@@ -1,0 +1,81 @@
+{
+    "APKExpansionLibrary": {
+        "srcDir": ["${ANDROID_SDK_HOME}/extras/google/play_apk_expansion/downloader_library",
+                    "${ANDROID_SDK_HOME}/extras/google/market_apk_expansion/downloader_library"],
+        "dependencies": [
+            "LicenseLibrary"
+        ],
+        "patches": [{
+            "path": "src/com/google/android/vending/expansion/downloader/impl/DownloadNotification.java",
+            "changes": [
+            {
+                "line": 134,
+                "old": ["mCurrentNotification.tickerText = mLabel + \": \" + mCurrentText;",
+                        "mCurrentNotification.icon = iconResource;",
+                        "mCurrentNotification.setLatestEventInfo(mContext, mCurrentTitle, mCurrentText,",
+                        "        mContentIntent);"],
+                "new": ["mCurrentNotification = createNotification(iconResource);"]
+            },
+            {
+                "line": 156,
+                "old": ["mNotification.tickerText = mCurrentTitle;",
+                        "mNotification.icon = android.R.drawable.stat_sys_download;",
+                        "mNotification.setLatestEventInfo(mContext, mLabel, mCurrentText, mContentIntent);"],
+                "new": ["mNotification = createNotification(android.R.drawable.stat_sys_download);"]
+            },
+            {
+                "line": 229,
+                "old" : [""],
+                "new": ["",
+                        "    private Notification createNotification(int iconRes) {",
+                        "        return new Notification.Builder(mContext)",
+                        "            .setContentText(mCurrentText)",
+                        "            .setContentTitle(mCurrentTitle)",
+                        "            .setContentIntent(mContentIntent)",
+                        "            .setTicker(mLabel + \": \" + mCurrentText)",
+                        "            .setSmallIcon(iconRes)",
+                        "            .build();",
+                        "    }"]
+            }]
+        },
+        {
+            "path": "AndroidManifest.xml",
+            "changes": [
+            {
+                "line": 6,
+                "old": ["<uses-sdk android:minSdkVersion=\"4\" android:targetSdkVersion=\"15\"/>"],
+                "new": [""]
+            }]
+        }],
+        "launcherDependency": "true"
+    },
+    "LicenseLibrary": {
+        "srcDir": ["${ANDROID_SDK_HOME}/extras/google/play_licensing/library",
+                    "${ANDROID_SDK_HOME}/extras/google/market_licensing/library"],
+        "buildDependencies": [
+            "org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2"
+        ],
+        "libs" : [{
+                    "path" : "${ANDROID_SDK_HOME}/platforms/${ANDROID_SDK_VERSION}/optional/org.apache.http.legacy.jar",
+                    "required" : false
+                }],
+        "patches": [{
+            "path": "src/com/google/android/vending/licensing/LicenseChecker.java",
+            "changes": [{
+                "line": 152,
+                "old": ["Base64.decode(\"Y29tLmFuZHJvaWQudmVuZGluZy5saWNlbnNpbmcuSUxpY2Vuc2luZ1NlcnZpY2U=\"))),"],
+                "new": ["Base64.decode(\"Y29tLmFuZHJvaWQudmVuZGluZy5saWNlbnNpbmcuSUxpY2Vuc2luZ1NlcnZpY2U=\"))).setPackage(\"com.android.vending\"),"]
+            }]
+        },
+        {
+            "path": "AndroidManifest.xml",
+            "changes": [
+            {
+                "line": 19,
+                "old": ["<!-- Devices >= 3 have version of Android Market that supports licensing. -->",
+                        "<uses-sdk android:minSdkVersion=\"3\" android:targetSdkVersion=\"15\" />"],
+                "new": [""]
+            }]
+        }]
+    }
+}

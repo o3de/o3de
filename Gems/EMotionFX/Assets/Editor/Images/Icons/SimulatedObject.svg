@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Actor / Physicalized Joint</title>
+    <g id="Icons-/-Actor-/-Physicalized-Joint" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M16.5,9 C15.6715729,9 15,8.32842712 15,7.5 C15,6.67157288 15.6715729,6 16.5,6 C17.3284271,6 18,6.67157288 18,7.5 C18,8.32842712 17.3284271,9 16.5,9 Z M16.5,12 C14.0147186,12 12,9.98528137 12,7.5 C12,5.01471863 14.0147186,3 16.5,3 C18.9852814,3 21,5.01471863 21,7.5 C21,9.98528137 18.9852814,12 16.5,12 Z M16.5,10.5 C18.1568542,10.5 19.5,9.15685425 19.5,7.5 C19.5,5.84314575 18.1568542,4.5 16.5,4.5 C14.8431458,4.5 13.5,5.84314575 13.5,7.5 C13.5,9.15685425 14.8431458,10.5 16.5,10.5 Z" id="Combined-Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <rect id="Rectangle-27" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.651650, 15.540738) rotate(45.000000) translate(-8.651650, -15.540738) " x="7.65165043" y="8.54809704" width="2" height="13.9852814"></rect>
+        <rect id="Rectangle-27" fill="#FFFFFF" fill-rule="nonzero" transform="translate(6.580043, 12.541778) rotate(45.000000) translate(-6.580043, -12.541778) " x="6.08004345" y="8.32619515" width="1" height="8.43116621"></rect>
+        <polygon id="Rectangle-27" fill="#FFFFFF" fill-rule="nonzero" transform="translate(5.103553, 11.103553) rotate(45.000000) translate(-5.103553, -11.103553) " points="4.60355339 8.62867966 5.60355339 8.62867966 5.60355339 13.5784271 4.60355339 13.5784271"></polygon>
+        <rect id="Rectangle-27" fill="#FFFFFF" fill-rule="nonzero" transform="translate(11.712975, 17.602986) rotate(45.000000) translate(-11.712975, -17.602986) " x="11.2129751" y="13.3879856" width="1" height="8.43"></rect>
+        <polygon id="Rectangle-27" fill="#FFFFFF" fill-rule="nonzero" transform="translate(13.616117, 18.603643) rotate(45.000000) translate(-13.616117, -18.603643) " points="13.1161165 16.1286427 14.1161165 16.1286427 14.1161165 21.0786427 13.1161165 21.0786427"></polygon>
+    </g>
+</svg>

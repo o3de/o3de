@@ -1,0 +1,281 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+option bool o_parallax_enablePixelDepthOffset;
+
+option enum class ParallaxAlgorithm {Basic, Steep, POM, Relief, Contact} o_parallax_algorithm;
+option enum class ParallaxQuality {Low, Medium, High, Ultra} o_parallax_quality;
+option bool o_parallax_shadow;
+
+//! The client shader must define this function.
+//! This allows the client shader to implement special depth map sampling, for example procedurally generating or blending depth maps.
+//! @param uv the UV coordinates to use for sampling
+//! @param uv_ddx will be set to ddx_fine(uv)
+//! @param uv_ddy will be set to ddy_fine(uv)
+float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy);
+
+//! Convenience function that can be used to implement GetDepth().
+//! @param isHeightmap indicates whether to sample the map is a height map rather than a depth map.
+float SampleDepthOrHeightMap(bool isHeightmap, Texture2D map, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    return abs((isHeightmap * 1.0) - map.SampleGrad(mapSampler, uv, uv_ddx, uv_ddy).r);
+}
+
+// dirToCameraTS should be in tangent space and normalized
+// From Reat-Time Rendering 3rd edition, p.192
+float3 BasicParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS)
+{
+    // the amount to shift
+    float2 delta = dirToCameraTS.xy * GetDepth(uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
+    
+    float3 offset = float3(0,0,0);
+    offset.xy -= delta;
+    return offset;
+}
+
+// dirToCameraTS and dirToLightTS should be in tangent space and normalized
+// Adapt from CryEngine shader shadelib.cfi and POM function in https://github.com/a-riccardi/shader-toy
+// check https://github.com/UPBGE/blender/issues/1009 for more details.
+float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, int numSteps, inout float parallaxShadowAttenuation)
+{
+    float dirToCameraZInverse = 1.0 / dirToCameraTS.z;
+    float step =  1.0 / numSteps;
+    float currentStep = 0.0;
+
+    // the amount to shift per step, shift in the inverse direction of dirToCameraTS
+    float3 delta = -dirToCameraTS.xyz * depthFactor * dirToCameraZInverse * step;
+
+    float2 ddx_uv = ddx_fine(uv);
+    float2 ddy_uv = ddy_fine(uv);
+
+    float currentSample = GetDepth(uv, ddx_uv, ddy_uv);
+    float prevSample;
+    float3 parallaxOffset = float3(0,0,0);
+
+    // find the intersect step
+    while(currentSample > currentStep)
+    {
+        currentStep += step;
+        parallaxOffset += delta;
+        prevSample = currentSample;
+        currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+    }
+
+    switch(o_parallax_algorithm)
+    {
+        case ParallaxAlgorithm::POM:
+        {
+            if(currentStep > 0.0)
+            {
+                // linear interpolation between the previous offset and the current offset
+                float prevStep = currentStep - step;
+                float currentDiff = currentStep - currentSample;
+                float prevDiff = prevSample - prevStep;
+                float ratio = prevDiff/ (prevDiff + currentDiff);
+
+                parallaxOffset = lerp(parallaxOffset - delta, parallaxOffset, ratio);
+            }
+            break;
+        }
+        case ParallaxAlgorithm::Relief:
+        {
+            if(currentStep > 0.0)
+            {
+                // Refining the parallax-offsetted uv, by binary searching around the naive intersection point
+                float depthSign = 1;
+                float3 reliefDelta = delta;
+                float reliefStep = step;
+
+                for(int i = 0; i < numSteps; i++)
+                {
+                    reliefDelta *= 0.5;
+                    reliefStep *= 0.5;
+                    depthSign = sign(currentSample - currentStep);
+
+                    parallaxOffset += reliefDelta * depthSign;
+                    currentStep += reliefStep * depthSign;
+
+                    currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                }
+            }
+            break;
+        }
+        case ParallaxAlgorithm::Contact:
+        {
+            if(currentStep > 0.0)
+            {
+                // Contact refinement propose by Andrea Riccardi 
+                // https://www.artstation.com/andreariccardi/blog/3VPo/a-new-approach-for-parallax-mapping-presenting-the-contact-refinement-parallax-mapping-technique
+
+                // Based on the rough approximation, rolling back to the previous step along the ray.
+                parallaxOffset -= delta;
+                currentStep -= step;
+                currentSample = prevSample;
+
+                // Adjust precision
+                float3 adjustedDelta = delta * step;
+                float adjustedStep = step * step;
+
+                // Uses another loop with the same step numbers, this times only covers the distance between previous point and the rough intersection point.
+                while(currentSample > currentStep)
+                {
+                    currentStep += adjustedStep;
+                    parallaxOffset += adjustedDelta;
+                    prevSample = currentSample;
+
+                    currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                }
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    if(o_parallax_shadow && any(dirToLightTS))
+    {
+        float2 shadowUV = uv + parallaxOffset.xy;
+        float shadowNumSteps = round(numSteps * currentStep);
+        float shadowStep = 1.0 / shadowNumSteps;
+        float dirToLightZInverse = 1.0 / dirToLightTS.z;
+        float2 shadowDelta = dirToLightTS.xy * depthFactor * dirToLightZInverse * shadowStep;
+
+        bool rayUnderSurface = false;
+        float partialShadowFactor = 0;
+
+        // Raytrace from found parallax-offsetted point to the light. 
+        // parallaxShadowAttenuation represents how much the current point is shadowed.
+        for(int i = 0 ; i < shadowNumSteps; i++)
+        {
+            // light ray is under surface
+            if(currentSample < currentStep)
+            {
+                rayUnderSurface = true;
+                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * (1 - (i + 1) * shadowStep));
+            }
+
+            shadowUV += shadowDelta;
+            currentSample = GetDepth(shadowUV, ddx_uv, ddy_uv);
+            currentStep -= step;
+        }
+
+        if(rayUnderSurface)
+        {
+            parallaxShadowAttenuation = 1 - partialShadowFactor;
+        }
+        else
+        {
+            parallaxShadowAttenuation = 1;
+        }
+    }
+
+    return parallaxOffset;
+}
+
+// return offset in tangent space
+float3 CalculateParallaxOffset(float depthFactor, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
+{
+    if(o_parallax_algorithm == ParallaxAlgorithm::Basic)
+    {
+        return BasicParallaxMapping(depthFactor, uv, dirToCameraTS);
+    }
+    else
+    {
+        float3 parallaxOffset;
+        switch(o_parallax_quality)
+        {
+            case ParallaxQuality::Low:
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 16, parallaxShadowAttenuation);
+                break;
+            case ParallaxQuality::Medium:
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 32, parallaxShadowAttenuation);
+                break;
+            case ParallaxQuality::High:
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 64, parallaxShadowAttenuation);
+                break;
+            case ParallaxQuality::Ultra:
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 128, parallaxShadowAttenuation);
+                break;
+        }
+        return parallaxOffset;
+    }
+}
+
+float3 GetParallaxOffset( float depthFactor, 
+                          float2 uv,
+                          float3 dirToCameraWS,
+                          float3 tangentWS,
+                          float3 bitangentWS,
+                          float3 normalWS,
+                          float3x3 uvMatrix)
+{
+    // Tangent space eye vector
+    float3 dirToCameraTS = normalize(WorldToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));
+
+    // uv transform matrix in 3d, ignore translation
+    float4x4 uv3DTransform;
+    uv3DTransform[0] = float4(uvMatrix[0].xy, 0, 0);
+    uv3DTransform[1] = float4(uvMatrix[1].xy, 0, 0);
+    uv3DTransform[2] = float4(0, 0, 1, 0);
+    uv3DTransform[3] = float4(0, 0, 0, 1);
+    
+    // Transform tangent space eye vector with UV matrix
+    float4 dirToCameraTransformed = mul(uv3DTransform, float4(dirToCameraTS, 0.0));
+
+    float dummy = 1;
+    return CalculateParallaxOffset(depthFactor, uv, normalize(dirToCameraTransformed.xyz), float3(0,0,0), dummy);
+}
+
+struct PixelDepthOffset
+{
+    float m_depth;
+    float3 m_worldPosition;
+};
+
+// Calculate Pixel Depth Offset and new world position
+PixelDepthOffset CalcPixelDepthOffset(  float depthFactor, 
+                                        float3 tangentOffset,
+                                        float3 posWS,
+                                        float3 tangentWS,
+                                        float3 bitangentWS,
+                                        float3 normalWS,
+                                        float3x3 uvMatrixInverse,
+                                        float4x4 objectToWorldMatrix,
+                                        float4x4 viewProjectionMatrix)
+{
+    // uv transform inverse matrix in 3d, ignore translation
+    float4x4 uv3DTransformInverse;
+    uv3DTransformInverse[0] = float4(uvMatrixInverse[0].xy, 0, 0);
+    uv3DTransformInverse[1] = float4(uvMatrixInverse[1].xy, 0, 0);
+    uv3DTransformInverse[2] = float4(0, 0, 1, 0);
+    uv3DTransformInverse[3] = float4(0, 0, 0, 1);
+    
+    tangentOffset = mul(uv3DTransformInverse, float4(tangentOffset, 0.0)).xyz;
+    float3 worldOffset = TangentSpaceToWorld(tangentOffset, normalWS, tangentWS, bitangentWS);
+
+    float scaleX = length(objectToWorldMatrix[0].xyz);
+    float scaleY = length(objectToWorldMatrix[1].xyz);
+    float scaleZ = length(objectToWorldMatrix[2].xyz);
+    worldOffset *= float3(scaleX, scaleY, scaleZ);
+
+    float3 worldOffsetPosition = posWS + worldOffset;
+    float4 clipOffsetPosition = mul(viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
+
+    PixelDepthOffset pdo;
+    pdo.m_depth = clipOffsetPosition.z / clipOffsetPosition.w;
+    pdo.m_worldPosition = worldOffsetPosition;
+    return pdo;
+}

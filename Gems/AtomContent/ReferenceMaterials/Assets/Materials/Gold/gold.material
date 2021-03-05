@@ -1,0 +1,26 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                1.0,
+                0.6938735246658325,
+                0.1587090939283371,
+                1.0
+            ]
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "factor": 1.0505050420761109,
+            "textureMap": "Materials/Copper/metal_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.06060609966516495
+        }
+    }
+}

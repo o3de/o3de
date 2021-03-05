@@ -1,0 +1,179 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+// AZ
+#include <AzCore/Serialization/SerializeContext.h>
+
+// Graph Canvas
+#include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
+#include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
+
+namespace GraphModelIntegration
+{
+    //! Provides a common interface for instantiating Graph Canvas support nodes like comments through the Node Palette
+    class CreateGraphCanvasNodeMimeEvent
+        : public GraphCanvas::GraphCanvasMimeEvent
+    {
+    public:
+        AZ_RTTI(CreateGraphCanvasNodeMimeEvent, "{7171A847-7405-459F-A031-CC9AE50745B6}", GraphCanvas::GraphCanvasMimeEvent);
+        AZ_CLASS_ALLOCATOR(CreateGraphCanvasNodeMimeEvent, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+            if (serializeContext)
+            {
+                serializeContext->Class<CreateGraphCanvasNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
+        CreateGraphCanvasNodeMimeEvent() = default;
+        ~CreateGraphCanvasNodeMimeEvent() = default;
+
+        bool ExecuteEvent([[maybe_unused]] const AZ::Vector2& mouseDropPosition, AZ::Vector2& dropPosition, const AZ::EntityId& graphCanvasSceneId) override final
+        {
+            AZ::Entity* graphCanvasNode = CreateNode();
+
+            if (graphCanvasNode)
+            {
+                AZ::EntityId graphCanvasNodeId = graphCanvasNode->GetId();
+
+                GraphCanvas::SceneRequestBus::Event(graphCanvasSceneId, &GraphCanvas::SceneRequests::AddNode, graphCanvasNodeId, dropPosition);
+                GraphCanvas::SceneMemberUIRequestBus::Event(graphCanvasNodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+
+                AZ::EntityId gridId;
+                GraphCanvas::SceneRequestBus::EventResult(gridId, graphCanvasSceneId, &GraphCanvas::SceneRequests::GetGrid);
+
+                AZ::Vector2 offset;
+                GraphCanvas::GridRequestBus::EventResult(offset, gridId, &GraphCanvas::GridRequests::GetMinorPitch);
+
+                dropPosition += offset;
+                return true;
+            }
+
+            return false;
+        }
+
+    protected:
+        virtual AZ::Entity* CreateNode() const = 0;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Comment Node
+
+    class CreateCommentNodeMimeEvent
+        : public CreateGraphCanvasNodeMimeEvent
+    {
+    public:
+        AZ_RTTI(CreateCommentNodeMimeEvent, "{1060EE7B-DBC2-4B7F-BC4C-4AB4651A3812}", CreateGraphCanvasNodeMimeEvent);
+        AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+            if (serializeContext)
+            {
+                serializeContext->Class<CreateCommentNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
+        CreateCommentNodeMimeEvent() = default;
+        ~CreateCommentNodeMimeEvent() = default;
+
+        virtual AZ::Entity* CreateNode() const override
+        {
+            AZ::Entity* graphCanvasNode = nullptr;
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateCommentNodeAndActivate);
+            return graphCanvasNode;
+        }
+    };
+
+    class CommentNodePaletteTreeItem
+        : public GraphCanvas::DraggableNodePaletteTreeItem
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CommentNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        CommentNodePaletteTreeItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
+            : DraggableNodePaletteTreeItem(nodeName, editorId)
+        {
+            SetToolTip("Comment box for notes. Does not affect script execution or data.");
+        }
+        ~CommentNodePaletteTreeItem() = default;
+
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override
+        {
+            return aznew CreateCommentNodeMimeEvent();
+        }
+    };    
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Node Group Node
+
+    class CreateNodeGroupNodeMimeEvent
+        : public CreateGraphCanvasNodeMimeEvent
+    {
+    public:
+        AZ_RTTI(CreateNodeGroupNodeMimeEvent, "{1451A2F2-640B-4CB3-BF48-DD77E97EC900}", CreateGraphCanvasNodeMimeEvent);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupNodeMimeEvent, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+            if (serializeContext)
+            {
+                serializeContext->Class<CreateNodeGroupNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
+        CreateNodeGroupNodeMimeEvent() = default;
+        ~CreateNodeGroupNodeMimeEvent() = default;
+
+        virtual AZ::Entity* CreateNode() const override
+        {
+            AZ::Entity* graphCanvasNode = nullptr;
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateNodeGroupAndActivate);
+            return graphCanvasNode;
+        }
+    };
+
+    class NodeGroupNodePaletteTreeItem
+        : public GraphCanvas::DraggableNodePaletteTreeItem
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(NodeGroupNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        NodeGroupNodePaletteTreeItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
+            : DraggableNodePaletteTreeItem(nodeName, editorId)
+        {}
+        ~NodeGroupNodePaletteTreeItem() = default;
+
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override
+        {
+            return aznew CreateNodeGroupNodeMimeEvent();
+        }
+    };
+
+    /// Add common utilities to a specific Node Palette tree.
+    void AddCommonNodePaletteUtilities(GraphCanvas::GraphCanvasTreeItem* rootItem, const GraphCanvas::EditorId& editorId);
+}

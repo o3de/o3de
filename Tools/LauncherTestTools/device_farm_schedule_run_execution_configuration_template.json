@@ -1,0 +1,4 @@
+{
+    "jobTimeoutMinutes": %EXECUTION_TIMEOUT%,
+    "videoCapture": true
+}

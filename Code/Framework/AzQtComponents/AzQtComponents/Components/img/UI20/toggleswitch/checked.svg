@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="16px" viewBox="0 0 32 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>Selection Controls / Switch / On</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Selection-Controls-/-Switch-/-On" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="switch-(on)">
+            <path d="M25.4117647,16 L6.58823529,16 C2.91764706,16 0,12.4571429 0,8 C0,3.54285714 2.91764706,0 6.58823529,0 L25.4117647,0 C29.0823529,0 32,3.54285714 32,8 C32,12.4571429 29.0823529,16 25.4117647,16 Z" id="track" fill="#0073BB"></path>
+            <circle id="knob" fill="#FFFFFF" cx="24" cy="8" r="6"></circle>
+        </g>
+    </g>
+</svg>

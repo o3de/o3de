@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Asset processor / Info</title>
+    <g id="Icons-/-Asset-processor-/-Info" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="Group">
+            <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+            <path d="M12,2 C17.5228475,2 22,6.4771525 22,12 C22,17.5228475 17.5228475,22 12,22 C6.4771525,22 2,17.5228475 2,12 C2,6.4771525 6.4771525,2 12,2 Z M12.4,9.7 L11.6,9.7 C11.0477153,9.7 10.6,10.1477153 10.6,10.7 L10.6,10.7 L10.6,17.8 C10.6,18.3522847 11.0477153,18.8 11.6,18.8 L11.6,18.8 L12.4,18.8 C12.9522847,18.8 13.4,18.3522847 13.4,17.8 L13.4,17.8 L13.4,10.7 C13.4,10.1477153 12.9522847,9.7 12.4,9.7 L12.4,9.7 Z M12,4.8 C11.0335017,4.8 10.25,5.58350169 10.25,6.55 C10.25,7.51649831 11.0335017,8.3 12,8.3 C12.9664983,8.3 13.75,7.51649831 13.75,6.55 C13.75,5.58350169 12.9664983,4.8 12,4.8 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        </g>
+    </g>
+</svg>

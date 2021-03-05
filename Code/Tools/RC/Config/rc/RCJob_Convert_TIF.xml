@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RCJobs>
+	<Properties CleanSettings="" /> <!-- This will force the settings to be read from the tif and written back out to .exportsettings -->
+	
+	<TexturesJob>
+		<Job Input="*.tif" /> <!-- Only applies to .tif files -->
+	</TexturesJob>
+
+	<Run Job="TexturesJob" /> <!-- Run the only job -->
+</RCJobs>

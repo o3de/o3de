@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Align to grid</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Align-to-grid" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="3" y="3" width="2" height="3"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="3" y="7" width="2" height="3"></rect>
+        <path d="M5,18 L5,21 L3,21 L3,18 L5,18 Z M9,19 L9,21 L6,21 L6,19 L9,19 Z M13,19 L13,21 L10,21 L10,19 L13,19 Z M5,14 L5,17 L3,17 L3,14 L5,14 Z M5,10 L5,13 L3,13 L3,10 L5,10 Z M21,10 L21,13 L19,13 L19,10 L21,10 Z M21,6 L21,9 L19,9 L19,6 L21,6 Z M21,3 L21,5 L18,5 L18,3 L21,3 Z M17,3 L17,5 L14,5 L14,3 L17,3 Z M13,3 L13,5 L10,5 L10,3 L13,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M19.0355339,13.732233 L17.091233,15.677233 L20.863961,19.4497475 L19.4497475,20.863961 L15.677233,17.091233 L13.732233,19.0355339 L13.732233,13.732233 L19.0355339,13.732233 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <rect id="Rectangle" fill="#D8D8D8" x="6" y="3" width="3" height="2"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="3" y="3" width="10" height="10"></rect>
+    </g>
+</svg>

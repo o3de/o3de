@@ -1,0 +1,8 @@
+{
+    "JOB_NAME": "LINUX",
+    "LABEL": "linux",
+    "LY_3RDPARTY_PATH": "/home/lybuilder/ly/workspace/3rdParty",
+    "TIMEOUT": 30,
+    "WORKSPACE": "/data/workspace",
+    "MOUNT_VOLUME": true
+}

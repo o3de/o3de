@@ -1,0 +1,161 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    // Source LUTs
+    Texture3D<float4> m_sourceLut1;
+    int m_sourceLut1ShaperType;
+    float m_sourceLut1ShaperBias;
+    float m_sourceLut1ShaperScale;
+
+    Texture3D<float4> m_sourceLut2;
+    int m_sourceLut2ShaperType;
+    float m_sourceLut2ShaperBias;
+    float m_sourceLut2ShaperScale;
+
+    Texture3D<float4> m_sourceLut3;
+    int m_sourceLut3ShaperType;
+    float m_sourceLut3ShaperBias;
+    float m_sourceLut3ShaperScale;
+
+    Texture3D<float4> m_sourceLut4;
+    int m_sourceLut4ShaperType;
+    float m_sourceLut4ShaperBias;
+    float m_sourceLut4ShaperScale;
+
+    // Five weights, the first is the weight of the ungraded base color, and the rest are for the up to 4 LUTs being blended.
+    float m_weight0;
+    float m_weight1;
+    float m_weight2;
+    float m_weight3;
+    float m_weight4;
+
+    // Destination LUT
+    RWTexture3D<float4> m_blendedLut;
+    uint3 m_blendedLutDimensions;
+    
+    int m_blendedLutShaperType;
+    float m_blendedLutShaperBias;
+    float m_blendedLutShaperScale;
+}
+
+// Option shader variable to select number of source LUTs.
+[[range(0, 4)]]
+option uint o_numSourceLuts = 0;
+
+float3 ShaperToLinear(float3 shaperColor, ShaperType shaperType, float shaperBias, float shaperScale)
+{
+    // Apply the inverse of the shaper function to give the color in the working color space
+    float3 linearColor = shaperColor;
+    if (shaperType == ShaperType::ShaperLinear)
+    {
+        linearColor = (shaperColor - shaperBias)/shaperScale;
+    }
+    else if (shaperType == ShaperType::ShaperLog2)
+    {
+        linearColor = pow(2.0, (shaperColor - shaperBias)/shaperScale);
+    }
+    return linearColor;
+}
+
+float3 LinearToShaper(float3 linearColor, ShaperType shaperType, float shaperBias, float shaperScale)
+{
+    // Convert from working color space to lut coordinates by applying the shaper function
+    float3 shaperColor = linearColor;
+    if (shaperType == ShaperType::ShaperLinear)
+    {
+        shaperColor = linearColor * shaperScale + shaperBias;
+    }
+    else if (shaperType == ShaperType::ShaperLog2)
+    {
+        shaperColor = log2(linearColor) * shaperScale + shaperBias;
+    }
+    return shaperColor;
+}
+
+float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
+{
+    // Convert from reference linearColor to the lutCoordinate for this Lut
+    float3 lutCoord = LinearToShaper(baseColor, shaperType, shaperBias, shaperScale);
+    float3 lutColor = sourceLut.SampleLevel(PassSrg::LinearSampler, lutCoord, 0).rgb;
+    // Convert to linear
+    float3 linearColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
+    return linearColor;
+}
+
+[numthreads(4,4,4)]
+void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
+{
+    // Get and output texture dimensions
+    uint3 outPixel = dispatch_id.xyz;
+
+    // Early out if thread is outside of the target image
+    if(outPixel.x >= PassSrg::m_blendedLutDimensions.x || outPixel.y >= PassSrg::m_blendedLutDimensions.y || outPixel.z >= PassSrg::m_blendedLutDimensions.z)
+    {
+        return;
+    }
+
+    // Get coordinates within the blended LUT 3D texture
+    float3 baseCoord = float3 (
+        (float)(dispatch_id.x)/(float)PassSrg::m_blendedLutDimensions.x,
+        (float)(dispatch_id.y)/(float)PassSrg::m_blendedLutDimensions.y,
+        (float)(dispatch_id.z)/(float)PassSrg::m_blendedLutDimensions.z
+        );
+    
+    // Convert to the base linear color (this is the color of the identity LUT)
+    float3 baseColor = ShaperToLinear(baseCoord, (ShaperType)PassSrg::m_blendedLutShaperType, PassSrg::m_blendedLutShaperBias, PassSrg::m_blendedLutShaperScale);
+
+    float4 output;
+    float3 blendedColor = baseColor * PassSrg::m_weight0;    
+
+    if (o_numSourceLuts > 0)
+    {
+        float3 linearColor1 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut1, (ShaperType)PassSrg::m_sourceLut1ShaperType, PassSrg::m_sourceLut1ShaperBias, PassSrg::m_sourceLut1ShaperScale);
+        blendedColor = blendedColor + (linearColor1 * PassSrg::m_weight1);
+    }
+    if (o_numSourceLuts > 1)
+    {
+        float3 linearColor2 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut2, (ShaperType)PassSrg::m_sourceLut2ShaperType, PassSrg::m_sourceLut2ShaperBias, PassSrg::m_sourceLut2ShaperScale);
+        blendedColor = blendedColor + (linearColor2 * PassSrg::m_weight2);
+    }
+    if (o_numSourceLuts > 2)
+    {
+        float3 linearColor3 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut3, (ShaperType)PassSrg::m_sourceLut3ShaperType, PassSrg::m_sourceLut3ShaperBias, PassSrg::m_sourceLut3ShaperScale);
+        blendedColor = blendedColor + (linearColor3 * PassSrg::m_weight3);
+    }
+    if (o_numSourceLuts > 3)
+    {
+        float3 linearColor4 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut4, (ShaperType)PassSrg::m_sourceLut4ShaperType, PassSrg::m_sourceLut4ShaperBias, PassSrg::m_sourceLut4ShaperScale);
+        blendedColor = blendedColor + (linearColor4 * PassSrg::m_weight4);
+    }
+    
+    // Apply the inverse of the blended LUT shaper
+    float3 lutColor = LinearToShaper(blendedColor, (ShaperType)PassSrg::m_blendedLutShaperType, PassSrg::m_blendedLutShaperBias, PassSrg::m_blendedLutShaperScale);
+    output.rgb = lutColor;
+    
+    output.a = 1.0;
+    PassSrg::m_blendedLut[outPixel] = output;
+}

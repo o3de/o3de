@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>icon / Physics  / PhysX / Terrain</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M12,2.13242158 L22.4355498,12.0381711 L12,21.3012432 L1.56445023,12.0381711 L12,2.13242158 Z M19.6311611,12 L16.571863,9.40180776 L14.7566116,10.127399 L13.8013912,8.88566017 L12,6.14496878 L10.4418065,9.40180776 L8.98073675,8.06984652 L7.58337536,10.4589864 L6.0008263,10.8122204 L4.46186505,12 L12,18.0688524 L19.6311611,12 Z" id="path-1"></path>
+    </defs>
+    <g id="icon-/-Physics--/-PhysX-/-Terrain" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#DD7F6D" fill-rule="nonzero" xlink:href="#path-1"></use>
+    </g>
+</svg>

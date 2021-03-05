@@ -1,0 +1,177 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+void ApplyDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    float3 posToLight = light.m_position - surface.position;
+    float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = distanceToLight2 * light.m_invAttenuationRadiusSquared;
+
+    float3 posToLightDir = normalize(posToLight);
+
+    // Adjust direction if light emits both direction and is pointing away.
+    float facing = sign(dot(posToLightDir, -light.m_direction));
+    float3 lightDirection = light.m_direction;
+    if (facing * light.m_bothDirectionsFactor > 0.0 )
+    {
+        lightDirection = -lightDirection;
+    }
+
+    // Reduce the brightness based on how much the disk is facing this pixel.
+    float angleFalloff = dot(posToLightDir, -lightDirection);
+
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f && angleFalloff > 0.0f)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+        // Find the distance to the closest point on the disk
+        float distanceToPlane = dot(posToLight, -lightDirection);
+        float distanceToPlane2 = distanceToPlane * distanceToPlane;
+        float pointOnPlaneToLightDistance = sqrt(distanceToLight2 - distanceToPlane2); // pythagorean theorem 
+        float pointOnPlaneToDiskDistance = max(pointOnPlaneToLightDistance - light.m_diskRadius, 0.0f); 
+        float distanceToDisk2 = pointOnPlaneToDiskDistance * pointOnPlaneToDiskDistance + distanceToPlane2;
+
+        // Update the light direction based on the edges of the disk as visible from this point instead of the center.
+        float3 pointOnPlane = -lightDirection * distanceToPlane;
+        float3 pointOnPlaneToLightDir = normalize(posToLight - pointOnPlane);
+        float3 nearSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance - light.m_diskRadius));
+        float3 farSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance + light.m_diskRadius));
+        posToLightDir = normalize((nearSideDir + farSideDir) * 0.5);
+
+        // Standard quadratic falloff
+        distanceToDisk2 = max(0.001 * 0.001, distanceToDisk2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / distanceToDisk2) * radiusAttenuation * angleFalloff;
+
+        // Adjust brightness based on the disk size relative to its distance.
+        // The larger the disk is relative to the surface point, the dimmer it becomes.
+        // 0 radius disks are unaffected.
+        lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0);
+
+        // Diffuse contribution
+        diffuseLighting += GetDiffuseLighting(surface, lightIntensity, dirToCamera, posToLightDir);
+
+        // Tranmission contribution
+        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, posToLightDir, 0.0);
+        
+        // Adjust the light direction for specular based on disk size
+
+        // Calculate the reflection off the normal from the view lightDirection
+        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float reflectionDotLight = dot(reflectionDir, -lightDirection);
+        
+        // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
+        // As such, posToIntersection denotes the vector from pos to the intersection of the reflection ray and the disk plane:
+        float3 posToIntersection;
+        
+        if (reflectionDotLight >= 0.0001)
+        {
+            // Reflection going towards the light
+            posToIntersection = reflectionDir * distanceToPlane / reflectionDotLight;
+        }
+        else
+        {
+            // Reflection going away from the light. Choose a point far off and project it on the plane,
+            // then treat that as the reflection plane intersection.
+            float3 posToFarOffPoint = reflectionDir * distanceToPlane * 10000.0;
+            float3 lightToFarOffPoint = posToFarOffPoint - posToLight;
+            float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, lightDirection) * lightDirection;
+            posToIntersection = posToFarOffPoint - intersectionToFarOffPoint;
+        }
+    
+        // Calculate a vector from the reflection vector to the light
+        float3 intersectionToLight = posToLight - posToIntersection;
+
+        // Adjust the lightDirection to light based on the bulb size
+        posToLight -= intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
+
+        // Adjust the intensity of the light based on the bulb size to conserve energy
+        float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, distanceToLight2);
+
+        // Specular contribution
+        specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+    }
+}
+
+float3 SampleDisk(float2 randomPoint, ViewSrg::DiskLight light)
+{
+    // Uniformly distributed point at light surface
+    float distanceFromCenter = sqrt(randomPoint.x) * light.m_diskRadius;
+    float angle = 2.0 * PI * randomPoint.y;
+    float3 outPoint = float3(distanceFromCenter * cos(angle), distanceFromCenter * sin(angle), 0.0);
+
+    // Orient point using the tangent / bitangent as a uv space.
+    float3 tangent;
+    if (abs(light.m_direction.z) > 0.9)
+    {
+        // If vector is close to aligned with z axis choose y as up.
+        tangent = normalize(cross(light.m_direction, float3(0.0, 1.0, 0.0)));
+    }
+    else
+    {
+        tangent = normalize(cross(light.m_direction, float3(0.0, 0.0, 1.0)));
+    }
+    float3 bitangent = cross(tangent, light.m_direction);
+    outPoint = tangent * outPoint.x + bitangent * outPoint.y;
+
+    // Translate by light position
+    outPoint += light.m_position;
+
+    return outPoint;
+}
+
+void ValidateDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    const uint sampleCount = 512;
+
+    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    float3 specularAcc = float3(0.0, 0.0, 0.0);
+    float3 translucentAcc = float3(0.0, 0.0, 0.0);
+
+    for (uint i = 0; i < sampleCount; ++i)
+    {
+        float2 randomPoint = GetHammersleyPoint(i, sampleCount);
+        float3 samplePoint = SampleDisk(randomPoint, light);
+        AddSampleContribution(surface, samplePoint, light.m_direction, dirToCamera, light.m_bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
+    }
+    
+    diffuseLighting += (diffuseAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
+    specularLighting += (specularAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
+}
+
+void ApplyDiskLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{    
+    tileIterator.LoadAdvance();
+            
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        
+        ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
+        
+        if (o_area_light_validation)
+        {
+            ValidateDiskLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+        else
+        {
+            ApplyDiskLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+    }
+}

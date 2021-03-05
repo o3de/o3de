@@ -1,0 +1,6 @@
+<download name="LevelForSliceEditing" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="8319" md5="4cd265fe4f45d14267888eb89c39bd03"/>
+ </files>
+</download>

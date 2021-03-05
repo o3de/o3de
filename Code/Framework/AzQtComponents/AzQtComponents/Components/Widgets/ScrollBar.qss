@@ -1,0 +1,110 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+QScrollBar
+{
+    border: 2px solid rgba(50, 50, 50, 70%);
+    background: none;
+    margin: 0px;
+}
+
+QScrollBar:vertical
+{
+    width: 8px;
+}
+
+QScrollBar:horizontal
+{
+    height: 8px;
+}
+
+QScrollBar::handle
+{
+    border: 0px solid #000000;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 40%);
+}
+
+QAbstractScrollArea.DarkScrollBar QScrollBar::handle
+{
+    border: 0px solid #000000;
+    border-radius: 2px;
+    background-color: rgba(136, 136, 136, 64%);
+}
+
+QScrollBar::handle:vertical {
+    min-height: 32px;
+}
+
+QScrollBar::handle:horizontal {
+    min-width: 32px;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line
+{
+     border: none;
+     background: none;
+     color: none;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal
+{
+     width: 0px;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical
+{
+     height: 0px;
+}
+
+QAbstractScrollArea > .QWidget
+{
+    background: none;
+}
+
+/* scrollbar hovered */
+
+QScrollBar:hover
+{
+    border: 1px solid rgba(50, 50, 50, 70%);
+    background: none;
+    margin: 0px;
+}
+
+QAbstractScrollArea.DarkScrollBar QScrollBar:hover
+{
+    border: 1px solid rgba(136, 136, 136, 64%);
+    background: none;
+    margin: 0px;
+}
+
+QScrollBar::handle:hover
+{
+    border-radius: 3px;
+    background-color: #999999;
+}
+
+QAbstractScrollArea > .QWidget:hover,
+QAbstractScrollArea > .QWidget[ShowBackground=true]
+{
+    background-color: rgba(255, 255, 255, 12%);
+}
+
+QAbstractScrollArea.DarkScrollBar > .QWidget:hover,
+QAbstractScrollArea.DarkScrollBar > .QWidget[ShowBackground=true]
+{
+    background-color: rgba(221, 221, 221, 80%);
+}

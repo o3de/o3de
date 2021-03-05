@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49 (51002) - http://www.bohemiancoding.com/sketch -->
+    <title>Ok</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Ok" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="signal-vote-on">
+            <path d="M12,2 C6.45454545,2 2,6.45454545 2,12 C2,17.5454545 6.45454545,22 12,22 C17.5454545,22 22,17.5454545 22,12 C22,6.45454545 17.5454545,2 12,2 Z M9.27272727,16.9090909 L5.90909091,13.5454545 L7.18181818,12.2727273 L9.27272727,14.3636364 L15.9090909,7.72727273 L17.1818182,9 L9.27272727,16.9090909 Z" id="Shape" fill="#58BC61" fill-rule="nonzero"></path>
+            <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        </g>
+    </g>
+</svg>

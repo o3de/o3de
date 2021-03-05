@@ -1,0 +1,24 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "1ecafbbec4e1406297e56a09fd73646e",
+    "Name": "MultiplayerImGui",
+    "DisplayName": "Multiplayer Analytics",
+    "Version": "0.1.0",
+    "Summary": "Live in-game network analysis tool for GridMate. It allows you to find out your network bottlenecks, where most of your network traffic is spent on. You can track the total bandwidth, per network field, or per remote procedure call bandwidth in real time.",
+    "Tags": ["GridMate","Multiplayer","Networking", "Diagnostics"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "bab8807a1bc646b3909f3cc200ffeedf",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "ImGui"
+        }
+    ]
+}

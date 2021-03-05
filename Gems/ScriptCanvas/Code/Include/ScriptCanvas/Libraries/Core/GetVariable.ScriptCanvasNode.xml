@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/GetVariable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="GetVariableNode"
+	       QualifiedName="ScriptCanvas::Nodes::Core::GetVariableNode"
+	       PreferredClassName="Get Variable"
+           Uuid="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}"
+           Base="ScriptCanvas::Node"
+           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Version="0"
+           GeneratePropertyFriend="True"
+           Description="Node for referencing a property within the graph">
+        <In Name="In" Description="When signaled sends the property referenced by this node to a Data Output slot"/>
+        <Out Name="Out" Description="Signaled after the referenced property has been pushed to the Data Output slot"/>
+        <SerializedProperty Name="m_variableId" />
+        <SerializedProperty Name="m_variableDataOutSlotId" />
+        <SerializedProperty Name="m_propertyAccounts" />
+        <EditProperty UiHandler="AZ::Edit::UIHandlers::ComboBox" FieldName="m_variableId" Name="m_variableId" >
+            <EditAttribute Key="AZ::Edit::Attributes::GenericValueList" Value="&amp;GetVariableNode::GetGraphVariables"/>
+            <EditAttribute Key="AZ::Edit::Attributes::PostChangeNotify" Value="&amp;GetVariableNode::OnIdChanged"/>
+        </EditProperty>
+    </Class>
+</ScriptCanvas>

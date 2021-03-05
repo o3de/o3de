@@ -1,0 +1,4 @@
+SomeLibrary
+Has*WildcardCharacter
+@PreloadLib
+@

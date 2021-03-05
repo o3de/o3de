@@ -1,0 +1,68 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+//! The surface struct should contain all the info for a pixel that can be
+//! passed onto the rendering logic for shading.
+//! Note that metallic workflow can be supported by first converting to these physical properties first.
+struct Surface
+{
+    float3 position;
+    float3 normal;
+    float3 tangentAniso;             //! surface space tangent for anisotropic use
+    float3 bitangentAniso;           //! surface space bitangent for anisotropic use
+    float2 anisotropyFactors;        //! anisotory factors along the tangent and the bitangent directions
+    float3 albedo;                   
+    float3 specularF0;               //!< actual fresnel f0 spectral value of the surface (as opposed to a "factor")
+    float3 multiScatterCompensation; //!< the constant scaling term to approximate multiscattering contribution in specular BRDF
+    float roughnessLinear;           //!< perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
+    float roughnessA;                //!< actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
+    float thickness;                 //!< pre baked local thickness, used for transmission
+    float4 transmissionParams;       //!< parameters: thick mode->(attenuation coefficient, power, distortion, scale), thin mode:  (float3 scatter distance, scale)
+    float clearCoatFactor;           //!< clear coat strength factor
+    float clearCoatRoughness;        //!< clear coat linear roughness (not base layer one)
+    float3 clearCoatNormal;          //!< normal used for top layer clear coat
+};
+
+//! Calculate and fill the data required for fast directional anisotropty surface response.
+//! Assumption: the normal and roughnessA surface properties were filled and are valid
+//! Notice that since the newly created surface tangent and bitangent will be rotated 
+//! according to the anisotropy direction and should not be used for other purposes uness 
+//! rotated back.
+void CalculateSurfaceDirectionalAnisotropicData( 
+    inout Surface surface, float2 anisotropyAngleAndFactor, 
+    float3 vtxTangent, float3 vtxBitangent )
+{
+    const float anisotropyAngle = anisotropyAngleAndFactor.x;
+    const float anisotropyFactor = anisotropyAngleAndFactor.y;
+
+    surface.anisotropyFactors = max( 0.01, 
+        float2( surface.roughnessA * (1.0 + anisotropyFactor), 
+                surface.roughnessA * (1.0 - anisotropyFactor) )
+    );
+
+    if (anisotropyAngle > 0.01)
+    {
+        // Base rotation according to anisotropic main direction
+        float aniSin, aniCos;
+        sincos(anisotropyAngle, aniSin, aniCos);
+
+        // Rotate the vertex tangent to get new aligned to surface normal tangent
+        vtxTangent = aniCos * vtxTangent - aniSin * vtxBitangent;
+    }
+
+    // Now create the new surface base according to the surface normal 
+    // If rotation was required it was already applied to the tangent, hence to the bitangent
+    surface.bitangentAniso = normalize(cross(surface.normal, vtxTangent));
+    surface.tangentAniso = cross(surface.bitangentAniso, surface.normal);
+}

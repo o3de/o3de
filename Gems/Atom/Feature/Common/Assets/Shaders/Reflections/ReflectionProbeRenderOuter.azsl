@@ -1,0 +1,116 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Specular IBL reflection pipeline:
+// Stencil -> BlendWeight -> GlobalFullscreen -> RenderOuter -> RenderInner -> Composite
+//                                               -----------
+// 
+// This shader writes the appropriate amount of IBL from a probe to this location,
+// based on the amount of blend determined by the probe volume.  This is an additive
+// blend operation into the render target, as other probes and Global IBL will be written
+// to this location as well.  Note that this shader only considers pixels stenciled to the
+// outer volume.  Inner volume pixels are written in the next pass.
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include "ReflectionProbeRenderObjectSrg.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float>  m_depth;
+    Texture2DMS<float4> m_normal;
+    Texture2DMS<float4> m_specularF0;
+    Texture2DMS<float4> m_clearCoatNormal;
+    Texture2DMS<float>  m_blendWeight;
+    Texture2D<float2>   m_brdfMap;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+#include "ReflectionCommon.azsli"
+#include "ReflectionProbeRenderCommon.azsli"
+
+// Vertex Shader
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float3 positionWS = mul(ObjectSrg::GetWorldMatrix(), float4(vsInput.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(positionWS, 1.0));
+    return OUT;
+}
+
+// Pixel Shader
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    // reconstruct world space position from the depth at this location in screenspace
+    // Note: this is the world position of the rendered object covered by the probe volume, not the volume itself
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+
+    // compute specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
+    float3 specular = float3(0.0f, 0.0f, 0.0f);
+    if (!ComputeProbeSpecular(IN.m_position.xy, positionWS, ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, sampleIndex, specular))
+    {
+        discard;
+    }
+        
+    // determine blend based on position with respect to the inner and outer AABBs
+    // if it's inside the inner AABB it blends at 100%, otherwise it's the percentage of the distance between the inner/outer AABB
+    float blendWeight = 1.0f;
+    if (!AabbContainsPoint(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, positionWS))
+    {
+        // not inside the inner AABB, so it's in between the inner and outer AABBs
+        // compute blend amount based on the distance to the outer AABB
+        blendWeight = ComputeLerpBetweenInnerOuterAABBs(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS);
+    }
+        
+    // retrieve the blend weight of all probes at this location
+    float blendWeightAllProbes = PassSrg::m_blendWeight.Load(IN.m_position.xy, sampleIndex).r;
+
+    // normalize the blend for this probe using the total of all probes at this location
+    // Note: if the total weight is <= 1.0f then we don't need to normalize, just use the weight
+    blendWeight /= max(1.0f, blendWeightAllProbes);
+
+    // apply exposure setting
+    specular *= pow(2.0, SceneSrg::m_iblExposure);
+
+    // apply blend weight for additive blending
+    specular *= blendWeight;
+
+    PSOutput OUT;
+    OUT.m_color = float4(specular, 1.0f);
+    return OUT;
+}

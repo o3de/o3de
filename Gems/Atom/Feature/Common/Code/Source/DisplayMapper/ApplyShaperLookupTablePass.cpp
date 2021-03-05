@@ -1,0 +1,123 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
+
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameGraphAttachmentInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+        RPI::Ptr<ApplyShaperLookupTablePass> ApplyShaperLookupTablePass::Create(const RPI::PassDescriptor& descriptor)
+        {
+            RPI::Ptr<ApplyShaperLookupTablePass> pass = aznew ApplyShaperLookupTablePass(descriptor);
+            return pass;
+        }
+
+        ApplyShaperLookupTablePass::ApplyShaperLookupTablePass(const RPI::PassDescriptor& descriptor)
+            : DisplayMapperFullScreenPass(descriptor)
+        {
+        }
+
+        ApplyShaperLookupTablePass::~ApplyShaperLookupTablePass()
+        {
+            ReleaseLutImage();
+        }
+
+        void ApplyShaperLookupTablePass::Init()
+        {
+            DisplayMapperFullScreenPass::Init();
+
+            AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
+
+            if (m_shaderResourceGroup != nullptr)
+            {
+                m_shaderInputLutImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_lut" });
+
+                m_shaderShaperTypeIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperType" });
+                m_shaderShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperBias" });
+                m_shaderShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperScale" });
+            }
+            UpdateShaperSrg();
+        }
+
+        void ApplyShaperLookupTablePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        {
+            DeclareAttachmentsToFrameGraph(frameGraph);
+            DeclarePassDependenciesToFrameGraph(frameGraph);
+
+            if (m_needToReloadLut)
+            {
+                ReleaseLutImage();
+                AcquireLutImage();
+                m_needToReloadLut = false;
+            }
+
+            AZ_Assert(m_lutResource.m_lutStreamingImage != nullptr, "ApplyShaperLookupTablePass unable to acquire LUT image");
+
+            frameGraph.SetEstimatedItemCount(1);
+        }
+
+        void ApplyShaperLookupTablePass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
+
+            BindPassSrg(context, m_shaderResourceGroup);
+            m_shaderResourceGroup->Compile();
+        }
+
+        void ApplyShaperLookupTablePass::AcquireLutImage()
+        {
+            auto displayMapper = m_pipeline->GetScene()->GetFeatureProcessor<AZ::Render::AcesDisplayMapperFeatureProcessor>();
+            displayMapper->GetLutFromAssetId(m_lutResource, m_lutAssetId);
+            UpdateShaperSrg();
+        }
+
+        void ApplyShaperLookupTablePass::ReleaseLutImage()
+        {
+            m_lutResource.m_lutStreamingImage.reset();
+        }
+
+        void ApplyShaperLookupTablePass::SetShaperParameters(const ShaperParams& shaperParams)
+        {
+            m_shaperParams = shaperParams;
+            UpdateShaperSrg();
+        }
+
+        void ApplyShaperLookupTablePass::SetLutAssetId(const AZ::Data::AssetId& assetId)
+        {
+            m_lutAssetId = assetId;
+        }
+
+        void ApplyShaperLookupTablePass::UpdateShaperSrg()
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling UpdateShaperSrg.", GetPathName().GetCStr());
+
+            if (m_shaderResourceGroup != nullptr)
+            {
+                if (m_lutResource.m_lutStreamingImage)
+                {
+                    m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_lutResource.m_lutStreamingImage->GetImageView());
+
+                    m_shaderResourceGroup->SetConstant(m_shaderShaperTypeIndex, m_shaperParams.type);
+                    m_shaderResourceGroup->SetConstant(m_shaderShaperBiasIndex, m_shaperParams.bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderShaperScaleIndex, m_shaperParams.scale);
+                }
+            }
+        }
+    }   // namespace Render
+}   // namespace AZ

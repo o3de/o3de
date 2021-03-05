@@ -1,0 +1,405 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/IO/Streamer/StorageDriveConfig_Windows.h>
+#include <AzCore/IO/Streamer/StreamerConfiguration_Windows.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <winioctl.h>
+
+namespace AZ::IO
+{
+    static DWORD NextPowerOfTwo(DWORD value)
+    {
+        --value;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        ++value;
+        return value;
+    }
+
+    static void CollectIoAdaptor(HANDLE deviceHandle, DriveInformation& info, const char* driveName)
+    {
+        STORAGE_ADAPTER_DESCRIPTOR adapterDescriptor{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageAdapterProperty;
+
+        DWORD bytesReturned = 0;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &adapterDescriptor, sizeof(adapterDescriptor), &bytesReturned, nullptr))
+        {
+            switch (adapterDescriptor.BusType)
+            {
+            case BusTypeScsi:               info.m_profile = "Scsi";                break;
+            case BusTypeAtapi:              info.m_profile = "Atapi";               break;
+            case BusTypeAta:                info.m_profile = "Ata";                 break;
+            case BusType1394:               info.m_profile = "1394";                break;
+            case BusTypeSsa:                info.m_profile = "Ssa";                 break;
+            case BusTypeFibre:              info.m_profile = "Fibre";               break;
+            case BusTypeUsb:                info.m_profile = "Usb";                 break;
+            case BusTypeRAID:               info.m_profile = "Raid";                break;
+            case BusTypeiScsi:              info.m_profile = "iScsi";               break;
+            case BusTypeSas:                info.m_profile = "Sas";                 break;
+            case BusTypeSata:               info.m_profile = "Sata";                break;
+            case BusTypeSd:                 info.m_profile = "Sd";                  break;
+            case BusTypeMmc:                info.m_profile = "Mmc";                 break;
+            case BusTypeVirtual:            info.m_profile = "Virtual";             break;
+            case BusTypeFileBackedVirtual:  info.m_profile = "File backed virtual"; break;
+            case BusTypeSpaces:             info.m_profile = "Spaces";              break;
+            case BusTypeNvme:               info.m_profile = "Nvme";                break;
+            case BusTypeSCM:                info.m_profile = "SCM";                 break;
+            case BusTypeUfs:                info.m_profile = "Ufs";                 break;
+            default:                        info.m_profile = "Generic";
+            }
+
+            DWORD pageSize = NextPowerOfTwo(adapterDescriptor.MaximumTransferLength / adapterDescriptor.MaximumPhysicalPages);
+
+            AZ_Printf("Streamer",
+                "Adapter for drive '%s':\n"
+                "    Bus: %s %i.%i\n"
+                "    Max transfer: %.3f kb\n"
+                "    Page size: %i kb for %i pages\n"
+                "    Supports queuing: %s\n",
+                driveName,
+                info.m_profile.c_str(), adapterDescriptor.BusMajorVersion, adapterDescriptor.BusMinorVersion,
+                (1.0f / 1024.0f) * adapterDescriptor.MaximumTransferLength,
+                pageSize, adapterDescriptor.MaximumPhysicalPages,
+                adapterDescriptor.CommandQueueing ? "Yes" : "No");
+
+            info.m_maxTransfer = adapterDescriptor.MaximumTransferLength;
+            info.m_pageSize = pageSize;
+            info.m_supportsQueuing = adapterDescriptor.CommandQueueing;
+        }
+    }
+
+    static void AppendDriveTypeToProfile(HANDLE deviceHandle, DriveInformation& information)
+    {
+        // Check for support for the TRIM command. This command is exclusively used by SSD drives so can be used to
+        // tell the difference between SSD and HDD. Since these are the only 2 types supported right now, no further
+        // checks need to happen.
+
+        DEVICE_TRIM_DESCRIPTOR trimDescriptor{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageDeviceTrimProperty;
+
+        DWORD bytesReturned = 0;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &trimDescriptor, sizeof(trimDescriptor), &bytesReturned, nullptr))
+        {
+            information.m_profile += trimDescriptor.TrimEnabled ? "_SSD" : "_HDD";
+            AZ_Printf("Streamer",
+                "    Drive type: %s\n",
+                trimDescriptor.TrimEnabled ? "SSD" : "HDD");
+        }
+        else
+        {
+            AZ_Printf("Streamer",
+                "    Drive type couldn't be determined.");
+        }
+    }
+
+    static void CollectAlignmentRequirements(HANDLE deviceHandle, DriveInformation& information)
+    {
+        STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR alignmentDescriptor{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageAccessAlignmentProperty;
+
+        DWORD bytesReturned = 0;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &alignmentDescriptor, sizeof(alignmentDescriptor), &bytesReturned, nullptr))
+        {
+            information.m_physicalSectorSize = aznumeric_caster(alignmentDescriptor.BytesPerPhysicalSector);
+            information.m_logicalSectorSize = aznumeric_caster(alignmentDescriptor.BytesPerLogicalSector);
+            AZ_Printf("Streamer",
+                "    Physical sector size: %i bytes\n"
+                "    Logical sector size: %i bytes\n",
+                alignmentDescriptor.BytesPerPhysicalSector,
+                alignmentDescriptor.BytesPerLogicalSector);
+        }
+    }
+
+    static void CollectDriveInfo(HANDLE deviceHandle, const char* driveName)
+    {
+        STORAGE_DEVICE_DESCRIPTOR sizeRequest{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageDeviceProperty;
+
+        DWORD bytesReturned = 0;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &sizeRequest, sizeof(sizeRequest), &bytesReturned, nullptr))
+        {
+            auto header = reinterpret_cast<STORAGE_DESCRIPTOR_HEADER*>(&sizeRequest);
+            auto buffer = AZStd::unique_ptr<char[]>(new char[header->Size]);
+
+            if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+                buffer.get(), header->Size, &bytesReturned, nullptr))
+            {
+                auto deviceDescriptor = reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(buffer.get());
+                AZ_Printf("Streamer",
+                    "Drive info for '%s':\n"
+                    "    Id: %s%s%s%s%s\n",
+                    driveName,
+                    deviceDescriptor->VendorIdOffset != 0 ? buffer.get() + deviceDescriptor->VendorIdOffset : "",
+                    deviceDescriptor->VendorIdOffset != 0 ? " " : "",
+                    deviceDescriptor->ProductIdOffset != 0 ? buffer.get() + deviceDescriptor->ProductIdOffset : "",
+                    deviceDescriptor->ProductIdOffset != 0 ? " " : "",
+                    deviceDescriptor->ProductRevisionOffset != 0 ? buffer.get() + deviceDescriptor->ProductRevisionOffset : "");
+            }
+        }
+    }
+
+    static void CollectDriveIoCapability(HANDLE deviceHandle, DriveInformation& information)
+    {
+        STORAGE_DEVICE_IO_CAPABILITY_DESCRIPTOR capabilityDescriptor{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageDeviceIoCapabilityProperty;
+
+        DWORD bytesReturned = 0;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &capabilityDescriptor, sizeof(capabilityDescriptor), &bytesReturned, nullptr))
+        {
+            information.m_ioChannelCount = aznumeric_caster(capabilityDescriptor.LunMaxIoCount);
+            AZ_Printf("Streamer",
+                "    Max IO count (LUN): %i\n"
+                "    Max IO count (Adapter): %i\n",
+                capabilityDescriptor.LunMaxIoCount,
+                capabilityDescriptor.AdapterMaxIoCount);
+        }
+    }
+
+    static void CollectDriveSeekPenalty(HANDLE deviceHandle, DriveInformation& information)
+    {
+        DWORD bytesReturned = 0;
+
+        // Get seek penalty information.
+        DEVICE_SEEK_PENALTY_DESCRIPTOR seekPenaltyDescriptor{};
+        STORAGE_PROPERTY_QUERY query{};
+        query.QueryType = PropertyStandardQuery;
+        query.PropertyId = StorageDeviceSeekPenaltyProperty;
+        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
+            &seekPenaltyDescriptor, sizeof(seekPenaltyDescriptor), &bytesReturned, nullptr))
+        {
+            information.m_hasSeekPenalty = seekPenaltyDescriptor.IncursSeekPenalty ? true : false;
+            AZ_Printf("Streamer",
+                "    Has seek penalty: %s\n",
+                information.m_hasSeekPenalty ? "Yes" : "No");
+        }
+
+    }
+
+    static bool IsDriveUsed(AZStd::string_view driveId)
+    {
+        struct PathVisitor : SettingsRegistryInterface::Visitor
+        {
+            ~PathVisitor() override = default;
+
+            AZStd::string_view m_driveId;
+            bool m_firstObject = true;
+            bool m_found = false;
+
+            SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path,
+                [[maybe_unused]] AZStd::string_view valueName, [[maybe_unused]] SettingsRegistryInterface::VisitAction action,
+                [[maybe_unused]] SettingsRegistryInterface::Type type) override
+            {
+                if (m_found)
+                {
+                    return SettingsRegistryInterface::VisitResponse::Done;
+                }
+
+                if (type == SettingsRegistryInterface::Type::Object)
+                {
+                    if (m_firstObject)
+                    {
+                        m_firstObject = false;
+                        return SettingsRegistryInterface::VisitResponse::Continue;
+                    }
+                    else
+                    {
+                        return SettingsRegistryInterface::VisitResponse::Skip;
+                    }
+                }
+
+                return type == SettingsRegistryInterface::Type::String ?
+                    SettingsRegistryInterface::VisitResponse::Continue : SettingsRegistryInterface::VisitResponse::Skip;
+            }
+
+            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
+                [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
+            {
+                constexpr bool caseSensitive = false;
+                if (AZ::StringFunc::StartsWith(value, m_driveId, caseSensitive))
+                {
+                    m_found = true;
+                }
+            }
+        };
+        PathVisitor visitor;
+        visitor.m_driveId = driveId;
+        if (driveId.back() == AZ_CORRECT_FILESYSTEM_SEPARATOR || driveId.back() == AZ_WRONG_FILESYSTEM_SEPARATOR)
+        {
+            visitor.m_driveId.remove_suffix(1);
+        }
+
+        auto settingsRegistry = SettingsRegistry::Get();
+        settingsRegistry->Visit(visitor, SettingsRegistryMergeUtils::FilePathsRootKey);
+
+        return visitor.m_found;
+    }
+
+    static bool CollectHardwareInfo(HardwareInformation& hardwareInfo, bool addAllDrives)
+    {
+        char drives[512];
+        if (::GetLogicalDriveStrings(sizeof(drives) - 1, drives))
+        {
+            AZStd::unordered_map<DWORD, DriveInformation> driveMappings;
+            char* driveIt = drives;
+            do
+            {
+                UINT driveType = ::GetDriveTypeA(driveIt);
+                // Only a selective set of devices that share similar behavior are supported, in particular
+                // drives that have magnetic or solid state storage. All types of buses (usb, sata, etc)
+                // are supported except network drives. If network support is needed it's better to use the
+                // virtual file system. Optical drives are not supported as they are currently not in use
+                // on any platform for games, as games are expected to be downloaded or installed to storage.
+                if (driveType == DRIVE_FIXED || driveType == DRIVE_REMOVABLE || driveType == DRIVE_RAMDISK)
+                {
+                    if (!addAllDrives && !IsDriveUsed(driveIt))
+                    {
+                        AZ_Printf("Streamer", "Skipping drive '%s' because to no paths make use of it.\n", driveIt);
+                        while (*driveIt++);
+                        continue;
+                    }
+
+                    AZStd::string deviceName = R"(\\.\)";
+                    deviceName += driveIt;
+                    deviceName.erase(deviceName.length() - 1); // Erase the slash.
+
+                    HANDLE deviceHandle = ::CreateFile(
+                        deviceName.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+                    if (deviceHandle != INVALID_HANDLE_VALUE)
+                    {
+                        DWORD bytesReturned = 0;
+                        // Get the device number so multiple partitions and mappings are handled by the same drive.
+                        STORAGE_DEVICE_NUMBER storageDeviceNumber{};
+                        if (::DeviceIoControl(deviceHandle, IOCTL_STORAGE_GET_DEVICE_NUMBER, nullptr, 0,
+                            &storageDeviceNumber, sizeof(storageDeviceNumber), &bytesReturned, nullptr))
+                        {
+                            auto driveInformationEntry = driveMappings.find(storageDeviceNumber.DeviceNumber);
+                            if (driveInformationEntry == driveMappings.end())
+                            {
+                                DriveInformation driveInformation;
+                                driveInformation.m_paths.emplace_back(driveIt);
+
+                                CollectIoAdaptor(deviceHandle, driveInformation, driveIt);
+                                if (driveInformation.m_supportsQueuing)
+                                {
+                                    CollectDriveInfo(deviceHandle, driveIt);
+                                    AppendDriveTypeToProfile(deviceHandle, driveInformation);
+                                    CollectDriveIoCapability(deviceHandle, driveInformation);
+                                    CollectDriveSeekPenalty(deviceHandle, driveInformation);
+                                    CollectAlignmentRequirements(deviceHandle, driveInformation);
+
+                                    hardwareInfo.m_maxPhysicalSectorSize =
+                                        AZStd::max(hardwareInfo.m_maxPhysicalSectorSize, driveInformation.m_physicalSectorSize);
+                                    hardwareInfo.m_maxLogicalSectorSize =
+                                        AZStd::max(hardwareInfo.m_maxLogicalSectorSize, driveInformation.m_logicalSectorSize);
+                                    hardwareInfo.m_maxPageSize = AZStd::max(hardwareInfo.m_maxPageSize, driveInformation.m_pageSize);
+                                    hardwareInfo.m_maxTransfer = AZStd::max(hardwareInfo.m_maxTransfer, driveInformation.m_maxTransfer);
+
+                                    driveMappings.insert({ storageDeviceNumber.DeviceNumber, AZStd::move(driveInformation) });
+
+                                    AZ_Printf("Streamer", "\n");
+                                }
+                                else
+                                {
+                                    AZ_Printf("Streamer", "Skipping drive '%s' because device does not support queuing requests.\n", driveIt);
+                                }
+                            }
+                            else
+                            {
+                                AZ_Printf("Streamer", "Drive '%s' is on the same storage drive as '%s'.\n",
+                                    driveIt, driveInformationEntry->second.m_paths[0].c_str());
+                                driveInformationEntry->second.m_paths.emplace_back(driveIt);
+                            }
+                        }
+                        else
+                        {
+                            AZ_Printf("Streamer",
+                                "Skipping drive '%s' because device is not registered with OS as a storage device.\n", driveIt);
+                        }
+                        ::CloseHandle(deviceHandle);
+                    }
+                    else
+                    {
+                        AZ_Warning("Streamer", false,
+                            "Skipping drive '%s' because device information can't be retrieved.\n", driveIt);
+                    }
+                }
+                else
+                {
+                    AZ_Printf("Streamer", "Skipping drive '%s', as it the type of drive is not supported.\n", driveIt);
+                }
+
+                // Move to next drive string. GetLogicalDriveStrings fills the target buffer with null-terminated strings, for instance
+                // "E:\\0F:\\0G:\\0\0". The code below reads forward till the next \0 and the following while will continue iterating until
+                // the entire buffer has been used.
+                while (*driveIt++);
+            } while (*driveIt);
+
+            DriveList driveList;
+            driveList.reserve(driveMappings.size());
+            for (auto& drive : driveMappings)
+            {
+                driveList.push_back(AZStd::move(drive.second));
+            }
+            hardwareInfo.m_profile = driveList.size() == 1 ? driveList.front().m_profile : "Generic";
+            hardwareInfo.m_platformData = AZStd::make_any<DriveList>(AZStd::move(driveList));
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool CollectIoHardwareInformation(HardwareInformation& info, bool includeAllHardware)
+    {
+        if (!CollectHardwareInfo(info, includeAllHardware))
+        {
+            // The numbers below are based on common defaults from a local hardware survey.
+            info.m_maxPageSize = 4096;
+            info.m_maxTransfer = 512_kib;
+            info.m_maxPhysicalSectorSize = 4096;
+            info.m_maxLogicalSectorSize = 512;
+            info.m_profile = "Generic";
+        }
+        return true;
+    }
+
+    void ReflectNative(ReflectContext* context)
+    {
+        WindowsStorageDriveConfig::Reflect(context);
+    }
+} // namespace AZ::IO

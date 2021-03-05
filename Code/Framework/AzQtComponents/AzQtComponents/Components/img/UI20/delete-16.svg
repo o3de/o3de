@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60.1 (88133) - https://sketch.com -->
+    <title>Icons / System / Delete</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Delete" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M19,9 L19,22 L5,22 L5,9 L19,9 Z M10,11 L8,11 L8,20 L10,20 L10,11 Z M16,11 L14,11 L14,20 L16,20 L16,11 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M8,3 L16,3 L16,5 L21,5 L21,7 L3,7 L3,5 L8,5 L8,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

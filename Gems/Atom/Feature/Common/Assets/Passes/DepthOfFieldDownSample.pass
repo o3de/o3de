@@ -1,0 +1,60 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldDownSampleTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthOfFieldDownSample.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

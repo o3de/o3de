@@ -1,0 +1,149 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>       m_sourceTexture;
+    RWTexture2D<float4>     m_targetTexture;  
+
+    RWTexture2D<float4>     m_targetMipLevel0;
+    RWTexture2D<float4>     m_targetMipLevel1;
+    RWTexture2D<float4>     m_targetMipLevel2;
+    RWTexture2D<float4>     m_targetMipLevel3;
+    RWTexture2D<float4>     m_targetMipLevel4;
+
+    Sampler LinearSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+
+    // 1.0 / source image size
+    float2 m_sourceImageTexelSize;
+
+    // Elements:
+    // x -> threshold
+    // y -> (knee - 1) * threshold
+    // z -> 2 * knee * threshold
+    // w -> 1 / (4 * threshold * knee + EPSILON(1e-5))
+    float4 m_thresholdConstants;
+
+    groupshared float3 smColor1[256];
+    groupshared float3 smColor2[64];
+
+    float3 Threshold(float3 color)
+    {
+        float luminance = CalculateLuminance(color, ColorSpaceId::ACEScg);
+        float softMin = luminance + m_thresholdConstants.y;
+        softMin = clamp(softMin, 0.0, m_thresholdConstants.z);
+        softMin = softMin * softMin * m_thresholdConstants.w;
+
+        float weight = max(softMin, luminance - m_thresholdConstants.x);
+        weight /= max(luminance, 1e-5);
+        return weight * color;
+    }
+
+}
+
+// This function is used to reorder texels in the shared memory in a way of:
+// -+---+---+---+---+-         
+//  | 0 | 1 | 2 | 3 |           -+---+---+---+---+---+---+---+---+-
+// -+---+---+---+---+-   ===>    | 0 | 1 | 4 | 5 | 2 | 3 | 6 | 7 |
+//  | 4 | 5 | 6 | 7 |           -+---+---+---+---+---+---+---+---+-
+// -+---+---+---+---+-        
+// to place elements in each 2x2 block to 4 consecutvie slots
+uint FlatID(uint2 xy, uint gridSize)
+{
+    uint rowOffset = gridSize * (xy.y & 0xFFFFFFFE);
+    uint rowPos = (xy.y & 1) * 2 + xy.x + (xy.x &0xFFFFFFFE);
+    return rowOffset + rowPos;
+}
+
+[numthreads(16, 16, 1)]
+void MainCS(uint3 dID : SV_DispatchThreadID, uint3 gtID : SV_GroupThreadID)
+{        
+    // Group thread ID for downsampling level 2
+    uint2 gtID2 = gtID.xy >> 1;
+    uint2 gtID3 = gtID.xy >> 2;
+    uint2 gtID4 = gtID.xy >> 3;
+
+    // Uv of sampled point in the source image, offseted to the center of a 2x2 tap
+    float2 uv = (dID.xy * 2 + 1) * PassSrg::m_sourceImageTexelSize;
+
+    //------------------ Mip 0 (1 / 2 downscale, 16x16 tap for each thread group) -----------------
+    // Apply threshold to extract bright pixels
+    float3 colorDownsample1 = 
+        PassSrg::Threshold(PassSrg::m_sourceTexture.SampleLevel(PassSrg::LinearSampler, uv, 0).rgb);
+
+    // Cache 16x16 tap in each thread group for following downsampling steps
+    PassSrg::smColor1[FlatID(gtID.xy, 16)] = colorDownsample1;    
+
+    // Wait shared memory ready
+    PassSrg::m_targetMipLevel0[dID.xy] = float4(colorDownsample1, 1.0);
+    GroupMemoryBarrierWithGroupSync();
+    //---------------------------------------------------------------------------------------------
+
+    uint parity = dID.x | dID.y;
+    //------------------ Mip 1 (1 / 4 downscale, 8x8 tap for each thread group) -------------------
+    float3 colorDownsample2;
+    if((parity & 1) == 0)
+    {
+        uint index = FlatID(gtID.xy, 16);
+        colorDownsample2 = (colorDownsample1 + PassSrg::smColor1[index + 1] + 
+                            PassSrg::smColor1[index + 2] + PassSrg::smColor1[index + 3]) * 0.25;
+        PassSrg::smColor2[FlatID(gtID2, 8)] = colorDownsample2;
+        PassSrg::m_targetMipLevel1[dID.xy >> 1] = float4(colorDownsample2, 1.0);
+    }
+    GroupMemoryBarrierWithGroupSync();
+    //---------------------------------------------------------------------------------------------
+
+    //------------------ Mip 2 (1 / 8 downscale, 4x4 tap for each thread group) -------------------
+    float3 colorDownsample3;
+    if((parity & 3) == 0)
+    {
+        uint index = FlatID(gtID2, 8);
+        colorDownsample3 = (colorDownsample2 + PassSrg::smColor2[index + 1] + 
+                            PassSrg::smColor2[index + 2] + PassSrg::smColor2[index + 3]) * 0.25;
+        PassSrg::smColor1[FlatID(gtID3, 4)] = colorDownsample3;
+        PassSrg::m_targetMipLevel2[dID.xy >> 2] = float4(colorDownsample3, 1.0);
+    }
+    GroupMemoryBarrierWithGroupSync();
+    //---------------------------------------------------------------------------------------------
+
+    //------------------ Mip 3 (1 / 16 downscale, 2x2 tap for each thread group) ------------------
+    float3 colorDownsample4;
+    if((parity & 7) == 0)
+    {
+        uint index = FlatID(gtID3, 4);
+        colorDownsample4 = (colorDownsample3 + PassSrg::smColor1[index + 1] + 
+                            PassSrg::smColor1[index + 2] + PassSrg::smColor1[index + 3]) * 0.25;
+        PassSrg::smColor2[FlatID(gtID4, 2)] = colorDownsample4;
+        PassSrg::m_targetMipLevel3[dID.xy >> 3] = float4(colorDownsample4, 1.0);
+    }
+    GroupMemoryBarrierWithGroupSync();
+    //---------------------------------------------------------------------------------------------
+
+    //------------------ Mip 4 (1 / 32 downscale, 1x1 tap for each thread group) ------------------
+    if((gtID.x | gtID.y) == 0)
+    {
+        float3 colorDownsample5 = (colorDownsample4 + PassSrg::smColor2[1] + 
+                                   PassSrg::smColor2[2] + PassSrg::smColor2[3]) * 0.25;
+        PassSrg::m_targetMipLevel4[dID.xy >> 4] = float4(colorDownsample5, 1.0);
+    }
+    //---------------------------------------------------------------------------------------------
+}

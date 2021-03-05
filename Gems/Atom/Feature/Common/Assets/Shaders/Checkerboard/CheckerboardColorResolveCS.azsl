@@ -1,0 +1,464 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// This checkerboard color resolve compute shaders is mainly for demonstrating how to setup input and output for
+// CheckerboardColorResolvePass with multiple color render targets which are to be resolved. 
+// This resolve function need to be reworked to achieve better reconstruct result.  
+// [GFX TODO] [ATOM-5411] Checkerboard color resolve shader rework 
+
+#include <viewsrg.srgi>
+
+// Maximum number of textures it can resolve at same time
+#define MaxNumberResolveTextures 3
+#define MaxNumberResolveTexturesDouble 6
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // input depth
+    Texture2DMS<float> m_depth0;    // current frame
+    Texture2DMS<float> m_depth1;    // previous frame
+
+    // An array of color textures to be resolved
+    // Each two of continuous textures are for one render target 
+    // which 2*n is the render target of current frame, 2*n + 1 is the render target of last frame
+    Texture2DMS<float4> m_color[MaxNumberResolveTexturesDouble]; 
+
+    struct Constants
+    {
+        float m_frameOffset;    // values can be 0 or 1; 0 means current frame is even frame; 1 means current frame is odd frame
+        float m_depthTolerance;
+        uint m_debugRenderflags;
+        uint m_checkOcclusion;
+        row_major float4x4 m_prevClipToWorld;  
+        uint m_numResolveTextures;
+        float3 m_padding;
+    };    
+    Constants m_constants;
+
+    // result of resolving
+    RWTexture2D<float4> m_outputColor[MaxNumberResolveTextures];
+}
+
+// given a pixel's position in render target with its depth, find its position from previous render target
+uint2 GetPreviousPixel(float2 currentPixelUV, float currentDepth, float2 screenResolution)
+{
+    if (currentDepth <= 0.0)
+        return currentPixelUV;
+
+    // calculate position in clip view
+    // Projection is flipped from UV coords
+    currentPixelUV.y = screenResolution.y - currentPixelUV.y - 1;
+    float2 projectedXY = currentPixelUV / screenResolution * 2.0 - 1;
+    float4 projectedPosition = float4(projectedXY.x, projectedXY.y, currentDepth, 1.0);
+
+    // get world position using previous frame's projection
+    float4 prevWorldPosition = mul(projectedPosition, PassSrg::m_constants.m_prevClipToWorld);
+    prevWorldPosition /= prevWorldPosition.w;
+
+    // projected position to current frame's projection space
+    float4 prevProjectedPosition = mul(prevWorldPosition, ViewSrg::m_viewProjectionMatrix);
+    prevProjectedPosition = prevProjectedPosition / prevProjectedPosition.w;
+
+    // convert projected to uv for previous pixel
+    float2 prevPixelUV = prevProjectedPosition.xy * (screenResolution / 2) + (screenResolution / 2);
+    prevPixelUV.y = screenResolution.y - prevPixelUV.y - 1;
+
+    uint2 prevPixel = floor(prevPixelUV);
+
+    return prevPixel;
+}
+
+// Pixel quadrant
+// +-+-+
+// |0|1|
+// +-+-+
+// |2|3|
+// +-+-+
+
+// 2x Multi-sample pattern
+// +-+-+
+// |1| |
+// +-+-+
+// | |0|
+// +-+-+
+
+// quadrant 0: even frame sample 1
+// quadrant 1: odd frame sample 1 of right neighbor
+// quadrant 2: odd frame sample 0
+// quadrant 3: even frame sample 0
+
+
+float4 ReadColorFromQuadrant(uint inputIndex, int2 pixel, int quadrant)
+{
+    // when m_frameOffset is 0, the 2*n is the even frame and 2*n+1 is the odd frame
+    // when m_frameOffset is 1, the 2*n+1 is the even frame and 2*n is the odd frame
+    // we get 0 and 3 quadrant from even frame
+    // And get 1 and 2 quadrant from odd frame  
+    if (PassSrg::m_constants.m_frameOffset == 0)
+    {
+        if (0 == quadrant)
+            return PassSrg::m_color[2*inputIndex].Load(pixel, 1);
+        else if (1 == quadrant)
+            return PassSrg::m_color[2*inputIndex+1].Load(pixel + int2(1, 0), 1);
+        else if (2 == quadrant)
+            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 0);
+        else //( 3 == quadrant )
+            return PassSrg::m_color[2*inputIndex].Load(pixel, 0);
+    }
+    else
+    {    
+        if (0 == quadrant)
+            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 1);
+        else if (1 == quadrant)
+            return PassSrg::m_color[2*inputIndex].Load(pixel + int2(1, 0), 1);
+        else if (2 == quadrant)
+            return PassSrg::m_color[2*inputIndex].Load(pixel, 0);
+        else //( 3 == quadrant )
+            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 0);
+    }
+}
+
+float ReadDepthFromQuadrant(int2 pixel, int quadrant)
+{
+    if (PassSrg::m_constants.m_frameOffset == 0)
+    {
+        if (0 == quadrant)
+            return PassSrg::m_depth1.Load(pixel, 1);
+        else if (1 == quadrant)
+            return PassSrg::m_depth0.Load(pixel + int2(1, 0), 1);
+        else if (2 == quadrant)
+            return PassSrg::m_depth0.Load(pixel, 0);
+        else //( 3 == quadrant )
+            return PassSrg::m_depth1.Load(pixel, 0);  
+    }
+    else
+    {
+        if (0 == quadrant)
+            return PassSrg::m_depth0.Load(pixel, 1);
+        else if (1 == quadrant)
+            return PassSrg::m_depth1.Load(pixel + int2(1, 0), 1);
+        else if (2 == quadrant)
+            return PassSrg::m_depth1.Load(pixel, 0);
+        else //( 3 == quadrant )
+            return PassSrg::m_depth0.Load(pixel, 0);  
+    }  
+}
+
+float ReadLinearDepthFromQuadrant(int2 pixel, int quadrant)
+{
+    float depth = ReadDepthFromQuadrant(pixel, quadrant);        
+    float linearDepth = abs(ceil(depth) * ((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * depth - ViewSrg::GetFarZ()))); 
+    return linearDepth;
+}
+
+#define Up      0
+#define Down    1
+#define Left    2
+#define Right   3
+
+// Neighbor information of a quadrant
+// For each neighbor of the quadrant, we need to know the pixel offset from the pixel where this quadrant is from
+// and also the quadrant on the neighbor pixel.
+// For example, for the quadrant 0 which is marked as * below, its up neighbor is from the pixel with a offset (0, -1)
+// and the quadrant 2 from the pixel. Its down neighbor is from the quadrant 2 from the same pixel (which has offset (0, 0)).
+// You can find the neighbor's pixel offset from the NeighborOffsets and the quadrant in NeighborQuadrants.
+//     +-+-+
+//     |0|1|
+//     +-+-+
+//     |2|3|
+// +-+-+-+-+
+// |0|1|*|1|
+// +-+-+-+-+
+// |2|3|2|3|
+// +-+-+-+-+
+
+static const int2 NeighborOffsets[4][4] =
+{
+    // {up, down, left, right}
+    { int2(0, -1), int2(0, 0), int2(-1, 0), int2(0, 0) }, // quadrant 0
+    { int2(0, -1), int2(0, 0), int2(0, 0),  int2(1, 0) }, // quadrant 1
+    { int2(0, 0),  int2(0, 1), int2(-1, 0), int2(0, 0) }, // quadrant 2
+    { int2(0, 0),  int2(0, 1), int2(0, 0),  int2(1, 0) }  // quadrant 3
+};
+
+static const int NeighborQuadrants[4][4] =
+{
+    // {up, down, left, right}
+    {2, 2, 1, 1 }, // quadrant 0
+    {3, 3, 0, 0 }, // quadrant 1
+    {0, 0, 3, 3 }, // quadrant 2
+    {1, 1, 2, 2 }  // quadrant 0
+};
+
+
+// Simple tonemap to invtonemap color blend
+float3 HdrColorBlend(float3 a, float3 b, float3 c, float3 d)
+{
+    // Reinhard 
+    float3 t_a = a / (a + 1);
+    float3 t_b = b / (b + 1);
+    float3 t_c = c / (c + 1);
+    float3 t_d = d / (d + 1);
+
+    float3 color = (t_a + t_b + t_c + t_d) * .25f;
+
+    // back to hdr
+    return -color / (color - 1);
+}
+
+float4 ColorFromNeighbors(uint inputIndex, uint2 pixelOnQuadrant, uint quadrant)
+{
+    float4 color[4];
+    
+    color[Up] = ReadColorFromQuadrant(inputIndex, pixelOnQuadrant + NeighborOffsets[quadrant][Up], NeighborQuadrants[quadrant][Up]);
+    color[Down] = ReadColorFromQuadrant(inputIndex, pixelOnQuadrant + NeighborOffsets[quadrant][Down], NeighborQuadrants[quadrant][Down]);
+    color[Left] = ReadColorFromQuadrant(inputIndex, pixelOnQuadrant  + NeighborOffsets[quadrant][Left], NeighborQuadrants[quadrant][Left]);
+    color[Right] = ReadColorFromQuadrant(inputIndex, pixelOnQuadrant  + NeighborOffsets[quadrant][Right], NeighborQuadrants[quadrant][Right]);
+
+    return float4(HdrColorBlend(color[Up].rgb, color[Down].rgb, color[Left].rgb, color[Right].rgb), 1);
+}
+
+float GetInterpolatedDepth(uint2 pixelPosQuadrant, uint quadrant)
+{
+    float4 currentDepth = 0;
+                
+    // Fetch the interpolated depth at this location in Frame N
+    currentDepth.x = ReadLinearDepthFromQuadrant(pixelPosQuadrant + NeighborOffsets[quadrant][Left], NeighborQuadrants[quadrant][Left]);
+    currentDepth.y = ReadLinearDepthFromQuadrant(pixelPosQuadrant + NeighborOffsets[quadrant][Right], NeighborQuadrants[quadrant][Right]);
+
+    currentDepth.z = ReadLinearDepthFromQuadrant(pixelPosQuadrant + NeighborOffsets[quadrant][Down], NeighborQuadrants[quadrant][Down]);
+    currentDepth.w = ReadLinearDepthFromQuadrant(pixelPosQuadrant + NeighborOffsets[quadrant][Up], NeighborQuadrants[quadrant][Up]);
+
+    float currentAvgDepth = (currentDepth.x + currentDepth.y + currentDepth.z + currentDepth.w) * .25f;
+    return currentAvgDepth;
+}
+
+struct PixelOutput
+{
+    uint2 finalPixelPosQuadrant;
+    int finalQuadrant;
+
+    bool useDebugColor;
+    float4 debugColor;
+
+    bool blendNeighbors;
+};
+
+void SetOutputColor(float4 color, inout PixelOutput pixelOutput)
+{
+    pixelOutput.useDebugColor = true;
+    pixelOutput.debugColor = color;
+}
+
+void Resolve2xSampleTemporal(float frameOffset, uint2 dispatchThreadId, uint2 outputSize, out PixelOutput pixelOutput)
+{    
+    pixelOutput.useDebugColor = false;
+    pixelOutput.blendNeighbors = false;
+
+    // for debug render. flags start from 0x10
+    uint debugRenderflags = PassSrg::m_constants.m_debugRenderflags;
+    const bool renderMotionVectors = (debugRenderflags & 0x1) != 0;
+    const bool renderMissingPixels = (debugRenderflags & 0x2) != 0;
+    const bool renderQuadrantMotionPixels = (debugRenderflags & 0x4) != 0;
+    bool renderOdd = (debugRenderflags & 0x8) != 0;
+    bool renderEven = (debugRenderflags & 0x10) != 0;
+    const bool renderObstructedPixels = (debugRenderflags & 0x20) != 0; 
+
+    // colors for debug render
+    const float4 missingPixelColor = float4(1, 0, 0, 1);
+    const float4 obstructedPixelColor = float4(1, 0, 1, 1);
+    const float4 singleFrameColor = float4(0, 0, 0, 1);
+
+    // using depth to check the occlusion
+    const bool checkOcclusion = PassSrg::m_constants.m_checkOcclusion != 0;
+    
+    // quadrant's size
+    const uint2 quadrantSize = outputSize * .5;
+    // pixel position on output texture
+    const uint2 pixelPos = dispatchThreadId.xy;
+    // pixel position on quadrant
+    const uint2 pixelPosQuadrant = floor(dispatchThreadId.xy * .5);
+    // current quadrant
+    const uint quadrant = (dispatchThreadId.x & 0x1) + (dispatchThreadId.y & 0x1) * 2;
+    const float tolerance = PassSrg::m_constants.m_depthTolerance;
+    
+    // debug rendering for render even or odd frame only
+    if (renderOdd + renderEven > 0)
+    {
+        if ((renderEven && (quadrant == 0 || quadrant == 3)) ||
+            (renderOdd && (quadrant == 1 || quadrant == 2)))
+        {
+            pixelOutput.finalPixelPosQuadrant = pixelPosQuadrant;
+            pixelOutput.finalQuadrant = quadrant;
+            return;
+        }
+        else
+        {
+            SetOutputColor(singleFrameColor, pixelOutput);
+            return;
+        }
+    }
+
+    // lookup table for frame offset
+    // if frame offset = 0, then current frame is an even frame. It contains data for quadrant 0 and 3
+    // if frame offset = 1. then current frame is an odd frame. It contains data for quadrant 1 and 2
+    const uint frameQuadrantLookup[2][2] =
+    {
+       { 0, 3 },
+       { 1, 2 }
+    };
+
+    uint frameQuadrants[2];
+    frameQuadrants[0] = frameQuadrantLookup[frameOffset][0];
+    frameQuadrants[1] = frameQuadrantLookup[frameOffset][1];
+    
+    // if the pixel we are writing to is in a MSAA quadrant which matches our latest CB frame
+    // then read it directly and we're done
+    if (frameQuadrants[0] == quadrant || frameQuadrants[1] == quadrant)
+    {
+        pixelOutput.finalPixelPosQuadrant = pixelPosQuadrant;
+        pixelOutput.finalQuadrant = quadrant;
+        return;
+    }
+    else
+    {
+        // We need to read from Frame N-1
+        bool missingPixel = false;
+        
+        // What is the depth at this pixel which was written to by Frame N-1
+        float depth = ReadDepthFromQuadrant(pixelPosQuadrant, quadrant);
+
+        // Project that through the matrices and get the screen space position
+        // this pixel was rendered in Frame N-1
+        uint2 prevPixelPos = GetPreviousPixel(pixelPos + .5f, depth, outputSize);
+
+        int2 pixelDelta = floor((pixelPos + .5f) - prevPixelPos);
+        int2 pixelDeltaQuadrant = pixelDelta * .5f;
+
+        int2 prevPixelPosQuadrant = floor(prevPixelPos * .5f);
+
+        // Which MSAA quadrant was this pixel in when it was shaded in Frame N-1
+        uint quadrantNeeded = (prevPixelPos.x & 0x1) + (prevPixelPos.y & 0x1) * 2;
+
+        if (renderMotionVectors && (pixelDelta.x || pixelDelta.y))
+        {
+            SetOutputColor(float4(1, pixelDelta.x, pixelDelta.y, 1), pixelOutput);
+            return;
+        }
+
+        if (renderQuadrantMotionPixels && (pixelDeltaQuadrant.x || pixelDeltaQuadrant.y))
+        {
+            SetOutputColor(float4(pixelDeltaQuadrant.x, 1, pixelDeltaQuadrant.y, 1), pixelOutput);
+            return;
+        }
+
+        // if it falls on this frame (Frame N)'s quadrant then the shading information is missing
+        // so extrapolate the color from the texels around us
+        if (frameQuadrants[0] == quadrantNeeded || frameQuadrants[1] == quadrantNeeded)
+        {
+            missingPixel = true;
+        }
+        else if (pixelDeltaQuadrant.x || pixelDeltaQuadrant.y)
+        {
+            // Otherwise we might have the shading information,
+            // Now we check to see if it's obstructed
+
+            // If the user doesn't want to check for obstruction we just assume it's obstructed
+            // and this pixel will be an extrapolation of the Frame N pixels around it
+            // This generally saves on perf and isn't noticeable because the pixels are in motion anyway
+            if (false == checkOcclusion)
+                missingPixel = true;
+            else
+            {    
+                float currentDepth = GetInterpolatedDepth(pixelPosQuadrant, quadrant);
+
+                // reach across the frame N-1 and grab the depth of the pixel we want
+                // then compare it to Frame N's depth at this pixel to see if it's within range
+                float prevDepth = ReadLinearDepthFromQuadrant(prevPixelPosQuadrant, quadrantNeeded);
+
+                // if the discrepancy is too large assume the pixel we need to 
+                // fetch from the previous buffer is missing
+                float diff = prevDepth - currentDepth;
+                missingPixel = abs(diff) >= tolerance;
+
+                // debug render pixels was obstructed
+                if (renderObstructedPixels && missingPixel)
+                {
+                    SetOutputColor(obstructedPixelColor, pixelOutput);
+                    return;
+                }
+            }
+        }
+
+        // debug render
+        if (renderMissingPixels && missingPixel)
+        {
+            SetOutputColor(missingPixelColor, pixelOutput);
+            return;
+        }
+
+        // If we've determined the pixel (i.e. shading information) is missing,
+        // then extrapolate the missing color by blending the 
+        // current frame's up, down, left, right pixels
+        if (missingPixel == true)
+        {
+            pixelOutput.finalPixelPosQuadrant = pixelPosQuadrant;
+            pixelOutput.finalQuadrant = quadrant;
+            pixelOutput.blendNeighbors = true;
+            return;
+        }
+        else
+        {
+            pixelOutput.finalPixelPosQuadrant = prevPixelPosQuadrant;
+            pixelOutput.finalQuadrant = quadrantNeeded;
+            return;
+        }
+    }
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (PassSrg::m_constants.m_numResolveTextures == 0)
+        return;
+
+    uint2 outputSize;
+    PassSrg::m_outputColor[0].GetDimensions(outputSize.x, outputSize.y);
+    if (dispatchThreadID.x < outputSize.x && dispatchThreadID.y < outputSize.y)
+    {
+        PixelOutput pixelOutput;
+        Resolve2xSampleTemporal(PassSrg::m_constants.m_frameOffset, dispatchThreadID.xy, outputSize, pixelOutput);
+
+        uint index;
+        if (pixelOutput.useDebugColor)
+        {
+            for (index = 0; index < PassSrg::m_constants.m_numResolveTextures; index++)
+            {
+                PassSrg::m_outputColor[index][dispatchThreadID.xy] = pixelOutput.debugColor;
+            }
+        }
+        else if (pixelOutput.blendNeighbors)
+        {
+            for (index = 0; index < PassSrg::m_constants.m_numResolveTextures; index++)
+            {
+                PassSrg::m_outputColor[index][dispatchThreadID.xy] = ColorFromNeighbors(index, pixelOutput.finalPixelPosQuadrant, pixelOutput.finalQuadrant);
+            }
+        }
+        else
+        {
+            for (index = 0; index < PassSrg::m_constants.m_numResolveTextures; index++)
+            {
+                PassSrg::m_outputColor[index][dispatchThreadID.xy] = ReadColorFromQuadrant(index, pixelOutput.finalPixelPosQuadrant, pixelOutput.finalQuadrant);
+            }
+        }
+    }
+}

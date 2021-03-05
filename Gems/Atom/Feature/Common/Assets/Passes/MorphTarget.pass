@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MorphTargetPassTemplate",
+            "PassClass": "MorphTargetComputePass",
+            "Slots": [
+                {
+                    "Name": "MorphTargetDeltaOutput",
+                    "ShaderInputName": "m_accumulatedDeltas",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/MorphTargets/MorphTargetCS.shader"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,121 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#ifndef AZCORE_MODULE_INCLUDE_H
+#define AZCORE_MODULE_INCLUDE_H 1
+
+#include <AzCore/Component/Component.h>
+#include <AzCore/Debug/ProfileModuleInit.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Environment.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Console/ConsoleFunctor.h>
+
+namespace AZ
+{
+    class ReflectContext;
+    class Entity;
+
+    /**
+     * AZ::Module enables static and dynamic modules (aka LIBs and DLLs) to
+     * connect with the running \ref AZ::ComponentApplication.
+     *
+     * Each module should contain a class which inherits from AZ::Module.
+     * This class must perform tasks such as reflecting the classes within
+     * the module and adding critical components to the system entity.
+     */
+    class Module
+    {
+    public:
+        AZ_RTTI(Module, "{59682E0E-731F-4361-BC0B-039BC5376CA1}");
+        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator, 0);
+
+        /**
+         * Override to register the module's ComponentDescriptors.
+         *
+         * Example:
+         * \code
+         * MyModule::MyModule()
+         *     : AZ::Module()
+         * {
+         *     m_descriptors.insert(m_descriptors.end(), {
+         *         MyAwesomeComponent::CreateDescriptor(),
+         *     });
+         * };
+         * \endcode
+         */
+        Module();
+        /**
+         * Releases all descriptors in m_descriptors.
+         */
+        virtual ~Module();
+
+        // no copy
+        Module(const Module&) = delete;
+        Module& operator=(const Module&) = delete;
+
+        /**
+         * DO NOT OVERRIDE. This method will return in the future, but at this point things reflected here are not unreflected for all ReflectContexts (Serialize, Editor, Network, Script, etc.)
+         * Place all calls to non-component reflect functions inside of a component reflect function to ensure that your types are unreflected.
+         */
+        virtual void Reflect(AZ::ReflectContext*) final { }
+
+        /**
+         * Override to require specific components on the system entity.
+         * \return The type-ids of required components.
+         */
+        virtual ComponentTypeList GetRequiredSystemComponents() const { return ComponentTypeList(); }
+
+        // Non virtual, just registers component descriptors
+        void RegisterComponentDescriptors();
+
+        AZStd::list<AZ::ComponentDescriptor*> GetComponentDescriptors() const { return m_descriptors; }
+
+    protected:
+        AZStd::list<AZ::ComponentDescriptor*> m_descriptors;
+
+    private:
+        AZ::Debug::ProfileModuleInitializer m_moduleProfilerInit;
+    };
+} // namespace AZ
+
+/// \def AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)
+/// For modules which define a \ref AZ::Module class.
+/// This macro provides default implementations of functions that \ref
+/// AZ::ComponentApplication expects to find in a module.
+///
+/// \note
+/// For modules with no \ref AZ::Module class, use \ref AZ_DECLARE_MODULE_INITIALIZATION instead.
+///
+/// \note
+/// In a monolithic build, all modules are compiled as static libraries.
+/// In a non-monolithic build, all modules are compiled as dynamic libraries.
+///
+/// \param MODULE_NAME      Name of module.
+/// \param MODULE_CLASSNAME Name of AZ::Module class (include namespace).
+#if defined(AZ_MONOLITHIC_BUILD)
+#   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME) \
+    extern "C" AZ::Module * CreateModuleClass_##MODULE_NAME() { return aznew MODULE_CLASSNAME; }
+#else
+#   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)                                \
+    AZ_DECLARE_MODULE_INITIALIZATION                                                             \
+    extern "C" AZ_DLL_EXPORT AZ::Module * CreateModuleClass()                                    \
+    {                                                                                            \
+        AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();       \
+        AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);                  \
+        return aznew MODULE_CLASSNAME;                                                           \
+    }                                                                                            \
+    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module * module) { delete module; }
+#endif
+
+#endif // AZCORE_MODULE_INCLUDE_H
+#pragma once

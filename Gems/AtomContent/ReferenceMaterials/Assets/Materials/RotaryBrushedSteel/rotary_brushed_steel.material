@@ -1,0 +1,26 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.7913023829460144,
+                0.7913023829460144,
+                0.7913023829460144,
+                1.0
+            ]
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "factor": 1.1717171669006348,
+            "textureMap": "Materials/RotaryBrushedSteel/rotary_brushed_steel_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.12121210247278214
+        }
+    }
+}

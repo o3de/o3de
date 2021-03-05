@@ -1,0 +1,24 @@
+{
+  "colors": [
+    {
+        "name": "indigo",
+        "color": [63,81,181],
+        "price": "Free"
+    },
+    {
+        "name": "light blue",
+        "color": [3,169,244],
+        "price": "Free"
+    },
+    {
+        "name": "teal",
+        "color": [0,150,136],
+        "price": "Free"
+    },
+    {
+        "name": "green",
+        "color": [76,175,80],
+        "price": "Free"
+    }
+  ]
+}

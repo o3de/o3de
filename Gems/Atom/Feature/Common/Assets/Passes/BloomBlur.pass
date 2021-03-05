@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BloomBlurPassTemplate",
+            "PassClass": "BloomBlurPass",
+            "Slots": [
+                {
+                    "Name": "BlurInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BlurWorkspace",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],    
+            "PassData": {
+                "$type": "DownsampleMipChainPassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/BloomBlurCS.shader"
+                }
+            }
+        }
+    }
+}

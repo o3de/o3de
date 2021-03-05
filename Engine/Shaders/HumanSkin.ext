@@ -1,0 +1,116 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Skin shader extension used by the editor
+//               for automatic shader generation (based on "Skin" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+
+Version (1.00)
+
+UsesCommonGlobalFlags
+
+Property
+{
+  Name = %NORMAL_MAP
+  Mask = 0x1
+  Property    (Normal map)
+  Description (Use normal-map texture)
+  DependencySet = $TEX_Normals
+  DependencyReset = $TEX_Normals
+  Hidden
+}
+
+Property
+{
+  Name = %SPECULAR_MAP
+  Mask = 0x2
+  Property    (Specular map)
+  Description (Use specular map as separate texture)
+  DependencySet = $TEX_Specular
+  DependencyReset = $TEX_Specular
+  Hidden  
+}
+
+Property
+{
+  Name = %WRINKLE_BLENDING
+  Mask = 0x200
+  Property    (Wrinkle blending)
+  Description (Use subsurface map alpha for wrinkle blending)
+  DependencyReset = $TEX_Custom
+  DependencyReset = $TEX_CustomSecondary
+}
+
+Property
+{
+  Name = %TEMP_SKIN
+  Mask = 0x1000
+  DependencySet = $UserEnabled
+  Hidden
+}
+
+Property
+{
+  Name = %DECAL_MAP
+  Mask = 0x2000
+	Property    (Decal map)
+  Description (Use a decal map which is blended on top of the diffuse map)
+}
+
+Property
+{
+  Name = %DETAIL_MAPPING
+  Mask = 0x20000
+  Property    (Detail normal-map)
+  Description (Tiled detail normal-map for pores and tiny details (_ddn))
+}
+
+Property
+{
+  Name = %SUBSURFACE_SCATTERING_MASK
+  Mask = 0x40000
+  Property    (Subsurface Scattering Mask)
+  Description (Use diffuse map alpha as subsurface scattering amount multiplier)
+}
+
+#ifdef FEATURE_MESH_TESSELLATION
+Property
+{
+  Name = %DISPLACEMENT_MAPPING
+  Mask = 0x10000000
+  Property    (Displacement mapping)
+  Description (Use displacement mapping (requires height map (_displ)))
+  //DependencySet = $TEX_Height
+  DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %PHONG_TESSELLATION
+  Mask = 0x20000000
+  Property    (Phong tessellation)
+  Description (Use rough approximation of smooth surface subdivision)
+}
+
+Property
+{
+  Name = %PN_TESSELLATION
+  Mask = 0x40000000
+  Property    (PN triangles tessellation)
+  Description (Use rough approximation of smooth surface subdivision)
+}
+#endif

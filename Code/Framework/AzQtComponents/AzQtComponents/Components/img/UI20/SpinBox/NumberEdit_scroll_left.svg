@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="27px" height="16px" viewBox="0 0 27 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>Cursor / Scroll Copy 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M15,0 L20,4 L15,8 L15,5 L5,5 L5,8 L0,4 L5,0 L5,3 L15,3 L15,0 Z" id="path-1"></path>
+        <filter x="-25.5%" y="-57.3%" width="151.0%" height="239.5%" filterUnits="objectBoundingBox" id="filter-2">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="1" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.577779549   0 0 0 0 0.577779549   0 0 0 0 0.577779549  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Lumberyard-Stickersheet" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Number-Edit" transform="translate(-267.000000, -184.000000)">
+            <g id="Cursor-/-Scroll-Copy-2" transform="translate(280.000000, 191.000000) scale(-1, 1) translate(-280.000000, -191.000000) translate(270.000000, 187.000000)">
+                <g id="Group">
+                    <g id="Triangle-4">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                        <path stroke="#FFFFFF" stroke-width="1" d="M14.5,5.5 L5.5,5.5 L5.5,9.04031242 L-0.80039053,4 L5.5,-1.04031242 L5.5,2.5 L14.5,2.5 L14.5,-1.04031242 L20.8003905,4 L14.5,9.04031242 L14.5,5.5 Z" fill="#000000" fill-rule="evenodd"></path>
+                    </g>
+                    <polygon id="Path" fill="#00A1C9" points="15 3 15 0 20 4 15 8 15 5 10 5 10 3"></polygon>
+                    <rect id="Rectangle-11" stroke="#FFFFFF" fill="#000000" x="8.5" y="0.5" width="3" height="7"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

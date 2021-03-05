@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>809</width>
+    <height>846</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Watch Directories</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QFrame" name="frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="projec_tag_label">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Project</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="project_slug_lineEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>MockProject</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>222</width>
+             <height>27</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="default_project_watch_path_label">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Project Path</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="default_project_watch_path_lineEdit">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>C:\Lumberyard\Dev\Gems\DccScriptingInterface\MockProject\</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="update_project_path_dir_pushButton">
+           <property name="minimumSize">
+            <size>
+             <width>225</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Update Project Path ...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="file_patterns_label">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>File Patterns</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="file_pattern_lineEdit">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>*.sbs, *.sbsar</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QPushButton" name="search_and_add_dirs_pushButton">
+           <property name="minimumSize">
+            <size>
+             <width>225</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Search and Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTreeView" name="WatchdogList_treeView">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>250</height>
+         </size>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QPushButton" name="remove_selected_watch_dir_pushButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Remove Selected Watch Directory</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="browse_and_add_dir_pushButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Browse and Add Watch Directory ...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Substance Watcher</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QPushButton" name="start_watcher_pushButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Start Watcher</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="stop_watcher_pushButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Stop Watcher</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QFrame" name="console_ancor_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QTextEdit" name="output_console_textEdit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>250</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

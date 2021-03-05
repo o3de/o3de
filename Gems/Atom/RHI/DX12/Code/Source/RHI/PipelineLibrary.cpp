@@ -1,0 +1,247 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "RHI/Atom_RHI_DX12_precompiled.h"
+#include <RHI/Device.h>
+#include <RHI/PipelineLibrary.h>
+
+namespace AZ
+{
+    namespace DX12
+    {
+        namespace
+        {
+            // Builds a wide-character name from a 64-bit hash.
+            void HashToName(uint64_t hash, AZStd::wstring& name)
+            {
+                static const wchar_t s_hexValues[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+                const size_t nibbleCount = sizeof(hash) * 2;
+                const size_t nibbleSize = 4;
+
+                name.resize(nibbleCount);
+
+                for (size_t nibbleIndex = 0; nibbleIndex < nibbleCount; ++nibbleIndex)
+                {
+                    uint64_t nibble = hash;
+                    nibble >>= (nibbleIndex * nibbleSize);
+                    nibble &= 0xF;
+                    name[nibbleCount - nibbleIndex - 1] = s_hexValues[nibble];
+                }
+            }
+        }
+
+        RHI::Ptr<PipelineLibrary> PipelineLibrary::Create()
+        {
+            return aznew PipelineLibrary;
+        }
+
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryData* serializedData)
+        {
+            Device& device = static_cast<Device&>(deviceBase);
+            ID3D12DeviceX* dx12Device = device.GetDevice();
+
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            AZStd::array_view<uint8_t> bytes;
+            if (serializedData)
+            {
+                bytes = serializedData->GetData();
+            }
+
+            Microsoft::WRL::ComPtr<ID3D12PipelineLibraryX> libraryComPtr;
+
+            if (!bytes.empty())
+            {
+                HRESULT hr = dx12Device->CreatePipelineLibrary(bytes.data(), bytes.size(), IID_GRAPHICS_PPV_ARGS(libraryComPtr.GetAddressOf()));
+
+                if (SUCCEEDED(hr))
+                {
+                    m_serializedData = serializedData;
+                }
+                else
+                {
+                    switch (hr)
+                    {
+                    case D3D12_ERROR_DRIVER_VERSION_MISMATCH:
+                    case DXGI_ERROR_UNSUPPORTED:
+                        AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to driver version mismatch. Contents will be rebuilt.");
+                        break;
+                    case D3D12_ERROR_ADAPTER_NOT_FOUND:
+                        AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to mismatched hardware. Contents will be rebuilt.");
+                        break;
+                    case E_INVALIDARG:
+                        AZ_Assert(false, "Failed to use pipeline library blob due to invalid arguments. Contents will be rebuilt.");
+                        break;
+                    default:
+                        AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");
+                    }
+                }
+            }
+
+            if (!libraryComPtr.Get())
+            {
+                // We didn't use serialized pipeline library blob, so need to create a fresh library.
+
+                HRESULT hr = dx12Device->CreatePipelineLibrary(nullptr, 0, IID_GRAPHICS_PPV_ARGS(libraryComPtr.GetAddressOf()));
+
+                if (FAILED(hr))
+                {
+                    return RHI::ResultCode::Fail;
+                }
+            }
+
+            m_library = libraryComPtr.Get();
+#endif
+
+            m_dx12Device = dx12Device;
+
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::Ptr<ID3D12PipelineState> PipelineLibrary::CreateGraphicsPipelineState([[maybe_unused]] uint64_t hash, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pipelineStateDesc)
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            AZStd::wstring name;
+            HashToName(hash, name);
+
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
+            Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
+            HRESULT hr = m_library->LoadGraphicsPipeline(name.c_str(), &pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+
+            // Invalid Arg is returned if the entry doesn't exist.
+            if (hr == E_INVALIDARG)
+            {
+                m_dx12Device->CreateGraphicsPipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+
+                if (pipelineStateComPtr)
+                {
+                    hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
+
+                    if (!AssertSuccess(hr))
+                    {
+                        return nullptr;
+                    }
+                }
+            }
+            else if (FAILED(hr))
+            {
+                return nullptr;
+            }
+
+            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
+            return pipelineStateComPtr.Get();
+#else
+            Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
+            HRESULT hr = m_dx12Device->CreateGraphicsPipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+            if (SUCCEEDED(hr))
+            {
+                return pipelineStateComPtr.Get();
+            }
+            return nullptr;
+#endif
+        }
+
+        RHI::Ptr<ID3D12PipelineState> PipelineLibrary::CreateComputePipelineState([[maybe_unused]] uint64_t hash, const D3D12_COMPUTE_PIPELINE_STATE_DESC& pipelineStateDesc)
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            AZStd::wstring name;
+            HashToName(hash, name);
+
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
+            Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
+            HRESULT hr = m_library->LoadComputePipeline(name.c_str(), &pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+
+            // Invalid Arg is returned if the entry doesn't exist.
+            if (hr == E_INVALIDARG)
+            {
+                m_dx12Device->CreateComputePipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+
+                if (pipelineStateComPtr)
+                {
+                    hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
+
+                    if (!AssertSuccess(hr))
+                    {
+                        return nullptr;
+                    }
+                }
+            }
+            else if (FAILED(hr))
+            {
+                return nullptr;
+            }
+
+            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
+
+            return pipelineStateComPtr.Get();
+#else
+            Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
+            HRESULT hr = m_dx12Device->CreateComputePipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+            if (SUCCEEDED(hr))
+            {
+                return pipelineStateComPtr.Get();
+            }
+            return nullptr;
+#endif
+        }
+
+        void PipelineLibrary::ShutdownInternal()
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            m_library = nullptr;
+            m_pipelineStates.clear();
+#endif
+        }
+
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
+            for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
+            {
+                const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
+
+                for (const auto& pipelineStateEntry : library->m_pipelineStates)
+                {
+                    m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
+
+                    m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
+                }
+            }
+#endif
+
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+     
+            AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
+
+            HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
+
+            if (!AssertSuccess(hr))
+            {
+                return nullptr;
+            }
+
+            return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+#else
+            return nullptr;
+#endif
+        }
+    }
+}

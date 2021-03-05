@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "LinkType": "DynamicStatic",
+    "Name": "GameEffectSystem",
+    "DisplayName": "Game Effect System",
+    "Summary": "Provides fundamentals for creating and managing visual effects.",
+    "Tags": ["Effects System"],
+    "Uuid": "d378b5a7b47747d0a7aa741945df58f3",
+    "Version": "1.0.0",
+    "IconPath": "preview.png"
+}

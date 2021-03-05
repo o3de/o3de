@@ -1,0 +1,18 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/WoodPlanks/wood_planks_diffuse.jpg"
+        },
+        "metallic": {
+            "useTexture": false
+        },
+        "normal": {
+            "factor": 0.8888888955116272,
+            "textureMap": "Materials/WoodPlanks/wood_planks_normal.jpg"
+        }
+    }
+}

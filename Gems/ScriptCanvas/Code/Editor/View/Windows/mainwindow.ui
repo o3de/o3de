@@ -1,0 +1,802 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>750</width>
+    <height>738</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
+  <property name="windowTitle">
+   <string>Script Canvas (PREVIEW)</string>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>750</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_New_Script"/>
+    <addaction name="actionFunction"/>
+    <addaction name="action_Open"/>
+    <addaction name="action_Save"/>
+    <addaction name="action_Save_As"/>
+    <addaction name="action_Close"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <widget class="QMenu" name="menuRemove_Unused">
+     <property name="title">
+      <string>Remove Unused</string>
+     </property>
+     <addaction name="action_RemoveUnusedVariables"/>
+     <addaction name="action_RemoveUnusedNodes"/>
+     <addaction name="action_RemoveUnusedElements"/>
+    </widget>
+    <widget class="QMenu" name="menuAlign">
+     <property name="title">
+      <string>Align</string>
+     </property>
+     <addaction name="action_AlignTop"/>
+     <addaction name="action_AlignBottom"/>
+     <addaction name="action_AlignLeft"/>
+     <addaction name="action_AlignRight"/>
+    </widget>
+    <widget class="QMenu" name="menuSelect">
+     <property name="title">
+      <string>Select</string>
+     </property>
+     <addaction name="action_SelectAll"/>
+     <addaction name="action_SelectInputs"/>
+     <addaction name="action_SelectOutputs"/>
+     <addaction name="action_SelectConnected"/>
+    </widget>
+    <addaction name="action_Undo"/>
+    <addaction name="action_Redo"/>
+    <addaction name="separator"/>
+    <addaction name="action_Cut"/>
+    <addaction name="action_Copy"/>
+    <addaction name="action_Paste"/>
+    <addaction name="action_Duplicate"/>
+    <addaction name="action_Delete"/>
+    <addaction name="separator"/>
+    <addaction name="action_Screenshot"/>
+    <addaction name="separator"/>
+    <addaction name="menuSelect"/>
+    <addaction name="action_ClearSelection"/>
+    <addaction name="separator"/>
+    <addaction name="action_EnableSelection"/>
+    <addaction name="action_DisableSelection"/>
+    <addaction name="separator"/>
+    <addaction name="menuAlign"/>
+    <addaction name="separator"/>
+    <addaction name="menuRemove_Unused"/>
+   </widget>
+   <widget class="QMenu" name="menuTools_2">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="action_ViewNodePalette"/>
+    <addaction name="action_ViewProperties"/>
+    <addaction name="action_ViewDebugger"/>
+    <addaction name="action_ViewCommandLine"/>
+    <addaction name="action_ViewLog"/>
+    <addaction name="action_ViewBookmarks"/>
+    <addaction name="action_ViewMiniMap"/>
+    <addaction name="action_ViewVariableManager"/>
+    <addaction name="action_GraphValidation"/>
+    <addaction name="action_Debugging"/>
+    <addaction name="separator"/>
+    <addaction name="action_ViewUnitTestManager"/>
+    <addaction name="action_NodeStatistics"/>
+    <addaction name="action_PresetsEditor"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuUtilities">
+    <property name="title">
+     <string>&amp;Utilities</string>
+    </property>
+    <addaction name="action_BatchConversion"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings_2">
+    <property name="title">
+     <string>&amp;Preferences</string>
+    </property>
+    <addaction name="action_GlobalPreferences"/>
+    <addaction name="action_GraphPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuView_2">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menuGo_To">
+     <property name="title">
+      <string>Go To</string>
+     </property>
+     <addaction name="action_GotoStartOfChain"/>
+     <addaction name="action_GotoEndOfChain"/>
+    </widget>
+    <addaction name="action_ZoomIn"/>
+    <addaction name="action_ZoomOut"/>
+    <addaction name="action_ZoomSelection"/>
+    <addaction name="action_ShowEntireGraph"/>
+    <addaction name="separator"/>
+    <addaction name="menuGo_To"/>
+    <addaction name="separator"/>
+    <addaction name="action_ViewRestoreDefaultLayout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuView_2"/>
+   <addaction name="menuTools_2"/>
+   <addaction name="menuUtilities"/>
+   <addaction name="menuSettings_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_New_Script">
+   <property name="text">
+    <string>&amp;New Script</string>
+   </property>
+  </action>
+  <action name="action_New_Function">
+   <property name="text">
+    <string>&amp;Function</string>
+   </property>
+  </action>
+  <action name="action_New_Editor_Graph">
+   <property name="text">
+    <string>&amp;Editor Graph</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="action_Save_As">
+   <property name="text">
+    <string>&amp;Save As...</string>
+   </property>
+  </action>
+  <action name="action_Open">
+   <property name="text">
+    <string>&amp;Open</string>
+   </property>
+  </action>
+  <action name="action_ViewLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_log.png</normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_log.png</iconset>
+   </property>
+   <property name="text">
+    <string>Log</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewCommandLine">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ScriptCanvasEditorResources.qrc">
+     <normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</iconset>
+   </property>
+   <property name="text">
+    <string>Command Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewNodePalette">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Node Palette</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+L</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewOutline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Node Outliner</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewDynamicEBusAssets">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Dynamic EBus</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+E</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewProperties">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Node Inspector</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewDebugger">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ScriptCanvasEditorResources.qrc">
+     <normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_debugger_off.png</normaloff>
+     <disabledoff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_debugger.png</disabledoff>
+     <disabledon>:/ScriptCanvasEditorResources/Resources/scriptcanvas_debugger_off.png</disabledon>:/ScriptCanvasEditorResources/Resources/scriptcanvas_debugger_off.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Debugger</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewRestoreDefaultLayout">
+   <property name="text">
+    <string>Restore Default Layout</string>
+   </property>
+  </action>
+  <action name="action_Close">
+   <property name="text">
+    <string>Close Graph</string>
+   </property>
+  </action>
+  <action name="action_Undo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Redo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Cut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Copy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Paste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Duplicate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Duplicate</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_GlobalPreferences">
+   <property name="text">
+    <string>Global Preferences</string>
+   </property>
+  </action>
+  <action name="action_GraphPreferences">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Graph Preferences</string>
+   </property>
+  </action>
+  <action name="action_ViewBookmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bookmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+B</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewMiniMap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;MiniMap</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+M</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewVariableManager">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Variable Manager</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_ViewLogWindow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Log</string>
+   </property>
+  </action>
+  <action name="action_GraphValidation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Graph Validation</string>
+   </property>
+  </action>
+  <action name="action_ViewUnitTestManager">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Test Manager</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Debugging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Debugging</string>
+   </property>
+  </action>
+  <action name="action_NodeStatistics">
+   <property name="text">
+    <string>Statistics</string>
+   </property>
+  </action>
+  <action name="action_RemoveUnusedNodes">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Nodes</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes all unused nodes from the active graph</string>
+   </property>
+  </action>
+  <action name="action_RemoveUnusedVariables">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Variables</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes all unused variables from the active graph</string>
+   </property>
+  </action>
+  <action name="action_RemoveUnusedElements">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>All</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes all unused elements from the active graph</string>
+   </property>
+  </action>
+  <action name="action_PresetsEditor">
+   <property name="text">
+    <string>Presets Editor</string>
+   </property>
+  </action>
+  <action name="action_BatchConversion">
+   <property name="text">
+    <string>Batch Conversion</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens and saves all of the ScriptCanvas files contained within a specific directory.</string>
+   </property>
+  </action>
+  <action name="action_GraphRecreator">
+   <property name="text">
+    <string>Graph Recreator</string>
+   </property>
+   <property name="toolTip">
+    <string>Will recreate the specified directory of graphs in a new target location.</string>
+   </property>
+  </action>
+  <action name="action_Screenshot">
+   <property name="text">
+    <string>Screenshot</string>
+   </property>
+   <property name="toolTip">
+    <string>Takes a picture of the current selection in the active graph, or the entire graph if there is no selection.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_SelectInputs">
+   <property name="text">
+    <string>Inputs</string>
+   </property>
+   <property name="toolTip">
+    <string>Selects all of the nodes that are connected to the current selection via input connections</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Left</string>
+   </property>
+  </action>
+  <action name="action_SelectOutputs">
+   <property name="text">
+    <string>Outputs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Right</string>
+   </property>
+  </action>
+  <action name="action_SelectConnected">
+   <property name="text">
+    <string>Connected</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Up</string>
+   </property>
+  </action>
+  <action name="action_ShowEntireGraph">
+   <property name="text">
+    <string>Show Entire Graph</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Down</string>
+   </property>
+  </action>
+  <action name="action_ZoomIn">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="action_ZoomOut">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="action_AlignLeft">
+   <property name="text">
+    <string>Align Left</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Left</string>
+   </property>
+  </action>
+  <action name="action_AlignRight">
+   <property name="text">
+    <string>Align Right</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Right</string>
+   </property>
+  </action>
+  <action name="action_AlignTop">
+   <property name="text">
+    <string>Align Top</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Up</string>
+   </property>
+  </action>
+  <action name="action_AlignBottom">
+   <property name="text">
+    <string>Align Bottom</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Down</string>
+   </property>
+  </action>
+  <action name="action_SelectAll">
+   <property name="text">
+    <string>All</string>
+   </property>
+   <property name="toolTip">
+    <string>Select All of the Nodes in the currently active graph</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionNone">
+   <property name="text">
+    <string>None</string>
+   </property>
+  </action>
+  <action name="action_ClearSelection">
+   <property name="text">
+    <string>Clear Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
+  <action name="action_GotoStartOfChain">
+   <property name="text">
+    <string>Start of Chain</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Left</string>
+   </property>
+  </action>
+  <action name="action_GotoEndOfChain">
+   <property name="text">
+    <string>End of Chain</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Right</string>
+   </property>
+  </action>
+  <action name="actionZoom_To">
+   <property name="text">
+    <string>Zoom Selection</string>
+   </property>
+  </action>
+  <action name="action_ZoomSelection">
+   <property name="text">
+    <string>Show Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Up</string>
+   </property>
+  </action>
+  <action name="action_EnableSelection">
+   <property name="text">
+    <string>Enable Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K, Ctrl+U</string>
+   </property>
+  </action>
+  <action name="action_DisableSelection">
+   <property name="text">
+    <string>Disable Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K, Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionEditor_Graph">
+   <property name="text">
+    <string>Editor Graph</string>
+   </property>
+  </action>
+  <action name="actionFunction">
+   <property name="text">
+    <string>New Function</string>
+   </property>
+  </action>
+  <addaction name="action_ViewNodePalette"/>
+  <addaction name="action_ViewOutline"/>
+  <addaction name="action_ViewDynamicEBusAssets"/>
+  <addaction name="action_ViewProperties"/>
+  <addaction name="action_ViewDebugger"/>
+  <addaction name="action_ViewCommandLine"/>
+  <addaction name="action_ViewRestoreDefaultLayout"/>
+ </widget>
+ <resources>
+  <include location="ScriptCanvasEditorResources.qrc"/>
+  <include location="../../../../../GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LUAEditorView</class>
+ <widget class="QWidget" name="LUAEditorView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>398</width>
+    <height>336</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Lua Editor</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="LUAEditor::LUAEditorBreakpointWidget" name="m_breakpoints" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>45</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>45</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="LUAEditor::FoldingWidget" name="m_folding" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>15</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="LUAEditor::LUAEditorPlainTextEdit" name="m_luaTextEdit">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="lineWrapMode">
+      <enum>QPlainTextEdit::NoWrap</enum>
+     </property>
+     <property name="backgroundVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LUAEditor::LUAEditorBreakpointWidget</class>
+   <extends>QWidget</extends>
+   <header>Woodpecker/LUA/LUAEditorBreakpointWidget.hxx</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LUAEditor::LUAEditorPlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>Woodpecker/LUA/LUAEditorPlainTextEdit.hxx</header>
+  </customwidget>
+  <customwidget>
+   <class>LUAEditor::FoldingWidget</class>
+   <extends>QWidget</extends>
+   <header>LUAEditorFoldingWidget.hxx</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,43 @@
+<DeviceList>
+    <Config file="ios_low.cfg">
+        <Device model="iPhone6,1"/> <!-- iPhone 5s, Apple A7 GPU -->
+        <Device model="iPhone6,2"/> <!-- iPhone 5s, Apple A7 GPU -->
+        <Device model="iPad4,1"/> <!-- iPad Air, Apple A7 GPU -->
+        <Device model="iPad4,2"/> <!-- iPad Air, Apple A7 GPU -->
+        <Device model="iPad4,3"/> <!-- iPad Air, Apple A7 GPU -->
+        <Device model="iPad4,4"/> <!-- iPad mini 2, Apple A7 GPU -->
+        <Device model="iPad4,5"/> <!-- iPad mini 2, Apple A7 GPU -->
+        <Device model="iPad4,6"/> <!-- iPad mini 2, Apple A7 GPU -->
+        <Device model="iPad4,7"/> <!-- iPad mini 3, Apple A7 GPU -->
+        <Device model="iPad4,8"/> <!-- iPad mini 3, Apple A7 GPU -->
+        <Device model="iPad4,9"/> <!-- iPad mini 3, Apple A7 GPU -->
+    </Config>
+    <Config file="ios_medium.cfg">
+        <Device model="iPhone7,1"/> <!-- iPhone 6 Plus, Apple A8 GPU -->
+        <Device model="iPhone7,2"/> <!-- iPhone 6, Apple A8 GPU -->
+        <Device model="iPad5,1"/> <!-- iPad mini 4, Apple A8 GPU -->
+        <Device model="iPad5,2"/> <!-- iPad mini 4, Apple A8 GPU -->
+        <Device model="iPad5,3"/> <!-- iPad Air 2, Apple A8 GPU -->
+        <Device model="iPad5,4"/> <!-- iPad Air 2, Apple A8 GPU -->
+        <Device model="iPod7,1"/> <!-- iPod touch 6th generation, Apple A8 GPU -->
+    </Config>
+    <Config file="ios_high.cfg">
+        <Device model="iPhone8,1"/> <!-- iPhone 6s, Apple A9 GPU -->
+        <Device model="iPhone8,2"/> <!-- iPhone 6s Plus, Apple A9 GPU -->
+        <Device model="iPhone8,4"/> <!-- iPhone SE, Apple A9 GPU -->
+        <Device model="iPad6,3"/> <!-- iPad Pro, Apple A9 GPU -->
+        <Device model="iPad6,4"/> <!-- iPad Pro, Apple A9 GPU -->
+        <Device model="iPad6,7"/> <!-- iPad Pro, Apple A9 GPU -->
+        <Device model="iPad6,8"/> <!-- iPad Pro, Apple A9 GPU -->
+        
+        <Device model="iPhone9,1"/> <!-- iPhone 7, Apple A10 GPU -->
+        <Device model="iPhone9,3"/> <!-- iPhone 7, Apple A10 GPU -->
+        <Device model="iPhone9,2"/> <!-- iPhone 7 Plus, Apple A10 GPU -->
+        <Device model="iPhone9,4"/> <!-- iPhone 7 Plus, Apple A10 GPU -->
+        <Device model="iPad7,1"/> <!-- iPad Pro, Apple A10 GPU -->
+        <Device model="iPad7,2"/> <!-- iPad Pro, Apple A10 GPU -->
+    </Config>
+    <Config file="ios_veryhigh.cfg">
+        
+    </Config>
+</DeviceList>

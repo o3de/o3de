@@ -1,0 +1,49 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/IO/CompressionBus.h>
+
+namespace AZ
+{
+    namespace IO
+    {
+        CompressionInfo::CompressionInfo(CompressionInfo&& rhs)
+        {
+            *this = AZStd::move(rhs);
+        }
+
+        CompressionInfo& CompressionInfo::operator=(CompressionInfo&& rhs)
+        {
+            m_decompressor = AZStd::move(rhs.m_decompressor);
+            m_archiveFilename = AZStd::move(rhs.m_archiveFilename);
+            m_compressionTag = rhs.m_compressionTag;
+            m_offset = rhs.m_offset;
+            m_compressedSize = rhs.m_compressedSize;
+            m_uncompressedSize = rhs.m_uncompressedSize;
+            m_conflictResolution = rhs.m_conflictResolution;
+            m_isCompressed = rhs.m_isCompressed;
+            m_isSharedPak = rhs.m_isSharedPak;
+
+            return *this;
+        }
+
+        namespace CompressionUtils
+        {
+            bool FindCompressionInfo(CompressionInfo& info, const AZStd::string_view filename)
+            {
+                bool result = false;
+                CompressionBus::Broadcast(&CompressionBus::Events::FindCompressionInfo, result, info, filename);
+                return result;
+            }
+        }
+    }
+}

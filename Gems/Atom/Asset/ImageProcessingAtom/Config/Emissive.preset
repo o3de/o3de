@@ -1,0 +1,73 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+            "Name": "Emissive",
+            "RGB_Weight": "CIEXYZ",
+            "FileMasks": [
+                "_emissive"
+            ],
+            "PixelFormat": "BC7",
+            "DiscardAlpha": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "FileMasks": [
+                    "_emissive",
+                    "_e",
+                    "_glow",
+                    "_em",
+                    "_emit"
+                ],
+                "PixelFormat": "ETC2",
+                "DiscardAlpha": true
+            },
+            "ios": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "FileMasks": [
+                    "_emissive"
+                ],
+                "PixelFormat": "ASTC_6x6",
+                "DiscardAlpha": true
+            },
+            "osx_gl": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "FileMasks": [
+                    "_emissive"
+                ],
+                "PixelFormat": "BC7",
+                "DiscardAlpha": true
+            },
+            "provo": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "FileMasks": [
+                    "_emissive"
+                ],
+                "PixelFormat": "BC7",
+                "DiscardAlpha": true
+            },
+            "xenia": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "FileMasks": [
+                    "_emissive"
+                ],
+                "PixelFormat": "BC7",
+                "DiscardAlpha": true
+            }
+        }
+    }
+}

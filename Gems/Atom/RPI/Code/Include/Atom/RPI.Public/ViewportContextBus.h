@@ -1,0 +1,139 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/base.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Math/Transform.h>
+#include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Windowing/NativeWindow.h>
+#include <Atom/RPI.Public/Base.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        class Device;
+    } //namespace RHI
+
+    namespace RPI
+    {
+        //! Manages ViewportContexts, which can be created and looked up by name.
+        //! Contexts are mapped to a stack of default Views which can be used to
+        //! push camera state to an arbitrary ViewportContext.
+        //!
+        //! All methods are thread-safe, but the underlying ViewportContext may not be.
+        class ViewportContextRequestsInterface
+        {
+        public:
+            AZ_RTTI(ViewportContextRequestsInterface, "{FDB82F02-7021-433B-AAD3-25B97EC69962}");
+
+            //! Parameters for creating a ViewportContext.
+            struct CreationParameters
+            {
+                //! The hardware device to bind the native window to, must not be null.
+                RHI::Device* device = nullptr;
+                //! The native window to create a swap chain for, must be valid.
+                AzFramework::NativeWindowHandle windowHandle = {};
+                //! The scene to render, optional.
+                ScenePtr renderScene;
+                //! The ID to use, if specified. This ID must be unique to this ViewportContext.
+                //! If an invalid ID is specified (the default) then an ID will be assigned automatically.
+                AzFramework::ViewportId id = AzFramework::InvalidViewportId;
+            };
+
+            //! Gets the name of the default, primary ViewportContext, for common single-viewport scenarios.
+            virtual AZ::Name GetDefaultViewportContextName() const = 0;
+
+            //! Creates a ViewportContext and registers it by name.
+            //! There may only be one context registered to a given name at any time.
+            //! The ViewportContext will be automatically assigned a View from the stack registered to this context name.
+            //! The ViewportContextManager does *not* take ownership of this ViewportContext,
+            //! its lifecycle is the responsibility of the caller. ViewportContexts shall automatically unregister
+            //! when they are destroyed.
+            virtual ViewportContextPtr CreateViewportContext(const Name& contextName, const CreationParameters& params) = 0;
+            //! Gets the ViewportContext registered to the given name, if any.
+            virtual ViewportContextPtr GetViewportContextByName(const Name& contextName) const = 0;
+            //! Gets the registered ViewportContext with the corresponding ID, if any.
+            virtual ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const = 0;
+            //! Maps a ViewportContext to a new name, inheriting the View stack (if any) registered to that context name.
+            //! This can be used to switch "default" viewports by registering a viewport with the default ViewportContext name
+            //! but note that only one ViewportContext can be mapped to a context name at a time.
+            virtual void RenameViewportContext(ViewportContextPtr viewportContext, const Name& newContextName) = 0;
+            //! Enumerates all registered ViewportContexts, calling visitorFunction once for each registered viewport.
+            virtual void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) = 0;
+
+            //! Pushes a view  to the stack for a given context name.
+            //! The View must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
+            //! This View will be registered as the context's pipeline's default view until the top of the camera stack changes.
+            virtual void PushView(const Name& contextName, ViewPtr view) = 0;
+            //! Pops a camera off of the stack for a given context name.
+            //! @note The default camera for a given viewport may not be removed from the view stack.
+            //! You must push an additional camera to override the default view instead.
+            virtual void PopView(const Name& contextName, ViewPtr view) = 0;
+            //! Gets the view currently registered to a given context, assuming the context exists.
+            //! This will be null if there is no registered ViewportContext and no views have been pushed for this context name.
+            virtual ViewPtr GetCurrentView(const Name& contextName) const = 0;
+        };
+
+        class ViewportContextManagerNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy  = EBusAddressPolicy::Single;
+
+            virtual void OnViewportContextAdded(ViewportContextPtr viewportContext){AZ_UNUSED(viewportContext);}
+            virtual void OnViewportContextRemoved(AzFramework::ViewportId viewportId){AZ_UNUSED(viewportId);}
+        };
+
+        using ViewportContextManagerNotificationsBus = AZ::EBus<ViewportContextManagerNotifications>;
+
+        class ViewportContextNotifications
+        {
+        public:
+            //! Called when the underlying native window size changes for a given viewport context name.
+            virtual void OnViewportSizeChanged(AzFramework::WindowSize size){AZ_UNUSED(size);}
+            //! Called when the active view for a given viewport context name changes.
+            virtual void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view){AZ_UNUSED(view);}
+
+        protected:
+            ~ViewportContextNotifications() = default;
+        };
+
+        class NotifyByViewportNameTraits
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy  = EBusAddressPolicy::ById;
+            using BusIdType = Name;
+            using EventQueueMutexType = AZStd::mutex;
+        };
+
+        class NotifyByViewportIdTraits
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy  = EBusAddressPolicy::ById;
+            using BusIdType = AzFramework::ViewportId;
+            using EventQueueMutexType = AZStd::mutex;
+        };
+
+        using ViewportContextNotificationBus = AZ::EBus<ViewportContextNotifications, NotifyByViewportNameTraits>;
+        using ViewportContextIdNotificationBus = AZ::EBus<ViewportContextNotifications, NotifyByViewportIdTraits>;
+    } // namespace RPI
+} // namespace AZ

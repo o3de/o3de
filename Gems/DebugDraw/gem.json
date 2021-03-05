@@ -1,0 +1,12 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "66239f50bf754354b514c850c8b841fb",
+    "Name": "DebugDraw",
+    "DisplayName": "DebugDraw [PREVIEW]",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "The DebugDraw Gem provides editor and game runtime debug visualization features.",
+    "Tags": ["Debugging"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

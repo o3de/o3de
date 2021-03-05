@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 0,
+    "ClassName": "CapabilitiesConfigFile",
+    "ClassData":
+    {
+        "DescriptorCounts":
+        {
+            "Sets": 64,
+            "Spaces": 4,
+            "Samplers": -1,
+            "Textures": -1,
+            "Buffers": -1
+        }
+    }
+}

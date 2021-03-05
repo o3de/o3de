@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PivotTreeWidget</class>
+ <widget class="QWidget" name="PivotTreeWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>372</width>
+    <height>476</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
+   <item>
+    <widget class="AzQtComponents::FilteredSearchWidget" name="filterWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="AzToolsFramework::QTreeViewWithStateSaving" name="pivotTreeView">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::FilteredSearchWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/FilteredSearchWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::QTreeViewWithStateSaving</class>
+   <extends>QTreeView</extends>
+   <header location="global">AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

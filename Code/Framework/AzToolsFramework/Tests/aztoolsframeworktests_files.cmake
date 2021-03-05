@@ -1,0 +1,90 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    Main.cpp
+    ArchiveTests.cpp
+    AssetFileInfoListComparison.cpp
+    AssetSeedManager.cpp
+    AssetSystemMocks.h
+    ComponentModeTests.cpp
+    ComponentModeTestDoubles.h
+    ComponentModeTestDoubles.cpp
+    ComponentModeTestFixture.h
+    ComponentModeTestFixture.cpp
+    EditorTransformComponentSelectionTests.cpp
+    EditorVertexSelectionTests.cpp
+    EntityIdQLabelTests.cpp
+    EntityInspectorTests.cpp
+    FingerprintingTests.cpp
+    LogLines.cpp
+    ManipulatorBoundsTests.cpp
+    ManipulatorCoreTests.cpp
+    ManipulatorViewTests.cpp
+    PlatformAddressedAssetCatalogTests.cpp
+    PropertyIntCtrlCommonTests.h
+    IntegerPrimtitiveTestConfig.h
+    QtWidgetLimitsTests.cpp
+    PropertyIntSliderCtrlTests.cpp
+    PropertyIntSpinCtrlTests.cpp
+    PropertyTreeEditorTests.cpp
+    PythonBindingTests.cpp
+    Slice.cpp
+    SliceUpgradeTestsData.h
+    SliceUpgradeTests.cpp
+    SpinBoxTests.cpp
+    ThumbnailerTests.cpp
+    UndoStack.cpp
+    PerforceComponentTests.cpp
+    Prefab/Benchmark/PrefabBenchmarkFixture.cpp
+    Prefab/Benchmark/PrefabBenchmarkFixture.h
+    Prefab/Benchmark/PrefabCreateBenchmarks.cpp
+    Prefab/Benchmark/PrefabInstantiateBenchmarks.cpp
+    Prefab/Benchmark/PrefabLoadBenchmarks.cpp
+    Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
+    Prefab/MockPrefabFileIOActionValidator.cpp
+    Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
+    Prefab/PrefabInstantiateTests.cpp
+    Prefab/PrefabLoadTemplateTests.cpp
+    Prefab/PrefabTestComponent.cpp
+    Prefab/PrefabTestComponent.h
+    Prefab/PrefabTestData.cpp
+    Prefab/PrefabTestData.h
+    Prefab/PrefabTestDataUtils.cpp
+    Prefab/PrefabTestDataUtils.h
+    Prefab/PrefabTestDomUtils.cpp
+    Prefab/PrefabTestDomUtils.h
+    Prefab/PrefabTestFixture.cpp
+    Prefab/PrefabTestFixture.h
+    Prefab/PrefabTestUtils.h
+    Prefab/PrefabUpdateInstancesTests.cpp
+    Prefab/PrefabUpdateTemplateTests.cpp
+    Prefab/PrefabUpdateWithPatchesTests.cpp
+    Prefab/PrefabInstantiateTests.cpp
+    Entity/EditorEntityContextComponentTests.cpp
+    Entity/EditorEntitySearchComponentTests.cpp
+    SliceStabilityTests/SliceStabilityTestFramework.h
+    SliceStabilityTests/SliceStabilityTestFramework.cpp
+    SliceStabilityTests/SliceStabilityCreateTests.cpp
+    SliceStabilityTests/SliceStabilityPushTests.cpp
+    SliceStabilityTests/SliceStabilityReParentTests.cpp
+    ToolsComponents/EditorLayerComponentTests.cpp
+    ToolsComponents/EditorTransformComponentTests.cpp
+    UI/EntityPropertyEditorTests.cpp
+    Viewport/ViewportScreenTests.cpp
+    Viewport/ViewportUiClusterTests.cpp
+    Viewport/ViewportUiDisplayTests.cpp
+    Viewport/ViewportUiManagerTests.cpp
+    Viewport/ClusterTests.cpp
+    Viewport/ViewportUiWidgetManagerTests.cpp
+    Visibility/EditorVisibilityTests.cpp
+)

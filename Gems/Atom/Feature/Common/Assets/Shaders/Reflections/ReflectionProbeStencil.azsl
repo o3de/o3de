@@ -1,0 +1,65 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Specular IBL reflection pipeline:
+// Stencil -> BlendWeight -> GlobalFullscreen -> RenderOuter -> RenderInner -> Composite
+// -------
+//
+// This shader stencils the pixels covered by inner probe volumes.  This will
+// exclude them from blending operations in the later passes since inner volumes
+// always blend at 100%.  Note that this shader only considers pixels that were
+// stenciled with the UseSpecularIBLPass value when they were rendered in the forward pass.
+// It increases the stencil value if they are in an inner volume (i.e., makes their stencil > 1).
+
+#include <viewsrg.srgi>
+
+ShaderResourceGroup ObjectSrg : SRG_PerObject
+{
+    row_major float3x4 m_modelToWorld;
+
+    float4x4 GetWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorld[0] = ObjectSrg::m_modelToWorld[0];
+        modelToWorld[1] = ObjectSrg::m_modelToWorld[1];
+        modelToWorld[2] = ObjectSrg::m_modelToWorld[2];
+        return modelToWorld;
+    }
+}
+
+// Vertex Shader
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(vsInput.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    return OUT;
+}
+
+// No PS since this shader just sets the stencil

@@ -1,0 +1,145 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "GlyphData.azsli"
+
+// This class allows procedural printing of characters during a fullscreen triangle pass
+class GlyphRender
+{
+    // public:
+
+    void Init(uint2 resolution)
+    {
+        m_backbufferResolution = resolution;       
+        m_glyphColor = 1;
+        m_dropShadowColor = float4(0,0,0,1);        
+    }
+
+    float4 DrawNumberScreenSpace(const float value, const int2 screenCoord, const int2 origin, const int scale)
+    {
+        m_screenSpaceScale = scale;
+        const uint mask = PrintInsideTile(value, origin, screenCoord);
+        if( (mask & MaskForeground) != 0 )
+        {
+            return m_glyphColor;   
+        }   
+        else
+        {   
+            const uint maskDropShadow = PrintInsideTile(value, origin, screenCoord - int2(1,1)); 
+            if( (maskDropShadow & MaskForeground) != 0 )
+            {
+                return m_dropShadowColor;
+            }
+            else
+            {
+                return 0; 
+            }
+        }    
+    }
+    
+    float4 DrawNumberUvSpace(const float value, const float2 uv, const float2 origin, const float scale)
+    {
+        return DrawNumberScreenSpace(
+            value, 
+            uv * m_backbufferResolution, 
+            origin * m_backbufferResolution, 
+            scale * m_backbufferResolution.x * 0.01);  // multiply by a scale factor so that the user can use call this function with values in the 0-1 range for reasonably sized text
+    }
+    
+    // private:
+       
+    // Using a macro because passing arrays as const uint glyphArray[] doesn't compile in azsl at this time.
+#define SAMPLE_GLYPH(index, glyphArray)  \
+    { \
+        m_localPosition.x += m_localSize.x; \
+        if( m_localPosition.x < m_localSize.x ) \
+        { \
+            m_localPosition.xy /= m_screenSpaceScale; \
+            mask = (glyphArray[m_localPosition.y + index * GLYPH_HEIGHT] & (1 << m_localPosition.x)) != 0 ? MaskForeground : MaskBackground; \
+        } \
+    }       
+       
+    void InitPrintCoords(uint2 uv, uint2 origin)
+    {        
+        m_localPosition = uv - origin;
+        m_localSize = uint2(GLYPH_CHAR_WIDTH + 1, GLYPH_HEIGHT) * m_screenSpaceScale;
+    }    
+    
+    uint PrintInsideTile(const float numberToPrint, const uint2 origin, const uint2 uv)
+    {
+        InitPrintCoords(uv, origin);
+        uint mask = MaskUninitialized;
+           
+        if( m_localPosition.y < m_localSize.y )
+        {
+            mask = PrintInsideTileImpl(numberToPrint);    
+        } 
+        return mask; 
+    }
+    
+    float RoundToTensPlace(float value)
+    {
+        value *= 10;
+        value = round(value);
+        value /= 10;
+        return value;
+    }
+       
+    uint PrintInsideTileImpl(float value)
+    {         
+        value = RoundToTensPlace(value);
+              
+        uint mask = MaskUninitialized;
+        uint valueAbs = abs(value);
+
+        const float fractional = frac(value);       
+        if (fractional != 0)
+        {
+            int digit = round(fractional * 10);
+            SAMPLE_GLYPH(digit, NumberGlyphs);            
+            SAMPLE_GLYPH(0, DotGlyph);         
+        }
+                       
+        while( valueAbs > 0 && mask == MaskUninitialized )
+        {
+            const uint n = valueAbs % 10;
+            valueAbs /= 10;
+
+            SAMPLE_GLYPH(n, NumberGlyphs);
+        }
+
+        if (value < 0)
+        {
+            SAMPLE_GLYPH(0, MinusGlyph); 
+        }
+        else if (value == 0)
+        {
+            SAMPLE_GLYPH(0, NumberGlyphs);         
+        }
+
+        return mask;
+    }       
+  
+    enum MaskState
+    {
+        MaskUninitialized = 0,
+        MaskBackground = 0x1,
+        MaskForeground = 0x2
+    };
+  
+    float4 m_glyphColor;
+    float4 m_dropShadowColor;
+    uint2 m_localPosition;
+    uint2 m_localSize;
+    uint m_screenSpaceScale;
+    uint2 m_backbufferResolution;
+};

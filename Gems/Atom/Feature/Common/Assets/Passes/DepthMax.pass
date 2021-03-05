@@ -1,0 +1,64 @@
+{
+    // This pass is used by the light culling system. 
+    // Transparent objects are drawn into here to produce a max depth bounds
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthMaxPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil",
+                            "DepthStencilValue": {
+                                // Atom uses a reversed depth buffer, i.e. 1 = near plane, 0 = far plane
+                                // Clear to 1 because this pass produces max depth bounds
+                                "Depth": "1.0"
+                            }
+                        },
+                        "LoadAction": "Clear",
+                        "LoadActionStencil": "Clear"
+                    }
+                },
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DepthStencil",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT_S8X24_UINT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencil"
+                    }
+                }
+            ]
+        }
+    }
+}

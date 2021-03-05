@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrackViewCurveEditor</class>
+ <widget class="QWidget" name="TrackViewCurveEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>588</width>
+    <height>285</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <widget class="CTrackViewSplineCtrl" name="m_wndSpline" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QToolButton" name="buttonTangentAuto">
+       <property name="toolTip">
+        <string>Set In/Out Tangents to Auto</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_00.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_00.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentInZero">
+       <property name="toolTip">
+        <string>Set In Tangent to Zero</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_01.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_01.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentInStep">
+       <property name="toolTip">
+        <string>Set In Tangent to Step</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_02.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_02.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentInLinear">
+       <property name="toolTip">
+        <string>Set In Tangent to Linear</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_03.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_03.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentOutZero">
+       <property name="toolTip">
+        <string>Set Out Tangent to Zero</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_04.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_04.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentOutStep">
+       <property name="toolTip">
+        <string>Set Out Tangent to Step</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_05.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_05.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentOutLinear">
+       <property name="toolTip">
+        <string>Set Out Tangent to Linear</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_06.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_06.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonSplineFitX">
+       <property name="toolTip">
+        <string>Fit splines to the visible width</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_07.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_07.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonSplineFitY">
+       <property name="toolTip">
+        <string>Fit splines to the visible height</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_08.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_08.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_4">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonSplineSnapGridX">
+       <property name="toolTip">
+        <string>Snap to time grid</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_09.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_09.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonSplineSnapGridY">
+       <property name="toolTip">
+        <string>Snap to value grid</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_10.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_10.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_5">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonTangentUnify">
+       <property name="toolTip">
+        <string>Unify/Break Tangent Handles</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_11.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_11.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_6">
+       <property name="minimumSize">
+        <size>
+         <width>6</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonFreezeKeys">
+       <property name="toolTip">
+        <string>Freeze/Unfreeze all keys</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_12.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_12.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="buttonFreezeTangents">
+       <property name="toolTip">
+        <string>Freeze/Unfreeze all tangent handles</string>
+       </property>
+       <property name="icon">
+        <iconset resource="TrackViewDialog.qrc">
+         <normaloff>:/TrackViewCurveEditor/spline_edit_bar_13.png</normaloff>:/TrackViewCurveEditor/spline_edit_bar_13.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CTrackViewSplineCtrl</class>
+   <extends>QWidget</extends>
+   <header>TrackView/TrackViewSplineCtrl.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="TrackViewDialog.qrc"/>
+ </resources>
+ <connections/>
+</ui>

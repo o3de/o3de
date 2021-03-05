@@ -1,0 +1,175 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    Source/Draw2d.cpp
+    Source/Draw2d.h
+    Source/LyShine.cpp
+    Source/LyShine.h
+    Source/LyShineDebug.cpp
+    Source/LyShineDebug.h
+    Source/LyShine_precompiled.cpp
+    Source/LyShine_precompiled.h
+    Source/StringUtfUtils.h
+    Source/UiImageComponent.cpp
+    Source/UiImageComponent.h
+    Source/UiImageSequenceComponent.cpp
+    Source/UiImageSequenceComponent.h
+    Source/UiRenderer.cpp
+    Source/UiRenderer.h
+    Source/resource.h
+    Include/LyShine/LyShineBus.h
+    Source/EditorPropertyTypes.cpp
+    Source/EditorPropertyTypes.h
+    Source/LyShineLoadScreen.cpp
+    Source/LyShineLoadScreen.h
+    Source/LyShineSystemComponent.cpp
+    Source/LyShineSystemComponent.h
+    Source/RenderGraph.cpp
+    Source/RenderGraph.h
+    Source/TextMarkup.cpp
+    Source/TextMarkup.h
+    Source/UiButtonComponent.cpp
+    Source/UiButtonComponent.h
+    Source/UiCanvasComponent.cpp
+    Source/UiCanvasComponent.h
+    Source/UiCanvasFileObject.cpp
+    Source/UiCanvasFileObject.h
+    Source/UiCanvasManager.cpp
+    Source/UiCanvasManager.h
+    Source/UiCheckboxComponent.cpp
+    Source/UiCheckboxComponent.h
+    Source/UiDraggableComponent.cpp
+    Source/UiDraggableComponent.h
+    Source/UiDropTargetComponent.cpp
+    Source/UiDropTargetComponent.h
+    Source/UiDropdownComponent.cpp
+    Source/UiDropdownComponent.h
+    Source/UiDropdownOptionComponent.cpp
+    Source/UiDropdownOptionComponent.h
+    Source/UiDynamicLayoutComponent.cpp
+    Source/UiDynamicLayoutComponent.h
+    Source/UiDynamicScrollBoxComponent.cpp
+    Source/UiDynamicScrollBoxComponent.h
+    Source/UiElementComponent.cpp
+    Source/UiElementComponent.h
+    Source/UiFaderComponent.cpp
+    Source/UiFaderComponent.h
+    Source/UiFlipbookAnimationComponent.cpp
+    Source/UiFlipbookAnimationComponent.h
+    Source/UiGameEntityContext.cpp
+    Source/UiGameEntityContext.h
+    Source/UiInteractableComponent.cpp
+    Source/UiInteractableComponent.h
+    Source/UiInteractableState.cpp
+    Source/UiInteractableState.h
+    Source/UiLayoutCellComponent.cpp
+    Source/UiLayoutCellComponent.h
+    Source/UiLayoutColumnComponent.cpp
+    Source/UiLayoutColumnComponent.h
+    Source/UiLayoutFitterComponent.cpp
+    Source/UiLayoutFitterComponent.h
+    Source/UiLayoutGridComponent.cpp
+    Source/UiLayoutGridComponent.h
+    Source/UiLayoutHelpers.cpp
+    Source/UiLayoutHelpers.h
+    Source/UiLayoutManager.cpp
+    Source/UiLayoutManager.h
+    Source/UiLayoutRowComponent.cpp
+    Source/UiLayoutRowComponent.h
+    Source/UiMarkupButtonComponent.cpp
+    Source/UiMarkupButtonComponent.h
+    Source/UiMaskComponent.cpp
+    Source/UiMaskComponent.h
+    Source/UiNavigationHelpers.cpp
+    Source/UiNavigationHelpers.h
+    Source/UiNavigationSettings.cpp
+    Source/UiNavigationSettings.h
+    Source/UiParticleEmitterComponent.cpp
+    Source/UiParticleEmitterComponent.h
+    Source/UiRadioButtonComponent.cpp
+    Source/UiRadioButtonComponent.h
+    Source/UiRadioButtonGroupComponent.cpp
+    Source/UiRadioButtonGroupComponent.h
+    Source/UiScrollBarComponent.cpp
+    Source/UiScrollBarComponent.h
+    Source/UiScrollBoxComponent.cpp
+    Source/UiScrollBoxComponent.h
+    Source/UiSerialize.cpp
+    Source/UiSerialize.h
+    Source/UiSliderComponent.cpp
+    Source/UiSliderComponent.h
+    Source/UiStateActionManager.cpp
+    Source/UiStateActionManager.h
+    Source/UiSpawnerComponent.cpp
+    Source/UiSpawnerComponent.h
+    Source/UiTextComponent.cpp
+    Source/UiTextComponent.h
+    Source/UiTextComponentOffsetsSelector.cpp
+    Source/UiTextComponentOffsetsSelector.h
+    Source/UiTextInputComponent.cpp
+    Source/UiTextInputComponent.h
+    Source/UiTooltipComponent.cpp
+    Source/UiTooltipComponent.h
+    Source/UiTooltipDisplayComponent.cpp
+    Source/UiTooltipDisplayComponent.h
+    Source/UiTransform2dComponent.cpp
+    Source/UiTransform2dComponent.h
+    Source/UiClipboard.h
+    Source/Sprite.cpp
+    Source/Sprite.h
+    Source/Animation/2DSpline.h
+    Source/Animation/AnimNode.cpp
+    Source/Animation/AnimNode.h
+    Source/Animation/AnimSequence.cpp
+    Source/Animation/AnimSequence.h
+    Source/Animation/AnimSplineTrack.cpp
+    Source/Animation/AnimSplineTrack.h
+    Source/Animation/AnimSplineTrack_Vec2Specialization.h
+    Source/Animation/AnimTrack.cpp
+    Source/Animation/AnimTrack.h
+    Source/Animation/AzEntityNode.cpp
+    Source/Animation/AzEntityNode.h
+    Source/Animation/BoolTrack.cpp
+    Source/Animation/BoolTrack.h
+    Source/Animation/CompoundSplineTrack.cpp
+    Source/Animation/CompoundSplineTrack.h
+    Source/Animation/EventNode.cpp
+    Source/Animation/EventNode.h
+    Source/Animation/TrackEventTrack.cpp
+    Source/Animation/TrackEventTrack.h
+    Source/Animation/UiAnimationSystem.cpp
+    Source/Animation/UiAnimationSystem.h
+    Source/Animation/UiAnimSerialize.cpp
+    Source/Animation/UiAnimSerialize.h
+    Source/Particle/UiParticle.cpp
+    Source/Particle/UiParticle.h
+    Source/Script/UiCanvasNotificationLuaBus.h
+    Source/Script/UiCanvasNotificationLuaBus.cpp
+    Source/Script/UiCanvasLuaBus.h
+    Source/Script/UiCanvasLuaBus.cpp
+    Source/Script/UiElementLuaBus.h
+    Source/Script/UiElementLuaBus.cpp
+    Source/World/UiCanvasOnMeshComponent.cpp
+    Source/World/UiCanvasOnMeshComponent.h
+    Source/World/UiCanvasAssetRefComponent.cpp
+    Source/World/UiCanvasAssetRefComponent.h
+    Source/World/UiCanvasProxyRefComponent.cpp
+    Source/World/UiCanvasProxyRefComponent.h
+)
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Source/UiImageSequenceComponent.h
+    Source/UiImageSequenceComponent.cpp
+    Source/UiTextComponent.cpp
+    Source/UiTextComponent.h
+)
+

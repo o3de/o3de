@@ -1,0 +1,24 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "35414634480a4d4c8412c60fe62f4c81",
+    "Name": "AssetMemoryAnalyzer",
+    "DisplayName": "AssetMemoryAnalyzer",
+    "Version": "0.1.0",
+    "Summary": "Provides debug visualization of the AssetMemoryDriller to show how individual assets are consuming memory.",
+    "Tags": ["debug"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "bab8807a1bc646b3909f3cc200ffeedf",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "ImGui GEM"
+        }
+    ]
+}

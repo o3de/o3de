@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "35d8f6e49ae04c9382c61a42d4355c2f",
+    "Name": "SceneLoggingExample",
+    "DisplayName": "Scene Logging Example",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "This example Gem demonstrates the basics of extending the SceneAPI by adding additional logging to the pipeline. Please read ReadMe.txt for further details.",
+    "Tags": ["Scene", "FBX"],
+    "IconPath": "preview.png"
+}

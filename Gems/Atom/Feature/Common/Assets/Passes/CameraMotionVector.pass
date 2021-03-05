@@ -1,0 +1,61 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CameraMotionVectorPassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "CameraMotion",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "CameraMotion"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/MotionVector/CameraMotionVector.shader"
+                }
+            }
+        }
+    }
+}

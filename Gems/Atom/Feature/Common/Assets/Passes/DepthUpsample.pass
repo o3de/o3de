@@ -1,0 +1,76 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthUpsampleTemplate",
+            "PassClass": "DepthUpsamplePass",
+            "Slots": [
+                {
+                    "Name": "FullResDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "HalfResDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "HalfResSource",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "UpsampledOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "FullResDepth"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "HalfResSource"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8_UNORM"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "UpsampledOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "HalfResSource",
+                    "Output": "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthUpsample.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

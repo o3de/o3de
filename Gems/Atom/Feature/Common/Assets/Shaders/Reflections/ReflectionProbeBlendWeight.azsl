@@ -1,0 +1,89 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Specular IBL reflection pipeline:
+// Stencil -> BlendWeight -> GlobalFullscreen -> RenderOuter -> RenderInner -> Composite
+//            -----------
+//
+// This shader writes the blend weight of a particular probe to this location in the blend
+// weight texture.  This is an additive operation since other overlapping probes will write
+// their blend weights here as well.  Note that this shader only considers pixels stenciled 
+// to the outer volumes.  Inner volumes always blend at 100% so there is no need to write them
+// to the blend weight texture.
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include "ReflectionProbeRenderObjectSrg.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float> m_depth;
+}
+
+#include "ReflectionCommon.azsli"
+
+// Vertex Shader
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float3 positionWS = mul(ObjectSrg::GetWorldMatrix(), float4(vsInput.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(positionWS, 1.0));
+    return OUT;
+}
+
+// Pixel Shader
+struct PSOutput
+{
+    float m_blendWeight : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    // reconstruct world position from depth
+    // Note: this is the world position of the rendered object covered by the volume, not the volume itself
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+
+    // make sure the pixel belongs to this probe volume
+    // this is necessary since it could have the correct stencil value but actually reside 
+    // in another volume that's in between the camera and the volume we're rendering
+    if (!AabbContainsPoint(ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, positionWS))
+    {
+        discard;
+    }
+
+    // determine blend based on position with respect to the inner and outer AABBs
+    // if it's inside the inner AABB it blends at 100%, otherwise it's the percentage of the distance between the inner/outer AABB
+    float blendWeight = 1.0f;
+    if (!AabbContainsPoint(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, positionWS))
+    {
+        // not inside the inner AABB, so it's in between the inner and outer AABBs
+        // compute blend amount based on the distance to the outer AABB
+        blendWeight = ComputeLerpBetweenInnerOuterAABBs(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS);
+    }
+
+    // write the blend weight (additive) at this position for the probe volume
+    PSOutput OUT;
+    OUT.m_blendWeight = blendWeight;
+    return OUT;
+}

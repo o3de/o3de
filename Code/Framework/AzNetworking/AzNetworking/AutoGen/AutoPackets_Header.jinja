@@ -1,0 +1,111 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+{%  macro ElementType(element) -%}
+{%      if ('Container' not in element.attrib) or (element.attrib['Container'] == 'None') %}
+{{ element.attrib['Type'] }}{% elif element.attrib['Container'] == 'Array' %}
+AZStd::array<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% elif element.attrib['Container'] == 'Vector' %}
+AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% endif %}
+{%- endmacro %}
+{% macro CamelCase(text) %}{{ text[0] | upper}}{{ text[1:] }}{% endmacro %}
+{%  macro DeclarePacket(name, packetNode, type) %}
+    //! @class {{ name }}
+    //! @brief {{ packetNode.attrib['Desc'] }}.
+    class {{ name }} final
+        : public AzNetworking::IPacket
+    {
+    public:
+        static constexpr AzNetworking::PacketType Type = aznumeric_cast<AzNetworking::PacketType>({{ type }});
+
+        {{ name }}() = default;
+{%  if (packetNode.getchildren()) | len > 0 %}
+        explicit {{ name }}
+        (
+{%          for Member in packetNode %}
+        {% if loop.first %}    {% else %},   {% endif %}{{ ElementType(Member) }} {{ Member.attrib['Name'] }}
+{%          endfor %}
+        );
+{% endif %}
+        ~{{ name }}() override = default;
+
+        //! Equality operator, returns true if the current instance is equal to rhs.
+        //! @param rhs the {{ name }} instance to test for equality against
+        //! @return boolean true if equal, false if not
+        bool operator ==(const {{ name }}& rhs) const;
+
+        //! Inequality operator, returns true if the current instance is not equal to rhs.
+        //! @param rhs the {{ name }} instance to test for inequality against
+        //! @return boolean false if equal, true if not equal
+        bool operator !=(const {{ name }}& rhs) const;
+
+{% for Member in packetNode.iter('Member') %}
+        //! Sets the value of {{ Member.attrib['Name'] }}.
+        //! @param value the value to set {{ Member.attrib['Name'] }} to
+        void Set{{ CamelCase(Member.attrib['Name']) }}(const {{ ElementType(Member) }}& value);
+
+        //! Gets the value of {{ Member.attrib['Name'] }}.
+        //! @return the value of {{ Member.attrib['Name'] }}
+        const {{ ElementType(Member) }}& Get{{ CamelCase(Member.attrib['Name']) }}() const;
+
+        //! Retrieves a non-const reference to the value of {{ Member.attrib['Name'] }}
+        //! @return a non-const reference to the value of {{ Member.attrib['Name'] }}
+        {{ ElementType(Member) }}& Modify{{ CamelCase(Member.attrib['Name']) }}();
+
+{% endfor %}
+        //! IPacket interface
+        //! @{
+        AzNetworking::PacketType GetPacketType() const override;
+        AZStd::unique_ptr<AzNetworking::IPacket> Clone() const override;
+        bool Serialize(AzNetworking::ISerializer& serializer) override;
+        //! @}
+{%  if (packetNode.getchildren()) | len > 0 %}
+
+    private:
+
+{%      for Member in packetNode.iter('Member') %}
+        {{ ElementType(Member) }} m_{{ Member.attrib['Name'] }}{% if Member.attrib['Init'] %} = {{ Member.attrib['Init'] }}{% endif %};
+{%      endfor %}
+{%  endif %}
+    };
+
+{%  endmacro %}
+#pragma once
+
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzNetworking/PacketLayer/IPacket.h>
+#include <AzNetworking/Serialization/ISerializer.h>
+#include <AzNetworking/ConnectionLayer/IConnection.h>
+#include <AzNetworking/DataStructures/ByteBuffer.h>
+{%  for xml in dataFiles %}
+{%      for Include in xml.iter('Include') %}
+#include <{{ Include.attrib['File'] }}>
+{%      endfor %}
+{%  endfor %}
+
+{%  for xml in dataFiles %}
+namespace {{ xml.attrib['Name'] }}
+{
+    enum class PacketType
+    {
+        START = aznumeric_cast<int32_t>({{ xml.attrib['PacketStart'] }})
+{%      for Packet in xml.iter('Packet') %}
+    ,   {{ Packet.attrib['Name'] }}
+{%      endfor %}
+    ,   MAX
+    };
+
+{%  for Packet in xml.iter('Packet') %}
+{{     DeclarePacket(Packet.attrib['Name'], Packet, "PacketType::" + Packet.attrib['Name']) -}}
+{%  endfor %}
+}
+{%  endfor %}
+
+{% set inlineFile = "{0}.inl".format(((outputFile|basename)|splitext)[0]) %}
+#include "{{ inlineFile }}"

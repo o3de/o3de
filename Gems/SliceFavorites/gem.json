@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "1bfc7270d4a1490daac8aa8b072c4489",
+    "Name": "SliceFavorites",
+    "DisplayName": "SliceFavorites",
+    "Version": "0.1.0",
+    "Summary": "Add the ability to favorite a slice to allow easy access and instantiation",
+    "Tags": ["Editor", "Slices"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+          "Type": "EditorModule",
+          "Name":  "Editor"
+        }
+    ]
+}

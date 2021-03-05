@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "LinkType": "NoCode",
+    "Name": "PhysicsEntities",
+    "DisplayName": "Physics Entities",
+    "Summary": "Provides physics entity modifiers that simulate physical events.",
+    "Uuid": "99ea531451fc4f64a5a9fe8f385e8a76",
+    "Version": "0.1.0",
+    "Tags": ["Physics", "Entities", "Legacy"],
+    "IconPath": "preview.png"
+}

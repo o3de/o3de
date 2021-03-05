@@ -1,0 +1,524 @@
+/* ============================================================= */
+/* Global styles                                                 */
+/* ============================================================= */
+*
+{
+	background-color: @WindowBackgroundColor;
+	color:  @TextColor;
+}
+
+QMainWindow, QDialog
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QDockWidget
+{
+	color: @DockWidgetTextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QDockWidget::title {
+    text-align: left;
+    background: @DockWindowTitleBarColor;
+    padding-left: 5px;
+}
+
+QLabel
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QTreeView
+{
+	color: @TextColor;
+	background: @PanelBackgroundColor;
+}
+
+QLineEdit, QTextEdit, QComboBox
+{
+	color: @TextColor;
+	border: 1px solid @PanelBackgroundColor;
+	background: @PanelBackgroundColor;
+}
+
+QTextEdit[class='CloudCanvas']
+{
+	background: #212225;
+}
+
+/* ----------- Primary button: ---------- */
+QPushButton[class='Primary']
+{
+    font-size: 0.875em;
+    font-weight: 600;
+    border: 1px solid rgb(33, 34, 35);
+    border-radius: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    height: 15px;
+}
+
+QPushButton[class='Primary']:!pressed
+{
+    background-color: qlineargradient(spread:pad, x1:0 y1:0, x2:0 y2:1, stop:0 rgb(243, 129, 29), stop:1 rgb(229, 113, 11));   
+}
+
+QPushButton[class='Primary']:hover
+{
+    background-color: qlineargradient(spread:pad, x1:0 y1:0, x2:0 y2:1, stop:0 rgb(244, 142, 52), stop:1 rgb(232, 127, 35));
+}
+
+QPushButton[class='Primary']:pressed
+{
+    background-color: qlineargradient(spread:pad, x1:0 y1:0, x2:0 y2:1, stop:0 rgb(201, 110, 31), stop:1 rgb(190, 97, 17));
+}
+
+/* --------- Primary Disabled Button -------------- */
+
+QPushButton[class='Primary']:disabled
+{
+    background-color: qlineargradient(spread:pad, x1:0 y1:0, x2:0 y2:1, stop:0 rgb(201, 110, 31), stop:1 rgb(190, 97, 17));
+    color: @PushButtonDisabledColor;
+}
+
+QPushButton
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QPushButton:disabled
+{
+	color: @PushButtonDisabledColor;
+}
+
+
+QToolButton
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+	border: 1px solid "transparent";
+}
+
+QToolButton[popupMode="1"]
+{
+	padding-right:20px;
+}
+
+QToolButton:hover
+{
+	background-color: @ToolButtonHoverBackgroundColor;
+	border: 1px solid @ToolButtonPressedBorderColor;
+}
+
+QToolButton:pressed
+{
+	background-color: @ToolButtonPressedBackgroundColor;
+	border: 1px solid @ToolButtonPressedBorderColor;
+}
+
+QToolButton:checked
+{
+	background-color: @ToolButtonCheckedBackgroundColor;
+	border: 1px solid @ToolButtonPressedBorderColor;
+}
+
+QToolBar
+{
+	background: @WindowBackgroundColor;
+}
+
+QMenuBar
+{
+	color: @TextColor;
+	background: @WindowBackgroundColor;
+}
+
+QMenu
+{
+	color: @TextColor; 
+	border: 1px solid @ScrollbarHandleBorderColor;
+}
+
+QMenu::item 
+{
+	color: @MenuEnabledTextColor;
+    padding: 2px 25px 2px 20px;
+    border: 1px solid transparent;
+}
+
+QMenu::item:selected 
+{
+	border: 1px solid @MenuItemSelectedColor;
+}
+
+QMenu::item:disabled
+{
+	color: @MenuDisabledTextColor;
+	border: 1px solid transparent;
+}
+
+QToolBar::separator 
+{
+    background: @TextColor;
+    margin-left: 3px;
+    margin-right: 3px;
+    width: 1px;
+}
+
+QScrollBar:vertical 
+{
+	border: 0px solid @ScrollbarBorderColor;
+	background-color: @ScrollbarBackgroundColor;
+	margin: 14px 0 14px 0;
+}
+
+QScrollBar::handle:vertical 
+{
+	background-color: @ScrollbarHandleBackgroundColor;
+	border: 1px solid @ScrollbarHandleBorderColor;
+    min-height: 20px;
+    margin: 2px 2px 2px 2px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical 
+{
+	background-color: @ScrollbarBackgroundColor;
+}
+
+QScrollBar::add-line:vertical 
+{
+	border: 1px solid @ScrollbarHandleBorderColor;
+	background-color: @ScrollbarBackgroundColor;
+	height: 12px;
+	width: 12px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+
+}
+
+QScrollBar::sub-line:vertical 
+{
+	border: 1px solid @MenuBorderColor;
+	background-color: @ScrollbarBackgroundColor;
+	height: 12px;
+	width: 12px;
+	subcontrol-position: top;
+	subcontrol-origin: margin;
+}
+
+
+QScrollBar::up-arrow:vertical
+{
+	border: 1px solid @MenuBorderColor;
+	border-image: url(Editor/Styles/StyleSheetImages/arrow_up_V2.png) 0 0 0 0 stretch stretch;
+}
+
+
+QScrollBar::down-arrow:vertical 
+{
+	border: 1px solid @MenuBorderColor;
+	border-image: url(Editor/Styles/StyleSheetImages/arrow_down_V2.png) 0 0 0 0 stretch stretch;
+}
+
+
+QScrollBar:horizontal 
+{
+	border: 0px solid black;
+	background-color: @ScrollbarBackgroundColor;
+	margin: 0px 14px 0px 14px;
+}
+
+QScrollBar::handle:horizontal 
+{
+	background-color: @ScrollbarHandleBackgroundColor;
+	border: 1px solid @ScrollbarHandleBorderColor;
+    min-width: 20px;
+    margin: 2px 2px 2px 2px;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal 
+{
+	background-color: @ScrollbarBackgroundColor;
+}
+
+QScrollBar::add-line:horizontal 
+{
+	border: 1px solid @ScrollbarHandleBorderColor;
+	background-color: @ScrollbarBackgroundColor;
+	height: 12px;
+	width: 12px;
+	subcontrol-position: right;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal 
+{
+	border: 1px solid @ScrollbarHandleBorderColor;
+	background-color: @ScrollbarBackgroundColor;
+	height: 12px;
+	width: 12px;
+	subcontrol-position: left;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::left-arrow:horizontal
+{
+	border: 1px solid @ScrollbarHandleBorderColor;
+	border-image: url(Editor/Styles/StyleSheetImages/arrow_left_V2.png) 0 0 0 0 stretch stretch;
+}
+
+
+QScrollBar::right-arrow:horizontal 
+{
+	border: 1px solid @ScrollbarHandleBorderColor;
+	border-image: url(Editor/Styles/StyleSheetImages/arrow_right_V2.png) 0 0 0 0 stretch stretch;
+}
+
+QSlider::handle:horizontal
+{
+	background-color: @ScrollbarHandleBackgroundColor;
+	border: 1px solid @ScrollbarHandleBorderColor;
+	border-radius: 2px;
+	margin: -4px 0px -4px 0px;
+	width: 9px;
+}
+
+QSlider:groove:horizontal
+{
+	border: 1px solid @ScrollbarBorderColor;
+	height: 3px;
+}
+
+QSlider::add-page:horizontal 
+{
+    border: 1px solid @ScrollbarHandleBorderColor;
+    margin: 1px;
+}
+
+QSlider::sub-page:horizontal 
+{
+    border: 1px solid @ScrollbarHandleBorderColor;
+    margin: 1px;
+}
+
+QSlider::handle:vertical
+{
+	background-color: @ScrollbarHandleBackgroundColor;
+	border: 1px solid @ScrollbarHandleBorderColor;
+	border-radius: 2px;
+	margin: 0px -4px 0px -4px;
+	height: 9px;
+}
+
+
+QSlider:groove:vertical
+{
+	border: 1px solid @ScrollbarBorderColor;
+	width: 3px;
+}
+
+QSlider::add-page:vertical 
+{
+    border: 1px solid @ScrollbarHandleBorderColor;
+    margin: 1px;
+}
+
+QSlider::sub-page:vertical 
+{
+    border: 1px solid @ScrollbarHandleBorderColor;
+    margin: 1px;
+}
+
+
+QHeaderView::section 
+{
+    background-color: @WindowBackgroundColor;
+    color: @TextColor;
+}
+
+
+
+QGroupBox::title 
+{
+    color: @TextColor;
+	font-weight:bold;
+	font-size: 16pt;
+}
+
+WelcomeScreenDialog QListView::item::hover
+{
+	color: @MenuItemSelectedColor;
+}
+
+
+/* Style for checkboxes */
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 15px;
+    height: 15px;
+}
+
+
+QCheckBox::indicator:unchecked {
+    image: url(STYLESHEETIMAGES:checkbox_unchecked.png);
+}
+
+QCheckBox::indicator:unchecked:hover {
+    image: url(STYLESHEETIMAGES:checkbox_unchecked_hover.png);
+}
+
+QCheckBox::indicator:unchecked:pressed {
+    image: url(STYLESHEETIMAGES:checkbox_unchecked_pressed.png);
+}
+
+QCheckBox::indicator:checked {
+    image: url(STYLESHEETIMAGES:checkbox_checked.png);
+}
+
+QCheckBox::indicator:checked:hover {
+    image: url(STYLESHEETIMAGES:checkbox_checked_hover.png);
+}
+
+QCheckBox::indicator:checked:pressed {
+    image: url(STYLESHEETIMAGES:checkbox_checked_pressed.png);
+}
+
+QCheckBox::indicator:indeterminate:hover {
+    image: url(STYLESHEETIMAGES:checkbox_indeterminate_hover.png);
+}
+
+QCheckBox::indicator:indeterminate:pressed {
+    image: url(STYLESHEETIMAGES:checkbox_indeterminate_pressed.png);
+}
+
+
+/* Style for delineating component blocks in the entity property editor */
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"]
+{
+    margin: 2px;
+    padding: 2px 2px 4px 2px;
+    border-width: 0px 0px 2px 0px;
+    border-color: @PanelBackgroundColor;
+    border-style: solid;
+}
+
+/* ============================================================= */
+/* Styles applied through programmatically-set QT properties      */
+/* ============================================================= */
+
+/* Style for pulse highlight widgets (outliner highlight, etc) */
+AzToolsFramework--OutlinerView QWidget[PulseHighlight="true"]
+{
+    background-color: @MenuItemSelectedColor;
+}
+
+/* Style for highlighting valid drag-drops (entity references, etc) */
+AzToolsFramework--PropertyEntityIdCtrl AzToolsFramework--EntityIdQLabel[DropHighlight="true"]
+{
+    background-color: @MenuItemSelectedColor;
+}
+
+AzToolsFramework--PropertyAssetCtrl QLabel[DropHighlight="true"]
+{
+    background-color: @MenuItemSelectedColor;
+}
+
+/* Style for delineating component blocks in the entity property editor */
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"]
+{
+    margin: 2px;
+    padding: 2px 2px 4px 2px;
+    border-width: 0px 0px 2px 0px;
+    border-color: @PanelBackgroundColor;
+    border-style: solid;
+}
+
+/* Style for visualizing property values overridden from their prefab values */
+AzToolsFramework--PropertyRowWidget[IsOverridden="true"] QLabel#Name
+{
+    font-weight: bold;
+    color: @MenuItemSelectedColor;
+}
+
+/* Style for visualizing the root of components in the prop grid */
+/*
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"] AzToolsFramework--PropertyRowWidget[Root="true"]
+{
+    min-height: 30px;
+    text-align: middle;
+}
+*/
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"] AzToolsFramework--PropertyRowWidget[Root="true"] *
+{
+    font-weight: bold;
+}
+
+/* In the permissions and deployments window controls the edit boxes for profile name, access key id, and secret access key */
+QAWSQTControls--QAWSProfileLineEdit
+{
+    border: 1px solid black;
+}
+
+QLabel#AboutPixmap
+{
+    qproperty-pixmap: url(Editor/Styles/StyleSheetImages/@AboutPixmap);
+}
+
+Amazon--LoginDialog
+{
+    background-color: #F8F8F8;
+}
+
+Amazon--LoginWelcomeTitle
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 21px;
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans Semibold";
+}
+
+Amazon--LoginWelcomeText
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignLeft;
+    font-family: "Open Sans";
+}
+
+Amazon--LoginFooterText
+{
+    color: #999999;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans";
+}
+
+Amazon--LoginWebViewFrame
+{
+    border: 2px solid #EEEEEE;
+}
+
+Amazon--LoginWebView
+{
+    background-color: #F8F8F8;
+}
+
+QLabel[class='Paragraph'] {font-size: 14px}
+QLabel[class='Heading1'] {font-size: 16px; font-weight:bold}
+QLabel[class='Heading2'] {font-size: 14px; font-weight:bold}
+QLabel[class='Error'] {color: @ResourceProgressError; }
+QLabel[class='Working'] {color: @ResourceProgressWorking; }
+
+QPushButton[class='Link'] { color: @LinkColor; }

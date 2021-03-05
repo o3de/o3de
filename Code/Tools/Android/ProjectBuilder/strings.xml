@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">${ANDROID_APP_NAME}</string>
+    <string name="public_key">${ANDROID_APP_PUBLIC_KEY}</string>
+    <string name="obfuscator_salt">${ANDROID_APP_OBFUSCATOR_SALT}</string>
+
+    <!-- Strings used for the Obb Downloader Activity -->
+    <string name="text_paused_cellular">Would you like to enable downloading over cellular connections? Depending on your data plan, this may cost you money.</string>
+    <string name="text_paused_cellular_2">If you choose not to enable downloading over cellular connections, the download will automatically resume when wi-fi is available.</string>
+    <string name="text_button_resume_cellular">Resume download</string>
+    <string name="text_button_wifi_settings">Wi-Fi settings</string>
+    <string name="text_verifying_download">Verifying Download</string>
+    <string name="text_validation_complete">XAPK File Validation Complete.  Select OK to exit.</string>
+    <string name="text_validation_failed">XAPK File Validation Failed.</string>
+    <string name="text_button_pause">Pause Download</string>
+    <string name="text_button_resume">Resume Download</string>
+    <string name="text_button_cancel">Cancel</string>
+    <string name="text_button_cancel_verify">Cancel Verification</string>
+    <!-- End Obb Downloader strings -->
+</resources>

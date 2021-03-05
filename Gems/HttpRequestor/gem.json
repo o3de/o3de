@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "28479e255bde466e91fc34eec808d9c7",
+    "Name": "HttpRequestor",
+    "DisplayName": "HttpRequestor",
+    "Version": "1.0.0",
+    "LinkType": "Dynamic",
+    "Summary": "A Gem to handle HTTP/HTTPs requests.",
+    "Tags": ["http", "https", "rest"],
+    "IconPath": "preview.png"
+}

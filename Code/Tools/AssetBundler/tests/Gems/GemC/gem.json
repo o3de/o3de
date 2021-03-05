@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "0945E21B7AE848AC80B4EC1F34C459CD",
+    "Name": "GemC",
+    "DisplayName": "GemC",
+    "Version": "0.1.0",
+    "Summary": "Only for unit test purposes.",
+    "Tags": ["Foo"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

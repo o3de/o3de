@@ -1,0 +1,233 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/Input/Channels/InputChannelAnalogWithPosition2D.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace AzFramework
+{
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //! Defines a generic touch input device, including the ids of all its associated input channels.
+    //! Platform specific implementations are defined as private implementations so that creating an
+    //! instance of this generic class will work correctly on any platform that supports touch input,
+    //! while providing access to the device name and associated channel ids on any platform through
+    //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
+    class InputDeviceTouch : public InputDevice
+    {
+    public:
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The id used to identify the primary touch input device
+        static const InputDeviceId Id;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Check whether an input device id identifies a touch device (regardless of index)
+        //! \param[in] inputDeviceId The input device id to check
+        //! \return True if the input device id identifies a touch device, false otherwise
+        static bool IsTouchDevice(const InputDeviceId& inputDeviceId);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! All the input channel ids that identify touches. The maximum number of active touches to
+        //! track is arbitrary, but ten seems to be more than sufficient for most game applications.
+        struct Touch
+        {
+            static const InputChannelId Index0; //!< Touch index 0
+            static const InputChannelId Index1; //!< Touch index 1
+            static const InputChannelId Index2; //!< Touch index 2
+            static const InputChannelId Index3; //!< Touch index 3
+            static const InputChannelId Index4; //!< Touch index 4
+            static const InputChannelId Index5; //!< Touch index 5
+            static const InputChannelId Index6; //!< Touch index 6
+            static const InputChannelId Index7; //!< Touch index 7
+            static const InputChannelId Index8; //!< Touch index 8
+            static const InputChannelId Index9; //!< Touch index 9
+
+            //!< All touch input channel ids
+            static const AZStd::array<InputChannelId, 10> All;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Allocator
+        AZ_CLASS_ALLOCATOR(InputDeviceTouch, AZ::SystemAllocator, 0);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Type Info
+        AZ_RTTI(InputDeviceTouch, "{796E4C57-4D6C-4DAA-8367-9026509E86EF}", InputDevice);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Reflection
+        static void Reflect(AZ::ReflectContext* context);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Constructor
+        InputDeviceTouch();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Disable copying
+        AZ_DISABLE_COPY_MOVE(InputDeviceTouch);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Destructor
+        ~InputDeviceTouch() override;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AzFramework::InputDevice::GetAssignedLocalUserId
+        LocalUserId GetAssignedLocalUserId() const override;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AzFramework::InputDevice::GetInputChannelsById
+        const InputChannelByIdMap& GetInputChannelsById() const override;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AzFramework::InputDevice::IsSupported
+        bool IsSupported() const override;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AzFramework::InputDevice::IsConnected
+        bool IsConnected() const override;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AzFramework::InputDeviceRequests::TickInputDevice
+        void TickInputDevice() override;
+
+    protected:
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for verbose container class
+        using TouchChannelByIdMap = AZStd::unordered_map<InputChannelId, InputChannelAnalogWithPosition2D*>;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Variables
+        InputChannelByIdMap m_allChannelsById;   //!< All touch channels by id
+        TouchChannelByIdMap m_touchChannelsById; //!< All touch channels by id
+
+    public:
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Base class for platform specific implementations of touch input devices
+        class Implementation
+        {
+        public:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Allocator
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Default factory create function
+            //! \param[in] inputDevice Reference to the input device being implemented
+            static Implementation* Create(InputDeviceTouch& inputDevice);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Constructor
+            //! \param[in] inputDevice Reference to the input device being implemented
+            Implementation(InputDeviceTouch& inputDevice);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Disable copying
+            AZ_DISABLE_COPY_MOVE(Implementation);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Destructor
+            virtual ~Implementation();
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Access to the input device's currently assigned local user id
+            //! \return Id of the local user currently assigned to the input device
+            virtual LocalUserId GetAssignedLocalUserId() const;
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Query the connected state of the input device
+            //! \return True if the input device is currently connected, false otherwise
+            virtual bool IsConnected() const = 0;
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Tick/update the input device to broadcast all input events since the last frame
+            virtual void TickInputDevice() = 0;
+
+        protected:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Platform agnostic representation of a raw touch event
+            struct RawTouchEvent : public InputChannelAnalogWithPosition2D::RawInputEvent
+            {
+                ////////////////////////////////////////////////////////////////////////////////////
+                //! State of the raw touch event
+                enum class State
+                {
+                    Began,
+                    Moved,
+                    Ended
+                };
+
+                ////////////////////////////////////////////////////////////////////////////////////
+                //! Constructor
+                explicit RawTouchEvent(
+                    float normalizedX,
+                    float normalizedY,
+                    float pressure,
+                    AZ::u32 index,
+                    State state);
+
+                ////////////////////////////////////////////////////////////////////////////////////
+                // Default copying
+                AZ_DEFAULT_COPY(RawTouchEvent);
+
+                ////////////////////////////////////////////////////////////////////////////////////
+                //! Default destructor
+                ~RawTouchEvent() override = default;
+
+                ////////////////////////////////////////////////////////////////////////////////////
+                // Variables
+                AZ::u32 m_index; //!< The index of the raw touch event
+                State m_state;   //!< The state of the raw touch event
+            };
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Queue raw touch events to be processed in the next call to ProcessRawEventQueues.
+            //! This function is not thread safe and so should only be called from the main thread.
+            //! \param[in] rawTouchEvent The raw touch event
+            void QueueRawTouchEvent(const RawTouchEvent& rawTouchEvent);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Process raw input events that have been queued since the last call to this function.
+            //! This function is not thread safe, and so should only be called from the main thread.
+            void ProcessRawEventQueues();
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Reset the state of all this input device's associated input channels
+            void ResetInputChannelStates();
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Alias for verbose container class
+            using RawTouchEventQueueByIdMap = AZStd::unordered_map<InputChannelId, AZStd::vector<RawTouchEvent>>;
+
+        private:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Variables
+            InputDeviceTouch&         m_inputDevice;             //!< Reference to the input device
+            RawTouchEventQueueByIdMap m_rawTouchEventQueuesById; //!< Raw touch event queues by id
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Set the implementation of this input device
+        //! \param[in] implementation The new implementation
+        void SetImplementation(AZStd::unique_ptr<Implementation> impl) { m_pimpl = AZStd::move(impl); }
+
+    private:
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Private pointer to the platform specific implementation
+        AZStd::unique_ptr<Implementation> m_pimpl;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Helper class that handles requests to create a custom implementation for this device
+        InputDeviceImplementationRequestHandler<InputDeviceTouch> m_implementationRequestHandler;
+    };
+} // namespace AzFramework

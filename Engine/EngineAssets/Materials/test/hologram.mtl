@@ -1,0 +1,6 @@
+<Material MtlFlags="526336" Shader="Hologram" GenMask="0" StringGenMask="" SurfaceType="mat_ice" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="0.15000001" AlphaTest="0.1" CloakAmount="0" LayerAct="1">
+ <Textures>
+  <Texture Map="Diffuse" File="engineassets/textures/color.dds"/>
+ </Textures>
+ <PublicParams InterferenceContrast="1" InterferenceSpeedScale="1" EdgeColor="1,1,1" InterferenceSizeScale="0.89999998" FresnelBias="1"/>
+</Material>

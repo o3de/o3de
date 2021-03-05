@@ -1,0 +1,62 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DisplayMapperTemplate",
+            "PassClass": "DisplayMapperPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DisplayMapperOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DisplayMapperOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "Input",
+                    "Output" : "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DisplayMapper.shader"
+                }
+            }
+        }
+    }
+}

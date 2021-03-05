@@ -1,0 +1,127 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Glyph data to be used by the GlyphRender class
+
+#define X                                       1
+#define _                                       0
+#define PACK_GLYPH_INTO_UINT(a, b, c, d)        ((d << 3) | (c << 2) | (b << 1) | a)
+#define GLYPH_HEIGHT                            6            
+#define GLYPH_CHAR_WIDTH                        4
+
+static const uint DotGlyph[GLYPH_HEIGHT] = 
+{
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+};
+
+static const uint MinusGlyph[GLYPH_HEIGHT] = 
+{
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _), 
+    PACK_GLYPH_INTO_UINT(_, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, _),
+};
+
+static const uint NumberGlyphs[GLYPH_HEIGHT * 10] =
+{
+    // Glpyh for the number 0
+    PACK_GLYPH_INTO_UINT(_, X, X, _),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, X, X, _),
+
+    // Glpyh for the number 1
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, X, _),
+
+    // Glpyh for the number 2
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, _),
+    PACK_GLYPH_INTO_UINT(X, _, _, _), 
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+
+    // Glpyh for the number 3
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+
+    // Glpyh for the number 4
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+
+    // Glpyh for the number 5
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+    PACK_GLYPH_INTO_UINT(X, _, _, _),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+
+    // Glpyh for the number 6
+    PACK_GLYPH_INTO_UINT(_, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, _),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+
+    // Glpyh for the number 7
+    PACK_GLYPH_INTO_UINT(_, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+
+    // Glpyh for the number 8
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+
+    // Glpyh for the number 9
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(X, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(_, _, _, X),
+    PACK_GLYPH_INTO_UINT(X, X, X, _),
+};
+
+
+#undef X
+#undef _
+#undef PACK_GLYPH_INTO_UINT

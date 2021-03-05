@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/layouts/">
+        <file alias="layouts-0.svg">res/layouts/layouts-0.svg</file>
+        <file alias="layouts-1.svg">res/layouts/layouts-1.svg</file>
+        <file alias="layouts-2.svg">res/layouts/layouts-2.svg</file>
+        <file alias="layouts-3.svg">res/layouts/layouts-3.svg</file>
+        <file alias="layouts-4.svg">res/layouts/layouts-4.svg</file>
+        <file alias="layouts-5.svg">res/layouts/layouts-5.svg</file>
+        <file alias="layouts-6.svg">res/layouts/layouts-6.svg</file>
+        <file alias="layouts-7.svg">res/layouts/layouts-7.svg</file>
+        <file alias="layouts-8.svg">res/layouts/layouts-8.svg</file>
+    </qresource>
+</RCC>

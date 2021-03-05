@@ -1,0 +1,14 @@
+<Enumerations Property="Enumerations">
+	<Enumeration name="fName">
+  	<Param value="Sample Value 1" />
+  	<Param value="Sample Value 2" />
+  	<Param value="Sample Value 3" />
+	</Enumeration>
+
+	<Enumeration name="Sample Property Name">
+  	<Param value="Sample Value 1" />
+  	<Param value="Sample Value 2" />
+  	<Param value="Sample Value 2" />
+	</Enumeration>	
+
+</Enumerations>

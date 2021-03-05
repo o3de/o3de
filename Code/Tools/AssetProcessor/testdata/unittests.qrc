@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="testdata">
+    <file>config_broken_badplatform/AssetProcessorPlatformConfig.ini</file>
+    <file>config_broken_noscans/AssetProcessorPlatformConfig.ini</file>
+    <file>config_broken_recognizers/AssetProcessorPlatformConfig.ini</file>
+    <file>config_broken_noplatform/AssetProcessorPlatformConfig.ini</file>
+    <file>config_regular/AssetProcessorPlatformConfig.ini</file>
+    <file>config_regular_platform_scanfolder/AssetProcessorPlatformConfig.ini</file>
+    <file>EmptyDummyProject/AssetProcessorGamePlatformConfig.ini</file>
+    <file>DummyProject/AssetProcessorGamePlatformConfig.ini</file>
+  </qresource>
+</RCC>

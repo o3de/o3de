@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "93ccb44a96b142f7942a3fb6b9ca36e1",
+    "Name": "LocalUser",
+    "DisplayName": "LocalUser",
+    "Version": "0.1.0",
+    "Summary": "Provides functionality for mapping local user ids to local player slots and managing local user profiles.",
+    "Tags": ["User", "Local User", "Local User Profile", "Primary User", "Local Multiplayer", "Local Co-op", "Split Screen"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

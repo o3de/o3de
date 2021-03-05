@@ -1,0 +1,38 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Uuid": "5a149b6b3c964064bd4970f0e92f72e2",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "Texture Atlas"
+        }
+    ],
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends":  "GameModule"
+        }
+    ],
+    "GemFormatVersion": 4,
+    "Uuid": "0fefab3f13364722b2eab3b96ce2bf20",
+    "Name": "LyShine",
+    "DisplayName": "LyShine",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "LyShine is the in-game UI system for Lumberyard",
+    "Tags": ["UI","Required"],
+    "IconPath": "preview.png",
+    "IsRequired": true
+}

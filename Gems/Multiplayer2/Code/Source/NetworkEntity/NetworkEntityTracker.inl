@@ -1,0 +1,71 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+namespace Multiplayer
+{
+    inline NetworkEntityTracker::iterator NetworkEntityTracker::begin()
+    {
+        return m_entityMap.begin();
+    }
+
+    inline NetworkEntityTracker::const_iterator NetworkEntityTracker::begin() const
+    {
+        return m_entityMap.begin();
+    }
+
+    inline NetworkEntityTracker::iterator NetworkEntityTracker::end()
+    {
+        return m_entityMap.end();
+    }
+
+    inline NetworkEntityTracker::const_iterator NetworkEntityTracker::end() const
+    {
+        return m_entityMap.end();
+    }
+
+    inline NetworkEntityTracker::iterator NetworkEntityTracker::find(NetEntityId netEntityId)
+    {
+        return m_entityMap.find(netEntityId);
+    }
+
+    inline NetworkEntityTracker::const_iterator NetworkEntityTracker::find(NetEntityId netEntityId) const
+    {
+        return m_entityMap.find(netEntityId);
+    }
+
+    inline AZStd::size_t NetworkEntityTracker::size() const
+    {
+        return m_entityMap.size();
+    }
+
+    inline void NetworkEntityTracker::clear()
+    {
+        m_entityMap.clear();
+    }
+
+    inline uint32_t NetworkEntityTracker::GetChangeDirty(const AZ::Entity* entity) const
+    {
+        return (entity != nullptr) ? GetDeleteChangeDirty() : GetAddChangeDirty();
+    }
+
+    inline uint32_t NetworkEntityTracker::GetDeleteChangeDirty() const
+    {
+        return m_deleteChangeDirty;
+    }
+
+    inline uint32_t NetworkEntityTracker::GetAddChangeDirty() const
+    {
+        return m_addChangeDirty;
+    }
+}

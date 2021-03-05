@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / System / Unlocked</title>
+    <g id="Icons-/-System-/-Unlocked" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,2 C14.7614237,2 17,4.23857625 17,7 L16.999,11 L20,11 L20,22 L4,22 L4,11 L14.999,11 L15,7 C15,5.34314575 13.6568542,4 12,4 C11.3744378,4 10.4706871,4.17592409 9.72670164,4.86313025 C9.52882667,5.04590385 9.32735259,5.43064531 9.1222794,6.01735463 L7.02553943,6.01735463 C7.10063842,5.67498213 7.16481201,5.43351589 7.21806022,5.2929559 C7.34121748,4.96785608 7.66430989,4.390511 7.76702757,4.24874942 C9.16936152,2.31337571 10.6259637,2 12,2 Z M18,13 L6,13 L6,20 L18,20 L18,13 Z M13,15 L13,18 L11,18 L11,15 L13,15 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

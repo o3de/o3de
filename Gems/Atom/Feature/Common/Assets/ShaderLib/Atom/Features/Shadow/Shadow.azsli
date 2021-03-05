@@ -1,0 +1,87 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+static const float EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
+
+struct FilterParameter
+{
+    uint m_isEnabled;
+    uint2 m_shadowmapOriginInSlice;
+    uint m_shadowmapSize;
+    uint m_parameterOffset;
+    uint m_parameterCount;
+    float m_lightDistanceOfCameraViewFrustum;
+    float m_n_f_n; // n / (f - n)
+    float m_n_f;   // n - f
+    float m_f;     // f
+                   // where n: nearDepth, f: farDepth.
+    float2 m_padding; // explicit padding
+};
+
+class Shadow
+{
+    // Calculate depth adjusting diff for jittered samples.
+    //  v_J : jitter vector (orthogonal to light direction),
+    //  v_N : normal vector of the surface (length = 1),
+    //  v_L : light direction vector (length = 1),
+    //  v_M : jitter unit vector on the plane which v_N and v_L make, and
+    //        orthogonal to v_L (length = 1 and defined below), and
+    //  d   : adjusting diff of depth (defined below)
+    // 
+    //  Say v_M = -s v_L + t v_N, where s and t are scalar values and t>=0.
+    //  Then we can define t = 1/length((- v_L . v_N) v_L + v_N) and
+    //                     v_M = t ((- v_L . v_N) v_L + v_N).
+    //  Letting theta be the angle between v_N and v_M (0<theta<=pi/2), 
+    //  we can define d by (v_J . v_M) / tan(theta).
+    //
+    //          v_L \_        ^ v_N           +  v_M
+    //                \_      |          ___/
+    //                  \_    | theta___/ 
+    //                    \_  |  ___/ \_
+    //                      + | /       \ d
+    //    --------------------------------------------- surface
+    //  For the case theta=0, the light direction is orthogonal to
+    //  the normal vector, so no light is expected.
+    //
+    // This function gives v_M (jitter unit vector) in xyz channel and
+    // 1/tan(theta) (depth diff base) in w channel.
+    // The jitter vector (v_J) is calculated for each jittered point
+    // in IsShadowedWithJitter(), so this function gives the other
+    // 2 parameters, v_M and 1/tan(theta).
+    static float4 GetJitterUnitVectorDepthDiffBase(
+        float3 normalVector,
+        float3 lightVector);
+};
+
+float4 Shadow::GetJitterUnitVectorDepthDiffBase(
+    float3 normalVector,
+    float3 lightDirection)
+{
+    const float3 v_M0 = lightDirection * dot(-lightDirection, normalVector)
+        + normalVector;
+    const float v_M0_length = length(v_M0);
+    if (v_M0_length == 0.)
+    {
+        return float4(0., 0., 0., 0.);
+    }
+    const float3 v_M = v_M0 / v_M0_length;
+    const float cosTheta = dot(normalVector, v_M);
+    const float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    if (sinTheta == 0.)
+    {
+        return float4(0., 0., 0., 0.);
+    }
+    const float depthDiffBase = cosTheta / sinTheta;
+    return float4(v_M, depthDiffBase);
+}

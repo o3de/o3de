@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Deploy</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Deploy" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M9,11 L15,16 L9,21 L9,11 Z M21,3 L21,17 L17,17 L17,15 L19,15 L19,5 L5,5 L5,15 L7,15 L7,17 L3,17 L3,3 L21,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

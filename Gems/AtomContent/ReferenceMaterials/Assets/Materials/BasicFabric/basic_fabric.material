@@ -1,0 +1,25 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/BasicFabric/basic_fabric_diffuse.jpg"
+        },
+        "metallic": {
+            "factor": 0.010100999847054482
+        },
+        "normal": {
+            "factor": 1.5353535413742066,
+            "textureMap": "Materials/BasicFabric/basic_fabric_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.9595959782600403
+        },
+        "uv": {
+            "tileU": 1.5,
+            "tileV": 1.5
+        }
+    }
+}

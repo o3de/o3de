@@ -1,0 +1,18 @@
+{
+    "Shader" : "DepthExponentiation.shader",
+    "Variants" : [
+      {
+        "StableId": 1,
+        "Options" : {
+           "o_shadowmapLightType": "ShadowmapLightType::Directional"
+        }
+      },
+      {
+        "StableId": 2,
+        "Options" : {
+           "o_shadowmapLightType": "ShadowmapLightType::Spot"
+        }
+      }
+    ]
+
+}

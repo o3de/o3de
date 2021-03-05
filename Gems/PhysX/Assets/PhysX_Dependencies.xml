@@ -1,0 +1,5 @@
+<EngineDependencies versionnumber="1.0.0">
+    <Dependency path="project.physicsconfiguration" optional="true" />
+    <Dependency path="project.physxconfiguration" optional="true" />
+    <Dependency path="default.physxconfiguration" optional="true" />
+</EngineDependencies>

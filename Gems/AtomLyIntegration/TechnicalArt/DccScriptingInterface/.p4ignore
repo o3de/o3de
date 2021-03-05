@@ -1,0 +1,21 @@
+*.log
+*.mayaSwatches
+*.ma.swatches
+*.dds
+*.bak
+!Solutions
+BinTemp
+*.pyc
+*.wpu
+!*.wpr
+!*.lnk
+Cache
+__*__/*
+# Ignore all files in __DEV__ directories
+__DEV__/*
+__WIP__/*
+!stub
+!.p4ignore
+!.gitignore
+.secrets.*
+settings.local.json

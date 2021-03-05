@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>TrackViewFindDlg</class>
+  <widget class="QDialog" name="TrackViewFindDlg">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>312</width>
+        <height>410</height>
+      </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+        <widget class="QLabel" name="STATIC">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>11</y>
+              <width>57</width>
+              <height>13</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Enter filter:</string>
+          </property>
+          <property name="alignment">
+            <set>Qt::AlignTop|Qt::AlignLeft</set>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QLineEdit" name="FILTER">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>28</y>
+              <width>291</width>
+              <height>19</height>
+            </rect>
+          </property>
+          <property name="alignment">
+            <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QListWidget" name="LIST">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>57</y>
+              <width>291</width>
+              <height>305</height>
+            </rect>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+            <number>200</number>
+          </property>
+          <property name="rightMargin">
+            <number>5</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="CANCEL">
+              <property name="geometry">
+                <rect>
+                  <x>139</x>
+                  <y>376</y>
+                  <width>75</width>
+                  <height>23</height>
+                </rect>
+              </property>
+              <property name="text">
+                <string>Close</string>
+              </property>
+            </widget>
+         </item>
+        <item>
+          <widget class="QPushButton" name="OK">
+            <property name="geometry">
+              <rect>
+                <x>226</x>
+                <y>376</y>
+                <width>75</width>
+                <height>23</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>Find</string>
+            </property>
+          </widget>
+         </item>
+      </layout>
+    </item>
+  </layout>
+  </widget>
+</ui>

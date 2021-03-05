@@ -1,0 +1,82 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionProbeRenderOuterPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "DepthStencilTextureInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "SpecularF0Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "ClearCoatNormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "ReflectionBlendWeightInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthStencilInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Stencil"
+                        ]
+                    }
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                }
+            ]
+        }
+    }
+}

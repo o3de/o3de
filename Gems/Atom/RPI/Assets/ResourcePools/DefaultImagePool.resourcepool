@@ -1,0 +1,11 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ResourcePoolSourceData",
+    "ClassData": {
+        "PoolName": "DefaultImagePool",
+        "PoolType": "ImagePool",
+        "BudgetInBytes": 33554432,
+        "ImagePoolBindFlags": "Color"
+    }
+}

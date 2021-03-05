@@ -1,0 +1,17 @@
+{
+    "Adreno 530" :[
+        "default"
+    ],
+    "Mali-T880 MP12" :[
+        "default"
+    ],
+    "PowerVR Series7XT Plus" :[
+        "default"
+    ],
+    "PowerVR Series 7 (12-core graphics)" :[
+        "default"
+    ],
+    "Kepler DX1" :[
+        "default"
+    ]
+}

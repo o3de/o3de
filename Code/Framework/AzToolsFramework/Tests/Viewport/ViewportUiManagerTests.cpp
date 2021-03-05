@@ -1,0 +1,191 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#include <AzCore/Math/Transform.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzTest/AzTest.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+
+namespace UnitTest
+{
+    using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
+    using ViewportUiElementId = AzToolsFramework::ViewportUi::ViewportUiElementId;
+    using Cluster = AzToolsFramework::ViewportUi::Internal::Cluster;
+    using ButtonId = AzToolsFramework::ViewportUi::ButtonId;
+
+    // child class of ViewportUiManager which exposes the protected cluster and viewport display
+    class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
+    {
+    public:
+        ViewportUiManagerTestable() = default;
+        ~ViewportUiManagerTestable() = default;
+
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<Cluster>>& GetClusterMap()
+        {
+            return m_clusters;
+        }
+
+        ViewportUiDisplay* GetViewportUiDisplay()
+        {
+            return m_viewportUi.get();
+        }
+    };
+
+    class ViewportManagerWrapper
+    {
+    public:
+        void Create()
+        {
+            m_viewportManager = AZStd::make_unique<ViewportUiManagerTestable>();
+            m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
+            m_mockRenderOverlay = AZStd::make_unique<QWidget>();
+            m_parentWidget = AZStd::make_unique<QWidget>();
+            m_viewportManager->InitializeViewportUi(m_parentWidget.get(), m_mockRenderOverlay.get());
+        }
+
+        void Destroy()
+        {
+            m_viewportManager->DisconnectViewportUiBus();
+            m_viewportManager.reset();
+            m_mockRenderOverlay.reset();
+            m_parentWidget.reset();
+        }
+
+        ViewportUiManagerTestable* GetViewportManager()
+        {
+            return m_viewportManager.get();
+        }
+
+        QWidget* GetMockRenderOverlay()
+        {
+            return m_mockRenderOverlay.get();
+        }
+
+    private:
+        AZStd::unique_ptr<ViewportUiManagerTestable> m_viewportManager;
+        AZStd::unique_ptr<QWidget> m_parentWidget;
+        AZStd::unique_ptr<QWidget> m_mockRenderOverlay;
+    };
+
+    // sets up a parent widget and render overlay to attach the Viewport UI to
+    // as well as a cluster with one button
+    class ViewportUiManagerTestFixture : public ::testing::Test
+    {
+    public:
+        ViewportUiManagerTestFixture() = default;
+
+        ViewportManagerWrapper m_viewportManagerWrapper;
+
+        void SetUp()
+        {
+            m_viewportManagerWrapper.Create();
+        }
+
+        void TearDown()
+        {
+            m_viewportManagerWrapper.Destroy();
+        }
+    };
+
+    TEST_F(ViewportUiManagerTestFixture, CreateClusterAddsNewClusterAndReturnsId)
+    {
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+
+        EXPECT_TRUE(clusterEntry != m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().end());
+        EXPECT_TRUE(clusterEntry->second.get() != nullptr);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, CreateClusterButtonAddsNewButtonAndReturnsId)
+    {
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+
+        EXPECT_TRUE(clusterEntry->second->GetButton(buttonId) != nullptr);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, SetClusterActiveButtonSetsButtonStateToActive)
+    {
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+        auto button = clusterEntry->second->GetButton(buttonId);
+
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterActiveButton(clusterId, buttonId);
+
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, RegisterClusterEventHandlerConnectsHandlerToClusterEvent)
+    {
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        // create a handler which will be triggered by the cluster
+        bool handlerTriggered = false;
+        auto testButtonId = ButtonId(buttonId);
+        AZ::Event<ButtonId>::Handler handler(
+            [&handlerTriggered, testButtonId](ButtonId buttonId)
+            {
+                if (buttonId == testButtonId)
+                {
+                    handlerTriggered = true;
+                }
+            });
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+        auto button = clusterEntry->second->GetButton(buttonId);
+
+        // trigger the cluster
+        m_viewportManagerWrapper.GetViewportManager()->RegisterClusterEventHandler(clusterId, handler);
+        clusterEntry->second->PressButton(buttonId);
+
+        EXPECT_TRUE(handlerTriggered);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, RemoveClusterRemovesClusterFromViewportUi)
+    {
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        m_viewportManagerWrapper.GetViewportManager()->RemoveCluster(clusterId);
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+
+        EXPECT_TRUE(clusterEntry == m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().end());
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, SetClusterVisibleChangesClusterVisibility)
+    {
+        m_viewportManagerWrapper.GetMockRenderOverlay()->setVisible(true);
+
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+        m_viewportManagerWrapper.GetViewportManager()->Update();
+
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterVisible(clusterId, false);
+        auto cluster = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId)->second;
+
+        bool visible =
+            m_viewportManagerWrapper.GetViewportManager()->GetViewportUiDisplay()->IsViewportUiElementVisible(cluster->GetViewportUiElementId());
+        EXPECT_FALSE(visible);
+
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterVisible(clusterId, true);
+        visible =
+            m_viewportManagerWrapper.GetViewportManager()->GetViewportUiDisplay()->IsViewportUiElementVisible(cluster->GetViewportUiElementId());
+        EXPECT_TRUE(visible);
+    }
+} // namespace UnitTest

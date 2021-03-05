@@ -1,0 +1,15 @@
+<fontshader>
+	<font path="NotoSansKR-Regular.otf" w="512" h="256"/>
+	<effect name="default">
+		<pass>
+		</pass>
+	</effect>
+	<effect name="drop_shadow">
+		<pass>
+		</pass>
+		<pass>
+			<color r="0" g="0" b="0" a="1"/>
+			<pos x="1" y="1"/>
+		</pass>
+	</effect>
+</fontshader>

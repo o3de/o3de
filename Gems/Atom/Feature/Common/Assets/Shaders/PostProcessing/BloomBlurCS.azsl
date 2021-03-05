@@ -1,0 +1,71 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>     m_inputTexture;
+    RWTexture2D<float4>   m_outputTexture;
+
+    Buffer<float>  m_offsets;
+    Buffer<float>  m_weights;
+    
+    uint   m_kernelRadius;
+    uint   m_direction;
+    uint   m_mipLevel;
+
+    float2 m_sourceImageSize;
+
+    // 1.0 / m_sourceImageSize
+    float2 m_sourceImageTexelSize;
+
+    Sampler LinearSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dID : SV_DispatchThreadID)
+{
+    if(dID.x >= PassSrg::m_sourceImageSize.x || dID.y >= PassSrg::m_sourceImageSize.y)
+    {
+        return;
+    }
+
+    float2 uv = (dID.xy + 0.5) * PassSrg::m_sourceImageTexelSize;
+
+    // Kernel has been normalized beforehand
+    float3 sum = (PassSrg::m_kernelRadius > 0 ? PassSrg::m_weights[0] : 1.0) * 
+                 PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv, PassSrg::m_mipLevel);
+
+    float2 t = (PassSrg::m_direction ? float2(1.0, 0.0) : float2(0.0, 1.0)) * PassSrg::m_sourceImageTexelSize;
+    for(int i = 1; i < PassSrg::m_kernelRadius; ++i)
+    {
+        float2 offset = PassSrg::m_offsets[i] * t;
+
+        // One side with positive offset
+        sum += PassSrg::m_weights[i] * 
+            PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv + offset, PassSrg::m_mipLevel).rgb;       
+
+        // The other side with negative offset
+        sum += PassSrg::m_weights[i] * 
+            PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv - offset, PassSrg::m_mipLevel).rgb;    
+    }
+
+    PassSrg::m_outputTexture[dID.xy] = float4(sum, 1.0); 
+}

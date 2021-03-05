@@ -1,0 +1,110 @@
+<RCC>
+    <qresource prefix="/nodes">
+        <file>tvnodes-00.png</file>
+        <file>tvnodes-01.png</file>
+        <file>tvnodes-02.png</file>
+        <file>tvnodes-03.png</file>
+        <file>tvnodes-04.png</file>
+        <file>tvnodes-05.png</file>
+        <file>tvnodes-06.png</file>
+        <file>tvnodes-07.png</file>
+        <file>tvnodes-08.png</file>
+        <file>tvnodes-09.png</file>
+        <file>tvnodes-10.png</file>
+        <file>tvnodes-11.png</file>
+        <file>tvnodes-12.png</file>
+        <file>tvnodes-13.png</file>
+        <file>tvnodes-14.png</file>
+        <file>tvnodes-15.png</file>
+        <file>tvnodes-16.png</file>
+        <file>tvnodes-17.png</file>
+        <file>tvnodes-18.png</file>
+        <file>tvnodes-19.png</file>
+        <file>tvnodes-20.png</file>
+        <file>tvnodes-21.png</file>
+        <file>tvnodes-22.png</file>
+        <file>tvnodes-23.png</file>
+        <file>tvnodes-24.png</file>
+        <file>tvnodes-25.png</file>
+        <file>tvnodes-26.png</file>
+        <file>tvnodes-27.png</file>
+        <file>tvnodes-28.png</file>
+        <file>tvnodes-29.png</file>
+    </qresource>
+    <qresource prefix="/Trackview/main">
+        <file>tvmain-00.png</file>
+        <file>tvmain-01.png</file>
+        <file>tvmain-02.png</file>
+        <file>tvmain-03.png</file>
+        <file>tvmain-04.png</file>
+        <file>tvmain-05.png</file>
+        <file>tvmain-06.png</file>
+        <file>tvmain-07.png</file>
+        <file>tvmain-08.png</file>
+        <file>tvmain-09.png</file>
+    </qresource>
+    <qresource prefix="/Trackview/view">
+        <file>tvview-00.png</file>
+        <file>tvview-01.png</file>
+        <file>tvview-02.png</file>
+    </qresource>
+    <qresource prefix="/Trackview/play">
+        <file>tvplay-00.png</file>
+        <file>tvplay-01.png</file>
+        <file>tvplay-02.png</file>
+        <file>tvplay-03.png</file>
+        <file>tvplay-04.png</file>
+        <file>tvplay-05.png</file>
+        <file>tvplay-06.png</file>
+        <file>tvplay-07.png</file>
+        <file>tvplay-08.png</file>
+        <file>tvplay-09.png</file>
+        <file>tvplay-10.png</file>
+    </qresource>
+    <qresource prefix="/Trackview/keys">
+        <file>tvkeys-00.png</file>
+        <file>tvkeys-01.png</file>
+        <file>tvkeys-02.png</file>
+        <file>tvkeys-03.png</file>
+        <file>tvkeys-04.png</file>
+        <file>tvkeys-05.png</file>
+        <file>tvkeys-06.png</file>
+        <file>tvkeys-07.png</file>
+        <file>tvkeys-08.png</file>
+        <file>tvkeys-09.png</file>
+        <file>tvkeys-10.png</file>
+        <file>tvkeys-11.png</file>
+        <file>tvkeys-12.png</file>
+    </qresource>
+    <qresource prefix="/Trackview/marker">
+        <file>bmp00016_00.png</file>
+        <file>bmp00016_01.png</file>
+    </qresource>
+    <qresource prefix="/Trackview">
+        <file>trackview_keys_00.png</file>
+        <file>trackview_keys_01.png</file>
+        <file>trackview_keys_02.png</file>
+        <file>trackview_keys_03.png</file>
+        <file>clapperboard_cancel.png</file>
+        <file>clapperboard_ready.png</file>
+    </qresource>
+    <qresource prefix="/TrackViewCurveEditor">
+        <file>spline_edit_bar_00.png</file>
+        <file>spline_edit_bar_01.png</file>
+        <file>spline_edit_bar_02.png</file>
+        <file>spline_edit_bar_03.png</file>
+        <file>spline_edit_bar_04.png</file>
+        <file>spline_edit_bar_05.png</file>
+        <file>spline_edit_bar_06.png</file>
+        <file>spline_edit_bar_07.png</file>
+        <file>spline_edit_bar_08.png</file>
+        <file>spline_edit_bar_09.png</file>
+        <file>spline_edit_bar_10.png</file>
+        <file>spline_edit_bar_11.png</file>
+        <file>spline_edit_bar_12.png</file>
+        <file>spline_edit_bar_13.png</file>
+        <file>spline_edit_bar_14.png</file>
+        <file>spline_edit_bar_15.png</file>
+       <file>spline_edit_bar_16.png</file>
+     </qresource>
+</RCC>

@@ -1,0 +1,51 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+            "Name": "LUT_RG16",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "R16G16"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+                "Name": "LUT_RG16",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R16G16F"
+            },
+            "ios": {
+                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+                "Name": "LUT_RG16",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R16G16"
+            },
+            "osx_gl": {
+                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+                "Name": "LUT_RG16",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R16G16"
+            },
+            "provo": {
+                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+                "Name": "LUT_RG16",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R16G16"
+            },
+            "xenia": {
+                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
+                "Name": "LUT_RG16",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R16G16"
+            }
+        }
+    }
+}

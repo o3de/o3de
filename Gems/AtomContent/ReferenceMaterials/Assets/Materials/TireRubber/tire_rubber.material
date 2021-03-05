@@ -1,0 +1,19 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.0318913571536541,
+                0.0318913571536541,
+                0.0318913571536541,
+                1.0
+            ]
+        },
+        "roughness": {
+            "factor": 0.5454545021057129
+        }
+    }
+}

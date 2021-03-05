@@ -1,0 +1,17 @@
+{ 
+    "Shader" : "RenderTexture.shader",
+    "Variants" : [ 
+        {
+            "StableId": 1,
+            "Options": {
+                "o_isNormal": "false"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_isNormal": "true"
+            }
+        }
+    ]    
+}

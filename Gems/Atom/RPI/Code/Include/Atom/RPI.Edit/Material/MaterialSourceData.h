@@ -1,0 +1,84 @@
+/*
+* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution(the "License").All use of this software is governed by the License,
+*or, if provided, by the license below or the license accompanying this file.Do not
+* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
+*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/JSON/document.h>
+
+#include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+
+namespace AZ
+{
+    class ReflectContext;
+
+    namespace RPI
+    {
+        //! A reserved name used in material inspectors.
+        //! In the source data, properties and UV names are loaded separately.
+        //! However, treating UV names as a special property group can greatly simplify the editor code.
+        //! See MaterialInspector::AddUvNamesGroup() for more details.
+        static constexpr const char UvGroupName[] = "UvNames";
+
+        class MaterialAsset;
+
+        //! This is a simple data structure for serializing in/out material source files.
+        class MaterialSourceData final
+        {
+        public:
+            AZ_TYPE_INFO(AZ::RPI::MaterialSourceData, "{B8881D92-DF9F-4552-9F22-FF4421C45D9A}");
+
+            static constexpr const char Extension[] = "material";
+
+            static void Reflect(ReflectContext* context);
+
+            MaterialSourceData() = default;
+            
+            AZStd::string m_description;
+            
+            AZStd::string m_materialType; //!< The material type that defines the interface and behavior of the material
+            
+            AZStd::string m_parentMaterial; //!< The immediate parent of this material
+
+            uint32_t m_propertyLayoutVersion = 0; //!< The version of the property layout, defined in the material type, which was used to configure this material
+
+            struct Property
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialSourceData::Property, "{8D613464-3750-4122-AFFE-9238010D5AFC}");
+
+                MaterialPropertyValue m_value;
+            };
+
+            using PropertyMap = AZStd::map<AZStd::string, Property>;
+            using PropertyGroupMap = AZStd::map<AZStd::string, PropertyMap>;
+
+            PropertyGroupMap m_properties;
+
+            //! Creates a MaterialAsset from the MaterialSourceData content.
+            //! @param assetId ID for the MaterialAsset
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
+            //! @param elevateWarnings Indicates whether to treat warnings as errors
+            //! @param materialTypeSourceData The function sometimes needs metadata from the .materialtype file.
+            //!        It will either load the .materialtype file from disk, or use this MaterialTypeSourceData if it's provided.
+            Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
+                Data::AssetId assetId,
+                AZStd::string_view materialSourceFilePath = "",
+                bool elevateWarnings = true
+            ) const;
+        };
+    } // namespace RPI
+} // namespace AZ

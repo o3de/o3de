@@ -1,0 +1,78 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+{%  macro ElementType(element) -%}
+{%      if ('Container' not in element.attrib) or (element.attrib['Container'] == 'None') %}
+{{ element.attrib['Type'] }}{% elif element.attrib['Container'] == 'Array' %}
+AZStd::array<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% elif element.attrib['Container'] == 'Vector' %}
+AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% endif %}
+{%- endmacro %}
+{% macro DefinePacketMethods(packetNode, name) %}
+{%  if (packetNode.getchildren()) | len > 0 %}
+    {{ name }}::{{ name }}
+    (
+{%      for Member in packetNode.iter('Member') %}
+        {{ ElementType(Member) }} {{ Member.attrib['Name'] }}{% if not loop.last %},{% endif %}
+
+{%          endfor %}
+    )
+{%          for  Member in packetNode.iter('Member') %}
+        {% if loop.first %}: {% else %}, {% endif %}m_{{ Member.attrib['Name'] }}({{ Member.attrib['Name'] }})
+{%          endfor %}
+    {
+        ;
+    }
+
+{% endif %}
+    AzNetworking::PacketType {{ name }}::GetPacketType() const
+    {
+        return Type;
+    }
+
+    bool {{ name }}::operator ==([[maybe_unused]] const {{ name }}& rhs) const
+    {
+{% for Member in packetNode.iter('Member') %}
+        if (m_{{ Member.attrib['Name'] }} != rhs.m_{{ Member.attrib['Name'] }})
+        {
+            return false;
+        }
+{% endfor %}
+        return true;
+    }
+
+    AZStd::unique_ptr<AzNetworking::IPacket> {{ name }}::Clone() const
+    {
+        AZStd::unique_ptr<{{ name }}> result = AZStd::make_unique<{{ name }}>();
+{% for Member in packetNode.iter('Member') %}
+        result->m_{{ Member.attrib['Name'] }} = m_{{ Member.attrib['Name'] }};
+{% endfor %}
+        return result;
+    }
+
+    bool {{ name }}::Serialize(AzNetworking::ISerializer& serializer)
+    {
+{% for Member in packetNode.iter('Member') %}
+        serializer.Serialize(m_{{ Member.attrib['Name'] }}, "{{ Member.attrib['Name'] }}");
+{% endfor %}
+        return serializer.IsValid();
+    }
+
+{%  endmacro %}
+{% set includeFile = "{0}.h".format(((outputFile|basename)|splitext)[0]) %}
+#include "{{ includeFile }}"
+
+{%  for xml in dataFiles %}
+namespace {{ xml.attrib['Name'] }}
+{
+{%      for Packet in xml.iter('Packet') %}
+{{          DefinePacketMethods(Packet, Packet.attrib['Name']) -}}
+{%      endfor %}
+}
+{%  endfor %}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Move</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Move" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="Group" transform="translate(2.000000, 2.000000)" fill="#FFFFFF">
+            <path d="M10.976,13.905 L10.976,15.857 L14.1421356,15.8578644 L10,20 L5.85786438,15.8578644 L9.023,15.857 L9.023,13.905 L10.976,13.905 Z M15.8578644,5.85786438 L20,10 L15.8578644,14.1421356 L15.857,10.976 L13.905,10.976 L13.905,9.023 L15.857,9.023 L15.8578644,5.85786438 Z M4.14213562,5.85786438 L4.142,9.023 L6.094,9.023 L6.094,10.976 L4.142,10.976 L4.14213562,14.1421356 L-3.99680289e-15,10 L4.14213562,5.85786438 Z M10,-1.77635684e-15 L14.1421356,4.14213562 L10.976,4.142 L10.976,6.094 L9.023,6.094 L9.023,4.142 L5.85786438,4.14213562 L10,-1.77635684e-15 Z" id="Combined-Shape"></path>
+            <rect id="Rectangle" x="7" y="7" width="6" height="6"></rect>
+        </g>
+    </g>
+</svg>

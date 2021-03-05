@@ -1,0 +1,5 @@
+#Ignore these directories
+SDKs
+
+#ignore these files
+*.user

@@ -1,0 +1,6 @@
+#Ignore these directories
+SDKs
+
+#ColinB (8/26)- I know there are depot files that this will ignore... But these files should not be
+#here, they should all be in 3rdParty... so we will ignore them until I can move them, it should
+#be OK for now because they shouldn't change at all anyway.

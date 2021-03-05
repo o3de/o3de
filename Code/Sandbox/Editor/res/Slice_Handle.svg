@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>icon / outliner / slice / standard copy</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="icon-/-outliner-/-slice-/-standard-copy" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.000000, 1.000000)" fill="#4285F4">
+            <path d="M13.9588728,6.23679213 C13.5786077,2.72981862 10.6080955,0 7,0 C3.13400675,0 0,3.13400675 0,7 C0,10.8659932 3.13400675,14 7,14 L7,6.23679213 C11.293058,6.23679213 13.6126823,6.23679213 13.9588728,6.23679213 Z" id="Combined-Shape"></path>
+            <path d="M11.9999166,9.73463536 C13.6052347,11.1311262 14.1508753,12.7679159 14.257424,13.505867 C13.6491663,13.505867 8.62210474,13.5009029 8.19563964,13.505867 C8.19563964,12.3483124 8.19563964,9.55037517 8.19563964,8.0672756 C8.34990272,8.0672756 10.2176801,8.18424048 11.9999166,9.73463536 Z" id="Triangle-2" transform="translate(11.226532, 10.786571) rotate(90.000000) translate(-11.226532, -10.786571) "></path>
+        </g>
+    </g>
+</svg>

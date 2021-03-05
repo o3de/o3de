@@ -1,0 +1,114 @@
+<RCC>
+    <qresource prefix="/toolbar">
+        <file>AssetBrowserIcon.png</file>
+        <file>breakpoints toggle.png</file>
+        <file>breakpoints.png</file>
+        <file>Find local reverse.png</file>
+        <file>Find local.png</file>
+        <file>find_results.png</file>
+        <file>Replace in open.png</file>
+        <file>arrow-curve.png</file>
+        <file>arrow-curve-180.png</file>
+        <file>arrow-curve-270.png</file>
+        <file>arrow-step-out.png</file>
+        <file>blue-document-tree.png</file>
+        <file>bug--minus.png</file>
+        <file>bug--plus.png</file>
+        <file>context.png</file>
+        <file>control.png</file>
+        <file>control_in_editor.png</file>
+        <file>control_play.png</file>
+        <file>document-new-4.png</file>
+        <file>document-save-3.png</file>
+        <file>document-save-all.png</file>
+        <file>document-save-as-3.png</file>
+        <file>edit-copy-4.png</file>
+        <file>edit-cut-4.png</file>
+        <file>edit-paste-4.png</file>
+        <file>edit-replace-4.png</file>
+        <file>eye.png</file>
+        <file>eye_close.png</file>
+        <file>Find next.png</file>
+        <file>inspect_icon.png</file>
+        <file>list-add-3.png</file>
+        <file>list-add-3-small.png</file>
+        <file>reset.png</file>
+        <file>target_connected.png</file>
+        <file>target_disconnected.png</file>
+        <file>target_none.png</file>
+        <file>watch_window.png</file>
+        <file>maximize_btn.png</file>
+        <file>Close_btn.png</file>
+        <file>file browser.png</file>
+    </qresource>
+    <qresource prefix="/general">
+        <file alias="hex_profiler_icon">profile_icon.png</file>
+        <file alias="hex_lua_icon">hex_lua.png</file>
+        <file alias="breakpoints">breakpoints.png</file>
+        <file alias="callstack">callstack.png</file>
+        <file alias="find_results">find_results.png</file>
+        <file alias="watch_window">watch_window.png</file>
+        <file alias="lua_locals">blue-document-tree.png</file>
+        <file alias="control_play_remote">control_remote.png</file>
+        <file alias="control_play_editor">control_in_editor.png</file>
+        <file alias="document_save_all">document-save-all.png</file>
+        <file alias="control_play">control.png</file>
+        <file alias="edit_checkout">arrow-step-out.png</file>
+        <file alias="edit_copy">edit-copy-4.png</file>
+        <file alias="edit_cut">edit-cut-4.png</file>
+        <file alias="edit_find">edit-find-4.png</file>
+        <file alias="edit_replace">edit-replace-4.png</file>
+        <file alias="edit_paste">edit-paste-4.png</file>
+        <file alias="edit_redo">edit-redo-4.png</file>
+        <file alias="edit_undo">edit-undo-4.png</file>
+        <file alias="target_connected">target_connected.png</file>
+        <file alias="target_disconnected">target_disconnected.png</file>
+        <file alias="target_none">target_none.png</file>
+        <file alias="document_new">document-new-4.png</file>
+        <file alias="document_save">document-save-3.png</file>
+        <file alias="document_save_as">document-save-as-3.png</file>
+        <file alias="list-add">list-add-3.png</file>
+        <file alias="list-add-small">list-add-3-small.png</file>
+        <file alias="contract">eye.png</file>
+        <file alias="expand">eye_close.png</file>
+        <file alias="inspect_icon">drill_down_enabled.png</file>
+    </qresource>
+    <qresource prefix="/debug">
+        <file alias="arrow-curve-270">arrow-curve-270.png</file>
+        <file alias="arrow-curve">arrow-curve.png</file>
+        <file alias="arrow-curve-180">arrow-curve-180.png</file>
+        <file alias="debugger_disconnected">bug--minus.png</file>
+        <file alias="debugger_connected">bug--plus.png</file>
+    </qresource>    
+    <qresource prefix="/driller">
+        <file alias="active_color_swatch">active_color_swatch.png</file>
+        <file alias="export_button_disabled">export_button_disabled.png</file>
+        <file alias="export_button_enabled">export_button_enabled.png</file>
+        <file alias="drill_down_disabled">drill_down_disabled.png</file>
+        <file alias="drill_down_enabled">drill_down_enabled.png</file>
+        <file alias="inactive_color_swatch">inactive_color_swatch.png</file>
+        <file alias="settings_icon">settings_icon.png</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file>style_dark.qss</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>StyleSheetImages/arrow_up_V2.png</file>
+        <file>StyleSheetImages/arrow_down_V2.png</file>
+        <file>StyleSheetImages/arrow_left_V2.png</file>
+        <file>StyleSheetImages/arrow_right_V2.png</file>
+        <file>StyleSheetImages/checkbox_checked.png</file>
+        <file>StyleSheetImages/checkbox_checked_disabled.png</file>
+        <file>StyleSheetImages/checkbox_unchecked.png</file>
+        <file>StyleSheetImages/checkbox_unchecked_disabled.png</file>
+        <file>StyleSheetImages/dropdown_arrow.png</file>
+        <file>StyleSheetImages/radiobutton_checked.png</file>
+        <file>StyleSheetImages/radiobutton_checked_disabled.png</file>
+        <file>StyleSheetImages/radiobutton_unchecked.png</file>
+        <file>StyleSheetImages/radiobutton_unchecked_disabled.png</file>
+        <file>StyleSheetImages/spinbox_down.png</file>
+        <file>StyleSheetImages/spinbox_up.png</file>
+        <file>StyleSheetImages/treeview_arrow_down.png</file>
+        <file>StyleSheetImages/treeview_arrow_right.png</file>
+    </qresource>
+</RCC>

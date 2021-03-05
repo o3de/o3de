@@ -1,0 +1,18 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "ad082dd50c6545849729e9afeaaeaa1d",
+    "Name": "CustomAssetExample",
+    "DisplayName": "CustomAssetExample",
+    "Version": "0.1.0",
+    "Summary": "Contians example code for creating a custom asset in Lumberyard's asset pipeline",
+    "Tags": ["Assets, Example"],
+    "LinkType": "Dynamic",
+    "IconPath": "preview.png",
+    "EditorModule": true,
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ]
+}

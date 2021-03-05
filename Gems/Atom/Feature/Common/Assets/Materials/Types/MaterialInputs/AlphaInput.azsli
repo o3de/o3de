@@ -1,0 +1,46 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+enum class OpacitySource {Packed, Split, None};
+option OpacitySource o_opacity_source;
+
+float SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, OpacitySource opacitySource)
+{
+    float alpha = 1.0;
+    switch(opacitySource)
+    {
+        case OpacitySource::Packed:
+        {
+            alpha = baseColorMap.Sample(mapSampler, baseColorUv).a;
+            break;
+        }
+        case OpacitySource::Split:  
+        {
+            alpha = opacityMap.Sample(mapSampler, opacityUv).r;
+            break;
+        }
+        case OpacitySource::None:
+        break;
+    }
+    return alpha;
+}
+
+float GetAlphaInputAndClip(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, float opacityFactor, OpacitySource opacitySource)
+{
+    float alpha = SampleAlpha(baseColorMap, opacityMap, baseColorUv, opacityUv, mapSampler, opacitySource);
+    CheckClipping(alpha, opacityFactor);
+    return (alpha * opacityFactor);
+}

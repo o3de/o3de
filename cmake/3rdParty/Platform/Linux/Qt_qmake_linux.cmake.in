@@ -1,0 +1,38 @@
+#!${CMAKE_COMMAND} -P
+
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E echo "QT_SYSROOT:
+QT_INSTALL_PREFIX:${QT_PATH}
+QT_INSTALL_ARCHDATA:${QT_PATH}
+QT_INSTALL_DATA:${QT_PATH}
+QT_INSTALL_DOCS:${QT_PATH}/doc
+QT_INSTALL_HEADERS:${QT_PATH}/include
+QT_INSTALL_LIBS:${QT_PATH}/lib
+QT_INSTALL_LIBEXECS:${QT_PATH}/libexec
+QT_INSTALL_BINS:${QT_PATH}/bin
+QT_INSTALL_TESTS:${QT_PATH}/tests
+QT_INSTALL_PLUGINS:${QT_PATH}/plugins
+QT_INSTALL_IMPORTS:${QT_PATH}/imports
+QT_INSTALL_TRANSLATIONS:${QT_PATH}/translations
+QT_INSTALL_CONFIGURATION:${QT_PATH}/etc/xdg
+QT_INSTALL_EXAMPLES:${QT_PATH}/examples
+QT_INSTALL_DEMOS:${QT_PATH}/examples
+QT_HOST_PREFIX:${QT_PATH}
+QT_HOST_DATA:${QT_PATH}
+QT_HOST_BINS:${QT_PATH}/bin
+QT_HOST_LIBS:${QT_PATH}/lib
+QMAKE_SPEC:linux-g++
+QMAKE_XSPEC:linux-g++
+QMAKE_VERSION:3.1
+QT_VERSION:${QT_PACKAGE_VERSION}")

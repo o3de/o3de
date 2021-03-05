@@ -1,0 +1,22 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/MixedStones/mixed_stones_diffuse.jpg"
+        },
+        "metallic": {
+            "factor": 0.06060609966516495,
+            "useTexture": false
+        },
+        "normal": {
+            "textureMap": "Materials/MixedStones/mixed_stones_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.46464648842811587,
+            "useTexture": false
+        }
+    }
+}

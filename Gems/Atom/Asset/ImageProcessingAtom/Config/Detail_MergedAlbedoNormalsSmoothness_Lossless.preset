@@ -1,0 +1,87 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+            "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "FileMasks": [
+                "_detail"
+            ],
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "osx_gl": {
+                "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "xenia": {
+                "UUID": "{B6FC1AEF-907C-4157-9A1A-D9960F0E5B9A}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness_Lossless",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

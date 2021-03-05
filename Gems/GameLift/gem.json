@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "76de765796504906b73be7365a9bff06",
+    "Name": "GameLift",
+    "DisplayName": "Amazon GameLift",
+    "Version": "2.0.0",
+    "LinkType": "Dynamic",
+    "Summary": "The Amazon GameLift Gem provides flowgraph nodes for starting the Amazon GameLift service and creating game sessions.",
+    "Tags": ["Amazon GameLift","GridMate","Multiplayer","Networking"],
+    "IconPath": "preview.png"
+}

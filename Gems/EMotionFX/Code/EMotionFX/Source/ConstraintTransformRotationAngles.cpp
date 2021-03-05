@@ -1,0 +1,262 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <EMotionFX/Source/ConstraintTransformRotationAngles.h>
+#include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+
+namespace EMotionFX
+{
+    AZ_CLASS_ALLOCATOR_IMPL(ConstraintTransformRotationAngles, Integration::EMotionFXAllocator, 0)
+
+    // Constructor, which inits on default values
+    ConstraintTransformRotationAngles::ConstraintTransformRotationAngles()
+    {
+        const float angleX = 0.382683f; // 45 degrees --> sin(45degInRadians * 0.5f)
+        const float angleY = 0.382683f; // 45 degrees
+        const float twistAngle = 0.0f; // 0 degrees
+
+        mMinRotationAngles.Set(-angleX, -angleY);
+        mMaxRotationAngles.Set(angleX, angleY);
+        mMinTwist = twistAngle;
+        mMaxTwist = twistAngle;
+        mTwistAxis = AXIS_Y;
+    }
+
+    uint32 ConstraintTransformRotationAngles::GetType() const
+    {
+        return TYPE_ID;
+    }
+
+    const char* ConstraintTransformRotationAngles::GetTypeString() const
+    {
+        return "ConstraintTransformRotationAngles";
+    }
+
+    void ConstraintTransformRotationAngles::SetMinRotationAngles(const AZ::Vector2& minSwingDegrees)
+    {
+        const float angleX = MCore::Math::Sin(MCore::Math::DegreesToRadians(minSwingDegrees.GetX()) * 0.5f);
+        const float angleY = MCore::Math::Sin(MCore::Math::DegreesToRadians(minSwingDegrees.GetY()) * 0.5f);
+        mMinRotationAngles.Set(angleX, angleY);
+    }
+
+    void ConstraintTransformRotationAngles::SetMaxRotationAngles(const AZ::Vector2& maxSwingDegrees)
+    {
+        const float angleX = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxSwingDegrees.GetX()) * 0.5f);
+        const float angleY = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxSwingDegrees.GetY()) * 0.5f);
+        mMaxRotationAngles.Set(angleX, angleY);
+    }
+
+    void ConstraintTransformRotationAngles::SetMinTwistAngle(float minTwistDegrees)
+    {
+        mMinTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(minTwistDegrees) * 0.5f);
+    }
+
+    void ConstraintTransformRotationAngles::SetMaxTwistAngle(float maxTwistDegrees)
+    {
+        mMaxTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxTwistDegrees) * 0.5f);
+    }
+
+    void ConstraintTransformRotationAngles::SetTwistAxis(ConstraintTransformRotationAngles::EAxis axis)
+    {
+        mTwistAxis = axis;
+    }
+
+    AZ::Vector2 ConstraintTransformRotationAngles::GetMinRotationAnglesDegrees() const
+    {
+        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinRotationAngles.GetX()) * 2.0f),
+            MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinRotationAngles.GetY()) * 2.0f));
+    }
+
+    AZ::Vector2 ConstraintTransformRotationAngles::GetMaxRotationAnglesDegrees() const
+    {
+        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxRotationAngles.GetX()) * 2.0f),
+            MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxRotationAngles.GetY()) * 2.0f));
+    }
+
+    AZ::Vector2 ConstraintTransformRotationAngles::GetMinRotationAnglesRadians() const
+    {
+        return AZ::Vector2(MCore::Math::ASin(mMinRotationAngles.GetX()) * 2.0f,
+            MCore::Math::ASin(mMinRotationAngles.GetY()) * 2.0f);
+    }
+
+    AZ::Vector2 ConstraintTransformRotationAngles::GetMaxRotationAnglesRadians() const
+    {
+        return AZ::Vector2(MCore::Math::ASin(mMaxRotationAngles.GetX()) * 2.0f,
+            MCore::Math::ASin(mMaxRotationAngles.GetY()) * 2.0f);
+    }
+
+    float ConstraintTransformRotationAngles::GetMinTwistAngle() const
+    {
+        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinTwist) * 2.0f);
+    }
+
+    float ConstraintTransformRotationAngles::GetMaxTwistAngle() const
+    {
+        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxTwist) * 2.0f);
+    }
+
+    ConstraintTransformRotationAngles::EAxis ConstraintTransformRotationAngles::GetTwistAxis() const
+    {
+        return mTwistAxis;
+    }
+
+    // The main execution function, which performs the actual constraint.
+    void ConstraintTransformRotationAngles::Execute()
+    {
+        AZ::Quaternion q = mTransform.mRotation;
+
+        // Always keep w positive.
+        if (q.GetW() < 0.0f)
+        {
+            q = -q;
+        }
+
+        // Get the axes indices for swing
+        uint32 swingX;
+        uint32 swingY;
+        switch (mTwistAxis)
+        {
+            // Twist is the X-axis.
+            case AXIS_X:
+                swingX = 2;
+                swingY = 1;
+                break;
+
+            // Twist is the Y-axis.
+            case AXIS_Y:
+                swingX = 2;
+                swingY = 0;
+                break;
+
+            // Twist is the Z-axis.
+            case AXIS_Z:
+                swingX = 1;
+                swingY = 0;
+                break;
+
+            default:
+                MCORE_ASSERT(false);
+                swingX = 2;
+                swingY = 0;
+        }
+
+        // Calculate the twist quaternion, based on over which axis we assume there is twist.
+        AZ::Quaternion twist;
+        const float twistAngle = q.GetElement(mTwistAxis);
+        const float s = twistAngle * twistAngle + q.GetW() * q.GetW();
+        if (!MCore::Math::IsFloatZero(s))
+        {
+            const float r = MCore::Math::InvSqrt(s);
+            twist.SetElement(swingX, 0.0f);
+            twist.SetElement(swingY, 0.0f);
+            twist.SetElement(mTwistAxis, MCore::Clamp(twistAngle * r, mMinTwist, mMaxTwist));
+            twist.SetW(MCore::Math::Sqrt(MCore::Max<float>(0.0f, 1.0f - twist.GetElement(mTwistAxis) * twist.GetElement(mTwistAxis))));
+        }
+        else
+        {
+            twist = AZ::Quaternion::CreateIdentity();
+        }
+
+        // Remove the twist from the input rotation so that we are left with a swing and then limit the swing.
+        AZ::Quaternion swing = q * twist.GetConjugate();
+        swing.SetElement(swingX, MCore::Clamp(static_cast<float>(swing.GetElement(swingX)), mMinRotationAngles.GetX(), mMaxRotationAngles.GetX()));
+        swing.SetElement(swingY, MCore::Clamp(static_cast<float>(swing.GetElement(swingY)), mMinRotationAngles.GetY(), mMaxRotationAngles.GetY()));
+        swing.SetElement(mTwistAxis, 0.0f);
+        swing.SetW(MCore::Math::Sqrt(MCore::Max<float>(0.0f, 1.0f - swing.GetElement(swingX) * swing.GetElement(swingX) - swing.GetElement(swingY) * swing.GetElement(swingY))));
+
+        // Combine the limited swing and twist again into a final rotation.
+        mTransform.mRotation = swing * twist;
+    }
+
+    AZ::Vector3 ConstraintTransformRotationAngles::GetSphericalPos(float x, float y) const
+    {
+        float sx = MCore::Math::Sin(x);
+        float sy = MCore::Math::Sin(y);
+        AZ::Vector3 pos(
+            sx,
+            sy,
+            MCore::Math::SafeSqrt(1.0f - sx * sx - sy * sy));
+        pos.Normalize();
+        return pos;
+    }
+
+    void ConstraintTransformRotationAngles::DrawSphericalLine(ActorInstance* actorInstance, const AZ::Vector2& start, const AZ::Vector2& end, uint32 numSteps, const AZ::Color& color, float radius, const AZ::Transform& offset) const
+    {
+        const AZ::Vector2 totalVector = end - start;
+        const AZ::Vector2 stepVector = totalVector / static_cast<float>(numSteps);
+
+        EMotionFX::DebugDraw& debugDraw = GetDebugDraw();
+        DebugDraw::ActorInstanceData* drawData = debugDraw.GetActorInstanceData(actorInstance);
+        drawData->Lock();
+
+        AZ::Vector2 current = start;
+        AZ::Transform offsetRotation(offset);
+        offsetRotation.SetTranslation(AZ::Vector3::CreateZero());
+
+        AZ::Vector3 lastPos = offsetRotation.TransformPoint(GetSphericalPos(start.GetX(), -start.GetY())) * radius;
+        for (uint32 i = 0; i < numSteps; ++i)
+        {
+            current += stepVector;
+
+            AZ::Vector3 pos = GetSphericalPos(current.GetX(), -current.GetY());
+            pos *= radius;
+            pos = offset.TransformPoint(pos);
+
+            drawData->DrawLine(lastPos, pos, color);
+            lastPos = pos;
+        }
+
+        drawData->Unlock();
+    }
+
+    void ConstraintTransformRotationAngles::DebugDraw(ActorInstance* actorInstance, const AZ::Transform& offset, const AZ::Color& color, float radius) const
+    {
+        const uint32 numSegments = 64;
+        const AZ::Vector2 minValues = GetMinRotationAnglesRadians();
+        const AZ::Vector2 maxValues = GetMaxRotationAnglesRadians();
+        const float minX = minValues.GetX();
+        const float maxX = maxValues.GetX();
+        const float minY = minValues.GetY();
+        const float maxY = maxValues.GetY();
+        DrawSphericalLine(actorInstance, AZ::Vector2(minX, minY), AZ::Vector2(maxX, minY), numSegments, color, radius, offset);
+        DrawSphericalLine(actorInstance, AZ::Vector2(minX, maxY), AZ::Vector2(maxX, maxY), numSegments, color, radius, offset);
+        DrawSphericalLine(actorInstance, AZ::Vector2(minX, minY), AZ::Vector2(minX, maxY), numSegments, color, radius, offset);
+        DrawSphericalLine(actorInstance, AZ::Vector2(maxX, minY), AZ::Vector2(maxX, maxY), numSegments, color, radius, offset);
+    }
+
+    void ConstraintTransformRotationAngles::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<ConstraintTransformRotationAngles>()
+            ->Version(1);
+
+        AZ::EditContext* editContext = serializeContext->GetEditContext();
+        if (!editContext)
+        {
+            return;
+        }
+
+        editContext->Enum<EAxis>("", "")
+            ->Value("X Axis", AXIS_X)
+            ->Value("Y Axis", AXIS_Y)
+            ->Value("Z Axis", AXIS_Z);
+    }
+} // namespace EMotionFX

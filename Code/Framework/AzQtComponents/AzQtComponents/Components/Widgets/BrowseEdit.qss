@@ -1,0 +1,93 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--BrowseEdit
+{
+    margin: 2px;
+}
+
+AzQtComponents--BrowseEdit QLineEdit
+{
+    height: 16px;
+    border-width: 0px;
+    border-style: solid;
+    border-color: transparent;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    /* 2px padding already applied */
+    padding-left: 2px;
+    /* 14px padding applied by default: 14 - 4 = 10 */
+    padding-right: -4px;
+}
+
+AzQtComponents--BrowseEdit.ValidDropTarget QLineEdit,
+AzQtComponents--BrowseEdit.ValidDropTarget QLineEdit:focus,
+AzQtComponents--BrowseEdit.ValidDropTarget QLineEdit:hover
+{
+    background-color: transparent;
+}
+
+AzQtComponents--BrowseEdit.InvalidDropTarget QLineEdit,
+AzQtComponents--BrowseEdit QLineEdit:focus
+{
+    background-color: #FFFFFF;
+    border-color: #FFFFFF;
+}
+
+AzQtComponents--BrowseEdit QLineEdit:disabled
+{
+    border-color: #777777;
+}
+
+AzQtComponents--BrowseEdit #attached-button
+{
+    /* Set the flat property to true to enable QPushButton styling from QSS */
+    qproperty-flat: true;
+
+    max-width: 16px;
+    min-width: 16px;
+    max-height: 16px;
+    min-height: 16px;
+
+    qproperty-iconSize: 12px 12px;
+
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #666666, stop: 1 #555555);
+
+    border-width: 0px;
+    border-style: solid;
+    border-left: none;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+AzQtComponents--BrowseEdit #attached-button:hover
+{
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #777777, stop: 1 #666666);
+}
+
+AzQtComponents--BrowseEdit #attached-button:pressed
+{
+    background-color: #444444;
+}
+
+AzQtComponents--BrowseEdit #attached-button:disabled
+{
+    background-color: #666666;
+    border-left: 1px solid #555555;
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49 (51002) - http://www.bohemiancoding.com/sketch -->
+    <title>Warning</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Warning" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-3"></g>
+        <g id="clock">
+            <path d="M12,2 C6.45454545,2 2,6.45454545 2,12 C2,17.5454545 6.45454545,22 12,22 C17.5454545,22 22,17.5454545 22,12 C22,6.45454545 17.5454545,2 12,2 Z M12,20.1818182 C7.45454545,20.1818182 3.81818182,16.5454545 3.81818182,12 C3.81818182,7.45454545 7.45454545,3.81818182 12,3.81818182 C16.5454545,3.81818182 20.1818182,7.45454545 20.1818182,12 C20.1818182,16.5454545 16.5454545,20.1818182 12,20.1818182 Z" id="Shape" fill="#E9E9E9" fill-rule="nonzero"></path>
+            <polygon id="Shape" fill="#E9E9E9" fill-rule="nonzero" points="12.9090909 7.45454545 11.0909091 7.45454545 11.0909091 12.3636364 15.9090909 17.1818182 17.1818182 15.9090909 12.9090909 11.6363636"></polygon>
+            <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        </g>
+    </g>
+</svg>

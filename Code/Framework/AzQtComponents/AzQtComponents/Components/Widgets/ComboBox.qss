@@ -1,0 +1,151 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/* NOTE: a number of QComboBox properties are defined in BaseStyleSheet.qss already, along with other text entry controls */
+
+/* ComboBox */
+
+QComboBox
+{
+    height: 16px;
+    padding-left: 4px;
+    margin: 1px;
+    font-size: 12px;
+    background-color: #CCCCCC;
+}
+
+QComboBox:hover
+{
+    margin: 0px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+    border-color: rgba(0, 0, 0, 50);
+}
+
+QComboBox:focus,
+QComboBox[HasPopupOpen=true],
+QComboBox[HasPopupOpen=true][HasPopupOpen=true]
+{
+    margin: 0px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+    border-color: #00A1C9;
+
+    background-color: #FFFFFF;
+}
+
+QComboBox[HasError=true]
+{
+    margin: 0px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 4px;
+    border-color: #E25243;
+}
+
+QComboBox:disabled
+{
+    background-color: #666666;
+    color: #999999;
+}
+
+QComboBox::drop-down
+{
+    border-width: 0;
+}
+
+QComboBox::down-arrow
+{
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    image: url(":/stylesheet/img/UI20/combobox-arrow.svg");
+}
+
+QComboBox::down-arrow:disabled
+{
+    image: url(":/stylesheet/img/UI20/combobox-arrow-disabled.svg");
+}
+
+/* Popup */
+
+QComboBox QAbstractItemView
+{
+    background-color: #222222;
+    padding: 0px;
+    outline: none; /* Disable focus rect */
+    show-decoration-selected: 1;
+}
+
+QComboBox QAbstractItemView::item
+{
+    color: #FFFFFF;
+    padding-right: 24px;
+    padding-left: 2px; /* There is already 22px from the check mark */
+
+    /* Without that the padding don't apply */
+    border: 0px solid transparent;
+}
+
+/*
+    This is needed as a result of using padding / border in ::item as
+    selection-background-color and selection-color are no more honored...
+*/
+QComboBox QAbstractItemView::item:selected
+{
+    background-color: #444444;
+    color: #FFFFFF;
+}
+
+QComboBox QAbstractItemView::item:disabled
+{
+    color: #555555;
+}
+
+QComboBox QAbstractItemView::separator
+{
+    height: 1px;
+    background: #444444;
+}
+
+QComboBox QAbstractItemView::indicator
+{
+    /* Keep in sync with the check mark image size */
+    width: 16px;
+    height: 16px;
+    image: none;
+}
+
+QComboBox QAbstractItemView::indicator:checked
+{
+    image: url(:/stylesheet/img/UI20/checkmark.svg);
+}
+
+QComboBox QAbstractItemView::indicator:indeterminate
+{
+    image: url(:/stylesheet/img/UI20/indeterminate.svg);
+}
+
+QMenu QComboBox
+{
+    margin: 3px 8px;
+}
+
+QMenu QComboBox:hover,
+QMenu QComboBox:focus,
+QMenu QComboBox[HasPopupOpen=true],
+QMenu QComboBox[HasPopupOpen=true][HasPopupOpen=true]
+{
+    margin: 2px 7px;
+}

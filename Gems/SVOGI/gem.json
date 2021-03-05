@@ -1,0 +1,22 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "09a70eb8876e49a8a919cabbb8f33b27",
+    "Name": "SVOGI",
+    "DisplayName": "Sparse Voxel Octree Global Illumination (SVOGI)",
+    "Version": "0.1.0",
+    "Summary": "Sparse Voxel Octree Global Illumination (SVOGI) solution for total illumination",
+    "Tags": ["Rendering", "Lighting", "Global Illumination", "Voxel"],
+    "IconPath": "preview.png",
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [ ">=0.1.0" ],
+            "_comment": "Depends on LmbrCentral for bus interface and MeshAsset"
+        }
+    ],
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

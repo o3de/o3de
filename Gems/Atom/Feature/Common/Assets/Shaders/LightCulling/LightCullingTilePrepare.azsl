@@ -1,0 +1,326 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/*
+    This compute shader analyzes the depth buffer and for each tile, find the min / max depths.  
+    It also produces a bitmask indicating which z subsections of the tile have geometry inside them     
+    This version supports 4x MSAA depth buffers with reversed depth    
+
+*/
+
+
+#include <Atom/RPI/Math.azsli>
+
+// We are using the shader variant system to deal with different MSAA modes
+// The shader variant system needs a fallback, using DefaultDrawSrg for this.
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+
+
+option enum class MsaaMode { None, Msaa2x, Msaa4x, Msaa8x } o_msaaMode;
+
+// This compute shader thread-group runs across a screen tile (usually 16x16 pixels)
+// Each pixel in the tile has a z depth value associated with it
+// The minimum/maximum depth values in the tile form a range
+// This range can be subdivided into 32 pieces
+// Each time we find a depth value that falls into that subdivided range, we mark
+// the corresponding bit in a 32-bit bitmask
+// We use this mask to only apply lights to pixels that need it.
+
+// It looks something like this:
+// Camera .............|transparent geometry|               |opaque geometry|   --> Z values
+//                     |                        minmaxZ                     |
+//  32-bit mask        |X|X|X|X|X|X|X|X|X|X|X| | | | | | | |X| |X| |X|X|X| |X
+//                                           
+// X indicates areas where geometry was discovered
+
+groupshared uint shared_opaqueMask;
+
+// Each thread-group attempts to find the minimum/maximum opaque z value in the tile by sharing them through:
+groupshared uint shared_depthNear;
+groupshared uint shared_depthFar;
+
+// Likewise for transparent z values:
+groupshared uint shared_depthTransparentNear;
+groupshared uint shared_depthTransparentFar;
+
+
+void StoreMinMaxIntoSharedMemory(float2 data)
+{
+    uint orig;
+    DEPTH_InterlockedMin(shared_depthNear, asuint(data.x), orig);
+    DEPTH_InterlockedMax(shared_depthFar, asuint(data.y), orig);
+}
+
+void StoreTransparentMinMaxIntoSharedMemory(float2 data)
+{
+    uint orig;
+    DEPTH_InterlockedMin(shared_depthTransparentNear, asuint(data.x), orig);
+    DEPTH_InterlockedMax(shared_depthTransparentFar, asuint(data.y), orig);
+}
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // We will use one or the other depending upon if MSAA is enabled or not
+    Texture2D<float4> m_depthBuffer;   
+    Texture2DMS<float4> m_depthBufferMSAA;   
+
+    // Depth buffer where we rendered the nearest pixels of transparent objects
+    Texture2D<float4> m_depthBufferTransparentMin;   
+
+    // Depth buffer where we rendered the furthest pixels of transparent objects
+    Texture2D<float4> m_depthBufferTransparentMax;   
+
+    RWTexture2D<uint4> m_tileLightData;    
+
+    struct Constants
+    {
+        // Used to convert from raw depth buffer values to Z values
+        float2 m_unprojectZ;    
+        uint m_depthBufferWidth;
+        uint m_depthBufferHeight;
+    };    
+    Constants m_constantData;
+}
+ 
+void ClearSharedMemory(uint groupIndex)
+{
+    if( groupIndex == 0 )
+    {
+        shared_depthNear = asuint(DEPTH_FAR);
+        shared_depthFar = asuint(DEPTH_NEAR);
+        shared_depthTransparentNear = asuint(DEPTH_FAR);
+        shared_depthTransparentFar = asuint(DEPTH_NEAR);
+        shared_opaqueMask = 0;
+    }
+}
+
+float2 ReadOpaqueDepthSamples2xMSAA(uint2 uv)
+{
+    float2 depthSamples;  
+    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(uv, 0).x;
+    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(uv, 1).x;  
+    return depthSamples;
+}
+
+float4 ReadOpaqueDepthSamples4xMSAA(uint2 uv)
+{
+    float4 depthSamples;  
+    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(uv, 0).x;
+    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(uv, 1).x;  
+    depthSamples.z = PassSrg::m_depthBufferMSAA.Load(uv, 2).x;
+    depthSamples.w = PassSrg::m_depthBufferMSAA.Load(uv, 3).x;
+    return depthSamples;
+}
+
+void CombineOpaqueMaskWithAllThreads(uint opaqueMask)
+{
+    InterlockedOr(shared_opaqueMask, opaqueMask);
+    GroupMemoryBarrierWithGroupSync();
+}
+
+// Given the locations of two values in a uint, return a bitmask that contains 1s in between those bits and 0s elsewhere
+// e.g. CreateFilledBitmask(0,31) produces 0b11111111111111111111111111111111
+// e.g. CreateFilledBitmask(1,30) produces 0b01111111111111111111111111111110
+uint CreateFilledBitmask(uint startBit, uint endBit)
+{
+    uint x = 1 << startBit;
+    uint y = 1 << endBit;
+    return ((y - 1) | y) & ~(x - 1);
+}
+
+// This function produces a bit mask that indicates which parts of the tile (along z) that contains transparent geometry 
+// Note that minmaxZ includes both the opaque and transparent parts.
+uint ComputeTransparentBitMask(float2 minmaxZ)
+{
+    float2 minmaxDepth_transparent = float2(asfloat(shared_depthTransparentNear), asfloat(shared_depthTransparentFar));  
+
+    // Handle case where no transparent pixel were drawn here. 
+    if (minmaxDepth_transparent.x == DEPTH_FAR)
+    {
+        return 0;
+    }
+    
+    float2 minmaxZ_transparent = Depth_to_Z(minmaxDepth_transparent, PassSrg::m_constantData.m_unprojectZ);
+
+    float2 minmaxUnit_transparent = RemapZToUnit(minmaxZ_transparent, minmaxZ);
+    
+    // Convert that 0 to 1 to 0.0 to 31.99999
+    float2 bit = Tile_UnitValueToBit(minmaxUnit_transparent);
+    
+    // IMPORTANT: we have only opaque depth and closest pixels for transparency, so we don't know
+    // what is going on in between. We have to fill this "unknown" region to avoid skipping lights
+    // This is not needed if an app does additional pass to get bits from all transparent layers
+    // An additional permutation is required for this case
+
+    uint bitMask = CreateFilledBitmask(bit.x, bit.y);
+    return bitMask;
+}
+
+uint ComputeOpaqueAndTransparentMask(float2 minmaxZ)
+{
+    uint result = shared_opaqueMask | ComputeTransparentBitMask(minmaxZ);    
+    return result;
+}
+
+void WriteTileLightDataToMainMemory(uint groupIndex, uint3 groupID, float2 minmaxZ)
+{
+    if( groupIndex == 0 )
+    {   
+        // Note that we could be in a RH coordinate system in which case minmaxz.x is > minmaxz.y, hence the abs() call
+        float tileZ = abs(minmaxZ.y - minmaxZ.x);
+        
+        // Note that Nvidia Light Culling framework has some additional code to better calculate this ratio
+        // See cb_perFrame.fRangeThreshold in their framework. This code might be something we want to port over.
+        // https://jira.agscollab.com/browse/ATOM-5554
+        float ratio = tileZ / 1.0f;         
+        float logMaxBins = clamp(log2(ratio), 0.0, LOG_MAX_BINS);
+        uint ulogMaxBins = uint(logMaxBins + 0.5);
+
+        uint4 data;
+        data.x = asuint(minmaxZ.x);
+        data.y = (asuint(minmaxZ.y) & ~NVLC_BINS_MASK) | ulogMaxBins;
+        data.z = ComputeOpaqueAndTransparentMask(minmaxZ);
+        data.w = 0;
+        
+        PassSrg::m_tileLightData[groupID.xy] = data;        
+    }
+} 
+
+float2 ReadTransparentMinMaxMSAA(uint2 uv)
+{
+    float2 transparentMinMax;
+    
+    // Nvidia light culling sample does fewer samples for transparency with the note that it
+    // should still be good enough with MSAA as sampling from MSAA textures can be expensive. 
+    // Doing 1 tap for min/max textures seems pretty precise in AtomSampleViewer test-scene.
+    // More experimentation required with more complex scenes would be ideal.
+
+    uint3 uv3 = uint3(uv,0);
+
+    transparentMinMax.x = PassSrg::m_depthBufferTransparentMin.Load(uv3).x;
+    transparentMinMax.y = PassSrg::m_depthBufferTransparentMax.Load(uv3).x;
+
+    return transparentMinMax;
+}
+
+// We want to compute the minmax bounding values for a tile to get tight bounds for accurate culling.
+// Each thread will call this function to share its values with every other thread, replacing them with the minmax for all threads
+void UpdateMinMaxFromAllThreads(in out float2 minmaxDepth_both, in out float2 transparentMinMax, const bool isPixelOnScreen)
+{
+    // Propagate this thread's data across the thread-group
+    if (isPixelOnScreen)
+    {
+        StoreMinMaxIntoSharedMemory(minmaxDepth_both);
+        StoreTransparentMinMaxIntoSharedMemory(transparentMinMax);    
+    }
+    GroupMemoryBarrierWithGroupSync();
+    
+    // Read back data from all threads in the thread-group
+    minmaxDepth_both = float2(asfloat(shared_depthNear), asfloat(shared_depthFar));   
+    transparentMinMax = float2(asfloat(shared_depthTransparentNear), asfloat(shared_depthTransparentFar));   
+}
+
+float2 ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects2x(float2 opaqueDepthSamples, float2 transparentMinMax)
+{
+    opaqueDepthSamples = (opaqueDepthSamples.x == DEPTH_FAR && transparentMinMax.y != DEPTH_NEAR) ? transparentMinMax.y : opaqueDepthSamples;
+    return opaqueDepthSamples;
+}
+
+float4 ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects4x(float4 opaqueDepthSamples, float2 transparentMinMax)
+{
+    opaqueDepthSamples = (opaqueDepthSamples.x == DEPTH_FAR && transparentMinMax.y != DEPTH_NEAR) ? transparentMinMax.y : opaqueDepthSamples;
+    return opaqueDepthSamples;
+}
+
+float IncrementULP(float x)
+{
+    x = asfloat( asuint(x) + 1 );
+    return x;
+}
+
+float2 ExpandMinMax(float2 minmaxA, float2 minmaxB)
+{
+    float2 expandedMinmax;
+    expandedMinmax.x = DEPTH_MIN(minmaxA.x, minmaxB.x);
+    expandedMinmax.y = DEPTH_MAX(minmaxA.y, minmaxB.y);
+    return expandedMinmax;
+}
+
+bool IsPixelOnScreen(uint3 dispatchThreadID)
+{
+    return dispatchThreadID.x < PassSrg::m_constantData.m_depthBufferWidth && 
+           dispatchThreadID.y < PassSrg::m_constantData.m_depthBufferHeight;
+}
+
+// Note that Nvidia light culling framework will dispatch different sized groups depending upon MSAA mode
+// For instance, they dispatch 32 threads for 1x, 64 for 2x, 128 for 4x and 8x.
+// This allows for some interesting optimizations, such as calling GatherRed instead of Load. 
+// I am dispatching one thread per screen pixel, which simplifies coding but we might be leaving some performance on the table
+[numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    const bool isPixelOnScreen = IsPixelOnScreen(dispatchThreadID);
+    
+    ClearSharedMemory(groupIndex);
+    GroupMemoryBarrierWithGroupSync();
+    
+    // .x contains the camera Z value of the pixel in the tile that is closest to the camera
+    // .y contains the furthest
+    float2 minmaxDepth_both = 0;
+
+    // Bitmask where each bit indicates where opaque geometry was found. See the diagram at the top of this file.
+    uint maskOpaque = 0;
+
+    float2 minmaxDepth_transparent = ReadTransparentMinMaxMSAA(dispatchThreadID.xy);
+
+    if (o_msaaMode == MsaaMode::Msaa2x)
+    {
+        float2 opaqueDepthSamples = ReadOpaqueDepthSamples2xMSAA(dispatchThreadID.xy);    
+        // Transparent geometry can't be behind opaque geometry. Just pick the first MSAA sample since we are trying to reduce reading from MSAA buffer
+        minmaxDepth_transparent = DEPTH_MIN(minmaxDepth_transparent, opaqueDepthSamples.x);
+        opaqueDepthSamples = ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects2x(opaqueDepthSamples, minmaxDepth_transparent);
+        float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom2Samples(opaqueDepthSamples);
+        minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
+        UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
+        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+
+        // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
+        minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
+
+        maskOpaque = DepthSamplesToBinMask2x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);                        
+    }
+    // Note that Nvidia light culling sample uses the 4x code for 8x msaa, with a note that msaa is obviously very expensive and taking 4x samples should still be accurate enough 
+    else if (o_msaaMode == MsaaMode::Msaa4x || o_msaaMode == MsaaMode::Msaa8x)
+    {
+        float4 opaqueDepthSamples = ReadOpaqueDepthSamples4xMSAA(dispatchThreadID.xy);    
+
+        // Transparent geometry can't be behind opaque geometry. Just pick the first MSAA sample since we are trying to reduce reading from MSAA buffer
+        minmaxDepth_transparent = DEPTH_MIN(minmaxDepth_transparent, opaqueDepthSamples.x);
+        opaqueDepthSamples = ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects4x(opaqueDepthSamples, minmaxDepth_transparent);
+        float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom4Samples(opaqueDepthSamples);
+        minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
+        UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
+        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+
+        // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
+        minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
+
+        maskOpaque = DepthSamplesToBinMask4x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+    }   
+    
+    CombineOpaqueMaskWithAllThreads(maskOpaque);
+    WriteTileLightDataToMainMemory(groupIndex, groupID, minmaxDepth_both);   
+}

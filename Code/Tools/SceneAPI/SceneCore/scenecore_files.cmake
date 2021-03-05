@@ -1,0 +1,137 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    SceneCoreConfiguration.h
+    DllMain.cpp
+    SceneBuilderDependencyBus.h
+    SceneCoreStandaloneAllocator.h
+    SceneCoreStandaloneAllocator.cpp
+    DataTypes/IManifestObject.h
+    DataTypes/IGraphObject.h
+    DataTypes/DataTypeUtilities.h
+    DataTypes/DataTypeUtilities.inl
+    DataTypes/DataTypeUtilities.cpp
+    DataTypes/GraphData/IMeshData.h
+    DataTypes/GraphData/IMeshVertexColorData.h
+    DataTypes/GraphData/IMeshVertexUVData.h
+    DataTypes/GraphData/IMeshVertexTangentData.h
+    DataTypes/GraphData/IMeshVertexBitangentData.h
+    DataTypes/GraphData/IMaterialData.h
+    DataTypes/GraphData/ITransform.h
+    DataTypes/GraphData/IBoneData.h
+    DataTypes/GraphData/ISkinWeightData.h
+    DataTypes/GraphData/IAnimationData.h
+    DataTypes/GraphData/IBlendShapeData.h
+    DataTypes/Groups/IGroup.h
+    DataTypes/Groups/ISceneNodeGroup.h
+    DataTypes/Groups/IMeshGroup.h
+    DataTypes/Groups/ISkeletonGroup.h
+    DataTypes/Groups/ISkinGroup.h
+    DataTypes/Groups/IAnimationGroup.h
+    DataTypes/ManifestBase/ISceneNodeSelectionList.h
+    DataTypes/Rules/IRule.h
+    DataTypes/Rules/IBlendShapeRule.h
+    DataTypes/Rules/ICommentRule.h
+    DataTypes/Rules/ILodRule.h
+    DataTypes/Rules/IMeshAdvancedRule.h
+    DataTypes/Rules/IOriginRule.h
+    DataTypes/Rules/IMaterialRule.h
+    DataTypes/Rules/IScriptProcessorRule.h
+    DataTypes/Rules/ISkeletonProxyRule.h
+    DataTypes/Rules/ITouchBendingRule.h
+    DataTypes/Rules/IClothRule.h
+    Components/BehaviorComponent.h
+    Components/BehaviorComponent.cpp
+    Components/ExportingComponent.h
+    Components/ExportingComponent.cpp
+    Components/RCExportingComponent.h
+    Components/RCExportingComponent.cpp
+    Components/GenerationComponent.h
+    Components/GenerationComponent.cpp
+    Components/LoadingComponent.h
+    Components/LoadingComponent.cpp
+    Components/SceneSystemComponent.h
+    Components/SceneSystemComponent.cpp
+    Components/Utilities/EntityConstructor.h
+    Components/Utilities/EntityConstructor.cpp
+    Containers/GraphObjectProxy.h
+    Containers/GraphObjectProxy.cpp
+    Containers/RuleContainer.h
+    Containers/RuleContainer.inl
+    Containers/RuleContainer.cpp
+    Containers/Scene.h
+    Containers/Scene.cpp
+    Containers/SceneGraph.h
+    Containers/SceneGraph.inl
+    Containers/SceneGraph.cpp
+    Containers/SceneManifest.h
+    Containers/SceneManifest.inl
+    Containers/SceneManifest.cpp
+    Containers/Views/View.h
+    Containers/Views/View.inl
+    Containers/Views/FilterIterator.h
+    Containers/Views/FilterIterator.inl
+    Containers/Views/PairIterator.h
+    Containers/Views/PairIterator.inl
+    Containers/Views/ConvertIterator.h
+    Containers/Views/ConvertIterator.inl
+    Containers/Views/SceneGraphUpwardsIterator.h
+    Containers/Views/SceneGraphUpwardsIterator.inl
+    Containers/Views/SceneGraphChildIterator.h
+    Containers/Views/SceneGraphChildIterator.inl
+    Containers/Views/SceneGraphDownwardsIterator.h
+    Containers/Views/SceneGraphDownwardsIterator.inl
+    Containers/Utilities/ProxyPointer.h
+    Containers/Utilities/ProxyPointer.inl
+    Containers/Utilities/Filters.h
+    Containers/Utilities/Filters.inl
+    Containers/Utilities/SceneGraphUtilities.h
+    Containers/Utilities/SceneGraphUtilities.inl
+    Containers/Utilities/SceneGraphUtilities.cpp
+    Events/CallProcessorBus.h
+    Events/CallProcessorBus.inl
+    Events/CallProcessorBus.cpp
+    Events/ProcessingResult.h
+    Events/ProcessingResult.cpp
+    Events/ExportEventContext.h
+    Events/ExportEventContext.cpp
+    Events/ExportProductList.h
+    Events/ExportProductList.cpp
+    Events/GenerateEventContext.h
+    Events/GenerateEventContext.cpp
+    Events/ImportEventContext.h
+    Events/ImportEventContext.cpp
+    Events/CallProcessorBinder.h
+    Events/CallProcessorBinder.inl
+    Events/CallProcessorBinder.cpp
+    Events/AssetImportRequest.h
+    Events/AssetImportRequest.cpp
+    Events/ManifestMetaInfoBus.h
+    Events/ManifestMetaInfoBus.cpp
+    Events/GraphMetaInfoBus.h
+    Events/SceneSerializationBus.h
+    Import/ManifestImportRequestHandler.h
+    Import/ManifestImportRequestHandler.cpp
+    Export/MtlMaterialExporter.h
+    Export/MtlMaterialExporter.cpp
+    Utilities/SceneGraphSelector.h
+    Utilities/SceneGraphSelector.cpp
+    Utilities/FileUtilities.h
+    Utilities/FileUtilities.cpp
+    Utilities/Reporting.h
+    Utilities/PatternMatcher.h
+    Utilities/PatternMatcher.cpp
+    Utilities/HashHelper.h
+    Utilities/DebugOutput.h
+    Utilities/DebugOutput.cpp
+    Utilities/DebugOutput.inl
+)

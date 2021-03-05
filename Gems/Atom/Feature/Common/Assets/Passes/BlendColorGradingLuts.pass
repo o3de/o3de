@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BlendColorGradingLutsTemplate",
+            "PassClass": "BlendColorGradingLutsPass",
+            "PassData": {
+                "$type": "ComputePassData",
+                "Make Fullscreen Pass": false,
+                "Target Thread Count X": 32,
+                "Target Thread Count Y": 32,
+                "Target Thread Count Z": 32,
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/BlendColorGradingLuts.shader" 
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EnvironmentCubeMapSkyBoxPassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "SpecularInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "SkyBoxDepth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ReflectionImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "SpecularInputOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 4
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "ReflectionInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ReflectionImage"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "shaders/skybox/skybox.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_sunIntensityMultiplier",
+                            "Value": 0.1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

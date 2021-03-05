@@ -1,0 +1,107 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BloomDownsamplePassTemplate",
+            "PassClass": "BloomDownsamplePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "ShaderInputName": "m_targetTexture",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "BlurImageResource",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DownsampledImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers":{
+                            "WidthMultiplier" : "0.5",
+                            "HeightMultiplier": "0.5"
+                        }
+                    },
+                     "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "MipLevels": "5",
+                        "SharedQueueMask": 3
+                    }
+                },
+                {
+                    "Name": "BlurPassImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers":{
+                            "WidthMultiplier" : "0.5",
+                            "HeightMultiplier": "0.5"
+                        }
+                    },
+                     "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "MipLevels": "5",
+                        "SharedQueueMask": 3
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledImage"
+                    }
+                },
+                {
+                    "LocalSlot": "BlurImageResource",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BlurPassImage"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/BloomDownsampleCS.shader"
+                },
+                "Make Fullscreen Pass": true
+            }
+        }
+    }
+}

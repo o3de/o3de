@@ -1,0 +1,87 @@
+<ObjectStream version="1">
+	<Class name="AZ::Entity" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
+		<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+			<Class name="AZ::u64" field="id" value="14361156056858099075" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+		</Class>
+		<Class name="AZStd::string" field="Name" value="14361156056858099075" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+		<Class name="bool" field="IsDependencyReady" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
+			<Class name="PrefabComponent" field="element" version="1" type="{AFD304E4-1773-47C8-855A-8B622398934F}">
+				<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+					<Class name="AZ::u64" field="Id" value="10067701675496589651" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+				</Class>
+				<Class name="AZStd::vector" field="Entities" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
+					<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
+						<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+							<Class name="AZ::u64" field="id" value="14361055434364288387" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+						<Class name="AZStd::string" field="Name" value="Security Camera" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+						<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
+							<Class name="TransformComponent" field="element" version="5" type="{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}">
+								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="2567642046327062565" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="EntityId" field="Parent Entity" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EditorTransform" field="Transform Data" version="1" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
+									<Class name="Vector3" field="Translate" value="70.0000000 66.0000000 41.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+								</Class>
+							</Class>
+							<Class name="GenericComponentWrapper" field="element" type="{68D358CA-89B9-4730-8BA6-E181DEA28FDE}">
+								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="6723585965463865528" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="CameraComponent" field="m_template" version="1" type="{A0C21E18-F759-4E72-AF26-7A36FC59E477}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+									<Class name="float" field="Field of View" value="75.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Near Clip Plane Distance" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Far Clip Plane Distance" value="1024.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+							</Class>
+							<Class name="GenericComponentWrapper" field="element" type="{68D358CA-89B9-4730-8BA6-E181DEA28FDE}">
+								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="14346412589118253737" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="CameraRigComponent" field="m_template" version="1" type="{286BF97A-1B4A-4EE1-944F-C13B2396227B}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+									<Class name="AZStd::vector" field="Target Acquirers" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
+										<Class name="CameraTargetComponentAcquirer" field="element" version="1" type="{CF1C04E4-1195-42DD-AF0B-C9F94E80B35D}">
+											<Class name="AZStd::string" field="Tag of Specific Target" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="bool" field="Use Target Rotation" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+											<Class name="bool" field="Use Target Position" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+										</Class>
+									</Class>
+									<Class name="AZStd::vector" field="Look-at Behaviors" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}"/>
+									<Class name="AZStd::vector" field="Camera Transform Behaviors" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
+										<Class name="FaceTarget" field="element" value="" version="1" type="{1A2CBCD0-1841-493C-8DB7-1BCA0D293019}"/>
+									</Class>
+								</Class>
+							</Class>
+							<Class name="SelectionComponent" field="element" value="" type="{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" value="9072570500205130968" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+				<Class name="AZStd::list" field="Prefabs" type="{B845AD64-B5A0-4CCD-A86B-3477A36779BE}"/>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

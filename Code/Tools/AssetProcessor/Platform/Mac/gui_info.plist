@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>This file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved.</string>
+	<key>CFBundleSignature</key>
+	<string>ASPR</string>
+	<key>CFBundleExecutable</key>
+	<string>AssetProcessor</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.Amazon.AssetProcessor</string>
+</dict>
+</plist>

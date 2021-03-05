@@ -1,0 +1,54 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "autoSelect": false,
+        "displayName": "Neutral Urban (Alt)",
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 3000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 2000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 3000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblExposure": 0.0,
+        "skyboxExposure": 0.0,
+        "lights": [
+            {
+                "direction": [
+                    0.15000000596046449,
+                    -0.15000000596046449,
+                    -1.0
+                ],
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowFarClipDistance": 20.0,
+                "shadowmapSize": "Size2048",
+                "enableShadowDebugColoring": false
+            }
+        ],
+        "shadowCatcherOpacity": 0.15000000596046449
+    }
+}

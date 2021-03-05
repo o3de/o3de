@@ -1,0 +1,29 @@
+{
+  "colors": [
+    {
+        "name": "maroon",
+        "color": [128, 0, 0],
+        "price": "$0.99"
+    },
+    {
+        "name": "firebrick",
+        "color": [178, 34, 34],
+        "price": "$0.99"
+    },
+    {
+        "name": "coral",
+        "color": [255, 127, 80],
+        "price": "$0.99"
+    },
+    {
+        "name": "orange",
+        "color": [255, 165, 0],
+        "price": "$0.99"
+    },
+    {
+        "name": "gold",
+        "color": [255, 215, 0],
+        "price": "$0.99"
+    }
+  ]
+}

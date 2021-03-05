@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Actor / Hit Detection / On-2</title>
+    <g id="Icons-/-Actor-/-Hit-Detection-/-On-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" fill="#4A90E2" x="0" y="0" width="24" height="24"></rect>
+        <path d="M8,12 L11,16 L8,20 L8,18.5 L2,18.5 L2,13.5 L8,13.5 L8,12 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M19,12 L22,16 L19,20 L19,18.5 L13,18.5 L13,13.5 L19,13.5 L19,12 Z" id="Combined-Shape" fill="#FFFFFF" transform="translate(17.500000, 16.000000) scale(-1, 1) translate(-17.500000, -16.000000) "></path>
+        <rect id="Rectangle-29" fill="#FFFFFF" x="11" y="4" width="2" height="8"></rect>
+        <polygon id="Rectangle-29" fill="#FFFFFF" transform="translate(17.045050, 7.995390) rotate(45.000000) translate(-17.045050, -7.995390) " points="16.1938033 4.4949714 17.8081016 4.51420795 17.8962973 11.4958096 16.1938033 11.450495"></polygon>
+        <polygon id="Rectangle-29" fill="#FFFFFF" transform="translate(7.108926, 7.934776) scale(-1, 1) rotate(45.000000) translate(-7.108926, -7.934776) " points="6.23206854 4.36834016 7.96339486 4.36903818 7.9857837 11.4273238 6.23206854 11.5012127"></polygon>
+    </g>
+</svg>

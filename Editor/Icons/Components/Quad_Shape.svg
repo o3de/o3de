@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon / Shapes / Quad Shape</title>
+    <defs>
+        <path class="cls-1" d="M9.378,2.878l11.261,2L13.514,22.08,3.84,17.2ZM5.159,16.309L10,4.323,18.791,6.1,13.074,20.3ZM10,10.094l2.638,1.332-0.44.888L9.556,10.982Z" id="path-1"/>
+    </defs>
+    <g id="icon-/-Shapes-/-Quad-Shape" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#5A69A1" fill-rule="evenodd" xlink:href="#path-1"></use>
+    </g>
+</svg>

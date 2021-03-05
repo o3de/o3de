@@ -1,0 +1,12 @@
+<ATLConfig atl_name="ATLTestControls">
+ <AudioTriggers/>
+ <AudioRtpcs/>
+ <AudioSwitches/>
+ <AudioEnvironments/>
+ <AudioPreloads>
+  <ATLPreloadRequest atl_name="content" path="bank">
+   <WwiseFile wwise_name="bank1.bnk"/>
+   <WwiseFile wwise_name="bank2.bnk"/>
+  </ATLPreloadRequest>
+ </AudioPreloads>
+</ATLConfig>

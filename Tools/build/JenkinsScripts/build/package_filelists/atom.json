@@ -1,0 +1,76 @@
+{
+    "@lyengine": {
+        "dev": {
+            "_WAF_/specs/atom.json": "#include",
+            "_WAF_/specs/autotests_atom.json" : "#include",
+            "AtomTest/**": "#include",
+            "AtomSampleViewer/**": "#include",
+            "Bin64vc???" : {
+                "Builders" : {
+                    "AZSLc/**" : "#include",
+                    "DirectXShaderCompiler/**" : "#include",
+                    "DirectXShaderCompilerAz/**" : "#include",
+                    "glslang/**" : "#exclude",
+                    "SPIRVCross/**" : "#include"
+                },
+                "AtomTestLauncher.*" : "#include",
+                "AtomSampleViewer.*" : "#include",
+                "AtomSampleViewerLauncher.*" : "#include",
+                "CryRenderAtomShim.*" : "#include",
+                "CryRenderOther.*" : "#include",
+                "Gem.Atom_*" : "#include",
+                "Gem.AtomImGuiTools.*" : "#include",
+                "Gem.AtomLyIntegration*" : "#include",
+                "Gem.AtomTest.*" : "#include",
+                "Gem.AtomSampleViewerGem.*" : "#include",
+                "Gem.EMotionFX_Atom.*" : "#include",
+                "Gem.ImageProcessingAtom.*" : "#include",
+                "Gem.ImguiAtom.*" : "#include",
+                "Gem.MaterialEditor.*" : "#include",
+                "MaterialEditor.*" : "#include"
+            },
+            "BinMac" : {
+                "Builders" : {
+                    "AZSLc/**" : "#include",
+                    "DirectXShaderCompiler/**" : "#include",
+                    "DirectXShaderCompilerAz/**" : "#include",
+                    "glslang/**" : "#exclude",
+                    "SPIRVCross/**" : "#include"
+                },
+                "AtomTestLauncher.*" : "#include",
+                "AtomSampleViewer.*" : "#include",
+                "AtomSampleViewerLauncher.*" : "#include",
+                "CryRenderAtomShim.*" : "#include",
+                "CryRenderOther.*" : "#include",
+                "Gem.Atom_*" : "#include",
+                "Gem.AtomImGuiTools.*" : "#include",
+                "Gem.AtomLyIntegration*" : "#include",
+                "Gem.AtomTest.*" : "#include",
+                "Gem.AtomSampleViewerGem.*" : "#include",
+                "Gem.EMotionFX_Atom.*" : "#include",
+                "Gem.ImageProcessingAtom.*" : "#include",
+                "Gem.ImguiAtom.*" : "#include",
+                "Gem.MaterialEditor.*" : "#include",
+                "MaterialEditor.*" : "#include"
+            },
+            "Code": {
+                "Framework": {
+                    "AtomCore/**": "#include"
+                },
+                "Viewers/**": "#include"
+            },
+            "Gems": {
+                "Atom/**": "#include",
+                "AtomLyIntegration/**": "#include",
+                "AtomSampleViewer/**": "#include",
+                "AtomTest/**": "#include"
+            },
+            "ProjectTemplates": {
+                "AtomTemplate/**": "#include",
+                "GemTemplate/atom_project_gem_template/**": "#include",
+                "GemTemplate/**/atom_*.json": "#include"
+            }
+        },
+        "LICENSE.txt": "#include"
+    }
+}

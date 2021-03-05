@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Snap to Angle</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Snap-to-Angle" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="3" y="3" width="2" height="17"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="3" y="19" width="18" height="2"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" transform="translate(18.853553, 5.121320) rotate(-45.000000) translate(-18.853553, -5.121320) " x="16.8535534" y="4.12132034" width="4" height="2"></rect>
+        <path d="M4,10 C9.5228475,10 14,14.4771525 14,20 L14,20 L4,20 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <polygon id="Triangle" fill="#FFFFFF" transform="translate(16.353553, 7.646447) rotate(-135.000000) translate(-16.353553, -7.646447) " points="16.3535534 5.14644661 20.3535534 10.1464466 12.3535534 10.1464466"></polygon>
+    </g>
+</svg>

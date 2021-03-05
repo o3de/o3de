@@ -1,0 +1,143 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+@import "AssetsTab.qss";
+@import "LogsTab.qss";
+@import "NewLogTabDialog.qss";
+
+.APTimer {
+    font-size: 18px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-family: "Open Sans Light";
+}
+
+.TimerLine {
+    color: #888888;
+}
+
+QLabel#APStatusValueLabel {
+    margin-top: 12px;
+    margin-left: 8px;
+}
+
+QLabel#lastScanLabel,
+QLabel#analysisLabel,
+QLabel#processingLabel{
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+}
+
+QLabel#projectLabel,
+QLabel#rootLabel {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 8px;
+}
+
+QLabel#portLabel {
+    margin-top: 0px;
+    margin-bottom: 24px;
+    margin-left: 8px;
+}
+
+QTreeView#SourceAssetsTreeView,
+QTreeView#SourceAssetsTreeView::item,
+QTreeView#SourceAssetsTreeView::branch,
+QTreeView#ProductAssetsTreeView,
+QTreeView#ProductAssetsTreeView::item,
+QTreeView#ProductAssetsTreeView::branch {
+    background-color: rgb(45,45,45);
+}
+
+QTreeView#SourceAssetsTreeView::item:hover,
+QTreeView#SourceAssetsTreeView::branch:hover,
+QTreeView#ProductAssetsTreeView::item:hover,
+QTreeView#ProductAssetsTreeView::branch:hover {
+    background-color: rgb(60,60,60);
+}
+
+QTreeView#SourceAssetsTreeView::item:selected,
+QTreeView#SourceAssetsTreeView::branch:selected,
+QTreeView#SourceAssetsTreeView::item:selected:active,
+QTreeView#ProductAssetsTreeView::item:selected,
+QTreeView#ProductAssetsTreeView::branch:selected,
+QTreeView#ProductAssetsTreeView::item:selected:active {
+    background-color: rgb(73,73,73);
+}
+
+QTreeView#SourceAssetsTreeView::item:selected:!active,
+QTreeView#ProductAssetsTreeView::item:selected:!active,
+QTableWidget#outgoingProductDependenciesTable:item:selected:!active,
+QListWidget#outgoingUnmetPathProductDependenciesList:item:selected:!active,
+QTableWidget#incomingProductDependenciesTable:item:selected:!active,
+QTableWidget#productTable:item:selected:!active,
+QTableWidget#outgoingSourceDependenciesTable:item:selected:!active,
+QTableWidget#incomingSourceDependenciesTable:item:selected:!active {
+    background-color: rgb(60,60,60);
+    selection-color: rgb(192, 192, 192);
+}
+
+QPushButton#supportButton,
+QPushButton#MissingProductDependenciesSupport {
+    min-height: 24px; /* We have to set the min- and max-height otherwise the margins are not respected. */
+    max-height: 24px;
+
+    margin-top: 10px;
+    margin-right: 16px;
+
+    border: none;
+
+    qproperty-icon: url(:/stylesheet/img/help.svg);
+    qproperty-iconSize: 24px 24px;
+}
+
+ConnectionEditDialog QLabel {
+    background-color: transparent;
+}
+
+QTableWidget {
+    background-color: rgb(45,45,45);            /* Odd row */
+    alternate-background-color: rgb(34,34,34);  /* Even row */
+    selection-background-color: rgb(73,73,73);
+}
+
+QTableWidget::item:selected {
+    background: rgb(73,73,73);
+}
+
+QTableWidget::item:hover {
+    background: rgb(60,60,60);
+}
+
+QTableWidget QHeaderView::section {
+    background-color: rgb(34,34,34);
+}
+
+QListWidget {
+    background-color: rgb(45,45,45);            /* Odd row */
+    alternate-background-color: rgb(34,34,34);  /* Even row */
+    selection-background-color: rgb(73,73,73);
+}
+
+QListWidget::item:selected {
+    background: rgb(73,73,73);
+}
+
+QListWidget::item:hover {
+    background: rgb(60,60,60);
+}
+
+QListWidget QHeaderView::section {
+    background-color: rgb(34,34,34);
+}

@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BloomCompositePassTemplate",
+            "PassClass": "BloomCompositePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "DownsampleMipChainPassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/BloomCompositeCS.shader"
+                }
+            }
+        }
+    }
+}

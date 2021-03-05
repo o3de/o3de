@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ATLControlsPanel</class>
+ <widget class="QWidget" name="ATLControlsPanel">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>299</width>
+    <height>674</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ATL Controls Panel</string>
+  </property>
+  <property name="icon" stdset="0">
+   <iconset resource="AudioControlsEditorUI.qrc">
+    <normaloff>:/AudioControlsEditor/Icons/Load_Icon.png</normaloff>:/AudioControlsEditor/Icons/Load_Icon.png</iconset>
+  </property>
+  <property name="text" stdset="0">
+   <string>Reload</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_27" stretch="1,0,0">
+     <item>
+      <widget class="QLineEdit" name="m_pTextFilter">
+       <property name="toolTip">
+        <string>Show only controls with this name</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>Search</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_pFiltersButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Filter controls by type</string>
+       </property>
+       <property name="text">
+        <string>Filters</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_pAddButton">
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Add new folder or control</string>
+       </property>
+       <property name="text">
+        <string>+ Add</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QAudioControlsTreeView" name="m_pATLControlsTree">
+     <property name="editTriggers">
+      <set>QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DragDrop</enum>
+     </property>
+     <property name="defaultDropAction">
+      <enum>Qt::MoveAction</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QAudioControlsTreeView</class>
+   <extends>QTreeView</extends>
+   <header>QAudioControlTreeWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="AudioControlsEditorUI.qrc"/>
+ </resources>
+ <connections/>
+ <slots>
+  <signal>CurrentControlNameChanged(QString)</signal>
+  <signal>CurrentControlEditingFinished()</signal>
+  <slot>Reload()</slot>
+  <slot>SelectedInternalControlChanged(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+  <slot>UpdateAddConnectionMenu(int)</slot>
+  <slot>SelectedConnectionChanged(QListWidgetItem*,QListWidgetItem*)</slot>
+  <slot>Save()</slot>
+  <slot>NewLibrary()</slot>
+  <slot>CreateSwitchControl()</slot>
+  <slot>CreateTriggerControl()</slot>
+  <slot>CreateRTPCControl()</slot>
+  <slot>AddEnvironmentsLibrary()</slot>
+  <slot>CreateEnvironmentsControl()</slot>
+  <slot>UpdateSelectedConnection()</slot>
+  <slot>AddPreloadLibrary()</slot>
+  <slot>CreatePreloadControl()</slot>
+  <slot>CurrentConnectionGroupChanged(QString)</slot>
+  <slot>SetScopeForCurrentControl(QString)</slot>
+  <slot>SetSelectedControlName(QString)</slot>
+  <slot>SetAutoLoadForCurrentControl(bool)</slot>
+  <slot>UpdateControlData()</slot>
+  <slot>ShowExtraColumns(bool)</slot>
+ </slots>
+</ui>

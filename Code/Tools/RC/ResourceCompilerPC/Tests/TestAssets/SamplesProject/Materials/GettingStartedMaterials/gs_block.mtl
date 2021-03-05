@@ -1,0 +1,23 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Block_01" MtlFlags="524416" Shader="Illum" GenMask="80000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="mat_wood" MatTemplate="" Diffuse="0.016807377,0.12743771,0.016807377" Specular="0,0,0" Emissive="0,0,0" Opacity="1" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="textures/gettingstartedtextures/white.tif"/>
+   </Textures>
+   <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="Block_02" MtlFlags="524416" Shader="Illum" GenMask="80000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="mat_wood" MatTemplate="" Diffuse="0.12743771,0.016807377,0.016807377" Specular="0,0,0" Emissive="0,0,0" Opacity="1" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="textures/gettingstartedtextures/white.tif"/>
+   </Textures>
+   <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="Block_03" MtlFlags="524416" Shader="Illum" GenMask="80000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="mat_wood" MatTemplate="" Diffuse="0.016807377,0.016807377,0.12743771" Specular="0,0,0" Emissive="0,0,0" Opacity="1" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="textures/gettingstartedtextures/white.tif"/>
+   </Textures>
+   <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/Any.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="Any"
+	       QualifiedName="ScriptCanvas::Nodes::Logic::Any"
+	       PreferredClassName="Any"
+           Uuid="{6359C34F-3C34-4784-9FFD-18F1C8E3482D}"
+           Base="ScriptCanvas::Node"
+           Version="1"
+           VersionConverter="AnyNodeVersionConverter"
+           GeneratePropertyFriend="True"
+           Description="Will trigger the Out pin whenever any of the In pins get triggered">
+        <Out Name="Out" Description="Signaled when the node receives a signal from the selected index"/>
+    </Class>
+</ScriptCanvas>

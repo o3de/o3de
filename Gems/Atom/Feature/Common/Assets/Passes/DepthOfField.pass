@@ -1,0 +1,83 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldTemplate",
+            "PassClass": "DepthOfFieldParentPass",
+            "Slots": [
+                {
+                    "Name": "DoFColorInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DoFDepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DoFOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DoFOutput",
+                    "AttachmentRef": {
+                        "Pass": "DepthOfFieldOnBokeh",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "DoFColorInput",
+                    "Output" : "DoFOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "AutoFocus",
+                    "TemplateName": "DepthOfFieldReadBackFocusDepthTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DoFDepthInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthOfFieldOnBokeh",
+                    "TemplateName": "DepthOfFieldOnBokehTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DoFColorInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DoFDepthInput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

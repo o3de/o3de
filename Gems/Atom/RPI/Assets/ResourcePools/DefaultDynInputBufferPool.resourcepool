@@ -1,0 +1,13 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ResourcePoolSourceData",
+    "ClassData": {
+        "PoolName": "DefaultDynInputBufferPool",
+        "PoolType": "BufferPool",
+        "BudgetInBytes": 25165824,
+        "BufferPoolHeapMemoryLevel": "Host",
+        "BufferPoolhostMemoryAccess": "Write",
+        "BufferPoolBindFlags": "InputAssembly"
+    }
+}

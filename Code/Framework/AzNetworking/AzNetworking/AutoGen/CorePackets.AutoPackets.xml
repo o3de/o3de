@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PacketGroup Name="CorePackets" PacketStart="0">
+    <Packet Name="InitiateConnectionPacket" Desc="This packet is used to initiate a new connection" />
+
+    <Packet Name="TerminateConnectionPacket" Desc="This packet is used to gracefully terminate an existing connection">
+        <Member Type="AzNetworking::DisconnectReason" Name="disconnectReason" Init="AzNetworking::DisconnectReason::None" />
+    </Packet>
+
+    <Packet Name="HeartbeatPacket" Desc="This packet is used to keep an established connection alive" />
+
+    <Packet Name="FragmentedPacket" Desc="This packet is used to segment a packet that exceeds a connections MTU">
+        <Member Type="AzNetworking::SequenceId" Name="unfragmentedSequence" Init="AzNetworking::InvalidSequenceId" />
+        <Member Type="AzNetworking::SequenceId" Name="fragmentSequence" Init="AzNetworking::InvalidSequenceId" />
+        <Member Type="uint8_t" Name="chunkIndex" Init="0" />
+        <Member Type="uint8_t" Name="chunkCount" Init="0" />
+        <Member Type="AzNetworking::ChunkBuffer" Name="chunkBuffer" />
+    </Packet>
+</PacketGroup>

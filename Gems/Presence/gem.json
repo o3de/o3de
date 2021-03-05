@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "903ce283760647049efaef70d9368eeb",
+    "Name": "Presence",
+    "DisplayName": "Presence",
+    "Version": "0.1.0",
+    "Summary": "Platform agnostic interface for Presence services",
+  "Tags": [ "Presence", "Rich Presence" ],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

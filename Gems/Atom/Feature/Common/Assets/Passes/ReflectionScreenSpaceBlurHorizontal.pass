@@ -1,0 +1,30 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceBlurHorizontalPassTemplate",
+            "PassClass": "ReflectionScreenSpaceBlurChildPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

@@ -1,0 +1,73 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LookModificationTransformTemplate",
+            "PassClass": "LookModificationTransformPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "EyeAdaptationDataInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_eyeAdaptation"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "LookModificationComposite",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "Input",
+                    "Output" : "Output"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "BlendColorGradingLuts",
+                    "TemplateName": "BlendColorGradingLutsTemplate"
+                },
+                {
+                    "Name": "LookModificationComposite",
+                    "TemplateName": "LookModificationCompositeTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Input"
+                            }
+                        },
+                        {
+                            "LocalSlot": "EyeAdaptationDataInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "EyeAdaptationDataInput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

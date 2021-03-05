@@ -1,0 +1,12 @@
+{
+    "platform": {
+        "darwin_x64": {
+            "libpath": [
+                "lib/mac"
+            ],
+            "lib": [
+                "libGLEW.a"
+            ]
+        }
+    }
+}

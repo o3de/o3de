@@ -1,0 +1,13 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="primitives_default_001_mat" MtlFlags="524416" Shader="Illum" GenMask="80000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1" Specular="0.5,0.5,0.5" Emissive="0,0,0" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="primitives_001_diff.tif"/>
+   </Textures>
+   <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="primitives_proxy_001_mat" MtlFlags="525440" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="mat_nodraw" Diffuse="1,0,0" Specular="0.5,0.5,0.5" Emissive="0,0,0" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures />
+  </Material>
+ </SubMaterials>
+</Material>

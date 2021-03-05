@@ -1,0 +1,3 @@
+[submodule "v-hacd-data"]
+	path = v-hacd-data
+	url = https://github.com/kmammou/v-hacd-data.git

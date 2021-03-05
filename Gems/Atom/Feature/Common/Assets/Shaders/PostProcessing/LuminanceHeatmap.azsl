@@ -1,0 +1,345 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// This is a fullscreen debug pass that draws luminance/exposure debugging information. 
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/GlyphRender.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/CoreLights/PhotometricValue.azsli>
+#include <Atom/Features/Math/IntersectionTests.azsli>
+#include "LuminanceHistogramCommon.azsli" 
+#include "EyeAdaptationUtil.azsli"  
+ 
+ 
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_framebuffer;
+    
+    // This is a mip chain containing the scene luminance info
+    // x = min luminance
+    // y = average luminance
+    // z = max luminance
+    Texture2D<float4> m_sceneLuminance;    
+    
+    // This should be of size NUM_HISTOGRAM_BINS. 
+    Buffer<uint> m_histogram;    
+    
+    Sampler LinearSampler 
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };    
+}  
+
+static const float HistogramHeightScale = 10;
+static const float HistogramGlyphPositionY = 0.965; 
+static const float HistogramLeft = 0.0;
+static const float HistogramRight = 1.0;
+static const float HistogramTop = 0.7; 
+static const float HistogramBottom = 0.92; 
+static const float HistogramAlpha = 0.75;
+
+static const float3 UnderMinLuminanceColor = float3(0,0,1);
+static const float3 OverMaxLuminanceColor = float3(1,0,0);
+static const float3 HistogramBarChartColor = float3(1,1,1);
+static const float4 AvgLuminanceMarkerColor = float4(1,1,1,1);
+static const float4 BottomBackgroundColor = float4(0.4, 0.4, 0.4, HistogramAlpha);
+
+static const float AvgLuminanceMarkerHeight = 0.025;
+static const float AvgLuminanceMarkerHalfWidth = 0.015;
+
+static const int MaxNumGlyphs = 33;
+static const float GlyphSize = 0.22;
+
+
+float3 GetSceneLuminanceMinAvgMax()
+{
+    // Get the dimensions from the luminance mip chain
+    uint2 inputDimensions;
+    uint numMipLevels = 1;
+    PassSrg::m_sceneLuminance.GetDimensions(0, inputDimensions.x, inputDimensions.y, numMipLevels);
+
+    // Use smallest 1x1 mip to get scene average luminance.
+    float3 luminanceMinAvgMax = PassSrg::m_sceneLuminance.SampleLevel(PassSrg::LinearSampler, float2(0.5f, 0.5f), numMipLevels - 1).xyz;
+    return luminanceMinAvgMax;
+}
+
+uint2 GetBackbufferResolution()
+{
+    uint numLevels;
+    uint2 dimensions;
+    PassSrg::m_framebuffer.GetDimensions(0, dimensions.x, dimensions.y, numLevels);
+    return dimensions;
+}
+
+uint GetNumPixelsInBackBuffer()
+{
+    uint2 dimensions = GetBackbufferResolution();
+    return dimensions.x * dimensions.y;
+}
+
+uint GetHistogramBinCount(const int bin)
+{
+    return PassSrg::m_histogram[bin]; 
+}
+
+float GetHistogramHeight(const int bin)
+{    
+    uint numPixels = GetNumPixelsInBackBuffer();
+    return (float)GetHistogramBinCount(bin) / (float)numPixels * HistogramHeightScale;
+}
+
+float2 GetEvRangeForBin(const int bin)
+{
+    float2 evDisplayRange = GetEvDisplayRangeMinMax();
+    float binWidth = (evDisplayRange.y - evDisplayRange.x) / (float)NUM_HISTOGRAM_BINS;
+    float2 evRange;
+    evRange.x = bin * binWidth + evDisplayRange.x;
+    evRange.y = evRange.x + binWidth;
+    return evRange;
+}
+
+// Returns the color for the given bin
+// This will highlight the bins that are over or under the max/min luminance with a different color
+float3 GetHistogramColor(const int bin)
+{
+    const float exposureMinLog2 = ViewSrg::m_exposureControl.m_exposureMinLog2;
+    const float exposureMaxLog2 = ViewSrg::m_exposureControl.m_exposureMaxLog2;
+    const float minLuminance = EV100LuminanceToNits(exposureMinLog2);
+    const float maxLuminance = EV100LuminanceToNits(exposureMaxLog2);
+    
+    const float2 evRangeForBin = GetEvRangeForBin(bin);
+
+    if (evRangeForBin.x < exposureMinLog2) 
+    {
+        return UnderMinLuminanceColor;
+    }
+        
+    if (evRangeForBin.y > exposureMaxLog2)
+    {
+        return OverMaxLuminanceColor;
+    }
+    
+    return HistogramBarChartColor;
+}
+
+float2 NormalizeUv(float2 uv, float2 origin, float2 dim)
+{
+    float2 uvResult = uv - float2(origin.x, origin.y);
+    uvResult *= rcp(dim);        
+    return uvResult;
+}
+
+float2 NormalizeHistogramUV(float2 uv)
+{
+    const float2 origin = float2(HistogramLeft, HistogramTop);
+    const float2 dim = float2(HistogramRight - HistogramLeft, HistogramBottom - HistogramTop);
+    return NormalizeUv(uv, origin, dim);
+}
+
+int GetHistogramBinFromUvCoord(float2 uv)
+{
+    if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1)
+    {
+        return -1;    
+    }
+    
+    return uv.x * NUM_HISTOGRAM_BINS;
+}
+
+float4 DrawLuminanceHistogram(const float2 screenUv)
+{
+    const float2 histogramUv = NormalizeHistogramUV(screenUv);
+    const int bin = GetHistogramBinFromUvCoord(histogramUv);
+    if (bin == -1)
+    {
+        return 0;
+    }
+    
+    const bool histogramHeightCheck = (1 - histogramUv.y) > GetHistogramHeight(bin);
+    if (histogramHeightCheck)
+    {        
+        return 0;
+    }
+      
+    return float4(GetHistogramColor(bin), HistogramAlpha);
+}
+
+float4 FramebufferColorToHeatmapColor(const float3 color)
+{
+    const float luminanceHere = CalculateLuminance(color.rgb, ColorSpaceId::ACEScg);
+
+    const float exposureMinLog2 = ViewSrg::m_exposureControl.m_exposureMinLog2;
+    const float exposureMaxLog2 = ViewSrg::m_exposureControl.m_exposureMaxLog2;
+    const float minLuminance = EV100LuminanceToNits(exposureMinLog2);
+    const float maxLuminance = EV100LuminanceToNits(exposureMaxLog2);
+    
+    if (luminanceHere < minLuminance)
+    {
+        return float4(UnderMinLuminanceColor, 1);
+    }
+    else if (luminanceHere > maxLuminance)
+    {
+        return float4(OverMaxLuminanceColor, 1);
+    }
+    else
+    {
+        return 0; 
+    }
+}
+
+float4 DrawBottomBackground(float2 uv)
+{
+    if (uv.y < HistogramBottom)
+    {
+        return 0;
+    }
+    else
+    {
+        return BottomBackgroundColor;
+    }
+}
+
+float4 DrawAvgLuminanceMarker(const float2 uv)
+{       
+    const float triangleTopY = HistogramBottom;
+    const float triangleBottomY = HistogramBottom + AvgLuminanceMarkerHeight;
+
+    if (uv.y < triangleTopY || uv.y > triangleBottomY)
+    {
+        return 0;
+    }
+
+    const float lumAvg = GetSceneLuminanceMinAvgMax().y;        
+    const float evAvg = NitsToEv100Luminance(lumAvg);
+
+    const float triangleTopX = (evAvg - GetEvDisplayRangeMinMax().x) / (GetEvDisplayRangeMinMax().y - GetEvDisplayRangeMinMax().x);  
+    const float triangleLeft = triangleTopX - AvgLuminanceMarkerHalfWidth;
+    const float triangleRight = triangleTopX + AvgLuminanceMarkerHalfWidth;
+    
+    if (uv.x < triangleLeft || uv.x > triangleRight)
+    {
+        return 0;
+    }
+    
+    const float2 triangleTop = float2(triangleTopX, triangleTopY);       
+    const float2 triangleBottomLeft = float2(triangleLeft, triangleBottomY);
+    const float2 triangleBottomRight = float2(triangleRight, triangleBottomY);
+    
+    return IsPointInsideTriangle(uv, triangleTop, triangleBottomLeft, triangleBottomRight) ? AvgLuminanceMarkerColor : 0;
+}
+
+int NumDigits(int value)
+{
+    int numDigits = value < 0 ? 1 : 0;
+    value = abs(value);
+    do
+    {
+        numDigits++;
+        value /= 10;
+    } while (value);
+
+    return numDigits;
+}
+
+// Note that the glyph system draws from right to left in screenspace
+// Given a number that we want to print, this function will return the offset needed to make sure the text is better centered
+// e.g. printing "1" will need a tiny offset to center the digit, but printing "-1234.9" will require a larger offset to center this text
+float CalculateOffsetToCenterGlyph(const int number)
+{
+    static const float centeringOffset = 0.006;     
+    return NumDigits(number) * 0.5 * centeringOffset;
+}
+
+int CalculateNumGlyphs()
+{
+    const float displayRange = GetEvDisplayRangeMinMax().y - GetEvDisplayRangeMinMax().x;
+    int numGlyphs = floor(displayRange);
+    numGlyphs = min(numGlyphs, MaxNumGlyphs);
+    return numGlyphs;
+}
+
+float4 DrawEvNumbers(const float2 uv)
+{
+    GlyphRender glyphRender;
+    glyphRender.Init(GetBackbufferResolution());    
+
+    const int numGlyphs = CalculateNumGlyphs();
+    const float2 displayRange = GetEvDisplayRangeMinMax();
+    const float evSceneIncrement = (displayRange.y - displayRange.x) / (numGlyphs - 1);
+ 
+    float evMarker = displayRange.x;
+        
+    float4 color = 0;
+    for(int i = 0 ; i < numGlyphs ; ++i)
+    {       
+        const int number = round(evMarker);       
+
+        const float glyphPositionX = i / float(numGlyphs - 1) + CalculateOffsetToCenterGlyph(number);
+        
+        color += glyphRender.DrawNumberUvSpace(number, uv, float2(glyphPositionX, HistogramGlyphPositionY), GlyphSize);
+        if (color.a > 0)
+        {
+            break;
+        }
+        evMarker += evSceneIncrement;
+    }
+    return color;
+}
+
+float4 DrawHeatmap(const float2 uv)
+{
+    const float4 frameBufferColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, uv);
+    return FramebufferColorToHeatmapColor(frameBufferColor.rgb);                                
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT; 
+      
+    OUT.m_color = DrawAvgLuminanceMarker(IN.m_texCoord);
+    if (OUT.m_color.a > 0)
+    {
+       return OUT;    
+    }
+    
+    OUT.m_color = DrawLuminanceHistogram(IN.m_texCoord); 
+    if (OUT.m_color.a > 0)
+    {
+        return OUT;    
+    }
+       
+    OUT.m_color = DrawEvNumbers(IN.m_texCoord);    
+    if (OUT.m_color.a > 0)
+    {    
+        return OUT;
+    }
+
+    OUT.m_color = DrawBottomBackground(IN.m_texCoord);
+    if (OUT.m_color.a > 0)
+    {
+        return OUT;
+    }
+    
+    OUT.m_color = DrawHeatmap(IN.m_texCoord);
+    return OUT;
+}

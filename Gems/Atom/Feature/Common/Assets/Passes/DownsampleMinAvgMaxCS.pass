@@ -1,0 +1,64 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DownsampleMinAvgMaxCS",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "MinAvgMax",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MinAvgMax"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
+                },
+                "Make Fullscreen Pass": true
+            }
+        }
+    }
+}

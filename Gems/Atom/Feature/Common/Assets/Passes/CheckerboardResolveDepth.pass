@@ -1,0 +1,65 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CheckerboardResolveDepthTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "LoadActionStencil": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ResolvedDepthOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ResolvedDepthOutput"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/MSAAResolveDepth.shader"
+                }
+            }
+        }
+    }
+}

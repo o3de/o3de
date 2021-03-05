@@ -1,0 +1,179 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
+
+#include <scenesrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2D<float2>   m_depthStencilTexture;
+    Texture2D<float>    m_linearDepthTexture;
+    Texture2D           m_noiseTexture;     // Defines fog pattern 
+    float3              m_fogColor;
+    float               m_fogStartDistance; // Distance at which the fog starts to appear
+    float               m_fogEndDistance;   // Distance for complete fog color taking over
+    float               m_fogMinHeight;     // Minmum and Maximum fog layer heights
+    float               m_fogMaxHeight;
+
+    // Fog texture scale and animation parameters
+    float2              m_noiseScaleUV;
+    float2              m_noiseVelocityUV;
+
+    float2              m_noiseScaleUV2;
+    float2              m_noiseVelocityUV2;
+
+    float               m_octavesBlendFactor;
+
+    Sampler DepthSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler LinearMirrorSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Mirror;
+        AddressV = Mirror;
+        AddressW = Mirror;
+    };
+};
+
+option bool o_useNoiseTexture = true;
+option bool o_enableFogLayer = true;
+
+float CalculateFogDensity(float3 surfacePosWS, float depthInLayer)
+{
+    // Noise pattern across the XY plane - first octave
+    float2 noiseUV = surfacePosWS.xy * PassSrg::m_noiseScaleUV + PassSrg::m_noiseVelocityUV * SceneSrg::m_time;
+    float  fogDensity = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV).r;
+
+    // second noise octave 
+    float2 noiseUV2 = surfacePosWS.xy * PassSrg::m_noiseScaleUV2 + PassSrg::m_noiseVelocityUV2 * SceneSrg::m_time;
+    float fogDensity2 = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV2).r;
+
+    // Overall fog density in this xy position
+    fogDensity = lerp(fogDensity, fogDensity2, PassSrg::m_octavesBlendFactor);
+
+    // Apply height attenuation at location xy based on the density amount.  This is a heuristic 
+    // in order to avoid using 3D texture yet have height deviation near the layer's edge.
+    const float fadeStartHeight = 0.8;  // relative fog layer height at which point we start to fade
+    // The fade will be gradual from the end of the noise location 
+    float fogRelativeHeight = 1.0 - smoothstep( fadeStartHeight, 1.0, depthInLayer );
+
+    return fogDensity * fogRelativeHeight;
+}
+
+// An optimized version of deferred fog with ability to have height layer.
+// It is optimized to reduce almost all edge cases by using ray intersection logic 
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    
+    float linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
+    float zDepth = PassSrg::m_depthStencilTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
+    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::DepthSampler, PassSrg::m_depthStencilTexture, zDepth, IN.m_position.xy).xyz;
+
+    // Fog layer deltas
+    const float layerThickness = PassSrg::m_fogMaxHeight - PassSrg::m_fogMinHeight;
+    const float dViewMax = ViewSrg::m_worldPosition.z - PassSrg::m_fogMaxHeight;
+    const float dViewMin = ViewSrg::m_worldPosition.z - PassSrg::m_fogMinHeight;
+    const float3 surfaceViewVec = surfacePosWS - ViewSrg::m_worldPosition;
+    const float3 surfaceViewDir = normalize(surfaceViewVec);
+    float dSurfaceView = surfaceViewVec.z;
+
+    // When set to 0, indicate that View and surface hit point are outside the 
+    // fog layer / ray start-end point
+    float fogTraversalRelLength = 0;    // length of the traversal within the fog layer / ray length
+    float distToFogLayer = 0;
+    float fogDensity = 1.0;            // accumulated fog density along the ray traversal
+
+    if (o_enableFogLayer)
+    {
+        if (abs(dSurfaceView) < EPSILON)
+            dSurfaceView = EPSILON;
+
+        // Normalizing the ray length to be 1.0 and aligning the fog layer according to ray direction
+        float relViewToMin = -dViewMin / dSurfaceView;
+        float relViewToMax = -dViewMax / dSurfaceView;
+        float relClosestToView = min(relViewToMin, relViewToMax);
+        float relFarthestFromView = max(relViewToMin, relViewToMax);
+
+        // Reduce the effect of noise towards more uniform fog
+        float fogDistanceDeviationRatio = 0.95;  // should be exposed to the user
+
+        // Fog layer ray intersection logic
+        if ((relClosestToView <= 1.0) && (relFarthestFromView >= 0))
+        {   // Fog layer was penetrated
+            distToFogLayer = saturate(relClosestToView);    // if view position is within the layer, relClosestToView < 0
+
+            // If (relFarthestFromView < 1.0) ray crosses the entire fog layer - use 1.0 for max fog depth. Otherwise the 
+            // surface hit point is within the layer - use tMax for max fog depth.
+            relFarthestFromView = min(relFarthestFromView, 1.0);
+            fogTraversalRelLength = relFarthestFromView - distToFogLayer;  
+
+            if (o_useNoiseTexture)
+            {
+                fogDensity = 0;         // accumulated fog density along the ray traversal
+                                                   
+                // Ray marching - stepping within the fog layer and accumulating density
+                const int steps = 30;
+                const float relIntervalSize = 1.0 / (steps - 1.0);      // relative size to the fog layer
+                const float stepSize = fogTraversalRelLength * relIntervalSize;
+                float locationAlongRay = distToFogLayer;
+                float locationWithinLayer = 0;
+
+                // Instead of passing how far along you are along the relative fog layer, pass the actual 
+                // height location in the layer (0..1) and based on it, impact the fading near the top.
+                [unroll]
+                for (int i = 0; i < steps ; i++ )
+                {
+                    float3 fogHitPnt = ViewSrg::m_worldPosition + locationAlongRay * surfaceViewVec;
+                    fogDensity += CalculateFogDensity(fogHitPnt, locationWithinLayer);
+                    locationWithinLayer += relIntervalSize;
+                    locationAlongRay += stepSize;
+                }
+                fogDensity /= (float)steps;
+            }
+            else
+            {
+                fogDensity = 1.0;   // fog density without noise is uniform
+            }
+        }
+        // Determine density of fog due to traversal until hit and taking into account the 
+        // fog turbulence sampling along the traversal that reduces density.
+        linearDepth *= lerp(1.0, fogDensity, fogDistanceDeviationRatio);
+
+        // The following line is the linear depth traversing the layer
+        linearDepth = fogTraversalRelLength * linearDepth - max( 0, PassSrg::m_fogStartDistance - distToFogLayer * linearDepth);
+    }
+    else
+    {
+        linearDepth = max( 0, linearDepth - PassSrg::m_fogStartDistance );
+    }
+ 
+    float layerFogAmountWithStartDist = saturate(linearDepth / (PassSrg::m_fogEndDistance - PassSrg::m_fogStartDistance));
+
+    OUT.m_color = float4(PassSrg::m_fogColor, layerFogAmountWithStartDist);
+
+    return OUT;
+}

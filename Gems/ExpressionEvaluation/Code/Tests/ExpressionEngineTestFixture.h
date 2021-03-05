@@ -1,0 +1,107 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AzCore/UnitTest/TestTypes.h>
+#include <gtest/gtest-param-test.h>
+
+#include <ExpressionEvaluation/ExpressionEngine.h>
+#include <ExpressionEvaluationSystemComponent.h>
+#include <ExpressionEngine/Utils.h>
+
+namespace ExpressionEvaluation
+{
+    class ExpressionEngineTestFixture
+        : public UnitTest::AllocatorsFixture
+    {
+    public:
+
+        void SetUp() override
+        {
+            UnitTest::AllocatorsFixture::SetUp();
+
+            // Faking the setup to avoid needing to re-implement these features somewhere else.
+            m_systemComponent = aznew ExpressionEvaluationSystemComponent();
+            m_systemComponent->Init();
+            m_systemComponent->Activate();
+        }
+
+        void TearDown() override
+        {
+            m_systemComponent->Deactivate();
+            delete m_systemComponent;
+
+            UnitTest::AllocatorsFixture::TearDown();
+        }
+
+        template<typename T>
+        void ConfirmResult(const ExpressionResult& result, const T& knownValue)
+        {
+            EXPECT_FALSE(result.type().IsNull());
+            EXPECT_EQ(result.type(), azrtti_typeid<T>());
+
+            T resultValue = Utils::GetAnyValue<T>(result);
+            EXPECT_EQ(resultValue, knownValue);
+        }
+
+        void ConfirmFailure(const ExpressionResult& result)
+        {
+            EXPECT_TRUE(result.type().IsNull());
+        }
+
+        template<typename T>
+        void PushPrimitive(ExpressionTree& expressionTree, const T& primitiveValue)
+        {
+            ExpressionToken token;
+
+            if (AZStd::is_same<T, double>::value)
+            {
+                token.m_parserId = Interfaces::NumericPrimitives;
+            }
+            else if (AZStd::is_same<T, bool>())
+            {
+                token.m_parserId = Interfaces::BooleanPrimitives;
+            }
+
+            token.m_information = Primitive::GetPrimitiveElement(primitiveValue);
+
+            expressionTree.PushElement(AZStd::move(token));
+        }
+
+        void PushOperator(ExpressionTree& expressionTree, ExpressionParserId parserId, ElementInformation&& elementInformation)
+        {
+            ExpressionToken expressionToken;
+
+            expressionToken.m_parserId = parserId;
+            expressionToken.m_information = AZStd::move(elementInformation);
+
+            expressionTree.PushElement(AZStd::move(expressionToken));
+        }
+
+        ExpressionEvaluationRequests* ExpressionEvaluationRequests()
+        {
+            return m_systemComponent;
+        }
+
+        AZStd::unordered_set<ExpressionParserId> MathOnlyOperatorRestrictions() const
+        {
+            return {
+                Interfaces::NumericPrimitives,
+                Interfaces::MathOperators
+            };
+        }
+
+    private:
+
+        ExpressionEvaluationSystemComponent* m_systemComponent;
+    };
+}

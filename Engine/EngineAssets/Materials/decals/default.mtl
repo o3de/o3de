@@ -1,0 +1,6 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="40000801" StringGenMask="%ALLOW_SILHOUETTE_POM%DECAL%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Opacity="1" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+ <Textures>
+  <Texture Map="Diffuse" File="engineassets/texturemsg/replaceme.dds"/>
+ </Textures>
+ <PublicParams EmittanceMapGamma="1" DecalDiffuseOpacity="1" DecalFalloff="1" DecalAlphaMult="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>

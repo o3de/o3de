@@ -1,0 +1,33 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+            "Name": "ReferenceImage"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+                "Name": "ReferenceImage"
+            },
+            "ios": {
+                "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+                "Name": "ReferenceImage"
+            },
+            "osx_gl": {
+                "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+                "Name": "ReferenceImage"
+            },
+            "provo": {
+                "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+                "Name": "ReferenceImage"
+            },
+            "xenia": {
+                "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
+                "Name": "ReferenceImage"
+            }
+        }
+    }
+}

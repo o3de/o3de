@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/AssetEditorResources">
+        <file>Load_Icon.png</file>
+        <file>New_Icon.png</file>
+        <file>Save_Icon.png</file>
+        <file>ExpandAll_Icon.png</file>
+        <file>CollapseAll_Icon.png</file>
+    </qresource>
+</RCC>

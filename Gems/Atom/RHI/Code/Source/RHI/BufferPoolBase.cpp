@@ -1,0 +1,67 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include <Atom/RHI/BufferPoolBase.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        ResultCode BufferPoolBase::InitBuffer(Buffer* buffer, const BufferDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+        {
+            // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered
+            // undefined for uninitialized resources. This makes the buffer descriptor well defined at initialization
+            // time rather than leftover data from the previous usage.             
+            buffer->SetDescriptor(descriptor);
+
+            return ResourcePool::InitResource(buffer, platformInitResourceMethod);
+        }
+
+        void BufferPoolBase::ValidateBufferMap(Buffer& buffer, bool isDataValid)
+        {
+            if (Validation::IsEnabled())
+            {
+                if (!isDataValid)
+                {
+                    AZ_Warning("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
+                }
+                ++buffer.m_mapRefCount;
+                ++m_mapRefCount;
+            }
+        }
+
+        bool BufferPoolBase::ValidateBufferUnmap(Buffer& buffer)
+        {
+            if (Validation::IsEnabled())
+            {
+                if (--buffer.m_mapRefCount == -1)
+                {
+                    AZ_Error("BufferPoolBase", false, "Buffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());
+
+                    // Undo the ref-count to keep the validation state sane.
+                    ++buffer.m_mapRefCount;
+                    return false;
+                }
+                else
+                {
+                    --m_mapRefCount;
+                }
+            }
+            return true;
+        }
+
+        uint32_t BufferPoolBase::GetMapRefCount() const
+        {
+            return m_mapRefCount;
+        }
+
+    }
+}

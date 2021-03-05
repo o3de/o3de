@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / System / Folder</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Folder" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M2,5 C2,4.44771525 2.44771525,4 3,4 L9.45124546,4 C9.78429996,4 10.0954962,4.16581403 10.2812564,4.44225291 L10.9920366,5.5 C11.0957122,5.65428466 11.1488102,5.8277351 11.1551724,6.00077049 L21,6 C21.5522847,6 22,6.44771525 22,7 L22,19 C22,19.5522847 21.5522847,20 21,20 L3,20 C2.44771525,20 2,19.5522847 2,19 L2,5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="CScriptTable">
+    <DisplayString Condition="m_nRef == -1">Deleted Ref</DisplayString>
+    <DisplayString Condition="m_nRef == 0">NULL Ref</DisplayString>
+    <DisplayString Condition="m_nRef > 0 &amp;&amp; (m_nRef &lt; L->l_G->l_registry.value.gc->h.sizearray + 1)">{L->l_G->l_registry.value.gc->h.array[m_nRef - 1]}</DisplayString>
+    <DisplayString Condition="!(m_nRef > 0 &amp;&amp; (m_nRef &lt; L->l_G->l_registry.value.gc->h.sizearray + 1))">Ref is in the hash part of registry</DisplayString>
+    <Expand>
+      <Item Name="Ref">m_nRef</Item>
+      <Item Name="Value" Condition="m_nRef &lt; L->l_G->l_registry.value.gc->h.sizearray + 1">L->l_G->l_registry.value.gc->h.array[m_nRef - 1]</Item>
+      <Item Name="Value" Condition="!(m_nRef &lt; L->l_G->l_registry.value.gc->h.sizearray + 1)">L->l_G->l_registry</Item>
+      <Item Name="Lua Context">L</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="lua_State">
+    <DisplayString Condition="ci->func->tt == 6 &amp;&amp; ci->func->value.gc->cl.c.isC">lua_State (From C function)</DisplayString>
+    <DisplayString Condition="ci->func->tt == 6 &amp;&amp; !ci->func->value.gc->cl.c.isC">lua_State (From Lua function)</DisplayString>
+    <DisplayString Condition="ci->func->tt != 6">lua_State</DisplayString>
+    <Expand>
+      <Item Name="Stack Size">top - base</Item>
+      <IndexListItems>
+        <Size>top - base</Size>
+        <ValueNode>base[$i]</ValueNode>
+      </IndexListItems>
+      <Item Name="Globals">l_gt</Item>
+      <Item Name="Registry">l_G->l_registry</Item>
+
+      <Synthetic Name="Call stack">
+        <DisplayString>Size {(ci - base_ci) + 1}</DisplayString>
+        <Expand>
+          <IndexListItems>
+            <Size>(ci - base_ci) + 1</Size>
+            <ValueNode>base_ci[(ci - base_ci) - $i]</ValueNode>
+          </IndexListItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="CallInfo">
+    <DisplayString Condition="func->tt == 6 &amp;&amp; !func->value.gc->cl.l.isC">File {func->value.gc->cl.l.p->source,na} line {func->value.gc->cl.l.p->lineinfo[savedpc - func->value.gc->cl.l.p->code - 1]}</DisplayString>
+    <DisplayString>{func,na}</DisplayString>
+    <Expand>
+      <Item Name="Function">func,na</Item>
+      <Item Name="Stack Size">top - base</Item>
+      <IndexListItems>
+        <Size>top - base</Size>
+        <ValueNode>base[$i]</ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="lua_TValue">
+    <DisplayString Condition="tt == 0">Nil</DisplayString>
+    <DisplayString Condition="tt == 1">{(bool) value.b}</DisplayString>
+    <DisplayString Condition="tt == 2">Light Userdata {value.p}</DisplayString>
+    <DisplayString Condition="tt == 3">{value.n}</DisplayString>
+    <DisplayString Condition="tt == 4">{value.gc->ts}</DisplayString>
+    <DisplayString Condition="tt == 5">{value.gc->h}</DisplayString>
+    <DisplayString Condition="tt == 6">{value.gc->cl}</DisplayString>
+    <DisplayString Condition="tt == 7">{value.gc->u}</DisplayString>
+    <DisplayString Condition="tt == 8">Thread {value.gc->th}</DisplayString>
+    <DisplayString>Unknown</DisplayString>
+    <Expand>
+      <Item Name="Light Userdata" Condition="tt == 2">value.p</Item>
+      <Item Name="Table" Condition="tt == 5">value.gc->h</Item>
+      <Item Name="Function" Condition="tt == 6">value.gc->cl</Item>
+      <Item Name="Userdata" Condition="tt == 7">value.gc->u</Item>
+      <Item Name="Thread" Condition="tt == 8">value.gc->th</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="TString">
+    <DisplayString>{(const char *) (this + 1), s}</DisplayString>
+  </Type>
+
+  <Type Name="Table">
+    <DisplayString Condition="sizearray != 0 || lsizenode != 0 || node->i_key.tvk.tt != 0 || node->i_val.tt != 0">Lua Table</DisplayString>
+    <DisplayString Condition="sizearray == 0 &amp;&amp; lsizenode == 0">Empty Lua Table</DisplayString>
+    <Expand>
+      <Item Name="Metatable" Condition="metatable!=0">metatable</Item>
+
+      <Synthetic Name="Array part" Condition="sizearray != 0">
+        <DisplayString>{sizearray} elements</DisplayString>
+        <Expand>
+          <Item Name="Size">sizearray</Item>
+          <IndexListItems>
+            <Size>sizearray</Size>
+            <ValueNode>array[$i]</ValueNode>
+          </IndexListItems>
+        </Expand>
+      </Synthetic>
+
+      <Synthetic Name="Hash part" Condition="lsizenode != 0 || node->i_key.tvk.tt != 0 || node->i_val.tt != 0">
+        <DisplayString>{1 &lt;&lt; lsizenode} elements</DisplayString>
+        <Expand>
+          <Item Name="Size">1 &lt;&lt; lsizenode</Item>
+          <IndexListItems>
+            <Size>1 &lt;&lt; lsizenode</Size>
+            <ValueNode>node[$i]</ValueNode>
+          </IndexListItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="Node">
+    <DisplayString Condition="i_key.tvk.tt == 0 &amp;&amp; i_val.tt == 0">Empty</DisplayString>
+    <DisplayString Condition="i_key.tvk.tt != 0 || i_val.tt != 0">{i_key.tvk} -> {i_val}</DisplayString>
+    <Expand>
+      <Item Name="Key" Condition="i_key.tvk.tt != 0 || i_val.tt != 0">i_key.tvk</Item>
+      <Item Name="Val" Condition="i_key.tvk.tt != 0 || i_val.tt != 0">i_val</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="TKey">
+    <DisplayString>{tvk}</DisplayString>
+  </Type>
+
+  <Type Name="Closure">
+    <DisplayString Condition="c.isC">C Function {c.f}</DisplayString>
+    <DisplayString Condition="!c.isC">Lua Function {l.p->source,na} line {l.p->linedefined}</DisplayString>
+    <Expand>
+      <Item Name="C Function" Condition="c.isC">c.f</Item>
+      <Synthetic Name="Upvalues" Condition="c.isC &amp;&amp; c.nupvalues != 0">
+        <DisplayString>{(int) c.nupvalues}</DisplayString>
+        <Expand>
+          <IndexListItems>
+            <Size>c.nupvalues</Size>
+            <ValueNode>c.upvalue[$i]</ValueNode>
+          </IndexListItems>
+        </Expand>
+      </Synthetic>
+
+      <Item Name="Lua File" Condition="!l.isC">l.p->source,na</Item>
+      <Item Name="Line" Condition="!l.isC">l.p->linedefined</Item>
+      <Synthetic Name="Upvalues" Condition="!l.isC &amp;&amp; l.nupvalues != 0">
+        <DisplayString>{(int) l.nupvalues}</DisplayString>
+        <Expand>
+          <IndexListItems>
+            <Size>l.nupvalues</Size>
+            <ValueNode>l.upvals[$i]->v</ValueNode>
+          </IndexListItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="Udata">
+    <DisplayString>Userdata {uv.len} bytes</DisplayString>
+    <Expand>
+      <Item Name="Metatable" Condition="uv.metatable != 0">uv.metatable</Item>
+      <Item Name="Env" Condition="uv.env != 0">uv.env</Item>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

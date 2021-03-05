@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "2c227161447b4d77a5b07c093e214fe3",
+    "Name": "DevTextures",
+    "DisplayName": "DevTextures",
+    "Version": "0.1.0",
+    "LinkType": "NoCode",
+    "Summary": "Collection of general purpose textures useful for prototypes and preproduction. ",
+    "Tags": ["Asset"],
+    "IconPath": "preview.png"
+}

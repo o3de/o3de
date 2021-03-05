@@ -1,0 +1,52 @@
+What does this software do?
+  Cross compiles HLSL bytecode to GLSL or GLSL ES. It also provides functions to
+  decode the reflection information embedded in HLSL bytecode. Both offline and online compiliation
+  is supported.
+
+Supported bytecode formats:
+  cs_4_0 cs_4_1 cs_5_0
+  ds_5_0
+  hs_5_0
+  gs_4_0 gs_4_1 gs_5_0
+  ps_4_0 ps_4_0_level_9_1 ps_4_0_level_9_3 ps_4_0_level_9_0 ps_4_1 ps_5_0
+  vs_4_0_level_9_3 vs_4_0_level_9_0 vs_4_1 vs_5_0   
+
+Work is underway to support the DX9 bytecode formats:
+  ps_2_0 ps_2_a ps_2_b ps_3_0
+  vs_1_1 vs_2_0 vs_2_a vs_3_0
+  
+Supported target languages:
+  GLSL ES 100
+  GLSL ES 300
+  GLSL ES 310
+  GLSL 120
+  GLSL 130
+  GLSL 140
+  GLSL 150
+  GLSL 330
+  GLSL 400
+  GLSL 410
+  GLSL 420
+  GLSL 430
+  GLSL 440
+  METAL
+
+I have plans to add support for more target languages including:
+  ARB assembly (ARB_vertex_program et al.)
+  NVIDIA assembly (NV_vertex_program et al.)
+
+If the source shader contains instructions not support by the target language then compilation is allowed
+to fail at the GLSL compile stage, i.e. the cross compiler may not generate errors/warnings but an OpenGL
+driver will reject the shader.
+
+The tests directory contains HLSL, bytecode and asm versions of some shaders used to verify this decoder.
+There are also a few sample applications used to make sure that generated GLSL is correct.
+
+A cmake makefile can be found in the mk directory.
+
+Generating hlsl_opcode_funcs_glsl.h
+  Use fwrap.py -f hlsl_opcode_funcs.glsl
+  fwrap.py can be found in my Helpful-scripts github repository.
+
+For further information please see the Wiki page for this project at
+https://github.com/James-Jones/HLSLCrossCompiler/wiki.

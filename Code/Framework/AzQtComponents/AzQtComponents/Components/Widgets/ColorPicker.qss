@@ -1,0 +1,137 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+
+AzQtComponents--ColorPicker
+{
+    padding: 100px;
+}
+
+AzQtComponents--ColorPicker *
+{
+    font-size: 12px;
+}
+
+AzQtComponents--ColorPicker QToolButton
+{
+    border: none;
+    max-width: 16px;
+    min-width: 16px;
+    max-height: 16px;
+    min-height: 16px;
+    background-color: transparent;
+}
+
+AzQtComponents--PaletteView,
+AzQtComponents--ColorPicker #Container
+{
+    background-color: transparent;
+}
+
+AzQtComponents--ColorPicker QScrollArea
+{
+    border: none;
+    background-color: transparent;
+}
+
+AzQtComponents--ColorPicker QLabel
+{
+    padding: 0px;
+    margin: 0px;
+}
+
+AzQtComponents--PaletteCardBase AzQtComponents--CardHeader
+{
+    background-color: transparent;
+}
+
+AzQtComponents--PaletteCardBase AzQtComponents--CardHeader #Title
+{
+    font-weight: normal;
+}
+
+AzQtComponents--PaletteCard[modified="true"] AzQtComponents--CardHeader #Title
+{
+    color: #ffa500;
+}
+
+AzQtComponents--ColorPicker QSpinBox:hover,
+AzQtComponents--ColorPicker QDoubleSpinBox:hover,
+AzQtComponents--ColorPicker QSpinBox:hover:focus,
+AzQtComponents--ColorPicker QDoubleSpinBox:hover:focus
+{
+    background: none;
+}
+
+AzQtComponents--ColorPicker QSpinBox::down-button,
+AzQtComponents--ColorPicker QSpinBox::up-button,
+AzQtComponents--ColorPicker QDoubleSpinBox::down-button,
+AzQtComponents--ColorPicker QDoubleSpinBox::up-button
+{
+    width: 0px;
+    border-style: none;
+}
+
+AzQtComponents--ColorPicker .HorizontalSeparator
+{
+    border-top: 1px solid #393a3c;
+    border-bottom: 1px solid #393a3c;
+    border-left: none;
+    border-right: none;
+    background: #222222;
+}
+
+AzQtComponents--ColorPicker .HorizontalSeparatorContainer
+{
+    background-color: transparent;
+}
+
+AzQtComponents--ColorPicker AzQtComponents--PaletteView
+{
+    border: none;
+}
+
+AzQtComponents--ColorGrid,
+AzQtComponents--ColorPreview,
+AzQtComponents--Swatch,
+AzQtComponents--ColorPicker #addColorButton
+{
+    /* Note: Swatches will ignore any 'background*' property set here */
+    border: 1px solid #333333;
+    border-radius: 2px;
+}
+
+AzQtComponents--Swatch:selected
+{
+    /* Note: Swatches will ignore any 'background*' property set here */
+    border: 2px solid #C8ABFF;
+}
+
+AzQtComponents--GradientSlider.HorizontalSlider
+{
+    qproperty-toolTipOffsetX: 0;
+    qproperty-toolTipOffsetY: -24;
+}
+
+AzQtComponents--HSLSliders AzQtComponents--GradientSlider.HorizontalSlider,
+AzQtComponents--HSVSliders AzQtComponents--GradientSlider.HorizontalSlider
+{
+    qproperty-toolTipOffsetX: 0;
+    qproperty-toolTipOffsetY: -40;
+}
+
+AzQtComponents--GradientSlider.VerticalSlider
+{
+    qproperty-toolTipOffsetX: 8;
+    qproperty-toolTipOffsetY: -24;
+}

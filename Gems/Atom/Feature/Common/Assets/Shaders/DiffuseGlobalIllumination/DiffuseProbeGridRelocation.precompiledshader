@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PrecompiledShaderAssetSourceData",
+    "ClassData":
+    {
+        "ShaderAssetFileName": "diffuseprobegridrelocation.azshader",
+        "ShaderResourceGroupAssets":
+        [
+            "diffuseprobegridrelocation_passsrg.azsrg"
+        ],
+        "RootShaderVariantAssets":
+        [
+            {
+                "APIName": "dx12",
+                "RootShaderVariantAssetFileName": "diffuseprobegridrelocation_dx12_0.azshadervariant"
+            },
+            {
+                "APIName": "vulkan",
+                "RootShaderVariantAssetFileName": "diffuseprobegridrelocation_vulkan_0.azshadervariant"
+            }
+        ]
+    }
+}

@@ -1,0 +1,74 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Eye shader extension used by the editor
+//               for automatic shader generation (based on "Eye" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+Version (1.00)
+
+UsesCommonGlobalFlags
+
+Property
+{
+  Name = %NORMAL_MAP
+  Mask = 0x1
+  Property    (Normal map)
+  Description (Use normal-map texture)
+  DependencySet = $TEX_Normals
+  DependencyReset = $TEX_Normals
+  Hidden
+}
+
+Property
+{
+  Name = %ENVIRONMENT_MAP
+  Mask = 0x2
+  Property    (Environment map)
+  Description (Use environment map as separate texture)
+  DependencyReset = $TEX_EnvCM     
+}
+
+Property
+{
+  Name = %EYE_AO_OVERLAY
+  Mask = 0x4
+  Property    (Ambient occlusion overlay)
+  Description (Use for ambient occlusion overlay rendering)
+}
+
+Property
+{
+  Name = %EYE_SPECULAR_OVERLAY
+  Mask = 0x8
+  Property    (Specular overlay)
+  Description (Use for specular overlay rendering)
+}
+
+Property
+{
+  Name = %VERTCOLORS
+  Mask = 0x400000
+  DependencySet = $UserEnabled
+  Hidden
+}
+
+Property
+{
+  Name = %TEMP_EYES
+  Mask = 0x80000000
+  DependencySet = $UserEnabled
+  Hidden
+}

@@ -1,0 +1,60 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LightCullingTemplate",
+            "PassClass": "LightCullingPass",
+            "Slots": [      
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LightCount",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_lightCount",
+                    "ScopeAttachmentUsage": "Shader"                    
+                },
+                {
+                    "Name": "LightList",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_lightList",
+                    "ScopeAttachmentUsage": "Shader"                    
+                }                
+            ],   
+            "ImageAttachments": [
+                {
+                    "Name": "LightCount",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "TileLightData"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_UINT"
+                    }
+                }
+            ],  
+            "Connections": [
+                {
+                    "LocalSlot": "LightCount",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "LightCount"
+                    } 
+                }
+            ],             
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/LightCulling/LightCulling.shader"
+                }
+            }
+        }
+    }
+}

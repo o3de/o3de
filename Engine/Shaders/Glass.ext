@@ -1,0 +1,111 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Glass shader extension used by the editor
+//               for automatic shader generation (based on "Glass" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+Version (2.00)
+
+UsesCommonGlobalFlags
+
+Property
+{
+  Name = %DIRT_MAP
+  Mask = 0x100000
+  Property    (Use Diffuse map)
+  Description (Use Diffuse map for dirt, etc. Requires Alpha channel)
+}
+
+Property
+{
+  Name = %SPECULAR_MAP
+  Mask = 0x200000
+  Property    (Specular map)
+  Description (Use specular map as separate texture)
+  DependencySet = $TEX_Specular
+  DependencyReset = $TEX_Specular
+  Hidden
+}
+
+Property
+{
+  Name = %ENVIRONMENT_MAP
+  Mask = 0x10
+  Property    (Environment map)
+  Description (Use environment map as separate texture)
+  DependencyReset = $TEX_EnvCM   
+}
+
+
+Property
+{
+  Name = %TINT_MAP
+  Mask = 0x200
+  Property    (Tint map - Tint/Gloss/Spec)
+  Description (Use RGB Spec Map to control Tinting in Red channel / Cloudiness in Green channel / Specular in Blue channel)
+
+}
+
+Property
+{
+  Name = %TINT_COLOR_MAP
+  Mask = 0x400
+  Property    (Use Tint Color Map)
+  Description (Use Tint Color Map for multi-colored glass, goes in the custom Tint Color Map slot)
+  DependencyReset = $TEX_Custom
+  DependencySet = $TEX_Custom
+}
+
+Property
+{
+  Name = %BLUR_REFRACTION
+  Mask = 0x2000
+  Property    (Blur refraction - PC Only)
+  Description (Blur objects seen through the glass)  
+}
+
+Property
+{
+  Name = %DEPTH_FOG
+  Mask = 0x4000
+  Property    (Depth Fog)
+  Description (Enables depth fog behind glass surface)
+}
+
+Property
+{
+  Name = %UNLIT
+  Mask = 0x8000
+  Property    (Disable Lights)
+  Description (Disables the reflection of lights)
+}
+
+Property
+{
+  Name = %DEPTH_FIXUP
+  Mask = 0x4000000
+  Property    (Depth Fixup)
+  Description (Write depth for depth of field and postprocessing)
+}
+
+Property
+{
+  Name = %SAA_FILTERING
+  Mask = 0x80000000
+  Property    (Specular Antialiasing)
+  Description (Perform specular Antialiasing)
+}

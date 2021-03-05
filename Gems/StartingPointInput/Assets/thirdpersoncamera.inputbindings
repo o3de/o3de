@@ -1,0 +1,60 @@
+<ObjectStream version="2">
+	<Class name="InputEventBindingsAsset" type="{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}" specializationTypeId="{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}">
+		<Class name="InputEventBindings" field="Bindings" type="{14FFD4A8-AE46-4E23-B45B-6A7C4F787A91}" version="1" specializationTypeId="{14FFD4A8-AE46-4E23-B45B-6A7C4F787A91}">
+			<Class name="AZStd::vector" field="Input Event Groups" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{E7A38039-E414-5322-B384-210475DA7732}">
+				<Class name="InputEventGroup" field="element" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}" version="1" specializationTypeId="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="zoom in" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{CD522420-8A74-5B73-8FFE-0488D0645663}">
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad_trigger_r2" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse_delta_z" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0083000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+				</Class>
+				<Class name="InputEventGroup" field="element" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}" version="1" specializationTypeId="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="zoom out" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{CD522420-8A74-5B73-8FFE-0488D0645663}">
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad_trigger_l2" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse_delta_z" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0083000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+				</Class>
+				<Class name="InputEventGroup" field="element" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}" version="1" specializationTypeId="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="rotate pitch" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{CD522420-8A74-5B73-8FFE-0488D0645663}">
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="gamepad_thumbstick_r_y" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+						<Class name="Input" field="element" type="{546C9EBC-90EF-4F03-891A-0736BE2A487E}" version="2" specializationTypeId="{546C9EBC-90EF-4F03-891A-0736BE2A487E}">
+							<Class name="AZStd::string" field="Input Device Type" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="mouse_delta_y" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.4000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.2000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

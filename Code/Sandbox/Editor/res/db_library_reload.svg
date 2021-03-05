@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="14px" viewBox="0 0 12 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / System / Paste Copy</title>
+    <defs>
+        <path d="M9,1.33333333 L9,5.66666667 L13.3333333,5.66666667 L13.3333333,14.6666667 L2.66666667,14.6666667 L2.66666667,1.33333333 L9,1.33333333 Z M10.5385519,7.54081951 L9.72006776,8.35985622 C10.0214238,8.7609979 10.2,9.2596446 10.2,9.8 C10.2,11.1254834 9.1254834,12.2 7.8,12.2 L7.8,12.2 L7.8,11.3333333 L6.5,12.6333333 L7.8,13.9333333 L7.8,13.1333333 C9.71458713,13.1333333 11.2666667,11.5812538 11.2666667,9.66666667 C11.2666667,8.86552737 10.9949103,8.12786018 10.5385519,7.54081951 L10.5385519,7.54081951 Z M7.8,5.53333333 L7.8,6.2 C5.88541287,6.2 4.33333333,7.75207953 4.33333333,9.66666667 C4.33333333,10.4680581 4.60526084,11.2059375 5.06187909,11.7930681 L5.06187909,11.7930681 L5.77156077,11.0833204 C5.5362486,10.7121595 5.4,10.271991 5.4,9.8 C5.4,8.4745166 6.4745166,7.4 7.8,7.4 L7.8,7.4 L7.8,8.13333333 L9.1,6.83333333 L7.8,5.53333333 Z M10,1.33333333 L13.3333333,4.66666667 L10,4.66666667 L10,1.33333333 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Lens-Flare-Editor-Tool-Bar-Redesign" transform="translate(-585.000000, -101.000000)">
+            <g id="Sub-Toolbar" transform="translate(34.000000, 95.000000)">
+                <g id="Group-7" transform="translate(7.000000, 1.000000)">
+                    <g id="Group" transform="translate(16.000000, 4.000000)">
+                        <g transform="translate(526.000000, 0.000000)" id="Icons-/-System-/-Paste-Copy">
+                            <rect id="Rectangle-18" fill-opacity="0" fill="#D8D8D8" x="0" y="0" width="16" height="16"></rect>
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <use id="Combined-Shape" fill="#FFFFFF" xlink:href="#path-1"></use>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

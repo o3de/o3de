@@ -1,0 +1,171 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#define PI      3.14159265f
+#define TWO_PI  6.28318530f
+#define INV_PI  0.31830988f
+#define EPSILON 10e-5f
+
+// Max values (largest positive values)
+
+static const float FLOAT_32_MAX = 3.402823466e+38f;
+static const float FLOAT_16_MAX = 65504.0f;
+
+
+// Min values (smallest positive values)
+
+static const float FLOAT_32_MIN = 1.175494351e-38f;
+static const float FLOAT_16_MIN = 0.000000059605f;
+
+void swap(inout float a, inout float b)
+{
+    float c = a;
+    a = b;
+    b = c;
+}
+
+// ---------- Intersection -----------
+
+// a simple ray sphere intersection function, didn't take limited precision 
+// mentioned in Ray Tracing Gems : Chapter7 into consider for simplicity
+// input vectors and calculation are in world space
+// return length t to the closest hit point if hit, otherwise return -1
+float RaySphereClosestHitWS(in float3 sphereOrigin, in float sphereRadius, 
+                          in float3 rayOrigin, in float3 rayDir)
+{
+    // vector point from sphere to ray origin
+    float3 F = rayOrigin - sphereOrigin;
+    float FdotF = dot(F, F);
+    float FdotD = dot(F, rayDir);
+    float DdotD = dot(rayDir, rayDir);
+
+    float det = FdotD * FdotD - (DdotD * FdotF - (DdotD * sphereRadius * sphereRadius));
+    
+    if(det < 0.0f)
+    {
+        return -1;
+    }
+    
+    float sqrtDet = sqrt(det);
+    if(sqrtDet > -FdotD)
+    {
+        // return further hit, because closer hit is negative, i.e. behind ray origin
+        return (-FdotD + sqrtDet) / DdotD;
+    }
+    else
+    {
+        return (-FdotD - sqrtDet) / DdotD;
+    }
+}
+
+// returns true if the Aabb contains the specified point
+bool AabbContainsPoint(float3 aabbMin, float3 aabbMax, float3 testPoint)
+{
+    float3 d = step(aabbMin, testPoint) - step(aabbMax, testPoint);
+    return (d.x * d.y * d.z) > 0.0f;
+}
+
+// returns the closest point on the Aabb to the specified point
+float3 AabbClosestPoint(float3 aabbMin, float3 aabbMax, float3 testPoint)
+{
+    float3 closestPos = float3(0.0f, 0.0f, 0.0f);
+    for (uint i = 0; i < 3; ++i)
+    {
+        closestPos[i] = max(testPoint[i], aabbMin[i]);
+        closestPos[i] = min(closestPos[i], aabbMax[i]);
+    }
+    return closestPos;
+}
+
+// ---------- Normal Encoding -----------
+
+// Encode/Decode functions for Signed Octahedron normals
+// Store in a 10/10/10/2 texture for best results
+// http://johnwhite3d.blogspot.com/2017/10/signed-octahedron-normal-encoding.html
+float3 EncodeNormalSignedOctahedron(float3 normal)
+{
+    normal /= (abs(normal.x) + abs(normal.y) + abs(normal.z));
+
+    float3 encodedNormal;
+    encodedNormal.y = normal.y * 0.5f + 0.5f;
+    encodedNormal.x = normal.x * 0.5f + encodedNormal.y;
+    encodedNormal.y = normal.x * -0.5f + encodedNormal.y;
+    encodedNormal.z = saturate(normal.z * FLOAT_32_MAX);
+    return encodedNormal;
+}
+
+float3 DecodeNormalSignedOctahedron(float3 encodedNormal)
+{
+    float3 decodedNormal;
+    decodedNormal.x = (encodedNormal.x - encodedNormal.y);
+    decodedNormal.y = (encodedNormal.x + encodedNormal.y) - 1.0f;
+    decodedNormal.z = encodedNormal.z * 2.0f - 1.0f;
+    decodedNormal.z = decodedNormal.z * (1.0f - abs(decodedNormal.x) - abs(decodedNormal.y));
+    decodedNormal = normalize(decodedNormal);
+    return decodedNormal;
+}
+
+// Encode normal (assume normalized) to a texture coordinate within [0, 1] to save a channel
+// not lossless, but error is negligible. This method is based on Lambert azimuthal projection which usually be used to project world map: 
+// https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection
+float2 EncodeNormalSphereMap(float3 normal)
+{
+    return normal.z <= (-1.0 + EPSILON) ? float2(0.0, 0.0) : float2(normal.xy / sqrt(normal.z * 8.0 + 8.0) + 0.5);
+}
+
+float3 DecodedNormalSphereMap(float2 encodedNormal)
+{
+    float2 fenc = encodedNormal * 4.0 - 2.0;
+    float f = dot(fenc, fenc);
+    float g = sqrt(1.0 - 0.25 * f);
+    float3 normal;
+    normal.xy = fenc * g;
+    normal.z = 1.0 - 0.5 * f;
+    // directly give out normal for invalid point at south pole, where the normal straightly points downward
+    return (encodedNormal.x + encodedNormal.y) > EPSILON ? normal : float3(0.0, 0.0, -1.0);
+}
+
+// ---------- Quaternion -----------
+
+float3 MultiplyVectorQuaternion(float3 v, float4 q)
+{
+    return v + 2.0f * cross(cross(v, q.xyz) + q.w * v, q.xyz);
+}
+
+// Rotates a vector using a rotation from a quaternion
+// Assumes a right-handed coordinate system
+float3 RotateVectorByQuaternion(float3 v, float4 q)
+{
+    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+// ---------- Projection -----------
+
+// This converts depth in clip space of perspective projection to linear depth in [0, 1].
+// coefficients:
+//   x : n / f - n
+//   y : n - f
+//   z : f
+//   where n : nearDepth and f : farDepth.
+// By the definition of the perspective projection,
+//   (z_, w_)^T = P (z, w)^T
+// where P = /  f/(n-f)    nf/(n-f)   \
+//           \    -1          0       /.
+// Then inverse(P) (d, 1)^T =
+//       /         -1          \
+//       \   ((n-f)d + f) / nf /.
+float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
+{
+    return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
+}

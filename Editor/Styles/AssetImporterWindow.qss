@@ -1,0 +1,40 @@
+QPushButton#m_deleteButton
+{
+    margin-right: 60px;
+}
+
+QTreeView::indicator
+{
+    width: 12px;
+    height: 12px;
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 2px;
+}
+
+QTreeView::indicator:checked
+{
+    background-color: rgb(66, 133, 244);
+    image: url(:Icons/CheckMark_Checked.png);
+    border-radius: 2px;
+    border: 0px;
+}
+
+QTreeView::indicator:hover
+{
+    border: 1px solid white;
+}
+
+QTreeView::indicator:checked:hover
+{
+    image: url(:Icons/CheckMark_Hover.png);
+}
+
+QTreeView::indicator:!checked:hover
+{
+    image: url(:Icons/CheckMark_Unchecked_Hover.png);
+}
+
+QTreeView::indicator:!enabled
+{
+    border: 1px solid rgb(102, 102, 102);
+}

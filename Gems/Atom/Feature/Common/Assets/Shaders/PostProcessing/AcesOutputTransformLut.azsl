@@ -1,0 +1,50 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_color;
+    Texture3D<float4> m_lut;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    float m_shaperBias;
+    float m_shaperScale;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    float2 uvCoord = float2(IN.m_texCoord.x, IN.m_texCoord.y);
+    float4 acescg = PassSrg::m_color.Sample(PassSrg::LinearSampler, uvCoord);
+    float3 color = mul(XYZToSRGBMat, mul(D60ToD65Cat, mul(AP1ToXYZMat, acescg.rgb)));
+    float3 lutCoordinate = log(color.rgb)/log(2.0) * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
+
+    OUT.m_color = PassSrg::m_lut.Sample(PassSrg::LinearSampler, lutCoordinate);
+    OUT.m_color.a = 1.0f;
+
+    return OUT;
+}

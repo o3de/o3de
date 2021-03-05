@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>AssetImporterWindow</class>
+  <widget class="QMainWindow" name="AssetImporterWindow">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>400</width>
+        <height>320</height>
+      </rect>
+    </property>
+    <property name="minimumSize">
+      <size>
+        <width>400</width>
+        <height>320</height>
+      </size>
+    </property>
+    <property name="windowTitle">
+      <string>Scene Settings (PREVIEW)</string>
+    </property>
+    <widget class="QMenuBar" name="menuBar">
+      <widget class="QMenu" name="editMenu">
+        <property name="title">
+          <string>&amp;Edit</string>
+        </property>
+        <addaction name="m_actionResetSettings"/>
+      </widget>
+      <widget class="QMenu" name="helpMenu">
+        <property name="title">
+          <string>&amp;Help</string>
+        </property>
+        <addaction name="m_actionInspect"/>
+        <addaction name="separator"/>
+        <addaction name="actionOpenDocumentation"/>
+      </widget>
+      <addaction name="editMenu"/>
+      <addaction name="helpMenu"/>
+    </widget>
+    <widget class="QWidget" name="m_rootWidget">
+      <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+        </sizepolicy>
+      </property>
+      <layout class="QGridLayout" name="rootLayout">
+        <property name="sizeConstraint">
+          <enum>QLayout::SetMaximumSize</enum>
+        </property>
+
+        <!-- When an fbx is loaded -->
+        <item>
+          <widget class="QWidget" name="m_mainArea">
+            <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+              </sizepolicy>
+            </property>
+            <layout class="QGridLayout" name="mainAreaLayout">
+              <property name="spacing">
+                <number>0</number>
+              </property>
+              <property name="leftMargin">
+                <number>0</number>
+              </property>
+              <property name="topMargin">
+                <number>0</number>
+              </property>
+              <property name="rightMargin">
+                <number>0</number>
+              </property>
+              <property name="bottomMargin">
+                <number>0</number>
+              </property>
+            </layout>
+          </widget>
+        </item>
+
+        <!-- When nothing is loaded -->
+        <item>
+          <widget class="QWidget" name="m_initialBrowseContainer">
+            <property name="leftMargin">
+              <number>20</number>
+            </property>
+            <property name="rightMargin">
+              <number>30</number>
+            </property>
+            <property name="topMargin">
+              <number>20</number>
+            </property>
+            <property name="bottomMargin">
+              <number>30</number>
+            </property>
+            <layout class="QGridLayout" name="initialBrowseLayout">
+              <!-- Initial Browse Prompt -->
+              <item row="0">
+                <widget class="QWidget">
+                  <layout class="QGridLayout">
+                  <!-- First Line -->
+                    <item row="0">
+                      <widget class="QLabel" name="m_initialPromptFirstLine">
+                        <property name="openExternalLinks">
+                          <bool>true</bool>
+                        </property>
+                        <property name="textFormat">
+                          <enum>Qt::TextFormat::RichText</enum>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                        <property name="font">
+                          <font>
+                            <pointsize>11</pointsize>
+                          </font>
+                        </property>
+                      </widget>
+                    </item>
+                    <!-- Fixed spacer: Height = 35-->
+                    <item row="1">
+                      <widget class="QWidget">
+                        <property name="minimumHeight">
+                          <number>35</number>
+                        </property>
+                        <property name="maximumHeight">
+                          <number>35</number>
+                        </property>
+                      </widget>
+                    </item>
+                    <!-- Second Line -->
+                    <item row="2">
+                      <widget class="QLabel" name="m_initialPromptSecondLine">
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                        <property name="font">
+                          <font>
+                            <pointsize>11</pointsize>
+                          </font>
+                        </property>
+                        <property name="topMargin">
+                          <number>37</number>
+                        </property>
+                      </widget>
+                    </item>
+                    <!-- Spacer -->
+                    <item row="3">
+                      <spacer name="bottomSpacer">
+                        <property name="orientation">
+                          <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                          <size>
+                            <width>1</width>
+                            <height>1</height>
+                          </size>
+                        </property>
+                      </spacer>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+        </item>
+      </layout>
+    </widget>
+  
+    <action name="m_actionResetSettings">
+      <property name="text">
+        <string>Reset settings...</string>
+      </property>
+      <property name="toolTip">
+        <string>Reset the settings for this file (note: you will have to update to commit)</string>
+      </property>
+    </action>
+  
+    <action name="actionOpenDocumentation">
+      <property name="text">
+        <string>Documentation</string>
+      </property>
+    </action>
+ 
+    <action name="m_actionInspect">
+      <property name="text">
+        <string>Inspect...</string>
+      </property>
+      <property name="toolTip">
+        <string>Inspect the data loaded in greater detail.</string>
+      </property>
+    </action>
+  </widget>
+
+  <layoutdefault spacing="6" margin="0"/>
+
+  <resources>
+    <include location="AssetImporter.qrc"/>
+  </resources>
+  <connections>
+    <connection>
+      <sender>m_actionResetSettings</sender>
+      <signal>triggered()</signal>
+      <receiver>AssetImporterWindow</receiver>
+      <slot>OnSceneResetRequested()</slot>
+    </connection>
+    <connection>
+      <sender>m_actionInspect</sender>
+      <signal>triggered()</signal>
+      <receiver>AssetImporterWindow</receiver>
+      <slot>OnInspect()</slot>
+    </connection>
+    <connection>
+      <sender>actionOpenDocumentation</sender>
+      <signal>triggered()</signal>
+      <receiver>AssetImporterWindow</receiver>
+      <slot>OnOpenDocumentation()</slot>
+    </connection>
+  </connections>
+</ui>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Copyright (c) Amazon.com, Inc.
+-->
+<project name="CopyLadThirdParty" default="CopyLadThirdParty" basedir="../../../">
+    <fail message="Error: 3rdParty.home is not set">
+        <condition>
+            <not>
+                <isset property="3rdParty.home"/>
+            </not>
+        </condition>
+    </fail>
+    <fail message="Error: 3rdParty.destination is not set">
+        <condition>
+            <not>
+                <isset property="3rdParty.destination"/>
+            </not>
+        </condition>
+    </fail>
+    <fail message="Error: platform is not set">
+        <condition>
+            <not>
+                <isset property="platform"/>
+            </not>
+        </condition>
+    </fail>
+    
+    <include file="../../distribution/package/3rdParty.xml" optional="false" />
+    <target name="CopyLadThirdParty">
+        <ThirdPartySDKsGeneratePlatformPatternSet platform="${platform}"/>
+        <copy todir="${3rdParty.destination}">
+            <fileset dir="${3rdParty.home}">
+                <patternset refid="include-3rdparty-patternset-common" />
+            </fileset>
+        </copy>
+        <copy todir="${3rdParty.destination}">
+            <fileset dir="${3rdParty.home}">
+                <patternset refid="include-3rdparty-patternset-${platform}" />
+            </fileset>
+        </copy>
+        <copy todir="${3rdParty.destination}">
+            <fileset dir="${3rdParty.home}">
+                <patternset id="include-3rdparty-patternset-non-shipped">
+                     <include name="FbxSdk/**"/>
+                </patternset>
+            </fileset>
+        </copy>
+        
+        
+    </target>
+</project>

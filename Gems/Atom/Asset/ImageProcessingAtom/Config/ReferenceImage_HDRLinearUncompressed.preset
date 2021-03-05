@@ -1,0 +1,63 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+            "Name": "ReferenceImage_HDRLinearUncompressed",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "R16G16B16A16F",
+            "DiscardAlpha": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+                "Name": "ReferenceImage_HDRLinearUncompressed",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R16G16B16A16F",
+                "DiscardAlpha": true
+            },
+            "ios": {
+                "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+                "Name": "ReferenceImage_HDRLinearUncompressed",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R16G16B16A16F",
+                "DiscardAlpha": true
+            },
+            "osx_gl": {
+                "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+                "Name": "ReferenceImage_HDRLinearUncompressed",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R16G16B16A16F",
+                "DiscardAlpha": true
+            },
+            "provo": {
+                "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+                "Name": "ReferenceImage_HDRLinearUncompressed",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R16G16B16A16F",
+                "DiscardAlpha": true
+            },
+            "xenia": {
+                "UUID": "{EEF24422-C8F0-4ECE-B32A-C70DB8129466}",
+                "Name": "ReferenceImage_HDRLinearUncompressed",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R16G16B16A16F",
+                "DiscardAlpha": true
+            }
+        }
+    }
+}

@@ -1,0 +1,72 @@
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+Unit Tests for mac launcher-wrappers: all are sanity code-path tests, since no interprocess actions should be taken
+"""
+
+import os
+import pytest
+import unittest.mock as mock
+
+import ly_test_tools.launchers
+
+pytestmark = pytest.mark.SUITE_smoke
+
+
+class TestMacLauncher(object):
+
+    def test_Construct_TestDoubles_MacLauncherCreated(self):
+        under_test = ly_test_tools.launchers.MacLauncher(mock.MagicMock(), ["some_args"])
+        assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+        assert isinstance(under_test, ly_test_tools.launchers.MacLauncher)
+
+    def test_BinaryPath_DummyPath_AddPathToApp(self):
+        dummy_path = "dummy_workspace_path"
+        dummy_project = "dummy_project"
+        mock_workspace = mock.MagicMock()
+        mock_workspace.paths.build_directory.return_value = dummy_path
+        mock_workspace.project = dummy_project
+        launcher = ly_test_tools.launchers.MacLauncher(mock_workspace, ["some_args"])
+
+        under_test = launcher.binary_path()
+        expected = os.path.join(f'{dummy_path}',
+                                f"{dummy_project}.GameLauncher.app",
+                                "Contents",
+                                "MacOS",
+                                f"{dummy_project}.GameLauncher")
+
+        assert under_test == expected
+
+    @mock.patch('ly_test_tools.launchers.MacLauncher.binary_path', mock.MagicMock)
+    @mock.patch('subprocess.Popen')
+    def test_Launch_DummyArgs_ArgsPassedToPopen(self, mock_subprocess):
+        dummy_args = ["some_args"]
+        launcher = ly_test_tools.launchers.MacLauncher(mock.MagicMock(), dummy_args)
+
+        launcher.launch()
+
+        mock_subprocess.assert_called_once()
+        name, args, kwargs = mock_subprocess.mock_calls[0]
+        unpacked_args = args[0]  # args is a list inside a tuple
+        assert len(dummy_args) > 0, "accidentally removed dummy_args"
+        for expected_arg in dummy_args:
+            assert expected_arg in unpacked_args
+
+    @mock.patch('ly_test_tools.launchers.MacLauncher.is_alive')
+    def test_Kill_MockAliveFalse_SilentSuccess(self, mock_alive):
+        mock_alive.return_value = False
+        mock_proc = mock.MagicMock()
+        launcher = ly_test_tools.launchers.MacLauncher(mock.MagicMock(), ["dummy"])
+        launcher._proc = mock_proc
+
+        launcher.kill()
+
+        mock_proc.kill.assert_called_once()
+        mock_alive.assert_called_once()

@@ -1,0 +1,18 @@
+{
+    "platform": {
+        "win_x64_vs2017": {
+            "importlibpath": [
+                "lib/win64"
+            ],
+            "sharedlibpath": [
+                "bin/win64"
+            ],
+            "import": [
+                "glew32.lib"
+            ],
+            "shared": [
+                "glew32.dll"
+            ]
+        }
+    }
+}

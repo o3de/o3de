@@ -1,0 +1,47 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
+#endif
+
+partial ShaderResourceGroup SceneSrg
+{
+    // Parameters definition can be found in SkyBoxSystem.h and SkyBoxBus.h
+    struct PhysicalSkyData
+    {
+        float4 m_physicalSkyParameterA;
+        float4 m_physicalSkyParameterB;
+        float4 m_physicalSkyParameterC;
+        float4 m_physicalSkyParameterD;
+        float4 m_physicalSkyParameterE;
+        float4 m_physicalSkyParameterF;
+        float4 m_physicalSkyParameterG;
+        float4 m_physicalSkyParameterH;
+        float4 m_physicalSkyParameterI;
+        float4 m_physicalSkyParameterZ;
+        float4 m_physicalSkySunParameters;
+        float4 m_physicalSkySunDirection;
+        float4 m_physicalSkySunRGB;
+        float4 m_physicalSkyAndSunIntensity;
+    };
+
+    bool m_enable;
+
+    ConstantBuffer<PhysicalSkyData> m_physicalSkyData;
+    bool m_physicalSky;
+    
+    TextureCube m_skyboxCubemap;
+    float4x4 m_cubemapRotationMatrix;
+    float m_cubemapExposure;
+}
+

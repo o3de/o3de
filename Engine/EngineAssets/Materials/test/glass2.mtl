@@ -1,0 +1,7 @@
+<Material MtlFlags="2623524" Shader="Glass" GenMask="10050" StringGenMask="%BILINEAR_FP16%BLUR_REFRACTION%ENVIRONMENT_MAP" SurfaceType="mat_glass_unbreakable" MatTemplate="" Diffuse="0,0,0" Specular="0.49950528,0.49950528,0.49950528" Emissive="0,0,0" Shininess="180" Opacity="1" LayerAct="1">
+ <Textures>
+  <Texture Map="Bumpmap" File="EngineAssets/Materials/test/Textures/glass_wall_ddn.tif"/>
+  <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+ </Textures>
+ <PublicParams BumpMapTile="1" TintColor="0.46207702,0.51491767,0.53327644" BlurAmount="0.5" FresnelScale="1.6" FresnelBias="1" TintCloudiness="0.0099999998" BackLightScale="0.5" BumpScale="0.1" IndirectColor="0.25,0.25,0.25"/>
+</Material>

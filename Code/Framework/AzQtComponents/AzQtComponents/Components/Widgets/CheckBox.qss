@@ -1,0 +1,177 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+QCheckBox
+{
+    background-color: transparent;
+    font-size: 12px;
+    line-height: 16px;
+    outline: 0;
+}
+
+QCheckBox:disabled
+{
+    color: #999999;
+}
+
+QAbstractItemView::indicator,
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    margin: 2px;
+}
+
+QAbstractItemView::indicator:indeterminate,
+QCheckBox::indicator:indeterminate{
+    image: url(:/stylesheet/img/UI20/checkbox/partial-selected.svg);
+}
+
+QAbstractItemView::indicator:indeterminate:focus,
+QCheckBox::indicator:indeterminate:focus {
+    image: url(:/stylesheet/img/UI20/checkbox/partial-selected-focus.svg);
+}
+
+QAbstractItemView::indicator:indeterminate:disabled,
+QCheckBox::indicator:indeterminate:disabled {
+    image: url(:/stylesheet/img/UI20/checkbox/partial-selected-disabled.svg);
+}
+
+QAbstractItemView::indicator:checked,
+QCheckBox::indicator:checked {
+    image: url(:/stylesheet/img/UI20/checkbox/on.svg);
+}
+
+QAbstractItemView::indicator:checked:focus,
+QCheckBox::indicator:checked:focus {
+    image: url(:/stylesheet/img/UI20/checkbox/on-focus.svg);
+}
+
+QAbstractItemView::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled {
+    image: url(:/stylesheet/img/UI20/checkbox/on-disabled.svg);
+}
+
+QAbstractItemView::indicator:unchecked,
+QCheckBox::indicator:unchecked {
+    image: url(:/stylesheet/img/UI20/checkbox/off.svg);
+}
+
+QAbstractItemView::indicator:unchecked:focus,
+QCheckBox::indicator:unchecked:focus {
+    image: url(:/stylesheet/img/UI20/checkbox/off-focus.svg);
+}
+
+QAbstractItemView::indicator:unchecked:disabled,
+QCheckBox::indicator:unchecked:disabled {
+    image: url(:/stylesheet/img/UI20/checkbox/off-disabled.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator
+{
+    width: 32px;
+    height: 16px;
+    border-width: 0px;
+    margin: 2px;
+}
+
+QCheckBox.ToggleSwitch::indicator:Unchecked
+{
+    image: url(:/stylesheet/img/UI20/toggleswitch/unchecked.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator:disabled
+{
+    image: url(:/stylesheet/img/UI20/toggleswitch/unchecked-disabled.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator:Unchecked:focus
+{
+    width: 34px;
+    height: 18px;
+    border-width: 0px;
+    margin: 1px;
+    image: url(:/stylesheet/img/UI20/toggleswitch/unchecked-focus.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator:Checked
+{
+    image: url(:/stylesheet/img/UI20/toggleswitch/checked.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator:Checked:disabled
+{
+    image: url(:/stylesheet/img/UI20/toggleswitch/checked-disabled.svg);
+}
+
+QCheckBox.ToggleSwitch::indicator:Checked:focus
+{
+    width: 34px;
+    height: 18px;
+    border-width: 0px;
+    margin: 1px;
+    image: url(:/stylesheet/img/UI20/toggleswitch/checked-focus.svg);
+}
+
+QCheckBox.Expander
+{
+    background-color: transparent;
+    spacing: 0px;
+    margin: 0px;
+    padding: 0px;
+    min-height: 16px;
+    max-height: 16px;
+    min-width: 16px;
+    max-width: 16px;
+}
+
+QCheckBox.Expander::indicator
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    margin: 0px;
+}
+
+QCheckBox.Expander::indicator:checked,
+QCheckBox.Expander::indicator:checked:disabled,
+QCheckBox.Expander::indicator:checked:focus
+{
+    image: url(:/Cards/img/UI20/Cards/caret-down.svg);
+}
+
+QCheckBox.Expander::indicator:checked:disabled
+{
+    image: url(:/Cards/img/UI20/Cards/caret-down-disabled.svg);
+}
+
+QCheckBox.Expander::indicator:unchecked,
+QCheckBox.Expander::indicator:unchecked:disabled,
+QCheckBox.Expander::indicator:unchecked:focus
+{
+    image: url(:/Cards/img/UI20/Cards/caret-right.svg);
+}
+
+QCheckBox.Expander::indicator:unchecked:disabled
+{
+    image: url(:/Cards/img/UI20/Cards/caret-right-disabled.svg);
+}
+
+QAbstractItemView[class~='VisibilityMode']::indicator:checked
+{
+    image: url(:/EMotionFX/Visualization.svg)
+}
+
+QAbstractItemView[class~='VisibilityMode']::indicator:unchecked
+{
+    image: url(:/EMotionFX/VisualizationHidden.svg)
+}

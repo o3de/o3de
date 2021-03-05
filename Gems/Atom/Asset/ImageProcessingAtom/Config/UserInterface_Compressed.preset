@@ -1,0 +1,45 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+            "Name": "UserInterface_Compressed",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "R8G8B8X8"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+                "Name": "UserInterface_Compressed",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "ETC2"
+            },
+            "ios": {
+                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+                "Name": "UserInterface_Compressed",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "ASTC_6x6"
+            },
+            "osx_gl": {
+                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+                "Name": "UserInterface_Compressed",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1"
+            },
+            "provo": {
+                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+                "Name": "UserInterface_Compressed",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1"
+            },
+            "xenia": {
+                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
+                "Name": "UserInterface_Compressed",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1"
+            }
+        }
+    }
+}

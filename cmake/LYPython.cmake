@@ -1,0 +1,270 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+include_guard()
+
+# this script exists to make sure a python interpreter is immediately available
+# it will both locate and run pip on python for our requirements.txt
+# but you can also call update_pip_requirements(filename) at any time after.
+
+# this is different from the usual package usage, because even if we are targetting
+# android, for example, we may still be doing so on a windows HOST pc, and the
+# python interpreter we want to use is for the windows HOST pc, not the PAL platform:
+
+# CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
+    set(LY_PYTHON_VERSION 3.7.10)
+    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev2-linux)
+elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
+    set(LY_PYTHON_VERSION 3.7.10)
+    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-darwin)
+elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+    set(LY_PYTHON_VERSION 3.7.10)
+    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-windows)
+endif()
+
+# settings and globals
+set(LY_PYTHON_DEFAULT_REQUIREMENTS_TXT "${CMAKE_SOURCE_DIR}/python/requirements.txt")
+
+include(cmake/3rdPartyPackages.cmake)
+
+# update_pip_requirements
+#    param: requirements_file_path = path to a requirements.txt file.
+# ensures that all the requirements in the requirements.txt are present.
+# you can call it repeatedly on sub-requirement.txt files (for exmaple, in gems)
+# note that unique_name is a string of your choosing to track and refer to this
+# file, and should be unique to your particular gem/package/3rdParty.  It will be
+# used as a file name, so avoid special characters that would fail as a file name.
+function(update_pip_requirements requirements_file_path unique_name)
+    # we run with --no-deps to prevent it from cascading to child dependencies 
+    # and getting more than we expect.
+    # to produce a new requirements.txt use pip-compile from pip-tools alongside pip freeze
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${requirements_file_path})
+
+    # We skip running requirements.txt if we can (we use a stamp file to keep track)
+    # the stamp file is kept in the binary folder with a similar file path to the source file.
+    set(stamp_file ${CMAKE_BINARY_DIR}/packages/requirements_files/${unique_name}.stamp)
+    get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
+    file(MAKE_DIRECTORY ${stamp_file_directory})
+
+    if(EXISTS ${stamp_file} AND ${stamp_file} IS_NEWER_THAN ${requirements_file_path})
+        # this means we more recently ran PIP than the requirements file was changed.
+        # however, users may have deleted and reinstalled python.  If this happens
+        # then the package will be newer than our stamp file, and we must not return.
+        ly_package_is_newer_than(${LY_PYTHON_PACKAGE_NAME} ${stamp_file} package_is_newer)
+        if (NOT package_is_newer)
+            # we can early out becuase the python installation is older than our stamp file
+            # and the stamp file is newer than the requirements.txt
+            return()
+        endif()
+    endif()
+
+    message(CHECK_START "Python: Getting/Checking packages listed in ${requirements_file_path}")
+    
+    # dont allow or use installs in python %USER% location.
+    if (NOT DEFINED ENV{PYTHONNOUSERSITE})
+        set(REMOVE_USERSITE TRUE)
+    endif()
+
+    set(ENV{PYTHONNOUSERSITE} 1)
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} -m pip install --no-deps -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
+        WORKING_DIRECTORY ${Python_BINFOLDER}
+        RESULT_VARIABLE PIP_RESULT
+        OUTPUT_VARIABLE PIP_OUT 
+        ERROR_VARIABLE PIP_OUT
+        )
+
+    message(VERBOSE "pip result: ${PIP_RESULT}")
+    message(VERBOSE "pip output: ${PIP_OUT}")
+
+    if (NOT ${PIP_RESULT} EQUAL 0)
+        message(CHECK_FAIL "Failed to fetch / update python dependencies: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+    else()
+        string(FIND "${PIP_OUT}" "Installing collected packages" NEW_PACKAGES_INSTALLED)
+
+        if (NOT ${NEW_PACKAGES_INSTALLED} EQUAL -1)
+            # this indicates it was found, meaning new stuff was installed.
+            # in this case, output the pip output to normal message mode
+            message(VERBOSE ${PIP_OUT})
+            message(CHECK_PASS "New packages were installed")
+        else()
+            message(CHECK_PASS "Already up to date.")
+        endif()
+
+        # since we're in a success state, stamp the stampfile so we don't run this rule again 
+        # unless someone updates the requirements.txt file.
+        file(TOUCH ${stamp_file})
+    endif()
+
+    # finally, verify that all packages are OK.  This runs locally and does not
+    # hit any repos, so its fairly quick.
+
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} -m pip check
+        WORKING_DIRECTORY ${Python_BINFOLDER} 
+        RESULT_VARIABLE PIP_RESULT
+        OUTPUT_VARIABLE PIP_OUT 
+        ERROR_VARIABLE PIP_OUT
+        )
+    
+    message(VERBOSE "Results from pip check: ${PIP_OUT}")
+
+    if (NOT ${PIP_RESULT} EQUAL 0)
+        message(WARNING "PIP reports unmet dependencies: ${PIP_OUT}")
+    endif()
+
+    if (REMOVE_USERSITE)
+        unset(ENV{PYTHONNOUSERSITE})
+    endif()
+
+endfunction()
+
+# allows you to install a folder into your site packages as an 'editable' package
+# meaning, it will show up in python but not actually be copied to your site-packages
+# folder, instead, it will be linked from there.
+# the pip_package_name should be the name given to the package in setup.py so that
+# any old versions may be uninstalled using setuptools before we install the new one.
+function(ly_pip_install_local_package_editable package_folder_path pip_package_name)
+    set(stamp_file ${CMAKE_BINARY_DIR}/packages/pip_installs/${pip_package_name}.stamp)
+    get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
+    file(MAKE_DIRECTORY ${stamp_file_directory})
+   
+    # we only ever need to do this once per runtime install, since its a link
+    # not an actual install:
+
+    if(EXISTS ${stamp_file})
+        ly_package_is_newer_than(${LY_PYTHON_PACKAGE_NAME} ${stamp_file} package_is_newer)
+        if (NOT package_is_newer)
+            # no need to run the command again, as the package is older than the stamp file
+            # and the stamp file exists.
+            return()
+        endif()
+    endif()
+
+    message(CHECK_START "Python: linking ${package_folder_path} into python site-packages...")
+    
+    # dont allow or use installs in python %USER% location.
+    if (NOT DEFINED ENV{PYTHONNOUSERSITE})
+        set(REMOVE_USERSITE TRUE)
+    endif()
+
+    set(ENV{PYTHONNOUSERSITE} 1)
+
+    # uninstall any old versions of this package first:
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} -m pip uninstall ${pip_package_name} -y  --disable-pip-version-check 
+        WORKING_DIRECTORY ${Python_BINFOLDER}
+        RESULT_VARIABLE PIP_RESULT
+        OUTPUT_VARIABLE PIP_OUT 
+        ERROR_VARIABLE PIP_OUT
+        )
+    # we discard the error output of above, since it might not be installed, which is ok
+    message(VERBOSE "pip uninstall result: ${PIP_RESULT}")
+    message(VERBOSE "pip uninstall output: ${PIP_OUT}")
+
+    # now install the new one:
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} -m pip install -e ${package_folder_path} --no-deps --disable-pip-version-check  --no-warn-script-location 
+        WORKING_DIRECTORY ${Python_BINFOLDER}
+        RESULT_VARIABLE PIP_RESULT
+        OUTPUT_VARIABLE PIP_OUT 
+        ERROR_VARIABLE PIP_OUT
+        )
+
+    message(VERBOSE "pip install result: ${PIP_RESULT}")
+    message(VERBOSE "pip install output: ${PIP_OUT}")
+
+    if (NOT ${PIP_RESULT} EQUAL 0)
+        message(CHECK_FAIL "Failed to install ${package_folder_path}: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+    else()
+        file(TOUCH ${stamp_file})
+    endif()
+
+    if (REMOVE_USERSITE)
+        unset(ENV{PYTHONNOUSERSITE})
+    endif()
+endfunction()
+
+# python is a special case of third party:
+#  * We download it into a folder in the build tree
+#  * The package is modified as time goes on (for example, PYC files appear)
+#  * we add pip-packages to the site-packages folder
+# Because of this, we want a strict verification the first time we download it
+# But we don't want to full verify using hashes after we successfully get it the
+# first time.
+
+set(temp_LY_PACKAGE_VALIDATE_CONTENTS ${LY_PACKAGE_VALIDATE_CONTENTS})
+set(temp_LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER ${LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER})
+if (EXISTS  ${CMAKE_SOURCE_DIR}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
+    # we will not validate the hash of every file, just that it is present
+    # this is not just an optimization, see comment above.
+    set(LY_PACKAGE_VALIDATE_CONTENTS FALSE)
+    set(LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER FALSE)
+endif()
+
+ly_associate_package(${LY_PYTHON_PACKAGE_NAME} "Python")
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/python/runtime)
+ly_download_associated_package(Python)
+
+set(LY_PACKAGE_VALIDATE_CONTENTS ${temp_LY_PACKAGE_VALIDATE_CONTENTS})
+set(LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER ${temp_LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER})
+
+if (NOT CMAKE_SCRIPT_MODE_FILE)
+    # if we're in script mode, we dont want to actually try to find package or anything else
+
+    find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
+
+    # note - if you want to use a normal python via FindPython instead of the LY package above,
+    # you may have to declare the below variables after find_package, as the project scripts are 
+    # looking for the below variables specifically.
+
+    # verify the required variables are present:
+    if (NOT Python_EXECUTABLE OR NOT Python_HOME OR NOT Python_PATHS)
+        message(SEND_ERROR "Python installation not valid expected to find all of the following variables set:")
+        message(STATUS "    Python_EXECUTABLE:  ${Python_EXECUTABLE}")
+        message(STATUS "    Python_HOME:        ${Python_HOME}")
+        message(STATUS "    Python_PATHS:       ${Python_PATHS}")
+    else()
+        message(STATUS "Using Python ${Python_VERSION} at ${Python_EXECUTABLE}")
+        message(VERBOSE "    Python_EXECUTABLE:  ${Python_EXECUTABLE}")
+        message(VERBOSE "    Python_HOME:        ${Python_HOME}")
+        message(VERBOSE "    Python_PATHS:       ${Python_PATHS}")
+
+        get_filename_component(Python_BINFOLDER ${Python_EXECUTABLE} DIRECTORY)
+
+        # make sure other utils can find python / pip / etc
+        # using find_program:
+        LIST(APPEND CMAKE_PROGRAM_PATH "${Python_BINFOLDER}")
+        
+        # some platforms have this scripts dir, its harmless to add for those that do not.
+        LIST(APPEND CMAKE_PROGRAM_PATH "${Python_BINFOLDER}/Scripts")   
+
+        # those using python should call it via LY_PYTHON_CMD - it adds the extra "-s" param
+        # this param causes python to ignore the users profile folder which can have bogus
+        # pip installation modules and lead to machine-specific config problems
+        # it also uses our wrapper python, which can add additional paths to the python path
+        if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+            set(LY_PYTHON_CMD "${CMAKE_SOURCE_DIR}/python/python.cmd" "-s")
+        else()
+            set(LY_PYTHON_CMD "${CMAKE_SOURCE_DIR}/python/python.sh" "-s")
+        endif()
+
+        update_pip_requirements(${LY_PYTHON_DEFAULT_REQUIREMENTS_TXT} default_requirements)
+
+        # we also need to make sure any custom packages are installed.
+        # this costs a moment of time though, so we'll only do it based on stamp files.
+
+        ly_pip_install_local_package_editable(${CMAKE_SOURCE_DIR}/Tools/LyTestTools ly-test-tools)
+        ly_pip_install_local_package_editable(${CMAKE_SOURCE_DIR}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
+    endif()
+endif()
+

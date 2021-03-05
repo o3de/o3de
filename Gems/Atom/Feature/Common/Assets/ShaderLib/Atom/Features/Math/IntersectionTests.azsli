@@ -1,0 +1,44 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+
+// a,b, and c are the vertices of the triangle
+// p is the point to be tested if it is inside or outside the triangle
+bool IsPointInsideTriangle(float2 p, float2 a, float2 b, float2 c)
+{
+    float2 x = p - c;
+    float2 y = a - c;
+    float2 z = b - c;
+    
+    float yy = dot(y,y);
+    float yz = dot(y,z);
+    float zz = dot(z,z);
+    
+    float xy = dot(x,y);
+    float xz = dot(x,z);
+    
+    float determinant0 = yy * zz - yz * yz;
+    float determinant1 = xy * zz - xz * yz;
+    float determinant2 = yy * xz - xy * yz;
+    
+    if (abs(determinant0) < 1e-9)
+        return false; 
+    
+    float barycentricA = determinant1 / determinant0;
+    float barycentricB = determinant2 / determinant0;    
+    float barycentricC = 1 - barycentricA - barycentricB;
+    
+    if (barycentricA < 0 || barycentricB < 0 || barycentricC < 0 || barycentricA > 1 || barycentricB > 1 || barycentricC > 1)
+        return false;
+    else       
+        return true;
+}

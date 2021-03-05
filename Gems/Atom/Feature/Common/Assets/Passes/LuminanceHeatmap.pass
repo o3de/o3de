@@ -1,0 +1,42 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LuminanceHeatmapTemplate",
+            "PassClass": "FullScreenTriangle",
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/LuminanceHeatmap.shader"
+                } 
+            },
+            "Slots": [                 
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "ColorInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_framebuffer"                   
+                },       
+                {
+                    "Name": "SceneLuminanceInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_sceneLuminance"                   
+                },
+                {
+                    "Name": "Histogram",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_histogram"                   
+                }                    
+            ]            
+        }
+    }
+}

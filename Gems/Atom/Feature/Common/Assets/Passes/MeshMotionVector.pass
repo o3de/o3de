@@ -1,0 +1,87 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshMotionVectorPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [ 0.0, 0.0, 0.0, {} ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "OutputDepthStencil",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadAction": "Clear",
+                        "LoadActionStencil": "Clear",
+                        "StoreAction": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+		{
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "MotionBuffer",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                     }
+                },
+                {
+                    "Name": "DepthStencil",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT_S8X24_UINT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MotionBuffer"
+                    }
+                },
+                {
+                    "LocalSlot": "OutputDepthStencil",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencil"
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,253 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--Card
+{
+    margin: 0px;
+    margin-bottom: 4px;
+    padding: -4px -5px -4px -5px;
+
+    border-color: transparent;
+    border-width: 5px 7px 9px 7px;
+    border-image: url(:/Cards/img/UI20/Cards/shadow.png) 5 7 9 7;
+}
+
+AzQtComponents--Card #contentContainer
+{
+    background-color: #555555;
+    /* 1px border with background colour so the contents doesn't move when selected */
+    border: 1px solid #555555;
+    border-top: none;
+    margin: 0px;
+    /* Take the border into account with the padding */
+    padding: 8px 7px 7px 7px;
+    spacing: 4px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+AzQtComponents--Card[selected="true"] > #contentContainer
+{
+    border: 1px solid #00A1C9;
+    border-top: none;
+}
+
+AzQtComponents--Card #contentContainer
+{
+    background-color: #555555;
+}
+
+AzQtComponents--Card[hideFrame=true]
+{
+    border: 1px transparent rgba(0, 0, 0, 0);
+}
+
+AzQtComponents--CardNotification
+{
+    background-color: #555555;
+    spacing: 4px;
+}
+
+AzQtComponents--CardNotification #HeaderFrame
+{
+    padding: 0px 8px 0px 8px;
+    spacing: 4px;
+}
+
+AzQtComponents--CardNotification #HeaderFrame,
+AzQtComponents--CardNotification #Icon,
+AzQtComponents--CardNotification #Title
+{
+    background-color: #444444;
+    border-radius: 3px;
+    border: none;
+}
+
+/**
+ * CardHeader is a QFrame with a QHBoxLayout that contains the following children:
+ * #Expander: a QCheckBox used as a "tree expander".
+ * #Icon: a QLabel displaying an icon. The icon is set from c++.
+ * #Title: a QLabel displaying text.
+ * #ContextMenu: a QPushButton used to launch a context menu.
+ */
+
+AzQtComponents--CardHeader
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+AzQtComponents--CardHeader *
+{
+    background-color: #555555;
+}
+
+AzQtComponents--CardHeader #Background
+{
+    margin: 0px;
+    padding: 2px 7px 3px 7px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+AzQtComponents--Card[selected="true"] > AzQtComponents--CardHeader #Background
+{
+    border: 1px solid #00A1C9;
+    border-bottom: none;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+AzQtComponents--Card[selected="true"][expanded="false"] > AzQtComponents--CardHeader #Background
+{
+    border: 1px solid #00A1C9;
+    border-radius: 2px
+}
+
+.primaryCardHeader
+{
+    background-color: #333333;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+.secondaryCardHeader
+{
+    background-color: #555555;
+    padding: 0px;
+}
+
+.secondaryCardHeader #Background
+{
+    border: none;
+    padding: 2px 0px 2px 0px;
+}
+
+AzQtComponents--CardHeader[contentModified=true] *
+{
+    color: #E57829;
+}
+
+AzQtComponents--CardHeader[warning=true] #Background
+{
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+
+    background-origin: border;
+    background-clip: border;
+    background-image: url(:/Cards/img/UI20/Cards/error-conclict-state.svg);
+}
+
+AzQtComponents--CardHeader[warning=false] #Background
+{
+    background-image: none;
+}
+
+AzQtComponents--CardHeader[readOnly=true] #Background
+{
+    background-repeat: repeat-xy;
+}
+
+AzQtComponents--CardHeader[readOnly=false] #Background
+{
+    background-image: none;
+}
+
+AzQtComponents--CardHeader #Title
+{
+    height: 16px;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #Expander
+{
+    margin: 0px 4px 0px 0px;
+}
+
+AzQtComponents--CardHeader #Icon,
+AzQtComponents--CardHeader #WarningIcon
+{
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    border: none;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #WarningIcon
+{
+    margin-left: 4px;
+}
+
+AzQtComponents--CardHeader #ContextMenu
+{
+    qproperty-icon: url(:/Cards/img/UI20/Cards/menu_ico.svg);
+    qproperty-iconSize: 18px 18px;
+    qproperty-flat: true;
+    margin: 0px;
+    max-width: 28px;
+    max-height: 18px;
+}
+
+AzQtComponents--CardHeader #ContextMenuPlusIcon
+{
+    qproperty-icon: url(:/Gallery/Add.svg);
+    qproperty-iconSize: 18px 18px;
+    qproperty-flat: true;
+    margin: 0px;
+    max-width: 18px;
+    max-height: 18px;
+}
+
+AzQtComponents--CardHeader #Help
+{
+    qproperty-icon: url(:/Cards/img/UI20/Cards/help.svg);
+    qproperty-iconSize: 16px 16px;
+    qproperty-flat: true;
+    margin: 0px 4px 0px 0px;
+    max-width: 16px;
+    max-height: 16px;
+}
+
+.separator
+{
+    color: #999999;
+    margin: 0px;
+    padding: 0px;
+}
+
+AzQtComponents--Card #SeparatorContainer
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+AzQtComponents--Card QLabel:disabled
+{
+    color: #999999;
+}
+
+/* Show expander arrow in card header at full opacity even when card is disabled */
+
+AzQtComponents--CardHeader QCheckBox.Expander::indicator:unchecked:disabled
+{
+    image: url(:/Cards/img/UI20/Cards/caret-right.svg);
+}
+
+AzQtComponents--CardHeader QCheckBox.Expander::indicator:checked:disabled
+{
+    image: url(:/Cards/img/UI20/Cards/caret-down.svg);
+}

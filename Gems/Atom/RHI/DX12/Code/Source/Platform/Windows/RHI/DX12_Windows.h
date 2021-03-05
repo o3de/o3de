@@ -1,0 +1,97 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#pragma once
+
+#if !defined(AZ_DX12_REFCOUNTED)
+    #error "Incorrect include of DX12_Windows.h, please include DX12.h instead of this header"
+#endif
+
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <wrl.h>
+
+#include <Win/d3dx12.h>
+
+#ifdef USE_PIX
+    #include <WinPixEventRuntime/pix3.h>
+#else
+    // Undefine these for now, should consider a more elegant solution.
+    #define PIXBeginEvent(...)
+    #define PIXEndEvent(...)
+#endif //USE_PIX
+
+// This define controls whether ID3D12PipelineLibrary instances are used to de-duplicate
+// pipeline states. This feature was added in the Windows Anniversary Update, so if you
+// have an older version of windows this will need to be disabled.
+#define AZ_DX12_USE_PIPELINE_LIBRARY
+
+// Enabling this define will force every scope into its own command list that
+// is explicitly flushed through the GPU before the next scope is processed.
+// Use it to debug TDR's when you need to know which scope is causing the problem.
+//#define AZ_DX12_FORCE_FLUSH_SCOPES
+
+// This define controls whether DXR ray tracing support is available on the platform.
+#define AZ_DX12_DXR_SUPPORT
+
+using ID3D12CommandAllocatorX = ID3D12CommandAllocator;
+using ID3D12CommandQueueX = ID3D12CommandQueue;
+using ID3D12DeviceX = ID3D12Device5;
+using ID3D12PipelineLibraryX = ID3D12PipelineLibrary1;
+using ID3D12PipelineStateX = ID3D12PipelineState;
+using ID3D12GraphicsCommandListX = ID3D12GraphicsCommandList4;
+
+using IDXGIAdapterX = IDXGIAdapter3;
+using IDXGIFactoryX = IDXGIFactory6;
+using IDXGISwapChainX = IDXGISwapChain4;
+using DXGI_SWAP_CHAIN_DESCX = DXGI_SWAP_CHAIN_DESC1;
+
+#define DX12_TEXTURE_DATA_PITCH_ALIGNMENT D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
+
+// To allow for the using's to overlap, please use the base DirectX types here instead of the remapped types
+
+AZ_DX12_REFCOUNTED(ID3D12CommandAllocator)
+AZ_DX12_REFCOUNTED(ID3D12CommandQueue)
+AZ_DX12_REFCOUNTED(ID3D12CommandSignature)
+AZ_DX12_REFCOUNTED(ID3D12Device)
+AZ_DX12_REFCOUNTED(ID3D12Device5)
+AZ_DX12_REFCOUNTED(ID3D12Fence)
+AZ_DX12_REFCOUNTED(ID3D12GraphicsCommandList)
+AZ_DX12_REFCOUNTED(ID3D12GraphicsCommandList1)
+AZ_DX12_REFCOUNTED(ID3D12Heap)
+AZ_DX12_REFCOUNTED(ID3D12Object)
+AZ_DX12_REFCOUNTED(ID3D12PipelineState)
+AZ_DX12_REFCOUNTED(ID3D12PipelineLibrary)
+AZ_DX12_REFCOUNTED(ID3D12PipelineLibrary1)
+AZ_DX12_REFCOUNTED(ID3D12QueryHeap)
+AZ_DX12_REFCOUNTED(ID3D12Resource)
+AZ_DX12_REFCOUNTED(ID3D12RootSignature)
+AZ_DX12_REFCOUNTED(ID3D12StateObject)
+
+AZ_DX12_REFCOUNTED(IDXGIAdapter)
+AZ_DX12_REFCOUNTED(IDXGIAdapter1)
+AZ_DX12_REFCOUNTED(IDXGIAdapter2)
+AZ_DX12_REFCOUNTED(IDXGIAdapter3)
+
+AZ_DX12_REFCOUNTED(IDXGIFactory)
+AZ_DX12_REFCOUNTED(IDXGIFactory1)
+AZ_DX12_REFCOUNTED(IDXGIFactory2)
+AZ_DX12_REFCOUNTED(IDXGIFactory3)
+AZ_DX12_REFCOUNTED(IDXGIFactory4)
+AZ_DX12_REFCOUNTED(IDXGIFactory5)
+AZ_DX12_REFCOUNTED(IDXGIFactory6)
+AZ_DX12_REFCOUNTED(IDXGIFactory7)
+AZ_DX12_REFCOUNTED(IDXGISwapChain)
+AZ_DX12_REFCOUNTED(IDXGISwapChain1)
+AZ_DX12_REFCOUNTED(IDXGISwapChain2)
+AZ_DX12_REFCOUNTED(IDXGISwapChain3)
+AZ_DX12_REFCOUNTED(IDXGISwapChain4)

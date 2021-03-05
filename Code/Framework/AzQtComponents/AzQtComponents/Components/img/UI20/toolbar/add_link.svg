@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / System / Link</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Link" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" fill-opacity="0" fill="#D8D8D8" x="0" y="0" width="24" height="24"></rect>
+        <path d="M9.75,15.25 L9.75,12.75 L10.25,12.75 L10.25,14.75 L20.75,14.75 L20.75,9.25 L17.75,9.25 L17.75,8.75 L21,8.75 L21.25,15 L9.75,15.25 Z M14.25,8.75 L14.25,11.25 L13.75,11.25 L13.75,9.25 L3.25,9.25 L3.25,14.75 L6.25,14.75 L6.25,15.25 L3,15.25 L2.75,9 L14.25,8.75 Z" id="Link" stroke="#FFFFFF" stroke-width="1.5" transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) "></path>
+    </g>
+</svg>

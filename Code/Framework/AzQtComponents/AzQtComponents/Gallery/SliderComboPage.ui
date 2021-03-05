@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SliderComboPage</class>
+ <widget class="QWidget" name="SliderComboPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1250</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="5" column="2">
+      <widget class="AzQtComponents::SliderDoubleCombo" name="verticalSliderDoubleComboWithSoftRange" native="true">
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>SliderDoubleCombo without value</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="5">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="label_22">
+       <property name="text">
+        <string>SliderCombo</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>SliderDoubleCombo with soft range</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="AzQtComponents::SliderDoubleCombo" name="verticalSliderDoubleCombo" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="AzQtComponents::SliderDoubleCombo" name="verticalSliderDoubleComboWithoutValue" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="5">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="9" column="1">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>SliderCombo with soft range</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="AzQtComponents::SliderCombo" name="verticalSliderCombo" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>SliderDoubleCombo</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2">
+      <widget class="AzQtComponents::SliderCombo" name="verticalSliderComboWithSoftRange" native="true">
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLabel" name="label_23">
+       <property name="text">
+        <string>SliderCombo without value</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2">
+      <widget class="AzQtComponents::SliderCombo" name="verticalSliderComboWithoutValue" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0" colspan="5">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>SliderDoubleCombo with curve</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2">
+      <widget class="AzQtComponents::SliderDoubleCombo" name="curveSliderDoubleCombo" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="orientation" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::SliderCombo</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/SliderCombo.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::SliderDoubleCombo</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/SliderCombo.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

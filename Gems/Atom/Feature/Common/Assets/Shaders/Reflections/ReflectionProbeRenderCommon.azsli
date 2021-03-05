@@ -1,0 +1,114 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+// compute parallax corrected reflection vector
+// we do this by finding the intersection with the probe volume and adjusting the reflection vector for the surface position 
+// https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
+float3 ApplyParallaxCorrection(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
+{
+    float3 rcpReflectDir = 1.0f / reflectDir;
+    float3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
+    float3 intersectB = (aabbMin - positionWS) * rcpReflectDir;
+    float3 furthestIntersect = max(intersectA, intersectB);
+    float distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
+    float3 intersectPos = reflectDir * distance + positionWS;
+    return (intersectPos - aabbPos);
+}
+
+// compute final probe specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
+bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin, float3 aabbMax, uint sampleIndex, out float3 specular)
+{
+    // make sure the pixel belongs to this probe volume
+    // this is necessary since it could have the correct stencil value but actually reside 
+    // in another volume that's in between the camera and the volume we're rendering
+    if (!AabbContainsPoint(aabbMin, aabbMax, positionWS))
+    {
+        return false;
+    }
+
+    // retrieve normal from the encoded buffer written by the forward pass
+    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+    bool multiScatterCompensationEnabled = (encodedNormal.a > 0.0f);
+
+    float3 dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+    float NdotV = dot(normal, dirToCamera);
+    NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
+
+    // retrieve specularF0 and roughness
+    float4 specularF0Sample = PassSrg::m_specularF0.Load(screenCoords, sampleIndex);
+    float3 specularF0 = specularF0Sample.rgb;
+    float roughness = specularF0Sample.a;
+
+    // sample BRDF map (using smoothness)
+    float smoothness = 1.0f - roughness;
+    float2 brdfUV = float2(saturate(NdotV), smoothness);
+    float2 brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+
+    float3 reflectDir = reflect(-dirToCamera, normal);
+
+    // compute parallax corrected reflection vector, if necessary
+    float3 localReflectDir = reflectDir;
+    if (ObjectSrg::m_useParallaxCorrection)
+    {
+        localReflectDir = ApplyParallaxCorrection(ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS, reflectDir);
+    }
+
+    // sample reflection cubemap with the appropriate roughness mip
+    float3 probeSpecular = ObjectSrg::m_reflectionCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(localReflectDir), GetRoughnessMip(roughness)).rgb;
+
+    // compute final specular amount
+    float3 multiScatterCompensation = GetMultiScatterCompensation(NdotV, specularF0, brdf, multiScatterCompensationEnabled);
+    specular = probeSpecular * multiScatterCompensation * (specularF0.xyz * brdf.x + brdf.y);
+
+    // compute clear coat specular amount
+    float4 encodedClearCoatNormal = PassSrg::m_clearCoatNormal.Load(screenCoords, sampleIndex);
+    if(encodedClearCoatNormal.z > 0.0)
+    {
+            float3 clearCoatNormal = DecodedNormalSphereMap(encodedClearCoatNormal.xy);
+            float factor = encodedClearCoatNormal.z;
+            float roughness = encodedClearCoatNormal.w;
+
+            // recompute reflection direction based on coat's normal
+            float3 reflectDir = reflect(-dirToCamera, clearCoatNormal);
+            
+            // compute parallax corrected reflection vector, if necessary
+            // clear coat uses different normal from bottom layer, so reflection direction should be recalculated
+            float3 localReflectDir = reflectDir;
+            if (ObjectSrg::m_useParallaxCorrection)
+            {
+                localReflectDir = ApplyParallaxCorrection(ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS, reflectDir);
+            }
+            
+            float NdotV = saturate(dot(clearCoatNormal, dirToCamera));
+            NdotV = max(NdotV, 0.01f);  // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
+            
+            float3 coatProbeSpecular = ObjectSrg::m_reflectionCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(localReflectDir), GetRoughnessMip(roughness)).rgb;
+            float2 coatBrdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(roughness, NdotV)).rg;
+            
+            // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
+            // coat layer assumed to be dielectric thus don't need multiple scattering compensation
+            float3 clearCoat = coatProbeSpecular * (float3(0.04, 0.04, 0.04) * coatBrdf.x + coatBrdf.y) * factor;
+            
+            // attenuate base layer energy
+            float3 coatResponse = FresnelSchlickWithRoughness(NdotV, float3(0.04, 0.04, 0.04), roughness) * factor;
+
+            specular = specular * (1.0 - coatResponse) * (1.0 - coatResponse) + clearCoat;
+    }
+
+    return true;
+}

@@ -1,0 +1,29 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "factor": 0.9292929172515869,
+            "textureMap": "Materials/BrushedSteel/brushedSteel_diffuse.png"
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "factor": 0.36363640427589419,
+            "textureMap": "Materials/BrushedSteel/brushedSteel_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.2626262903213501
+        },
+        "specularF0": {
+            "factor": 0.5050504803657532
+        },
+        "uv": {
+            "tileU": 1.5,
+            "tileV": 1.5
+        }
+    }
+}

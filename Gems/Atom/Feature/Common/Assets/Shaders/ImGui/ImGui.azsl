@@ -1,0 +1,67 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+struct VertexInput
+{
+    float2 Position : POSITION;
+    float2 UV : UV;
+    float4 Color : COLOR;
+};
+
+struct VertexOutput
+{
+    float4 Position : SV_Position;
+    float4 Color : COLOR;
+    float2 UV : UV;
+};
+
+ShaderResourceGroup ObjectSrg : SRG_PerObject
+{
+    Texture2D<float4> FontImage;
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    column_major float4x4 m_projectionMatrix;
+}
+
+VertexOutput MainVS(in VertexInput input)
+{
+    VertexOutput output;
+    output.Position = mul(float4(input.Position, 0.0f, 1.0f), ObjectSrg::m_projectionMatrix);
+    output.Color = float4(input.Color.rgb, input.Color.a);
+    output.UV = input.UV;
+    return output;
+}
+
+struct PixelOutput
+{
+     float4 m_color : SV_Target0;
+};  
+    
+PixelOutput MainPS(in VertexOutput input)
+{
+    PixelOutput output;
+    float4 color = ObjectSrg::FontImage.Sample(ObjectSrg::LinearSampler, input.UV) * input.Color;
+    output.m_color = float4(color.rgb * color.a, color.a);
+    return output;
+}

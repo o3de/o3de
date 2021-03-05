@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::ModelPreset",
+    "ClassData": {
+        "displayName": "Sphere (Platonic)",
+        "modelAsset": {
+            "assetId": {
+                "guid": "{5D4A455D-E584-54ED-ACBA-DE780F1FB00F}",
+                "subId": 270370614
+            },
+            "assetHint": "materialeditor/viewportmodels/platonicsphere.azmodel"
+        }
+    }
+}

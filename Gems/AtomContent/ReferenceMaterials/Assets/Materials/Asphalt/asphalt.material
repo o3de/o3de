@@ -1,0 +1,15 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/Asphalt/asphalt_basecolor.jpg"
+        },
+        "normal": {
+            "factor": 2.0,
+            "textureMap": "Materials/Asphalt/asphalt_normal.jpg"
+        }
+    }
+}

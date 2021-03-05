@@ -1,0 +1,104 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/RHI/ImageFrameAttachment.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        ImageFrameAttachment::ImageFrameAttachment(
+            const AttachmentId& attachmentId,
+            Ptr<Image> image)
+            : FrameAttachment(
+                attachmentId,
+                HardwareQueueClassMask::All,
+                AttachmentLifetimeType::Imported)
+            , m_imageDescriptor{image->GetDescriptor()}
+        {
+            SetResource(AZStd::move(image));
+        }
+
+        ImageFrameAttachment::ImageFrameAttachment(const TransientImageDescriptor& descriptor)
+            : FrameAttachment(
+                descriptor.m_attachmentId,
+                descriptor.m_supportedQueueMask,
+                AttachmentLifetimeType::Transient)
+            , m_imageDescriptor{descriptor.m_imageDescriptor}
+        {
+            if (descriptor.m_optimizedClearValue)
+            {
+                m_clearValueOverride = *descriptor.m_optimizedClearValue;
+                m_hasClearValueOverride = true;
+            }
+        }
+
+        const ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment() const
+        {
+            return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        }
+
+        ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment()
+        {
+            return static_cast<ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        }
+
+        const ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment() const
+        {
+            return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        }
+
+        ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment()
+        {
+            return static_cast<ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        }
+
+        const ImageDescriptor& ImageFrameAttachment::GetImageDescriptor() const
+        {
+            return m_imageDescriptor;
+        }
+
+        const Image* ImageFrameAttachment::GetImage() const
+        {
+            return static_cast<const Image*>(GetResource());
+        }
+
+        Image* ImageFrameAttachment::GetImage()
+        {
+            return static_cast<Image*>(GetResource());
+        }
+
+        ClearValue ImageFrameAttachment::GetOptimizedClearValue() const
+        {
+            if (m_hasClearValueOverride)
+            {
+                return m_clearValueOverride;
+            }
+
+            const ScopeAttachment* bindingNode = GetFirstScopeAttachment();
+            while (bindingNode)
+            {
+                const ImageScopeAttachmentDescriptor& binding = static_cast<const ImageScopeAttachment&>(*bindingNode).GetDescriptor();
+
+                if (binding.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
+                    binding.m_loadStoreAction.m_loadActionStencil == AttachmentLoadAction::Clear)
+                {
+                    return binding.m_loadStoreAction.m_clearValue;
+                }
+
+                bindingNode = bindingNode->GetNext();
+            }
+            return ClearValue{};
+        }
+    }
+}

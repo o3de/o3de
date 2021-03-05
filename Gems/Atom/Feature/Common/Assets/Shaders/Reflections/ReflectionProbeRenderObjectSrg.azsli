@@ -1,0 +1,42 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup ObjectSrg : SRG_PerObject
+{
+    row_major float3x4 m_modelToWorld;
+
+    float3 m_aabbPos;
+    float3 m_outerAabbMin;
+    float3 m_outerAabbMax;
+    float3 m_innerAabbMin;
+    float3 m_innerAabbMax;
+    bool m_useParallaxCorrection;
+    TextureCube m_reflectionCubeMap;
+
+    float4x4 GetWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorld[0] = ObjectSrg::m_modelToWorld[0];
+        modelToWorld[1] = ObjectSrg::m_modelToWorld[1];
+        modelToWorld[2] = ObjectSrg::m_modelToWorld[2];
+        return modelToWorld;
+    }
+}

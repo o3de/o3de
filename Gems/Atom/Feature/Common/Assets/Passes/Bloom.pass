@@ -1,0 +1,73 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BloomPassTemplate",
+            "PassClass": "BloomParentPass",
+            "Slots": [
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "BloomDownsamplePass",
+                    "TemplateName": "BloomDownsamplePassTemplate",
+                    "Connections":[
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BloomBlurPass",
+                    "TemplateName": "BloomBlurPassTemplate",
+                    "Connections":[
+                        {
+                            "LocalSlot": "BlurInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "BloomDownsamplePass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurWorkspace",
+                            "AttachmentRef": {
+                                "Pass": "BloomDownsamplePass",
+                                "Attachment": "BlurImageResource"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BloomCompositePass",
+                    "TemplateName": "BloomCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "BloomBlurPass",
+                                "Attachment": "BlurInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            } 
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

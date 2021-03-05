@@ -1,0 +1,170 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+float ViewSpaceDepth(float depth)
+{
+    float z = 2.0f * depth - 1.0f;
+    float zFar = ViewSrg::GetFarZ();
+    float zNear = ViewSrg::GetNearZ();
+    return 2.0f * zNear * zFar / (zFar + zNear - z * (zFar - zNear));
+}
+
+float DistanceSqr(float2 v1, float2 v2) 
+{ 
+    v1 -= v2; 
+    return dot(v1, v1); 
+}
+
+//
+// This is a modified version of the following work:
+// http://jcgt.org/published/0003/04/04/paper.pdf
+// 
+// Copyright (c) 2014, Morgan McGuire and Michael Mara
+// All rights reserved.
+//
+// Released as open source under the BSD 2-Clause License
+// http://opensource.org/licenses/BSD-2-Clause
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions 
+// and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+// and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED 
+// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR 
+// ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+// TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+// POSSIBILITY OF SUCH DAMAGE.
+//
+// See http://kode80.com/blog/2015/03/11/screen-space-reflections-in-unity-5/index.html for additional
+// extensions and optimizations.
+//
+
+static const float Thickness = 0.01f;
+static const uint MaxSteps = 96;
+static const float MaxDistance = 15.0f;
+static const float MaxDepthThreshold = 0.3f;
+static const uint BinarySearchSteps = 16;
+
+bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensions, out float2 hitCoords)
+{
+    float3 rayEndVS = rayStartVS + rayDirectionVS * MaxDistance;
+
+    // project into homogeneous clip space
+    float4 H0 = mul(ViewSrg::m_projectionMatrix, float4(rayStartVS, 1.0));
+    float4 H1 = mul(ViewSrg::m_projectionMatrix, float4(rayEndVS, 1.0));
+    float k0 = 1.0 / H0.w;
+    float k1 = 1.0 / H1.w;
+    
+    // convert to screen-space endpoints 
+    float2 P0 = H0.xy * k0 * 0.5f + 0.5f;
+    P0 = float2(P0.x * dimensions.x, (1.0f - P0.y) * dimensions.y);
+    float2 P1 = H1.xy * k1 * 0.5f + 0.5f;
+    P1 = float2(P1.x * dimensions.x, (1.0f - P1.y) * dimensions.y);
+
+    // the interpolated homogeneous version of the viewspace points  
+    float3 Q0 = rayStartVS * k0;
+    float3 Q1 = rayEndVS * k1;
+
+    // if the line is degenerate, make it cover at least one pixel
+    P1 += DistanceSqr(P0, P1) < EPSILON ? float2(0.01f, 0.01f) : 0.0f;
+
+    // store all of the start variables in a single float4
+    float4 PQK = float4(P0, Q0.z, k0);
+
+    // compute the step amount for each variable (SIMD)
+    float4 dPQK = float4(P1, Q1.z, k1);
+    dPQK -= PQK;
+    dPQK /= MaxSteps;
+
+    // advance by one step before starting the ray march
+    PQK += dPQK;
+
+    // ray march until the expected ray depth is beyond the actual scene depth
+    bool foundHit = false;
+    for (uint step = 0; step < MaxSteps; ++step)
+    {
+        // validate the current screenspace coordinates (stored in PQK.xy)
+        hitCoords = PQK.xy;
+        float4 validate = float4(hitCoords.x >= dimensions.x, hitCoords.y >= dimensions.y, hitCoords.x < 0, hitCoords.y < 0);
+        if (any(validate))
+        {
+            break;
+        }
+
+        // retrieve the scene depth from the depth buffer at the sample coordinates and convert to viewspace depth
+        float sampleDepth = PassSrg::m_depth.Load(int2(hitCoords), 0).r;
+        float sceneDepth = -ViewSpaceDepth(sampleDepth);
+        
+        // compute the expected depth of the ray at this point, by performing the perspective-divide
+        // on the current homogenous z-coordinate (PQK.z) by the current w-coordinate (PQK.w)
+        float rayDepth = PQK.z / PQK.w;
+
+        // a hit occurs when the expected ray depth is beyond the scene depth and within the depth tolerance
+        if (rayDepth < sceneDepth && sceneDepth - rayDepth < MaxDepthThreshold)
+        {
+            foundHit = true;
+            break;
+        }
+
+        // increase all three variables by the step amount
+        PQK += dPQK;
+    }
+
+    if (foundHit)
+    {
+        // binary search refinement on the hit
+        // start by moving back one step to just before the hit       
+        PQK -= dPQK;
+
+        // the stride reduces the dQKP increment each iteration of the binary search
+        float stride = 0.5f;
+
+        // the sign of the stride is changed each iteration to control the step direction
+        float strideAndDirection = stride;
+        
+        for (uint binarySearchStep = 0; binarySearchStep < BinarySearchSteps; ++binarySearchStep)
+        {
+            dPQK *= strideAndDirection;
+            PQK += dPQK;
+
+            // current screen coordinates are stored in PQK.xy
+            hitCoords = PQK.xy;
+
+            // retrieve the scene depth from the depth buffer at the screen coordinates and convert to viewspace depth
+            float sampleDepth = PassSrg::m_depth.Load(int2(hitCoords), 0).r;
+            float sceneDepth = -ViewSpaceDepth(sampleDepth);
+        
+            // compute the expected depth of the ray at this point, by performing the perspective-divide
+            // on the current homogenous z-coordinate (in PQK.z) by the current w-coordinate (in PQK.w)
+            float rayDepth = PQK.z / PQK.w;
+
+            // determine if the expected ray depth is beyond the scene depth and within the depth tolerance
+            bool exceedsSceneDepth = (rayDepth < sceneDepth && sceneDepth - rayDepth < MaxDepthThreshold);    
+        
+            // reduce the stride each iteration
+            stride *= 0.5f;
+
+            // move backwards if the ray depth exceeds the scene depth, otherwise move forward
+            strideAndDirection = exceedsSceneDepth ? -stride : stride;
+        }
+    }
+
+    return foundHit;
+}

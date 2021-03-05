@@ -1,0 +1,21 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        }
+    ],
+    "GemFormatVersion": 3,
+    "Uuid": "4e08125824434932a0fe3717259caa47",
+    "Name": "PhysX",
+    "DisplayName": "PhysX",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "The PhysX Gem enables the NVIDIA PhysX SDK to provide physics simulation for Lumberyard. The PhysX system is not compatible with the legacy physics system. You cannot use components interchangeably between each system.",
+    "Tags": ["Physics"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

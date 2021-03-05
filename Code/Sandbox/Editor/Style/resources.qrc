@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="Editor/Style/Editor.qss">Editor.qss</file>
+    <file alias="Editor/Style/EditorPreferencesDialog.qss">EditorPreferencesDialog.qss</file>
+    <file alias="Editor/Style/CloudCanvas.qss">CloudCanvas.qss</file>
+    <file alias="Editor/Style/LayoutConfigDialog.qss">LayoutConfigDialog.qss</file>
+    <file alias="Editor/Style/GraphicsSettingsDialog.qss">GraphicsSettingsDialog.qss</file>
+    <file alias="Editor/Style/LensFlareEditor.qss">LensFlareEditor.qss</file>
+</qresource>
+</RCC>

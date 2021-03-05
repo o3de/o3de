@@ -1,0 +1,102 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float>  m_depth;
+    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+}
+
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include "ReflectionCommon.azsli"
+#include "ReflectionScreenSpaceTrace.azsli"
+
+struct VSInput
+{
+    uint m_vertexID : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+};
+
+// Vertex Shader
+VSOutput MainVS(VSInput input)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+    return OUT;
+}
+
+// Pixel Shader
+PSOutput MainPS(VSOutput IN)
+{
+    // compute screen coords based on a half-res render target
+    float2 screenCoords = IN.m_position.xy * 2.0f;
+       
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    float2 UV = saturate(screenCoords / dimensions.xy);
+
+    float depth = PassSrg::m_depth.Load(screenCoords, 0).r;
+    if (depth == 0.0f)
+    {
+        // skip tracing rays at max scene depth
+        discard;
+    }
+        
+    // compute view space surface position
+    float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+
+    // normalize the viewspace position to get the camera-to-position vector
+    float3 cameraToPositionVS = normalize(positionVS);  
+
+    // retrieve surface normal
+    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, 0);
+    float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+    float3 normalVS = normalize(mul(ViewSrg::m_viewMatrix, float4(normalWS, 0.0f)).xyz);
+
+    // reflect view ray around surface normal
+    float3 reflectDirVS = normalize(reflect(cameraToPositionVS, normalVS));
+ 
+    // trace screenspace rays against the depth buffer to find the screenspace intersection coordinates    
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float2 hitCoords = float2(0.0f, 0.0f);
+    if (TraceRayScreenSpace(positionVS, reflectDirVS, dimensions, hitCoords))
+    {
+        float rdotv = dot(reflectDirVS, cameraToPositionVS);
+        result = float4(hitCoords, 0.0f, rdotv);   
+    }
+
+    PSOutput OUT;
+    OUT.m_color = result;
+    return OUT;
+}

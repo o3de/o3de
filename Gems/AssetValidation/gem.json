@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "5a5c3c10b91d4b4ea8baef474c5b5d49",
+    "Name": "AssetValidation",
+    "DisplayName": "AssetValidation",
+    "Version": "0.1.0",
+    "Summary": "Tools for managing your assets and their dependencies during development",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

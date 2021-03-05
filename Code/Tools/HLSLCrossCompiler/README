@@ -1,0 +1,71 @@
+Overview:
+  This is a modified version of https://github.com/James-Jones/HLSLCrossCompiler
+  
+  It can be used either:
+  1. As an executable.
+     This is the default use case for release builds
+     This is run by the RemoteShaderCompiler when compiling the shaders for the GL4 and GLES3 platforms.
+  2. As a static library.
+     This is used by the DXGL translation layer if compiled with DXGL_USE_GLSL set to 0.
+     In this case DXGL translation layer to translate DirectX shader model 5 bytecode coming from the renderer front end (runtime translation).
+
+Editing:
+  When modifying the source code, in order to use the updated version in the engine, you will have to recompile the library.
+  To do this, please follow these steps:
+  
+  A. Edit /Code/Tools/HLSLCrossCompiler/bin/mk/rsc_version.txt and bump the version string.
+     Please use the format for released branches and main:
+       V[3_decimal_digits_version_number]
+     and optionally for development branches:
+       V[3_decimal_digits_version_number]_[custom_version_label]
+
+  B. From a Windows machine:
+       Verify that the following folders and the contained files are writeable (checkout if needed):
+         - /Code/Tools/HLSLCrossCompiler/bin
+         - /Code/Tools/HLSLCrossCompiler/lib
+         - /Tools/RemoteShaderCompiler/Compiler/PCGL
+       Run:
+         /Code/Tools/HLSLCrossCompiler/mk/build_win_all.py
+       Note:
+         This will compile:
+           - The static library (2) for win32 and win64 in release
+           - The executable (1) with the PORTABLE define enabled (required to run from machines without Direct3D runtime, such ass the RSC servers)
+             for win64 release in and place it in /Tools/RemoteShaderCompiler/Compiler/PCGL/[rsc_version]/
+
+  C. From a Linux machine:
+       Verify that the following folder and the contained files are writeable (checkout if needed):
+         - /Code/Tools/HLSLCrossCompiler/lib
+       Run:
+         /Code/Tools/HLSLCrossCompiler/mk/build_linux_all.py
+       Note:
+         This will compile:
+           - The static library (2) for linux (64 bit) in release
+           - The static library (2) for android (android-armeabi-v7a) in release
+
+  D. Edit:
+      /Code/CryEngine/RenderDll/Common/Shaders/ShaderCache.cpp
+     and update the two command lines in CShaderMan::mfGetShaderCompileFlags:
+      const char* pCompilerGL4="PCGL/[rsc_version]/HLSLcc.exe [generic_gl4_flags ...]";
+      const char* pCompilerGLES3="PCGL/[rsc_version]/HLSLcc.exe [generic_gles3_flags ...]";
+     with the rsc_version string chosen.
+
+  E. Edit:
+      /Code/CryEngine/RenderDll/Common/Shaders/Shader.h
+     and bump by one minor decimal unit:
+      #define FX_CACHE_VER       [major_decimal_digit_0].[minor_decimal_digit_0]
+     Note:
+       This is required to flush cached shaders generated with the previous versions that might be stored
+       in ShaderCache.pak or in a user cache folder.
+
+Submitting:
+  Before submitting any change to HLSLCrossCompiler source code, please 
+  make sure to do so together with the updated:
+    /Code/Tools/HLSLCrossCompiler/bin/mk/rsc_version.txt
+    /Code/Tools/HLSLCrossCompiler/lib/win64/libHLSLcc.lib
+    /Code/Tools/HLSLCrossCompiler/lib/win32/libHLSLcc.lib
+    /Code/Tools/HLSLCrossCompiler/lib/linux/libHLSLcc.a
+    /Code/Tools/HLSLCrossCompiler/lib/android-armeabi-v7a/libHLSLcc.a
+    /Code/CryEngine/RenderDll/Common/Shaders/ShaderCache.cpp
+    /Code/CryEngine/RenderDll/Common/Shaders/Shader.h
+    /Tools/RemoteShaderCompiler/Compiler/PCGL/[rsc_version]/HLSLcc.exe
+  This will make sure there is no mismatch between any cached shaders, and remotely or locally compiled shaders.

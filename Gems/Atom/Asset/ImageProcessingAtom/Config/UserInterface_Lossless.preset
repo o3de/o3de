@@ -1,0 +1,45 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+            "Name": "UserInterface_Lossless",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "R8G8B8X8"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+                "Name": "UserInterface_Lossless",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R8G8B8X8"
+            },
+            "ios": {
+                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+                "Name": "UserInterface_Lossless",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R8G8B8X8"
+            },
+            "osx_gl": {
+                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+                "Name": "UserInterface_Lossless",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R8G8B8X8"
+            },
+            "provo": {
+                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+                "Name": "UserInterface_Lossless",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R8G8B8X8"
+            },
+            "xenia": {
+                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
+                "Name": "UserInterface_Lossless",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R8G8B8X8"
+            }
+        }
+    }
+}

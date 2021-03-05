@@ -1,0 +1,79 @@
+<TextureGroups>
+	<!--  The following are parallel to texturesFromFile array existed in ITexture.h and now moved to be loaded by the TextureManager.cpp/
+        It should be replaced by data driven file (this one) and loaded by the CTextureManager code  /-->
+	<DefaultTextures> 
+		<TextureEntry> Usage="NoTextureCM", FileName="EngineAssets/TextureMsg/ReplaceMeCM.dds", Flags="FT_DONT_RELEASE | FT_DONT_STREAM" </TextureEntry>
+	</DefaultTextures> 
+	
+	<!-- The following are parallel to the needless list of static CTexture pointers located within CTexture and used as default engine textures  /-->
+	<EngineTextures>
+	</EngineTextures>
+
+  <!-- Bellow are the original textures that were loaded by the old TextureManager and never used anywhere - to be loaded or removed    /-->
+  <entry>EngineAssets/Textures/caustics_sampler.dds</entry>
+	<entry nomips="1">EngineAssets/Textures/default_cch.dds</entry>
+	<entry>EngineAssets/Textures/detailDecalVariation.dds</entry>
+	<entry>EngineAssets/Textures/dither_2.dds</entry>
+	<entry>EngineAssets/Textures/dither_pattern_2d.dds</entry>
+	<entry>EngineAssets/Textures/fresnel_sampler.dds</entry>
+	<entry>EngineAssets/Textures/fringe_map.dds</entry>
+	<entry>EngineAssets/Textures/frost_refl2.dds</entry>
+	<entry>EngineAssets/Textures/fuzzy_pow_sampler_merged.dds</entry>
+	<entry>EngineAssets/Textures/glass_decalatlas_ddn.dds</entry>
+	<entry>EngineAssets/Textures/glass_decalatlas_diff.dds</entry>
+	<entry>EngineAssets/Textures/interference.dds</entry>
+	<entry>EngineAssets/Textures/noise.dds</entry>
+	<entry>EngineAssets/Textures/noise3d.dds</entry>
+	<entry>EngineAssets/Textures/oceanwaves_ddn.dds</entry>
+	<entry>EngineAssets/Textures/palette/cloak_interlation.dds</entry>
+	<entry>EngineAssets/Textures/palette/cloak_palette.dds</entry>
+	<entry>EngineAssets/Textures/palette/cloak_sparks.dds</entry>
+	<entry>EngineAssets/Textures/palette/cloak_transition.dds</entry>
+	<entry>EngineAssets/Textures/perlinNoise2D.dds</entry>
+	<entry>EngineAssets/Textures/perlinNoiseNormal_ddn.dds</entry>
+	<entry>EngineAssets/Textures/rotrandom.dds</entry>
+	<entry>EngineAssets/Textures/rotrandomCM.dds</entry>
+	<entry>EngineAssets/Textures/scratch.dds</entry>
+	<entry>EngineAssets/Textures/screen_noisy_bump.dds</entry>
+	<entry>EngineAssets/Textures/screenfrost_alpha.dds</entry>
+	<entry>EngineAssets/Textures/screenfrost_ddn.dds</entry>
+	<entry>EngineAssets/Textures/water_droplets.dds</entry>
+	<entry>EngineAssets/Textures/water_gloss.dds</entry>
+	<entry>EngineAssets/Textures/perlinNoise_sum.dds</entry>
+	<entry>EngineAssets/ScreenSpace/NormalsFitting.dds</entry>
+	<entry>EngineAssets/ScreenSpace/PointsOnSphere4x4.dds</entry>
+	<entry>EngineAssets/Shading/layer_effect_anim_function.dds</entry>
+	<entry>EngineAssets/Shading/WaterFoam.dds</entry>
+	<entry>EngineAssets/Shading/generic_reflections.dds</entry>
+	<entry>EngineAssets/Shading/ThermalVisionGradient.dds</entry>
+	<entry>EngineAssets/Shading/environmentBRDF.dds</entry>
+	<entry>EngineAssets/Shading/defaultprobe_cm.dds</entry>
+	<entry>EngineAssets/Shading/defaultprobe_cm_diff.dds</entry>
+	<entry>EngineAssets/TextureMsg/ShaderCompiling.dds</entry>
+	<entry>EngineAssets/TextureMsg/ShaderError.dds</entry>
+	<entry>EngineAssets/Textures/JumpNoiseHighFrequency_x27y19.dds</entry>
+	<entry>EngineAssets/Textures/TexelsPerMeterGrad.dds</entry>
+	<entry>EngineAssets/Textures/vector_noise.dds</entry>
+	<entry>EngineAssets/Textures/alienhud_distortionimage.dds</entry>
+	<entry>EngineAssets/Textures/alienhud_noise1.dds</entry>
+	<entry>EngineAssets/Icons/LevelShaderCacheMiss.dds</entry>
+	<entry>EngineAssets/ScreenSpace/grain_bayer_mul.dds</entry>
+	<entry>EngineAssets/Textures/pixeltex.dds</entry>
+	<entry>EngineAssets/Textures/white_cm.dds</entry>
+	<entry>EngineAssets/Textures/hex_ddn.dds</entry>
+	<entry>engineassets/screenspace/bokeh_pentagon.dds</entry>
+	<entry>engineassets/screenspace/areatex.dds</entry>
+	<entry>engineassets/screenspace/searchtex.dds</entry>
+	<entry>engineassets/textures/nightvis_grad.dds</entry>
+	<entry>engineassets/shading/sonarvisiongradient.dds</entry>
+	<entry>engineassets/shading/thermalvisiongradient.dds</entry>
+	<entry>engineassets/textures/hex.dds</entry>
+	<entry>engineassets/textures/hex_rand.dds</entry>
+	<entry>engineassets/textures/hex_grad.dds</entry>
+	<entry>engineassets/textures/perlinnoise_sum_small.dds</entry>
+	<entry>engineassets/textures/fogvolshadowjitter.dds</entry>
+
+</TextureGroups>
+	
+
+	

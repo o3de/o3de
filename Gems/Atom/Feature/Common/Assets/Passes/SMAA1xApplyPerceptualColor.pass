@@ -1,0 +1,114 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SMAA1xApplyPerceptualColorTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }     
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "SMAANeighborhoodBlending",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "SMAAEdgeDetection",
+                    "TemplateName": "SMAAEdgeDetectionTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SMAABlendingWeightCalculation",
+                    "TemplateName": "SMAABlendingWeightCalculationTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputEdgeDetection",
+                            "AttachmentRef": {
+                                "Pass": "SMAAEdgeDetection",
+                                "Attachment": "OutputEdgeDetectionResult"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SMAANeighborhoodBlending",
+                    "TemplateName": "SMAANeighborhoodBlendingTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColorPassThrough",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEdgeDetectionResult",
+                            "AttachmentRef": {
+                                "Pass": "SMAAEdgeDetection",
+                                "Attachment": "OutputEdgeDetectionResult"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputBlendingWeight",
+                            "AttachmentRef": {
+                                "Pass": "SMAABlendingWeightCalculation",
+                                "Attachment": "OutputBlendingWeight"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

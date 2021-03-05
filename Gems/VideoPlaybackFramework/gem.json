@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "560d69cbaafd40bea8a09bccfe7f77e6",
+    "Name": "VideoPlaybackFramework",
+    "DisplayName": "Video Playback Framework",
+    "Version": "0.1.0",
+    "Summary": "The Video Playback Framework Gem provides the interface to play back video during gameplay. This gem is automatically enabled when selecting any of the Video Playback Gems.",
+    "Tags": ["Video"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

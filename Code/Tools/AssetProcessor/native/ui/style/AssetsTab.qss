@@ -1,0 +1,137 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+QSplitter#jobDialogSplitter {
+    qproperty-childrenCollapsible: False;
+}
+
+/* FilteredSearchWidget */
+
+AzQtComponents--FilteredSearchWidget#jobFilteredSearchWidget,
+AzQtComponents--FilteredSearchWidget#detailsFilterWidget,
+AzQtComponents--FilteredSearchWidget#assetDataFilteredSearchWidget {
+    padding: 8px;
+    background-color: rgb(40,40,40);
+    qproperty-textFilterFillsWidth: False;
+}
+
+AzQtComponents--FilteredSearchWidget#assetDataFilteredSearchWidget {
+    padding: 8px;
+    background-color: rgb(40,40,40);
+    qproperty-textFilterFillsWidth: True;
+}
+
+AzQtComponents--FilteredSearchWidget #textSearchContainer,
+AzQtComponents--FilteredSearchWidget #filteredParent,
+AzQtComponents--FilteredSearchWidget #filteredLayout {
+    background-color: rgb(40,40,40);
+}
+
+
+
+AzQtComponents--FilteredSearchWidget QLineEdit {
+    background-color: #e9e9e9;
+}
+
+/* filteredParent is in FilteredSearchWidget */
+AzQtComponents--FilteredSearchWidget #filteredParent {
+    margin-top: 6px;
+}
+
+/* Tighten things up a bit in the Asset Processor */
+#jobFilteredSearchWidget AzQtComponents--FilterCriteriaButton,
+#detailsFilterWidget AzQtComponents--FilterCriteriaButton
+{
+    max-height: 22px;
+}
+
+/* Tighten things up a bit in the Asset Processor */
+#jobFilteredSearchWidget AzQtComponents--FilterCriteriaButton QLabel,
+#detailsFilterWidget AzQtComponents--FilterCriteriaButton QLabel
+{
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+/* filteredLayout is in FilteredSearchWidget */
+AzQtComponents--FilteredSearchWidget #filteredLayout {
+    /* Negative margin to negate the default FlowLayout margin */
+    margin: -4px;
+}
+
+#jobFilteredSearchWidget QTreeView,
+#detailsFilterWidget QTreeView {
+    /* Apply a custom border to the inner tree view, to make it stand out a little */
+    background-color: rgb(34,34,34);
+    border: 1px solid rgb(70,70,70);
+    border-radius: 2px;
+
+    /* These filters show only one category for "Status" so remove the indentation and therefore the indicators */
+    qproperty-indentation: 0;
+    qproperty-expandsOnDoubleClick: 0;
+}
+
+#jobFilteredSearchWidget AzQtComponents--SearchTypeSelector,
+#detailsFilterWidget AzQtComponents--SearchTypeSelector {
+    qproperty-lineEditSearchVisible: 0;
+}
+
+/* TableView */
+
+AzQtComponents--TableView {
+    background-color: rgb(45,45,45);            /* Odd row */
+    alternate-background-color: rgb(34,34,34);  /* Even row */
+
+    selection-background-color: rgb(73,73,73);
+}
+
+AzQtComponents--TableView::branch:selected,
+AzQtComponents--TableView::item:selected {
+    background: rgb(73,73,73);
+}
+
+AzQtComponents--TableView::branch:hover,
+AzQtComponents--TableView::item:hover {
+    background: rgb(60,60,60);
+}
+
+AzQtComponents--TableView QHeaderView::section {
+    background-color: rgb(34,34,34);
+}
+
+AzQtComponents--TableView#jobTreeView {
+    margin-bottom: 0px;
+}
+
+QStackedWidget#jobLogStackedWidget {
+    margin-bottom: 0px;
+}
+
+.solo {
+    margin-top: 12px;
+}
+
+QFrame#jobLogLabel,
+QFrame#jobContextLogLabel {
+    margin-top: 12px;
+}
+
+QSplitter:handle {
+    background-color: #222222;
+}
+
+QLabel#jobLogPlaceholderLabel,
+QLabel#jobContextLogPlaceholderLabel {
+    background-color: rgb(34,34,34);
+    padding: 8px;
+    padding-top: 16px;
+}

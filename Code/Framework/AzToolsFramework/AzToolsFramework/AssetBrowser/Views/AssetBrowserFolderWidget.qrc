@@ -1,0 +1,8 @@
+<RCC>
+ <qresource prefix="/AssetBrowser/FolderWidget">
+  <file>list-selected.png</file>
+  <file>list-unselected.png</file>
+  <file>thumb-selected.png</file>
+  <file>thumb-unselected.png</file>
+ </qresource>
+</RCC>

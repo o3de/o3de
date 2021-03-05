@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Editor / Select Terrain</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Editor-/-Select-Terrain" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="Group" transform="translate(3.000000, 3.000000)" fill="#FFFFFF">
+            <path d="M9,0 L13.194,9.227 L7.5,7.6 L8.472,11 L0,11 L4.5,2 L6.381,5.762 L9,0 Z M13.721,10.386 L14,11 L12.306,11 L13.721,10.386 Z M4.5,4.25 L3,7.25 L5.705,7.25 L5.845,6.94 L4.5,4.25 Z M9,2.0625 L7.57142857,5.5 L10.4285714,5.5 L9,2.0625 Z" id="Combined-Shape"></path>
+        </g>
+        <path d="M11,11 L18.6236276,13.1781793 L15.605,14.488 L21,19.8835456 L19.844846,21.0386996 L14.471,15.665 L13.1781793,18.6236276 L11,11 Z" id="Combined-Shape-Copy-2" fill="#FFFFFF"></path>
+    </g>
+</svg>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/img/">
+        <file alias="tree_view_folder.png">res/tree_view_folder.png</file>
+        <file alias="tree_view_level.png">res/tree_view_level.png</file>
+    </qresource>
+</RCC>

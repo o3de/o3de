@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RCJobs>
+    <DefaultProperties
+        game="RPGSample"
+        target="TempRC"
+    />
+    
+
+    <DBAJob>
+        <Job input="*.i_caf"  animConfigFolder="Animations" sourceroot="${game}" targetroot="${target}" cafAlignTracks="1" dbaStreamPrepare="1" /> 
+        <Job input="*.dba" copyonly="1" sourceroot="${target}" targetroot="${game}" /> 
+        <Job input="*.img" copyonly="1" sourceroot="${target}" targetroot="${game}" /> 
+    </DBAJob>
+
+    <Run Job="DBAJob" /> <!-- Run the only job -->
+</RCJobs>

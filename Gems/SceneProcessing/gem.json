@@ -1,0 +1,19 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "7c2578f634df4345aca98d671e39b8ab",
+    "Name": "SceneProcessing",
+    "DisplayName": "Scene Processing (PREVIEW)",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Use this gem to fine tune the defaults for processing of scene files like Fbx.",
+    "Tags": ["Scene", "FBX", "Assets"],
+    "IconPath": "preview.png",
+    "EditorModule": true,
+    "IsRequired": false,
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ]
+}

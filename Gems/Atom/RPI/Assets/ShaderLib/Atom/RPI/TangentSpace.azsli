@@ -1,0 +1,201 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+// ---------- Tangent & World Space ----------
+
+//! Utility function to convert vector from tangent space to world space
+float3 TangentSpaceToWorld(float3 vectorTS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    return (vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
+}
+
+//! Utility function to convert vector from world space to tangent space
+float3 WorldToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    float a = dot(tangentWS, vectorWS);
+    float b = dot(bitangentWS, vectorWS);
+    float c = dot(normalWS, vectorWS);
+
+    return float3(a,b,c);
+}
+
+//! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space based on MikkT conventions.
+void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float3 vertexBitangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+{
+    normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
+    tangentWS = normalize(mul(localToWorld, float4(vertexTangent.xyz, 0)).xyz);
+    float bitangentSign = -vertexTangent.w;
+    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0)).xyz) * bitangentSign;
+}
+
+// ---------- Normal Calculation ----------
+
+//! Utility function for fragment shaders to decode a normal map sample based on MikkT conventions.
+float3 GetTangentSpaceNormal_Unnormalized(float2 normalMapSample, float normalStrength)
+{
+    float3 surfaceNormal;
+
+    // [GFX TODO][ATOM-2404] For some reason, the image build pipeline swaps the R and G channels so we swap them back here.
+    surfaceNormal.xy = normalMapSample.yx;
+
+    // The image build pipeline drops the B channel so we have to reconstruct it here.
+    surfaceNormal.z = sqrt(1 - dot(surfaceNormal.xy, surfaceNormal.xy));
+    
+    surfaceNormal.xy *= normalStrength;
+
+    return surfaceNormal;
+}
+
+// Normalized version of above function
+float3 GetTangentSpaceNormal(float2 normalMapSample, float normalStrength)
+{
+    return normalize(GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength));
+}
+
+float3 GetWorldSpaceNormal(float2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float normalStrength)
+{
+    float3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength);
+    return normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) );
+}
+
+float3 GetWorldSpaceNormal(float2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    return GetWorldSpaceNormal(normalMapSample, normalWS, tangentWS, bitangentWS, 1.0f);
+}
+
+// ---------- Normal Calculation with UV Transform Matrix ----------
+
+//! Utility function for fragment shaders to decode a normal map sample based on MikkT conventions.
+float3 GetTangentSpaceNormal_Unnormalized(float2 normalMapSample, float3x3 uvTransform, float normalStrength)
+{
+    float3 surfaceNormal = GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength);
+
+    // Handle UV transform.
+    // Note, the full calculation is Inverse(uvTransform) * InverseTranspose(uvTransform), which simplifies to just transpose(uvTransform).
+    // (The first Inverse is because the appearance of the normal map moves opposite the UV transformation. The InverseTranspose
+    // of course maintains normals perpendicular to the surface during nonuniform scale).
+    uvTransform = transpose(uvTransform);
+
+    // For non-uniform scale, take the average difference between u and v scales for adjusting normal strength. When scale is uniform, this
+    // preserves the original normal map strength.
+    uvTransform[2] = float3(0, 0, (length(uvTransform[0].xy) + length(uvTransform[1].xy)) * 0.5);
+    surfaceNormal = mul(uvTransform, surfaceNormal);
+
+    return surfaceNormal;
+}
+
+// Normalized version of above function
+float3 GetTangentSpaceNormal(float2 normalMapSample, float3x3 uvTransform, float normalStrength)
+{
+    return normalize(GetTangentSpaceNormal_Unnormalized(normalMapSample, uvTransform, normalStrength));
+}
+
+float3 GetWorldSpaceNormal(float2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform, float normalStrength)
+{
+    float3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized( normalMapSample, uvTransform, normalStrength );
+    return normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) );
+}
+
+float3 GetWorldSpaceNormal(float2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform)
+{
+    return GetWorldSpaceNormal(normalMapSample, normalWS, tangentWS, bitangentWS, uvTransform, 1.0f);
+}
+
+// ---------- Normal Reorientation ----------
+
+//! Normal Re-orientation function for applying detail normal on top of existing surface normal.
+//! Since this is based on quaternion math and simplified by the assumption that it is done 
+//! using normals in Tangent space (vertex normal - [0,0,1]) make sure not to use other space.
+//! Another assumption is that the normals are in range [-1..1] and not texture read [0..1] - the 
+//! assumption is easy to change following the math shown below.
+//! By assuming it is in tangent space we also prevent the need to do two trasformation before the blend.
+//! Based on  https://!blog.selfshadow.com/publications/blending-in-detail/
+//! float3 t = tex2D(texBase,   uv).xyz*float3( 2,  2, 2) + float3(-1, -1,  0);
+//! float3 u = tex2D(texDetail, uv).xyz*float3(-2, -2, 2) + float3( 1,  1, -1);
+//! float3 r = normalize(t*dot(t, u) - u*t.z);
+float3 ReorientTangentSpaceDetailNormal(float3 surfaceNormalTS, float3 detailNormalTS)
+{
+    surfaceNormalTS.z = surfaceNormalTS.z + 1.0;
+    detailNormalTS.xy = -detailNormalTS.xy;
+    return normalize( surfaceNormalTS.xyz * dot( surfaceNormalTS, detailNormalTS) - detailNormalTS * surfaceNormalTS.z);
+}
+
+// ---------- Surface-Gradient-Based-Normal-Mapping (SGBNM) ----------
+
+// https://github.com/mmikk/Papers-Graphics-3D/blob/master/sgp.pdf
+
+// cached SGBNM globals reusable for all UVs including procedural 
+static float3 g_sigmaX;         //g_sigmaX and g_sigmaY represent the first order derivatives of the surface position wrt screen-space dPdx and dPdy but perpendicular to nrmBaseNormal
+static float3 g_sigmaY; 
+static float3 g_nrmBaseNormal;  //normalized interpolated world-space surface normal
+static float g_flipSign;
+static float3 g_dPdx;
+static float3 g_dPdy;
+static float g_resolveSign;
+
+enum BackfaceMode
+{
+    BACKFACE_MODE_NONE,
+    BACKFACE_MODE_MIRROR,
+    BACKFACE_MODE_FLIP
+};
+
+//! Utility function to initialize Surface-Gradient-Based-Normal-Mapping global variables.
+//! Call this at the start of your pixel shader if you need to use any of the SGBNM utility functions.
+//! posWS should ideally be in camera-relative world space to improve precision.
+//! backfaceMode should be set to one of the BACKFACE_MODE_* values.
+void SurfaceGradientNormalMapping_Init(float3 normalWS, float3 posWS, bool isBackface = false, float backfaceMode = BACKFACE_MODE_NONE)
+{
+    float renormFactor = 1.0f/length(normalWS);
+    float fs = (isBackface && backfaceMode != BACKFACE_MODE_NONE) ? -1.0f : 1.0f;
+    g_nrmBaseNormal = (fs*renormFactor) * normalWS;
+    g_resolveSign = (isBackface && backfaceMode == BACKFACE_MODE_FLIP) ? -1.0f : 1.0f; 
+    g_dPdx = ddx_fine(posWS);
+    g_dPdy = ddy_fine(posWS);
+
+    //already in world space
+    g_sigmaX = g_dPdx - dot(g_dPdx, g_nrmBaseNormal)*g_nrmBaseNormal;
+    g_sigmaY = g_dPdy - dot(g_dPdy, g_nrmBaseNormal)*g_nrmBaseNormal;
+    g_flipSign = dot(g_dPdy, cross(g_nrmBaseNormal, g_dPdx)) < 0 ? -1.0f : 1.0f;
+}
+
+//! Utility function to generate a tangent basis without using explicit tangent/bitangent vectors.
+void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, out float3 bitangentWS)
+{
+    float2 dUVdx = ddx_fine(uv); 
+    float2 dUVdy = ddy_fine(uv);
+    float det = dot(dUVdx , float2(dUVdy.y, -dUVdy.x)); 
+    float signDet = det < 0 ? -1 : 1;
+
+    // invC0 represents (dXds , dYds); but we don’t divide by determinant (scale by sign instead) 
+    float2 invC0 = signDet*float2(dUVdy.y, -dUVdx.y); 
+    // Using the chain rule we can obtain the tangent as follows
+    tangentWS = g_sigmaX * invC0.x + g_sigmaY * invC0.y; 
+    if(abs(det) > 0.0) 
+    {
+        tangentWS = normalize(tangentWS);
+    }
+    bitangentWS = (signDet * g_flipSign) * cross(g_nrmBaseNormal, tangentWS);
+}
+
+//! Utility macro to nest SGBNM setup processes.
+#define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents, startIndex)  \
+{                                                                                                                           \
+    SurfaceGradientNormalMapping_Init(normal, worldPos, !isFrontFace);                                                      \
+    [unroll]                                                                                                                \
+    for (int i = startIndex; i < uvSetCount; ++i)                                                                           \
+    {                                                                                                                       \
+        SurfaceGradientNormalMapping_GenerateTB(uvSets[i], outTangents[i], outBitangents[i]);                               \
+    }                                                                                                                       \
+}

@@ -1,0 +1,17 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "parentMaterial": "Materials\\Presets\\MacBeth\\23_neutral_3-5_1-05D.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "useTexture": true
+        }
+    }
+}

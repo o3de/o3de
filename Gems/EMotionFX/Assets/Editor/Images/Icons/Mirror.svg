@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / Video Control / 24x24 / Mirror</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Video-Control-/-24x24-/-Mirror" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="11" y="4" width="2" height="16"></rect>
+        <polygon id="Triangle" fill="#FFFFFF" transform="translate(6.000000, 12.000000) rotate(90.000000) translate(-6.000000, -12.000000) " points="6 8 12 16 0 16"></polygon>
+        <polygon id="Triangle" fill="#FFFFFF" transform="translate(18.000000, 12.000000) scale(-1, 1) rotate(90.000000) translate(-18.000000, -12.000000) " points="18 8 24 16 12 16"></polygon>
+    </g>
+</svg>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Log.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="Log"
+	       QualifiedName="ScriptCanvas::Nodes::Debug::Log"
+	       PreferredClassName="Log"
+           Uuid="{6E100241-A738-4A8B-83C2-0FD0F5A44FDB}"
+           Base="ScriptCanvas::Node"
+           Icon="Editor/Icons/ScriptCanvas/Log.png"
+		   Category="Utilities/Debug"
+		   Version="0"
+           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+           GeneratePropertyFriend="True"
+           Description="Logs the provided text in the debug console.">
+        <In Name="In" Description="Input signal"/>
+        <Out Name="Out" Description=""/>
+        <Property Name="Value"
+                  Description="The value to log"
+                  Type="AZStd::string"
+                  IsInput="True"
+                  IsOutput="False" />
+    </Class>
+</ScriptCanvas>

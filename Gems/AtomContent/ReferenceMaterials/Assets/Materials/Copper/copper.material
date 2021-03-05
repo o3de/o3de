@@ -1,0 +1,30 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.5960784554481506,
+                0.21815823018550874,
+                0.10588235408067703,
+                1.0
+            ]
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "textureMap": "Materials/Copper/metal_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.20202019810676576
+        },
+        "subsurfaceScattering": {
+            "quality": 0.329292893409729,
+            "scatterDistance": 6.666666507720947,
+            "subsurfaceScatterFactor": 0.9595959782600403
+        }
+    }
+}

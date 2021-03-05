@@ -1,0 +1,42 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//
+////////////////////////////////////////////////////////////////////////////
+
+Version (1.00)
+
+Property
+{
+  Name = %REFLEX_SIGHT
+  Mask = 0x2
+  Property    (Reflex sight)
+  Description (New reflex sight version)
+}
+
+Property
+{
+  Name = %SCOPE_ZOOMED_REFRACTION
+  Mask = 0x4
+  Property    (Scope zoomed refraction)
+  Description (Scope zoomed in refraction)
+}
+
+Property
+{
+  Name = %HOLO_SIGHT
+  Mask = 0x8
+  Property    (Use holo sight depth)
+  Description (Holographic sight with depth modifier)
+}

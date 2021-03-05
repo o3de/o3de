@@ -1,0 +1,17 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BRDFTexturePipeline",
+            "PassClass": "ParentPass",
+            "PassRequests": [
+                {
+                    "Name": "BRDFTexturePass",
+                    "TemplateName": "BRDFTextureTemplate"
+                }
+            ]
+        }
+    }
+}

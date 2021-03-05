@@ -1,0 +1,121 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> m_trace;
+    Texture2D<float4>   m_previousFrame;
+    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+    Texture2DMS<float>  m_depth;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+// Pixel Shader
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    float2 screenCoords = IN.m_position.xy;
+
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+
+    // compute trace image coordinates for the half-res image
+    float2 traceCoords = screenCoords * 0.5f;
+
+    // load trace data and check w-component to see if there was a hit
+    float4 traceData = PassSrg::m_trace.Load(traceCoords, sampleIndex);
+    if (traceData.w <= 0.0f)
+    {
+        // no hit, fallback to the cubemap reflections currently in the reflection buffer
+        discard;
+    }
+
+    // reconstruct world space position of current pixel
+    float2 UV = IN.m_texCoord;
+    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
+    float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, depth, 1.0f);
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+    positionWS /= positionWS.w;
+
+    //float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    //positionVS /= positionVS.w;
+    //float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+
+    // compute ray from camera to surface position
+    float3 cameraToPositionWS = normalize(positionWS.xyz - ViewSrg::m_worldPosition);
+
+    // retrieve surface normal
+    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+
+    // compute surface specular
+    float4 specularF0 = PassSrg::m_specularF0.Load(screenCoords, sampleIndex);
+    float roughness = specularF0.a;
+    float NdotV = dot(normalWS, -cameraToPositionWS);
+    float3 specular = FresnelSchlickWithRoughness(NdotV, specularF0.rgb, roughness);
+
+    // reconstruct the world space position of the trace coordinates
+    float2 traceUV = saturate(traceData.xy / dimensions);
+    float traceDepth = PassSrg::m_depth.Load(traceData.xy, sampleIndex).r;
+    float2 traceNDC = float2(traceUV.x, 1.0f - traceUV.y) * 2.0f - 1.0f;
+    float4 traceProjectedPos = float4(traceNDC, traceDepth, 1.0f);
+    float4 tracePositionVS = mul(ViewSrg::m_projectionMatrixInverse, traceProjectedPos);
+    tracePositionVS /= tracePositionVS.w;
+    float4 tracePositionWS = mul(ViewSrg::m_viewMatrixInverse, tracePositionVS);
+
+    // reproject to the previous frame image coordinates
+    float4 tracePrevNDC = mul(ViewSrg::m_viewProjectionPrevMatrix, tracePositionWS);
+    tracePrevNDC /= tracePrevNDC.w;
+    float2 tracePrevUV = float2(tracePrevNDC.x, -1.0f * tracePrevNDC.y) * 0.5f + 0.5f;
+
+    // compute the roughness mip to use in the previous frame image
+    // remap the roughness mip into a lower range to more closely match the material roughness values
+    const float MaxRoughness = 0.5f;
+    const float MaxRoughnessMip = 7;
+    float mip = saturate(roughness / MaxRoughness) * MaxRoughnessMip;
+    
+    // sample reflection value from the roughness mip
+    float4 reflectionColor = float4(PassSrg::m_previousFrame.SampleLevel(PassSrg::LinearSampler, tracePrevUV, mip).rgb, 1.0f);  
+    
+    // fade rays close to screen edge
+    const float ScreenFadeDistance = 0.95f;
+    float2 fadeAmount = max(max(0.0f, traceUV - ScreenFadeDistance), max(0.0f, 1.0f - traceUV - ScreenFadeDistance));
+    fadeAmount /= (1.0f - ScreenFadeDistance);
+    float alpha = 1.0f - max(fadeAmount.x, fadeAmount.y);
+    
+    PSOutput OUT;
+    OUT.m_color = float4(reflectionColor.rgb * specular, alpha);
+    return OUT;
+}

@@ -1,0 +1,22 @@
+<fontshader>
+<font path="VeraMono.ttf" w="512" h="256"/>
+<effect name="default">
+	<pass>
+	</pass>
+
+	<pass>
+		<color r="0" g="0" b="0" a="1"/>
+		<pos x="1" y="1"/>
+	</pass>
+</effect>
+
+<effect name="console">
+	<pass>
+	</pass>
+
+	<pass>
+		<color r="0" g="0" b="0" a="0.5"/>
+		<pos x="2" y="2"/>
+	</pass>
+</effect>
+</fontshader>

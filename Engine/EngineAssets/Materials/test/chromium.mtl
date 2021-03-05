@@ -1,0 +1,4 @@
+<Material MtlFlags="526336" Shader="CloakLayer" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.54572457,1,1" Specular="0.54572457,0.54572457,0.54572457" Emissive="0,0,0" Shininess="82" Opacity="1" CloakAmount="0" LayerAct="1">
+ <Textures />
+ <PublicParams DetailBumpTillingU="1" RefrBumpScale="1" DetailBumpScale="0" SparksTilling="1" DetailBumpTillingV="1"/>
+</Material>

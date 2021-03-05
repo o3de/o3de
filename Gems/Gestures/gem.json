@@ -1,0 +1,10 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "6056556b6088413984309c4a413593ad",
+    "Name": "Gestures",
+    "Version": "1.0.0",
+    "LinkType": "Dynamic",
+    "Summary": "Gesture-based input, including click/tap, drag, hold, pinch, rotate, and swipe.",
+    "IconPath": "preview.png",
+    "Tags": ["Input", "Gestures"]
+}

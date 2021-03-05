@@ -1,0 +1,27 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "76de765796504906b73be7365a9bff06",
+            "VersionConstraints": [
+                "~>2.0"
+            ],
+            "_comment": "GameLift"
+        },
+        {
+            "Uuid": "659CFFFF33B14A10835BAFC6EA623F98", 
+            "VersionConstraints": [
+                "~>0.0.1"
+            ], 
+            "_comment": "CertificateManager"
+        }
+    ], 
+    
+    "GemFormatVersion": 3,
+    "Uuid": "d3ed407a19bb4c0d92b7c4872313d600",
+    "Name": "Multiplayer",
+    "Version": "1.0.0",
+    "LinkType": "Dynamic",
+    "Tags": ["GridMate","Multiplayer","Networking", "CertificateManager"],
+    "Summary": "The Multiplayer Gem provides a public API for multiplayer functionality like connecting and hosting.",
+    "IconPath": "preview.png"
+}

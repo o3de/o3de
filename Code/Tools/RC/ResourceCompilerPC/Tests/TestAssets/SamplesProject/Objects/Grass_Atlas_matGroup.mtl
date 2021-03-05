@@ -1,0 +1,12 @@
+<Material MtlFlags="557312" DccMaterialHash="0" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Grass_Atlas" MtlFlags="524416" DccMaterialHash="0" Shader="Vegetation" GenMask="2400201000" StringGenMask="%DETAIL_BENDING%GRASS%TEMP_VEGETATION%VERTCOLORS" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0,0,0,1" Opacity="1" Shininess="10" AlphaTest="0.46000001" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/natural/vegetation/grass_atlas_diff.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0"/>
+    </Texture>
+   </Textures>
+   <PublicParams bendDetailLeafAmplitude="0.2" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" BlendTerrainCol="0" NormalViewDependency="0.5" TransmittanceColor="1,1,0.60000002" BackDiffuseMultiplier="1" BlendTerrainColDist="0.5" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+</Material>

@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "937fc4d2b2a94291bdeea06261c501b3",
+    "Name": "TickBusOrderViewer",
+    "DisplayName": "Tick Bus Order Console Variable",
+    "Version": "1.0.0",
+    "Summary": "Provides the console variable, print_tickbus_handlers, which displays the order of all tick events to the console. If you specify an entityId, it will only display the tick events for that entity.",
+    "Tags": ["Console Variable", "CVAR"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

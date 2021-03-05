@@ -1,0 +1,326 @@
+{
+  "scrubbing": {
+    "TAGS":[
+        "default"
+    ],
+    "COMMAND":"python_windows.cmd",
+    "PARAMETERS": {
+        "SCRIPT_PATH":"Tools/build/JenkinsScripts/build/scrubbing_job.py"
+    }
+  },
+  "validation": {
+    "TAGS":[
+        "default"
+    ],
+    "COMMAND":"python_windows.cmd",
+    "PARAMETERS": {
+        "SCRIPT_PATH":"scripts/commit_validation/validate_file_or_folder.py"
+    }
+  },
+  "metrics": {
+    "TAGS":[
+        "weekly"
+    ],
+    "COMMAND":"python_windows.cmd",
+    "PARAMETERS": {
+        "SCRIPT_PATH":"Tools/build/JenkinsScripts/build/ci_build_metrics.py",
+        "SCRIPT_PARAMETERS":"--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
+    }
+  },
+  "windows_packaging_all": {
+    "TAGS":[
+        "packaging"
+    ],
+    "COMMAND":"python_windows.cmd",
+    "PARAMETERS": {
+        "SCRIPT_PATH":"scripts/build/package/package.py",
+        "SCRIPT_PARAMETERS":"--platform Windows --type all"
+    }
+  },
+  "3rdParty_all": {
+    "TAGS":[
+        "packaging"
+    ],
+    "COMMAND":"python_windows.cmd",
+    "PARAMETERS": {
+        "SCRIPT_PATH":"scripts/build/package/package.py",
+        "SCRIPT_PARAMETERS":"--platform 3rdParty --type 3rdParty_all"
+    }
+  },
+  "debug_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"debug",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo"
+    }
+  },
+  "test_debug_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"debug",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample",
+      "CMAKE_TARGET":"TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo",
+      "CTEST_OPTIONS":"-L \"(smoke|main)\""
+    }
+  },
+  "profile_vs2017": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo"
+    }
+  },
+  "test_profile_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo",
+      "CTEST_OPTIONS":"-L \"(smoke|main)\""
+    }
+  },
+  "asset_profile_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_asset_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION":"profile",
+        "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+        "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+        "CMAKE_TARGET":"AssetProcessorBatch",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo",
+        "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
+        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+        "ASSET_PROCESSOR_PLATFORMS":"pc,server"
+    }
+  },
+  "release_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"release",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo"
+    }
+  },
+  "monolithic_release_vs2017": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"release",
+      "OUTPUT_DIRECTORY":"build\\mono_windows_vs2017",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo"
+    }
+  },
+  "debug_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"debug",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "test_debug_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"debug",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample",
+      "CMAKE_TARGET":"TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS":"-L \"(smoke|main)\""
+    }
+  },
+  "profile_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "profile_vs2019_nounity": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=FALSE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "test_profile_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS":"-L \"(smoke|main)\""
+    }
+  },
+  "asset_profile_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_asset_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION":"profile",
+        "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+        "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+        "CMAKE_TARGET":"AssetProcessorBatch",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+        "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
+        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+        "ASSET_PROCESSOR_PLATFORMS":"pc,server"
+    }
+  },
+  "periodic_test_profile_vs2019" : {
+    "TAGS":[
+        "nightly",
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"TEST_SUITE_periodic",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS":"-L \"(periodic)\""
+    }
+  },
+  "sandbox_test_profile_vs2019" : {
+    "TAGS":[
+        "nightly",
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"TEST_SUITE_sandbox",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS":"-L \"(sandbox)\""
+    }
+  },
+  "benchmark_test_profile_vs2019" : {
+    "TAGS":[
+        "nightly",
+        "metric"
+    ],
+    "COMMAND":"build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"TEST_SUITE_benchmark",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS":"-L \"(benchmark)\""
+    }
+  },
+  "release_vs2019": {
+    "TAGS":[
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"release",
+      "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "monolithic_release_vs2019": {
+    "TAGS":[
+        "default",
+        "metric"
+    ],
+    "COMMAND":"build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"release",
+      "OUTPUT_DIRECTORY":"build\\mono_windows_vs2019",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;AtomTest;AtomSampleViewer;MultiplayerSample;AutomatedTesting",
+      "CMAKE_TARGET":"ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "659CFFFF33B14A10835BAFC6EA623F98",
+    "Name": "CertificateManager",
+    "DisplayName": "Amazon Certificate Manager",
+    "Version": "0.0.1",
+    "LinkType": "Dynamic",
+    "Summary": "The Amazon Certificate Manager Gem provides access to authentication files for secure game connections from S3, files on disk, and other 3rd party sources",
+    "Tags": ["Amazon Certificate Manager","Security","Multiplayer","Networking"],
+    "IconPath": "preview.png"
+}

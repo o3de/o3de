@@ -1,0 +1,62 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+
+// This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
+class LightCullingTileIterator
+{       
+    void Init(float4 svPosition, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex)
+    {
+        m_lightListRemapped = lightListRemapped;
+    
+        uint2 tileId = ComputeTileId(svPosition.xy);
+        
+        float viewz = abs(svPosition.w);
+
+        // https://jira.agscollab.com/browse/ATOM-4198
+        // Replace GetDimensions() with a cbuffer uint read. Reading it from a cbuffer should be faster
+        uint tileWidth, tileHeight;
+        tileLightDataTex.GetDimensions(tileWidth, tileHeight);
+                    
+        TileLightData tileLightData = Tile_UnpackData(tileLightDataTex[tileId]);
+        uint bin = NVLC_GetBin(viewz, tileLightData); 
+        m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN; 
+        m_value = 0;               
+    }
+            
+    uint LoadAdvance()
+    {
+        if (m_value != NVLC_END_OF_LIST)
+        {
+            m_value = m_lightListRemapped.Load(int(m_readIndex)).x;     
+            ++m_readIndex;
+        }
+        return m_value;
+    }
+    
+    uint GetValue()
+    {
+        return m_value;
+    }
+           
+    bool IsDone()
+    {
+        return !(m_value < NVLC_END_OF_GROUP);
+    }
+
+    uint m_readIndex;
+    uint m_value;    
+    StructuredBuffer<uint> m_lightListRemapped;
+};

@@ -1,0 +1,443 @@
+<ObjectStream version="2">
+	<Class name="AZ::Entity" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+		<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+			<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="5205619910491" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+		</Class>
+		<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="5205619910491" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+			<Class name="SliceComponent" field="element" type="{AFD304E4-1773-47C8-855A-8B622398934F}" version="2" specializationTypeId="{AFD304E4-1773-47C8-855A-8B622398934F}">
+				<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+					<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="2142275909573452131" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+				</Class>
+				<Class name="AZStd::vector" field="Entities" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{56942E81-55BE-53E7-BAC4-0F567BCA3863}">
+					<Class name="AZ::Entity" field="element" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+						<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+							<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="558956777220" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+						<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RadioButton1" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+							<Class name="UiTransform2dComponent" field="element" type="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}" version="2" specializationTypeId="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="948020824279796190" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="Anchors" field="Anchors" type="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}" specializationTypeId="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Offsets" field="Offsets" type="{F681BA9D-245C-4630-B20E-05DD752FAD57}" specializationTypeId="{F681BA9D-245C-4630-B20E-05DD752FAD57}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="300.0100098" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="40.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Vector2" field="Pivot" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="0.5000000 0.5000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="float" field="Rotation" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="Vector2" field="Scale" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="1.0000000 1.0000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="bool" field="ScaleToDevice" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiElementComponent" field="element" type="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" version="2" specializationTypeId="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="1385417330579471054" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="unsigned int" field="Id" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="66" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::vector" field="Children" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4841CFF0-7A5C-519C-BD16-D3625E99605E}">
+									<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+										<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+									<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+										<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="bool" field="IsVisibleInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectableInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsExpandedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiRadioButtonComponent" field="element" type="{773A0F4B-F9F9-4B82-9951-BBD73A737DE4}" version="1" specializationTypeId="{773A0F4B-F9F9-4B82-9951-BBD73A737DE4}">
+								<Class name="UiInteractableComponent" field="BaseClass1" type="{A42EB486-1C89-434C-AD22-A3FC6CEEC46F}" version="2" specializationTypeId="{A42EB486-1C89-434C-AD22-A3FC6CEEC46F}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="5561546572159806389" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+									<Class name="bool" field="IsHandlingEvents" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="AZStd::vector" field="HoverStateActions" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4F980781-CE3A-5C48-AADC-E46E62CAEC4E}">
+										<Class name="UiInteractableStateSprite" field="element" type="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}" version="3" specializationTypeId="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="Sprite" type="{68E92460-5C0C-4031-9620-6F1A08763243}" version="1" specializationTypeId="{68E92460-5C0C-4031-9620-6F1A08763243}">
+												<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+													<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/textures/prefab/radiobutton_background_hover.dds" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												</Class>
+											</Class>
+											<Class name="unsigned int" field="Index" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.7176471 0.7333333 0.7411765 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.3882353 0.4588235 0.5137255 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+									</Class>
+									<Class name="AZStd::vector" field="PressedStateActions" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4F980781-CE3A-5C48-AADC-E46E62CAEC4E}">
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.5882353 0.6235294 0.6980392 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+										<Class name="UiInteractableStateSprite" field="element" type="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}" version="3" specializationTypeId="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="Sprite" type="{68E92460-5C0C-4031-9620-6F1A08763243}" version="1" specializationTypeId="{68E92460-5C0C-4031-9620-6F1A08763243}">
+												<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+													<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/textures/prefab/radiobutton_background_disabled.dds" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												</Class>
+											</Class>
+											<Class name="unsigned int" field="Index" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.3764706 0.3843137 0.3882353 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+									</Class>
+									<Class name="AZStd::vector" field="DisabledStateActions" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4F980781-CE3A-5C48-AADC-E46E62CAEC4E}">
+										<Class name="UiInteractableStateSprite" field="element" type="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}" version="3" specializationTypeId="{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="Sprite" type="{68E92460-5C0C-4031-9620-6F1A08763243}" version="1" specializationTypeId="{68E92460-5C0C-4031-9620-6F1A08763243}">
+												<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+													<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/textures/prefab/radiobutton_background_disabled.dds" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												</Class>
+											</Class>
+											<Class name="unsigned int" field="Index" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.6823530 0.6823530 0.6823530 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="567546711812" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.6823530 0.6823530 0.6823530 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+										<Class name="UiInteractableStateColor" field="element" type="{D7978A94-592F-4E1A-86EF-E34A819A55FB}" version="2" specializationTypeId="{D7978A94-592F-4E1A-86EF-E34A819A55FB}">
+											<Class name="EntityId" field="TargetEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+												<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+											</Class>
+											<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.8078431 0.8078431 0.8078431 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+										</Class>
+									</Class>
+									<Class name="UiNavigationSettings" field="NavigationSettings" type="{E28DDC8B-F7C6-406F-966C-2F0825471641}" version="1" specializationTypeId="{E28DDC8B-F7C6-406F-966C-2F0825471641}">
+										<Class name="int" field="NavigationMode" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+										<Class name="EntityId" field="OnUpEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+											<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										</Class>
+										<Class name="EntityId" field="OnDownEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+											<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										</Class>
+										<Class name="EntityId" field="OnLeftEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+											<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										</Class>
+										<Class name="EntityId" field="OnRightEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+											<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										</Class>
+									</Class>
+									<Class name="bool" field="IsAutoActivationEnabled" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="AZStd::string" field="HoverStartActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="AZStd::string" field="HoverEndActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="AZStd::string" field="PressedActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="AZStd::string" field="ReleasedActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								</Class>
+								<Class name="EntityId" field="OptionalCheckedEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="567546711812" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EntityId" field="OptionalUncheckedEntity" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EntityId" field="Group" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="bool" field="IsChecked" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="AZStd::string" field="ChangedActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="TurnOnActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="TurnOffActionName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="UiLayoutCellComponent" field="element" type="{A0568E58-4382-47F8-8B88-77C64B99AC80}" version="1" specializationTypeId="{A0568E58-4382-47F8-8B88-77C64B99AC80}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="8603212130069340986" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="bool" field="MinWidthOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="MinWidth" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="bool" field="MinHeightOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="MinHeight" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="bool" field="TargetWidthOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="TargetWidth" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="bool" field="TargetHeightOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="TargetHeight" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="40.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="bool" field="ExtraWidthRatioOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="ExtraWidthRatio" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="bool" field="ExtraHeightRatioOverridden" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="float" field="ExtraHeightRatio" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="AZ::Entity" field="element" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+						<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+							<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+						<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="Circle" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+							<Class name="UiElementComponent" field="element" type="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" version="2" specializationTypeId="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="993087442120893231" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="unsigned int" field="Id" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="24" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::vector" field="Children" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4841CFF0-7A5C-519C-BD16-D3625E99605E}">
+									<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+										<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="567546711812" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="bool" field="IsVisibleInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectableInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsExpandedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiTransform2dComponent" field="element" type="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}" version="2" specializationTypeId="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="3672577756982932199" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="Anchors" field="Anchors" type="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}" specializationTypeId="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Offsets" field="Offsets" type="{F681BA9D-245C-4630-B20E-05DD752FAD57}" specializationTypeId="{F681BA9D-245C-4630-B20E-05DD752FAD57}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="2.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="-16.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="34.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="16.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Vector2" field="Pivot" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="0.0000000 0.5000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="float" field="Rotation" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="Vector2" field="Scale" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="1.0000000 1.0000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="bool" field="ScaleToDevice" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiImageComponent" field="element" type="{BDBEFD23-DBB4-4726-A32D-4FEAC24E51F6}" version="7" specializationTypeId="{BDBEFD23-DBB4-4726-A32D-4FEAC24E51F6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="12621505696790213218" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="int" field="SpriteType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" type="{68E92460-5C0C-4031-9620-6F1A08763243}" version="1" specializationTypeId="{68E92460-5C0C-4031-9620-6F1A08763243}">
+									<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+										<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/textures/prefab/radiobutton_background_normal.dds" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									</Class>
+								</Class>
+								<Class name="unsigned int" field="Index" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::string" field="RenderTargetName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.4392157 0.4392157 0.4392157 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+								<Class name="float" field="Alpha" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="int" field="ImageType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="2" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="bool" field="FillCenter" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="int" field="BlendMode" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="FillType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="float" field="FillAmount" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="FillStartAngle" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="int" field="FillCornerOrigin" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="FillEdgeOrigin" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="bool" field="FillClockwise" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="AZ::Entity" field="element" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+						<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+							<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+						<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="Text" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+							<Class name="UiElementComponent" field="element" type="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" version="2" specializationTypeId="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="7596997558223279386" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="unsigned int" field="Id" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="26" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::vector" field="Children" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4841CFF0-7A5C-519C-BD16-D3625E99605E}"/>
+								<Class name="bool" field="IsVisibleInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectableInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsExpandedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiTransform2dComponent" field="element" type="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}" version="2" specializationTypeId="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="12566577726618989226" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="Anchors" field="Anchors" type="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}" specializationTypeId="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Offsets" field="Offsets" type="{F681BA9D-245C-4630-B20E-05DD752FAD57}" specializationTypeId="{F681BA9D-245C-4630-B20E-05DD752FAD57}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="40.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="8.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="-8.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="-8.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Vector2" field="Pivot" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="0.5000000 0.5000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="float" field="Rotation" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="Vector2" field="Scale" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="1.0000000 1.0000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="bool" field="ScaleToDevice" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiTextComponent" field="element" type="{5B3FB2A7-5DC4-4033-A970-001CEC85B6C4}" version="7" specializationTypeId="{5B3FB2A7-5DC4-4033-A970-001CEC85B6C4}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="3068610810953516373" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="AZStd::string" field="Text" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RadioButton1" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.4313726 0.4392157 0.4431373 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+								<Class name="float" field="Alpha" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="AzFramework::SimpleAssetReference&lt;LyShine::FontAsset&gt;" field="FontFileName" type="{D6342379-A5FA-4B18-B890-702C2FE99A5A}" version="1" specializationTypeId="{D6342379-A5FA-4B18-B890-702C2FE99A5A}">
+									<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+										<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="fonts/vera.fontfamily" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									</Class>
+								</Class>
+								<Class name="float" field="FontSize" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="32.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="unsigned int" field="EffectIndex" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="int" field="TextHAlignment" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="TextVAlignment" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="1" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="float" field="CharacterSpacing" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="LineSpacing" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="int" field="OverflowMode" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="WrapTextSetting" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="AZ::Entity" field="element" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+						<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+							<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="567546711812" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+						<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="Dot" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+							<Class name="UiElementComponent" field="element" type="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" version="2" specializationTypeId="{4A97D63E-CE7A-45B6-AAE4-102DB4334688}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4442025690883899859" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="unsigned int" field="Id" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="25" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::vector" field="Children" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{4841CFF0-7A5C-519C-BD16-D3625E99605E}"/>
+								<Class name="bool" field="IsVisibleInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectableInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsSelectedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="bool" field="IsExpandedInEditor" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiTransform2dComponent" field="element" type="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}" version="2" specializationTypeId="{2751A5A5-3291-4A4D-9FC0-9CB0EB8D1DE6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="15602039163934615808" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="Anchors" field="Anchors" type="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}" specializationTypeId="{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.5000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Offsets" field="Offsets" type="{F681BA9D-245C-4630-B20E-05DD752FAD57}" specializationTypeId="{F681BA9D-245C-4630-B20E-05DD752FAD57}">
+									<Class name="float" field="left" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="-7.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="top" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="-5.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="right" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="7.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="bottom" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="9.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
+								<Class name="Vector2" field="Pivot" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="0.5000000 0.5000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="float" field="Rotation" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="Vector2" field="Scale" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}" value="1.0000000 1.0000000" specializationTypeId="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
+								<Class name="bool" field="ScaleToDevice" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+							<Class name="UiImageComponent" field="element" type="{BDBEFD23-DBB4-4726-A32D-4FEAC24E51F6}" version="7" specializationTypeId="{BDBEFD23-DBB4-4726-A32D-4FEAC24E51F6}">
+								<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+									<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="3757812230385720060" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="int" field="SpriteType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" type="{68E92460-5C0C-4031-9620-6F1A08763243}" version="1" specializationTypeId="{68E92460-5C0C-4031-9620-6F1A08763243}">
+									<Class name="SimpleAssetReferenceBase" field="BaseClass1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}" version="1" specializationTypeId="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
+										<Class name="AZStd::string" field="AssetPath" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/textures/prefab/radiobutton_dot.dds" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									</Class>
+								</Class>
+								<Class name="unsigned int" field="Index" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}" value="0" specializationTypeId="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZStd::string" field="RenderTargetName" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="Color" field="Color" type="{7894072A-9050-4F0F-901B-34B1A0D29417}" value="0.8392157 0.8392157 0.8392157 1.0000000" specializationTypeId="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+								<Class name="float" field="Alpha" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="int" field="ImageType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="bool" field="FillCenter" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="int" field="BlendMode" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="FillType" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="float" field="FillAmount" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="1.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="FillStartAngle" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}" value="0.0000000" specializationTypeId="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="int" field="FillCornerOrigin" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="int" field="FillEdgeOrigin" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}" value="0" specializationTypeId="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								<Class name="bool" field="FillClockwise" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+				<Class name="AZStd::list" field="Prefabs" type="{B845AD64-B5A0-4CCD-A86B-3477A36779BE}" specializationTypeId="{DAD45EB6-5853-5645-B762-3A37F8775E12}"/>
+				<Class name="bool" field="IsDynamic" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="AZ::Entity" field="MetadataEntity" type="{75651658-8663-478D-9090-2432DFCAFA44}" version="2" specializationTypeId="{75651658-8663-478D-9090-2432DFCAFA44}">
+					<Class name="EntityId" field="Id" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+						<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="657741025028" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+					</Class>
+					<Class name="AZStd::string" field="Name" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="ui/slices/lyshineexamples/dynamic/dynamicradiobutton.slice" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="bool" field="IsDependencyReady" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="IsRuntimeActive" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="true" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="AZStd::vector" field="Components" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" specializationTypeId="{0D23B755-6E8F-5C6C-B7C9-A352A55DC1DF}">
+						<Class name="SliceMetadataInfoComponent" field="element" type="{25EE4D75-8A17-4449-81F4-E561005BAABD}" version="1" specializationTypeId="{25EE4D75-8A17-4449-81F4-E561005BAABD}">
+							<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}" specializationTypeId="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+								<Class name="AZ::u64" field="Id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4555925215840035422" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							</Class>
+							<Class name="AZStd::unordered_set" field="AssociatedIds" type="{B04E902E-C6F7-4212-A166-1B52F7437D3C}" specializationTypeId="{6C8F8E52-AB4A-5C1F-8E56-9AC390290B94}">
+								<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="558956777220" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="563251744516" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="571841679108" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+								<Class name="EntityId" field="element" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+									<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="567546711812" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								</Class>
+							</Class>
+							<Class name="EntityId" field="ParentId" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}" version="1" specializationTypeId="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
+								<Class name="AZ::u64" field="id" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}" value="4294967295" specializationTypeId="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							</Class>
+							<Class name="AZStd::unordered_set" field="ChildrenIds" type="{B04E902E-C6F7-4212-A166-1B52F7437D3C}" specializationTypeId="{6C8F8E52-AB4A-5C1F-8E56-9AC390290B94}"/>
+							<Class name="bool" field="PersistenceFlag" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

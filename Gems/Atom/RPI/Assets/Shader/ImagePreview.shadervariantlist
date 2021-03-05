@@ -1,0 +1,17 @@
+{
+    "Shader": "ImagePreview.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_imageType": "ImageType::Image2d"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_imageType": "ImageType::Image2dMs"
+            }
+        }             
+    ]        
+}  

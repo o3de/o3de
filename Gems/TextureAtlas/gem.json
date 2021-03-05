@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "5a149b6b3c964064bd4970f0e92f72e2",
+    "Name": "TextureAtlas",
+    "DisplayName": "Texture Atlas",
+    "Version": "0.1.0",
+    "Summary": "Includes the formatting for Texture Atlases",
+    "Tags": ["Required", "Asset Processor Builder", "Texture Atlas"],
+    "IconPath": "preview.png",
+    "IsRequired": true,
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

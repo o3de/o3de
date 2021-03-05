@@ -1,0 +1,4 @@
+<EngineDependencies versionnumber="1.0.0">
+    <Dependency path="ui/textures/prefab/checkbox_check.sprite" optional="true" />
+    <Dependency path="ui/textures/prefab/checkbox_box_normal.sprite" optional="true" />
+</EngineDependencies>

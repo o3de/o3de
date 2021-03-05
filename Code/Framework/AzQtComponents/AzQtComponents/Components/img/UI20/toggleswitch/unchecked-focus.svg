@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="34px" height="18px" viewBox="0 0 34 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>Selection Controls / Switch / Off-focus</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Selection-Controls-/-Switch-/-Off-focus" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="switch-(off)" transform="translate(1.000000, 1.000000)">
+            <path d="M25.0231909,16.5 L7.01632718,16.5 C2.97419648,16.5 -0.5,12.6299076 -0.5,8 C-0.5,3.37009242 2.97419648,-0.5 7.01632718,-0.5 L25.0231909,-0.5 C29.0586432,-0.5 32.5,3.36297526 32.5,8 C32.5,12.6370247 29.0586432,16.5 25.0231909,16.5 Z" id="track" stroke="#00A1C9"></path>
+            <circle id="knob" fill="#FFFFFF" cx="8" cy="8" r="6"></circle>
+        </g>
+    </g>
+</svg>

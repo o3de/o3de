@@ -1,0 +1,135 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+ 
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/ParallaxMapping.azsli>
+
+#include "MaterialInputs/AlphaInput.azsli"
+#include "MaterialInputs/ParallaxInput.azsli"
+
+
+#include "MaterialInputs/ParallaxInput.azsli"
+COMMON_OPTIONS_PARALLAX(o_layer1_)
+COMMON_OPTIONS_PARALLAX(o_layer2_)
+COMMON_OPTIONS_PARALLAX(o_layer3_)
+
+#include "./StandardMultilayerPBR_Common.azsli"
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+
+    // only used for parallax depth calculation
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
+    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+    float4 m_optional_blendMask : COLOR0;
+};
+ 
+struct VSDepthOutput
+{
+    // "centroid" is needed for SV_DepthLessEqual to compile
+    linear centroid float4 m_position : SV_Position;
+    float2 m_uv[UvSetCount] : UV1;
+
+    // only used for parallax depth calculation
+    float3 m_normal : NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_blendMask : UV3;
+};
+
+VSDepthOutput MainVS(VSInput IN)
+{
+    VSDepthOutput OUT;
+ 
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    
+    // Note there are additional UV transforms that happen for each layer, but we defer that step to the pixel shader to avoid bloating the vertex output buffer.
+    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
+
+    // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
+    OUT.m_uv[1] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv1, 1.0)).xy;
+
+    if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
+    {
+        OUT.m_worldPosition = worldPosition.xyz;
+
+        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+        ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    }
+        
+    if(o_blendMask_isBound)
+    {
+        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+    }
+    else
+    {
+        OUT.m_blendMask = float3(1,1,1);
+    }
+
+    return OUT;
+}
+
+struct PSDepthOutput
+{
+    float m_depth : SV_DepthLessEqual;
+};
+
+PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    PSDepthOutput OUT;
+
+    // Alpha
+    float2 layer1_baseColorUV = IN.m_uv[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
+    float2 layer2_baseColorUV = IN.m_uv[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
+    float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
+    // [GFX TODO][ATOM-14589] Figure out how to deal with opacity, instead of just hard-coding to layer1
+    float alpha = SampleAlpha(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_opacityMap, layer1_baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source);
+
+    CheckClipping(alpha, MaterialSrg::m_opacityFactor);
+
+    OUT.m_depth = IN.m_position.z;
+    
+    if(o_debugDrawMode == DebugDrawMode::None && o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
+    {
+        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
+        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
+        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
+             
+        GetDepth_Setup(IN.m_blendMask);
+        
+        float depth;
+
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
+                         ObjectSrg::GetWorldMatrix(), MaterialSrg::m_uvMatrix, MaterialSrg::m_uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+
+        OUT.m_depth = depth;
+    }
+
+    return OUT;
+}

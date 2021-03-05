@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="2 2 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / System / Clone Library Item</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons-/-System-/-Clone-Library-Item">
+            <rect id="Rectangle-18" fill-opacity="0" fill="#D8D8D8" x="0" y="0" width="16" height="16"></rect>
+            <g id="Group" transform="translate(2.000000, 2.000000)" fill="#FFFFFF">
+                <path d="M7.2,4.4408921e-14 L7.199,4.799 L12,4.8 L11.999,5.799 L11.999,6.494 L12,6.49389322 L12,7.90789322 L11.999,7.908 L11.998,8.293 L12,8.29289322 L12,9.70789322 L11.998,9.708 L12,12 L4.8,12 L4.8,7.2 L-1.82964754e-13,7.2 L-1.82964754e-13,4.4408921e-14 L7.2,4.4408921e-14 Z M10.998,8.909 L8.907,11 L9.291,11 L10.997,9.294 L10.998,8.909 Z M10.998,7.107 L7.106,11 L7.492,11 L10.998,7.495 L10.998,7.107 Z M10.508,5.799 L5.799,10.508 L5.798,10.894 L10.893,5.8 L10.508,5.799 Z M9.094,5.799 L8.708,5.799 L5.799,8.708 L5.799,9.093 L9.094,5.799 Z" id="Combined-Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,15 @@
+{
+    "@lyengine": {
+        "dev": {
+            "Bin64vc???" : {
+                "AtomDemoLauncher.*" : "#include",
+                "Gem.AtomDemo.*" : "#include"
+            },
+            "Gems": {
+                "AtomContent/**": "#include"
+            },
+            "AtomDemo/**": "#include"
+        },
+        "LICENSE.txt": "#include"
+    }
+}

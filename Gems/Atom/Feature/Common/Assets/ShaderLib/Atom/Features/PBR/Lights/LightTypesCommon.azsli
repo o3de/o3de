@@ -1,0 +1,108 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+#include <Atom/Features/PBR/BackLighting.azsli>
+#include <Atom/Features/PBR/Hammersley.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Surface.azsli>
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+
+option bool o_area_light_validation = false;
+
+float3 GetDiffuseLighting(Surface surface, float3 lightIntensity, float3 dirToCamera, float3 dirToLight)
+{
+    float3 diffuse;
+    if(o_enableSubsurfaceScattering)
+    {
+        // Use diffuse brdf contains double Fresnel (enter/exit surface) terms if subsurface scattering is enabled
+        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, dirToCamera, dirToLight, surface.roughnessLinear);
+    }
+    else
+    {
+        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight);
+    }
+
+    if(o_clearCoat_feature_enabled)
+    {
+        // Attenuate diffuse term by clear coat's fresnel term to account for energy loss
+        float HdotV = saturate(dot(normalize(dirToLight + dirToCamera), dirToCamera));
+        diffuse *= 1.0 - (FresnelSchlick(HdotV, 0.04) * surface.clearCoatFactor);
+    }
+    
+    diffuse *= lightIntensity;
+    return diffuse;
+}
+
+float3 GetSpecularLighting(Surface surface, const float3 lightIntensity, const float3 dirToCamera, const float3 dirToLight)
+{
+    float3 specular = SpecularGGX(surface, dirToCamera, dirToLight);
+
+    if(o_clearCoat_feature_enabled)
+    {
+        float3 halfVector = normalize(dirToLight + dirToCamera);
+        float NdotH = saturate(dot(surface.clearCoatNormal, halfVector));
+        float NdotL = saturate(dot(surface.clearCoatNormal, dirToLight));
+        float HdotL = saturate(dot(halfVector, dirToLight));
+
+        // HdotV = HdotL due to the definition of half vector
+        float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surface.clearCoatFactor;
+        float clearCoatRoughness = max(surface.clearCoatRoughness * surface.clearCoatRoughness, 0.0005f);
+        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoatNormal, clearCoatRoughness, clearCoatF );
+
+        specular = specular * (1.0 - clearCoatF) * (1.0 - clearCoatF) + clearCoatSpecular;
+    }
+    
+    specular *= lightIntensity;
+    
+    return specular;
+}
+
+//! Adjust the intensity of specular light based on the radius of the light source and roughness of the surface to approximate energy conservation.
+float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, float distance2)
+{
+    float roughnessAdjusted = saturate(roughnessA + (radius / (3.0 * sqrt(distance2))));
+    float intensityNormalization = max(roughnessA, 0.001f) / roughnessAdjusted;
+    return intensityNormalization * intensityNormalization;
+}
+
+//! Adds diffuse and specular contribution for a single sample of a lambertian emitter
+void AddSampleContribution(
+    in Surface surface,
+    in float3 lightSamplePoint,
+    in float3 lightSampleDirection,
+    in float3 dirToCamera,
+    in float bothDirectionsFactor,
+    inout float3 diffuseAcc,
+    inout float3 specularAcc,
+    inout float3 translucentAcc)
+{
+    float3 posToLightSample = lightSamplePoint - surface.position;
+    float distanceToLight2 = dot(posToLightSample, posToLightSample);
+    float3 posToLightSampleDir = normalize(posToLightSample);
+
+    // Lambertian emitter
+    float intensity = dot(-lightSampleDirection, posToLightSampleDir);
+    // Handle if the light emits from both sides
+    intensity = abs(clamp(intensity, bothDirectionsFactor, 1.0));
+    // Attenuate with distance
+    intensity /= distanceToLight2;
+
+    float3 intensityRgb = float3(intensity, intensity, intensity);
+
+    diffuseAcc += GetDiffuseLighting(surface, intensityRgb, dirToCamera, posToLightSampleDir);
+    translucentAcc += GetBackLighting(surface, intensityRgb, dirToCamera, posToLightSampleDir, 0.0);
+    specularAcc += GetSpecularLighting(surface, intensityRgb, dirToCamera, posToLightSampleDir);
+}

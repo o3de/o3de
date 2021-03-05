@@ -1,0 +1,31 @@
+{
+    "name": "lux_core",
+    "source": "@GEM@/External/LuxCore2.2",
+    "description": "LuxCore",
+    "includes": ["include"],
+    "defines": [],
+    "lib_required": "True",
+    "shared_required": "True",
+    "platform" : {
+        "win_x64_vs2017": {
+            "sharedlibpath": [
+                "win64/dll"
+            ],
+            "importlibpath": [
+                "win64/lib"
+            ],
+            "import": [
+                "luxcore.lib"
+            ],
+            "shared": [
+                "embree3.dll",
+                "luxcore.dll",
+                "OpenImageDenoise.dll",
+                "OpenImageIO.dll",
+                "tbb.dll",
+                "tbbmalloc.dll"
+            ]
+        },
+        "win_x64_vs2019": "@win_x64_vs2017"
+    }
+}

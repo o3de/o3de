@@ -1,0 +1,5 @@
+<Material MtlFlags="526336" Shader="Lensoptics.Enable" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" LayerAct="1">
+ <Textures>
+  <Texture Map="Diffuse" File="engineassets/textures/flares/flare01.tif"/>
+ </Textures>
+</Material>

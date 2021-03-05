@@ -1,0 +1,42 @@
+<ATLConfig atl_name="ATLTestControls">
+ <AudioTriggers/>
+ <AudioRtpcs/>
+ <AudioSwitches/>
+ <AudioEnvironments/>
+ <AudioPreloads>
+  <ATLPreloadRequest atl_name="first" path="bank">
+   <ATLPlatforms>
+    <Platform atl_name="windows" atl_config_group_name="default"/>
+    <Platform atl_name="mac" atl_config_group_name="default"/>
+    <Platform atl_name="linux" atl_config_group_name="default"/>
+    <Platform atl_name="android" atl_config_group_name="default"/>
+    <Platform atl_name="ios" atl_config_group_name="default"/>
+    <Platform atl_name="appletv" atl_config_group_name="default"/>
+    <Platform atl_name="salem" atl_config_group_name="default" />
+    <Platform atl_name="provo" atl_config_group_name="default" />
+    <Platform atl_name="xenia" atl_config_group_name="default" />
+   </ATLPlatforms>
+   <ATLConfigGroup atl_name="default">
+    <WwiseFile wwise_name="bank1.bnk"/>
+    <WwiseFile wwise_name="bank2.bnk"/>
+   </ATLConfigGroup>
+  </ATLPreloadRequest>
+  <ATLPreloadRequest atl_name="second" path="bank">
+   <ATLPlatforms>
+    <Platform atl_name="windows" atl_config_group_name="default"/>
+    <Platform atl_name="mac" atl_config_group_name="default"/>
+    <Platform atl_name="linux" atl_config_group_name="default"/>
+    <Platform atl_name="android" atl_config_group_name="default"/>
+    <Platform atl_name="ios" atl_config_group_name="default"/>
+    <Platform atl_name="appletv" atl_config_group_name="default"/>
+    <Platform atl_name="salem" atl_config_group_name="default" />
+    <Platform atl_name="provo" atl_config_group_name="default" />
+    <Platform atl_name="xenia" atl_config_group_name="default" />
+   </ATLPlatforms>
+   <ATLConfigGroup atl_name="default">
+    <WwiseFile wwise_name="bank3.bnk"/>
+    <WwiseFile wwise_name="bank4.bnk"/>
+   </ATLConfigGroup>
+  </ATLPreloadRequest>
+ </AudioPreloads>
+</ATLConfig>

@@ -1,0 +1,3201 @@
+Better String library
+---------------------
+
+by Paul Hsieh
+
+The bstring library is an attempt to provide improved string processing 
+functionality to the C and C++ language.  At the heart of the bstring library 
+(Bstrlib for short) is the management of "bstring"s which are a significant 
+improvement over '\0' terminated char buffers.
+
+===============================================================================
+
+Motivation
+----------
+
+The standard C string library has serious problems:
+
+    1) Its use of '\0' to denote the end of the string means knowing a 
+       string's length is O(n) when it could be O(1).
+    2) It imposes an interpretation for the character value '\0'.
+    3) gets() always exposes the application to a buffer overflow.
+    4) strtok() modifies the string its parsing and thus may not be usable in
+       programs which are re-entrant or multithreaded.
+    5) fgets has the unusual semantic of ignoring '\0's that occur before
+       '\n's are consumed.
+    6) There is no memory management, and actions performed such as strcpy,
+       strcat and sprintf are common places for buffer overflows.
+    7) strncpy() doesn't '\0' terminate the destination in some cases.
+    8) Passing NULL to C library string functions causes an undefined NULL 
+       pointer access.
+    9) Parameter aliasing (overlapping, or self-referencing parameters) 
+       within most C library functions has undefined behavior.
+   10) Many C library string function calls take integer parameters with 
+       restricted legal ranges.  Parameters passed outside these ranges are
+       not typically detected and cause undefined behavior.
+
+So the desire is to create an alternative string library that does not suffer
+from the above problems and adds in the following functionality:
+
+    1) Incorporate string functionality seen from other languages.
+        a) MID$() - from BASIC
+        b) split()/join() - from Python
+        c) string/char x n - from Perl
+    2) Implement analogs to functions that combine stream IO and char buffers
+       without creating a dependency on stream IO functionality.
+    3) Implement the basic text editor-style functions insert, delete, find,
+       and replace.
+    4) Implement reference based sub-string access (as a generalization of 
+       pointer arithmetic.)
+    5) Implement runtime write protection for strings.
+
+There is also a desire to avoid "API-bloat".  So functionality that can be
+implemented trivially in other functionality is omitted.  So there is no
+left$() or right$() or reverse() or anything like that as part of the core 
+functionality.
+
+Explaining Bstrings
+-------------------
+
+A bstring is basically a header which wraps a pointer to a char buffer.  Lets
+start with the declaration of a struct tagbstring:
+
+    struct tagbstring {
+        int mlen;
+        int slen;
+        unsigned char * data;
+    };
+
+This definition is considered exposed, not opaque (though it is neither 
+necessary nor recommended that low level maintenance of bstrings be performed 
+whenever the abstract interfaces are sufficient).  The mlen field (usually)
+describes a lower bound for the memory allocated for the data field.  The 
+slen field describes the exact length for the bstring.  The data field is a 
+single contiguous buffer of unsigned chars.  Note that the existence of a '\0' 
+character in the unsigned char buffer pointed to by the data field does not 
+necessarily denote the end of the bstring.
+
+To be a well formed modifiable bstring the mlen field must be at least the 
+length of the slen field, and slen must be non-negative.  Furthermore, the 
+data field must point to a valid buffer in which access to the first mlen 
+characters has been acquired.  So the minimal check for correctness is:
+
+    (slen >= 0 && mlen >= slen && data != NULL)
+
+bstrings returned by bstring functions can be assumed to be either NULL or
+satisfy the above property.  (When bstrings are only readable, the mlen >= 
+slen restriction is not required; this is discussed later in this section.)  
+A bstring itself is just a pointer to a struct tagbstring:
+
+    typedef struct tagbstring * bstring;
+
+Note that use of the prefix "tag" in struct tagbstring is required to work
+around the inconsistency between C and C++'s struct namespace usage.  This
+definition is also considered exposed.
+
+Bstrlib basically manages bstrings allocated as a header and an associated 
+data-buffer.  Since the implementation is exposed, they can also be 
+constructed manually.  Functions which mutate bstrings assume that the header 
+and data buffer have been malloced; the bstring library may perform free() or 
+realloc() on both the header and data buffer of any bstring parameter. 
+Functions which return bstring's create new bstrings.  The string memory is 
+freed by a bdestroy() call (or using the bstrFree macro).
+
+The following related typedef is also provided:
+
+    typedef const struct tagbstring * const_bstring;
+
+which is also considered exposed.  These are directly bstring compatible (no
+casting required) but are just used for parameters which are meant to be 
+non-mutable.  So in general, bstring parameters which are read as input but 
+not meant to be modified will be declared as const_bstring, and bstring
+parameters which may be modified will be declared as bstring.  This convention
+is recommended for user written functions as well.
+
+Since bstrings maintain interoperability with C library char-buffer style 
+strings, all functions which modify, update or create bstrings also append a 
+'\0' character into the position slen + 1.  This trailing '\0' character is 
+not required for bstrings input to the bstring functions; this is provided 
+solely as a convenience for interoperability with standard C char-buffer 
+functionality.
+
+Analogs for the ANSI C string library functions have been created when they
+are necessary, but have also been left out when they are not.  In particular
+there are no functions analogous to fwrite, or puts just for the purposes of
+bstring.  The ->data member of any string is exposed, and therefore can be
+used just as easily as char buffers for C functions which read strings.
+
+For those that wish to hand construct bstrings, the following should be kept 
+in mind:
+
+    1) While bstrlib can accept constructed bstrings without terminating
+       '\0' characters, the rest of the C language string library will not
+       function properly on such non-terminated strings.  This is obvious
+       but must be kept in mind.
+    2) If it is intended that a constructed bstring be written to by the
+       bstring library functions then the data portion should be allocated
+       by the malloc function and the slen and mlen fields should be entered
+       properly.  The struct tagbstring header is not reallocated, and only
+       freed by bdestroy.
+    3) Writing arbitrary '\0' characters at various places in the string
+       will not modify its length as perceived by the bstring library 
+       functions.  In fact, '\0' is a legitimate non-terminating character
+       for a bstring to contain.
+    4) For read only parameters, bstring functions do not check the mlen.  
+       I.e., the minimal correctness requirements are reduced to:
+
+            (slen >= 0 && data != NULL)
+
+Better pointer arithmetic
+-------------------------
+
+One built-in feature of '\0' terminated char * strings, is that its very easy
+and fast to obtain a reference to the tail of any string using pointer 
+arithmetic.  Bstrlib does one better by providing a way to get a reference to
+any substring of a bstring (or any other length delimited block of memory.)
+So rather than just having pointer arithmetic, with bstrlib one essentially 
+has segment arithmetic.  This is achieved using the macro blk2tbstr() which 
+builds a reference to a block of memory and the macro bmid2tbstr() which 
+builds a reference to a segment of a bstring.  Bstrlib also includes 
+functions for direct consumption of memory blocks into bstrings, namely 
+bcatblk () and blk2bstr ().
+
+One scenario where this can be extremely useful is when string contains many 
+substrings which one would like to pass as read-only reference parameters to 
+some string consuming function without the need to allocate entire new 
+containers for the string data.  More concretely, imagine parsing a command 
+line string whose parameters are space delimited.  This can only be done for 
+tails of the string with '\0' terminated char * strings.
+
+Improved NULL semantics and error handling
+------------------------------------------
+
+Unless otherwise noted, if a NULL pointer is passed as a bstring or any other 
+detectably illegal parameter, the called function will return with an error 
+indicator (either NULL or BSTR_ERR) rather than simply performing a NULL 
+pointer access, or having undefined behavior.
+
+To illustrate the value of this, consider the following example:
+
+        strcpy (p = malloc (13 * sizeof (char)), "Hello,");
+        strcat (p, " World");
+
+This is not correct because malloc may return NULL (due to an out of memory 
+condition), and the behaviour of strcpy is undefined if either of its 
+parameters are NULL.  However:
+
+        bstrcat (p = bfromcstr ("Hello,"), q = bfromcstr (" World"));
+        bdestroy (q);
+
+is well defined, because if either p or q are assigned NULL (indicating a 
+failure to allocate memory) both bstrcat and bdestroy will recognize it and 
+perform no detrimental action.
+
+Note that it is not necessary to check any of the members of a returned 
+bstring for internal correctness (in particular the data member does not need 
+to be checked against NULL when the header is non-NULL), since this is 
+assured by the bstring library itself.
+
+bStreams
+--------
+
+In addition to the bgets and bread functions, bstrlib can abstract streams 
+with a high performance read only stream called a bStream.  In general, the 
+idea is to open a core stream (with something like fopen) then pass its
+handle as well as a bNread function pointer (like fread) to the bsopen 
+function which will return a handle to an open bStream.  Then the functions 
+bsread, bsreadln or bsreadlns can be called to read portions of the stream.  
+Finally, the bsclose function is called to close the bStream -- it will 
+return a handle to the original (core) stream.  So bStreams, essentially, 
+wrap other streams.
+
+The bStreams have two main advantages over the bgets and bread (as well as
+fgets/ungetc) paradigms:
+
+1) Improved functionality via the bunread function which allows a stream to 
+   unread characters, giving the bStream stack-like functionality if so 
+   desired.
+2) A very high performance bsreadln function.  The C library function fgets()
+   (and the bgets function) can typically be written as a loop on top of 
+   fgetc(), thus paying all of the overhead costs of calling fgetc on a per 
+   character basis.  bsreadln will read blocks at a time, thus amortizing the 
+   overhead of fread calls over many characters at once.
+
+However, clearly bStreams are suboptimal or unusable for certain kinds of 
+streams (stdin) or certain usage patterns (a few spotty, or non-sequential
+reads from a slow stream.)  For those situations, using bgets will be more 
+appropriate.
+
+The semantics of bStreams allows practical construction of layerable data 
+streams.  What this means is that by writing a bNread compatible function on
+top of a bStream, one can construct a new bStream on top of it.  This can be
+useful for writing multi-pass parsers that don't actually read the entire
+input more than once and don't require the use of intermediate storage.
+
+Aliasing
+--------
+
+Aliasing occurs when a function is given two parameters which point to data
+structures which overlap in the memory they occupy.  While this does not
+disturb read only functions, for many libraries this can make functions that 
+write to these memory locations malfunction.  This is a common problem of the 
+C standard library and especially the string functions in the C standard 
+library.
+
+The C standard string library is entirely char by char oriented (as is 
+bstring) which makes conforming implementations alias safe for some 
+scenarios.  However no actual detection of aliasing is typically performed, 
+so it is easy to find cases where the aliasing will cause anomolous or 
+undesirable behaviour (consider: strcat (p, p).)  The C99 standard includes 
+the "restrict" pointer modifier which allows the compiler to document and 
+assume a no-alias condition on usage.  However, only the most trivial cases 
+can be caught (if at all) by the compiler at compile time, and thus there is 
+no actual enforcement of non-aliasing.
+
+Bstrlib, by contrast, permits aliasing and is completely aliasing safe, in 
+the C99 sense of aliasing.  That is to say, under the assumption that 
+pointers of incompatible types from distinct objects can never alias, bstrlib 
+is completely aliasing safe.  (In practice this means that the data buffer 
+portion of any bstring and header of any bstring are assumed to never alias.) 
+With the exception of the reference building macros, the library behaves as 
+if all read-only parameters are first copied and replaced by temporary 
+non-aliased parameters before any writing to any output bstring is performed 
+(though actual copying is extremely rarely ever done.)
+
+Besides being a useful safety feature, bstring searching/comparison 
+functions can improve to O(1) execution when aliasing is detected.
+
+Note that aliasing detection and handling code in Bstrlib is generally 
+extremely cheap.  There is almost never any appreciable performance penalty
+for using aliased parameters.
+
+Reenterancy
+-----------
+
+Nearly every function in Bstrlib is a leaf function, and is completely 
+reenterable with the exception of writing to common bstrings.  The split 
+functions which use a callback mechanism requires only that the source string 
+not be destroyed by the callback function unless the callback function returns
+with an error status (note that Bstrlib functions which return an error do 
+not modify the string in any way.)  The string can in fact be modified by the
+callback and the behaviour is deterministic.  See the documentation of the 
+various split functions for more details.
+
+Undefined scenarios
+-------------------
+
+One of the basic important premises for Bstrlib is to not to increase the
+propogation of undefined situations from parameters that are otherwise legal
+in of themselves.  In particular, except for extremely marginal cases, usages 
+of bstrings that use the bstring library functions alone cannot lead to any 
+undefined action.  But due to C/C++ language and library limitations, there 
+is no way to define a non-trivial library that is completely without 
+undefined operations.  All such possible undefined operations are described 
+below:
+
+1) bstrings or struct tagbstrings that are not explicitely initialized cannot
+   be passed as a parameter to any bstring function.
+2) The members of the NULL bstring cannot be accessed directly.  (Though all
+   APIs and macros detect the NULL bstring.)
+3) A bstring whose data member has not been obtained from a malloc or 
+   compatible call and which is write accessible passed as a writable 
+   parameter will lead to undefined results.  (i.e., do not writeAllow any 
+   constructed bstrings unless the data portion has been obtained from the 
+   heap.)
+4) If the headers of two strings alias but are not identical (which can only 
+   happen via a defective manual construction), then passing them to a 
+   bstring function in which one is writable is not defined.
+5) If the mlen member is larger than the actual accessible length of the data 
+   member for a writable bstring, or if the slen member is larger than the 
+   readable length of the data member for a readable bstring, then the 
+   corresponding bstring operations are undefined.
+6) Any bstring definition whose header or accessible data portion has been
+   assigned to inaccessible or otherwise illegal memory clearly cannot be
+   acted upon by the bstring library in any way.
+7) Destroying the source of an incremental split from within the callback
+   and not returning with a negative value (indicating that it should abort)
+   will lead to undefined behaviour.  (Though *modifying* or adjusting the 
+   state of the source data, even if those modification fail within the 
+   bstrlib API, has well defined behavior.)
+8) Modifying a bstring which is write protected by direct access has 
+   undefined behavior.
+
+While this may seem like a long list, with the exception of invalid uses of 
+the writeAllow macro, and source destruction during an iterative split 
+without an accompanying abort, no usage of the bstring API alone can cause 
+any undefined scenario to occurr.  I.e., the policy of restricting usage of 
+bstrings to the bstring API can significantly reduce the risk of runtime 
+errors (in practice it should eliminate them) related to string manipulation 
+due to undefined action.
+
+C++ wrapper
+-----------
+
+A C++ wrapper has been created to enable bstring functionality for C++ in the
+most natural (for C++ programers) way possible.  The mandate for the C++ 
+wrapper is different from the base C bstring library.  Since the C++ language 
+has far more abstracting capabilities, the CBString structure is considered 
+fully abstracted -- i.e., hand generated CBStrings are not supported (though 
+conversion from a struct tagbstring is allowed) and all detectable errors are
+manifest as thrown exceptions.
+
+- The C++ class definitions are all under the namespace Bstrlib.  bstrwrap.h 
+  enables this namespace (with a using namespace Bstrlib; directive at the 
+  end) unless the macro BSTRLIB_DONT_ASSUME_NAMESPACE has been defined before 
+  it is included.
+
+- Erroneous accesses results in an exception being thrown.  The exception 
+  parameter is of type "struct CBStringException" which is derived from
+  std::exception if STL is used.  A verbose description of the error message 
+  can be obtained from the what() method.
+
+- CBString is a C++ structure derived from a struct tagbstring.  An address 
+  of a CBString cast to a bstring must not be passed to bdestroy.  The bstring 
+  C API has been made C++ safe and can be used directly in a C++ project.
+
+- It includes constructors which can take a char, '\0' terminated char 
+  buffer, tagbstring, (char, repeat-value), a length delimited buffer or a 
+  CBStringList to initialize it.
+
+- Concatenation is performed with the + and += operators.  Comparisons are 
+  done with the ==, !=, <, >, <= and >= operators.  Note that == and != use
+  the biseq call, while <, >, <= and >= use bstrcmp.
+
+- CBString's can be directly cast to const character buffers.
+
+- CBString's can be directly cast to double, float, int or unsigned int so
+  long as the CBString are decimal representations of those types (otherwise
+  an exception will be thrown).  Converting the other way should be done with
+  the format(a) method(s).
+
+- CBString contains the length, character and [] accessor methods.  The
+  character and [] accessors are aliases of each other.  If the bounds for 
+  the string are exceeded, an exception is thrown.  To avoid the overhead for
+  this check, first cast the CBString to a (const char *) and use [] to 
+  dereference the array as normal.  Note that the character and [] accessor 
+  methods allows both reading and writing of individual characters.
+
+- The methods: format, formata, find, reversefind, findcaseless, 
+  reversefindcaseless, midstr, insert, insertchrs, replace, findreplace, 
+  findreplacecaseless, remove, findchr, nfindchr, alloc, toupper, tolower, 
+  gets, read are analogous to the functions that can be found in the C API.
+
+- The caselessEqual and caselessCmp methods are analogous to biseqcaseless
+  and bstricmp functions respectively.
+
+- Note that just like the bformat function, the format and formata methods do 
+  not automatically cast CBStrings into char * strings for "%s"-type 
+  substitutions:
+
+	CBString w("world");
+	CBString h("Hello");
+	CBString hw;
+
+	/* The casts are necessary */
+	hw.format ("%s, %s", (const char *)h, (const char *)w);
+
+- The methods trunc and repeat have been added instead of using pattern.
+
+- ltrim, rtrim and trim methods have been added.  These remove characters 
+  from a given character string set (defaulting to the whitespace characters) 
+  from either the left, right or both ends of the CBString, respectively.
+
+- The method setsubstr is also analogous in functionality to bsetstr, except 
+  that it cannot be passed NULL.  Instead the method fill and the fill-style 
+  constructor have been supplied to enable this functionality.
+
+- The writeprotect(), writeallow() and iswriteprotected() methods are 
+  analogous to the bwriteprotect(), bwriteallow() and biswriteprotected() 
+  macros in the C API.  Write protection semantics in CBString are stronger 
+  than with the C API in that indexed character assignment is checked for 
+  write protection.  However, unlike with the C API, a write protected 
+  CBString can be destroyed by the destructor.
+
+- CBStream is a C++ structure which wraps a struct bStream (its not derived
+  from it, since destruction is slightly different).  It is constructed by
+  passing in a bNread function pointer and a stream parameter cast to void *. 
+  This structure includes methods for detecting eof, setting the buffer 
+  length, reading the whole stream or reading entries line by line or block 
+  by block, an unread function, and a peek function.
+
+- If STL is available, the CBStringList structure is derived from a vector of 
+  CBString with various split methods.  The split method has been overloaded 
+  to accept either a character or CBString as the second parameter (when the 
+  split parameter is a CBString any character in that CBString is used as a
+  seperator).  The splitstr method takes a CBString as a substring seperator. 
+  Joins can be performed via a CBString constructor which takes a 
+  CBStringList as a parameter, or just using the CBString::join() method.
+
+- If there is proper support for std::iostreams, then the >> and << operators 
+  and the getline() function have been added (with semantics the same as 
+  those for std::string).
+
+Multithreading
+--------------
+
+A mutable bstring is kind of analogous to a small (two entry) linked list 
+allocated by malloc, with all aliasing completely under programmer control. 
+I.e., manipulation of one bstring will never affect any other distinct 
+bstring unless explicitely constructed to do so by the programmer via hand 
+construction or via building a reference.  Bstrlib also does not use any 
+static or global storage, so there are no hidden unremovable race conditions. 
+Bstrings are also clearly not inherently thread local.  So just like 
+char *'s, bstrings can be passed around from thread to thread and shared and 
+so on, so long as modifications to a bstring correspond to some kind of 
+exclusive access lock as should be expected (or if the bstring is read-only, 
+which can be enforced by bstring write protection) for any sort of shared 
+object in a multithreaded environment.
+
+Bsafe module
+------------
+
+For convenience, a bsafe module has been included.  The idea is that if this
+module is included, inadvertant usage of the most dangerous C functions will 
+be overridden and lead to an immediate run time abort.  Of course, it should 
+be emphasized that usage of this module is completely optional.  The 
+intention is essentially to provide an option for creating project safety 
+rules which can be enforced mechanically rather than socially.  This is 
+useful for larger, or open development projects where its more difficult to 
+enforce social rules or "coding conventions".
+
+Problems not solved
+-------------------
+
+Bstrlib is written for the C and C++ languages, which have inherent weaknesses
+that cannot be easily solved:
+
+1. Memory leaks:  Forgetting to call bdestroy on a bstring that is about to be
+   unreferenced, just as forgetting to call free on a heap buffer that is 
+   about to be dereferenced.  Though bstrlib itself is leak free.
+2. Read before write usage:  In C, declaring an auto bstring does not 
+   automatically fill it with legal/valid contents.  This problem has been 
+   somewhat mitigated in C++.  (The bstrDeclare and bstrFree macros from 
+   bstraux can be used to help mitigate this problem.)
+
+Other problems not addressed:
+
+3. Built-in mutex usage to automatically avoid all bstring internal race 
+   conditions in multitasking environments: The problem with trying to 
+   implement such things at this low a level is that it is typically more 
+   efficient to use locks in higher level primitives. There is also no 
+   platform independent way to implement locks or mutexes.
+4. Unicode/widecharacter support.
+
+Note that except for spotty support of wide characters, the default C 
+standard library does not address any of these problems either.
+
+Configurable compilation options
+--------------------------------
+
+All configuration options are meant solely for the purpose of compiler 
+compatibility.  Configuration options are not meant to change the semantics
+or capabilities of the library, except where it is unavoidable.
+
+Since some C++ compilers don't include the Standard Template Library and some 
+have the options of disabling exception handling, a number of macros can be 
+used to conditionally compile support for each of this:
+
+BSTRLIB_CAN_USE_STL
+
+  - defining this will enable the used of the Standard Template Library.  
+    Defining BSTRLIB_CAN_USE_STL overrides the BSTRLIB_CANNOT_USE_STL macro.
+
+BSTRLIB_CANNOT_USE_STL
+
+  - defining this will disable the use of the Standard Template Library.  
+    Defining BSTRLIB_CAN_USE_STL overrides the BSTRLIB_CANNOT_USE_STL macro.
+
+BSTRLIB_CAN_USE_IOSTREAM
+
+  - defining this will enable the used of streams from class std.  Defining 
+    BSTRLIB_CAN_USE_IOSTREAM overrides the BSTRLIB_CANNOT_USE_IOSTREAM macro.
+
+BSTRLIB_CANNOT_USE_IOSTREAM
+
+  - defining this will disable the use of streams from class std.  Defining 
+    BSTRLIB_CAN_USE_IOSTREAM overrides the BSTRLIB_CANNOT_USE_IOSTREAM macro.
+
+BSTRLIB_THROWS_EXCEPTIONS
+
+  - defining this will enable the exception handling within bstring.
+    Defining BSTRLIB_THROWS_EXCEPTIONS overrides the 
+    BSTRLIB_DOESNT_THROWS_EXCEPTIONS macro.
+
+BSTRLIB_DOESNT_THROW_EXCEPTIONS
+
+  - defining this will disable the exception handling within bstring.
+    Defining BSTRLIB_THROWS_EXCEPTIONS overrides the 
+    BSTRLIB_DOESNT_THROW_EXCEPTIONS macro.
+
+Note that these macros must be defined consistently throughout all modules 
+that use CBStrings including bstrwrap.cpp.
+
+Some older C compilers do not support functions such as vsnprintf.  This is 
+handled by the following macro variables:
+
+BSTRLIB_NOVSNP
+
+  - defining this indicates that the compiler does not support vsnprintf.
+    This will cause bformat and bformata to not be declared.  Note that
+    for some compilers, such as Turbo C, this is set automatically.
+    Defining BSTRLIB_NOVSNP overrides the BSTRLIB_VSNP_OK macro.
+
+BSTRLIB_VSNP_OK
+
+  - defining this will disable the autodetection of compilers the do not
+    support of compilers that do not support vsnprintf.
+    Defining BSTRLIB_NOVSNP overrides the BSTRLIB_VSNP_OK macro.
+
+Semantic compilation options
+----------------------------
+
+Bstrlib comes with very few compilation options for changing the semantics of
+of the library.  These are described below.
+
+BSTRLIB_DONT_ASSUME_NAMESPACE
+
+  - Defining this before including bstrwrap.h will disable the automatic 
+    enabling of the Bstrlib namespace for the C++ declarations.
+
+BSTRLIB_DONT_USE_VIRTUAL_DESTRUCTOR
+
+  - Defining this will make the CBString destructor non-virtual.
+
+BSTRLIB_MEMORY_DEBUG
+
+  - Defining this will cause the bstrlib modules bstrlib.c and bstrwrap.cpp
+    to invoke a #include "memdbg.h".  memdbg.h has to be supplied by the user.
+
+Note that these macros must be defined consistently throughout all modules 
+that use bstrings or CBStrings including bstrlib.c, bstraux.c and 
+bstrwrap.cpp.
+
+===============================================================================
+
+Files
+-----
+
+bstrlib.c       - C implementaion of bstring functions.
+bstrlib.h       - C header file for bstring functions.
+bstraux.c       - C example that implements trivial additional functions.
+bstraux.h       - C header for bstraux.c
+bstest.c        - C unit/regression test for bstrlib.c
+
+bstrwrap.cpp    - C++ implementation of CBString.
+bstrwrap.h      - C++ header file for CBString.
+test.cpp        - C++ unit/regression test for bstrwrap.cpp
+
+bsafe.c         - C runtime stubs to abort usage of unsafe C functions.
+bsafe.h         - C header file for bsafe.c functions.
+
+C projects need only include bstrlib.h and compile/link bstrlib.c to use the
+bstring library.  C++ projects need to additionally include bstrwrap.h and
+compile/link bstrwrap.cpp.  For both, there may be a need to make choices 
+about feature configuration as described in the "Configurable compilation 
+options" in the section above.
+
+Other files that are included in this archive are:
+
+license.txt     - The 3 clause BSD license for Bstrlib
+gpl.txt         - The GPL version 2
+security.txt    - A security statement useful for auditting Bstrlib
+porting.txt     - A guide to porting Bstrlib
+bstrlib.txt     - This file
+
+===============================================================================
+
+The functions
+-------------
+
+    extern bstring bfromcstr (const char * str);
+
+    Take a standard C library style '\0' terminated char buffer and generate
+    a bstring with the same contents as the char buffer.  If an error occurs 
+    NULL is returned.
+
+    So for example:
+
+	bstring b = bfromcstr ("Hello");
+	if (!b) {
+		fprintf (stderr, "Out of memory");
+	} else {
+		puts ((char *) b->data);
+	}
+
+    ..........................................................................
+
+    extern bstring bfromcstralloc (int mlen, const char * str);
+
+    Create a bstring which contains the contents of the '\0' terminated 
+    char * buffer str.  The memory buffer backing the bstring is at least 
+    mlen characters in length.  If an error occurs NULL is returned.
+
+    So for example:
+
+	bstring b = bfromcstralloc (64, someCstr);
+	if (b) b->data[63] = 'x';
+
+    The idea is that this will set the 64th character of b to 'x' if it is at 
+    least 64 characters long otherwise do nothing.  And we know this is well 
+    defined so long as b was successfully created, since it will have been 
+    allocated with at least 64 characters.
+
+    ..........................................................................
+
+    extern bstring blk2bstr (const void * blk, int len);
+
+    Create a bstring whose contents are described by the contiguous buffer 
+    pointing to by blk with a length of len bytes.  Note that this function
+    creates a copy of the data in blk, rather than simply referencing it.  
+    Compare with the blk2tbstr macro.  If an error occurs NULL is returned.
+
+    ..........................................................................
+
+    extern char * bstr2cstr (const_bstring s, char z);
+
+    Create a '\0' terminated char buffer which contains the contents of the 
+    bstring s, except that any contained '\0' characters are converted to the 
+    character in z.  This returned value should be freed with bcstrfree(), by 
+    the caller.  If an error occurs NULL is returned.
+
+    ..........................................................................
+
+    extern int bcstrfree (char * s);
+
+    Frees a C-string generated by bstr2cstr ().  This is normally unnecessary
+    since it just wraps a call to free (), however, if malloc () and free () 
+    have been redefined as a macros within the bstrlib module (via macros in 
+    the memdbg.h backdoor) with some difference in behaviour from the std 
+    library functions, then this allows a correct way of freeing the memory 
+    that allows higher level code to be independent from these macro 
+    redefinitions.
+
+    ..........................................................................
+
+    extern bstring bstrcpy (const_bstring b1);
+
+    Make a copy of the passed in bstring.  The copied bstring is returned if 
+    there is no error, otherwise NULL is returned.
+
+    ..........................................................................
+
+    extern int bassign (bstring a, const_bstring b);
+
+    Overwrite the bstring a with the contents of bstring b.  Note that the 
+    bstring a must be a well defined and writable bstring.  If an error 
+    occurs BSTR_ERR is returned and a is not overwritten.
+
+    ..........................................................................
+
+    int bassigncstr (bstring a, const char * str);
+
+    Overwrite the string a with the contents of char * string str.  Note that 
+    the bstring a must be a well defined and writable bstring.  If an error 
+    occurs BSTR_ERR is returned and a may be partially overwritten.
+
+    ..........................................................................
+
+    int bassignblk (bstring a, const void * s, int len);
+
+    Overwrite the string a with the contents of the block (s, len).  Note that 
+    the bstring a must be a well defined and writable bstring.  If an error 
+    occurs BSTR_ERR is returned and a is not overwritten.
+
+    ..........................................................................
+
+    extern int bassignmidstr (bstring a, const_bstring b, int left, int len);
+
+    Overwrite the bstring a with the middle of contents of bstring b 
+    starting from position left and running for a length len.  left and 
+    len are clamped to the ends of b as with the function bmidstr.  Note that 
+    the bstring a must be a well defined and writable bstring.  If an error 
+    occurs BSTR_ERR is returned and a is not overwritten.
+
+    ..........................................................................
+
+    extern bstring bmidstr (const_bstring b, int left, int len);
+
+    Create a bstring which is the substring of b starting from position left 
+    and running for a length len (clamped by the end of the bstring b.)  If 
+    there was no error, the value of this constructed bstring is returned 
+    otherwise NULL is returned.
+
+    ..........................................................................
+
+    extern int bdelete (bstring s1, int pos, int len);
+
+    Removes characters from pos to pos+len-1 and shifts the tail of the 
+    bstring starting from pos+len to pos.  len must be positive for this call 
+    to have any effect.  The section of the bstring described by (pos, len) 
+    is clamped to boundaries of the bstring b.  The value BSTR_OK is returned 
+    if the operation is successful, otherwise BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int bconcat (bstring b0, const_bstring b1);
+
+    Concatenate the bstring b1 to the end of bstring b0.  The value BSTR_OK 
+    is returned if the operation is successful, otherwise BSTR_ERR is 
+    returned.
+
+    ..........................................................................
+
+    extern int bconchar (bstring b, char c);
+
+    Concatenate the character c to the end of bstring b.  The value BSTR_OK 
+    is returned if the operation is successful, otherwise BSTR_ERR is 
+    returned.
+
+    ..........................................................................
+
+    extern int bcatcstr (bstring b, const char * s);
+
+    Concatenate the char * string s to the end of bstring b.  The value 
+    BSTR_OK is returned if the operation is successful, otherwise BSTR_ERR is 
+    returned.
+
+    ..........................................................................
+
+    extern int bcatblk (bstring b, const void * s, int len);
+
+    Concatenate a fixed length buffer (s, len) to the end of bstring b.  The 
+    value BSTR_OK is returned if the operation is successful, otherwise 
+    BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int biseq (const_bstring b0, const_bstring b1);
+
+    Compare the bstring b0 and b1 for equality.  If the bstrings differ, 0 
+    is returned, if the bstrings are the same, 1 is returned, if there is an 
+    error, -1 is returned.  If the length of the bstrings are different, this 
+    function has O(1) complexity.  Contained '\0' characters are not treated 
+    as a termination character.
+
+    Note that the semantics of biseq are not completely compatible with 
+    bstrcmp because of its different treatment of the '\0' character.
+
+    ..........................................................................
+
+    extern int bisstemeqblk (const_bstring b, const void * blk, int len);
+
+    Compare beginning of bstring b0 with a block of memory of length len for 
+    equality.  If the beginning of b0 differs from the memory block (or if b0 
+    is too short), 0 is returned, if the bstrings are the same, 1 is returned, 
+    if there is an error, -1 is returned.
+
+    ..........................................................................
+
+    extern int biseqcaseless (const_bstring b0, const_bstring b1);
+
+    Compare two bstrings for equality without differentiating between case.  
+    If the bstrings differ other than in case, 0 is returned, if the bstrings 
+    are the same, 1 is returned, if there is an error, -1 is returned.  If 
+    the length of the bstrings are different, this function is O(1).  '\0' 
+    termination characters are not treated in any special way.
+
+    ..........................................................................
+
+    extern int bisstemeqcaselessblk (const_bstring b0, const void * blk, int len);
+
+    Compare beginning of bstring b0 with a block of memory of length len 
+    without differentiating between case for equality.  If the beginning of b0
+    differs from the memory block other than in case (or if b0 is too short), 
+    0 is returned, if the bstrings are the same, 1 is returned, if there is an 
+    error, -1 is returned.
+
+    ..........................................................................
+
+    extern int biseqcstr (const_bstring b, const char *s);
+
+    Compare the bstring b and char * bstring s.  The C string s must be '\0' 
+    terminated at exactly the length of the bstring b, and the contents 
+    between the two must be identical with the bstring b with no '\0' 
+    characters for the two contents to be considered equal.  This is 
+    equivalent to the condition that their current contents will be always be 
+    equal when comparing them in the same format after converting one or the 
+    other.  If they are equal 1 is returned, if they are unequal 0 is 
+    returned and if there is a detectable error BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int biseqcstrcaseless (const_bstring b, const char *s);
+
+    Compare the bstring b and char * string s.  The C string s must be '\0'
+    terminated at exactly the length of the bstring b, and the contents
+    between the two must be identical except for case with the bstring b with
+    no '\0' characters for the two contents to be considered equal.  This is
+    equivalent to the condition that their current contents will be always be
+    equal ignoring case when comparing them in the same format after
+    converting one or the other.  If they are equal, except for case, 1 is 
+    returned, if they are unequal regardless of case 0 is returned and if 
+    there is a detectable error BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int bstrcmp (const_bstring b0, const_bstring b1);
+
+    Compare the bstrings b0 and b1 for ordering.  If there is an error, 
+    SHRT_MIN is returned, otherwise a value less than or greater than zero, 
+    indicating that the bstring pointed to by b0 is lexicographically less 
+    than or greater than the bstring pointed to by b1 is returned.  If the
+    bstring lengths are unequal but the characters up until the length of the 
+    shorter are equal then a value less than, or greater than zero, 
+    indicating that the bstring pointed to by b0 is shorter or longer than the 
+    bstring pointed to by b1 is returned.  0 is returned if and only if the 
+    two bstrings are the same.  If the length of the bstrings are different, 
+    this function is O(n).  Like its standard C library counter part, the 
+    comparison does not proceed past any '\0' termination characters 
+    encountered.
+
+    The seemingly odd error return value, merely provides slightly more 
+    granularity than the undefined situation given in the C library function 
+    strcmp.  The function otherwise behaves very much like strcmp().
+
+    Note that the semantics of bstrcmp are not completely compatible with 
+    biseq because of its different treatment of the '\0' termination 
+    character.
+
+    ..........................................................................
+
+    extern int bstrncmp (const_bstring b0, const_bstring b1, int n);
+
+    Compare the bstrings b0 and b1 for ordering for at most n characters.  If 
+    there is an error, SHRT_MIN is returned, otherwise a value is returned as 
+    if b0 and b1 were first truncated to at most n characters then bstrcmp 
+    was called with these new bstrings are paremeters.  If the length of the 
+    bstrings are different, this function is O(n).  Like its standard C 
+    library counter part, the comparison does not proceed past any '\0' 
+    termination characters encountered.
+
+    The seemingly odd error return value, merely provides slightly more 
+    granularity than the undefined situation given in the C library function 
+    strncmp.  The function otherwise behaves very much like strncmp().
+
+    ..........................................................................
+
+    extern int bstricmp (const_bstring b0, const_bstring b1);
+
+    Compare two bstrings without differentiating between case.  The return 
+    value is the difference of the values of the characters where the two 
+    bstrings first differ, otherwise 0 is returned indicating that the 
+    bstrings are equal.  If the lengths are different, then a difference from 
+    0 is given, but if the first extra character is '\0', then it is taken to 
+    be the value UCHAR_MAX+1.
+
+    ..........................................................................
+
+    extern int bstrnicmp (const_bstring b0, const_bstring b1, int n);
+
+    Compare two bstrings without differentiating between case for at most n
+    characters.  If the position where the two bstrings first differ is
+    before the nth position, the return value is the difference of the values
+    of the characters, otherwise 0 is returned.  If the lengths are different
+    and less than n characters, then a difference from 0 is given, but if the 
+    first extra character is '\0', then it is taken to be the value 
+    UCHAR_MAX+1.
+
+    ..........................................................................
+
+    extern int bdestroy (bstring b);
+
+    Deallocate the bstring passed.  Passing NULL in as a parameter will have 
+    no effect.  Note that both the header and the data portion of the bstring 
+    will be freed.  No other bstring function which modifies one of its 
+    parameters will free or reallocate the header.  Because of this, in 
+    general, bdestroy cannot be called on any declared struct tagbstring even 
+    if it is not write protected.  A bstring which is write protected cannot 
+    be destroyed via the bdestroy call.  Any attempt to do so will result in 
+    no action taken, and BSTR_ERR will be returned.
+
+    Note to C++ users: Passing in a CBString cast to a bstring will lead to
+    undefined behavior (free will be called on the header, rather than the
+    CBString destructor.)  Instead just use the ordinary C++ language 
+    facilities to dealloc a CBString.
+
+    ..........................................................................
+
+    extern int binstr (const_bstring s1, int pos, const_bstring s2);
+
+    Search for the bstring s2 in s1 starting at position pos and looking in a
+    forward (increasing) direction.  If it is found then it returns with the 
+    first position after pos where it is found, otherwise it returns BSTR_ERR.  
+    The algorithm used is brute force; O(m*n).
+
+    ..........................................................................
+
+    extern int binstrr (const_bstring s1, int pos, const_bstring s2);
+
+    Search for the bstring s2 in s1 starting at position pos and looking in a
+    backward (decreasing) direction.  If it is found then it returns with the 
+    first position after pos where it is found, otherwise return BSTR_ERR.  
+    Note that the current position at pos is tested as well -- so to be 
+    disjoint from a previous forward search it is recommended that the 
+    position be backed up (decremented) by one position.  The algorithm used 
+    is brute force; O(m*n).
+
+    ..........................................................................
+
+    extern int binstrcaseless (const_bstring s1, int pos, const_bstring s2);
+
+    Search for the bstring s2 in s1 starting at position pos and looking in a
+    forward (increasing) direction but without regard to case.  If it is 
+    found then it returns with the first position after pos where it is 
+    found, otherwise it returns BSTR_ERR. The algorithm used is brute force; 
+    O(m*n).
+
+    ..........................................................................
+
+    extern int binstrrcaseless (const_bstring s1, int pos, const_bstring s2);
+
+    Search for the bstring s2 in s1 starting at position pos and looking in a
+    backward (decreasing) direction but without regard to case.  If it is 
+    found then it returns with the first position after pos where it is 
+    found, otherwise return BSTR_ERR. Note that the current position at pos 
+    is tested as well -- so to be disjoint from a previous forward search it 
+    is recommended that the position be backed up (decremented) by one 
+    position.  The algorithm used is brute force; O(m*n).
+
+    ..........................................................................
+
+    extern int binchr (const_bstring b0, int pos, const_bstring b1);
+
+    Search for the first position in b0 starting from pos or after, in which 
+    one of the characters in b1 is found.  This function has an execution 
+    time of O(b0->slen + b1->slen).  If such a position does not exist in b0, 
+    then BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int binchrr (const_bstring b0, int pos, const_bstring b1);
+
+    Search for the last position in b0 no greater than pos, in which one of 
+    the characters in b1 is found.  This function has an execution time
+    of O(b0->slen + b1->slen).  If such a position does not exist in b0, 
+    then BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int bninchr (const_bstring b0, int pos, const_bstring b1);
+
+    Search for the first position in b0 starting from pos or after, in which 
+    none of the characters in b1 is found and return it.  This function has 
+    an execution time of O(b0->slen + b1->slen).  If such a position does 
+    not exist in b0, then BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int bninchrr (const_bstring b0, int pos, const_bstring b1);
+  
+    Search for the last position in b0 no greater than pos, in which none of 
+    the characters in b1 is found and return it.  This function has an 
+    execution time of O(b0->slen + b1->slen).  If such a position does not 
+    exist in b0, then BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int bstrchr (const_bstring b, int c);
+
+    Search for the character c in the bstring b forwards from the start of 
+    the bstring.  Returns the position of the found character or BSTR_ERR if 
+    it is not found.
+
+    NOTE: This has been implemented as a macro on top of bstrchrp ().
+
+    ..........................................................................
+
+    extern int bstrrchr (const_bstring b, int c);
+
+    Search for the character c in the bstring b backwards from the end of the 
+    bstring.  Returns the position of the found character or BSTR_ERR if it is 
+    not found.
+
+    NOTE: This has been implemented as a macro on top of bstrrchrp ().
+
+    ..........................................................................
+
+    extern int bstrchrp (const_bstring b, int c, int pos);
+  
+    Search for the character c in b forwards from the position pos 
+    (inclusive).  Returns the position of the found character or BSTR_ERR if 
+    it is not found.
+
+    ..........................................................................
+
+    extern int bstrrchrp (const_bstring b, int c, int pos);
+
+    Search for the character c in b backwards from the position pos in bstring 
+    (inclusive).  Returns the position of the found character or BSTR_ERR if 
+    it is not found.
+
+    ..........................................................................
+
+    extern int bsetstr (bstring b0, int pos, const_bstring b1, unsigned char fill);
+
+    Overwrite the bstring b0 starting at position pos with the bstring b1. If 
+    the position pos is past the end of b0, then the character "fill" is 
+    appended as necessary to make up the gap between the end of b0 and pos.
+    If b1 is NULL, it behaves as if it were a 0-length bstring. The value 
+    BSTR_OK is returned if the operation is successful, otherwise BSTR_ERR is 
+    returned.
+
+    ..........................................................................
+
+    extern int binsert (bstring s1, int pos, const_bstring s2, unsigned char fill);
+
+    Inserts the bstring s2 into s1 at position pos.  If the position pos is 
+    past the end of s1, then the character "fill" is appended as necessary to 
+    make up the gap between the end of s1 and pos.  The value BSTR_OK is 
+    returned if the operation is successful, otherwise BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int binsertch (bstring s1, int pos, int len, unsigned char fill);
+
+    Inserts the character fill repeatedly into s1 at position pos for a 
+    length len.  If the position pos is past the end of s1, then the 
+    character "fill" is appended as necessary to make up the gap between the 
+    end of s1 and the position pos + len (exclusive).  The value BSTR_OK is 
+    returned if the operation is successful, otherwise BSTR_ERR is returned.
+
+    ..........................................................................
+
+    extern int breplace (bstring b1, int pos, int len, const_bstring b2, 
+                         unsigned char fill);
+
+    Replace a section of a bstring from pos for a length len with the bstring 
+    b2. If the position pos is past the end of b1 then the character "fill"
+    is appended as necessary to make up the gap between the end of b1 and 
+    pos.
+
+    ..........................................................................
+
+    extern int bfindreplace (bstring b, const_bstring find,
+                             const_bstring replace, int position);
+
+    Replace all occurrences of the find substring with a replace bstring 
+    after a given position in the bstring b.  The find bstring must have a 
+    length > 0 otherwise BSTR_ERR is returned.  This function does not 
+    perform recursive per character replacement; that is to say successive
+    searches resume at the position after the last replace.
+
+    So for example:
+
+        bfindreplace (a0 = bfromcstr("aabaAb"), a1 = bfromcstr("a"),
+                      a2 = bfromcstr("aa"), 0);
+
+    Should result in changing a0 to "aaaabaaAb".
+
+    This function performs exactly (b->slen - position) bstring comparisons, 
+    and data movement is bounded above by character volume equivalent to size 
+    of the output bstring.
+
+    ..........................................................................
+
+    extern int bfindreplacecaseless (bstring b, const_bstring find,
+                             const_bstring replace, int position);
+
+    Replace all occurrences of the find substring, ignoring case, with a 
+    replace bstring after a given position in the bstring b.  The find bstring 
+    must have a length > 0 otherwise BSTR_ERR is returned.  This function 
+    does not perform recursive per character replacement; that is to say 
+    successive searches resume at the position after the last replace.
+
+    So for example:
+
+        bfindreplacecaseless (a0 = bfromcstr("AAbaAb"), a1 = bfromcstr("a"),
+                              a2 = bfromcstr("aa"), 0);
+
+    Should result in changing a0 to "aaaabaaaab".
+
+    This function performs exactly (b->slen - position) bstring comparisons, 
+    and data movement is bounded above by character volume equivalent to size 
+    of the output bstring.
+
+    ..........................................................................
+
+    extern int balloc (bstring b, int length);
+
+    Increase the allocated memory backing the data buffer for the bstring b
+    to a length of at least length.  If the memory backing the bstring b is
+    already large enough, not action is performed.  This has no effect on the 
+    bstring b that is visible to the bstring API.  Usually this function will 
+    only be used when a minimum buffer size is required coupled with a direct 
+    access to the ->data member of the bstring structure.
+
+    Be warned that like any other bstring function, the bstring must be well
+    defined upon entry to this function.  I.e., doing something like:
+
+        b->slen *= 2; /* ?? Most likely incorrect */
+        balloc (b, b->slen);
+
+    is invalid, and should be implemented as:
+
+        int t;
+        if (BSTR_OK == balloc (b, t = (b->slen * 2))) b->slen = t;
+
+    This function will return with BSTR_ERR if b is not detected as a valid 
+    bstring or length is not greater than 0, otherwise BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int ballocmin (bstring b, int length);
+
+    Change the amount of memory backing the bstring b to at least length.  
+    This operation will never truncate the bstring data including the 
+    extra terminating '\0' and thus will not decrease the length to less than
+    b->slen + 1.  Note that repeated use of this function may cause 
+    performance problems (realloc may be called on the bstring more than
+    the O(log(INT_MAX)) times).  This function will return with BSTR_ERR if b 
+    is not detected as a valid bstring or length is not greater than 0, 
+    otherwise BSTR_OK is returned.
+
+    So for example:
+
+	if (BSTR_OK == ballocmin (b, 64)) b->data[63] = 'x';
+
+    The idea is that this will set the 64th character of b to 'x' if it is at 
+    least 64 characters long otherwise do nothing.  And we know this is well 
+    defined so long as the ballocmin call was successfully, since it will 
+    ensure that b has been allocated with at least 64 characters.
+
+    ..........................................................................
+
+    int btrunc (bstring b, int n);
+
+    Truncate the bstring to at most n characters.  This function will return 
+    with BSTR_ERR if b is not detected as a valid bstring or n is less than 
+    0, otherwise BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int bpattern (bstring b, int len);
+
+    Replicate the starting bstring, b, end to end repeatedly until it 
+    surpasses len characters, then chop the result to exactly len characters. 
+    This function operates in-place.  This function will return with BSTR_ERR 
+    if b is NULL or of length 0, otherwise BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int btoupper (bstring b);
+
+    Convert contents of bstring to upper case.  This function will return with 
+    BSTR_ERR if b is NULL or of length 0, otherwise BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int btolower (bstring b);
+
+    Convert contents of bstring to lower case.  This function will return with 
+    BSTR_ERR if b is NULL or of length 0, otherwise BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int bltrimws (bstring b);
+
+    Delete whitespace contiguous from the left end of the bstring.  This 
+    function will return with BSTR_ERR if b is NULL or of length 0, otherwise 
+    BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int brtrimws (bstring b);
+
+    Delete whitespace contiguous from the right end of the bstring.  This 
+    function will return with BSTR_ERR if b is NULL or of length 0, otherwise 
+    BSTR_OK is returned.
+
+    ..........................................................................
+
+    extern int btrimws (bstring b);
+
+    Delete whitespace contiguous from both ends of the bstring.  This function 
+    will return with BSTR_ERR if b is NULL or of length 0, otherwise BSTR_OK 
+    is returned.
+
+    ..........................................................................
+
+    extern int bstrListCreate (void);
+
+    Create an empty struct bstrList. The struct bstrList output structure is 
+    declared as follows:
+
+    struct bstrList {
+        int qty, mlen;
+        bstring * entry;
+    };
+
+    The entry field actually is an array with qty number entries.  The mlen
+    record counts the maximum number of bstring's for which there is memory
+    in the entry record.
+
+    The Bstrlib API does *NOT* include a comprehensive set of functions for 
+    full management of struct bstrList in an abstracted way.  The reason for 
+    this is because aliasing semantics of the list are best left to the user 
+    of this function, and performance varies wildly depending on the 
+    assumptions made.  For a complete list of bstring data type it is 
+    recommended that the C++ public std::vector<CBString> be used, since its
+    semantics are usage are more standard.
+
+    ..........................................................................
+
+    extern int bstrListDestroy (struct bstrList * sl);
+
+    Destroy a struct bstrList structure that was returned by the bsplit 
+    function.  Note that this will destroy each bstring in the ->entry array
+    as well.  See bstrListCreate() above for structure of struct bstrList.
+
+    ..........................................................................
+
+    extern int bstrListAlloc (struct bstrList * sl, int msz);
+
+    Ensure that there is memory for at least msz number of entries for the
+    list.
+
+    ..........................................................................
+
+    extern int bstrListAllocMin (struct bstrList * sl, int msz);
+
+    Try to allocate the minimum amount of memory for the list to include at
+    least msz entries or sl->qty whichever is greater.
+
+    ..........................................................................
+
+    extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
+
+    Create an array of sequential substrings from str divided by the 
+    character splitChar.  Successive occurrences of the splitChar will be 
+    divided by empty bstring entries, following the semantics from the Python 
+    programming language.  To reclaim the memory from this output structure, 
+    bstrListDestroy () should be called.  See bstrListCreate() above for 
+    structure of struct bstrList.
+
+    ..........................................................................
+
+    extern struct bstrList * bsplits (bstring str, const_bstring splitStr);
+
+    Create an array of sequential substrings from str divided by any 
+    character contained in splitStr.  An empty splitStr causes a single entry 
+    bstrList containing a copy of str to be returned.  See bstrListCreate() 
+    above for structure of struct bstrList.
+
+    ..........................................................................
+
+    extern struct bstrList * bsplitstr (bstring str, const_bstring splitStr);
+
+    Create an array of sequential substrings from str divided by the entire 
+    substring splitStr.  An empty splitStr causes a single entry bstrList 
+    containing a copy of str to be returned.  See bstrListCreate() above for 
+    structure of struct bstrList.
+
+    ..........................................................................
+
+    extern bstring bjoin (const struct bstrList * bl, const_bstring sep);
+
+    Join the entries of a bstrList into one bstring by sequentially 
+    concatenating them with the sep bstring in between.  If sep is NULL, it
+    is treated as if it were the empty bstring.  Note that:
+
+        bjoin (l = bsplit (b, s->data[0]), s);
+
+    should result in a copy of b, if s->slen is 1.  If there is an error NULL 
+    is returned, otherwise a bstring with the correct result is returned.  
+    See bstrListCreate() above for structure of struct bstrList.
+
+    ..........................................................................
+
+    extern int bsplitcb (const_bstring str, unsigned char splitChar, int pos,
+	int (* cb) (void * parm, int ofs, int len), void * parm);
+
+    Iterate the set of disjoint sequential substrings over str starting at 
+    position pos divided by the character splitChar.  The parm passed to 
+    bsplitcb is passed on to cb.  If the function cb returns a value < 0, 
+    then further iterating is halted and this value is returned by bsplitcb.
+
+    Note: Non-destructive modification of str from within the cb function 
+    while performing this split is not undefined.  bsplitcb behaves in 
+    sequential lock step with calls to cb.  I.e., after returning from a cb 
+    that return a non-negative integer, bsplitcb continues from the position 
+    1 character after the last detected split character and it will halt 
+    immediately if the length of str falls below this point.  However, if the 
+    cb function destroys str, then it *must* return with a negative value, 
+    otherwise bsplitcb will continue in an undefined manner.
+
+    This function is provided as an incremental alternative to bsplit that is
+    abortable and which does not impose additional memory allocation.
+
+    ..........................................................................
+
+    extern int bsplitscb (const_bstring str, const_bstring splitStr, int pos,
+	int (* cb) (void * parm, int ofs, int len), void * parm);
+
+    Iterate the set of disjoint sequential substrings over str starting at 
+    position pos divided by any of the characters in splitStr.  An empty 
+    splitStr causes the whole str to be iterated once.  The parm passed to 
+    bsplitcb is passed on to cb.  If the function cb returns a value < 0, 
+    then further iterating is halted and this value is returned by bsplitcb.
+
+    Note: Non-destructive modification of str from within the cb function 
+    while performing this split is not undefined.  bsplitscb behaves in 
+    sequential lock step with calls to cb.  I.e., after returning from a cb 
+    that return a non-negative integer, bsplitscb continues from the position 
+    1 character after the last detected split character and it will halt 
+    immediately if the length of str falls below this point.  However, if the 
+    cb function destroys str, then it *must* return with a negative value, 
+    otherwise bsplitscb will continue in an undefined manner.
+
+    This function is provided as an incremental alternative to bsplits that 
+    is abortable and which does not impose additional memory allocation.
+
+    ..........................................................................
+
+    extern int bsplitstrcb (const_bstring str, const_bstring splitStr, int pos,
+	int (* cb) (void * parm, int ofs, int len), void * parm);
+
+    Iterate the set of disjoint sequential substrings over str starting at 
+    position pos divided by the entire substring splitStr.  An empty splitStr 
+    causes each character of str to be iterated.  The parm passed to bsplitcb 
+    is passed on to cb.  If the function cb returns a value < 0, then further 
+    iterating is halted and this value is returned by bsplitcb.
+
+    Note: Non-destructive modification of str from within the cb function 
+    while performing this split is not undefined.  bsplitstrcb behaves in 
+    sequential lock step with calls to cb.  I.e., after returning from a cb 
+    that return a non-negative integer, bsplitstrcb continues from the position 
+    1 character after the last detected split character and it will halt 
+    immediately if the length of str falls below this point.  However, if the 
+    cb function destroys str, then it *must* return with a negative value, 
+    otherwise bsplitscb will continue in an undefined manner.
+
+    This function is provided as an incremental alternative to bsplitstr that 
+    is abortable and which does not impose additional memory allocation.
+
+    ..........................................................................
+
+    extern bstring bformat (const char * fmt, ...);
+
+    Takes the same parameters as printf (), but rather than outputting 
+    results to stdio, it forms a bstring which contains what would have been 
+    output. Note that if there is an early generation of a '\0' character, 
+    the bstring will be truncated to this end point.
+
+    Note that %s format tokens correspond to '\0' terminated char * buffers, 
+    not bstrings.  To print a bstring, first dereference data element of the 
+    the bstring:
+
+        /* b1->data needs to be '\0' terminated, so tagbstrings generated 
+           by blk2tbstr () might not be suitable. */
+        b0 = bformat ("Hello, %s", b1->data);
+
+    Note that if the BSTRLIB_NOVSNP macro has been set when bstrlib has been 
+    compiled the bformat function is not present.
+
+    ..........................................................................
+
+    extern int bformata (bstring b, const char * fmt, ...);
+
+    In addition to the initial output buffer b, bformata takes the same 
+    parameters as printf (), but rather than outputting results to stdio, it 
+    appends the results to the initial bstring parameter. Note that if 
+    there is an early generation of a '\0' character, the bstring will be 
+    truncated to this end point.
+
+    Note that %s format tokens correspond to '\0' terminated char * buffers, 
+    not bstrings.  To print a bstring, first dereference data element of the 
+    the bstring:
+
+        /* b1->data needs to be '\0' terminated, so tagbstrings generated 
+           by blk2tbstr () might not be suitable. */
+        bformata (b0 = bfromcstr ("Hello"), ", %s", b1->data); 
+
+    Note that if the BSTRLIB_NOVSNP macro has been set when bstrlib has been 
+    compiled the bformata function is not present.
+
+    ..........................................................................
+
+    extern int bassignformat (bstring b, const char * fmt, ...);
+
+    After the first parameter, it takes the same parameters as printf (), but 
+    rather than outputting results to stdio, it outputs the results to 
+    the bstring parameter b. Note that if there is an early generation of a 
+    '\0' character, the bstring will be truncated to this end point.
+
+    Note that %s format tokens correspond to '\0' terminated char * buffers, 
+    not bstrings.  To print a bstring, first dereference data element of the 
+    the bstring:
+
+        /* b1->data needs to be '\0' terminated, so tagbstrings generated 
+           by blk2tbstr () might not be suitable. */
+        bassignformat (b0 = bfromcstr ("Hello"), ", %s", b1->data); 
+
+    Note that if the BSTRLIB_NOVSNP macro has been set when bstrlib has been 
+    compiled the bassignformat function is not present.
+
+    ..........................................................................
+
+    extern int bvcformata (bstring b, int count, const char * fmt, va_list arglist);
+
+    The bvcformata function formats data under control of the format control 
+    string fmt and attempts to append the result to b.  The fmt parameter is 
+    the same as that of the printf function.  The variable argument list is 
+    replaced with arglist, which has been initialized by the va_start macro.
+    The size of the output is upper bounded by count.  If the required output
+    exceeds count, the string b is not augmented with any contents and a value
+    below BSTR_ERR is returned.  If a value below -count is returned then it
+    is recommended that the negative of this value be used as an update to the
+    count in a subsequent pass.  On other errors, such as running out of 
+    memory, parameter errors or numeric wrap around BSTR_ERR is returned.  
+    BSTR_OK is returned when the output is successfully generated and 
+    appended to b.
+
+    Note: There is no sanity checking of arglist, and this function is
+    destructive of the contents of b from the b->slen point onward.  If there 
+    is an early generation of a '\0' character, the bstring will be truncated 
+    to this end point.
+
+    Although this function is part of the external API for Bstrlib, the 
+    interface and semantics (length limitations, and unusual return codes) 
+    are fairly atypical.  The real purpose for this function is to provide an 
+    engine for the bvformata macro.
+
+    Note that if the BSTRLIB_NOVSNP macro has been set when bstrlib has been 
+    compiled the bvcformata function is not present.
+
+    ..........................................................................
+
+    extern bstring bread (bNread readPtr, void * parm);
+    typedef size_t (* bNread) (void *buff, size_t elsize, size_t nelem, 
+                               void *parm);
+
+    Read an entire stream into a bstring, verbatum.  The readPtr function 
+    pointer is compatible with fread sematics, except that it need not obtain 
+    the stream data from a file.  The intention is that parm would contain 
+    the stream data context/state required (similar to the role of the FILE* 
+    I/O stream parameter of fread.)
+
+    Abstracting the block read function allows for block devices other than 
+    file streams to be read if desired.  Note that there is an ANSI 
+    compatibility issue if "fread" is used directly; see the ANSI issues 
+    section below.
+
+    ..........................................................................
+
+    extern int breada (bstring b, bNread readPtr, void * parm);
+
+    Read an entire stream and append it to a bstring, verbatum.  Behaves 
+    like bread, except that it appends it results to the bstring b.
+    BSTR_ERR is returned on error, otherwise 0 is returned.
+
+    ..........................................................................
+
+    extern bstring bgets (bNgetc getcPtr, void * parm, char terminator);
+    typedef int (* bNgetc) (void * parm);
+
+    Read a bstring from a stream.  As many bytes as is necessary are read
+    until the terminator is consumed or no more characters are available from
+    the stream.  If read from the stream, the terminator character will be
+    appended to the end of the returned bstring.  The getcPtr function must 
+    have the same semantics as the fgetc C library function (i.e., returning 
+    an integer whose value is negative when there are no more characters 
+    available, otherwise the value of the next available unsigned character 
+    from the stream.)  The intention is that parm would contain the stream 
+    data context/state required (similar to the role of the FILE* I/O stream 
+    parameter of fgets.)  If no characters are read, or there is some other 
+    detectable error, NULL is returned.
+
+    bgets will never call the getcPtr function more often than necessary to
+    construct its output (including a single call, if required, to determine 
+    that the stream contains no more characters.)
+
+    Abstracting the character stream function and terminator character allows
+    for different stream devices and string formats other than '\n' 
+    terminated lines in a file if desired (consider \032 terminated email 
+    messages, in a UNIX mailbox for example.)
+
+    For files, this function can be used analogously as fgets as follows:
+
+        fp = fopen ( ... );
+        if (fp) b = bgets ((bNgetc) fgetc, fp, '\n');
+
+    (Note that only one terminator character can be used, and that '\0' is 
+    not assumed to terminate the stream in addition to the terminator 
+    character. This is consistent with the semantics of fgets.)
+
+    ..........................................................................
+
+    extern int bgetsa (bstring b, bNgetc getcPtr, void * parm, char terminator);
+
+    Read from a stream and concatenate to a bstring.  Behaves like bgets, 
+    except that it appends it results to the bstring b.  The value 1 is 
+    returned if no characters are read before a negative result is returned
+    from getcPtr.  Otherwise BSTR_ERR is returned on error, and 0 is returned
+    in other normal cases.
+
+    ..........................................................................
+
+    extern int bassigngets (bstring b, bNgetc getcPtr, void * parm, char terminator);
+
+    Read from a stream and concatenate to a bstring.  Behaves like bgets, 
+    except that it assigns the results to the bstring b.  The value 1 is 
+    returned if no characters are read before a negative result is returned
+    from getcPtr.  Otherwise BSTR_ERR is returned on error, and 0 is returned
+    in other normal cases.
+
+    ..........................................................................
+
+    extern struct bStream * bsopen (bNread readPtr, void * parm);
+  
+    Wrap a given open stream (described by a fread compatible function 
+    pointer and stream handle) into an open bStream suitable for the bstring 
+    library streaming functions.
+  
+    ..........................................................................
+
+    extern void * bsclose (struct bStream * s);
+  
+    Close the bStream, and return the handle to the stream that was 
+    originally used to open the given stream.  If s is NULL or detectably 
+    invalid, NULL will be returned.
+
+    ..........................................................................
+
+    extern int bsbufflength (struct bStream * s, int sz);
+
+    Set the length of the buffer used by the bStream.  If sz is the macro
+    BSTR_BS_BUFF_LENGTH_GET (which is 0), the length is not set.  If s is 
+    NULL or sz is negative, the function will return with BSTR_ERR, otherwise 
+    this function returns with the previous length.
+
+    ..........................................................................
+
+    extern int bsreadln (bstring r, struct bStream * s, char terminator);
+  
+    Read a bstring terminated by the terminator character or the end of the
+    stream from the bStream (s) and return it into the parameter r.  The 
+    matched terminator, if found, appears at the end of the line read.  If
+    the stream has been exhausted of all available data, before any can be
+    read, BSTR_ERR is returned.  This function may read additional characters 
+    into the stream buffer from the core stream that are not returned, but 
+    will be retained for subsequent read operations.  When reading from high 
+    speed streams, this function can perform significantly faster than bgets.
+
+    ..........................................................................
+
+    extern int bsreadlna (bstring r, struct bStream * s, char terminator);
+  
+    Read a bstring terminated by the terminator character or the end of the
+    stream from the bStream (s) and concatenate it to the parameter r.  The 
+    matched terminator, if found, appears at the end of the line read.  If
+    the stream has been exhausted of all available data, before any can be
+    read, BSTR_ERR is returned.  This function may read additional characters 
+    into the stream buffer from the core stream that are not returned, but 
+    will be retained for subsequent read operations.  When reading from high 
+    speed streams, this function can perform significantly faster than bgets.
+
+    ..........................................................................
+
+    extern int bsreadlns (bstring r, struct bStream * s, bstring terminators);
+
+    Read a bstring terminated by any character in the terminators bstring or 
+    the end of the stream from the bStream (s) and return it into the 
+    parameter r. This function may read additional characters from the core 
+    stream that are not returned, but will be retained for subsequent read 
+    operations.
+
+    ..........................................................................
+
+    extern int bsreadlnsa (bstring r, struct bStream * s, bstring terminators);
+
+    Read a bstring terminated by any character in the terminators bstring or 
+    the end of the stream from the bStream (s) and concatenate it to the 
+    parameter r.  If the stream has been exhausted of all available data, 
+    before any can be read, BSTR_ERR is returned.  This function may read 
+    additional characters from the core stream that are not returned, but 
+    will be retained for subsequent read operations.
+
+    ..........................................................................
+
+    extern int bsread (bstring r, struct bStream * s, int n);
+  
+    Read a bstring of length n (or, if it is fewer, as many bytes as is 
+    remaining) from the bStream.  This function will read the minimum 
+    required number of additional characters from the core stream.  When the
+    stream is at the end of the file BSTR_ERR is returned, otherwise BSTR_OK 
+    is returned.
+
+    ..........................................................................
+
+    extern int bsreada (bstring r, struct bStream * s, int n);
+  
+    Read a bstring of length n (or, if it is fewer, as many bytes as is 
+    remaining) from the bStream and concatenate it to the parameter r.  This 
+    function will read the minimum required number of additional characters 
+    from the core stream.  When the stream is at the end of the file BSTR_ERR 
+    is returned, otherwise BSTR_OK is returned.
+  
+    ..........................................................................
+  
+    extern int bsunread (struct bStream * s, const_bstring b);
+  
+    Insert a bstring into the bStream at the current position.  These 
+    characters will be read prior to those that actually come from the core 
+    stream.
+
+    ..........................................................................
+
+    extern int bspeek (bstring r, const struct bStream * s);
+  
+    Return the number of currently buffered characters from the bStream that 
+    will be read prior to reads from the core stream, and append it to the
+    the parameter r.
+
+    ..........................................................................
+
+    extern int bssplitscb (struct bStream * s, const_bstring splitStr, 
+	int (* cb) (void * parm, int ofs, const_bstring entry), void * parm);
+
+    Iterate the set of disjoint sequential substrings over the stream s 
+    divided by any character from the bstring splitStr.  The parm passed to 
+    bssplitscb is passed on to cb.  If the function cb returns a value < 0, 
+    then further iterating is halted and this return value is returned by 
+    bssplitscb.
+
+    Note: At the point of calling the cb function, the bStream pointer is 
+    pointed exactly at the position right after having read the split 
+    character.  The cb function can act on the stream by causing the bStream
+    pointer to move, and bssplitscb will continue by starting the next split
+    at the position of the pointer after the return from cb.
+
+    However, if the cb causes the bStream s to be destroyed then the cb must
+    return with a negative value, otherwise bssplitscb will continue in an 
+    undefined manner.
+
+    This function is provided as way to incrementally parse through a file
+    or other generic stream that in total size may otherwise exceed the 
+    practical or desired memory available.  As with the other split callback
+    based functions this is abortable and does not impose additional memory 
+    allocation.
+
+    ..........................................................................
+    
+    extern int bssplitstrcb (struct bStream * s, const_bstring splitStr, 
+	int (* cb) (void * parm, int ofs, const_bstring entry), void * parm);
+	
+    Iterate the set of disjoint sequential substrings over the stream s 
+    divided by the entire substring splitStr.  The parm passed to 
+    bssplitstrcb is passed on to cb.  If the function cb returns a 
+    value < 0, then further iterating is halted and this return value is 
+    returned by bssplitstrcb.
+
+    Note: At the point of calling the cb function, the bStream pointer is 
+    pointed exactly at the position right after having read the split 
+    character.  The cb function can act on the stream by causing the bStream
+    pointer to move, and bssplitstrcb will continue by starting the next 
+    split at the position of the pointer after the return from cb.
+
+    However, if the cb causes the bStream s to be destroyed then the cb must
+    return with a negative value, otherwise bssplitscb will continue in an 
+    undefined manner.
+
+    This function is provided as way to incrementally parse through a file
+    or other generic stream that in total size may otherwise exceed the 
+    practical or desired memory available.  As with the other split callback
+    based functions this is abortable and does not impose additional memory 
+    allocation.
+    
+    ..........................................................................
+    
+    extern int bseof (const struct bStream * s);
+
+    Return the defacto "EOF" (end of file) state of a stream (1 if the 
+    bStream is in an EOF state, 0 if not, and BSTR_ERR if stream is closed or 
+    detectably erroneous.)  When the readPtr callback returns a value <= 0 
+    the stream reaches its "EOF" state. Note that bunread with non-empty 
+    content will essentially turn off this state, and the stream will not be 
+    in its "EOF" state so long as its possible to read more data out of it.
+
+    Also note that the semantics of bseof() are slightly different from 
+    something like feof().  I.e., reaching the end of the stream does not
+    necessarily guarantee that bseof() will return with a value indicating
+    that this has happened.  bseof() will only return indicating that it has
+    reached the "EOF" and an attempt has been made to read past the end of
+    the bStream.
+
+The macros
+----------
+
+    The macros described below are shown in a prototype form indicating their
+    intended usage.  Note that the parameters passed to these macros will be
+    referenced multiple times.  As with all macros, programmer care is 
+    required to guard against unintended side effects.
+
+    int blengthe (const_bstring b, int err);
+
+    Returns the length of the bstring.  If the bstring is NULL err is 
+    returned.
+
+    ..........................................................................
+
+    int blength (const_bstring b);
+
+    Returns the length of the bstring.  If the bstring is NULL, the length 
+    returned is 0.
+
+    ..........................................................................
+
+    int bchare (const_bstring b, int p, int c);
+
+    Returns the p'th character of the bstring b.  If the position p refers to 
+    a position that does not exist in the bstring or the bstring is NULL, 
+    then c is returned.
+
+    ..........................................................................
+
+    char bchar (const_bstring b, int p);
+
+    Returns the p'th character of the bstring b.  If the position p refers to 
+    a position that does not exist in the bstring or the bstring is NULL, 
+    then '\0' is returned.
+
+    ..........................................................................
+
+    char * bdatae (bstring b, char * err);
+
+    Returns the char * data portion of the bstring b.  If b is NULL, err is
+    returned.
+
+    ..........................................................................
+
+    char * bdata (bstring b);
+
+    Returns the char * data portion of the bstring b.  If b is NULL, NULL is
+    returned.
+
+    ..........................................................................
+
+    char * bdataofse (bstring b, int ofs, char * err);
+
+    Returns the char * data portion of the bstring b offset by ofs.  If b is 
+    NULL, err is returned.
+
+    ..........................................................................
+
+    char * bdataofs (bstring b, int ofs);
+
+    Returns the char * data portion of the bstring b offset by ofs.  If b is 
+    NULL, NULL is returned.
+
+    ..........................................................................
+
+    struct tagbstring var = bsStatic ("...");
+
+    The bsStatic macro allows for static declarations of literal string 
+    constants as struct tagbstring structures.  The resulting tagbstring does 
+    not need to be freed or destroyed.  Note that this macro is only well
+    defined for string literal arguments.  For more general string pointers, 
+    use the btfromcstr macro.
+
+    The resulting struct tagbstring is permanently write protected.  Attempts 
+    to write to this struct tagbstring from any bstrlib function will lead to 
+    BSTR_ERR being returned.  Invoking the bwriteallow macro onto this struct 
+    tagbstring has no effect.
+
+    ..........................................................................
+
+    <void * blk, int len> <- bsStaticBlkParms ("...")
+
+    The bsStaticBlkParms macro emits a pair of comma seperated parameters 
+    corresponding to the block parameters for the block functions in Bstrlib 
+    (i.e., blk2bstr, bcatblk, blk2tbstr, bisstemeqblk, bisstemeqcaselessblk.) 
+    Note that this macro is only well defined for string literal arguments.
+
+    Examples:
+
+    bstring b = blk2bstr (bsStaticBlkParms ("Fast init. "));
+    bcatblk (b, bsStaticBlkParms ("No frills fast concatenation."));
+
+    These are faster than using bfromcstr() and bcatcstr() respectively 
+    because the length of the inline string is known as a compile time
+    constant.  Also note that seperate struct tagbstring declarations for
+    holding the output of a bsStatic() macro are not required.
+
+    ..........................................................................
+
+    void btfromcstr (struct tagbstring& t, const char * s);
+
+    Fill in the tagbstring t with the '\0' terminated char buffer s.  This 
+    action is purely reference oriented; no memory management is done.  The 
+    data member is just assigned s, and slen is assigned the strlen of s.  
+    The s parameter is accessed exactly once in this macro.
+
+    The resulting struct tagbstring is initially write protected.  Attempts 
+    to write to this struct tagbstring in a write protected state from any 
+    bstrlib function will lead to BSTR_ERR being returned.  Invoke the 
+    bwriteallow on this struct tagbstring to make it writeable (though this 
+    requires that s be obtained from a function compatible with malloc.)
+
+    ..........................................................................
+
+    void btfromblk (struct tagbstring& t, void * s, int len);
+
+    Fill in the tagbstring t with the data buffer s with length len.  This 
+    action is purely reference oriented; no memory management is done.  The 
+    data member of t is just assigned s, and slen is assigned len.  Note that 
+    the buffer is not appended with a '\0' character.  The s and len 
+    parameters are accessed exactly once each in this macro.
+
+    The resulting struct tagbstring is initially write protected.  Attempts 
+    to write to this struct tagbstring in a write protected state from any 
+    bstrlib function will lead to BSTR_ERR being returned.  Invoke the 
+    bwriteallow on this struct tagbstring to make it writeable (though this 
+    requires that s be obtained from a function compatible with malloc.)
+
+    ..........................................................................
+
+    void btfromblkltrimws (struct tagbstring& t, void * s, int len);
+
+    Fill in the tagbstring t with the data buffer s with length len after it
+    has been left trimmed.  This action is purely reference oriented; no 
+    memory management is done.  The data member of t is just assigned to a 
+    pointer inside the buffer s.  Note that the buffer is not appended with a 
+    '\0' character.  The s and len parameters are accessed exactly once each 
+    in this macro.
+
+    The resulting struct tagbstring is permanently write protected.  Attempts 
+    to write to this struct tagbstring from any bstrlib function will lead to 
+    BSTR_ERR being returned.  Invoking the bwriteallow macro onto this struct 
+    tagbstring has no effect.
+
+    ..........................................................................
+
+    void btfromblkrtrimws (struct tagbstring& t, void * s, int len);
+
+    Fill in the tagbstring t with the data buffer s with length len after it
+    has been right trimmed.  This action is purely reference oriented; no 
+    memory management is done.  The data member of t is just assigned to a 
+    pointer inside the buffer s.  Note that the buffer is not appended with a 
+    '\0' character.  The s and len parameters are accessed exactly once each 
+    in this macro.
+
+    The resulting struct tagbstring is permanently write protected.  Attempts 
+    to write to this struct tagbstring from any bstrlib function will lead to 
+    BSTR_ERR being returned.  Invoking the bwriteallow macro onto this struct 
+    tagbstring has no effect.
+
+    ..........................................................................
+
+    void btfromblktrimws (struct tagbstring& t, void * s, int len);
+
+    Fill in the tagbstring t with the data buffer s with length len after it
+    has been left and right trimmed.  This action is purely reference 
+    oriented; no memory management is done.  The data member of t is just 
+    assigned to a pointer inside the buffer s.  Note that the buffer is not 
+    appended with a '\0' character.  The s and len parameters are accessed 
+    exactly once each in this macro.
+
+    The resulting struct tagbstring is permanently write protected.  Attempts 
+    to write to this struct tagbstring from any bstrlib function will lead to 
+    BSTR_ERR being returned.  Invoking the bwriteallow macro onto this struct 
+    tagbstring has no effect.
+
+    ..........................................................................
+
+    void bmid2tbstr (struct tagbstring& t, bstring b, int pos, int len);
+
+    Fill the tagbstring t with the substring from b, starting from position
+    pos with a length len.  The segment is clamped by the boundaries of
+    the bstring b.  This action is purely reference oriented; no memory 
+    management is done.  Note that the buffer is not appended with a '\0' 
+    character.  Note that the t parameter to this macro may be accessed 
+    multiple times.  Note that the contents of t will become undefined 
+    if the contents of b change or are destroyed.
+
+    The resulting struct tagbstring is permanently write protected.  Attempts 
+    to write to this struct tagbstring in a write protected state from any 
+    bstrlib function will lead to BSTR_ERR being returned.  Invoking the
+    bwriteallow macro on this struct tagbstring will have no effect.
+
+    ..........................................................................
+
+    void bvformata (int& ret, bstring b, const char * format, lastarg);
+
+    Append the bstring b with printf like formatting with the format control
+    string, and the arguments taken from the ... list of arguments after
+    lastarg passed to the containing function.  If the containing function 
+    does not have ... parameters or lastarg is not the last named parameter 
+    before the ... then the results are undefined.  If successful, the 
+    results are appended to b and BSTR_OK is assigned to ret.  Otherwise 
+    BSTR_ERR is assigned to ret.
+
+    Example:
+
+    void dbgerror (FILE * fp, const char * fmt, ...) {
+        int ret;
+        bstring b;
+        bvformata (ret, b = bfromcstr ("DBG: "), fmt, fmt);
+        if (BSTR_OK == ret) fputs ((char *) bdata (b), fp);
+        bdestroy (b);
+    }
+
+    Note that if the BSTRLIB_NOVSNP macro was set when bstrlib had been 
+    compiled the bvformata macro will not link properly.  If the 
+    BSTRLIB_NOVSNP macro has been set, the bvformata macro will not be 
+    available.
+
+    ..........................................................................
+
+    void bwriteprotect (struct tagbstring& t);
+
+    Disallow bstring from being written to via the bstrlib API.  Attempts to 
+    write to the resulting tagbstring from any bstrlib function will lead to 
+    BSTR_ERR being returned.
+
+    Note: bstrings which are write protected cannot be destroyed via bdestroy.
+
+    Note to C++ users: Setting a CBString as write protected will not prevent
+    it from being destroyed by the destructor.
+
+    ..........................................................................
+
+    void bwriteallow (struct tagbstring& t);
+
+    Allow bstring to be written to via the bstrlib API.  Note that such an 
+    action makes the bstring both writable and destroyable.  If the bstring is
+    not legitimately writable (as is the case for struct tagbstrings 
+    initialized with a bsStatic value), the results of this are undefined.
+
+    Note that invoking the bwriteallow macro may increase the number of 
+    reallocs by one more than necessary for every call to bwriteallow 
+    interleaved with any bstring API which writes to this bstring.
+
+    ..........................................................................
+
+    int biswriteprotected (struct tagbstring& t);
+
+    Returns 1 if the bstring is write protected, otherwise 0 is returned.
+
+===============================================================================
+
+The bstest module
+-----------------
+
+The bstest module is just a unit test for the bstrlib module.  For correct
+implementations of bstrlib, it should execute with 0 failures being reported.
+This test should be utilized if modifications/customizations to bstrlib have
+been performed.  It tests each core bstrlib function with bstrings of every 
+mode (read-only, NULL, static and mutable) and ensures that the expected 
+semantics are observed (including results that should indicate an error). It
+also tests for aliasing support.  Passing bstest is a necessary but not a 
+sufficient condition for ensuring the correctness of the bstrlib module.
+
+
+The test module
+---------------
+
+The test module is just a unit test for the bstrwrap module.  For correct
+implementations of bstrwrap, it should execute with 0 failures being 
+reported.  This test should be utilized if modifications/customizations to 
+bstrwrap have been performed.  It tests each core bstrwrap function with 
+CBStrings write protected or not and ensures that the expected semantics are 
+observed (including expected exceptions.)  Note that exceptions cannot be
+disabled to run this test.  Passing test is a necessary but not a sufficient 
+condition for ensuring the correctness of the bstrwrap module.
+
+===============================================================================
+
+Using Bstring and CBString as an alternative to the C library
+-------------------------------------------------------------
+
+First let us give a table of C library functions and the alternative bstring 
+functions and CBString methods that should be used instead of them.
+
+C-library         Bstring alternative             CBString alternative
+---------         -------------------             --------------------
+gets              bgets                           ::gets
+strcpy            bassign                         = operator
+strncpy           bassignmidstr                   ::midstr
+strcat            bconcat                         += operator
+strncat           bconcat + btrunc                += operator + ::trunc
+strtok            bsplit, bsplits                 ::split
+sprintf           b(assign)format                 ::format
+snprintf          b(assign)format + btrunc        ::format + ::trunc
+vsprintf          bvformata                       bvformata
+
+vsnprintf         bvformata + btrunc              bvformata + btrunc
+vfprintf          bvformata + fputs               use bvformata + fputs
+strcmp            biseq, bstrcmp                  comparison operators.
+strncmp           bstrncmp, memcmp                bstrncmp, memcmp
+strlen            ->slen, blength                 ::length
+strdup            bstrcpy                         constructor
+strset            bpattern                        ::fill
+strstr            binstr                          ::find
+strpbrk           binchr                          ::findchr
+stricmp           bstricmp                        cast & use bstricmp
+strlwr            btolower                        cast & use btolower
+strupr            btoupper                        cast & use btoupper
+strrev            bReverse (aux module)           cast & use bReverse
+strchr            bstrchr                         cast & use bstrchr
+strspnp           use strspn                      use strspn
+ungetc            bsunread                        bsunread
+
+The top 9 C functions listed here are troublesome in that they impose memory 
+management in the calling function.  The Bstring and CBstring interfaces have
+built-in memory management, so there is far less code with far less potential 
+for buffer overrun problems.  strtok can only be reliably called as a "leaf" 
+calculation, since it (quite bizarrely) maintains hidden internal state.  And
+gets is well known to be broken no matter what.  The Bstrlib alternatives do
+not suffer from those sorts of problems.
+
+The substitute for strncat can be performed with higher performance by using 
+the blk2tbstr macro to create a presized second operand for bconcat.
+
+C-library         Bstring alternative             CBString alternative
+---------         -------------------             --------------------
+strspn            strspn acceptable               strspn acceptable
+strcspn           strcspn acceptable              strcspn acceptable
+strnset           strnset acceptable              strnset acceptable
+printf            printf acceptable               printf acceptable
+puts              puts acceptable                 puts acceptable
+fprintf           fprintf acceptable              fprintf acceptable
+fputs             fputs acceptable                fputs acceptable
+memcmp            memcmp acceptable               memcmp acceptable
+
+Remember that Bstring (and CBstring) functions will automatically append the
+'\0' character to the character data buffer.  So by simply accessing the data
+buffer directly, ordinary C string library functions can be called directly 
+on them.  Note that bstrcmp is not the same as memcmp in exactly the same way
+that strcmp is not the same as memcmp.
+
+C-library         Bstring alternative             CBString alternative
+---------         -------------------             --------------------
+fread             balloc + fread                  ::alloc + fread
+fgets             balloc + fgets                  ::alloc + fgets
+
+These are odd ones because of the exact sizing of the buffer required.  The 
+Bstring and CBString alternatives requires that the buffers are forced to 
+hold at least the prescribed length, then just use fread or fgets directly.  
+However, typically the automatic memory management of Bstring and CBstring 
+will make the typical use of fgets and fread to read specifically sized 
+strings unnecessary.
+
+Implementation Choices
+----------------------
+
+Overhead:
+.........
+
+The bstring library has more overhead versus straight char buffers for most
+functions.  This overhead is essentially just the memory management and 
+string header allocation.  This overhead usually only shows up for small 
+string manipulations.  The performance loss has to be considered in
+light of the following:
+
+1) What would be the performance loss of trying to write this management
+   code in one's own application?
+2) Since the bstring library source code is given, a sufficiently powerful 
+   modern inlining globally optimizing compiler can remove function call 
+   overhead.
+
+Since the data type is exposed, a developer can replace any unsatisfactory
+function with their own inline implementation.  And that is besides the main 
+point of what the better string library is mainly meant to provide.  Any 
+overhead lost has to be compared against the value of the safe abstraction 
+for coupling memory management and string functionality.
+
+Performance of the C interface:
+...............................
+
+The algorithms used have performance advantages versus the analogous C 
+library functions.  For example:
+
+1. bfromcstr/blk2str/bstrcpy versus strcpy/strdup.  By using memmove instead 
+   of strcpy, the break condition of the copy loop is based on an independent 
+   counter (that should be allocated in a register) rather than having to 
+   check the results of the load.  Modern out-of-order executing CPUs can 
+   parallelize the final branch mis-predict penality with the loading of the 
+   source string.  Some CPUs will also tend to have better built-in hardware 
+   support for counted memory moves than load-compare-store.  (This is a 
+   minor, but non-zero gain.)
+2. biseq versus strcmp.  If the strings are unequal in length, bsiseq will
+   return in O(1) time.  If the strings are aliased, or have aliased data
+   buffers, biseq will return in O(1) time.  strcmp will always be O(k), 
+   where k is the length of the common prefix or the whole string if they are 
+   identical.
+3. ->slen versus strlen.  ->slen is obviously always O(1), while strlen is
+   always O(n) where n is the length of the string.
+4. bconcat versus strcat.  Both rely on precomputing the length of the 
+   destination string argument, which will favor the bstring library.  On 
+   iterated concatenations the performance difference can be enormous.
+5. bsreadln versus fgets.  The bsreadln function reads large blocks at a time
+   from the given stream, then parses out lines from the buffers directly.
+   Some C libraries will implement fgets as a loop over single fgetc calls.
+   Testing indicates that the bsreadln approach can be several times faster
+   for fast stream devices (such as a file that has been entirely cached.)
+6. bsplits/bsplitscb versus strspn.  Accelerators for the set of match 
+   characters are generated only once.
+7. binstr versus strstr.  The binstr implementation unrolls the loops to
+   help reduce loop overhead.  This will matter if the target string is 
+   long and source string is not found very early in the target string.
+   With strstr, while it is possible to unroll the source contents, it is
+   not possible to do so with the destination contents in a way that is
+   effective because every destination character must be tested against
+   '\0' before proceeding to the next character.
+8. bReverse versus strrev.  The C function must find the end of the string
+   first before swaping character pairs.
+9. bstrrchr versus no comparable C function.  Its not hard to write some C
+   code to search for a character from the end going backwards.  But there
+   is no way to do this without computing the length of the string with
+   strlen.
+
+Practical testing indicates that in general Bstrlib is never signifcantly 
+slower than the C library for common operations, while very often having a
+performance advantage that ranges from significant to massive.  Even for 
+functions like b(n)inchr versus str(c)spn() (where, in theory, there is no 
+advantage for the Bstrlib architecture) the performance of Bstrlib is vastly 
+superior to most tested C library implementations.
+
+Some of Bstrlib's extra functionality also lead to inevitable performance
+advantages over typical C solutions.  For example, using the blk2tbstr macro,
+one can (in O(1) time) generate an internal substring by reference while not 
+disturbing the original string.  If disturbing the original string is not an
+option, typically, a comparable char * solution would have to make a copy of 
+the substring to provide similar functionality.  Another example is reverse 
+character set scanning -- the str(c)spn functions only scan in a forward 
+direction which can complicate some parsing algorithms.
+
+Where high performance char * based algorithms are available, Bstrlib can 
+still leverage them by accessing the ->data field on bstrings.  So 
+realistically Bstrlib can never be significantly slower than any standard
+'\0' terminated char * based solutions.
+
+Performance of the C++ interface:
+.................................
+
+The C++ interface has been designed with an emphasis on abstraction and safety
+first.  However, since it is substantially a wrapper for the C bstring 
+functions, for longer strings the performance comments described in the 
+"Performance of the C interface" section above still apply. Note that the 
+(CBString *) type can be directly cast to a (bstring) type, and passed as 
+parameters to the C functions (though a CBString must never be passed to 
+bdestroy.)
+
+Probably the most controversial choice is performing full bounds checking on
+the [] operator.  This decision was made because 1) the fast alternative of
+not bounds checking is still available by first casting the CBString to a 
+(const char *) buffer or to a (struct tagbstring) then derefencing .data and 
+2) because the lack of bounds checking is seen as one of the main weaknesses 
+of C/C++ versus other languages.  This check being done on every access leads 
+to individual character extraction being actually slower than other languages 
+in this one respect (other language's compilers will normally dedicate more 
+resources on hoisting or removing bounds checking as necessary) but otherwise 
+bring C++ up to the level of other languages in terms of functionality.
+
+It is common for other C++ libraries to leverage the abstractions provided by
+C++ to use reference counting and "copy on write" policies.  While these 
+techniques can speed up some scenarios, they impose a problem with respect to
+thread safety.  bstrings and CBStrings can be properly protected with 
+"per-object" mutexes, meaning that two bstrlib calls can be made and execute
+simultaneously, so long as the bstrings and CBstrings are distinct.  With a
+reference count and alias before copy on write policy, global mutexes are 
+required that prevent multiple calls to the strings library to execute 
+simultaneously regardless of whether or not the strings represent the same
+string.
+
+One interesting trade off in CBString is that the default constructor is not 
+trivial.  I.e., it always prepares a ready to use memory buffer.  The purpose 
+is to ensure that there is a uniform internal composition for any functioning 
+CBString that is compatible with bstrings.  It also means that the other 
+methods in the class are not forced to perform "late initialization" checks. 
+In the end it means that construction of CBStrings are slower than other 
+comparable C++ string classes.  Initial testing, however, indicates that 
+CBString outperforms std::string and MFC's CString, for example, in all other 
+operations.  So to work around this weakness it is recommended that CBString 
+declarations be pushed outside of inner loops.
+
+Practical testing indicates that with the exception of the caveats given 
+above (constructors and safe index character manipulations) the C++ API for
+Bstrlib generally outperforms popular standard C++ string classes.  Amongst 
+the standard libraries and compilers, the quality of concatenation operations 
+varies wildly and very little care has gone into search functions.  Bstrlib
+dominates those performance benchmarks.
+
+Memory management:
+..................
+
+The bstring functions which write and modify bstrings will automatically 
+reallocate the backing memory for the char buffer whenever it is required to 
+grow.  The algorithm for resizing chosen is to snap up to sizes that are a 
+power of two which are sufficient to hold the intended new size.  Memory 
+reallocation is not performed when the required size of the buffer is 
+decreased.  This behavior can be relied on, and is necessary to make the 
+behaviour of balloc deterministic.  This trades off additional memory usage 
+for decreasing the frequency for required reallocations:
+
+1. For any bstring whose size never exceeds n, its buffer is not ever 
+   reallocated more than log_2(n) times for its lifetime.
+2. For any bstring whose size never exceeds n, its buffer is never more than
+   2*(n+1) in length.  (The extra characters beyond 2*n are to allow for the 
+   implicit '\0' which is always added by the bstring modifying functions.)
+
+Decreasing the buffer size when the string decreases in size would violate 1) 
+above and in real world case lead to pathological heap thrashing.  Similarly, 
+allocating more tightly than "least power of 2 greater than necessary" would 
+lead to a violation of 1) and have the same potential for heap thrashing.
+
+Property 2) needs emphasizing.  Although the memory allocated is always a 
+power of 2, for a bstring that grows linearly in size, its buffer memory also 
+grows linearly, not exponentially.  The reason is that the amount of extra 
+space increases with each reallocation, which decreases the frequency of 
+future reallocations.
+
+Obviously, given that bstring writing functions may reallocate the data 
+buffer backing the target bstring, one should not attempt to cache the data 
+buffer address and use it after such bstring functions have been called.  
+This includes making reference struct tagbstrings which alias to a writable 
+bstring.
+
+balloc or bfromcstralloc can be used to preallocate the minimum amount of 
+space used for a given bstring.  This will reduce even further the number of 
+times the data portion is reallocated.  If the length of the string is never 
+more than one less than the memory length then there will be no further 
+reallocations.
+
+Note that invoking the bwriteallow macro may increase the number of reallocs 
+by one more than necessary for every call to bwriteallow interleaved with any 
+bstring API which writes to this bstring.
+
+The library does not use any mechanism for automatic clean up for the C API.
+Thus explicit clean up via calls to bdestroy() are required to avoid memory
+leaks.
+
+Constant and static tagbstrings:
+................................
+
+A struct tagbstring can be write protected from any bstrlib function using 
+the bwriteprotect macro.  A write protected struct tagbstring can then be 
+reset to being writable via the bwriteallow macro.  There is, of course, no 
+protection from attempts to directly access the bstring members.  Modifying a 
+bstring which is write protected by direct access has undefined behavior.
+
+static struct tagbstrings can be declared via the bsStatic macro.  They are
+considered permanently unwritable.  Such struct tagbstrings's are declared 
+such that attempts to write to it are not well defined.  Invoking either 
+bwriteallow or bwriteprotect on static struct tagbstrings has no effect.  
+
+struct tagbstring's initialized via btfromcstr or blk2tbstr are protected by 
+default but can be made writeable via the bwriteallow macro.  If bwriteallow 
+is called on such struct tagbstring's, it is the programmer's responsibility 
+to ensure that:
+
+1) the buffer supplied was allocated from the heap.
+2) bdestroy is not called on this tagbstring (unless the header itself has
+   also been allocated from the heap.)
+3) free is called on the buffer to reclaim its memory.
+
+bwriteallow and bwriteprotect can be invoked on ordinary bstrings (they have 
+to be dereferenced with the (*) operator to get the levels of indirection 
+correct) to give them write protection.
+
+Buffer declaration:
+...................
+
+The memory buffer is actually declared "unsigned char *" instead of "char *".
+The reason for this is to trigger compiler warnings whenever uncasted char
+buffers are assigned to the data portion of a bstring.  This will draw more
+diligent programmers into taking a second look at the code where they 
+have carelessly left off the typically required cast.  (Research from 
+AT&T/Lucent indicates that additional programmer eyeballs is one of the most 
+effective mechanisms at ferreting out bugs.)
+
+Function pointers:
+..................
+
+The bgets, bread and bStream functions use function pointers to obtain 
+strings from data streams.  The function pointer declarations have been 
+specifically chosen to be compatible with the fgetc and fread functions. 
+While this may seem to be a convoluted way of implementing fgets and fread 
+style functionality, it has been specifically designed this way to ensure 
+that there is no dependency on a single narrowly defined set of device 
+interfaces, such as just stream I/O.  In the embedded world, its quite 
+possible to have environments where such interfaces may not exist in the 
+standard C library form.  Furthermore, the generalization that this opens up 
+allows for more sophisticated uses for these functions (performing an fgets 
+like function on a socket, for example.) By using function pointers, it also 
+allows such abstract stream interfaces to be created using the bstring library 
+itself while not creating a circular dependency.
+
+Use of int's for sizes:
+.......................
+
+This is just a recognition that 16bit platforms with requirements for strings
+that are larger than 64K and 32bit+ platforms with requirements for strings
+that are larger than 4GB are pretty marginal.  The main focus is for 32bit 
+platforms, and emerging 64bit platforms with reasonable < 4GB string 
+requirements.  Using ints allows for negative values which has meaning 
+internally to bstrlib.
+
+Semantic consideration:
+.......................
+
+Certain care needs to be taken when copying and aliasing bstrings.  A bstring
+is essentially a pointer type which points to a multipart abstract data
+structure.  Thus usage, and lifetime of bstrings have semantics that follow
+these considerations.  For example:
+
+    bstring a, b;
+    struct tagbstring t;
+
+    a = bfromcstr("Hello"); /* Create new bstring and copy "Hello" into it. */
+    b = a;                  /* Alias b to the contents of a.                */
+    t = *a;                 /* Create a current instance pseudo-alias of a. */
+    bconcat (a, b);         /* Double a and b, t is now undefined.          */
+    bdestroy (a);           /* Destroy the contents of both a and b.        */
+
+Variables of type bstring are really just references that point to real 
+bstring objects.  The equal operator (=) creates aliases, and the asterisk 
+dereference operator (*) creates a kind of alias to the current instance (which
+is generally not useful for any purpose.)  Using bstrcpy() is the correct way 
+of creating duplicate instances.  The ampersand operator (&) is useful for 
+creating aliases to struct tagbstrings (remembering that constructed struct 
+tagbstrings are not writable by default.)
+
+CBStrings use complete copy semantics for the equal operator (=), and thus do 
+not have these sorts of issues.  
+
+Debugging:
+..........
+
+Bstrings have a simple, exposed definition and construction, and the library 
+itself is open source.  So most debugging is going to be fairly straight- 
+forward.  But the memory for bstrings come from the heap, which can often be
+corrupted indirectly, and it might not be obvious what has happened even from
+direct examination of the contents in a debugger or a core dump.  There are
+some tools such as Purify, Insure++ and Electric Fence which can help solve
+such problems, however another common approach is to directly instrument the
+calls to malloc, realloc, calloc, free, memcpy, memmove and/or other calls
+by overriding them with macro definitions.
+
+Although the user could hack on the Bstrlib sources directly as necessary to 
+perform such an instrumentation, Bstrlib comes with a built-in mechanism for 
+doing this.  By defining the macro BSTRLIB_MEMORY_DEBUG and providing an 
+include file named memdbg.h this will force the core Bstrlib modules to 
+attempt to include this file.  In such a file, macros could be defined which 
+overrides Bstrlib's useage of the C standard library.
+
+Rather than calling malloc, realloc, free, memcpy or memmove directly, Bstrlib
+emits the macros bstr__alloc, bstr__realloc, bstr__free, bstr__memcpy and 
+bstr__memmove in their place respectively.  By default these macros are simply
+assigned to be equivalent to their corresponding C standard library function
+call.  However, if they are given earlier macro definitions (via the back 
+door include file) they will not be given their default definition.  In this
+way Bstrlib's interface to the standard library can be changed but without
+having to directly redefine or link standard library symbols (both of which 
+are not strictly ANSI C compliant.)
+
+An example definition might include:
+
+    #define bstr__alloc(sz) X_malloc ((sz), __LINE__, __FILE__)
+
+which might help contextualize heap entries in a debugging environment.
+
+The NULL parameter and sanity checking of bstrings is part of the Bstrlib 
+API, and thus Bstrlib itself does not present any different modes which would 
+correspond to "Debug" or "Release" modes.  Bstrlib always contains mechanisms
+which one might think of as debugging features, but retains the performance
+and small memory footprint one would normally associate with release mode
+code.
+
+Integration Microsoft's Visual Studio debugger:
+...............................................
+
+Microsoft's Visual Studio debugger has a capability of customizable mouse 
+float over data type descriptions.  This is accomplished by editting the
+AUTOEXP.DAT file to include the following:
+
+    ; new for CBString
+    tagbstring =slen=<slen> mlen=<mlen> <data,st>
+    Bstrlib::CBStringList =count=<size()>
+
+In Visual C++ 6.0 this file is located in the directory:
+
+    C:\Program Files\Microsoft Visual Studio\Common\MSDev98\Bin
+
+and in Visual Studio .NET 2003 its located here:
+
+    C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\Packages\Debugger
+
+This will improve the ability of debugging with Bstrlib under Visual Studio.
+
+Security
+--------
+
+Bstrlib does not come with explicit security features outside of its fairly
+comprehensive error detection, coupled with its strict semantic support.  
+That is to say that certain common security problems, such as buffer overrun,
+constant overwrite, arbitrary truncation etc, are far less likely to happen 
+inadvertently.  Where it does help, Bstrlib maximizes its advantage by 
+providing developers a simple adoption path that lets them leave less secure
+string mechanisms behind.  The library will not leave developers wanting, so 
+they will be less likely to add new code using a less secure string library 
+to add functionality that might be missing from Bstrlib.
+
+That said there are a number of security ideas not addressed by Bstrlib:
+
+1. Race condition exploitation (i.e., verifying a string's contents, then 
+raising the privilege level and execute it as a shell command as two 
+non-atomic steps) is well beyond the scope of what Bstrlib can provide.  It 
+should be noted that MFC's built-in string mutex actually does not solve this 
+problem either -- it just removes immediate data corruption as a possible 
+outcome of such exploit attempts (it can be argued that this is worse, since 
+it will leave no trace of the exploitation).  In general race conditions have 
+to be dealt with by careful design and implementation; it cannot be assisted 
+by a string library.
+
+2. Any kind of access control or security attributes to prevent usage in 
+dangerous interfaces such as system().  Perl includes a "trust" attribute 
+which can be endowed upon strings that are intended to be passed to such 
+dangerous interfaces.  However, Perl's solution reflects its own limitations 
+-- notably that it is not a strongly typed language.  In the example code for 
+Bstrlib, there is a module called taint.cpp.  It demonstrates how to write a 
+simple wrapper class for managing "untainted" or trusted strings using the 
+type system to prevent questionable mixing of ordinary untrusted strings with 
+untainted ones then passing them to dangerous interfaces.  In this way the 
+security correctness of the code reduces to auditing the direct usages of 
+dangerous interfaces or promotions of tainted strings to untainted ones.
+
+3. Encryption of string contents is way beyond the scope of Bstrlib.  
+Maintaining encrypted string contents in the futile hopes of thwarting things 
+like using system-level debuggers to examine sensitive string data is likely 
+to be a wasted effort (imagine a debugger that runs at a higher level than a 
+virtual processor where the application runs).  For more standard encryption 
+usages, since the bstring contents are simply binary blocks of data, this 
+should pose no problem for usage with other standard encryption libraries.
+
+Compatibility
+-------------
+
+The Better String Library is known to compile and function correctly with the 
+following compilers:
+
+  - Microsoft Visual C++
+  - Watcom C/C++
+  - Intel's C/C++ compiler (Windows)
+  - The GNU C/C++ compiler (cygwin and Linux on PPC64)
+  - Borland C
+  - Turbo C
+
+Setting of configuration options should be unnecessary for these compilers
+(unless exceptions are being disabled or STLport has been added to WATCOM 
+C/C++).  Bstrlib has been developed with an emphasis on portability.  As such 
+porting it to other compilers should be straight forward.  This package 
+includes a porting guide (called porting.txt) which explains what issues may 
+exist for porting Bstrlib to different compilers and environments.
+
+ANSI issues
+-----------
+
+1. The function pointer types bNgetc and bNread have prototypes which are very
+similar to, but not exactly the same as fgetc and fread respectively.  
+Basically the FILE * parameter is replaced by void *.  The purpose of this
+was to allow one to create other functions with fgetc and fread like 
+semantics without being tied to ANSI C's file streaming mechanism.  I.e., one 
+could very easily adapt it to sockets, or simply reading a block of memory, 
+or procedurally generated strings (for fractal generation, for example.)
+
+The problem is that invoking the functions (bNgetc)fgetc and (bNread)fread is 
+not technically legal in ANSI C.  The reason being that the compiler is only 
+able to coerce the function pointers themselves into the target type, however 
+are unable to perform any cast (implicit or otherwise) on the parameters 
+passed once invoked.  I.e., if internally void * and FILE * need some kind of 
+mechanical coercion, the compiler will not properly perform this conversion 
+and thus lead to undefined behavior.
+
+Apparently a platform from Data General called "Eclipse" and another from 
+Tandem called "NonStop" have a different representation for pointers to bytes 
+and pointers to words, for example, where coercion via casting is necessary.  
+(Actual confirmation of the existence of such machines is hard to come by, so
+it is prudent to be skeptical about this information.)  However, this is not 
+an issue for any known contemporary platforms.  One may conclude that such 
+platforms are effectively apocryphal even if they do exist.
+
+To correctly work around this problem to the satisfaction of the ANSI 
+limitations, one needs to create wrapper functions for fgets and/or 
+fread with the prototypes of bNgetc and/or bNread respectively which performs 
+no other action other than to explicitely cast the void * parameter to a
+FILE *, and simply pass the remaining parameters straight to the function 
+pointer call.
+
+The wrappers themselves are trivial:
+
+    size_t freadWrap (void * buff, size_t esz, size_t eqty, void * parm) {
+        return fread (buff, esz, eqty, (FILE *) parm);
+    }
+
+    int fgetcWrap (void * parm) {
+        return fgetc ((FILE *) parm);
+    }
+
+These have not been supplied in bstrlib or bstraux to prevent unnecessary
+linking with file I/O functions.
+
+2. vsnprintf is not available on all compilers.  Because of this, the bformat
+and bformata functions (and format and formata methods) are not guaranteed to 
+work properly.  For those compilers that don't have vsnprintf, the 
+BSTRLIB_NOVSNP macro should be set before compiling bstrlib, and the format 
+functions/method will be disabled.
+
+The more recent ANSI C standards have specified the required inclusion of a 
+vsnprintf function.
+
+3. The bstrlib function names are not unique in the first 6 characters.  This
+is only an issue for older C compiler environments which do not store more 
+than 6 characters for function names.
+
+4. The bsafe module defines macros and function names which are part of the
+C library.  This simply overrides the definition as expected on all platforms
+tested, however it is not sanctioned by the ANSI standard.  This module is 
+clearly optional and should be omitted on platforms which disallow its 
+undefined semantics.
+
+In practice the real issue is that some compilers in some modes of operation 
+can/will inline these standard library functions on a module by module basis 
+as they appear in each.  The linker will thus have no opportunity to override
+the implementation of these functions for those cases.  This can lead to 
+inconsistent behaviour of the bsafe module on different platforms and 
+compilers.
+
+===============================================================================
+
+Comparison with Microsoft's CString class
+-----------------------------------------
+
+Although developed independently, CBStrings have very similar functionality to 
+Microsoft's CString class.  However, the bstring library has significant 
+advantages over CString:
+
+1. Bstrlib is a C-library as well as a C++ library (using the C++ wrapper).
+
+    - Thus it is compatible with more programming environments and 
+      available to a wider population of programmers.
+
+2. The internal structure of a bstring is considered exposed.
+
+    - A single contiguous block of data can be cut into read-only pieces by 
+      simply creating headers, without allocating additional memory to create 
+      reference copies of each of these sub-strings.
+    - In this way, using bstrings in a totally abstracted way becomes a choice
+      rather than an imposition.  Further this choice can be made differently
+      at different layers of applications that use it.
+
+3. Static declaration support precludes the need for constructor 
+   invocation.
+
+    - Allows for static declarations of constant strings that has no 
+      additional constructor overhead.
+
+4. Bstrlib is not attached to another library.
+
+    - Bstrlib is designed to be easily plugged into any other library 
+      collection, without dependencies on other libraries or paradigms (such 
+      as "MFC".)
+
+The bstring library also comes with a few additional functions that are not 
+available in the CString class:
+
+    - bsetstr
+    - bsplit
+    - bread
+    - breplace (this is different from CString::Replace())
+    - Writable indexed characters (for example a[i]='x')
+
+Interestingly, although Microsoft did implement mid$(), left$() and right$() 
+functional analogues (these are functions from GWBASIC) they seem to have
+forgotten that mid$() could be also used to write into the middle of a string.  
+This functionality exists in Bstrlib with the bsetstr() and breplace() 
+functions.
+
+Among the disadvantages of Bstrlib is that there is no special support for 
+localization or wide characters.  Such things are considered beyond the scope 
+of what bstrings are trying to deliver.  CString essentially supports the 
+older UCS-2 version of Unicode via widechar_t as an application-wide compile 
+time switch.
+
+CString's also use built-in mechanisms for ensuring thread safety under all
+situations.  While this makes writing thread safe code that much easier, this
+built-in safety feature has a price -- the inner loops of each CString method
+runs in its own critical section (grabbing and releasing a light weight mutex
+on every operation.)  The usual way to decrease the impact of a critical 
+section performance penalty is to amortize more operations per critical 
+section.  But since the implementation of CStrings is fixed as a one critical 
+section per-operation cost, there is no way to leverage this common 
+performance enhancing idea.
+
+The search facilities in Bstrlib are comparable to those in MFC's CString 
+class, though it is missing locale specific collation.  But because Bstrlib 
+is interoperable with C's char buffers, it will allow programmers to write 
+their own string searching mechanism (such as Boyer-Moore), or be able to 
+choose from a variety of available existing string searching libraries (such 
+as those for regular expressions) without difficulty.
+
+Microsoft used a very non-ANSI conforming trick in its implementation to
+allow printf() to use the "%s" specifier to output a CString correctly.  This
+can be convenient, but it is inherently not portable.  CBString requires an
+explicit cast, while bstring requires the data member to be dereferenced.  
+Microsoft's own documentation recommends casting, instead of relying on this
+feature.
+
+Comparison with C++'s std::string
+---------------------------------
+
+This is the C++ language's standard STL based string class.
+
+1. There is no C implementation.
+2. The [] operator is not bounds checked.
+3. Missing a lot of useful functions like printf-like formatting.
+4. Some sub-standard std::string implementations (SGI) are necessarily unsafe 
+   to use with multithreading.
+5. Limited by STL's std::iostream which in turn is limited by ifstream which
+   can only take input from files.  (Compare to CBStream's API which can take
+   abstracted input.)
+6. Extremely uneven performance across implementations.
+
+Comparison with ISO C TR 24731 proposal
+---------------------------------------
+
+Following the ISO C99 standard, Microsoft has proposed a group of C library 
+extensions which are supposedly "safer and more secure".  This proposal is
+expected to be adopted by the ISO C standard which follows C99.
+
+The proposal reveals itself to be very similar to Microsoft's "StrSafe" 
+library. The functions are basically the same as other standard C library 
+string functions except that destination parameters are paired with an 
+additional length parameter of type rsize_t.  rsize_t is the same as size_t, 
+however, the range is checked to make sure its between 1 and RSIZE_MAX.  Like 
+Bstrlib, the functions perform a "parameter check".  Unlike Bstrlib, when a 
+parameter check fails, rather than simply outputing accumulatable error 
+statuses, they call a user settable global error function handler, and upon 
+return of control performs no (additional) detrimental action.  The proposal 
+covers basic string functions as well as a few non-reenterable functions 
+(asctime, ctime, and strtok).
+
+1. Still based solely on char * buffers (and therefore strlen() and strcat()
+   is still O(n), and there are no faster streq() comparison functions.)
+2. No growable string semantics.
+3. Requires manual buffer length synchronization in the source code.
+4. No attempt to enhance functionality of the C library.
+5. Introduces a new error scenario (strings exceeding RSIZE_MAX length).
+
+The hope is that by exposing the buffer length requirements there will be 
+fewer buffer overrun errors.  However, the error modes are really just 
+transformed, rather than removed.  The real problem of buffer overflows is 
+that they all happen as a result of erroneous programming.  So forcing 
+programmers to manually deal with buffer limits, will make them more aware of 
+the problem but doesn't remove the possibility of erroneous programming.  So
+a programmer that erroneously mixes up the rsize_t parameters is no better off
+from a programmer that introduces potential buffer overflows through other 
+more typical lapses.  So at best this may reduce the rate of erroneous 
+programming, rather than making any attempt at removing failure modes.
+
+The error handler can discriminate between types of failures, but does not 
+take into account any callsite context.  So the problem is that the error is 
+going to be manifest in a piece of code, but there is no pointer to that 
+code.  It would seem that passing in the call site __FILE__, __LINE__ as 
+parameters would be very useful, but the API clearly doesn't support such a 
+thing (it would increase code bloat even more than the extra length 
+parameter does, and would require macro tricks to implement).
+
+The Bstrlib C API takes the position that error handling needs to be done at 
+the callsite, and just tries to make it as painless as possible.  Furthermore, 
+error modes are removed by supporting auto-growing strings and aliasing.  For 
+capturing errors in more central code fragments, Bstrlib's C++ API uses 
+exception handling extensively, which is superior to the leaf-only error 
+handler approach.
+
+Comparison with Managed String Library CERT proposal
+----------------------------------------------------
+
+The main webpage for the managed string library:
+http://www.cert.org/secure-coding/managedstring.html
+
+Robert Seacord at CERT has proposed a C string library that he calls the 
+"Managed String Library" for C. Like Bstrlib, it introduces a new type 
+which is called a managed string. The structure of a managed string 
+(string_m) is like a struct tagbstring but missing the length field.  This 
+internal structure is considered opaque. The length is, like the C standard 
+library, always computed on the fly by searching for a terminating NUL on 
+every operation that requires it. So it suffers from every performance 
+problem that the C standard library suffers from. Interoperating with C 
+string APIs (like printf, fopen, or anything else that takes a string 
+parameter) requires copying to additionally allocating buffers that have to 
+be manually freed -- this makes this library probably slower and more 
+cumbersome than any other string library in existence.
+
+The library gives a fully populated error status as the return value of every
+string function.  The hope is to be able to diagnose all problems 
+specifically from the return code alone.  Comparing this to Bstrlib, which 
+aways returns one consistent error message, might make it seem that Bstrlib 
+would be harder to debug; but this is not true.  With Bstrlib, if an error 
+occurs there is always enough information from just knowing there was an error
+and examining the parameters to deduce exactly what kind of error has 
+happened.  The managed string library thus gives up nested function calls 
+while achieving little benefit, while Bstrlib does not.
+
+One interesting feature that "managed strings" has is the idea of data 
+sanitization via character set whitelisting.  That is to say, a globally
+definable filter that makes any attempt to put invalid characters into strings 
+lead to an error and not modify the string.  The author gives the following 
+example:
+
+    // create valid char set
+    if (retValue = strcreate_m(&str1, "abc") ) {
+      fprintf(
+        stderr, 
+        "Error %d from strcreate_m.\n", 
+        retValue
+      );
+    }  
+    if (retValue = setcharset(str1)) {
+      fprintf(
+        stderr, 
+        "Error %d from  setcharset().\n", 
+        retValue
+      );
+    }
+    if (retValue = strcreate_m(&str1, "aabbccabc")) {
+      fprintf(
+        stderr, 
+        "Error %d from strcreate_m.\n", 
+        retValue
+      );
+    }
+    // create string with invalid char set
+    if (retValue = strcreate_m(&str1, "abbccdabc")) {
+      fprintf(
+        stderr, 
+        "Error %d from strcreate_m.\n", 
+        retValue
+      );
+    } 
+
+Which we can compare with a more Bstrlib way of doing things:
+
+    bstring bCreateWithFilter (const char * cstr, const_bstring filter) {
+      bstring b = bfromcstr (cstr);
+      if (BSTR_ERR != bninchr (b, filter) && NULL != b) {
+        fprintf (stderr, "Filter violation.\n");
+        bdestroy (b);
+        b = NULL;
+      }
+      return b;
+    }
+
+    struct tagbstring charFilter = bsStatic ("abc");
+    bstring str1 = bCreateWithFilter ("aabbccabc", &charFilter);
+    bstring str2 = bCreateWithFilter ("aabbccdabc", &charFilter);
+
+The first thing we should notice is that with the Bstrlib approach you can 
+have different filters for different strings if necessary.  Furthermore, 
+selecting a charset filter in the Managed String Library is uni-contextual. 
+That is to say, there can only be one such filter active for the entire 
+program, which means its usage is not well defined for intermediate library 
+usage (a library that uses it will interfere with user code that uses it, and 
+vice versa.)  It is also likely to be poorly defined in multi-threading 
+environments.
+
+There is also a question as to whether the data sanitization filter is checked
+on every operation, or just on creation operations.  Since the charset can be
+set arbitrarily at run time, it might be set *after* some managed strings have
+been created.  This would seem to imply that all functions should run this
+additional check every time if there is an attempt to enforce this.  This 
+would make things tremendously slow.  On the other hand, if it is assumed that
+only creates and other operations that take char *'s as input need be checked 
+because the charset was only supposed to be called once at and before any 
+other managed string was created, then one can see that its easy to cover 
+Bstrlib with equivalent functionality via a few wrapper calls such as the 
+example given above.
+
+And finally we have to question the value of sanitation in the first place.
+For example, for httpd servers, there is generally a requirement that the
+URLs parsed have some form that avoids undesirable translation to local file 
+system filenames or resources.  The problem is that the way URLs can be 
+encoded, it must be completely parsed and translated to know if it is using 
+certain invalid character combinations.  That is to say, merely filtering
+each character one at a time is not necessarily the right way to ensure that
+a string has safe contents.
+
+In the article that describes this proposal, it is claimed that it fairly 
+closely approximates the existing C API semantics.  On this point we should 
+compare this "closeness" with Bstrlib:
+
+                      Bstrlib                     Managed String Library
+                      -------                     ----------------------
+
+Pointer arithmetic    Segment arithmetic          N/A
+
+Use in C Std lib      ->data, or bdata{e}         getstr_m(x,*) ... free(x)
+
+String literals       bsStatic, bsStaticBlk       strcreate_m()
+
+Transparency          Complete                    None
+
+Its pretty clear that the semantic mapping from C strings to Bstrlib is fairly 
+straightforward, and that in general semantic capabilities are the same or
+superior in Bstrlib.  On the other hand the Managed String Library is either
+missing semantics or changes things fairly significantly.
+
+Comparison with Annexia's c2lib library
+---------------------------------------
+
+This library is available at:
+http://www.annexia.org/freeware/c2lib
+
+1. Still based solely on char * buffers (and therefore strlen() and strcat()
+   is still O(n), and there are no faster streq() comparison functions.)
+   Their suggestion that alternatives which wrap the string data type (such as 
+   bstring does) imposes a difficulty in interoperating with the C langauge's
+   ordinary C string library is not founded.
+2. Introduction of memory (and vector?) abstractions imposes a learning
+   curve, and some kind of memory usage policy that is outside of the strings
+   themselves (and therefore must be maintained by the developer.)
+3. The API is massive, and filled with all sorts of trivial (pjoin) and
+   controvertial (pmatch -- regular expression are not sufficiently 
+   standardized, and there is a very large difference in performance between
+   compiled and non-compiled, REs) functions.  Bstrlib takes a decidely 
+   minimal approach -- none of the functionality in c2lib is difficult or
+   challenging to implement on top of Bstrlib (except the regex stuff, which
+   is going to be difficult, and controvertial no matter what.)
+4. Understanding why c2lib is the way it is pretty much requires a working 
+   knowledge of Perl.  bstrlib requires only knowledge of the C string library
+   while providing just a very select few worthwhile extras.
+5. It is attached to a lot of cruft like a matrix math library (that doesn't
+   include any functions for getting the determinant, eigenvectors, 
+   eigenvalues, the matrix inverse, test for singularity, test for 
+   orthogonality, a grahm schmit orthogonlization, LU decomposition ... I 
+   mean why bother?)
+
+Convincing a development house to use c2lib is likely quite difficult.  It
+introduces too much, while not being part of any kind of standards body.  The
+code must therefore be trusted, or maintained by those that use it.  While
+bstring offers nothing more on this front, since its so much smaller, covers 
+far less in terms of scope, and will typically improve string performance, 
+the barrier to usage should be much smaller.
+
+Comparison with stralloc/qmail
+------------------------------
+
+More information about this library can be found here:
+http://www.canonical.org/~kragen/stralloc.html or here:
+http://cr.yp.to/lib/stralloc.html
+
+1. Library is very very minimal.  A little too minimal.
+2. Untargetted source parameters are not declared const.
+3. Slightly different expected emphasis (like _cats function which takes an
+   ordinary C string char buffer as a parameter.)  Its clear that the 
+   remainder of the C string library is still required to perform more
+   useful string operations.
+
+The struct declaration for their string header is essentially the same as that
+for bstring.  But its clear that this was a quickly written hack whose goals
+are clearly a subset of what Bstrlib supplies.  For anyone who is served by
+stralloc, Bstrlib is complete substitute that just adds more functionality.
+
+stralloc actually uses the interesting policy that a NULL data pointer 
+indicates an empty string.  In this way, non-static empty strings can be
+declared without construction.  This advantage is minimal, since static empty
+bstrings can be declared inline without construction, and if the string needs
+to be written to it should be constructed from an empty string (or its first 
+initializer) in any event.
+
+wxString class
+--------------
+
+This is the string class used in the wxWindows project.  A description of 
+wxString can be found here:
+http://www.wxwindows.org/manuals/2.4.2/wx368.htm#wxstring
+
+This C++ library is similar to CBString.  However, it is littered with 
+trivial functions (IsAscii, UpperCase, RemoveLast etc.)
+
+1. There is no C implementation.
+2. The memory management strategy is to allocate a bounded fixed amount of 
+   additional space on each resize, meaning that it does not have the 
+   log_2(n) property that Bstrlib has (it will thrash very easily, cause 
+   massive fragmentation in common heap implementations, and can easily be a 
+   common source of performance problems).
+3. The library uses a "copy on write" strategy, meaning that it has to deal 
+   with multithreading problems.
+
+Vstr
+----
+
+This is a highly orthogonal C string library with an emphasis on 
+networking/realtime programming.  It can be found here:
+http://www.and.org/vstr/
+
+1. The convoluted internal structure does not contain a '\0' char * compatible
+   buffer, so interoperability with the C library a non-starter.
+2. The API and implementation is very large (owing to its orthogonality) and
+   can lead to difficulty in understanding its exact functionality.
+3. An obvious dependency on gnu tools (confusing make configure step)
+4. Uses a reference counting system, meaning that it is not likely to be 
+   thread safe.
+
+The implementation has an extreme emphasis on performance for nontrivial 
+actions (adds, inserts and deletes are all constant or roughly O(#operations) 
+time) following the "zero copy" principle.  This trades off performance of 
+trivial functions (character access, char buffer access/coersion, alias 
+detection) which becomes significantly slower, as well as incremental 
+accumulative costs for its searching/parsing functions.  Whether or not Vstr 
+wins any particular performance benchmark will depend a lot on the benchmark, 
+but it should handily win on some, while losing dreadfully on others.
+
+The learning curve for Vstr is very steep, and it doesn't come with any 
+obvious way to build for Windows or other platforms without gnu tools.  At 
+least one mechanism (the iterator) introduces a new undefined scenario 
+(writing to a Vstr while iterating through it.)  Vstr has a very large 
+footprint, and is very ambitious in its total functionality.  Vstr has no C++ 
+API.
+
+Vstr usage requires context initialization via vstr_init() which must be run
+in a thread-local context.  Given the totally reference based architecture
+this means that sharing Vstrings across threads is not well defined, or at
+least not safe from race conditions.  This API is clearly geared to the older
+standard of fork() style multitasking in UNIX, and is not safely transportable
+to modern shared memory multithreading available in Linux and Windows.  There 
+is no portable external solution making the library thread safe (since it 
+requires a mutex around each Vstr context -- not each string.)
+
+In the documentation for this library, a big deal is made of its self hosted
+s(n)printf-like function.  This is an issue for older compilers that don't
+include vsnprintf(), but also an issue because Vstr has a slow conversion to
+'\0' terminated char * mechanism.  That is to say, using "%s" to format data 
+that originates from Vstr would be slow without some sort of native function 
+to do so.  Bstrlib sidesteps the issue by relying on what snprintf-like 
+functionality does exist and having a high performance conversion to a char * 
+compatible string so that "%s" can be used directly.
+
+Str Library
+-----------
+
+This is a fairly extensive string library, that includes full unicode support
+and targetted at the goal of out performing MFC and STL.  The architecture, 
+similarly to MFC's CStrings, is a copy on write reference counting mechanism.
+
+http://www.utilitycode.com/str/default.aspx
+
+1. Commercial.
+2. C++ only.
+
+This library, like Vstr, uses a ref counting system.  There is only so deeply
+I can analyze it, since I don't have a license for it.  However, performance 
+improvements over MFC's and STL, doesn't seem like a sufficient reason to 
+move your source base to it.  For example, in the future, Microsoft may 
+improve the performance CString.
+
+It should be pointed out that performance testing of Bstrlib has indicated 
+that its relative performance advantage versus MFC's CString and STL's 
+std::string is at least as high as that for the Str library.
+
+libmib astrings
+---------------
+
+A handful of functional extensions to the C library that add dynamic string
+functionality.
+http://www.mibsoftware.com/libmib/astring/
+
+This package basically references strings through char ** pointers and assumes
+they are pointing to the top of an allocated heap entry (or NULL, in which 
+case memory will be newly allocated from the heap.)  So its still up to user
+to mix and match the older C string functions with these functions whenever
+pointer arithmetic is used (i.e., there is no leveraging of the type system
+to assert semantic differences between references and base strings as Bstrlib 
+does since no new types are introduced.)  Unlike Bstrlib, exact string length 
+meta data is not stored, thus requiring a strlen() call on *every* string 
+writing operation.  The library is very small, covering only a handful of C's
+functions.
+
+While this is better than nothing, it is clearly slower than even the 
+standard C library, less safe and less functional than Bstrlib.
+
+To explain the advantage of using libmib, their website shows an example of
+how dangerous C code:
+
+    char buf[256];
+    char *pszExtraPath = ";/usr/local/bin";
+
+    strcpy(buf,getenv("PATH")); /* oops! could overrun! */
+    strcat(buf,pszExtraPath); /* Could overrun as well! */
+
+    printf("Checking...%s\n",buf); /* Some printfs overrun too! */
+
+is avoided using libmib:
+
+    char *pasz = 0;      /* Must initialize to 0 */
+    char *paszOut = 0;
+    char *pszExtraPath = ";/usr/local/bin";
+
+    if (!astrcpy(&pasz,getenv("PATH"))) /* malloc error */ exit(-1);
+    if (!astrcat(&pasz,pszExtraPath)) /* malloc error */ exit(-1);
+	
+    /* Finally, a "limitless" printf! we can use */
+    asprintf(&paszOut,"Checking...%s\n",pasz);fputs(paszOut,stdout);
+
+    astrfree(&pasz); /* Can use free(pasz) also. */
+    astrfree(&paszOut);
+
+However, compare this to Bstrlib:
+
+    bstring b, out;
+
+    bcatcstr (b = bfromcstr (getenv ("PATH")), ";/usr/local/bin");
+    out = bformat ("Checking...%s\n", bdatae (b, "<Out of memory>"));
+    /* if (out && b) */ fputs (bdatae (out, "<Out of memory>"), stdout);
+    bdestroy (b);
+    bdestroy (out);
+
+Besides being shorter, we can see that error handling can be deferred right
+to the very end.  Also, unlike the above two versions, if getenv() returns 
+with NULL, the Bstrlib version will not exhibit undefined behavior. 
+Initialization starts with the relevant content rather than an extra 
+autoinitialization step.
+
+libclc
+------
+
+An attempt to add to the standard C library with a number of common useful
+functions, including additional string functions.
+http://libclc.sourceforge.net/
+
+1. Uses standard char * buffer, and adopts C 99's usage of "restrict" to pass
+   the responsibility to guard against aliasing to the programmer.
+2. Adds no safety or memory management whatsoever.
+3. Most of the supplied string functions are completely trivial.
+
+The goals of libclc and Bstrlib are clearly quite different.
+
+fireString
+----------
+
+http://firestuff.org/
+
+1. Uses standard char * buffer, and adopts C 99's usage of "restrict" to pass
+   the responsibility to guard against aliasing to the programmer.
+2. Mixes char * and length wrapped buffers (estr) functions, doubling the API
+   size, with safety limited to only half of the functions.
+
+Firestring was originally just a wrapper of char * functionality with extra
+length parameters.  However, it has been augmented with the inclusion of the 
+estr type which has similar functionality to stralloc.  But firestring does 
+not nearly cover the functional scope of Bstrlib.
+
+Safe C String Library
+---------------------
+
+A library written for the purpose of increasing safety and power to C's string
+handling capabilities.
+http://www.zork.org/safestr/safestr.html
+
+1. While the safestr_* functions are safe in of themselves, interoperating 
+   with char * string has dangerous unsafe modes of operation.
+2. The architecture of safestr's causes the base pointer to change.  Thus,
+   its not practical/safe to store a safestr in multiple locations if any 
+   single instance can be manipulated.
+3. Dependent on an additional error handling library.
+4. Uses reference counting, meaning that it is either not thread safe or
+   slow and not portable.
+
+I think the idea of reallocating (and hence potentially changing) the base 
+pointer is a serious design flaw that is fatal to this architecture.  True 
+safety is obtained by having automatic handling of all common scenarios 
+without creating implicit constraints on the user.
+
+Because of its automatic temporary clean up system, it cannot use "const" 
+semantics on input arguments.  Interesting anomolies such as:
+
+    safestr_t s, t;
+    s = safestr_replace (t = SAFESTR_TEMP ("This is a test"),
+                         SAFESTR_TEMP (" "), SAFESTR_TEMP ("."));
+    /* t is now undefined. */
+
+are possible.  If one defines a function which takes a safestr_t as a 
+parameter, then the function would not know whether or not the safestr_t is 
+defined after it passes it to a safestr library function.  The author 
+recommended method for working around this problem is to examine the 
+attributes of the safestr_t within the function which is to modify any of
+its parameters and play games with its reference count.  I think, therefore,
+that the whole SAFESTR_TEMP idea is also fatally broken.
+
+The library implements immutability, optional non-resizability, and a "trust" 
+flag.  This trust flag is interesting, and suggests that applying any 
+arbitrary sequence of safestr_* function calls on any set of trusted strings 
+will result in a trusted string.  It seems to me, however, that if one wanted 
+to implement a trusted string semantic, one might do so by actually creating 
+a different *type* and only implement the subset of string functions that are 
+deemed safe (i.e., user input would be excluded, for example.)  This, in 
+essence, would allow the compiler to enforce trust propogation at compile 
+time rather than run time.  Non-resizability is also interesting, however, 
+it seems marginal (i.e., to want a string that cannot be resized, yet can be 
+modified and yet where a fixed sized buffer is undesirable.)
+
+===============================================================================
+
+Examples
+--------
+
+    Dumping a line numbered file:
+
+    FILE * fp;
+    int i, ret;
+    struct bstrList * lines;
+    struct tagbstring prefix = bsStatic ("-> ");
+
+    if (NULL != (fp = fopen ("bstrlib.txt", "rb"))) {
+        bstring b = bread ((bNread) fread, fp);
+        fclose (fp);
+        if (NULL != (lines = bsplit (b, '\n'))) {
+            for (i=0; i < lines->qty; i++) {
+                binsert (lines->entry[i], 0, &prefix, '?');
+                printf ("%04d: %s\n", i, bdatae (lines->entry[i], "NULL"));
+            }
+            bstrListDestroy (lines);
+        }
+        bdestroy (b);
+    }
+
+For numerous other examples, see bstraux.c, bstraux.h and the example archive.
+
+===============================================================================
+
+License
+-------
+
+The Better String Library is available under either the 3 clause BSD license 
+(see the accompanying license.txt) or the Gnu Public License version 2 (see 
+the accompanying gpl.txt) at the option of the user.
+
+===============================================================================
+
+Acknowledgements
+----------------
+
+The following individuals have made significant contributions to the design
+and testing of the Better String Library:
+
+Bjorn Augestad
+Clint Olsen
+Darryl Bleau
+Fabian Cenedese
+Graham Wideman
+Ignacio Burgueno
+International Business Machines Corporation
+Ira Mica
+John Kortink
+Manuel Woelker
+Marcel van Kervinck
+Michael Hsieh
+Richard A. Smith
+Simon Ekstrom
+Wayne Scott
+
+===============================================================================

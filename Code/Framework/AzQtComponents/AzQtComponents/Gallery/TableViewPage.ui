@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TableViewPage</class>
+ <widget class="QWidget" name="TableViewPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>827</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="azTableViewTitle">
+       <property name="text">
+        <string>AzQtComponents::TableView</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TableView" name="tableView"/>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TableView" name="tableView2"/>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TableView" name="logTableView"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="qTableViewTitle">
+       <property name="text">
+        <string>QTableView</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableView" name="qTableView" />
+     </item>
+     <item>
+      <widget class="QLabel" name="qListViewTitle">
+       <property name="text">
+        <string>QListView</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListView" name="qListView" />
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::TableView</class>
+   <extends>QTreeView</extends>
+   <header location="global">AzQtComponents/Components/Widgets/TableView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::StyledDetailsTableView</class>
+   <extends>QTreeView</extends>
+   <header location="global">AzQtComponents/Components/StyledDetailsTableView.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

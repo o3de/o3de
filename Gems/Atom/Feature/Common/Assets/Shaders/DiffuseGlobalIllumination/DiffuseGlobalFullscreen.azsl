@@ -1,0 +1,94 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/RPI/Math.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> m_albedo;       // RGB8 = Albedo, A = Occlusion
+    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float>  m_depth;
+}
+
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+// Vertex Shader
+VSOutput MainVS(VSInput input)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+
+    return OUT;
+}
+
+// retrieve irradiance from the global IBL diffuse cubemap
+float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3 normal, float3 albedo)
+{
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+
+    // reconstruct world space position
+    float2 UV = saturate((float2)screenCoords / dimensions.xy);
+
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(x, y, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+    float3 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS).xyz;  
+
+    // apply global IBL
+    float3 dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+    float NdotV = dot(normal, dirToCamera);
+    NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
+
+    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
+    float3 irradiance = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
+    return irradiance;
+}
+
+// Pixel Shader
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    uint2 screenCoords = IN.m_position.xy;
+    
+    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
+    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+    float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
+    float occlusion = albedo.a;
+
+    float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal, albedo);
+    float3 diffuse = albedo * irradiance;
+
+    // apply ambient occlusion to indirect diffuse
+    diffuse *= occlusion;
+
+    // adjust IBL lighting by exposure.
+    float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
+    diffuse *= iblExposureFactor;
+ 
+    PSOutput OUT;
+    OUT.m_color = float4(diffuse, 1.0f);
+    return OUT;
+}

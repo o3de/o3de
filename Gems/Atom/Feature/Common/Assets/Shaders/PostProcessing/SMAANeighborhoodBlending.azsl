@@ -1,0 +1,118 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include "SMAAUtils.azsli"
+
+struct VSOutputNeighborhoodBlending
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+    float4 m_offset : TEXCOORD1;
+};
+
+ShaderResourceGroup PassSrg : SRG_PerDraw
+{
+    Texture2D<float4> m_framebuffer;
+    Texture2D<float4> m_framebufferPassThrough;
+    // This texture will not be used for blending process. Binding for debug purpose.
+    Texture2D<float4> m_blendTexture;
+    // This texture will not be used for blending process. Binding for debug purpose.
+    Texture2D<float4> m_edgeTexture;
+
+    // Information for render target.
+    // x = 1.0 / width
+    // y = 1.0 / height
+    // z = width
+    // w = height
+    float4 m_renderTargetMetrics;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+// Option shader variable for the output mode of this pass. The EdgeTexture and BlendWeightTexture modes are intended for debug purpose only.
+option enum class BlendingOutputMode { BlendResultWithProvisionalTonemap, BlendResult, PassThrough, EdgeTexture, BlendWeightTexture } o_blendingOutputMode = BlendingOutputMode::BlendResultWithProvisionalTonemap;
+
+// This macro being defined before being included in SMAA.azsli, we can control which function is enabled in SMAA.azsli
+// This macro is intended to enable the blending functions only.
+#define ATOM_SMAA_NEIGHBORHOOD_BLENDING_PASS_IMPLEMENTATION_ENABLE
+
+// Defining the elements below before including SMAA.azsli as they'll be used in it.
+// - PassSrg SRG to be used for the blending implementation.
+// - The option shader variables to be used for the blending implementation.
+#include "SMAA.azsli"
+
+VSOutputNeighborhoodBlending MainVS(VSInput input)
+{
+    VSOutputNeighborhoodBlending OUT;
+    
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+    
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+    SMAANeighborhoodBlendingVS(OUT.m_texCoord, OUT.m_offset);
+
+    return OUT;
+}
+
+PSOutput MainPS(VSOutputNeighborhoodBlending IN)
+{
+    PSOutput OUT;
+    
+    switch (o_blendingOutputMode)
+    {
+        case BlendingOutputMode::BlendResultWithProvisionalTonemap:
+            {
+                float4 blendedColor = SMAANeighborhoodBlendingPS(IN.m_texCoord, IN.m_offset, PassSrg::m_framebuffer, PassSrg::m_blendTexture);
+                OUT.m_color = ApplyInverseProvisionalTonemap(blendedColor);
+            }
+            break;
+        case BlendingOutputMode::BlendResult:
+            OUT.m_color = SMAANeighborhoodBlendingPS(IN.m_texCoord, IN.m_offset, PassSrg::m_framebuffer, PassSrg::m_blendTexture);
+            break;
+        case BlendingOutputMode::PassThrough:
+            OUT.m_color = PassSrg::m_framebufferPassThrough.Sample(PassSrg::PointSampler, IN.m_texCoord);
+            break;
+        case BlendingOutputMode::EdgeTexture:
+            OUT.m_color = PassSrg::m_edgeTexture.Sample(PassSrg::PointSampler, IN.m_texCoord);
+            break;
+        case BlendingOutputMode::BlendWeightTexture:
+            OUT.m_color = PassSrg::m_blendTexture.Sample(PassSrg::PointSampler, IN.m_texCoord);
+            break;
+        default:
+            break;
+    }
+    
+    return OUT;
+}

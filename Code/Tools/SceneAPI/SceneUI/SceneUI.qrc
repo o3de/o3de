@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/SceneUI/Graph">
+      <file alias="MeshIcon.png">../../../../Editor/Icons/AssetImporter/mesh_on.png</file>
+      <file alias="AnimationIcon.png">../../../../Editor/Icons/AssetImporter/animation_on.png</file>
+      <file alias="BoneIcon.png">../../../../Editor/Icons/AssetImporter/skeleton_on.png</file>
+    </qresource>
+    <qresource prefix="/SceneUI/Manifest">
+      <file alias="TreeIcon.png">../../../../Editor/Icons/AssetImporter/tree.png</file>
+      <file alias="MeshGroupIcon.png">../../../../Editor/Icons/AssetImporter/mesh.png</file>
+      <file alias="AnimationGroupIcon.png">../../../../Editor/Icons/AssetImporter/animation.png</file>
+      <file alias="SkeletonGroupIcon.png">../../../../Editor/Icons/AssetImporter/skeleton.png</file>
+      <file alias="SkinGroupIcon.png">../../../../Editor/Icons/AssetImporter/skin.png</file>
+    </qresource>
+    <qresource prefix="/SceneUI/Common">
+      <file alias="WarningIcon.png">../../../../Editor/Styles/StyleSheetImages/info_icon.png</file>
+      <file alias="ErrorIcon.png">../../../../Editor/Styles/StyleSheetImages/error_icon.png</file>
+      <file alias="AssertIcon.png">../../../../Editor/Icons/Assets/Lua.png</file>
+      <file alias="ExpandIcon.png">../../../../Editor/Icons/PropertyEditor/group_closed.png</file>
+      <file alias="CollapseIcon.png">../../../../Editor/Icons/PropertyEditor/group_open.png</file>
+    </qresource>
+</RCC>

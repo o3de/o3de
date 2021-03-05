@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Set object height 1</title>
+    <g id="Set-object-height-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <polygon id="Combined-Shape" fill="#FFFFFF" points="4.5 10 2.5 12 1 12 5 8 9 12 7.5 12 5.5 10 5.5 15 4.5 15"></polygon>
+        <rect id="Rectangle" fill="#FFFFFF" x="0.676553826" y="14.00625" width="8" height="1"></rect>
+        <path d="M7.72789116,1 C7.87817272,1 8,1.13431458 8,1.3 L8,6.7 C8,6.86568542 7.87817272,7 7.72789116,7 L2.27210884,7 C2.12182728,7 2,6.86568542 2,6.7 L2,1.3 C2,1.13431458 2.12182728,1 2.27210884,1 L7.72789116,1 Z" id="Path-Copy-3" fill="#FFFFFF"></path>
+        <path d="M14.7701149,1 C14.897077,1 15,1.10512392 15,1.23480084 L15,14.7651992 C15,14.8948761 14.897077,15 14.7701149,15 L13,15 L13,14 L10,14 L10,13 L12,13 L12,12 L10,12 L10,11 L12,11 L12,10 L10,10 L10,9 L13,9 L13,8 L10,8 L10,7 L12,7 L12,6 L10,6 L10,5 L12,5 L12,4 L10,4 L10,3 L13,3 L13,2 L10,2 L10,1.23480084 C10,1.10512392 10.102923,1 10.2298851,1 L14.7701149,1 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

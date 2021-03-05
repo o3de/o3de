@@ -1,0 +1,28 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+float4 GetVertexPositionAndTexCoords(uint vertexID)
+{
+    // Generate tex coords (0,0), (0,2), (2,0)
+    float u = float(vertexID & 2);
+    float v = float((vertexID << 1) & 2);
+
+    // Generate clip space positions from texCoords
+    // for      (0,0),  (0,2), (2,0) 
+    // we get   (-1,1), (-1,-3), (3,1) 
+    float x = u * 2.0 - 1.0;
+    float y = v * -2.0 + 1.0;
+
+    return float4(x, y, u, v);
+}

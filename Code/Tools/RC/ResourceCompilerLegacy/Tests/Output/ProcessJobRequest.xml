@@ -1,0 +1,36 @@
+<ObjectStream version="3">
+	<Class name="ProcessJobRequest" version="2" type="{20461454-D2F9-4079-AB95-703905E06002}">
+		<Class name="AZStd::string" field="Source File" value="Example.fontfamily" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZStd::string" field="Watch Folder" value="Output" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZStd::string" field="Full Path" value="Output/Example.fontfamily" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZ::Uuid" field="Builder Guid" value="{31B74BFD-7046-47AC-A7DA-7D5167E9B2F8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+		<Class name="JobDescriptor" field="Job Description" version="3" type="{BD0472A4-7634-41F3-97EF-00F3B239BAE2}">
+			<Class name="AZStd::string" field="Additional Fingerprint Info" value="0copy{57767D37-0EBE-43BE-8F60-AB36D2056EF8}" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="int" field="Platform" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+			<Class name="AZStd::string" field="Platform Identifier" value="pc" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="Job Key" value="fontfamily" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="bool" field="Critical" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+			<Class name="int" field="Priority" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+			<Class name="AZStd::unordered_map" field="Job Parameters" type="{4113BC4E-1027-500F-93A2-545C3DBB824D}">
+				<Class name="AZStd::pair" field="element" type="{3690DA11-3F3B-5A64-B683-471C4BA90FFC}">
+					<Class name="unsigned int" field="value1" value="1589735409" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::string" field="value2" value="fontfamily" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="bool" field="Check Exclusive Lock" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+			<Class name="bool" field="Fail On Error" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+			<Class name="AZStd::vector" field="Job Dependency List" type="{DEFBFFD3-D0FA-53B3-B5D3-0ABA49B2FEBD}"/>
+		</Class>
+		<Class name="AZStd::string" field="Temp Dir Path" value="Output" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="PlatformInfo" field="Platform Info" version="1" type="{F7DA39A5-C319-4552-954B-3479E2454D3F}">
+			<Class name="AZStd::string" field="Platform Identifier" value="pc" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::unordered_set" field="Tags on Platform" type="{32EC831B-8AE7-5715-998B-C0C723CB61DA}">
+				<Class name="AZStd::string" field="element" value="tools" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="element" value="renderer" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			</Class>
+		</Class>
+		<Class name="AZStd::vector" field="Source File Dependency List" type="{A78563AF-17EE-5D6D-940A-9FE76BD74AB9}"/>
+		<Class name="AZ::Uuid" field="Source File UUID" value="{A1CEEB96-D5FC-52A6-8678-86722B7DCFB2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+	</Class>
+</ObjectStream>
+

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LogPanel</class>
+ <widget class="QDockWidget" name="ScriptCanvasLog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>1</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
+  <property name="windowTitle">
+   <string>Log</string>
+  </property>
+   <widget class="QWidget" name="host">
+    <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>1</verstretch>
+        </sizepolicy>
+      </property>
+     <layout class="QVBoxLayout" name="layout">
+       <property name="spacing">
+         <number>0</number>
+       </property>
+       <property name="leftMargin">
+         <number>0</number>
+       </property>
+       <property name="topMargin">
+         <number>0</number>
+       </property>
+       <property name="rightMargin">
+         <number>0</number>
+       </property>
+       <property name="bottomMargin">
+         <number>0</number>
+       </property>
+     </layout>
+   </widget>
+ </widget>
+  <customwidgets>
+  </customwidgets>
+
+  <resources/>
+ <connections/>
+</ui>

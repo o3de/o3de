@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ButtonPage</class>
+ <widget class="QWidget" name="ButtonPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1250</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="buttonLabel">
+       <property name="text">
+        <string>Button</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="buttonLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="primary">
+         <property name="text">
+          <string>Primary</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="FixedStateButton" name="primaryHover">
+         <property name="text">
+          <string>Primary - Hover</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="FixedStateButton" name="primaryPressed">
+         <property name="text">
+          <string>Primary - Pressed</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="primaryDisabled">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Primary - Disabled</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="FixedStateButton" name="primaryFocused">
+         <property name="text">
+          <string>Primary - Focused</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="secondary">
+         <property name="text">
+          <string>Secondary</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="FixedStateButton" name="secondaryHover">
+         <property name="text">
+          <string>Secondary - Hover</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="FixedStateButton" name="secondaryPressed">
+         <property name="text">
+          <string>Secondary - Pressed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QPushButton" name="secondaryDisabled">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Secondary - Disabled</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="FixedStateButton" name="secondaryFocused">
+         <property name="text">
+          <string>Secondary - Focused</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="dropdownButtonLabel">
+       <property name="text">
+        <string>Dropdown Button</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="dropdownButtonLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="dropdown">
+         <property name="text">
+          <string>Dropdown</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="FixedStateButton" name="dropdownHover">
+         <property name="text">
+          <string>Dropdown - Hover</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="FixedStateButton" name="dropdownPressed">
+         <property name="text">
+          <string>Dropdown - Pressed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="dropdownDisabled">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Dropdown - Disabled</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="iconButtonLabel">
+       <property name="text">
+        <string>Icon Button</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="toolButtonLayout">
+       <item row="0" column="0">
+        <widget class="QToolButton" name="toolButton">
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QToolButton" name="toolButtonMenu">
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="toolButtonHoverLabel">
+         <property name="text">
+          <string>Hover state
+#00A1C9</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="toolButtonSelectedLabel">
+         <property name="text">
+          <string>Selected state
+#00A1C9</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QToolButton" name="toolButtonHover">
+         <property name="mouseTracking">
+          <bool>false</bool>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="toolButtonRegularLabel">
+         <property name="text">
+          <string>Regular state
+#DDDDDD</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QToolButton" name="toolButtonMenuDisabled">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="toolButtonDisabled">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QToolButton" name="toolButtonMenuHover">
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QToolButton" name="toolButtonSelected">
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="toolButtonDisabledLabel">
+         <property name="text">
+          <string>Disabled state
+#999999</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QToolButton" name="toolButtonMenuSelected">
+         <property name="icon">
+          <iconset>
+           <normaloff>:/stylesheet/img/logging/add-filter.svg</normaloff>:/stylesheet/img/logging/add-filter.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::MenuButtonPopup</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FixedStateButton</class>
+   <extends>QPushButton</extends>
+   <header>Gallery/FixedStateButton.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

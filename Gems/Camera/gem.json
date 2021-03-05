@@ -1,0 +1,20 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "f910686b6725452fbfc4671f95f733c6",
+    "Name": "Camera",
+    "Version": "0.1.0",
+    "DisplayName": "Camera",
+    "Tags": ["Camera"],
+    "Summary": "The Camera Gem includes a basic camera component that defines a frustum for runtime rendering.",
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ]
+}

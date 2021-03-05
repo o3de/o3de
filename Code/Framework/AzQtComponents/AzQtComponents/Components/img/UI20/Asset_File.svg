@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / System / File</title>
+    <g id="Icons-/-System-/-File" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M13.5,2 L13.5,8.5 L20,8.5 L20,22 L4,22 L4,2 L13.5,2 Z M15,2 L20,7 L15,7 L15,2 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

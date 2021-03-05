@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Texture icon</title>
+    <g id="Texture-icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="16" height="16"></rect>
+        <g id="picture" transform="translate(2.000000, 2.000000)" fill="#FFFFFF" fill-rule="nonzero">
+            <path d="M0,0 L0,12 L12,12 L12,0 L0,0 Z M11,1 L11,11 L1,11 L1,1 L11,1 Z M5,2 L2,2 L2,5 L4.5,5 L4.5,6.999 L2,6.99940453 L2,9.99940453 L5,9.99940453 L5,7.5 L6.997,7.5 L6.99722271,9.99940453 L9.99722271,9.99940453 L9.99722271,6.99940453 L7.5,6.999 L7.5,5 L9.99722271,5 L9.99722271,2 L6.99722271,2 L6.997,4.5 L5,4.5 L5,2 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>

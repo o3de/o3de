@@ -1,0 +1,106 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/Aces.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include "EyeAdaptationUtil.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerDraw
+{
+    Texture2D<float4> m_framebuffer;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    // These parameters contain exposure control parameters.
+    StructuredBuffer<EyeAdaptation> m_eyeAdaptation;
+
+    Texture3D<float4> m_gradingLut;
+
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
+}
+
+// Option shader variable to enable the exposure control feature.
+option bool o_enableExposureControlFeature = false;
+// Option shader variable to enable color grading LUT.
+option bool o_enableColorGradingLut = false;
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    // Fetch the pixel color from the input texture
+    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+
+    if (o_enableExposureControlFeature)
+    {
+        // Apply auto exposure
+        color.rgb *= PassSrg::m_eyeAdaptation[0].m_exposureValue;
+
+        // Apply manual exposure compensation
+        color *= pow(2.0, ViewSrg::GetExposureValueCompensation());
+    }
+
+    // Apply color grading LUT
+    ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
+    if (o_enableColorGradingLut)
+    {
+        // Convert from working color space to lut coordinates by applying the shaper function
+        float3 lutCoordinate = color;
+        if (shaperType == ShaperType::ShaperLinear)
+        {
+            lutCoordinate = color * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
+        }
+        else if (shaperType == ShaperType::ShaperLog2)
+        {
+            lutCoordinate = log2(color) * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
+        }
+
+        // Adjust coordinate to the domain excluding the outer half texel in all directions
+        uint3 outputDimensions;
+        PassSrg::m_gradingLut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
+        float3 coordBias = 0.5f / outputDimensions;
+        float3 coordScale = (outputDimensions-1.0)/outputDimensions;
+        lutCoordinate = (lutCoordinate * coordScale) + coordBias;
+
+        float3 lutColor = PassSrg::m_gradingLut.Sample(PassSrg::LinearSampler, lutCoordinate).rgb;
+
+        // Apply the inverse of the shaper function to give the color in the working color space
+        float3 finalColor = lutColor;
+        if (shaperType == ShaperType::ShaperLinear)
+        {
+            finalColor = (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale;
+        }
+        else if (shaperType == ShaperType::ShaperLog2)
+        {
+            finalColor = pow(2.0, (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale);
+        }
+        color = finalColor;
+    }
+
+    OUT.m_color.rgb = color;
+    OUT.m_color.w = 1;
+
+    return OUT;
+}

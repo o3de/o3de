@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyBoxTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "SpecularInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "SkyBoxDepth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "shaders/skybox/skybox.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_sunIntensityMultiplier",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

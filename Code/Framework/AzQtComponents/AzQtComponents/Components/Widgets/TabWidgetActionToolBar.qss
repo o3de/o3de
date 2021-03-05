@@ -1,0 +1,32 @@
+AzQtComponents--TabWidget > AzQtComponents--TabWidgetActionToolBarContainer
+{
+    background: #111111;
+    min-height: 28px;
+    margin: 0;
+    margin-bottom: 9px;
+}
+
+AzQtComponents--TabWidget.Secondary > AzQtComponents--TabWidgetActionToolBarContainer
+{
+    background: transparent;
+}
+
+AzQtComponents--TabWidgetActionToolBar
+{
+    spacing: 0px;
+}
+
+AzQtComponents--TabWidgetActionToolBar QToolButton,
+AzQtComponents--TabWidgetActionToolBar QToolButton:hover,
+AzQtComponents--TabWidgetActionToolBar QToolButton:pressed
+{
+    background: transparent;
+}
+
+AzQtComponents--DockTabWidget > AzQtComponents--TabWidgetActionToolBarContainer
+{
+    background: #111111;
+    min-height: 28px;
+    margin: 0;
+    margin-bottom: 9px;
+}

@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "8aa9a66015804d6d9c809ce306e7d913",
+    "Name": "VirtualGamepad",
+    "DisplayName": "VirtualGamepad",
+    "Version": "0.1.0",
+    "Summary": "Example of a virtual gamepad that can be used by mobile devices with touch screens in place of a physical gamepad.",
+    "Tags": ["Input", "Mobile"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

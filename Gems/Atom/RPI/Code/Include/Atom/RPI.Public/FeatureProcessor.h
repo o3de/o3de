@@ -1,0 +1,132 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/RHI/DrawListContext.h>
+
+#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/SceneBus.h>
+
+#include <Atom/RPI.Reflect/FeatureProcessorDescriptor.h>
+
+#include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+
+#include <AtomCore/Instance/InstanceData.h>
+
+#include <AzCore/base.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Jobs/JobCompletion.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        //! @class FeatureProcessor
+        //! @brief Interface that FeatureProcessors should derive from
+        //! @detail FeatureProcceors will record simulation state from the simulation job graph into a buffer that is isolated from the asynchronous rendering graph.
+        //!         Simulate() is called from the simulation graph preparing and publishing data for use by the asynchronous rendering execution graph.
+        //!         Render() is called from the render graph, converting state data to GPU/rendering state and submitting to the pipeline coordinator.
+        //!         Feature processors will contain or derive from listeners with a data buffers as needed to minimize contention.  FeatureProcesors will collate the
+        //!         data from the listeners into a data packet/feature for submission to the render pipeline coordinator.
+        //! 
+        //!         It is recommended that each feature processor maintain a data buffer that is buffered N times for the data that is
+        //!         expected to be delivered via an Ebus.
+        class FeatureProcessor
+            : public SceneNotificationBus::Handler
+        {
+            friend class Scene;
+        public:
+
+            // [GFX TODO]: now these structure are empty, but we will clean up them later when we are sure we won't have any members in them.
+            struct PrepareViewsPacket
+            {
+            };
+
+            struct SimulatePacket
+            {
+            };
+            
+            struct RenderPacket
+            {
+                //! The views that are relevant for rendering this frame.
+                AZStd::vector<ViewPtr> m_views;
+
+                //! A global draw list mask which is a combined mask for all the views.
+                //! Feature processors can utilize this mask to figure out if it may need to generate the DrawPackets upfront.
+                //! For example, UI feature processor can skip further processing if it finds out there is no view has UI DrawListTag
+                RHI::DrawListMask m_drawListMask;
+
+                //! Whether to run jobs in parallel or not (for debugging)
+                RHI::JobPolicy m_jobPolicy;
+
+                class CullingSystem* m_cullingSystem;
+            };            
+
+            AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");
+            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator, 0);
+
+            FeatureProcessor() = default;
+            virtual ~FeatureProcessor() = default;
+
+            Scene* GetParentScene() const { return m_parentScene; }
+
+            // FeatureProcessor Interface
+            //! Perform any necessary activation and gives access to owning Scene.
+            virtual void Activate() {}
+
+            //! Perform any necessary deactivation.
+            virtual void Deactivate() {}
+
+            //! Allows the feature processor to expose supporting views based on
+            //! the main views passed in. Main views (persistent views) are views that must be 
+            //! rendered and impacts the presentation of the application. Support
+            //! views (transient views) are views that must be rendered only to correctly render 
+            //! the main views. This function is called per frame and it happens on main thread.
+            //! Support views should be added to outViews with their associated pipeline view tags.
+            virtual void PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /* outViews*/) {}
+
+            //! The feature processor should perform any internal simulation at this point - For 
+            //! instance, updating a particle system or animation. Not every feature processor
+            //! will need to implement this.
+            //! 
+            //!  - This may not be called every frame.
+            //!  - This may be called in parallel with other feature processors.
+            virtual void Simulate(const SimulatePacket&) {}
+
+            //! The feature processor should enqueue draw packets to relevant draw lists.
+            //! 
+            //!  - This is called every frame.
+            //!  - This may be called in parallel with other feature processors.
+            virtual void Render(const RenderPacket&) {}
+
+            //! The feature processor may do clean up when the current render frame is finished
+            //!  - This is called every RPI::RenderTick.
+            virtual void OnRenderEnd() {}
+
+        protected:
+            // Functions to enable or disable SceneNotificationBus. Feature processors which need to handle these notifications may 
+            // call EnableSceneNotification in its Activate function. 
+            void EnableSceneNotification();
+            void DisableSceneNotification();
+
+        private:
+
+            Scene* m_parentScene = nullptr;
+        };
+
+    } // namespace RPI
+} // namespace AZ
+
+#define AZ_FEATURE_PROCESSOR(TypeName)
+

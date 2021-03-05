@@ -1,0 +1,98 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    SceneDataConfiguration.h
+    DllMain.cpp
+    ManifestMetaInfoHandler.h
+    ManifestMetaInfoHandler.cpp
+    SceneDataStandaloneAllocator.h
+    SceneDataStandaloneAllocator.cpp
+    ReflectionRegistrar.h
+    ReflectionRegistrar.cpp
+    Behaviors/BehaviorsMeshGroup.cpp
+    Behaviors/BehaviorsSkeletonGroup.cpp
+    Behaviors/BehaviorsSkinGroup.cpp
+    Behaviors/Registry.h
+    Behaviors/Registry.cpp
+    Behaviors/MeshGroup.h
+    Behaviors/SkeletonGroup.h
+    Behaviors/SkinGroup.h
+    Behaviors/AnimationGroup.h
+    Behaviors/BehaviorsAnimationGroup.cpp
+    Behaviors/MeshAdvancedRule.h
+    Behaviors/MeshAdvancedRule.cpp
+    Behaviors/MaterialRuleBehavior.h
+    Behaviors/MaterialRuleBehavior.cpp
+    Behaviors/LodRuleBehavior.h
+    Behaviors/LodRuleBehavior.cpp
+    Behaviors/BlendShapeRuleBehavior.h
+    Behaviors/BlendShapeRuleBehavior.cpp
+    Behaviors/ScriptProcessorRuleBehavior.h
+    Behaviors/ScriptProcessorRuleBehavior.cpp
+    Groups/MeshGroup.h
+    Groups/MeshGroup.cpp
+    Groups/SkeletonGroup.h
+    Groups/SkeletonGroup.cpp
+    Groups/SkinGroup.h
+    Groups/SkinGroup.cpp
+    Groups/AnimationGroup.h
+    Groups/AnimationGroup.cpp
+    ManifestBase/SceneNodeSelectionList.h
+    ManifestBase/SceneNodeSelectionList.cpp
+    Rules/BlendShapeRule.h
+    Rules/BlendShapeRule.cpp
+    Rules/CommentRule.h
+    Rules/CommentRule.cpp
+    Rules/LodRule.h
+    Rules/LodRule.cpp
+    Rules/StaticMeshAdvancedRule.h
+    Rules/StaticMeshAdvancedRule.cpp
+    Rules/OriginRule.h
+    Rules/OriginRule.cpp
+    Rules/MaterialRule.h
+    Rules/MaterialRule.cpp
+    Rules/ScriptProcessorRule.h
+    Rules/ScriptProcessorRule.cpp
+    Rules/SkeletonProxyRule.h
+    Rules/SkeletonProxyRule.cpp
+    Rules/SkinMeshAdvancedRule.h
+    Rules/SkinMeshAdvancedRule.cpp
+    Rules/TangentsRule.h
+    Rules/TangentsRule.cpp
+    GraphData/MeshData.h
+    GraphData/MeshData.cpp
+    GraphData/MeshVertexColorData.h
+    GraphData/MeshVertexColorData.cpp
+    GraphData/MeshVertexUVData.h
+    GraphData/MeshVertexUVData.cpp
+    GraphData/MeshVertexTangentData.h
+    GraphData/MeshVertexTangentData.cpp
+    GraphData/MeshVertexBitangentData.h
+    GraphData/MeshVertexBitangentData.cpp
+    GraphData/MaterialData.h
+    GraphData/MaterialData.cpp
+    GraphData/TransformData.h
+    GraphData/TransformData.cpp
+    GraphData/MeshDataPrimitiveUtils.h
+    GraphData/MeshDataPrimitiveUtils.cpp
+    GraphData/BoneData.h
+    GraphData/BoneData.cpp
+    GraphData/RootBoneData.h
+    GraphData/RootBoneData.cpp
+    GraphData/SkinMeshData.h
+    GraphData/SkinWeightData.h
+    GraphData/SkinWeightData.cpp
+    GraphData/AnimationData.h
+    GraphData/AnimationData.cpp
+    GraphData/BlendShapeData.h
+    GraphData/BlendShapeData.cpp
+)

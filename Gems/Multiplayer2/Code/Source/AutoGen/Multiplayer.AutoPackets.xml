@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PacketGroup Name="MultiplayerPackets" PacketStart="CorePackets::PacketType::MAX">
+    <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
+    <Include File="Source/MultiplayerTypes.h" />
+    <Include File="Source/NetworkEntity/NetworkEntityRpcMessage.h" />
+    <Include File="Source/NetworkEntity/NetworkEntityUpdateMessage.h" />
+
+    <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
+        <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
+    </Packet>
+
+    <Packet Name="Accept" Desc="Server accept packet">
+        <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
+        <Member Type="Multiplayer::LongNetworkString" Name="map" />
+    </Packet>
+
+    <Packet Name="SyncConsole" Desc="Packet for synchornizing cvars between hosts">
+        <Member Type="Multiplayer::LongNetworkString" Name="commandSet" Container="Vector" Count="32" />
+    </Packet>
+
+    <Packet Name="ConsoleCommand" Desc="Packet for executing a server command from the client">
+        <Member Type="Multiplayer::LongNetworkString" Name="command" />
+    </Packet>
+
+    <Packet Name="SyncConnectionCvars" Desc="Packet for synchornizing connection quality of service simulation cvars">
+        <Member Type="int32_t"    Name="lossPercent" Init="0" />
+        <Member Type="AZ::TimeMs" Name="latencyMs"   Init="AZ::TimeMs{ 0 }" />
+        <Member Type="AZ::TimeMs" Name="varianceMs"  Init="AZ::TimeMs{ 0 }" />
+    </Packet>
+
+    <Packet Name="EntityUpdates" Desc="A packet that contains multiple entity updates">
+        <Member Type="AZ::TimeMs" Name="hostTimeMs" Init="AZ::TimeMs{ 0 }" />
+        <Member Type="Multiplayer::NetworkEntityUpdateMessage" Name="entityMessages" Container="Vector" Count="Multiplayer::MaxAggregateEntityMessages" SuppressFromInitializerList="true" />
+    </Packet>
+
+    <Packet Name="EntityRpcs" Desc="A packet that contains multiple entity rpcs">
+        <Member Type="Multiplayer::NetworkEntityRpcMessage" Name="entityRpcs" Container="Vector" Count="Multiplayer::MaxAggregateRpcMessages" SuppressFromInitializerList="true" />
+    </Packet>
+
+    <Packet Name="ClientMigration" Desc="Tell a client to migrate to a new server">
+    </Packet>
+
+    <Packet Name="NotifyClientMigration" Desc="Tells a server that a client is about to migrate">
+    </Packet>
+
+    <Packet Name="EntityMigration" Desc="A packet that migrates a set of entities to a new server">
+        <Member Type="Multiplayer::NetEntityId"    Name="entityId"           Init="Multiplayer::InvalidNetEntityId" />
+        <Member Type="Multiplayer::PrefabEntityId" Name="prefabEntityId"     Init="" />
+        <Member Type="AzNetworking::PacketEncodingBuffer" Name="propertyUpdateData" Init="" SuppressFromInitializerList="true" />
+        <Member Type="AzNetworking::PacketEncodingBuffer" Name="migrationData"      Init="" SuppressFromInitializerList="true" />
+    </Packet>
+</PacketGroup>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / Actor / Bone</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Actor-/-Bone" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M17,3 C18.1045695,3 19,3.8954305 19,5 C20.1045695,5 21,5.8954305 21,7 C21,8.1045695 20.1045695,9 19,9 C18.4772492,9 18.0013407,8.79944421 17.6450213,8.47107937 L8.47107937,17.6450213 C8.79944421,18.0013407 9,18.4772492 9,19 C9,20.1045695 8.1045695,21 7,21 C5.8954305,21 5,20.1045695 5,19 L5,19 L4.85073766,18.9945143 C3.81587779,18.9181651 3,18.0543618 3,17 C3,15.8954305 3.8954305,15 5,15 C5.51979741,15 5.9932803,15.198296 6.34892797,15.5233674 L15.5233674,6.34892797 C15.198296,5.9932803 15,5.51979741 15,5 C15,3.8954305 15.8954305,3 17,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

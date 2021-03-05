@@ -1,0 +1,212 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/UnitTest/TestTypes.h>
+#include <Atom/Utils/ImageComparison.h>
+
+namespace UnitTest
+{
+    using namespace AZ::Utils;
+
+    class ImageComparisonTests
+        : public AllocatorsFixture
+    {
+    protected:
+        static const AZ::RHI::Format DefaultFormat = AZ::RHI::Format::R8G8B8A8_UNORM;
+        static constexpr size_t BytesPerPixel = 4;
+
+        AZStd::vector<uint8_t> CreateTestRGBAImageData(AZ::RHI::Size size)
+        {
+            AZStd::vector<uint8_t> buffer;
+            const size_t bufferSize = BytesPerPixel * size.m_width * size.m_height;
+            buffer.reserve(bufferSize);
+            for (uint32_t i = 0; i < bufferSize; ++i)
+            {
+                buffer.push_back(aznumeric_cast<uint8_t>(i % 255));
+            }
+            return buffer;
+        }
+
+        void SetPixel(AZStd::vector<uint8_t>& image, size_t pixelIndex, uint8_t r, uint8_t g, uint8_t b)
+        {
+            image[pixelIndex * BytesPerPixel + 0] = r;
+            image[pixelIndex * BytesPerPixel + 1] = g;
+            image[pixelIndex * BytesPerPixel + 2] = b;
+        };
+
+    };
+
+    TEST_F(ImageComparisonTests, Error_ImageSizesDontMatch)
+    {
+        AZ::RHI::Size sizeA{1, 1, 1};
+        AZ::RHI::Size sizeB{1, 2, 1};
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            CreateTestRGBAImageData(sizeA), sizeA, DefaultFormat,
+            CreateTestRGBAImageData(sizeB), sizeB, DefaultFormat,
+            &diffScore);
+
+        EXPECT_EQ(result, ImageDiffResultCode::SizeMismatch);
+    }
+
+    TEST_F(ImageComparisonTests, Error_BufferSizeDoesntMatchImageSize)
+    {
+        AZ::RHI::Size size{1, 1, 1};
+        AZ::RHI::Size wrongSize{1, 2, 1};
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            CreateTestRGBAImageData(size), wrongSize, DefaultFormat,
+            CreateTestRGBAImageData(size), wrongSize, DefaultFormat,
+            &diffScore);
+
+        EXPECT_EQ(result, ImageDiffResultCode::SizeMismatch);
+    }
+        
+    TEST_F(ImageComparisonTests, Error_UnsupportedFormat)
+    {
+        AZ::RHI::Format format = AZ::RHI::Format::G8R8_G8B8_UNORM;
+        AZ::RHI::Size size{1, 1, 1};
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            CreateTestRGBAImageData(size), size, format,
+            CreateTestRGBAImageData(size), size, format,
+            &diffScore);
+
+        EXPECT_EQ(result, ImageDiffResultCode::UnsupportedFormat);
+    }
+
+    TEST_F(ImageComparisonTests, Error_FormatsDontMatch)
+    {
+        AZ::RHI::Size size{1, 1, 1};
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            CreateTestRGBAImageData(size), size, AZ::RHI::Format::R8G8B8A8_SNORM,
+            CreateTestRGBAImageData(size), size, AZ::RHI::Format::R8G8B8A8_UNORM,
+            &diffScore);
+
+        EXPECT_EQ(result, ImageDiffResultCode::FormatMismatch);
+    }
+
+    TEST_F(ImageComparisonTests, CheckThreshold_SmallIdenticalImages)
+    {
+        AZ::RHI::Size size{16, 9, 1};
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            CreateTestRGBAImageData(size), size, DefaultFormat,
+            CreateTestRGBAImageData(size), size, DefaultFormat,
+            &diffScore);
+        EXPECT_EQ(result, ImageDiffResultCode::Success);
+
+        EXPECT_EQ(0.0f, diffScore);
+    }
+
+    TEST_F(ImageComparisonTests, CheckThreshold_LargeIdenticalImages)
+    {
+        AZ::RHI::Size size{1620, 1080, 1};
+
+        AZStd::vector<uint8_t> imageA = CreateTestRGBAImageData(size);
+        AZStd::vector<uint8_t> imageB = imageA;
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            imageA, size, DefaultFormat,
+            imageB, size, DefaultFormat,
+            &diffScore);
+        EXPECT_EQ(result, ImageDiffResultCode::Success);
+
+        EXPECT_EQ(0.0f, diffScore);
+    }
+
+    TEST_F(ImageComparisonTests, CheckThreshold_SmallImagesWithDifferences)
+    {
+        AZ::RHI::Size size{2, 2, 1};
+
+        AZStd::vector<uint8_t> imageA = CreateTestRGBAImageData(size);
+        AZStd::vector<uint8_t> imageB = CreateTestRGBAImageData(size);
+
+        // Difference of 1 (R)
+        SetPixel(imageA, 0, 100, 200, 5);
+        SetPixel(imageB, 0, 101, 200, 5);
+
+        // Difference of 2 (G)
+        SetPixel(imageA, 1, 255, 255, 255);
+        SetPixel(imageB, 1, 255, 253, 255);
+
+        // Difference of 5 (B)
+        SetPixel(imageA, 2, 0, 0, 0);
+        SetPixel(imageB, 2, 0, 0, 5);
+
+        // Difference of 100 (RGB all different)
+        SetPixel(imageA, 3, 100, 100, 100);
+        SetPixel(imageB, 3, 101, 102, 0);
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            imageA, size, DefaultFormat,
+            imageB, size, DefaultFormat,
+            &diffScore);
+        EXPECT_EQ(result, ImageDiffResultCode::Success);
+
+        // Result should be:
+        // sqrt( (1^2 + 2^2 + 5^2 + 100^2) / (255.0^2) / 4 )
+        EXPECT_FLOAT_EQ(0.19637232876f, diffScore);
+    }
+
+    TEST_F(ImageComparisonTests, CheckThreshold_IgnoreImperceptibleDifferences)
+    {
+        AZ::RHI::Size size{2, 2, 1};
+
+        AZStd::vector<uint8_t> imageA = CreateTestRGBAImageData(size);
+        AZStd::vector<uint8_t> imageB = CreateTestRGBAImageData(size);
+
+        // Difference of 1 (R)
+        SetPixel(imageA, 0, 100, 200, 5);
+        SetPixel(imageB, 0, 101, 200, 5);
+
+        // Difference of 2 (G)
+        SetPixel(imageA, 1, 255, 255, 255);
+        SetPixel(imageB, 1, 255, 253, 255);
+
+        // Difference of 5 (B)
+        SetPixel(imageA, 2, 0, 0, 0);
+        SetPixel(imageB, 2, 0, 0, 5);
+
+        // Difference of 4 (RGB all different)
+        SetPixel(imageA, 3, 100, 100, 100);
+        SetPixel(imageB, 3, 101, 102, 96);
+
+        const float minDiffFilter = 3.9f / 255.0f;
+
+        float diffScore = -1.0f;
+        float filteredDiffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            imageA, size, DefaultFormat,
+            imageB, size, DefaultFormat,
+            &diffScore,
+            &filteredDiffScore,
+            minDiffFilter);
+        EXPECT_EQ(result, ImageDiffResultCode::Success);
+
+        // Result should be:
+        // sqrt( (1^2 + 2^2 + 5^2 + 4^2) / (255.0^2) / 4 )
+        EXPECT_FLOAT_EQ(0.01329868624, diffScore);
+
+        // Result should be:
+        // sqrt( (5^2 + 4^2) / (255.0^2) / 4 )
+        EXPECT_FLOAT_EQ(0.01255514556f, filteredDiffScore);
+    }
+}

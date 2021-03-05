@@ -1,0 +1,48 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // D32_FLOAT_S8X24_UINT (Format:15) depthStencil texture
+    Texture2D<float2> m_depthStencil;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+struct PSOutput
+{
+    float2 m_motion : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    float depth = PassSrg::m_depthStencil.Sample(PassSrg::LinearSampler, IN.m_texCoord).r;
+    float2 clipPos = float2(mad(IN.m_texCoord.x, 2.0, -1.0), mad(IN.m_texCoord.y, -2.0, 1.0));
+    float4 worldPos = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(clipPos, depth, 1.0));
+    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4((worldPos / worldPos.w).xyz, 1.0));
+    
+    OUT.m_motion = (clipPos - (clipPosPrev / clipPosPrev.w).xy) * 0.5;
+    return OUT;
+}

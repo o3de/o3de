@@ -1,0 +1,243 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Illumination shader extension used by the editor
+//               for automatic shader generation (based on "Illumination" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+
+Version (1.00)
+
+UsesCommonGlobalFlags
+
+Property
+{
+  Name = %NORMAL_MAP
+  Mask = 0x1
+  Property    (Normal map)
+  Description (Use normal-map texture)
+  DependencySet = $TEX_Normals
+  DependencyReset = $TEX_Normals
+  Hidden
+}
+
+Property
+{
+  Name = %SPECULAR_MAP
+  Mask = 0x10
+  Property    (Specular map)
+  Description (Use specular map as separate texture)
+  DependencySet = $TEX_Specular
+  DependencyReset = $TEX_Specular
+  Hidden
+}
+
+Property
+{
+  Name = %DETAIL_MAPPING
+  Mask = 0x4000
+  Property    (Detail mapping)
+  Description (Enables Detail Map texture to increase surface detail. Requires Detail map before enabling.)
+  DependencyReset = $TEX_Detail
+}
+
+Property
+{
+  Name = %DETAIL_MAPPING_UV_SET_2
+  Mask = 0x8000
+  Property    (Use uv set 2 for detail map)
+  Description (Detail map will be applied to second UV set on mesh)
+}
+
+Property
+{
+  Name = %OFFSET_BUMP_MAPPING
+  Mask = 0x20000
+  Property    (Offset bump mapping)
+  Description (Simulates surface bump detail. Used in place of POM for lower spec configs. Requires height and normal maps before enabling.)
+  DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %FX_DISSOLVE
+  Mask = 0x20
+  Property    (Dissolve FX)
+  Description (Enables the use of an animated dissolve effect on the material)
+}
+
+Property
+{
+  Name = %VERTCOLORS
+  Mask = 0x400000
+  Property    (Vertex Colors)
+  Description (Enables the use of vertex colors added to the mesh in the DCC tool)
+}
+
+Property
+{
+  Name = %DECAL
+  Mask = 0x2000000
+  Property    (Decal)
+  Description (Enables the decal opacity map and used to prevent flickering and z-fighting)
+}
+
+Property
+{
+  Name = %PARALLAX_OCCLUSION_MAPPING
+  Mask = 0x8000000
+  Property    (Parallax occlusion mapping)
+  Description (Simulates surface depth by parallaxing bump detail from camera view.  Requires height and normal maps before enabling.)
+  DependencyReset = $TEX_Normals
+}
+
+#ifdef FEATURE_MESH_TESSELLATION
+Property
+{
+  Name = %DISPLACEMENT_MAPPING
+  Mask = 0x10000000
+  Property    (Displacement mapping)
+  Description (Displaces the vertices on the mesh to add depth.  Requires height and normal maps before enabling.)
+  //DependencySet = $TEX_Height
+  DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %PHONG_TESSELLATION
+  Mask = 0x20000000
+  Property    (Phong tessellation)
+  Description (Tesselates geometry for smoother faces and displacement. Can suffer from inflation.)
+}
+
+Property
+{
+  Name = %PN_TESSELLATION
+  Mask = 0x40000000
+  Property    (PN triangles tessellation)
+  Description (Best geometry tesselation for smoother faces and displacement at the cost of perfornmance)
+}
+#endif
+
+Property
+{
+  Name = %BLENDLAYER
+  Mask = 0x100
+  Property    (Blendlayer)
+  Description (Enables a second set of texture inputs and mask to be used for a layered material)
+}
+
+Property
+{
+  Name = %BLENDLAYER_UV_SET_2
+  Mask = 0x200
+  Property    (Use uv set 2 for blendlayer maps)
+  Description (Second blend layer maps will be applied to second UV set on mesh)
+}
+
+Property
+{
+  Name = %EMITTANCE_MAP
+  Mask = 0x400
+  Property (Emittance Map)
+  Description (Use emittance map texture)
+  DependencySet = $TEX_Emittance
+  DependencyReset = $TEX_Emittance
+  Hidden
+}
+
+Property
+{
+  Name = %EMITTANCE_MAP_UV_SET_2
+  Mask = 0x800
+  Property (Use uv set 2 for emittance map)
+  Description (Emittance map will be applied to second UV set on mesh)
+}
+
+Property
+{
+  Name = %ALPHAMASK_DETAILMAP
+  Mask = 0x800000
+  Property    (DetailMap mask in Diffuse alpha)
+  Description (Enables the diffuse map alpha to mask the detail map)
+}
+
+Property
+{
+  Name = %SILHOUETTE_PARALLAX_OCCLUSION_MAPPING
+  Mask = 0x10000
+  Property    (Silhouette POM)
+  Description (Simulates surface depth by parallaxing bump detail and adds silhouette displacement to the mesh edge.  Requires height and normal maps before enabling.)
+  DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %ALLOW_SILHOUETTE_POM
+  Mask = 0x40000
+  DependencySet = $HW_SilhouettePom
+  DependencyReset = $HW_SilhouettePom
+  Hidden
+}
+
+Property
+{
+  Name = %SUBSURFACE_SCATTERING
+  Mask = 0x80000
+  DependencySet = $UserEnabled
+  Hidden
+}
+
+Property
+{
+  Name = %DEPTH_FIXUP
+  Mask = 0x4000000
+  Property    (Depth Fixup)
+  Description (Enables to write and control depth for post-processing like depth of field)
+}
+
+Property
+{
+  Name = %SAA_FILTERING
+  Mask = 0x80000000
+  Property    (Specular Antialiasing)
+  Description (Reduces antialiasing on bright specular meshes)
+}
+
+Property
+{
+  Name = %ALLOW_SPECULAR_ANTIALIASING
+  Mask = 0x200000000
+  DependencySet = $HW_SpecularAntialiasing
+  DependencyReset = $HW_SpecularAntialiasing
+  Hidden
+}
+
+Property
+{
+  Name = %OCCLUSION_MAP
+  Mask = 0x40
+  Property    (Occlusion Map)
+  Description (Adds an additional texture slot for ambient occlusion)
+}
+
+Property
+{
+    Name = %APPLY_FORWARD_DYNAMIC_LIGHTING
+    Mask = 0x400000000
+    Property(Dynamic Lighting for Transparency)
+    Description(Adds a full forward lighting pass for transparent objects - less performant)
+}

@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "f5c92f1560714010ba30467d93feecef",
+    "Name": "TestAssetBuilder",
+    "DisplayName": "Test Asset Builder",
+    "Version": "0.1.0",
+    "Summary": "This builder is used for feature testing the asset processor.",
+    "Tags": ["Assets", "Pipeline", "Feature Test", "Asset Builder", "Asset Processor"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ]
+}

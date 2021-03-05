@@ -1,0 +1,52 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CascadedShadowmapsTemplate",
+            "PassClass": "CascadedShadowmapsPass",
+            "Slots": [
+                {
+                    "Name": "Shadowmap",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil",
+                            "Value": [
+                                1.0,
+                                {},
+                                {},
+                                {}
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ShadowmapImage",
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Shadowmap",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ShadowmapImage"
+                    }
+                }
+            ]
+        }
+    }
+}

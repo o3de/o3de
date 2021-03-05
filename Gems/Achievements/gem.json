@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "6f8d953dd4fc4bb6ad34c9118a7b789f",
+    "Name": "Achievements",
+    "DisplayName": "Achievements",
+    "Version": "0.1.0",
+    "Summary": "Platform agnostic interface for retrieving achievement details and unlocking achievements.",
+    "Tags": ["Achievement", "Achievements", "Trophy", "Trophies"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

@@ -1,0 +1,65 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "MorphTargetSRG.azsli"
+
+rootconstant float s_min;
+rootconstant float s_max;
+rootconstant float s_accumulatedDeltaIntegerEncoding;
+rootconstant float s_weight;
+rootconstant uint s_vertexCount;
+rootconstant uint s_targetPositionOffset;
+
+float3 DecodePositionDelta(uint3 xyz)
+{
+    // Positions are encoded using 16 bits per channel, which represent a 0-1 range between the min and max values
+    // They are converted to 32 bit uints after being loaded from memory before calling this function since AZSL does not support 16-bit uint
+    // Divide by 65535 to get from 0-1, multiply by the magnitude of the range between min and max,
+    // and add the value of min to get back the original value
+    float f = (s_max - s_min) / 65535.0f;
+    return float3(xyz) * f + s_min;
+}
+
+int EncodeFloatToInt(float f)
+{
+    return int(f * s_accumulatedDeltaIntegerEncoding);
+}
+
+[numthreads(256,1,1)]
+void MainCS(uint3 thread_id: SV_DispatchThreadID)
+{
+    // Each thread is responsible for one morph
+    const uint i = thread_id.x;
+    if(i < s_vertexCount)
+    {
+        // The compressed data is packed into a buffer that is aligned for coalesced reads of 4-bytes per thread
+        // Since the positions occupy 6 bytes, the xy positions for each vertex are packed together, and the z positions + padding are packed together
+        uint compressedPositionDeltaXY = MorphTargetInstanceSrg::m_vertexDeltas.Load(i * 4);
+        // x is in the most significant 2 bytes
+        uint3 compressedPositionDelta;
+        compressedPositionDelta.x = compressedPositionDeltaXY >> 16;
+        // y is in the least significant 2 bytes
+        compressedPositionDelta.y = compressedPositionDeltaXY & 0x0000FFFF;
+
+        uint compressedPositionDeltaZPad = MorphTargetInstanceSrg::m_vertexDeltas.Load(i * 4 + s_vertexCount * 4);
+        compressedPositionDelta.z = compressedPositionDeltaZPad >> 16;
+        
+        // Now that we have the compressed positions, unpack them
+        float3 positionDelta = DecodePositionDelta(compressedPositionDelta) * s_weight;
+
+        // s_targetPositionOffset gives the start location of the final morph values
+        // morphedVertexIndex is the vertex that is being morphed by the current thread
+        uint morphedVertexIndex = MorphTargetInstanceSrg::m_vertexIndices[i];
+        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3], EncodeFloatToInt(positionDelta.x));
+        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3 + 1], EncodeFloatToInt(positionDelta.y));
+        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3 + 2], EncodeFloatToInt(positionDelta.z));
+    }
+}

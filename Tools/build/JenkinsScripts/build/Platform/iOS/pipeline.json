@@ -1,0 +1,8 @@
+{
+    "JOB_NAME": "IOS",
+    "LABEL": "mac",
+    "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
+    "TIMEOUT": 30,
+    "WORKSPACE": "/Users/lybuilder/workspace",
+    "MOUNT_VOLUME": false
+}

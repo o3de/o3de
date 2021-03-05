@@ -1,0 +1,59 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <Atom/RHI/ShaderResourceGroup.h>
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <RHI/Buffer.h>
+#include <RHI/DescriptorPool.h>
+#include <RHI/DescriptorSetLayout.h>
+#include <RHI/DescriptorSet.h>
+
+namespace AZ
+{
+    namespace Vulkan
+    {
+        class ShaderResourceGroupPool;
+
+        class ShaderResourceGroup
+            : public RHI::ShaderResourceGroup
+        {
+            using Base = RHI::ShaderResourceGroup;
+            friend class ShaderResourceGroupPool;
+
+        public:
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_RTTI(ShaderResourceGroup, "DB59214E-57B4-4F7B-B273-CB5210826A57", Base);
+
+            static RHI::Ptr<ShaderResourceGroup> Create();
+            ~ShaderResourceGroup() = default;
+
+            void UpdateCompiledDataIndex(uint64_t frameIteration);
+            const DescriptorSet& GetCompiledData() const;
+            uint32_t GetCompileDataIndex() const;
+            uint64_t GetLastCompileFrameIteration() const;
+
+        protected:
+            ShaderResourceGroup() = default;
+
+        private:
+            /// The current index into the compiled data array.
+            uint32_t m_compiledDataIndex = 0;
+            uint64_t m_lastCompileFrameIteration = 0;
+            RHI::Ptr<DescriptorSetLayout> m_descriptorSetLayout;
+            AZStd::vector<RHI::Ptr<DescriptorSet>> m_compiledData;
+        };
+    }
+}

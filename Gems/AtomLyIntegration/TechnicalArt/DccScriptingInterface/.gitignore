@@ -1,0 +1,4 @@
+
+# Ignore dynaconf secret files
+.secrets.*
+settings.local.json

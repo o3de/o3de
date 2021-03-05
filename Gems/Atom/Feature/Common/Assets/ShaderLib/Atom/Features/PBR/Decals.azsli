@@ -1,0 +1,94 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/Decals/DecalTextureUtil.azsli>
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+#include <Atom/Features/PBR/Surface.azsli>
+
+void ApplyDecal(uint currDecalIndex, inout Surface surface);
+
+void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+{
+    tileIterator.LoadAdvance();
+                
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currDecalIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        
+        ApplyDecal(currDecalIndex, surface);                  
+    }    
+}
+
+float GetDecalAttenuation(float3 surfNormal, float3 decalUp, float decalAngleAttenutation)
+{ 
+    const half DecalClampAngle = 0.55;
+    float dotAtten = dot(surfNormal, decalUp);
+    dotAtten = clamp(dotAtten, DecalClampAngle, 1.0);
+    dotAtten = smoothstep(DecalClampAngle, 1.0f, dotAtten);
+     
+    return lerp(1, dotAtten, decalAngleAttenutation);
+}
+
+void ApplyDecal(uint currDecalIndex, inout Surface surface)
+{
+    ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];            
+
+    float3x3 decalRot = MatrixFromQuaternion(decal.m_quaternion);
+
+    float3 localPos = surface.position - decal.m_position;    
+    localPos = mul(localPos, decalRot);
+              
+    float3 decalUVW = localPos * rcp(decal.m_halfSize);
+    if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
+       decalUVW.y >= -1.0f && decalUVW.y <= 1.0f &&
+       decalUVW.z >= -1.0f && decalUVW.z <= 1.0f)
+    {
+        // [GFX TODO][ATOM-13798] Investigate using SampleGrad in the decal shader
+        const uint textureArrayIndex = decal.m_textureArrayIndex;
+        const uint textureIndex = decal.m_textureIndex;
+        
+        decalUVW.y *= -1;
+
+        float3 decalUV = float3(decalUVW.xy * 0.5f + 0.5f, textureIndex);
+        
+        float3 decalSample;
+
+        float4 baseMap = 0;
+        switch(textureArrayIndex)
+        {
+            case 0:
+                baseMap = ViewSrg::m_decalTextureArray0.Sample(PassSrg::LinearSampler, decalUV);    
+            break;
+            case 1:
+                baseMap = ViewSrg::m_decalTextureArray1.Sample(PassSrg::LinearSampler, decalUV);    
+            break;
+            case 2:
+                baseMap = ViewSrg::m_decalTextureArray2.Sample(PassSrg::LinearSampler, decalUV);    
+            break;
+            case 3:
+                baseMap = ViewSrg::m_decalTextureArray3.Sample(PassSrg::LinearSampler, decalUV);    
+            break;
+            case 4:
+                baseMap = ViewSrg::m_decalTextureArray4.Sample(PassSrg::LinearSampler, decalUV);    
+            break;
+        }
+        
+        float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);                
+        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);        
+    }   
+}
+
+

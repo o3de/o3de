@@ -1,0 +1,128 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ifndef __EMSTUDIO_EMSTUDIOPLUGIN_H
+#define __EMSTUDIO_EMSTUDIOPLUGIN_H
+
+// include MCore
+#if !defined(Q_MOC_RUN)
+#include <MCore/Source/StandardHeaders.h>
+#include <MCore/Source/MemoryFile.h>
+#include <EMotionFX/Rendering/Common/RenderUtil.h>
+#include <EMotionFX/Rendering/Common/Camera.h>
+#include "EMStudioConfig.h"
+#include <QString>
+#include <QObject>
+#include <QFile>
+#endif
+
+QT_FORWARD_DECLARE_CLASS(QMenu)
+
+namespace AZ
+{
+    class ReflectContext;
+}
+
+namespace EMStudio
+{
+    // forward declaration
+    class PluginOptions;
+    class PreferencesWindow;
+    class RenderPlugin;
+
+    /**
+     *
+     *
+     */
+    class EMSTUDIO_API EMStudioPlugin
+        : public QObject
+    {
+        Q_OBJECT
+        MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
+
+    public:
+        enum EPluginType
+        {
+            PLUGINTYPE_DOCKWIDGET   = 0,
+            PLUGINTYPE_TOOLBAR      = 1,
+            PLUGINTYPE_RENDERING    = 2,
+            PLUGINTYPE_INVISIBLE    = 3
+        };
+
+        EMStudioPlugin()
+            : QObject() {}
+        virtual ~EMStudioPlugin() {}
+
+        virtual const char* GetCompileDate() const { return MCORE_DATE; }
+        virtual const char* GetName() const = 0;
+        virtual uint32 GetClassID() const = 0;
+        virtual const char* GetCreatorName() const { return "Amazon.com, Inc."; }
+        virtual float GetVersion() const { return 1.0f; }
+        virtual void Reflect(AZ::ReflectContext*) {}
+        virtual bool Init() = 0;
+        virtual EMStudioPlugin* Clone() = 0;
+        virtual EMStudioPlugin::EPluginType GetPluginType() const = 0;
+
+        virtual void OnAfterLoadLayout() {}
+        virtual void OnAfterLoadProject() {}
+        virtual void OnAfterLoadActors() {}
+        virtual void OnBeforeRemovePlugin(uint32 classID) { MCORE_UNUSED(classID); }
+        virtual void OnMainWindowClosed() {}
+
+        virtual void RegisterKeyboardShortcuts() {}
+
+        struct RenderInfo
+        {
+            MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin::RenderInfo, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
+
+            RenderInfo(MCommon::RenderUtil* renderUtil, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight)
+            {
+                mRenderUtil     = renderUtil;
+                mCamera         = camera;
+                mScreenWidth    = screenWidth;
+                mScreenHeight   = screenHeight;
+            }
+
+            MCommon::RenderUtil*        mRenderUtil;
+            MCommon::Camera*            mCamera;
+            uint32                      mScreenWidth;
+            uint32                      mScreenHeight;
+        };
+
+        virtual void Render(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
+
+        virtual PluginOptions* GetOptions() { return nullptr; }
+
+        virtual void WriteLayoutData(MCore::MemoryFile& outFile)                            { MCORE_UNUSED(outFile); }
+        virtual bool ReadLayoutSettings(QFile& file, uint32 dataSize, uint32 dataVersion)   { MCORE_UNUSED(file); MCORE_UNUSED(dataSize); MCORE_UNUSED(dataVersion); return true; }
+        virtual uint32 GetLayoutDataVersion() const                                         { return 0; }
+
+        virtual void ProcessFrame(float timePassedInSeconds)                                { MCORE_UNUSED(timePassedInSeconds); }
+        virtual uint32 GetProcessFramePriority() const                                      { return 0; }
+
+        bool operator<(const EMStudioPlugin& plugin)                                        { return GetProcessFramePriority() < plugin.GetProcessFramePriority(); }
+        bool operator>(const EMStudioPlugin& plugin)                                        { return GetProcessFramePriority() > plugin.GetProcessFramePriority(); }
+
+        virtual bool GetHasWindowWithObjectName(const AZStd::string& objectName) = 0;
+
+        virtual QString GetObjectName() const = 0;
+        virtual void SetObjectName(const QString& objectName) = 0;
+
+        virtual void CreateBaseInterface(const char* objectName) = 0;
+
+        virtual bool AllowMultipleInstances() const     { return false; }
+
+        virtual void AddWindowMenuEntries([[maybe_unused]] QMenu* parent) { }
+    };
+}   // namespace EMStudio
+
+#endif

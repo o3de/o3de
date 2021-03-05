@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SaveChangesDialog</class>
+ <widget class="QDialog" name="SaveChangesDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>404</width>
+    <height>89</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Save Changes</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="3">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;You have unsaved changes for this document...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="margin">
+      <number>10</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="ContinueButton">
+     <property name="text">
+      <string>Continue</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="CancelButton">
+     <property name="text">
+      <string>Cancel</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="SaveButton">
+     <property name="text">
+      <string>Save</string>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <zorder>label</zorder>
+  <zorder>SaveButton</zorder>
+  <zorder>CancelButton</zorder>
+  <zorder>ContinueButton</zorder>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>CancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SaveChangesDialog</receiver>
+   <slot>OnCancelButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>207</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ContinueButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SaveChangesDialog</receiver>
+   <slot>OnContinueButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>107</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>SaveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SaveChangesDialog</receiver>
+   <slot>OnSaveButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>307</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnSaveButton()</slot>
+  <slot>OnCancelButton()</slot>
+  <slot>OnContinueButton()</slot>
+ </slots>
+</ui>

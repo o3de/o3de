@@ -1,0 +1,42 @@
+Values for these metals taken from this post:
+https://www.artstation.com/shinsoj/blog/Q9j6/albedo-chart
+
+Note: when authoring metal materials, you can use the Factor slider in basecolor to darken the albedo, this have been done with the matte materials here
+
+Metallic values
+
+sRGB values are for reference, may vary a little bit.
+
+Metals have black diffuse albedo value and colored specular albedo. In metalness-roughness workflow, for metals (pixels set to white in the metalness map) the specular color and intensity is taken from the albedo map. Metals albedo values are between 0.5 and 0.98. Lower values are for matte, higher are for polished metal.
+
+Iron  = c4c7c7 (198, 198, 200)  --> substance 156,161,169 (used this instead)
+ 
+Brass = d6b97b (214, 185, 123) --> substance polished brass 250,236,192 (original looks better to me)
+
+Copper = fad0c0 (250, 208, 192)  --> used a substance value as reference instead 176,116,78 (looks more correct)
+
+Gold = ffe29b (255, 226, 155)  --> used substance value as reference instead 252,219,100 (also looks more correct)
+
+Aluminum = f5f6f6 (245, 246, 246)
+
+Chrome = c4c5c5 (196, 197, 197)
+    polished: 95,97,96 w Factor 1
+
+Silver = fcfaf5 (252, 250, 245)
+    normal: 179,180,171 w Factor 1, 
+    matte: 210,206,196 w Factor 1, roughness: 0.57
+    polished: 251,250,245 w Factor 1 roughness: 0.16
+
+Cobalt = d3d2cf (211, 210, 207)
+
+Titanium = c1bab1 (195, 186, 177)
+
+Platinum = d5d0c8 (213, 208, 200)
+
+Nickel = d3cbbe (211, 203, 190)
+
+Zinc = d5eaed (213, 234, 237)
+
+Mercury = e5e4e4 (229, 228, 228)
+
+Palladium = ded9d3 (222, 217, 211)

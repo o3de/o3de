@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PrecompiledShaderAssetSourceData",
+    "ClassData":
+    {
+        "ShaderAssetFileName": "diffuseprobegridblendirradiance.azshader",
+        "ShaderResourceGroupAssets":
+        [
+            "diffuseprobegridblendirradiance_passsrg.azsrg"
+        ],
+        "RootShaderVariantAssets":
+        [
+            {
+                "APIName": "dx12",
+                "RootShaderVariantAssetFileName": "diffuseprobegridblendirradiance_dx12_0.azshadervariant"
+            },
+            {
+                "APIName": "vulkan",
+                "RootShaderVariantAssetFileName": "diffuseprobegridblendirradiance_vulkan_0.azshadervariant"
+            }
+        ]
+    }
+}

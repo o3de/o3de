@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49 (51002) - http://www.bohemiancoding.com/sketch -->
+    <title>Reset</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Reset" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-3"></g>
+        <g id="Group">
+            <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+            <path d="M17.9170416,13 L15,13 L19,8 L23,13 L19.9381062,13 C19.4460082,16.9463116 16.0796177,20 12,20 C7.581722,20 4,16.418278 4,12 C4,7.581722 7.581722,4 12,4 C12.7802003,4 13.9671798,4.06538456 15.0498484,4.51218321 C15.7716274,4.81004899 16.4416987,5.24040551 17.0600622,5.80325277 L15.7131139,7.27359539 C15.0274394,6.82544032 14.5159069,6.53408503 14.1785164,6.39952951 C13.6724307,6.19769624 12.5830744,6 12,6 C8.6862915,6 6,8.6862915 6,12 C6,15.3137085 8.6862915,18 12,18 C14.9729963,18 17.4409635,15.8377133 17.9170416,13 Z" id="Combined-Shape" fill="#E9E9E9"></path>
+        </g>
+    </g>
+</svg>

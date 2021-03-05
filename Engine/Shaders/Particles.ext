@@ -1,0 +1,102 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Particles shader extension used by the editor
+//               for automatic shader generation (based on "Particles" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+Version (1.00)
+
+Property
+{
+  Name = %REFRACTION
+  Mask = 0x4
+  Property    (Refraction)
+  Description (Use normal-map texture as displacement for refraction)
+}
+
+Property
+{
+  Name = %REFRACTION_TINTING
+  Mask = 0x800
+  Property    (Refraction Tinting)
+  Description (Use color texture to tint refraction)
+}
+
+Property
+{
+  Name = %SCREEN_SPACE_DEFORMATION
+  Mask = 0x10
+  Property    (Screen space deformation)
+  Description (Use custom slot map for screen space particles deformation)
+  DependencyReset = $TEX_Custom
+}
+
+Property
+{
+  Name = %DEFORMATION
+  Mask = 0x20
+  Property    (Deformation)
+  Description (Use custom slot map for per-particle deformation)
+  DependencyReset = $TEX_Custom
+}
+
+Property
+{
+  Name = %COLOR_LOOKUP
+  Mask = 0x40
+  Property    (Color lookup)
+  Description (Use custom slot [1] map for applying color lookup)
+  DependencyReset = $TEX_CustomSecondary
+}
+
+Property
+{
+  Name = %SPECULAR_LIGHTING
+  Mask = 0x100
+  Property    (Specular Lighting)
+  Description (Calculate specular lighting in addition to diffuse lighting)
+	DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %DEPTH_FIXUP
+  Mask = 0x200
+  Property    (Depth Fixup)
+  Description (Write depth for depth of field and postprocessing)
+}
+
+Property
+{
+  Name = %NORMAL_MAP
+  Mask = 0x400
+  Property    (Normal map)
+  Description (Use normal-map texture)
+  DependencySet = $TEX_Normals
+  DependencyReset = $TEX_Normals
+  Hidden
+}
+
+Property
+{
+  Name = %GLOW_MAP
+  Mask = 0x1000
+  Property    (Emissive map)
+  Description (Use this map to mask the particle emissive intensity)
+  DependencySet = $TEX_Detail
+  DependencyReset = $TEX_Detail
+  Hidden
+}

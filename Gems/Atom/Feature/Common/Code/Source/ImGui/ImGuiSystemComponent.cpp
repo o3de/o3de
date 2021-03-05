@@ -1,0 +1,239 @@
+/*
+* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution(the "License").All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file.Do not
+* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <ImGui/ImGuiSystemComponent.h>
+#include <ImGui/ImGuiPass.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+        void ImGuiSystemComponent::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<ImGuiSystemComponent, AZ::Component>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
+        void ImGuiSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+        }
+
+        void ImGuiSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        }
+
+        void ImGuiSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
+        {
+            incompatbile.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+        }
+
+        ImGuiSystemComponent::ImGuiSystemComponent()
+        {
+        }
+
+        void ImGuiSystemComponent::Activate()
+        {
+            ImGuiSystemRequestBus::Handler::BusConnect();
+        }
+
+        void ImGuiSystemComponent::Deactivate()
+        {
+            ImGuiSystemRequestBus::Handler::BusDisconnect();
+        }
+
+        void ImGuiSystemComponent::SetGlobalSizeScale(float scale)
+        {
+            if (m_sizeScale != scale)
+            {
+                m_sizeScale = scale;
+                ForAllImGuiPasses(
+                    [&]([[maybe_unused]] ImGuiPass* pass)
+                    {
+                        ImGui::GetStyle().ScaleAllSizes(m_sizeScale);
+                    }
+                );
+            }
+        }
+
+        void ImGuiSystemComponent::SetGlobalFontScale(float scale)
+        {
+            if (m_fontScale != scale)
+            {
+                m_fontScale = scale;
+                ForAllImGuiPasses(
+                    [&]([[maybe_unused]] ImGuiPass* pass)
+                    {
+                        ImGui::GetIO().FontGlobalScale = scale;
+                    }
+                );
+            }
+        }
+
+        void ImGuiSystemComponent::HideAllImGuiPasses()
+        {
+            ForAllImGuiPasses(
+                [&](ImGuiPass* pass)
+                {
+                    pass->SetEnabled(false);
+                }
+            );
+        }
+
+        void ImGuiSystemComponent::ShowAllImGuiPasses()
+        {
+            ForAllImGuiPasses(
+                [&](ImGuiPass* pass)
+                {
+                    pass->SetEnabled(true);
+                }
+            );
+        }
+
+        void ImGuiSystemComponent::ForAllImGuiPasses(PassFunction func)
+        {
+            ImGuiContext* contextToRestore = ImGui::GetCurrentContext();
+            RPI::PassClassFilter<ImGuiPass> filter;
+            auto imguiPasses = RPI::PassSystemInterface::Get()->FindPasses(filter);
+
+            for (RPI::Pass* pass : imguiPasses)
+            {
+                ImGuiPass* imguiPass = azrtti_cast<ImGuiPass*>(pass);
+                ImGui::SetCurrentContext(imguiPass->GetContext());
+                func(imguiPass);
+            }
+
+            ImGui::SetCurrentContext(contextToRestore);
+        }
+
+        void ImGuiSystemComponent::PushDefaultImGuiPass(ImGuiPass* imguiPass)
+        {
+            ImGuiPass** existingPass = AZStd::find(m_defaultImguiPassStack.begin(), m_defaultImguiPassStack.end(), imguiPass);
+            if (existingPass != m_defaultImguiPassStack.end())
+            {
+                AZ_Assert(false, "This Imgui pass is already registered as a default pass.");
+                return;
+            }
+            m_defaultImguiPassStack.push_back(imguiPass);
+        }
+
+        void ImGuiSystemComponent::RemoveDefaultImGuiPass(ImGuiPass* imguiPass)
+        {
+            for (size_t i = 0; i < m_defaultImguiPassStack.size(); ++i)
+            {
+                if (imguiPass == m_defaultImguiPassStack.at(i))
+                {
+                    m_defaultImguiPassStack.erase(m_defaultImguiPassStack.begin() + i);
+
+                    // If the pass being removed as default is active, assume the current active should be changed
+                    // to whatever's on the top of the default stack as long as it has at least one entry.
+                    if (GetActiveContext() == imguiPass->GetContext())
+                    {
+                        PushActiveContextFromDefaultPass();
+                    }
+                    break;
+                }
+            }
+        }
+
+        ImGuiPass* ImGuiSystemComponent::GetDefaultImGuiPass()
+        {
+            return m_defaultImguiPassStack.size() > 0 ? m_defaultImguiPassStack.back() : nullptr;
+        }
+
+        bool ImGuiSystemComponent::PushActiveContextFromDefaultPass()
+        {
+            if (m_defaultImguiPassStack.size() > 0)
+            {
+                ImGuiContext* context = m_defaultImguiPassStack.back()->GetContext();
+                m_activeContextStack.push_back(context);
+                ImGuiSystemNotificationBus::Broadcast(&ImGuiSystemNotifications::ActiveImGuiContextChanged, context);
+                return true;
+            }
+            return false;
+        }
+
+        bool ImGuiSystemComponent::PushActiveContextFromPass(const RPI::PassHierarchyFilter& passHierarchyFilter)
+        {
+            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passHierarchyFilter);
+            AZStd::vector<ImGuiPass*> foundImGuiPasses;
+
+            for (RPI::Pass* pass : foundPasses)
+            {
+                ImGuiPass* imGuiPass = azrtti_cast<ImGuiPass*>(pass);
+                if (imGuiPass)
+                {
+                    foundImGuiPasses.push_back(imGuiPass);
+                }
+            }
+
+            if (foundImGuiPasses.size() == 0)
+            {
+                AZ_Warning("ImGuiSystemComponent", false, "Failed to find ImGui pass to activate from %s", passHierarchyFilter.ToString().c_str());
+                return false;
+            }
+
+            if (foundImGuiPasses.size() > 1)
+            {
+                AZ_Warning("ImGuiSystemComponent", false, "Found more than one ImGui pass to activate from %s, only activating first one.", passHierarchyFilter.ToString().c_str());
+            }
+
+            ImGuiContext* context = foundImGuiPasses.at(0)->GetContext();
+            m_activeContextStack.push_back(context);
+            ImGuiSystemNotificationBus::Broadcast(&ImGuiSystemNotifications::ActiveImGuiContextChanged, context);
+            return true;
+        }
+
+        bool ImGuiSystemComponent::PopActiveContext()
+        {
+            if (m_activeContextStack.size() > 0)
+            {
+                m_activeContextStack.pop_back();
+
+                ImGuiContext* newContext = GetActiveContext();
+                ImGuiSystemNotificationBus::Broadcast(&ImGuiSystemNotifications::ActiveImGuiContextChanged, newContext);
+                return true;
+            }
+            AZ_Error("ImGuiSystemComponent", false, "Attempting to pop active ImGui context when there are none on the stack. There must be a Push/Pop mismatch.")
+            return false;
+        }
+
+        ImGuiContext* ImGuiSystemComponent::GetActiveContext()
+        {
+            if (m_activeContextStack.size() > 0)
+            {
+                return m_activeContextStack.back();
+            }
+            return nullptr;
+        }
+
+        bool ImGuiSystemComponent::RenderImGuiBuffersToDefaultPass(const ImDrawData& drawData)
+        {
+            if (m_defaultImguiPassStack.size() > 0)
+            {
+                m_defaultImguiPassStack.back()->RenderImguiDrawData(drawData);
+                return true;
+            }
+            return false;
+        }
+
+    } // namespace RPI
+} // namespace AZ

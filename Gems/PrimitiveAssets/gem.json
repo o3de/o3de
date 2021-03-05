@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "ed07631f95fb4be1bd10cd37298ec697",
+    "Name": "PrimitiveAssets",
+    "DisplayName": "Primitive Assets",
+    "Version": "1.0.0",
+    "LinkType": "NoCode",
+    "Summary": "Provides simple primitive shape assets useful for quickly building a basic scene.",
+    "Tags": ["Getting Started", "Asset"],
+    "IconPath": "preview.png"
+}

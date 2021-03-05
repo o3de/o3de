@@ -1,0 +1,4 @@
+<Material MtlFlags="524288" Shader="VolumeObject" GenMask="11" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Opacity="0.99000001" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+ <Textures />
+ <PublicParams GlobalDensity="0.147"/>
+</Material>

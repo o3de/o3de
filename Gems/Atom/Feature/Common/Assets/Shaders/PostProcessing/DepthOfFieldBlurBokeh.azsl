@@ -1,0 +1,146 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "DepthOfField.azsli"
+
+#define SampleMax 60
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerDraw
+{
+    Texture2D<float4> m_colorAndDofFactorTexture;
+    float m_radiusMin;
+    float m_radiusMax;
+    float4 m_sampleTexcoordsRadius[SampleMax];
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+// The number of points to sample.
+// Sample 6 points around center pixel.
+// Similarly, sample around it as 12,18,24 points.
+// Please refer to “https://wiki.agscollab.com/display/ATOM/Pencil+Map” for details.
+option enum class SampleNumber
+{
+    Sample6,        // 6
+    Sample18,       // 6 + 12
+    Sample36,       // 6 + 12 + 18
+    Sample60        // 6 + 12 + 18 + 24
+}
+o_sampleNumber = SampleNumber::Sample6;
+
+// Get CocRadius from dofFactor.
+// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for CocRadius.
+inline float GetCocRadius(float dofFactor)
+{
+    float cocRadius = dofFactor * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    cocRadius = sign(cocRadius) * clamp(abs(cocRadius), PassSrg::m_radiusMin, PassSrg::m_radiusMax);
+    return cocRadius;
+}
+
+// Calculate the texcoord U of the pencil map from cocRadius.
+// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for the pencil map.
+inline float GetPencilMapTexcoordU(float cocRadius)
+{
+    return cocRadius * ViewSrg::m_dof.m_pencilMapTexcoordToCocRadius + ViewSrg::m_dof.m_pencilMapFocusPointTexcoordU;
+}
+
+// Get the color from the coordinate array.
+// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for details of coordinates.
+inline float4 SampleColorAndDofFactor(float2 centerTexCoord, float cocRadius, int sampleIndex)
+{
+    float2 sampleTexcoordOffset = PassSrg::m_sampleTexcoordsRadius[sampleIndex].xy * cocRadius;
+    float2 sampleTexcoord = centerTexCoord + sampleTexcoordOffset;
+    float4 sampleColor = PassSrg::m_colorAndDofFactorTexture.Sample(PassSrg::LinearSampler, sampleTexcoord);
+    return sampleColor;
+}
+
+// Load the pencil map. Since the colors are square rooted, they are decoded (linearized). This is for accuracy.
+// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for the pencil map.
+inline float4 SamplePencilMap(float lensCoordX, float radius)
+{
+    float2 bokehTexcoord = float2(lensCoordX, radius);
+    float4 bokehColor = float4(SceneSrg::m_dofPencilMap.Sample(PassSrg::LinearSampler, bokehTexcoord).rgb, 1.0f);
+    bokehColor.rgb *= bokehColor.rgb;
+    return bokehColor;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT = (PSOutput)0;
+
+    float4 centerColor = PassSrg::m_colorAndDofFactorTexture.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    float dofFactor = centerColor.a;
+    float cocRadius = GetCocRadius(dofFactor);
+    float pencilMapTexcoordU = GetPencilMapTexcoordU(cocRadius);
+
+    // center pixel
+    float4 pencilMapColor = SamplePencilMap(pencilMapTexcoordU, 1.0f);
+
+    // Balance the weight to area ratio.
+    // This is an empirically found weight to give less importance to central samples
+    pencilMapColor.rgb *= 0.75f;
+    float4 pencilMapColorSum = pencilMapColor;
+    OUT.m_color = centerColor * pencilMapColor;
+
+    int sampleNumber = 6;
+    switch(o_sampleNumber)
+    {
+        case SampleNumber::Sample6:
+        {
+            sampleNumber = 6;
+            break;
+        }
+        case SampleNumber::Sample18:
+        {
+            sampleNumber = 18;
+            break;
+        }
+        case SampleNumber::Sample36:
+        {
+            sampleNumber = 36;
+            break;
+        }
+        case SampleNumber::Sample60:
+        {
+            sampleNumber = 60;
+            break;
+        }
+    }
+
+    // sampling around center pixel
+    for (int i = 0; i < sampleNumber; i++)
+    {
+        float4 sampleColor = SampleColorAndDofFactor(IN.m_texCoord, cocRadius, i);
+        pencilMapColor = SamplePencilMap(pencilMapTexcoordU, PassSrg::m_sampleTexcoordsRadius[i].z);
+
+        pencilMapColorSum += pencilMapColor;
+        OUT.m_color += sampleColor * float4(pencilMapColor.rgb, 1.0f);
+    }
+
+    OUT.m_color = OUT.m_color / pencilMapColorSum;
+
+    return OUT;
+}

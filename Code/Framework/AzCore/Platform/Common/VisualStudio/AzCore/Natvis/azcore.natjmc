@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NonUserCode xmlns="http://schemas.microsoft.com/vstudio/debugger/jmc/2015">
+  <!-- <Module Name="?:\Windows\System32\*.dll"/> -->
+  
+  <File Name="*\AzCore\std\*" />
+  <File Name="*\AzCore\Debug\Trace*" />
+  <File Name="*\AzCore\Debug\Stack*" />
+  <File Name="*\AzCore\EBus\*" />
+
+  <!-- Generated files-->
+  <File Name="*.generated*" />
+</NonUserCode>

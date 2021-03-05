@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/AssetProcessor/style">
+        <file>AssetProcessor.qss</file>
+        <file>AssetProcessorConfig.ini</file>
+        <file>AssetsTab.qss</file>
+        <file>LogsTab.qss</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>AssetProcessor_checkbox_blue_checked.png</file>
+        <file>AssetProcessor_checkbox_blue_unchecked.png</file>
+        <file>AssetProcessor_goto.svg</file>
+        <file>AssetProcessor_goto_hover.svg</file>
+        <file>AssetProcessor_arrow_left.svg</file>
+        <file>AssetProcessor_arrow_right.svg</file>
+        <file>AssetProcessor_plus.svg</file>
+        <file>AssetProcessor_arrow_down.svg</file>
+        <file>AssetProcessor_arrow_up.svg</file>
+        <file>AssetProcessor_refresh.png</file>
+        <file>lyassetprocessor.png</file>
+    </qresource>
+</RCC>

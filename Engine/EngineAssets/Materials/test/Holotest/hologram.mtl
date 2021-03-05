@@ -1,0 +1,27 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="SubMtl1" MtlFlags="524448" Shader="Hologram" GenMask="0" StringGenMask="" SurfaceType="mat_ice" Diffuse="0.8591736,0.17013837,0.031551391" Specular="0,0,0" Emittance="1,1,1,200" Opacity="0.23999999" Shininess="228" AlphaTest="0.11" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="materials/test/holotest/test2.tif">
+     <TexMod TexMod_RotateType="3" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TexMod_URotateRate="0.098876953" TexMod_URotatePhase="0.098876953" TexMod_URotateAmplitude="0.098876953" TexMod_URotateCenter="0.1" TexMod_VRotateRate="0.098876953" TexMod_VRotatePhase="0.098876953" TexMod_VRotateAmplitude="0.39550781" TexMod_VRotateCenter="0.1" TexMod_WRotateRate="0.098876953" TexMod_WRotatePhase="0.098876953" TexMod_WRotateAmplitude="0.098876953"/>
+    </Texture>
+    <Texture Map="Emittance" File="materials/test/holotest/test2.tif"/>
+   </Textures>
+   <PublicParams />
+  </Material>
+  <Material Name="SubMtl2" MtlFlags="524420" Shader="Hologram" GenMask="0" StringGenMask="" SurfaceType="mat_ice" Diffuse="0.024222942,0.024222942,0.024222942" Specular="0,0,0" Emittance="1,1,1,40" Opacity="0.38" Shininess="51" AlphaTest="0.18000001" vertModifType="1" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="materials/test/holotest/tews1.tif">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="5" TexMod_UOscillatorType="2" TexMod_UOscillatorRate="1.4" TexMod_UOscillatorPhase="1.7" TexMod_UOscillatorAmplitude="1.7" TileV="5" TexMod_VOscillatorType="2" TexMod_VOscillatorRate="0.60000002" TexMod_VOscillatorPhase="0.60000002" TexMod_VOscillatorAmplitude="0.60000002"/>
+    </Texture>
+    <Texture Map="Emittance" File="materials/test/holotest/tews1.tif"/>
+   </Textures>
+   <VertexDeform Type="1" DividerX="28.299999" DividerY="17.4" NoiseScale="1,1,1">
+    <WaveX Type="7" Amp="0.0099999998" Level="0.02" Phase="16.700001" Freq="0.51999998"/>
+    <WaveY Type="6" Amp="1" Level="1" Phase="1" Freq="1"/>
+   </VertexDeform>
+   <PublicParams />
+  </Material>
+ </SubMaterials>
+ <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

@@ -1,0 +1,70 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI/FrameAttachment.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ObjectCache.h>
+#include <AzCore/Memory/PoolAllocator.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        class ImageScopeAttachment;
+
+        /**
+         * A specialization of Attachment for an image. Provides access to the image.
+         */
+        class ImageFrameAttachment
+            : public FrameAttachment
+        {
+        public:
+            AZ_RTTI(ImageFrameAttachment, "{F620A6ED-C33A-4487-9BF7-12F652B8B1E3}", FrameAttachment);
+            AZ_CLASS_ALLOCATOR(ImageFrameAttachment, AZ::PoolAllocator, 0);
+            virtual ~ImageFrameAttachment() override = default;
+
+            /// Initialization for imported images.
+            ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<Image> image);
+
+            /// Initialization for transient images.
+            ImageFrameAttachment(const TransientImageDescriptor& descriptor);
+
+            /// Returns the first scope attachment in the linked list.
+            const ImageScopeAttachment* GetFirstScopeAttachment() const;
+            ImageScopeAttachment* GetFirstScopeAttachment();
+
+            /// Returns the last scope attachment in the linked list.
+            const ImageScopeAttachment* GetLastScopeAttachment() const;
+            ImageScopeAttachment* GetLastScopeAttachment();
+
+            /// Returns the image assigned to this attachment. This is not guaranteed to exist
+            /// until after frame graph compilation.
+            const Image* GetImage() const;
+            Image* GetImage();
+
+            /// Returns the image descriptor for this attachment.
+            const ImageDescriptor& GetImageDescriptor() const;
+
+            /// Returns an optimized clear value for the image by traversing the usage chain.
+            ClearValue GetOptimizedClearValue() const;
+
+        private:
+            ImageDescriptor m_imageDescriptor;
+
+            /// TODO: Replace with optional. A user clear value in the case of a transient attachment.
+            bool m_hasClearValueOverride = false;
+            ClearValue m_clearValueOverride;
+        };
+    }
+}

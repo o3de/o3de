@@ -1,0 +1,57 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: 
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+
+Version (1.00)
+
+Property
+{
+  Name = %SOFT_OBJECT_INTERSECTION
+  Mask = 0x1
+  Property    (Soft Intersections)
+  Description (Enables soft intersections with opaque scene geometry)
+}
+Property
+{
+  Name = %BACK_LIGHTING
+  Mask = 0x2
+  Property    (Back Lighting)
+  Description (Adds back lighting to volume silhouette when viewing against sun)
+}
+Property
+{
+  Name = %JITTERING
+  Mask = 0x4
+  Property    (Jittering)
+  Description (Enables jittering on cloud steps)
+}
+Property
+{
+  Name = %SOFT_JITTERING
+  Mask = 0x8
+  Property    (Soft Jittering)
+  Description (Softens the effect of jittering on volume objects)
+}
+Property
+{
+  Name = %CUSTOM_SETTINGS
+  Mask = 0x10
+  Property    (Use TOD Settings)
+  Description (Use the custom cloud settings from the TOD for lighting)
+}

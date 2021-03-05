@@ -1,0 +1,180 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "LmbrCentral_precompiled.h"
+#include "DiskShapeComponent.h"
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+
+namespace LmbrCentral
+{
+    void DiskShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
+    }
+
+    void DiskShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        incompatible.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        incompatible.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
+    }
+
+    void DiskShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+    }
+
+    void DiskShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DiskShapeDebugDisplayComponent, EntityDebugDisplayComponent>()
+                ->Version(1)
+                ->Field("Configuration", &DiskShapeDebugDisplayComponent::m_diskShapeConfig)
+                ;
+        }
+    }
+
+    void DiskShapeDebugDisplayComponent::Activate()
+    {
+        EntityDebugDisplayComponent::Activate();
+        ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void DiskShapeDebugDisplayComponent::Deactivate()
+    {
+        ShapeComponentNotificationsBus::Handler::BusDisconnect();
+        EntityDebugDisplayComponent::Deactivate();
+    }
+
+    void DiskShapeDebugDisplayComponent::Draw(AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        DrawDiskShape(m_diskShapeConfig.GetDrawParams(), m_diskShapeConfig, debugDisplay);
+    }
+
+    bool DiskShapeDebugDisplayComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
+    {
+        if (const auto config = azrtti_cast<const DiskShapeConfig*>(baseConfig))
+        {
+            m_diskShapeConfig = *config;
+            return true;
+        }
+        return false;
+    }
+
+    bool DiskShapeDebugDisplayComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
+    {
+        if (auto outConfig = azrtti_cast<DiskShapeConfig*>(outBaseConfig))
+        {
+            *outConfig = m_diskShapeConfig;
+            return true;
+        }
+        return false;
+    }
+
+    void DiskShapeDebugDisplayComponent::OnShapeChanged(ShapeChangeReasons changeReason)
+    {
+        if (changeReason == ShapeChangeReasons::ShapeChanged)
+        {
+            DiskShapeComponentRequestBus::EventResult(m_diskShapeConfig, GetEntityId(), &DiskShapeComponentRequests::GetDiskConfiguration);
+        }
+    }
+
+    void DiskShapeConfig::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DiskShapeConfig, ShapeComponentConfig>()
+                ->Version(1)
+                ->Field("Radius", &DiskShapeConfig::m_radius)
+                ;
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DiskShapeConfig>("Configuration", "Disk shape configuration parameters")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DiskShapeConfig::m_radius, "Radius", "Radius of disk")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ;
+            }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<DiskShapeConfig>()
+                ->Constructor()
+                ->Constructor<float>()
+                ->Property("Radius", BehaviorValueProperty(&DiskShapeConfig::m_radius))
+                ;
+        }
+    }
+
+    void DiskShapeComponent::Reflect(AZ::ReflectContext* context)
+    {
+        DiskShape::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DiskShapeComponent, AZ::Component>()
+                ->Version(1)
+                ->Field("DiskShape", &DiskShapeComponent::m_diskShape)
+                ;
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Constant("DiskShapeComponentTypeId", BehaviorConstant(DiskShapeComponentTypeId));
+
+            behaviorContext->EBus<DiskShapeComponentRequestBus>("DiskShapeComponentRequestsBus")
+                ->Event("GetDiskConfiguration", &DiskShapeComponentRequestBus::Events::GetDiskConfiguration)
+                ->Event("SetRadius", &DiskShapeComponentRequestBus::Events::SetRadius)
+                ->Event("GetRadius", &DiskShapeComponentRequestBus::Events::GetRadius)
+                ;
+        }
+    }
+
+    void DiskShapeComponent::Activate()
+    {
+        m_diskShape.Activate(GetEntityId());
+    }
+
+    void DiskShapeComponent::Deactivate()
+    {
+        m_diskShape.Deactivate();
+    }
+
+    bool DiskShapeComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
+    {
+        if (const auto config = azrtti_cast<const DiskShapeConfig*>(baseConfig))
+        {
+            m_diskShape.SetDiskConfiguration(*config);
+            return true;
+        }
+        return false;
+    }
+
+    bool DiskShapeComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
+    {
+        if (auto outConfig = azrtti_cast<DiskShapeConfig*>(outBaseConfig))
+        {
+            *outConfig = m_diskShape.GetDiskConfiguration();
+            return true;
+        }
+        return false;
+    }
+} // namespace LmbrCentral

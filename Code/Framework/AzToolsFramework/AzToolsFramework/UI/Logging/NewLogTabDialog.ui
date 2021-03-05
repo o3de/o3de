@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>newLogDialog</class>
+ <widget class="QDialog" name="newLogDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>610</width>
+    <height>230</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Create New Logging Tab</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnminimumwidth="0,0,0,80">
+   <property name="leftMargin">
+    <number>40</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>40</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="nameLabel">
+     <property name="text">
+      <string>Filter name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="tabNameEdit">
+     <property name="toolTip">
+      <string>Required!</string>
+     </property>
+     <property name="placeholderText">
+      <string>Hint text</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="windowNameBoxLabel">
+     <property name="text">
+      <string>Category filter (optional)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QComboBox" name="windowNameBox">
+     <property name="toolTip">
+      <string>Comma-Seperated List&lt;br&gt;Leave empty for all messages</string>
+     </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="filterLabel">
+     <property name="text">
+      <string>Text filter (optional)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QLineEdit" name="filterEdit">
+     <property name="placeholderText">
+      <string>Hint text</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="moreOptionsLabel">
+     <property name="text">
+      <string>More options</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QCheckBox" name="checkNormal">
+     <property name="text">
+      <string>Show messages</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QCheckBox" name="checkWarning">
+     <property name="text">
+      <string>Show warnings</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1" colspan="2">
+    <widget class="QCheckBox" name="checkError">
+     <property name="text">
+      <string>Show errors</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QCheckBox" name="checkDebug">
+     <property name="text">
+      <string>Show debug</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok|QDialogButtonBox::Cancel</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>newLogDialog</receiver>
+   <slot>attemptAccept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>99</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>230</x>
+     <y>116</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>newLogDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>59</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>attemptAccept()</slot>
+ </slots>
+</ui>

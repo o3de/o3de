@@ -1,0 +1,443 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include "EMotionFXConfig.h"
+#include "BlendTreeBlend2Node.h"
+#include "AnimGraphInstance.h"
+#include "AnimGraphManager.h"
+#include "AnimGraphMotionNode.h"
+#include "ActorInstance.h"
+#include "MotionInstance.h"
+#include "AnimGraphAttributeTypes.h"
+#include "TransformData.h"
+#include "Node.h"
+#include "AnimGraph.h"
+
+
+namespace EMotionFX
+{
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2Node, AnimGraphAllocator, 0)
+
+
+    BlendTreeBlend2Node::BlendTreeBlend2Node()
+        : BlendTreeBlend2NodeBase()
+    {
+    }
+
+
+    BlendTreeBlend2Node::~BlendTreeBlend2Node()
+    {
+    }
+
+
+    const char* BlendTreeBlend2Node::GetPaletteName() const
+    {
+        return "Blend Two";
+    }
+
+
+    void BlendTreeBlend2Node::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    {
+        if (mDisabled)
+        {
+            AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+            uniqueData->Clear();
+            return;
+        }
+
+        AnimGraphNode* weightNode = GetInputNode(INPUTPORT_WEIGHT);
+        if (weightNode)
+        {
+            UpdateIncomingNode(animGraphInstance, weightNode, timePassedInSeconds);
+        }
+
+        AnimGraphNode* nodeA;
+        AnimGraphNode* nodeB;
+        float weight;
+        FindBlendNodes(animGraphInstance, &nodeA, &nodeB, &weight, false, false);
+
+        if (!nodeA)
+        {
+            AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+            uniqueData->Clear();
+            return;
+        }
+
+        animGraphInstance->SetObjectFlags(nodeA->GetObjectIndex(), AnimGraphInstance::OBJECTFLAGS_IS_SYNCLEADER, true);
+        UpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
+
+        AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
+        uniqueData->Init(animGraphInstance, nodeA);
+
+        if (nodeB && nodeA != nodeB)
+        {
+            UpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
+
+            float factorA;
+            float factorB;
+            float playSpeed;
+            AnimGraphNode::CalcSyncFactors(animGraphInstance, nodeA, nodeB, m_syncMode, weight, &factorA, &factorB, &playSpeed);
+            uniqueData->SetPlaySpeed(playSpeed * factorA);
+        }
+    }
+
+
+    void BlendTreeBlend2Node::Output(AnimGraphInstance* animGraphInstance)
+    {
+        if (mDisabled)
+        {
+            RequestPoses(animGraphInstance);
+            AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
+            outputPose->InitFromBindPose(actorInstance);
+            return;
+        }
+
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+
+        AnimGraphNode* weightNode = GetInputNode(INPUTPORT_WEIGHT);
+        if (weightNode)
+        {
+            OutputIncomingNode(animGraphInstance, weightNode);
+        }
+
+        const size_t numNodes = uniqueData->mMask.size();
+        if (numNodes == 0)
+        {
+            OutputNoFeathering(animGraphInstance);
+        }
+        else
+        {
+            OutputFeathering(animGraphInstance, uniqueData);
+        }
+
+        if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
+        {
+            AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+        }
+    }
+
+
+    void BlendTreeBlend2Node::OutputNoFeathering(AnimGraphInstance* animGraphInstance)
+    {
+        ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
+
+        AnimGraphPose* outputPose;
+
+        AnimGraphNode* nodeA;
+        AnimGraphNode* nodeB;
+        float weight;
+        FindBlendNodes(animGraphInstance, &nodeA, &nodeB, &weight, false, true);
+
+        if (!nodeA)
+        {
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            outputPose->InitFromBindPose(actorInstance);
+            return;
+        }
+
+        if (!nodeB || weight < MCore::Math::epsilon)
+        {
+            OutputIncomingNode(animGraphInstance, nodeA);
+
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            *outputPose = *nodeA->GetMainOutputPose(animGraphInstance);
+            return;
+        }
+
+        if (weight < 1.0f - MCore::Math::epsilon)
+        {
+            OutputIncomingNode(animGraphInstance, nodeA);
+            OutputIncomingNode(animGraphInstance, nodeB);
+
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            *outputPose = *nodeA->GetMainOutputPose(animGraphInstance);
+            outputPose->GetPose().Blend(&nodeB->GetMainOutputPose(animGraphInstance)->GetPose(), weight);
+        }
+        else
+        {
+            OutputIncomingNode(animGraphInstance, nodeB);
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            *outputPose = *nodeB->GetMainOutputPose(animGraphInstance);
+        }
+    }
+
+
+    void BlendTreeBlend2Node::OutputFeathering(AnimGraphInstance* animGraphInstance, UniqueData* uniqueData)
+    {
+        AnimGraphPose* outputPose;
+
+        float blendWeight;
+        AnimGraphNode* nodeA;
+        AnimGraphNode* nodeB;
+        FindBlendNodes(animGraphInstance, &nodeA, &nodeB, &blendWeight, false, true);
+
+        if (!nodeA)
+        {
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            outputPose->InitFromBindPose(animGraphInstance->GetActorInstance());
+            return;
+        }
+
+        OutputIncomingNode(animGraphInstance, nodeA);
+        if (!nodeB || blendWeight < MCore::Math::epsilon)
+        {
+            RequestPoses(animGraphInstance);
+            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+            *outputPose = *nodeA->GetMainOutputPose(animGraphInstance);
+            return;
+        }
+
+        OutputIncomingNode(animGraphInstance, nodeB);
+        const AnimGraphPose* maskPose = nodeB->GetMainOutputPose(animGraphInstance);
+        const Pose& localMaskPose = maskPose->GetPose();
+
+        RequestPoses(animGraphInstance);
+        outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+        *outputPose = *nodeA->GetMainOutputPose(animGraphInstance);
+        Pose& outputLocalPose = outputPose->GetPose();
+
+        const size_t numNodes = uniqueData->mMask.size();
+        if (numNodes > 0)
+        {
+            Transform transform;
+            for (size_t n = 0; n < numNodes; ++n)
+            {
+                const float finalWeight = blendWeight /* * uniqueData->mWeights[n]*/;
+                const uint32 nodeIndex = uniqueData->mMask[n];
+                transform = outputLocalPose.GetLocalSpaceTransform(nodeIndex);
+                transform.Blend(localMaskPose.GetLocalSpaceTransform(nodeIndex), finalWeight);
+                outputLocalPose.SetLocalSpaceTransform(nodeIndex, transform);
+            }
+        }
+    }
+
+
+    void BlendTreeBlend2Node::UpdateMotionExtraction(AnimGraphInstance* animGraphInstance, AnimGraphNode* nodeA, AnimGraphNode* nodeB, float weight, UniqueData* uniqueData)
+    {
+        AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
+        data->ZeroTrajectoryDelta();
+
+        const ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
+        const Actor* actor = actorInstance->GetActor();
+        AnimGraphRefCountedData* nodeAData = nodeA->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
+        AnimGraphRefCountedData* nodeBData = nodeB ? nodeB->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData() : nullptr;
+
+        if (!nodeAData)
+        {
+            AZ_Assert(false, "BlendTreeBlend2Node::UpdateMotionExtraction %s has no RefCountedData", nodeA->GetName());
+            return;
+        }
+
+        Transform delta = Transform::CreateIdentityWithZeroScale();
+        Transform deltaMirrored = Transform::CreateIdentityWithZeroScale();
+        const bool hasMotionExtractionNodeInMask = (uniqueData->mMask.size() == 0) || (uniqueData->mMask.size() > 0 && AZStd::find(uniqueData->mMask.begin(), uniqueData->mMask.end(), actor->GetMotionExtractionNodeIndex()) != uniqueData->mMask.end());
+        CalculateMotionExtractionDelta(m_extractionMode, nodeAData, nodeBData, weight, hasMotionExtractionNodeInMask, delta, deltaMirrored);
+
+        data->SetTrajectoryDelta(delta);
+        data->SetTrajectoryDeltaMirrored(deltaMirrored);
+    }
+
+
+    void BlendTreeBlend2Node::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    {
+        if (mDisabled)
+        {
+            return;
+        }
+
+        UniqueData* uniqueData = static_cast<BlendTreeBlend2Node::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
+        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).mConnection;
+        if (con)
+        {
+            AnimGraphNodeData* sourceNodeUniqueData = con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance);
+            sourceNodeUniqueData->SetGlobalWeight(uniqueData->GetGlobalWeight());
+            sourceNodeUniqueData->SetLocalWeight(1.0f);
+            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+        }
+
+        AnimGraphNode* nodeA;
+        AnimGraphNode* nodeB;
+        float weight;
+        FindBlendNodes(animGraphInstance, &nodeA, &nodeB, &weight, false, false);
+
+        if (!nodeA)
+        {
+            return;
+        }
+
+        // Both nodes need to have their weight updated and their TopDownUpdate be called
+        // Then one of the node can be removed for the synching if it has zero weight
+        // Please Note: the TopDownUpdate needs to be called afer the synching
+        AnimGraphNode* nodeWeightUpdateA = nodeA;
+        AnimGraphNode* nodeWeightUpdateB = nodeB;
+
+        if (m_syncMode != SYNCMODE_DISABLED)
+        {
+            const bool resync = (uniqueData->mSyncTrackNode != nodeA);
+            if (resync)
+            {
+                nodeA->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_RESYNC, true);
+                if (nodeB)
+                {
+                    nodeB->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_RESYNC, true);
+                }
+
+                uniqueData->mSyncTrackNode = nodeA;
+            }
+
+            nodeA->AutoSync(animGraphInstance, this, 0.0f, SYNCMODE_TRACKBASED, false);
+
+            for (uint32 i = 0; i < 2; ++i)
+            {
+                BlendTreeConnection* connection = mInputPorts[INPUTPORT_POSE_A + i].mConnection;
+                if (!connection)
+                {
+                    continue;
+                }
+
+                if (animGraphInstance->GetIsObjectFlagEnabled(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
+                {
+                    connection->GetSourceNode()->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, true);
+                }
+
+                AnimGraphNode* nodeToSync = connection->GetSourceNode();
+                if (nodeToSync == nodeA)
+                {
+                    continue;
+                }
+
+                nodeToSync->AutoSync(animGraphInstance, nodeA, weight, m_syncMode, false);
+            }
+        }
+        else
+        {
+            if (animGraphInstance->GetIsObjectFlagEnabled(nodeA->GetObjectIndex(), AnimGraphInstance::OBJECTFLAGS_SYNCED))
+            {
+                nodeA->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, false);
+            }
+
+            if (nodeB && animGraphInstance->GetIsObjectFlagEnabled(nodeB->GetObjectIndex(), AnimGraphInstance::OBJECTFLAGS_SYNCED))
+            {
+                nodeB->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, false);
+            }
+        }
+
+        AnimGraphNodeData* uniqueDataNodeA = nodeWeightUpdateA->FindOrCreateUniqueNodeData(animGraphInstance);
+        if (!nodeWeightUpdateB)
+        {
+            uniqueDataNodeA->SetGlobalWeight(uniqueData->GetGlobalWeight());
+            uniqueDataNodeA->SetLocalWeight(1.0f);
+        }
+        else
+        {
+            uniqueDataNodeA->SetGlobalWeight(uniqueData->GetGlobalWeight() * (1.0f - weight));
+            uniqueDataNodeA->SetLocalWeight(1.0f - weight);
+            if (nodeWeightUpdateB)
+            {
+                AnimGraphNodeData* uniqueDataNodeB = nodeWeightUpdateB->FindOrCreateUniqueNodeData(animGraphInstance);
+                uniqueDataNodeB->SetGlobalWeight(uniqueData->GetGlobalWeight() * weight);
+                uniqueDataNodeB->SetLocalWeight(weight);
+                nodeWeightUpdateB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            }
+        }
+        nodeWeightUpdateA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+    }
+
+
+    void BlendTreeBlend2Node::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    {
+        if (mDisabled)
+        {
+            RequestRefDatas(animGraphInstance);
+            UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+            AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
+            data->ClearEventBuffer();
+            data->ZeroTrajectoryDelta();
+            return;
+        }
+
+        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).mConnection;
+        if (con)
+        {
+            con->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        }
+
+        AnimGraphNode* nodeA;
+        AnimGraphNode* nodeB;
+        float weight;
+        FindBlendNodes(animGraphInstance, &nodeA, &nodeB, &weight, false, false);
+
+        if (!nodeA)
+        {
+            RequestRefDatas(animGraphInstance);
+            UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+            AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
+            data->ClearEventBuffer();
+            data->ZeroTrajectoryDelta();
+            return;
+        }
+
+        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        if (nodeB && nodeA != nodeB)
+        {
+            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        }
+
+        RequestRefDatas(animGraphInstance);
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+        AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
+        data->ClearEventBuffer();
+        data->ZeroTrajectoryDelta();
+
+        FilterEvents(animGraphInstance, m_eventMode, nodeA, nodeB, weight, data);
+
+        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != MCORE_INVALIDINDEX32)
+        {
+            UpdateMotionExtraction(animGraphInstance, nodeA, nodeB, weight, uniqueData);
+        }
+    }
+
+
+    void BlendTreeBlend2Node::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<BlendTreeBlend2Node, BlendTreeBlend2NodeBase>()
+            ->Version(1)
+        ;
+
+        AZ::EditContext* editContext = serializeContext->GetEditContext();
+        if (!editContext)
+        {
+            return;
+        }
+
+        editContext->Class<BlendTreeBlend2Node>("Blend 2", "Blend 2 attributes")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+        ;
+    }
+} // namespace EMotionFX

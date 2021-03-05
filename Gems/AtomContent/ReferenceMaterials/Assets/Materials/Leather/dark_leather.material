@@ -1,0 +1,21 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/Leather/leather_diffuse.jpg"
+        },
+        "normal": {
+            "textureMap": "Materials/Leather/leather_normal.jpg"
+        },
+        "roughness": {
+            "textureMap": "Materials/Leather/leather_roughness.jpg"
+        },
+        "uv": {
+            "tileU": 0.75,
+            "tileV": 0.75
+        }
+    }
+}

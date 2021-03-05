@@ -1,0 +1,53 @@
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
+import logging
+import os
+import subprocess
+
+import ly_test_tools
+from ly_test_tools.environment.process_utils import kill_processes_named as kill_processes_named
+
+logger = logging.getLogger(__name__)
+
+
+def start_asset_processor(bin_dir):
+    """
+    Starts the AssetProcessor from the given bin directory. Raises a RuntimeError if the process fails.
+
+    :param bin_dir: The bin directory from which to launch the AssetProcessor executable.
+    :return: A subprocess.Popen object for the AssetProcessor process.
+    """
+    os.chdir(bin_dir)
+    asset_processor = subprocess.Popen(['AssetProcessor.exe'])
+    return_code = asset_processor.poll()
+
+    if return_code is not None and return_code != 0:
+        logger.error("Failed to start AssetProcessor")
+        raise RuntimeError("AssetProcessor exited with code {}".format(return_code))
+    else:
+        logger.info("AssetProcessor is running")
+        return asset_processor
+
+
+def kill_asset_processor():
+    """
+    Kill the AssetProcessor and all its related processes.
+
+    :return: None
+    """
+    
+    kill_processes_named('AssetProcessor_tmp', ignore_extensions=True)
+    kill_processes_named('AssetProcessor', ignore_extensions=True)
+    kill_processes_named('AssetProcessorBatch', ignore_extensions=True)
+    kill_processes_named('AssetBuilder', ignore_extensions=True)
+    kill_processes_named('rc', ignore_extensions=True)
+

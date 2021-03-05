@@ -1,0 +1,153 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "DepthOfField.azsli"
+
+#include <viewsrg.srgi>
+
+#define SQRT2_HALF 0.707106781  // sqrt(2) / 2
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorAndDofFactor;
+    float2 m_blendFactor;
+    float2 m_inputResolutionInverse;
+    float m_radiusMin;
+    float m_radiusMax;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+// Return the average of the valid colors obtained from the four input texture coordinates.
+// Valid colors are colors where the blend exceeds 0.
+// (rgb : the average valid color, a : the weight value)
+// This function is used to pick up valid surrounding colors.
+float4 SampleAverageValidColors(float2 tex0, float2 tex1, float2 tex2, float2 tex3)
+{
+    float4 color0 = PassSrg::m_colorAndDofFactor.Sample(PassSrg::PointSampler, tex0);
+    float4 color1 = PassSrg::m_colorAndDofFactor.Sample(PassSrg::PointSampler, tex1);
+    float4 color2 = PassSrg::m_colorAndDofFactor.Sample(PassSrg::PointSampler, tex2);
+    float4 color3 = PassSrg::m_colorAndDofFactor.Sample(PassSrg::PointSampler, tex3);
+
+    float4 dofFactors = float4(color0.a, color1.a, color2.a, color3.a);
+    float4 blends = ConvertBlendsFloat4(dofFactors , PassSrg::m_blendFactor);
+    // 0.25 is 1 / pixel number.
+    float4 masks = blends > 0.0f ? 0.25f : 0.0f;
+    float weight = dot(masks, (float4)1.0f);
+
+    float4 color = (float4)0;
+    color.rgb  = color0.rgb * masks.x;
+    color.rgb += color1.rgb * masks.y;
+    color.rgb += color2.rgb * masks.z;
+    color.rgb += color3.rgb * masks.w;
+    color.a = weight;
+
+    return color;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT = (PSOutput)0;
+
+    float4 color = PassSrg::m_colorAndDofFactor.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    float dofFactor = color.a;
+    OUT.m_color.a = dofFactor;
+
+    // If the blend ratio is 0 or less, set pixel to black.
+    // This disables the color of the foreground object so that the color does not seep into the background blur.
+
+    float blend = ConvertBlend(dofFactor, PassSrg::m_blendFactor);
+    float mask = blend > 0.0f ? 1.0f : 0.0f;
+    OUT.m_color.rgb = color.rgb * mask;
+    if(mask > 0.0f)
+    {
+        return OUT;
+    }
+
+    // With the above processing, a slightly black area appears on the boundary with the foreground object because of blur.
+    // Expand the valid area to prevent it.
+    // The range to expand is between the minimum and maximum of the blur radius.
+    // Specifically, if a valid color is found around an invalid pixel, get that color.
+    // Minimize the number of samples for performance.
+
+    // The following radiuses are experimentally obtained values to eliminate black areas.
+
+    float2 screenRatio = float2(PassSrg::m_inputResolutionInverse.x / PassSrg::m_inputResolutionInverse.y, 1.0f);
+    // c : center pixel (IN.m_texCoord)
+    // o : sample pixel
+    // |   o   |
+    // | o c o |
+    // |   o   |
+    float radius = lerp(PassSrg::m_radiusMin, PassSrg::m_radiusMax, 0.1f);
+    float2 scale = radius * screenRatio;
+    float2 tex0 = IN.m_texCoord + scale * float2(-1.0f, 0.0f);
+    float2 tex1 = IN.m_texCoord + scale * float2( 1.0f, 0.0f);
+    float2 tex2 = IN.m_texCoord + scale * float2( 0.0f,-1.0f);
+    float2 tex3 = IN.m_texCoord + scale * float2( 0.0f, 1.0f);
+    color = SampleAverageValidColors(tex0, tex1, tex2, tex3);
+    float weight = color.a;
+    if (weight > 0.0f)
+    {
+        OUT.m_color.rgb = color.rgb / weight;
+        return OUT;
+    }
+
+    // | o     o |
+    // |    c    |
+    // | o     o |
+    radius = lerp(PassSrg::m_radiusMin, PassSrg::m_radiusMax, 0.3f);
+    scale = radius * screenRatio;
+    tex0 = IN.m_texCoord + scale * float2(-SQRT2_HALF,-SQRT2_HALF);
+    tex1 = IN.m_texCoord + scale * float2( SQRT2_HALF,-SQRT2_HALF);
+    tex2 = IN.m_texCoord + scale * float2(-SQRT2_HALF, SQRT2_HALF);
+    tex3 = IN.m_texCoord + scale * float2( SQRT2_HALF, SQRT2_HALF);
+    color = SampleAverageValidColors(tex0, tex1, tex2, tex3);
+    weight = color.a;
+    if (weight > 0.0f)
+    {
+        OUT.m_color.rgb = color.rgb / weight;
+        return OUT;
+    }
+
+    // |      o      |
+    // |             |
+    // | o    c    o |
+    // |             |
+    // |      o      |
+    radius = lerp(PassSrg::m_radiusMin, PassSrg::m_radiusMax, 0.5f);
+    scale = radius * screenRatio;
+    tex0 = IN.m_texCoord + scale * float2(-1.0f, 0.0f);
+    tex1 = IN.m_texCoord + scale * float2( 1.0f, 0.0f);
+    tex2 = IN.m_texCoord + scale * float2( 0.0f,-1.0f);
+    tex3 = IN.m_texCoord + scale * float2( 0.0f, 1.0f);
+    color = SampleAverageValidColors(tex0, tex1, tex2, tex3);
+    weight = color.a;
+    if (weight > 0.0f)
+    {
+        OUT.m_color.rgb = color.rgb / weight;
+        return OUT;
+    }
+
+    // If there are no valid colors around this pixel, pass here.
+    // OUT.m_color.rgb at this time is 0.
+    return OUT;
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon / Shapes / Disk Shape</title>
+    <defs>
+        <path class="cls-1" d="M16.769,4.552c2.715,1.766,2.78,6.479.146,10.526s-6.969,5.9-9.683,4.13-2.78-6.479-.146-10.526S14.054,2.786,16.769,4.552Zm-0.9,1.533c2.2,1.434,2.256,5.258.119,8.543s-5.656,4.785-7.859,3.352-2.256-5.258-.119-8.543S13.669,4.652,15.872,6.085Zm-5.165,4.2,1.71,1.112-0.553.85-1.709-1.112Z" id="path-1" transform="translate(0 0.125)"/>
+    </defs>
+    <g id="icon-/-Shapes-/-Disk-Shape" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#5A69A1" fill-rule="evenodd" xlink:href="#path-1"></use>
+    </g>
+</svg>

@@ -1,0 +1,36 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "a218db9eb2114477b46600fea4441a6c",
+            "VersionConstraints": [
+                "~>0.1.0"
+            ],
+            "_comment": "Atom RPI"
+        },
+        {
+            "Uuid": "c7ff89ad6e8b4b45b2fadef2bcf12d6e",
+            "VersionConstraints": [
+                "~>0.1.0"
+            ],
+            "_comment": "Atom_Bootstrap"
+        }
+    ],    
+    "GemFormatVersion": 4,
+    "Uuid": "b55b2738aa4a46c8b034fe98e6e5158b",
+    "Name": "Atom_AtomBridge",
+    "DisplayName": "Atom.AtomBridge",
+    "Version": "0.1.0",
+    "Summary": "A short description of my Gem.",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ]
+}

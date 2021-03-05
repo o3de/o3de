@@ -1,0 +1,5 @@
+<RCC>
+	<qresource prefix="/Icons">
+		<file>lyeditor.ico</file>
+	</qresource>
+</RCC>

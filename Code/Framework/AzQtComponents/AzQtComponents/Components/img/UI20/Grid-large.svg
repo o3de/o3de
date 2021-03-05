@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59 (86127) - https://sketch.com -->
+    <title>Icons / System / Grid - large</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Grid---large" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M21,13 L21,21 L13,21 L13,13 L21,13 Z M11,13 L11,21 L3,21 L3,13 L11,13 Z M11,3 L11,11 L3,11 L3,3 L11,3 Z M21,3 L21,11 L13,11 L13,3 L21,3 Z" id="Combined-Shape" fill="#D8D8D8"></path>
+    </g>
+</svg>

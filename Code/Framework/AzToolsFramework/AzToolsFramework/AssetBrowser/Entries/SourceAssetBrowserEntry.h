@@ -1,0 +1,83 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AzCore/std/string/string.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Uuid.h>
+
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/Thumbnails/Thumbnail.h>
+
+#include <QObject>
+#include <QModelIndex>
+
+namespace AZ
+{
+    class ReflectContext;
+}
+
+namespace AzToolsFramework
+{
+    namespace AssetBrowser
+    {
+        //! SourceAssetBrowserEntry represents source entry.
+        class SourceAssetBrowserEntry
+            : public AssetBrowserEntry
+        {
+            friend class RootAssetBrowserEntry;
+
+        public:
+            AZ_RTTI(SourceAssetBrowserEntry, "{9FD4FF76-4CC3-4E96-953F-5BF63C2E1F1D}", AssetBrowserEntry);
+            AZ_CLASS_ALLOCATOR(SourceAssetBrowserEntry, AZ::SystemAllocator, 0);
+
+            SourceAssetBrowserEntry() = default;
+            ~SourceAssetBrowserEntry() override;
+
+            QVariant data(int column) const override;
+            static void Reflect(AZ::ReflectContext* context);
+            AssetEntryType GetEntryType() const override;
+
+            const AZStd::string& GetExtension() const;
+            AZ::s64 GetFileID() const;
+            AZ::s64 GetSourceID() const;
+            AZ::s64 GetScanFolderID() const;
+
+            //! returns the asset type of the first child (product) that isn't an invalid type.
+            AZ::Data::AssetType GetPrimaryAssetType() const;
+
+            //! Returns true if any children (products) are the given asset type
+            bool HasProductType(const AZ::Data::AssetType& assetType) const;
+            SharedThumbnailKey CreateThumbnailKey() override;
+            SharedThumbnailKey GetSourceControlThumbnailKey() const;
+            const AZ::Uuid& GetSourceUuid() const;
+
+            static const SourceAssetBrowserEntry* GetSourceByUuid(const AZ::Uuid& sourceUuid);
+
+        protected:
+            void UpdateChildPaths(AssetBrowserEntry* child) const override;
+            void PathsUpdated() override;
+
+        private:
+            AZStd::string m_extension;
+            AZ::s64 m_fileId = -1;
+            AZ::s64 m_sourceId = -1;
+            AZ::s64 m_scanFolderId = -1;
+            AZ::Uuid m_sourceUuid;
+            SharedThumbnailKey m_sourceControlThumbnailKey;
+
+            void UpdateSourceControlThumbnail();
+
+            AZ_DISABLE_COPY_MOVE(SourceAssetBrowserEntry);
+        };
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework

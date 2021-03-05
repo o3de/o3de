@@ -1,0 +1,21 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "metallic": {
+            "useTexture": false
+        },
+        "normal": {
+            "useTexture": false
+        },
+        "roughness": {
+            "useTexture": false
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true,
+            "useTexture": false
+        }
+    }
+}

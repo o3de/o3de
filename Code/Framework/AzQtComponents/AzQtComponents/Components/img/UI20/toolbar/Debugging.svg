@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Editor / Debugging</title>
+    <g id="Icons-/-Editor-/-Debugging" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M17,9 L17,16 C17,18.4185387 15.2828356,20.4360122 13.0011864,20.8997409 L13,13 L11,13 L11.0000852,20.8999992 C8.7863647,20.4506779 7.10371875,18.5388174 7.00461951,16.2168896 L7,16 L7,9 L17,9 Z M12,3 C14.4188915,3 16.4366008,4.71766536 16.8999437,6.99981203 L7.10005553,6.99981569 C7.56339708,4.7176672 9.58110721,3 12,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <rect id="Rectangle" fill="#FFFFFF" transform="translate(5.500000, 9.000000) rotate(30.000000) translate(-5.500000, -9.000000) " x="3" y="8" width="5" height="2"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="3" y="13" width="5" height="2"></rect>
+        <polygon id="Rectangle" fill="#FFFFFF" points="4.02512627 20.0606602 7.56066017 16.5251263 8.97487373 17.9393398 5.43933983 21.4748737"></polygon>
+        <polygon id="Rectangle" fill="#FFFFFF" points="19.9748737 20.0606602 16.4393398 16.5251263 15.0251263 17.9393398 18.5606602 21.4748737"></polygon>
+        <rect id="Rectangle" fill="#FFFFFF" x="16" y="13" width="5" height="2"></rect>
+        <polygon id="Rectangle" fill="#FFFFFF" points="20.1650635 6.8839746 15.8349365 9.3839746 16.8349365 11.1160254 21.1650635 8.6160254"></polygon>
+    </g>
+</svg>

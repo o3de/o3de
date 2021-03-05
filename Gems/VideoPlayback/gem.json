@@ -1,0 +1,25 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "632473900ed84df3a2bad2887a3bff56",
+    "Name": "VideoPlayback",
+    "DisplayName": "Video Playback",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Allows for full motion video playback during gameplay. This includes 360 degree stereo video. WARNING: using this Gem requires that you have provided a copy of FFmpeg. It is suggested that you pay close attention to the licenses associated with this library.",
+    "Tags": ["Video"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "560d69cbaafd40bea8a09bccfe7f77e6",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "VideoPlaybackFramework"
+        }
+    ]
+}

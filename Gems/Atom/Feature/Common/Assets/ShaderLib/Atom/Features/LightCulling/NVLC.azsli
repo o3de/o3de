@@ -1,0 +1,282 @@
+// Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//  * Neither the name of NVIDIA CORPORATION nor the names of its
+//    contributors may be used to endorse or promote products derived
+//    from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+// OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------------
+
+#define Depth_to_Z(d, unprojectZ)                                      (unprojectZ.x / (d + unprojectZ.y))
+
+ 
+#define NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN                256
+#define NVLC_MAX_BINS                                   8
+#define LOG_MAX_BINS                                    3 
+
+#define NVLC_ALL_BIN_BITS                               ((1 << NVLC_MAX_BINS) - 1)
+#define NVLC_BINS_MASK                                  (NVLC_MAX_BINS - 1)
+
+// We terminate the entire list of lights with a single marker of this type
+#define NVLC_END_OF_LIST                                0xFFFF
+
+// Marks the end of a group of lights in the LightList and LightListRemapped buffers, a group being a bunch of point/spot/disk/etc lights. 
+#define NVLC_END_OF_GROUP                               0xFFFE
+
+// Some macros to assist with a reversed depth
+// Having these as macros helps if we decide we want to use non-reversed depth at some point
+
+#define DEPTH_NEAR                                  1.0
+#define DEPTH_FAR                                   0.0
+#define DEPTH_MIN                                   max
+#define DEPTH_MAX                                   min
+#define DEPTH_InterlockedMin                        InterlockedMax
+#define DEPTH_InterlockedMax                        InterlockedMin
+#define InfDepthToNearPlane(d)                      max(d, step(d, 0.0f))
+#define DepthLessThanInf(d)                         (d > 0.0f)
+
+// We are using RH coordinate system on Atom so some calculations need to be reversed in order to work
+// Should be a free operation according to Drobot
+#define RH_COORD_SYSTEM_REVERSE                        -1.0f
+
+struct TileLightData
+{
+    float zNear;
+    float zFar;
+    
+    // In the TilePrepare shader we analyze the depth buffer precisely and divide the depth along Z into bins
+    // If there is a pixel of opaque geometry there, we mark a bit in this bin.
+    uint mask;
+    uint logMaxBins;
+};
+
+ 
+bool Light_IsInsideBin(uint package, uint bin)
+{
+    return (package & (1 << bin)) != 0;
+}
+
+uint PackLightIndexWithBinMask(uint ind, uint bins)
+{
+    return (ind << 16) | bins;
+}
+
+uint Light_GetIndex(uint package)
+{
+    return package >> 16;
+}
+
+// This will convert that 0 to 1 value into 0.0 to 31.99999
+// IMPORTANT: we want to avoid getting exact value "32", so decrease by 1 ULP
+#define Tile_UnitValueToBit(x)          (saturate(x) * asfloat( asuint(32.0) - 1 ) )
+
+static const uint4 g_binMask0[] =
+{
+    uint4(0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000),
+    uint4(0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000),
+    uint4(0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000),
+    uint4(0x0000000F, 0x000000F0, 0x00000F00, 0x0000F000),
+};
+
+static uint4 g_binMask1[] =
+{
+    uint4(0x00000000, 0x00000000, 0x00000000, 0x00000000),
+    uint4(0x00000000, 0x00000000, 0x00000000, 0x00000000),
+    uint4(0x00000000, 0x00000000, 0x00000000, 0x00000000),
+    uint4(0x000F0000, 0x00F00000, 0x0F000000, 0xF0000000),
+};
+
+// Unpacks light culling tile data that was packed by the LightCullingTilePrepare shader
+TileLightData Tile_UnpackData(uint4 pack)
+{
+    TileLightData data;
+    data.zNear              = asfloat(pack.x);
+
+    // NOTE: we have to add lost bits to be conservative
+    data.zFar               = asfloat( pack.y | NVLC_BINS_MASK );
+    data.mask               = pack.z;
+    data.logMaxBins         = pack.y & NVLC_BINS_MASK;
+
+    return data;
+}
+
+// Used by the forward shader, given a fragment to shade, find the bin to lookup
+uint NVLC_GetBin(const float viewZ, const TileLightData data)
+{
+    const float viewZCoordSystemAdjusted = viewZ * RH_COORD_SYSTEM_REVERSE;
+    const float zNearCoordSystemAdjusted = data.zNear * RH_COORD_SYSTEM_REVERSE;
+    const float zFarCoordSystemAdjusted = data.zFar * RH_COORD_SYSTEM_REVERSE;
+
+    float f = saturate( (abs(viewZCoordSystemAdjusted) - zNearCoordSystemAdjusted) / (zFarCoordSystemAdjusted - zNearCoordSystemAdjusted) );
+    float bin = min(f, 0.999999) * float(1 << data.logMaxBins);
+
+    return uint(bin);
+}
+
+// Return true/false if an object with the given Z bounds intersects the set bits inside this tile
+bool IsObjectInsideTile(TileLightData data, float2 objectMinMax, inout uint package)
+{
+    data.zNear *= RH_COORD_SYSTEM_REVERSE;
+    data.zFar *= RH_COORD_SYSTEM_REVERSE;
+    objectMinMax *= RH_COORD_SYSTEM_REVERSE;
+
+    // Convert object z into [0 to 1] where 0 is the start of the tile and 1 is the end of the tile
+    float2 objectMinMaxNormalized = (objectMinMax - data.zNear) / (data.zFar - data.zNear);
+
+    // Convert [0 to 1] to [0 to 31.9999]
+    float2 fb = Tile_UnitValueToBit(objectMinMaxNormalized);
+    
+    // Sets a bit indicating where the object max is and another bit where the object min is
+    uint2 extents = uint2(1, 1) << uint2(fb);
+    
+    // Create a mask that sets all bits in between extents.x and extents.y
+    uint objectMask = ((extents.y - 1) | extents.y) & ~(extents.x - 1);
+
+    uint overlap = data.mask & objectMask;
+    overlap = (objectMinMaxNormalized.x <= 1.0 && objectMinMaxNormalized.y >= 0.0) ? overlap : 0;
+
+    // At this point overlap contains 32 bits indicating where the object overlaps with the tile
+    // Divide these 32 bits into (probably 8) bins and set a bit in package indicating if there is any overlap in that range     
+    uint4 cmp = overlap & g_binMask0[data.logMaxBins];
+
+    package |= cmp.x != 0 ? (1 << 0) : 0;
+    package |= cmp.y != 0 ? (1 << 1) : 0;
+    package |= cmp.z != 0 ? (1 << 2) : 0;
+    package |= cmp.w != 0 ? (1 << 3) : 0;
+
+    cmp = overlap & g_binMask1[data.logMaxBins];
+
+    package |= cmp.x != 0 ? (1 << 4) : 0;
+    package |= cmp.y != 0 ? (1 << 5) : 0;
+    package |= cmp.z != 0 ? (1 << 6) : 0;
+    package |= cmp.w != 0 ? (1 << 7) : 0;
+
+    return overlap != 0;
+}
+
+// Given Z in the range of minmaxz, convert it to a 0 to 1 value
+// e.g. if minmaz = {0.2, 0.7} and z is 0.45, return 0.5
+float2 RemapZToUnit(float2 z, float2 minmaxz)
+{
+    return (z - (float2)minmaxz.x) / (minmaxz.y - minmaxz.x);
+}
+
+float4 RemapZToUnit(float4 z, float2 minmaxz)
+{
+    return (z - (float4)minmaxz.x) / (minmaxz.y - minmaxz.x);
+}
+
+uint DepthSamplesToBinMask2x(float2 d, float2 minmaxz, float2 unprojectZ)
+{
+    float2 z = Depth_to_Z(d, unprojectZ);
+    
+    // Tile_UnitValueToBit will convert that 0 to 1 value into 0.0 to 31.99999
+    float2 bit = Tile_UnitValueToBit(RemapZToUnit(z, minmaxz));
+
+    // Convert [0.0, 31.99] to [0x00000001, 0x80000000]
+    // i.e. just set a single bit in the mask indicating where this z value is
+    uint2 mask = uint2(1, 1) << uint2(bit);
+
+    // zero out any bits that are at infinity
+    bool2 cmp = DepthLessThanInf(d); 
+
+    mask.x = cmp.x ? mask.x : 0;
+    mask.y = cmp.y ? mask.y : 0;
+
+    return mask.x | mask.y;
+}
+
+uint DepthSamplesToBinMask4x(float4 d, float2 minmaxz, float2 unprojectZ)
+{
+    float4 z = Depth_to_Z(d, unprojectZ);
+    
+    // Tile_UnitValueToBit will convert that 0 to 1 value into 0.0 to 31.99999
+    float4 bit = Tile_UnitValueToBit(RemapZToUnit(z, minmaxz));
+
+    // Convert [0.0, 31.99] to [0x00000001, 0x80000000]
+    // i.e. just set a single bit in the mask indicating where this z value is
+    uint4 mask = uint4(1, 1, 1, 1) << uint4(bit);
+
+    // zero out any bits that are at infinity
+    bool4 cmp = DepthLessThanInf(d);
+
+    mask.x = cmp.x ? mask.x : 0;
+    mask.y = cmp.y ? mask.y : 0;
+    mask.z = cmp.z ? mask.z : 0;
+    mask.w = cmp.w ? mask.w : 0;
+
+
+    // combine all bit masks into a single mask
+    mask.xy |= mask.zw;
+    mask.x |= mask.y;
+
+    return mask.x;
+}
+
+float2 ComputeDepthMinMaxFrom2Samples(float2 d)
+{
+    float2 t;
+
+    t.x = DEPTH_MIN(d.x, d.y);
+    d = InfDepthToNearPlane(d);
+    t.y = DEPTH_MAX(d.x, d.y);
+
+    return t;
+}
+
+float2 ComputeDepthMinMaxFrom4Samples(float4 d)
+{
+    float4 t;
+
+    t.xy = DEPTH_MIN(d.xy, d.zw);
+    t.x = DEPTH_MIN(t.x, t.y);
+
+    d = InfDepthToNearPlane(d);
+
+    t.yz = DEPTH_MAX(d.xy, d.zw);
+    t.y = DEPTH_MAX(t.y, t.z);
+
+    return t.xy;
+}
+
+// Builds a view space AABB encompassing the tile
+void BuildAabb(float4 tileRect, TileLightData tileLightData, out float3 aabbCenter, out float3 aabbExtents)
+{  
+    float nearz = tileLightData.zNear;
+    float farz = tileLightData.zFar;
+
+    float4 t0 = tileRect * -nearz;
+    float4 t1 = tileRect * -farz;
+
+    float3 aabbMin, aabbMax;
+
+    float4 v = min(t0, t1);
+    aabbMin.xy = min(v.xy, v.zw);
+    aabbMin.z = farz;
+
+    v = max(t0, t1);
+    aabbMax.xy = max(v.xy, v.zw);
+    aabbMax.z = nearz;
+
+    aabbCenter = (aabbMin + aabbMax) * 0.5;
+    aabbExtents = aabbMax - aabbCenter;    
+}

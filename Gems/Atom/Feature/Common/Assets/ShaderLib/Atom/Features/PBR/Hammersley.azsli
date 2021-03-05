@@ -1,0 +1,31 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ * 
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * move or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ */
+
+#pragma once
+
+//! Computes Van der Corput radical inverse, used primarily as a utility for computing hammersley point sets.
+//! See Holger Dammertz's "Hammersley Points on the Hemisphere": http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+float GetVanDerCorputRadicalInverse(uint bits)
+{
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10f; // / 0x100000000
+}
+
+//! Returns a set of 2D points that are reasonably well distributed, in the range [0,1) on both axes.
+//! See Holger Dammertz's "Hammersley Points on the Hemisphere": http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+float2 GetHammersleyPoint(uint pointIndex, uint totalPointCount)
+{
+    return float2(float(pointIndex) / float(totalPointCount), GetVanDerCorputRadicalInverse(pointIndex));
+}

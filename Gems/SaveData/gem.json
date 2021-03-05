@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "d96ab03f53d14c9e83f9b4528c8576d7",
+    "Name": "SaveData",
+    "DisplayName": "SaveData",
+    "Version": "0.1.0",
+    "Summary": "Provides a simple, platform agnostic API for saving and loading persistent user data.",
+    "Tags": ["Save", "Load", "Save Data", "Save Game", "Persistent Data"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

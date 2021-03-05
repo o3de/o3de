@@ -1,0 +1,33 @@
+
+{
+	"StylesheetVariables" : {
+		"WindowBackgroundColor" : "#393a3c",
+		"PanelBackgroundColor" : "#303030",
+		"DockWidgetTextColor" : "#cccccc",
+		"DockWindowTitleBarColor" : "#222326",
+		"TextColor" : "#cccccc",
+		"LabelTextColor" : "#999999",
+		"ToolButtonPressedBackgroundColor" : "#FF990080",
+		"ToolButtonPressedBorderColor" : "#D9822E",
+		"ToolButtonHoverBackgroundColor" : "FF990040",
+		"ToolButtonHoverBorderColor" : "#D9822E",
+		"ToolButtonCheckedBackgroundColor" : "FF990020",
+		"MenuBorderColor" : "#4E4E4E",
+		"MenuItemSelectedColor" : "#D9822E",
+		"MenuEnabledTextColor" : "#ffffff",
+		"MenuDisabledTextColor" : "#C0C0C0",
+		"PushButtonDisabledColor" : "#666666",
+		"ScrollbarBackgroundColor" : " #2D2D2D",
+		"ScrollbarBorderColor" : "000000",
+		"ScrollbarHandleBackgroundColor" : " #353535",
+		"ScrollbarHandleBorderColor" : " #4E4E4E",
+		"ComponentPanelFrameColor" : "#323232",
+		"AboutPixmap" : "about_dark.png",
+		"LinkColor" : "#4285F4",
+		"ErrorTextColor" : "#FF0000",
+		"ResourceProgressError" : "#FF0000",
+		"ResourceProgressWorking" : "#ec7914",
+		"DividerHighlightColor" : "#4c4e4f",
+		"DividerShadowColor" : "#222324"
+	}
+}

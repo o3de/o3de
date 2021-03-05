@@ -1,0 +1,20 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "c5833dbda2e045d3a5f16b7414280c27",
+    "Name": "WhiteBox",
+    "DisplayName": "White Box",
+    "Version": "0.1.0",
+    "Summary": "A tool for quickly prototyping levels in the editor.",
+    "Tags": ["Editor"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ]
+}

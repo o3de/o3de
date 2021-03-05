@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TabWidgetPage</class>
+ <widget class="QWidget" name="TabWidgetPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>827</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidget_3">
+       <widget class="QWidget" name="tab_5">
+        <attribute name="title">
+         <string>Tab 1</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tab_6">
+        <attribute name="title">
+         <string>Tab 2</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_A">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidget_2">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="tab_3">
+        <attribute name="title">
+         <string>Tab 1</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tab_4">
+        <attribute name="title">
+         <string>Tab 2</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_B">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Tab A</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Tab B</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_C">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_D">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidgetBig">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="tabA">
+        <attribute name="title">
+         <string>Tab A</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabB">
+        <attribute name="title">
+         <string>Tab B</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabC">
+        <attribute name="title">
+         <string>Tab C</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabD">
+        <attribute name="title">
+         <string>Tab D</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabE">
+        <attribute name="title">
+         <string>Tab E</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_E">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidgetSecondary">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>false</bool>
+       </property>
+       <property name="movable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="tabWidgetSecondaryA">
+        <attribute name="title">
+         <string>Tab A</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabWidgetSecondaryB">
+        <attribute name="title">
+         <string>Tab B</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabWidgetSecondaryC">
+        <attribute name="title">
+         <string>Tab C</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_F">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TabWidget" name="tabWidgetSecondaryBorderless">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="tabWidgetSecondaryBorderlessA">
+        <attribute name="title">
+         <string>Tab A</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabWidgetSecondaryBorderlessB">
+        <attribute name="title">
+         <string>Tab B</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabWidgetSecondaryBorderlessC">
+        <attribute name="title">
+         <string>Tab C</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/TabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

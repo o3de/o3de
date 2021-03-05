@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="8px" height="5px" viewBox="0 0 8 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>Triangle</title>
+    <desc>Created with Sketch.</desc>
+    <g id="[YOUR-PROJECT]" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Exploration-Large" transform="translate(-461.000000, -39.000000)" fill="#FFFFFF">
+            <g id="Group-6" transform="translate(352.000000, 31.000000)">
+                <g id="Group" transform="translate(59.000000, 11.000000) scale(-1, 1) rotate(90.000000) translate(-59.000000, -11.000000) translate(51.000000, -48.000000)">
+                    <g id="Group-14" transform="translate(5.000000, 95.000000)">
+                        <polygon id="Triangle" transform="translate(2.207107, 18.000000) scale(1, -1) rotate(90.000000) translate(-2.207107, -18.000000) " points="2.20710678 16 6.20710678 20 -1.79289322 20"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

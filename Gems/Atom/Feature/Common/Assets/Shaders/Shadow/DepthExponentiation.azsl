@@ -1,0 +1,95 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/Shadow/Shadow.azsli>
+#include <Atom/Features/Math/Filter.azsli>
+#include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/RPI/Math.azsli>
+
+static const uint MaxCascadeCount = 4;
+
+option enum class ShadowmapLightType
+{
+    Directional,
+    Spot
+}
+o_shadowmapLightType = ShadowmapLightType::Directional;
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float> m_inputShadowmap;
+    RWTexture2DArray<float> m_outputShadowmap;
+    Buffer<uint2> m_shadowmapIndexTable;
+    StructuredBuffer<FilterParameter> m_filterParameters;
+}
+
+[numthreads(8,8,1)]
+void MainCS(uint3 dispatchId: SV_DispatchThreadID)
+{
+    const float3 inputSize = GetImageSize(PassSrg::m_inputShadowmap);
+    const float3 outputSize = GetImageSize(PassSrg::m_outputShadowmap);
+
+
+    const float depthInClip = PassSrg::m_inputShadowmap[dispatchId].r;
+    const uint shadowmapIndex = GetShadowmapIndex(
+        PassSrg::m_shadowmapIndexTable,
+        dispatchId,
+        inputSize.x);
+    if (shadowmapIndex == ~0)
+    {
+        return; // Early return if it is outside of shadowmaps.
+    }
+
+    const FilterParameter filterParameter = PassSrg::m_filterParameters[shadowmapIndex];
+    if (!filterParameter.m_isEnabled)
+    {
+        return; // Early return if filter is disabled.
+    }
+    
+    float depth = 0.;
+    switch (o_shadowmapLightType)
+    {
+        case ShadowmapLightType::Directional:
+        {
+            const float distanceMin = filterParameter.m_lightDistanceOfCameraViewFrustum;
+
+            // When the light origin is far from the camera view frustum,
+            // the difference of "depthInClip" in the frustum is so small,
+            // and it often causes light bleeding with ESM.
+            // So this converts it to "depth" to emphasize the difference
+            // within the frustum.
+            depth = (depthInClip - distanceMin) / (1. - distanceMin);
+        }
+            break;
+        case ShadowmapLightType::Spot:
+        {
+            const float3 coefficients = float3(
+                filterParameter.m_n_f_n,
+                filterParameter.m_n_f,
+                filterParameter.m_f);
+            
+            // With a spot light shadowmap, "depthInClip" is calculated
+            // as a perspective depth, not a orthogonal one.
+            // So the values are concentrated to near 1.0,
+            // and it often causes light bleeding with ESM.
+            // So this converts it to a linear depth to emphasize the 
+            // difference like a orthogonal depth.
+            depth = PerspectiveDepthToLinear(depthInClip, coefficients);
+        }
+            break;
+    }
+
+    const float outValue = exp(EsmExponentialShift * depth);
+    PassSrg::m_outputShadowmap[dispatchId].r = outValue;
+}
+

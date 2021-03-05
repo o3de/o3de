@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProjectSettingsToolWidget</class>
+ <widget class="QWidget" name="ProjectSettingsToolWidget">
+  <property name="modal" stdset="0">
+   <bool>false</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>853</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>640</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Project Settings Tool</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="mainContentLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>1</number>
+     </property>
+     <item>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="1" column="0">
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>616</width>
+            <height>612</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <layout class="QGridLayout" name="gridLayout_7">
+             <item row="1" column="0">
+              <widget class="QGroupBox" name="verticalGroupBox_3">
+               <property name="title">
+                <string>Platform Settings</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_5">
+                <item>
+                 <widget class="AzQtComponents::TabWidget" name="platformTabs">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string/>
+                  </property>
+                  <property name="currentIndex">
+                   <number>0</number>
+                  </property>
+                  <property name="usesScrollButtons">
+                   <bool>true</bool>
+                  </property>
+                  <property name="documentMode">
+                   <bool>false</bool>
+                  </property>
+                  <property name="tabBarAutoHide">
+                   <bool>false</bool>
+                  </property>
+                  <widget class="QWidget" name="androidTab">
+                   <attribute name="title">
+                    <string>Android</string>
+                   </attribute>
+                   <layout class="QGridLayout" name="gridLayout_8"/>
+                  </widget>
+                  <widget class="QWidget" name="iosTab">
+                   <attribute name="title">
+                    <string>    iOS    </string>
+                   </attribute>
+                   <layout class="QGridLayout" name="gridLayout_9"/>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="baseSettingsGroupBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="title">
+                <string>Base Settings</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout"/>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveButton">
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="reloadButton">
+         <property name="text">
+          <string>Reload</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTextBrowser" name="reconfigureLog">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/TabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="ProjectSettingsTool.qrc"/>
+ </resources>
+ <connections/>
+</ui>

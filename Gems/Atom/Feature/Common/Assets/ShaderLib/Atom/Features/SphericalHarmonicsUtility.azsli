@@ -1,0 +1,527 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+//! Please see SphericalHarmonicsUtility.inl version for more detailed explanations on this part
+
+#include <Atom/RPI/Math.azsli>
+
+#define K01 0.2820947918        // sqrt(  1/PI)/2
+#define K02 0.4886025119        // sqrt(  3/PI)/2
+#define K03 1.0925484306        // sqrt( 15/PI)/2
+#define K04 0.3153915652        // sqrt(  5/PI)/4
+#define K05 0.5462742153        // sqrt( 15/PI)/4
+#define K06 0.5900435899        // sqrt( 70/PI)/8
+#define K07 2.8906114426        // sqrt(105/PI)/2
+#define K08 0.4570457995        // sqrt( 42/PI)/8
+#define K09 0.3731763326        // sqrt(  7/PI)/4
+#define K10 1.4453057213        // sqrt(105/PI)/4
+#define SQRT2 1.4142135623      // sqrt(2)
+#define SQRT3 1.7320508076      // sqrt(3)
+#define INV_4PI     0.0795774715 // 1 / (4 * pi)
+#define SQRT3Div2   0.8660254038 // sqrt(3) / 2
+#define C2Div3      0.6666666667 // 2 / 3
+#define C1Div3      0.3333333333 // 1 / 3
+
+//! upper & lower bounds used by factorial approximation
+//! used by FactorialStieltjesNoExp
+#define lpa0 0.8333333333   //            1 / 12
+#define lpa1 0.0333333333   //            1 / 30
+#define lpa2 0.2523809524   //           53 / 210
+#define lpa3 0.5256064690   //          195 / 371
+#define lpa4 1.0115230681   //        22999 / 22737
+#define lpa5 1.5174736492   //     29944523 / 19733142
+#define lpa6 2.2694889742   // 109535241009 / 48264275462 
+ 
+//! factorial look up table from 0-32, support at most band 16
+//! used by KPLUT
+static const double FactorialLUT[33] = {
+    1.0L,
+    1.0L,
+    2.0L,
+    6.0L,
+    24.0L,
+    120.0L,
+    720.0L,
+    5040.0L,
+    40320.0L,
+    362880.0L,
+    3628800.0L,
+    39916800.0L,
+    479001600.0L,
+    6227020800.0L,
+    87178291200.0L,
+    1307674368000.0L,
+    20922789888000.0L,
+    355687428096000.0L,
+    6402373705728000.0L,
+    1.21645100408832e+17L,
+    2.43290200817664e+18L,
+    5.109094217170944e+19L,
+    1.12400072777760768e+21,
+    2.58520167388849766e+22L,
+    6.20448401733239439e+23L,
+    1.55112100433309860e+25L,
+    4.03291461126605636e+26L,
+    1.08888694504183522e+28L,
+    3.04888344611713861e+29L,
+    8.84176199373970195e+30L,
+    2.65252859812191059e+32L,
+    8.22283865417792282e+33L,
+    2.63130836933693530e+35L
+};
+
+//! double factorial LUT, each entry represents: (2*index - 1)!! (1 if index is 0)
+//! used by KPLUT
+static const double DoubleFactorialLUT[17] = {
+    1.0L,
+    1.0L,
+    3.0L,    
+    15.0L,   
+    105.0L,  
+    945.0L,  
+    10395.0L,
+    135135.0L,
+    2027025.0L,
+    34459425.0L,
+    654729075.0L,
+    13749310575.0L,
+    316234143225.0L,
+    7905853580625.0L,
+    213458046676875.0L,
+    6190283353629375.0L,
+    1.9189878396251062e+17L
+};
+
+// Zonal coefficient for clamped cosine term: max(0.0, cos(n dot s))
+// calculated as: integral{ max(0.0, cos(n dot s)) * SHBasis(l, 0, s) } for all sample s on sphere S
+// then multiplied with constant scaling factor: sqrt(4 * pi / (2 * l + 1))
+// A reference for this is included in 
+//   https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf by Ramamoorthi R. and Hanrahan P. 2001 (page 2, equation 8)
+// This coefficient set precomputed with 128k sample using Riemann sum
+static const float LambertCosineZH[3] = {
+    3.14159265, 
+    2.09439510,
+    0.78539816
+};
+
+//! Unrolled basis functions for first 4 bands (0-3), implicitly applied transform from y-up to z-up
+//! n -> negative, p->positive
+//! ----------L = 0------------
+float SHBasis_0_0 (float3 dir) { return  K01; }
+
+//! ----------L = 1------------
+float SHBasis_1_n1(float3 dir) { return -K02 * dir.z; }
+float SHBasis_1_0 (float3 dir) { return  K02 * dir.y; }
+float SHBasis_1_p1(float3 dir) { return -K02 * dir.x; }
+
+//! ----------L = 2------------
+float SHBasis_2_n2(float3 dir) { return  K03 * dir.x * dir.z; }
+float SHBasis_2_n1(float3 dir) { return -K03 * dir.z * dir.y; }
+float SHBasis_2_0 (float3 dir) { return  K04 * (3.0 * dir.y * dir.y - 1.0); }
+float SHBasis_2_p1(float3 dir) { return -K03 * dir.x * dir.y; }
+float SHBasis_2_p2(float3 dir) { return  K05 * (dir.x * dir.x - dir.z * dir.z); }
+
+//! ----------L = 3------------
+float SHBasis_3_n3(float3 dir) { return -K06 * dir.z * (3.0 * dir.x * dir.x - dir.z * dir.z); }
+float SHBasis_3_n2(float3 dir) { return  K07 * dir.y * dir.z * dir.x; }
+float SHBasis_3_n1(float3 dir) { return -K08 * dir.z * (5.0 * dir.y * dir.y - 1.0); }
+float SHBasis_3_0 (float3 dir) { return  K09 * dir.y * (5.0 * dir.y * dir.y - 3.0); }
+float SHBasis_3_p1(float3 dir) { return -K08 * dir.x * (5.0 * dir.y * dir.y - 1.0); }
+float SHBasis_3_p2(float3 dir) { return  K10 * dir.y * (dir.x * dir.x - dir.z * dir.z); }
+float SHBasis_3_p3(float3 dir) { return -K06 * dir.x * (dir.x * dir.x - 3.0 * dir.z * dir.z); }
+
+//! Polynomial solver evaluates first 4 bands (0-3) efficiently via analytical polynomial form
+//! based on https://www.shadertoy.com/view/lsfXWH
+//! input:
+//!     l -> SH band, non negative integer <= 3
+//!     m -> SH order, integer within rage [-l, l]
+//!     dir -> cartesian coordinates (Y-up, -Z-forward) of direction on unit sphere, required to be normalized
+float SHBasisPoly3(int l, int m, float3 dir)
+{
+    int index = l * (l + 1) + m;
+    //transform y up, -z forward to z up, -y forward
+    float3 zUpDir = dir.xzy;
+    switch(index)
+    {
+        //----------L = 0------------
+        case 0: return   K01; 
+        
+        //----------L = 1------------
+        case 1: return  -K02 * zUpDir.y; 
+        case 2: return   K02 * zUpDir.z; 
+        case 3: return  -K02 * zUpDir.x;
+        
+        //----------L = 2------------
+        case 4: return   K03 * zUpDir.x * zUpDir.y;
+        case 5: return  -K03 * zUpDir.y * zUpDir.z;
+        case 6: return   K04 * (3.0 * zUpDir.z * zUpDir.z - 1.0);
+        case 7: return  -K03 * zUpDir.x * zUpDir.z;
+        case 8: return   K05 * (zUpDir.x * zUpDir.x - zUpDir.y * zUpDir.y);
+        
+        //----------L = 3------------
+        case 9: return  -K06 * (3.0 * zUpDir.x * zUpDir.x - zUpDir.y * zUpDir.y) * zUpDir.y;
+        case 10:return   K07 * zUpDir.y * zUpDir.x * zUpDir.z;
+        case 11:return  -K08 * zUpDir.y * (5.0 * zUpDir.z * zUpDir.z - 1.0); 
+        case 12:return   K09 * zUpDir.z * (5.0 * zUpDir.z * zUpDir.z - 3.0);
+        case 13:return  -K08 * zUpDir.x * (5.0 * zUpDir.z * zUpDir.z - 1.0); 
+        case 14:return   K10 * (zUpDir.x * zUpDir.x - zUpDir.y * zUpDir.y) * zUpDir.z;
+        case 15:return  -K06 * zUpDir.x * (zUpDir.x * zUpDir.x - 3.0 * zUpDir.y * zUpDir.y);
+    }
+    
+    return 0.0;
+}
+
+//! Continued fraction approximation by T.J.Stieltjes,
+//! gives 5/2+(13/2)*ln(x) valid siginificant decimal digits, very accurate for floating point result
+//! the actual factorial should be exp(output) where exp() is temporarily omitted here to maintain precision
+//! valid decimal digits are less than original version which use double but much faster
+float FactorialStieltjesNoExp(int x)
+{
+    // valid digits is too few to support calculation when x < 8, thus use LUT instead
+    if(x < 8)
+    {
+        return log(float(FactorialLUT[x]));
+    }
+    
+    float  Z = x + 1.0;
+    return 0.5 * log(2.0 * PI) + (Z - 0.5) * log(float(Z)) - Z + 
+        lpa0/(Z + lpa1/(Z + lpa2/(Z + lpa3/(Z + lpa4/(Z + lpa5/(Z + lpa6/Z))))));
+}
+
+//! K(l, m) * P(l, m)
+//! where:
+//!      K is normalization factor that K = sqrt( ((2*l + 1) / (4pi)) ((l - |m|)! / (l + m)!) )
+//!      P is real associated legendre polynomial at x with band l, order m
+//! Please see http://silviojemma.com/public/papers/lighting/spherical-harmonic-lighting.pdf page 11, equation 6 for more information
+float KP(int l, int m, float x)
+{
+    float f = 0.0;
+    if(m > 0)
+    {
+        // low precision mode
+
+        float t1 = FactorialStieltjesNoExp(l - m);
+        float t2 = FactorialStieltjesNoExp(2 * m - 1);
+        float t3 = FactorialStieltjesNoExp(l + m);
+        float t4 = FactorialStieltjesNoExp(m - 1);
+
+        f = exp2(2 - 2 * m) * exp(t1 + 2.0 * t2 - t3 - 2.0 * t4);
+    }
+    else
+    {
+        // skip calculation for zonal harmonics (m = 0)
+        f = 1.0;
+    }
+    
+    // kp <=> K(l, m) * (2m - 1)!!
+    float kp = sqrt((2.0 * l + 1.0) * INV_4PI * f); 
+
+    // (-1)^(m): 1 if m is even, -1 if m is odd
+    float fact = 1.0 - 2.0 * (m % 2);
+     
+    // P of band m, order m, base case
+    float Pmm = fact * kp * pow(1 - x * x, m / 2.0);
+
+    if(l == m)
+    {
+        return Pmm;
+    }
+    
+    // P of band m+1, order m, lift band by 1
+    float Pmmp1 = x * (2.0 * m + 1.0) * Pmm;
+    if(l == m+1)
+    {
+        return float(Pmmp1);
+    }
+
+    float Pml = 0.0;
+    
+    // first two order has been calculated by previous expressions
+    for (int ll = m+2; ll <= l; ++ll)
+    { 
+        Pml = ( (2.0 * ll - 1.0) * x * Pmmp1 - (ll + m - 1.0) * Pmm ) / (ll - m);
+        Pmm = Pmmp1;
+        Pmmp1 = Pml;
+    }
+    return Pml;
+}
+
+//! K(l, m) * P(l, m)
+//! where:
+//!      K is normalization factor that K = sqrt( ((2*l + 1) / (4pi)) ((l - |m|)! / (l + m)!) )
+//!      P is real associated legendre polynomial at x with band l, order m
+//! This version uses LUT to handle factorial, thus supported number of band is limited
+//! Please see http://silviojemma.com/public/papers/lighting/spherical-harmonic-lighting.pdf page 11, equation 6 for more information
+float KPLUT(int l, int m, float x)
+{
+    // computing K(l, m) * (2m - 1)!!, which requires higher precision due to factorial
+    double Kterm2 = FactorialLUT[l - m] * (DoubleFactorialLUT[m] * (DoubleFactorialLUT[m] / FactorialLUT[l + m]));
+    float Kterm1 = (2.0 * l + 1.0) * INV_4PI;
+    float kp = sqrt(Kterm1 * float(Kterm2));
+
+    // (-1)^(m): 1 if m is even, -1 if m is odd
+    float fact = 1.0 - 2.0 * (m % 2);
+    // P of band m, order m, base case
+    float Pmm = fact * kp * pow(1 - x * x, m / 2.0);
+
+    if(l == m)
+    {
+        return Pmm;
+    }
+    
+    // P of band m+1, order m, lift band by 1
+    float Pmmp1 = x * (2.0 * m + 1.0) * Pmm;
+    if(l == m+1)
+    {
+        return Pmmp1;
+    }
+
+    float Pml = 0.0;
+    
+    // first two order has been calculated by previous expressions
+    for (int ll = m+2; ll <= l; ++ll)
+    { 
+        Pml = ( (2.0 * ll - 1.0) * x * Pmmp1 - (ll + m - 1.0) * Pmm ) / (ll - m);
+        Pmm = Pmmp1;
+        Pmmp1 = Pml;
+    }
+    return Pml;
+}
+
+//! Naive solver evaluates SH by definition
+//! up to 17 bands (0-16) due to size of LUT
+//! (could go beyond 16 but behavious is unpredicted)
+//! equation slightly reorganized to mitigate precision problem
+//! input:
+//!     l -> SH band, non negative integer <= 16
+//!     m -> SH order, integer within rage [-l, l]
+//!     dir -> cartesian coordinates (Y-up, -Z-forward) of direction on unit sphere, required to be normalized
+float SHBasisNaive16(int l, int m, float3 dir)
+{
+    float cosTheta = dir.y;
+    float phi = atan2(dir.z, dir.x);
+    
+    if(m == 0)
+    {
+        return KPLUT(l, 0, cosTheta);
+    }
+    else if(m > 0)
+    {
+        return SQRT2 * cos(m * phi)  * KPLUT(l, m, cosTheta);
+    }
+    else
+    {
+        return SQRT2 * sin(-m * phi) * KPLUT(l, -m, cosTheta);
+    }
+}
+
+//! Extended naive solver, support up to band 101, order 30, more available orders for lower band
+//! might be useful for comparision and reference
+//! input:
+//!   l -> SH band, non negative integer
+//1   m -> SH order, integer within rage [-l, l]
+//!   dir -> cartesian coordinates (Y-up, -Z-forward) of direction on unit sphere, required to be normalized
+//! Precision lower than average, much lower than CPU version, due to the precision limits of float32
+float SHBasisNaiveEx(int l, int m, float3 dir)
+{
+    float cosTheta = dir.y;
+    float phi = atan2(dir.z, dir.x);
+
+    if(m == 0)
+    {
+        return KP(l, 0, cosTheta);
+    }
+    else if(m > 0)
+    {
+        return SQRT2 * cos(m * phi)  * KP(l, m, cosTheta);
+    }
+    else
+    {
+        return SQRT2 * sin(-m * phi) * KP(l, -m, cosTheta);
+    }
+}
+
+//! Reconstruct exit radiance at direction "dir" by integrating SH coefficient from band 0 to 2 (known as second order) in input array
+//! "SH" whose layout is {SH0-9 for R channel, SH0-9 for G, SH0-9 for B}
+//! which equivalent to Sum{ ZHCoefficient(l) * SHCoefficient(l, m) * SHBasis(l, m) } 
+//! This function integrate with lambert cosine term commonly appears in rendering equation by default
+float3 EvalSH2RadianceRGB(float3 dir, float SH[27])
+{
+    // exit radiance for each color channel
+    float outR = 0.0f;
+    float outG = 0.0f;
+    float outB = 0.0f;
+ 
+    // (zonal harmonics * basis) for band l and order m
+    float tL0M0  = LambertCosineZH[0] * SHBasisPoly3(0,  0, dir);
+    
+    float tL1MN1 = LambertCosineZH[1] * SHBasisPoly3(1, -1, dir);
+    float tL1M0  = LambertCosineZH[1] * SHBasisPoly3(1,  0, dir);
+    float tL1MP1 = LambertCosineZH[1] * SHBasisPoly3(1,  1, dir);
+    
+    float tL2MN2 = LambertCosineZH[2] * SHBasisPoly3(2, -2, dir);
+    float tL2MN1 = LambertCosineZH[2] * SHBasisPoly3(2, -1, dir);
+    float tL2M0  = LambertCosineZH[2] * SHBasisPoly3(2,  0, dir);
+    float tL2MP1 = LambertCosineZH[2] * SHBasisPoly3(2,  1, dir);
+    float tL2MP2 = LambertCosineZH[2] * SHBasisPoly3(2,  2, dir);
+
+    // band 0, 
+    outR = SH[0] * tL0M0;
+    // band 1, order -1 - 1
+    outR = mad(SH[1], tL1MN1, outR);
+    outR = mad(SH[2], tL1M0 , outR);
+    outR = mad(SH[3], tL1MP1, outR);   
+    // band 2, order -2 - 2
+    outR = mad(SH[4], tL2MN2, outR);
+    outR = mad(SH[5], tL2MN1, outR);
+    outR = mad(SH[6], tL2M0 , outR);
+    outR = mad(SH[7], tL2MP1, outR);
+    outR = mad(SH[8], tL2MP2, outR);
+
+    // band 0, 
+    outG = SH[9] * tL0M0;
+    // band 1, order -1 - 1
+    outG = mad(SH[10], tL1MN1, outG);
+    outG = mad(SH[11], tL1M0 , outG);
+    outG = mad(SH[12], tL1MP1, outG);   
+    // band 2, order -2 - 2
+    outG = mad(SH[13], tL2MN2, outG);
+    outG = mad(SH[14], tL2MN1, outG);
+    outG = mad(SH[15], tL2M0 , outG);
+    outG = mad(SH[16], tL2MP1, outG);
+    outG = mad(SH[17], tL2MP2, outG);
+
+    // band 0, 
+    outB = SH[18] * tL0M0;
+    // band 1, order -1 - 1
+    outB = mad(SH[19], tL1MN1, outB);
+    outB = mad(SH[20], tL1M0 , outB);
+    outB = mad(SH[21], tL1MP1, outB);   
+    // band 2, order -2 - 2
+    outB = mad(SH[22], tL2MN2, outB);
+    outB = mad(SH[23], tL2MN1, outB);
+    outB = mad(SH[24], tL2M0 , outB);
+    outB = mad(SH[25], tL2MP1, outB);
+    outB = mad(SH[26], tL2MP2, outB);
+
+    return float3(outR, outG, outB);
+}
+
+// first order version of above function, which evaluates first 2 bands instead
+float3 EvalSH1RadianceRGB(float3 dir, float SH[12])
+{
+    // exit radiance for each color channel
+    float outR = 0.0f;
+    float outG = 0.0f;
+    float outB = 0.0f;
+ 
+    // (zonal harmonics * basis) for band l and order m
+    float tL0M0  = LambertCosineZH[0] * SHBasisPoly3(0,  0, dir);
+    
+    float tL1MN1 = LambertCosineZH[1] * SHBasisPoly3(1, -1, dir);
+    float tL1M0  = LambertCosineZH[1] * SHBasisPoly3(1,  0, dir);
+    float tL1MP1 = LambertCosineZH[1] * SHBasisPoly3(1,  1, dir);
+
+    // band 0, 
+    outR = SH[0] * tL0M0;
+    // band 1, order -1 - 1
+    outR = mad(SH[1], tL1MN1, outR);
+    outR = mad(SH[2], tL1M0 , outR);
+    outR = mad(SH[3], tL1MP1, outR);   
+
+    // band 0, 
+    outG = SH[4] * tL0M0;
+    // band 1, order -1 - 1
+    outG = mad(SH[5], tL1MN1, outG);
+    outG = mad(SH[6], tL1M0 , outG);
+    outG = mad(SH[7], tL1MP1, outG);   
+
+    // band 0, 
+    outB = SH[8] * tL0M0;
+    // band 1, order -1 - 1
+    outB = mad(SH[9], tL1MN1, outB);
+    outB = mad(SH[10], tL1M0 , outB);
+    outB = mad(SH[11], tL1MP1, outB);   
+
+    return float3(outR, outG, outB);
+}
+
+//! Two band SH rotation
+void SHRotationZHF2(in row_major float3x3 R, in float inSH[4], out float outSH[4])
+{
+    // output rotated coefficient
+    float o[4];
+    
+    // band 0
+    o[0] = inSH[0];
+    
+    // band 1
+    o[1] =  R[1][0] * inSH[3] + R[1][1] * inSH[1] - R[1][2] * inSH[2];
+    o[2] = -R[2][0] * inSH[3] - R[2][1] * inSH[1] + R[2][2] * inSH[2];
+    o[3] =  R[0][0] * inSH[3] + R[0][1] * inSH[1] - R[0][2] * inSH[2];
+    
+    outSH = o;
+} 
+
+//! Three band SH rotation
+void SHRotationZHF3(in row_major float3x3 R, in float inSH[9], out float outSH[9])
+{
+    // output rotated coefficient
+    float o[9];
+    
+    // band 0
+    o[0] = inSH[0];
+    
+    // band 1
+    o[1] =  R[1][0] * inSH[3] + R[1][1] * inSH[1] - R[1][2] * inSH[2];
+    o[2] = -R[2][0] * inSH[3] - R[2][1] * inSH[1] + R[2][2] * inSH[2];
+    o[3] =  R[0][0] * inSH[3] + R[0][1] * inSH[1] - R[0][2] * inSH[2];
+    
+    // band 2
+    float invAX0 =  inSH[7] + inSH[8] + inSH[8] - inSH[5];
+    float invAX1 =  inSH[4] + SQRT3 * inSH[6] + inSH[7] + inSH[8];
+    float invAX2 =  inSH[4];
+    float invAX3 = -inSH[7];
+    float invAX4 = -inSH[5];
+    
+    float3 r0 = float3(R[0][0]          , R[1][0]          , R[2][0]);
+    float3 r1 = float3(R[0][2]          , R[1][2]          , R[2][2]);
+    float3 r2 = float3(R[0][0] + R[0][1], R[1][0] + R[1][1], R[2][0] + R[2][1]);
+    float3 r3 = float3(R[0][0] + R[0][2], R[1][0] + R[1][2], R[2][0] + R[2][2]);
+    float3 r4 = float3(R[0][1] + R[0][2], R[1][1] + R[1][2], R[2][1] + R[2][2]);
+    
+    float invAX0X = invAX0 * r0.x;
+    float invAX0Y = invAX0 * r0.y;
+    
+    float invAX1X = invAX1 * r1.x;
+    float invAX1Y = invAX1 * r1.y;
+    
+    float invAX2X = invAX2 * r2.x;
+    float invAX2Y = invAX2 * r2.y;
+    
+    float invAX3X = invAX3 * r3.x;
+    float invAX3Y = invAX3 * r3.y;
+    
+    float invAX4X = invAX4 * r4.x;
+    float invAX4Y = invAX4 * r4.y;
+
+    o[4] =                invAX0X*r0.y               +  invAX1X*r1.y               +  invAX2X*r2.y               +  invAX3X*r3.y               +  invAX4X*r4.y;
+    o[5] =             -( invAX0Y*r0.z               +  invAX1Y*r1.z               +  invAX2Y*r2.z               +  invAX3Y*r3.z               +  invAX4Y*r4.z);
+    o[6] = SQRT3Div2  * ( invAX0*(r0.z*r0.z-C1Div3)  +  invAX1*(r1.z*r1.z-C1Div3)  +  invAX2*(r2.z*r2.z-C2Div3)  +  invAX3*(r3.z*r3.z-C2Div3)  +  invAX4*(r4.z*r4.z-C2Div3));
+    o[7] =             -( invAX0X*r0.z               +  invAX1X*r1.z               +  invAX2X*r2.z               +  invAX3X*r3.z               +  invAX4X*r4.z);
+    o[8] = 0.5        * ((invAX0X*r0.x-invAX0Y*r0.y) + (invAX1X*r1.x-invAX1Y*r1.y) + (invAX2X*r2.x-invAX2Y*r2.y) + (invAX3X*r3.x-invAX3Y*r3.y) + (invAX4X*r4.x-invAX4Y*r4.y));
+    
+    outSH = o;
+}
+
+
+

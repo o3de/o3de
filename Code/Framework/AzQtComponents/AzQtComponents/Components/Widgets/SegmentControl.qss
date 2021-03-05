@@ -1,0 +1,81 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--SegmentBar
+{
+    margin-bottom: 15px;
+}
+
+AzQtComponents--SegmentBar QAbstractButton
+{
+    background-color: #333333;
+    border-color: #222222;
+    border-style: solid;
+    border-width: 1px;
+
+    font-size: 12px;
+
+    height: 28px;
+
+    line-height: 24px;
+
+    margin-left: 0px;
+
+    min-width: 68px; /* 100 - (padding-left + padding-right) */
+
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+AzQtComponents--SegmentBar[orientation="1"] QAbstractButton.TabLast
+{
+    margin-left: -1px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+AzQtComponents--SegmentBar[orientation="1"] QAbstractButton.TabFirst
+{
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+AzQtComponents--SegmentBar[orientation="1"] QAbstractButton.TabMiddle
+{
+    margin-left: -1px;
+}
+
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton
+{
+    text-align: left;
+}
+
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabMiddle,
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabLast
+{
+    margin-top: -1px;
+}
+
+AzQtComponents--SegmentBar QAbstractButton:checked
+{
+    background-color: #555555;
+}
+
+AzQtComponents--SegmentBar QAbstractButton:hover:!checked,
+AzQtComponents--SegmentBar QAbstractButton:pressed:!checked
+{
+    background-color: #444444;
+}

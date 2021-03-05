@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CommandLine</class>
+ <widget class="QWidget" name="commandLine">
+   <property name="minimumSize">
+     <size>
+       <width>120</width>
+       <height>400</height>
+     </size>
+   </property>
+   <property name="sizePolicy">
+     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+     </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+       <widget class="ScriptCanvasEditor::Widget::CommandLineEdit" name="commandText">
+         <property name="geometry">
+           <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>261</width>
+             <height>20</height>
+           </rect>
+         </property>
+         <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+           <size>
+             <width>120</width>
+             <height>20</height>
+           </size>
+         </property>
+       </widget>
+     </item>
+     <item>
+       <widget class="ScriptCanvasEditor::Widget::CommandLineList" name="commandList">
+         <property name="geometry">
+           <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>261</width>
+             <height>20</height>
+           </rect>
+         </property>
+         <property name="styleSheet">
+           <string notr="true">
+             QTableView { background-color: rgba(15,15,15,0.1); }
+           </string>
+         </property>
+         <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+         <property name="showGrid">
+           <bool>false</bool>
+         </property>
+         <property name="cornerButtonEnabled">
+           <bool>false</bool>
+         </property>
+         <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderVisible">
+           <bool>false</bool>
+         </attribute>
+         <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="lineWidth">
+           <number>0</number>
+         </property>
+         <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+           <size>
+             <width>120</width>
+             <height>220</height>
+           </size>
+         </property>
+         <property name="showGrid">
+           <bool>false</bool>
+         </property>
+         <property name="alternatingRowColors">
+           <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <property name="sortingEnabled">
+           <bool>true</bool>
+         </property>
+         <attribute name="headerStretchLastSection">
+           <bool>true</bool>
+         </attribute>
+       </widget>
+     </item>
+   </layout>
+       </widget>
+  <customwidgets>
+    <customwidget>
+      <class>ScriptCanvasEditor::Widget::CommandLineEdit</class>
+      <extends>QLineEdit</extends>
+      <header>Editor/View/Widgets/CommandLine.h</header>
+    </customwidget>
+    <customwidget>
+      <class>ScriptCanvasEditor::Widget::CommandLineList</class>
+      <extends>QTableView</extends>
+      <header>Editor/View/Widgets/CommandLine.h</header>
+    </customwidget>
+  </customwidgets>
+</ui>

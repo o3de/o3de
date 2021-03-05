@@ -1,0 +1,51 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+            "Name": "ReferenceImage_Linear",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+                "Name": "ReferenceImage_Linear",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true
+            },
+            "ios": {
+                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+                "Name": "ReferenceImage_Linear",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true
+            },
+            "osx_gl": {
+                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+                "Name": "ReferenceImage_Linear",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true
+            },
+            "provo": {
+                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+                "Name": "ReferenceImage_Linear",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true
+            },
+            "xenia": {
+                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
+                "Name": "ReferenceImage_Linear",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true
+            }
+        }
+    }
+}

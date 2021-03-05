@@ -1,0 +1,9 @@
+{
+    "name": "imgui_atom",
+    "source": "@GEM@/External/ImGui",
+    "description": "ImGui",
+    "defines": [],
+    "lib_required": "False",
+    "includes": [""]
+}
+

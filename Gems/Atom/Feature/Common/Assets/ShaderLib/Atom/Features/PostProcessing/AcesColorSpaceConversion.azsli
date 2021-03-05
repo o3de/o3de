@@ -1,0 +1,153 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Modifications copyright Amazon.com, Inc. or its affiliates.  
+/*
+License Terms for Academy Color Encoding System Components
+
+Academy Color Encoding System (ACES) software and tools are provided by the
+ Academy under the following terms and conditions: A worldwide, royalty-free,
+ non-exclusive right to copy, modify, create derivatives, and use, in source and
+ binary forms, is hereby granted, subject to acceptance of this license.
+
+Copyright © 2015 Academy of Motion Picture Arts and Sciences (A.M.P.A.S.). 
+Portions contributed by others as indicated. All rights reserved.
+
+Performance of any of the aforementioned acts indicates acceptance to be bound
+ by the following terms and conditions:
+
+* Copies of source code, in whole or in part, must retain the above copyright
+  notice, this list of conditions and the Disclaimer of Warranty.
+* Use in binary form must retain the above copyright notice, this list of 
+  conditions and the Disclaimer of Warranty in the documentation and/or other 
+  materials provided with the distribution.
+* Nothing in this license shall be deemed to grant any rights to trademarks, 
+  copyrights, patents, trade secrets or any other intellectual property of 
+  A.M.P.A.S. or any contributors, except as expressly stated herein.
+* Neither the name "A.M.P.A.S." nor the name of any other contributors to this
+  software may be used to endorse or promote products derivative of or based on
+  this software without express prior written permission of A.M.P.A.S. or the 
+  contributors, as appropriate.
+
+This license shall be construed pursuant to the laws of the State of California,
+and any disputes related thereto shall be subject to the jurisdiction of the
+ courts therein.
+
+Disclaimer of Warranty: THIS SOFTWARE IS PROVIDED BY A.M.P.A.S. AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NON-INFRINGEMENT ARE DISCLAIMED. IN NO EVENT SHALL A.M.P.A.S., OR ANY 
+CONTRIBUTORS OR DISTRIBUTORS, BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+SPECIAL, EXEMPLARY, RESITUTIONARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+////////////////////////////////////////////////////////////////////////////////
+WITHOUT LIMITING THE GENERALITY OF THE FOREGOING, THE ACADEMY SPECIFICALLY 
+DISCLAIMS ANY REPRESENTATIONS OR WARRANTIES WHATSOEVER RELATED TO PATENT OR 
+OTHER INTELLECTUAL PROPERTY RIGHTS IN THE ACADEMY COLOR ENCODING SYSTEM, OR 
+APPLICATIONS THEREOF, HELD BY PARTIES OTHER THAN A.M.P.A.S.,WHETHER DISCLOSED OR
+UNDISCLOSED.
+*/
+
+//
+// Academy Color Encoding System(ACES) related implementation.
+//
+// You can find more detail about the ACES at the below link.
+// https://www.oscars.org/science-technology/sci-tech-projects/aces
+// 
+// You can find the ACES reference implementation repository at the below link.
+// The reference implementation is implemented by the Color Transformation Language(CTL)
+// which is defined by AMPAS. These implementations are find at the transforms directory.
+// https://github.com/ampas/aces-dev
+//
+// Also this implementation is partially ported from NVIDIA HDR sample.
+// https://developer.nvidia.com/high-dynamic-range-display-development
+//
+
+#pragma once
+
+////////////////////////////////////////////////////////////////////////////////
+// Color space conversion matrices
+
+static const float3x3 AP0ToXYZMat =
+{
+    0.95255238f, 0.00000000f, 0.00009368f,
+    0.34396642f, 0.72816616f, -0.07213254f,
+    -0.00000004f, 0.00000000f, 1.00882506f
+};
+
+static const float3x3 XYZToAP0Mat =
+{
+    1.04981101f, -0.00000000f, -0.00009748f,
+    -0.49590296f, 1.37331295f, 0.09824003f,
+    0.00000004f, -0.00000000f, 0.99125212f
+};
+
+static const float3x3 AP1ToXYZMat =
+{
+    0.66245413f, 0.13400421f, 0.15618768f,
+    0.27222872f, 0.67408168f, 0.05368952f,
+    -0.00557466f, 0.00406073f, 1.01033902f
+};
+
+static const float3x3 XYZToAP1Mat =
+{
+    1.64102352f, -0.32480335f, -0.23642471f,
+    -0.66366309f, 1.61533189f, 0.01675635f,
+    0.01172191f, -0.00828444f, 0.98839492f
+};
+
+static const float3x3 AP0ToAP1Mat = 
+{
+    1.45143950f, -0.23651081f, -0.21492855f,
+    -0.07655388f, 1.17623007f, -0.09967594f,
+    0.00831613f, -0.00603245f, 0.99771625f
+};
+
+static const float3x3 AP1ToAP0Mat = 
+{
+    0.69545215f, 0.14067869f, 0.16386905f,
+    0.04479461f, 0.85967094f, 0.09553432f,
+    -0.00552587f, 0.00402521f, 1.00150073f
+};
+
+static const float3x3 SRGBToXYZMat =
+{
+    0.41239089f, 0.35758430f, 0.18048084f,
+    0.21263906f, 0.71516860f, 0.07219233f,
+    0.01933082f, 0.11919472f, 0.95053232f
+};
+
+static const float3x3 XYZToSRGBMat =
+{
+    3.24096942f, -1.53738296f, -0.49861076f,
+    -0.96924388f, 1.87596786f, 0.04155510f,
+    0.05563002f, -0.20397684f, 1.05697131f,
+};
+
+static const float3x3 D65ToD60Cat =
+{
+    1.01303, 0.00610531, -0.014971,
+    0.00769823, 0.998165, -0.00503203,
+    -0.00284131, 0.00468516, 0.924507,
+};
+
+static const float3x3 D60ToD65Cat =
+{
+    0.987224, -0.00611327, 0.0159533,
+    -0.00759836, 1.00186, 0.00533002,
+    0.00307257, -0.00509595, 1.08168,
+};

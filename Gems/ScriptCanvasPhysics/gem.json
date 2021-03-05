@@ -1,0 +1,31 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "1c27519a4dda4ffaaeebf91514e5b1e8",
+    "Name": "ScriptCanvasPhysics",
+    "DisplayName": "Script Canvas - Physics",
+    "Version": "0.1.0",
+    "Summary": "Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas.",
+    "Tags": ["Scripting", "Physics"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                ">=0.1.0"
+            ],
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Uuid": "869a0d0ec11a45c299917d45c81555e6",
+            "VersionConstraints": [
+                ">=0.1.0"
+            ],
+            "_comment": "ScriptCanvas"
+        }
+    ]
+}

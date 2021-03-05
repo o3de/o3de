@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / System / Redo</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Redo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="-4" y="2" width="24" height="24"></rect>
+        <g id="Group" transform="translate(4.000000, 4.000000)" fill="#FFFFFF">
+            <path d="M8,2.84217094e-14 C10.5059505,2.84217094e-14 12.7427885,1.15220774 14.2096417,2.95575096 C13.6546725,3.4055786 13.1374264,3.82584101 12.6573026,4.21594166 C11.5563067,2.86375164 9.87902334,2 8,2 C4.6862915,2 2,4.6862915 2,8 C2,11.3137085 4.6862915,14 8,14 C10.3044531,14 12.3054728,12.7008471 13.3106055,10.7949946 C13.8567556,11.0825029 14.44718,11.3932526 15.08003,11.7263316 C13.7407366,14.2677271 11.0726653,16 8,16 C3.581722,16 0,12.418278 0,8 C0,3.581722 3.581722,2.84217094e-14 8,2.84217094e-14 Z" id="Oval-2" fill-rule="nonzero"></path>
+            <polygon id="Rectangle" transform="translate(13.200572, 5.116130) rotate(-195.000000) translate(-13.200572, -5.116130) " points="12.915966 3.08954379 17.6770514 7.13084822 8.72409329 7.14271578"></polygon>
+        </g>
+    </g>
+</svg>

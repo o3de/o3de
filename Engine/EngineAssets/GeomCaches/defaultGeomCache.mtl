@@ -1,0 +1,17 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="mat01_white" MtlFlags="524416" Shader="Illum" GenMask="12000020040003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%EMITTANCE_MAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0.5,0.5,0.5,1" Opacity="1" Shininess="174.72" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="engineassets/textures/white.dds"/>
+   </Textures>
+   <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="mat02_grey" MtlFlags="524416" Shader="Illum" GenMask="10000000000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="0.5,0.5,0.5,1" Specular="0.5,0.5,0.5,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="engineassets/textures/white.dds"/>
+   </Textures>
+   <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

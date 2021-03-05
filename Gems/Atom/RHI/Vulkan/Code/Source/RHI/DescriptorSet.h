@@ -1,0 +1,140 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI.Reflect/SamplerState.h>
+#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/Memory/PoolAllocator.h>
+#include <RHI/Buffer.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        class ResourceView;
+    }
+
+    namespace Vulkan
+    {
+        class BufferView;
+        class DescriptorSetLayout;
+        class Device;
+        class ImageView;
+        class DescriptorPool;
+
+        class DescriptorSet final
+            : public RHI::DeviceObject
+        {
+            using Base = RHI::DeviceObject;
+            friend class DescriptorPool;
+
+        public:
+            AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::ThreadPoolAllocator, 0);
+            AZ_RTTI(DescriptorSet, "06D7FC0A-B53E-46D9-975D-D4E445356645", Base);
+
+            struct Descriptor
+            {
+                Device* m_device = nullptr;
+                const DescriptorPool* m_descriptorPool = nullptr;
+                const DescriptorSetLayout* m_descriptorSetLayout = nullptr;
+            };
+            ~DescriptorSet() = default;
+
+            static RHI::Ptr<DescriptorSet> Create();
+            VkResult Init(const Descriptor& descriptor);
+            const Descriptor& GetDescriptor() const;
+            VkDescriptorSet GetNativeDescriptorSet() const;
+
+            void CommitUpdates();
+
+            void UpdateBufferViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews);
+            void UpdateImageViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
+            void UpdateSamplers(uint32_t index, const AZStd::array_view<RHI::SamplerState>& samplers);
+            void UpdateConstantData(AZStd::array_view<uint8_t> data);
+
+            RHI::Ptr<BufferView> GetConstantDataBufferView() const;
+
+        private:
+            struct WriteDescriptorData
+            {
+                uint32_t m_layoutIndex = 0;
+                AZStd::vector<VkDescriptorBufferInfo> m_bufferViewsInfo;
+                AZStd::vector<VkDescriptorImageInfo> m_imageViewsInfo;
+                AZStd::vector<VkBufferView> m_texelBufferViews;
+            };
+
+            DescriptorSet() = default;
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::Object
+            void SetNameInternal(const AZStd::string_view& name) override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::DeviceObject
+            void Shutdown() override;
+            //////////////////////////////////////////////////////////////////////////
+
+            void UpdateNativeDescriptorSet();
+
+            template<typename T>
+            AZStd::vector<RHI::Interval> GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const;
+
+            static bool IsNullDescriptorInfo(const VkDescriptorBufferInfo& descriptorInfo);
+            static bool IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo);
+            static bool IsNullDescriptorInfo(const VkBufferView& descriptorInfo);
+
+            Descriptor m_descriptor;
+
+            VkDescriptorSet m_nativeDescriptorSet = VK_NULL_HANDLE;
+            AZStd::vector<WriteDescriptorData> m_updateData;
+            RHI::Ptr<Buffer> m_constantDataBuffer;
+            RHI::Ptr<BufferView> m_constantDataBufferView;
+            bool m_nullDescriptorSupported = false;
+        };
+
+        template<typename T>
+        AZStd::vector<RHI::Interval> DescriptorSet::GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const
+        {
+            // if Null descriptors are supported, then we just return one interval that covers the whole range.
+            if (m_nullDescriptorSupported)
+            {
+                return { RHI::Interval(0, aznumeric_caster(descriptorsInfo.size())) };
+            }
+
+            AZStd::vector<RHI::Interval> intervals;
+            auto beginInterval = descriptorsInfo.begin();
+            auto endInterval = beginInterval;
+            bool (*IsNullFuntion)(const T&) = &DescriptorSet::IsNullDescriptorInfo;
+            do 
+            {
+                beginInterval = AZStd::find_if_not(endInterval, descriptorsInfo.end(), IsNullFuntion);
+                if (beginInterval != descriptorsInfo.end())
+                {
+                    endInterval = AZStd::find_if(beginInterval, descriptorsInfo.end(), IsNullFuntion);
+
+                    intervals.emplace_back();
+                    RHI::Interval& interval = intervals.back();
+                    interval.m_min = aznumeric_caster(AZStd::distance(descriptorsInfo.begin(), beginInterval));
+                    interval.m_max = endInterval == descriptorsInfo.end() ? static_cast<uint32_t>(descriptorsInfo.size()) : static_cast<uint32_t>(AZStd::distance(descriptorsInfo.begin(), endInterval));
+                }
+            } while (beginInterval != descriptorsInfo.end() && endInterval != descriptorsInfo.end());
+
+            return intervals;
+        }
+    }
+}

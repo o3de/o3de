@@ -1,0 +1,395 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/* begin-license-attribution:
+
+This code is based in part on third-party work(s), see below for applicable
+terms and attribution information.  Modifications copyright (c) Amazon.com, 
+Inc. or its affiliates or licensors.
+
+begin-original-license-text:
+
+Copyright (c) 2017, Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* If you use (or adapt) the source code in your own work, please include a 
+reference to the paper:
+
+Real-Time Polygonal-Light Shading with Linearly Transformed Cosines.
+Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt.
+ACM Transactions on Graphics (Proceedings of ACM SIGGRAPH 2016) 35(4), 2016.
+Project page: https://eheitzresearch.wordpress.com/415-2/
+
+* Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+end-license-attribution */
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+// Generates UV coords for LTC lookup table
+float2 LtcCoords(float cosTheta, float roughness)
+{
+    float theta = acos(cosTheta);
+    float2 coords = float2(roughness, theta / (0.5 * PI));
+
+    const float LUT_SIZE = 32.0;
+    // scale and bias coordinates, for correct filtered lookup
+    coords = coords * ((LUT_SIZE - 1.0) / LUT_SIZE) + (0.5 / LUT_SIZE);
+
+    return coords;
+}
+
+// Constructs an LTC matrix from the provided texture and coordinates.
+float3x3 LtcMatrix(Texture2D<float4> ltcMatrix, float2 coord)
+{
+    float4 t = ltcMatrix.Sample(PassSrg::LinearSampler, coord);
+
+    return float3x3(
+        1.0, 0.0, t.w,
+        0.0, t.z, 0.0,
+        t.y, 0.0, t.x
+    );
+}
+
+float3x3 BuildViewAlignedOrthonormalBasis(in float3 normal, in float3 dirToView)
+{
+    float3 tangent = normalize(dirToView - normal * dot(dirToView, normal));
+    float3 bitangent = cross(normal, tangent);
+    return float3x3(tangent, bitangent, normal);
+}
+
+// Cosine integration of edge in a hemisphere. v1 and v2 should be normalized vertices above the
+// xy plane in positive z space.
+float IntegrateEdge(float3 v1, float3 v2)
+{
+    float cosTheta = dot(v1, v2);
+    cosTheta = clamp(cosTheta, -0.9999, 0.9999);
+
+    // calculate 1.0 / sin(theta)
+    float invSinTheta = rsqrt(1.0 - cosTheta * cosTheta);
+
+    float theta = acos(cosTheta);
+    return cross(v1, v2).z * theta * invSinTheta;
+}
+
+// Returns the unnormalized z plane intersection point between pointAboveHorizon and pointBelowHorizon.
+// Once normalized, this represents a direction vector on the z plane between the directions of
+// pointAboveHorizon and pointBelowHorizon.
+float3 ClipEdge(in float3 pointAboveHorizon, in float3 pointBelowHorizon)
+{
+    return pointAboveHorizon.z * pointBelowHorizon - pointBelowHorizon.z * pointAboveHorizon;
+}
+
+// Clips a quad to above the xy plane in positive z space. Returns number of points after
+// clip in vertexCount. This could have a 5 point result if only one corner is clipped.
+void ClipQuadToHorizon(inout float3 p[5], out int vertexCount)
+{
+    // detect clipping config
+    int config = 0;
+    config += step(0.0, p[0].z) * 1;
+    config += step(0.0, p[1].z) * 2;
+    config += step(0.0, p[2].z) * 4;
+    config += step(0.0, p[3].z) * 8;
+
+    vertexCount = 0;
+
+    switch(config)
+    {
+    case 0: // clip all
+        break;
+    case 1: // clip p[1], p[2], p[3]
+        vertexCount = 3;
+        p[1] = ClipEdge(p[0], p[1]);
+        p[2] = ClipEdge(p[0], p[3]);
+        break;
+    case 2: // clip p[0], p[2], p[3]
+        vertexCount = 3;
+        p[0] = ClipEdge(p[1], p[0]);
+        p[2] = ClipEdge(p[1], p[2]);
+        break;
+    case 3: // clip p[2], p[3]
+        vertexCount = 4;
+        p[2] = ClipEdge(p[1], p[2]);
+        p[3] = ClipEdge(p[0], p[3]);
+        break;
+    case 4: // clip p[0], p[1], p[3]
+        vertexCount = 3;
+        p[0] = ClipEdge(p[2], p[3]);
+        p[1] = ClipEdge(p[2], p[1]);
+        break;
+    case 5: // clip p[1], p[3] - impossible (opposite corners)
+        break;
+    case 6: // clip p[0], p[3]
+        vertexCount = 4;
+        p[0] = ClipEdge(p[1], p[0]);
+        p[3] = ClipEdge(p[2], p[3]);
+        break;
+    case 7: // clip p[3]
+        vertexCount = 5;
+        p[4] = ClipEdge(p[0], p[3]);
+        p[3] = ClipEdge(p[2], p[3]);
+        break;
+    case 8: // clip p[0], p[1], p[2]
+        vertexCount = 3;
+        p[0] = ClipEdge(p[3], p[0]);
+        p[1] = ClipEdge(p[3], p[2]);
+        p[2] =  p[3];
+        break;
+    case 9: // clip p[1], p[2]
+        vertexCount = 4;
+        p[1] = ClipEdge(p[0], p[1]);
+        p[2] = ClipEdge(p[3], p[2]);
+        break;
+    case 10: // clip p[0], p[2] - impossible (opposite corners)
+        break;
+    case 11: // clip p[2]
+        vertexCount = 5;
+        p[4] = p[3];
+        p[3] = ClipEdge(p[3], p[2]);
+        p[2] = ClipEdge(p[1], p[2]);
+        break;
+    case 12: // clip p[0], p[1]
+        vertexCount = 4;
+        p[1] = ClipEdge(p[2], p[1]);
+        p[0] = ClipEdge(p[3], p[0]);
+        break;
+    case 13: // clip p[1]
+        vertexCount = 5;
+        p[4] = p[3];
+        p[3] = p[2];
+        p[2] = ClipEdge(p[2], p[1]);
+        p[1] = ClipEdge(p[0], p[1]);
+        break;
+    case 14: // clip p[0]
+        vertexCount = 5;
+        p[4] = ClipEdge(p[3], p[0]);
+        p[0] = ClipEdge(p[1], p[0]);
+        break;
+    case 15: // no clipping
+        vertexCount = 4;
+        break;
+    }
+}
+
+// Takes 4 points (p) from a quad plus a 5th dummy point, rotates them into the space of the normal, then transforms
+// the points by the LTC matrix provided. The points are then clipped to the normal's hemisphere. The number of points
+// after the clip is returned in vertexCount. It's possible for the resulting clipped quad to be a triangle (when 3
+// points are below the horizon), or a pentagon (when one point is below the horizon), or be a regular 4 point quad.
+void LtcClipAndNormalizeQuad(in float3 normal, in float3 dirToView, float3x3 ltcMat, inout float3 p[5], out int vertexCount)
+{
+    // Rotate ltc matrix
+    ltcMat = mul(ltcMat, BuildViewAlignedOrthonormalBasis(normal, dirToView));
+
+    // Transform points into ltc space
+    p[0] = mul(ltcMat, p[0].xyz);
+    p[1] = mul(ltcMat, p[1].xyz);
+    p[2] = mul(ltcMat, p[2].xyz);
+    p[3] = mul(ltcMat, p[3].xyz);
+
+    ClipQuadToHorizon(p, vertexCount);
+
+    // visibility check
+    if (vertexCount == 0)
+    {
+        return;
+    }
+
+    // project onto sphere
+    p[0] = normalize(p[0]);
+    p[1] = normalize(p[1]);
+    p[2] = normalize(p[2]);
+    p[3] = normalize(p[3]);
+    p[4] = normalize(p[4]);
+}
+
+float IntegrateQuad(in float3 v[5], in float vertexCount, in bool doubleSided)
+{
+    // Integrate
+    float sum = 0.0;
+
+    // There must be at least 3 points so don't check for the first 2 edges.
+    sum += IntegrateEdge(v[0], v[1]);
+    sum += IntegrateEdge(v[1], v[2]);
+
+    if (vertexCount > 3)
+    {
+        sum += IntegrateEdge(v[2], v[3]);
+        if (vertexCount == 5)
+        {
+            sum += IntegrateEdge(v[3], v[4]);
+        }
+    }
+
+    // Close the polygon
+    sum += IntegrateEdge(v[vertexCount - 1], v[0]);
+
+    // Note: negated due to winding order
+    sum = doubleSided ? abs(sum) : max(0.0, -sum);
+
+    return sum;
+}
+
+float LtcQuadEvaluate(in float3 normal, in float3 dirToView, in float3x3 ltcMat, in float3 p[4], in bool doubleSided)
+{
+    // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
+    float3 v[5] = {p[0], p[1], p[2], p[3], float3(0.0, 0.0, 0.0)};
+
+    int vertexCount = 0;
+    LtcClipAndNormalizeQuad(normal, dirToView, ltcMat, v, vertexCount);
+
+    if (vertexCount > 0)
+    {
+       return IntegrateQuad(v, vertexCount, doubleSided);
+    }
+    return 0.0;
+}
+
+// Checks an edge against the horizon and integrates it.
+//   p0 - first point
+//   p1 - second point
+//   prevClipPoint - the clip point saved from the last time an edge went from above to below the horizon
+//   sum - the sum total of all integrations to contribute to.
+//
+// Explanation:
+// When evaluating edges of a polygon there are four possible states to deal with
+// 1. Both points are above the horizon.
+//    - Integrate those points.
+// 2. The first point is above the horizon, but the second is below.
+//    - Find the point along the edge that intersects the horizon.
+//    - Integrate from point 1 to the intersection point
+//    - Save the intersection point for later
+// 3. The first point is blow the horizon, but the second point is above.
+//    - Find the point along the edge that intersects the horizon.
+//    - Integate from the previous saved insection (see option 2 above) to this new insection
+//    - Integrate from the new insection to the second point.
+// 4. Both points are below the horizon
+//    - Do nothing.
+
+void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, inout float sum)
+{
+    if (p0.z > 0.0)
+    {
+        if (p1.z > 0.0)
+        {
+            // Both above horizon
+            sum += IntegrateEdge(normalize(p0), normalize(p1));
+        }
+        else
+        {
+            // Going from above to below horizon
+            prevClipPoint = normalize(ClipEdge(p0, p1));
+            sum += IntegrateEdge(normalize(p0), prevClipPoint);
+        }
+    }
+    else if (p1.z > 0.0)
+    {
+        // Going from below to above horizon
+        float3 clipPoint = normalize(ClipEdge(p1, p0));
+        sum += IntegrateEdge(prevClipPoint, clipPoint);
+        sum += IntegrateEdge(clipPoint, normalize(p1));
+    }
+}
+
+// Evaluates the LTC result of an arbitrary polygon lighting a surface position.
+//   pos - The surface position
+//   normal - The surface normal
+//   dirToView - Normalized direction from the surface to the view
+//   ltcMat - The LTC matrix for specular, or identity for diffuse.
+//   positions - The buffer where the polygon positions are
+//   startIdx - The index of the first polygon position
+//   endIdx - The index of the point directly after the last polygon position
+//
+// The most complicated aspect of this function is clipping the polygon against the horizon of the surface point. See
+// EvaluatePolyEdge() above for details on the general concept. However, this function must deal with the case of the
+// first point being below the horizon. In that case, it needs to search in reverse from the end for the first point 
+// above the horizon, and save the intersection point between the above and below points so it can be used in 
+// EvaluatePolyEdge() later. During this search it also adjusts the end point index as necessary to avoid processing
+// those points that are below the horizon.
+float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, in float3x3 ltcMat, in StructuredBuffer<float4> positions, in uint startIdx, in uint endIdx)
+{
+    if (endIdx - startIdx < 3)
+    {
+        return 0.0; // Must have at least 3 points to form a polygon.
+    }
+
+    // Rotate ltc matrix
+    ltcMat = mul(ltcMat, BuildViewAlignedOrthonormalBasis(normal, dirToView));
+
+    // Prepare initial values
+    float sum = 0.0; // sum of edge integation
+    float3 p0 = mul(ltcMat, positions[startIdx].xyz - pos); // First point in polygon
+    
+    float3 prevClipPoint = float3(0.0, 0.0, 0.0); // Used to hold previous clip point when polygon dips below horizon.
+    float3 closePoint = p0;
+    
+    // Handle if the first point is below the horizon.
+    if (p0.z < 0.0)
+    {
+        float3 firstPoint = p0; // save the first point so it can be restored later.
+
+        // Find the previous clip point so it can be used when the polygon goes above the horizon by
+        // searching backwards, updating the endIdx along the way to avoid reprocessing those points later
+        for (endIdx; endIdx > startIdx + 1; --endIdx)
+        {
+            float3 prevPoint = mul(ltcMat, positions[endIdx - 1].xyz - pos);
+            if (prevPoint.z > 0)
+            {
+                prevClipPoint = normalize(ClipEdge(prevPoint, p0));
+                closePoint = prevClipPoint;
+                break;
+            }
+            p0 = prevPoint;
+        }
+        
+        // Check if all points below horizon
+        if (endIdx == startIdx + 1)
+        {
+            return 0.0; 
+        }
+
+        p0 = firstPoint; // Restore the original p0
+    }
+    
+    // Evaluate all the points
+    for (uint curIdx = startIdx + 1; curIdx < endIdx; ++curIdx)
+    {
+        float3 p1 = mul(ltcMat, positions[curIdx].xyz - pos); // Current point in polygon
+        EvaluatePolyEdge(p0, p1, prevClipPoint, sum);
+        p0 = p1;
+    }
+    
+    EvaluatePolyEdge(p0, closePoint, prevClipPoint, sum);
+
+    // Note: negated due to winding order
+    return -sum;
+}

@@ -1,0 +1,35 @@
+{
+    "Shader" : "BlendColorGradingLuts.shader",
+    "Variants" : [
+        {
+            "StableId": 1,
+            "Options" : {
+                "o_numSourceLuts": 0
+            }
+        },
+        {
+            "StableId": 2,
+            "Options" : {
+                "o_numSourceLuts": 1
+            }
+        },
+        {
+            "StableId": 3,
+            "Options" : {
+                "o_numSourceLuts": 2
+            }
+        },
+        {
+            "StableId": 4,
+            "Options" : {
+                "o_numSourceLuts": 3
+            }
+        },
+        {
+            "StableId": 5,
+            "Options" : {
+                "o_numSourceLuts": 4
+            }
+        }
+    ]
+}

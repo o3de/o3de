@@ -1,0 +1,135 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#include "AzManipulatorTestFrameworkTestFixtures.h"
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
+
+namespace UnitTest
+{
+    class AValidViewportInteraction
+        : public ToolsApplicationFixture
+    {
+    public:
+        AValidViewportInteraction()
+            : m_viewportInteraction(AZStd::make_unique<AzManipulatorTestFramework::ViewportInteraction>())
+        {
+        }
+
+    protected:
+        void SetUpEditorFixtureImpl() override
+        {
+            m_cameraState =
+                AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AZ::Vector2(800.0f, 600.0f));
+        }
+
+    public:
+        AZStd::unique_ptr<AzManipulatorTestFramework::ViewportInteraction> m_viewportInteraction;
+        AzFramework::CameraState m_cameraState;
+    };
+
+    TEST_F(AValidViewportInteraction, HasViewportId1234)
+    {
+        EXPECT_EQ(m_viewportInteraction->GetViewportId(), 1234);
+    }
+
+    TEST_F(AValidViewportInteraction, CanSetAndGetCameraState)
+    {
+        m_viewportInteraction->SetCameraState(m_cameraState);
+        const auto cameraState = m_viewportInteraction->GetCameraState();
+
+        EXPECT_EQ(cameraState.m_position, m_cameraState.m_position);
+        EXPECT_EQ(cameraState.m_forward, m_cameraState.m_forward);
+    }
+
+    TEST_F(AValidViewportInteraction, CanEnableGridSnapping)
+    {
+        bool snapping = false;
+
+        m_viewportInteraction->EnableGridSnaping();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+
+        EXPECT_TRUE(snapping);
+    }
+
+    TEST_F(AValidViewportInteraction, CanDisableGridSnapping)
+    {
+        bool snapping = true;
+
+        m_viewportInteraction->DisableGridSnaping();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+
+        EXPECT_FALSE(snapping);
+    }
+
+    TEST_F(AValidViewportInteraction, CanGetAndSetGridSize)
+    {
+        float gridSize = 0.0f;
+        const float expectedGridSize = 50.0f;
+
+        m_viewportInteraction->SetGridSize(expectedGridSize);
+
+        m_viewportInteraction->DisableGridSnaping();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            gridSize, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+
+        EXPECT_EQ(gridSize, expectedGridSize);
+    }
+
+    TEST_F(AValidViewportInteraction, CanEnableAngularSnapping)
+    {
+        bool snapping = false;
+
+        m_viewportInteraction->EnableAngularSnaping();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+
+        EXPECT_TRUE(snapping);
+    }
+
+    TEST_F(AValidViewportInteraction, CanDisableAngularSnapping)
+    {
+        bool snapping = true;
+
+        m_viewportInteraction->DisableAngularSnaping();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+
+        EXPECT_FALSE(snapping);
+    }
+
+    TEST_F(AValidViewportInteraction, CanGetAndSetAngleStep)
+    {
+        float angularStep = 0.0f;
+        const float expectedAngularStep = 50.0f;
+
+        m_viewportInteraction->SetAngularStep(expectedAngularStep);
+
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            angularStep, m_viewportInteraction->GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleStep);
+
+        EXPECT_EQ(angularStep, expectedAngularStep);
+    }
+
+    TEST_F(AValidViewportInteraction, HasAValidGetDebugDisplay)
+    {
+        AzFramework::DebugDisplayRequests& debugDisplay = m_viewportInteraction->GetDebugDisplay();
+        EXPECT_NE(nullptr, &debugDisplay);
+    }
+} // namespace UnitTest

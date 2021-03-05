@@ -1,0 +1,636 @@
+<Substitutions>
+  <!-- Here you can change and old node class to a new class and also reconnect edges to new ports, by remapping old ports to new ones
+         Optionally you can also remap the value of an old input port to an new one, when the port name has changed
+         Also, you can set the input port values of the new node to reasonable/appropriate values
+    -->
+
+  <!-- EXAMPLE
+    <Node OldClass="Physics:ActionImpulse" NewClass="Physics:ActionImpulse">
+        <InputPort OldName="impulseDirection" NewName="impulse" RemapValue="1"/>
+        <InputPort OldName="Momentum" NewName="angImpulse" RemapValue="1"/>
+    </Node>
+    -->
+  <!-- copy-paste these into the file!  fill in the names!
+    
+    <Node OldClass="" NewClass="">
+     <InputPort OldName="" NewName="" />
+     <OutputPort OldName="" NewName="" />
+    </Node>
+    
+    -->
+
+
+  <!-- Gameplay event NODES -->
+  <Node OldClass="ComponentEntity:GameplayEventHandler:Float" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventHandler:String" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventHandler:Vector3" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventHandler:EntityId" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:EventActionHandler:Float" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:EventActionHandler:String" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:EventActionHandler:Vector3" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  <Node OldClass="ComponentEntity:EventActionHandler:EntityId" NewClass="ComponentEntity:GameplayEventHandler">
+    <OutputPort OldName="Success" NewName="OnEventBegin" />
+    <OutputPort OldName="Failure" NewName="OnEventEnd" />
+  </Node>
+  
+  <Node OldClass="ComponentEntity:GameplayEventSender:Float" NewClass="ComponentEntity:GameplayEventSender">
+    <InputPort OldName="Activate" NewName="Activate" />
+    <InputPort OldName="ChannelId" NewName="ChannelId" />
+    <InputPort OldName="SendEventValue" NewName="SendEventValue" />
+    <InputPort OldName="EventName" NewName="EventName" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventSender:String" NewClass="ComponentEntity:GameplayEventSender">
+    <InputPort OldName="Activate" NewName="Activate" />
+    <InputPort OldName="ChannelId" NewName="ChannelId" />
+    <InputPort OldName="SendEventValue" NewName="SendEventValue" />
+    <InputPort OldName="EventName" NewName="EventName" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventSender:Vector3" NewClass="ComponentEntity:GameplayEventSender">
+    <InputPort OldName="Activate" NewName="Activate" />
+    <InputPort OldName="ChannelId" NewName="ChannelId" />
+    <InputPort OldName="SendEventValue" NewName="SendEventValue" />
+    <InputPort OldName="EventName" NewName="EventName" />
+  </Node>
+  <Node OldClass="ComponentEntity:GameplayEventSender:EntityId" NewClass="ComponentEntity:GameplayEventSender">
+    <InputPort OldName="Activate" NewName="Activate" />
+    <InputPort OldName="ChannelId" NewName="ChannelId" />
+    <InputPort OldName="SendEventValue" NewName="SendEventValue" />
+    <InputPort OldName="EventName" NewName="EventName" />
+  </Node>
+  
+  <!-- IMAGE NODES -->
+  <Node OldClass="Image:ColorCorrection" NewClass="Image:ColorCorrection">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectFrost" NewClass="Image:EffectFrost">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectCondensation" NewClass="Image:EffectCondensation">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectWaterDroplets" NewClass="Image:EffectWaterDroplets">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectWaterFlow" NewClass="Image:EffectWaterFlow">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectBloodSplats" NewClass="Image:EffectBloodSplats">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectGhosting" NewClass="Image:EffectGhosting">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectDepthOfField" NewClass="Image:EffectDepthOfField">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectVolumetricScattering" NewClass="Image:EffectVolumetricScattering">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectAlienInterference" NewClass="Image:EffectAlienInterference">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:EffectRainDrops" NewClass="Image:EffectRainDrops">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterBlur" NewClass="Image:FilterBlur">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterRadialBlur" NewClass="Image:FilterRadialBlur">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterSharpen" NewClass="Image:FilterSharpen">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterChromaShift" NewClass="Image:FilterChromaShift">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterGrain" NewClass="Image:FilterGrain">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterDirectionalBlur" NewClass="Image:FilterDirectionalBlur">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:FilterVisualArtifacts" NewClass="Image:FilterVisualArtifacts">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Image:3DHudInterference" NewClass="Image:3DHudInterference">
+    <InputPort OldName="Enabled" NewName="Enable" />
+    <InputPort OldName="Disabled" NewName="Disable" />
+  </Node>
+
+  <!-- INTERPOL NODES -->
+
+  <Node OldClass="Interpol:Int" NewClass="Interpolate:Int" />
+
+  <Node OldClass="Interpol:Float" NewClass="Interpolate:Float" />
+
+  <Node OldClass="Interpol:Vec3" NewClass="Interpolate:Vec3" />
+
+  <Node OldClass="Interpol:Color" NewClass="Interpolate:Color" />
+
+  <Node OldClass="Interpol:SmoothInt" NewClass="Interpolate:SmoothInt">
+    <InputPort OldName="Value" NewName="TargetValue" />
+  </Node>
+
+  <Node OldClass="Interpol:SmoothFloat" NewClass="Interpolate:SmoothFloat">
+    <InputPort OldName="Value" NewName="TargetValue" />
+  </Node>
+
+  <Node OldClass="Interpol:SmoothVec3" NewClass="Interpolate:SmoothVec3">
+    <InputPort OldName="Value" NewName="TargetValue" />
+  </Node>
+
+  <Node OldClass="Interpol:SmoothColor" NewClass="Interpolate:SmoothColor">
+    <InputPort OldName="Value" NewName="TargetValue" />
+  </Node>
+
+
+  <!-- ITERATOR NODES -->
+
+  <Node OldClass="Iterator:GetEntitiesInSphere" NewClass="Iterator:GetEntitiesInSphere">
+    <InputPort OldName="Start" NewName="Activate" />
+    <InputPort OldName="Range" NewName="Radius" />
+    <OutputPort OldName="Entity" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntitiesInBox" NewClass="Iterator:GetEntitiesInBox">
+    <InputPort OldName="Start" NewName="Activate" />
+    <OutputPort OldName="Entity" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntitiesInArea" NewClass="Iterator:GetEntitiesInArea">
+    <InputPort OldName="Start" NewName="Activate" />
+    <OutputPort OldName="Entity" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntities" NewClass="Iterator:GetEntities">
+    <InputPort OldName="Start" NewName="Activate" />
+    <OutputPort OldName="Entity" NewName="OutEntityId" />
+  </Node>
+
+  <!-- INPUT NODES -->
+
+  <Node OldClass="Input:Action" NewClass="Input:ActionListener" />
+
+  <Node OldClass="Input:MouseCoords" NewClass="Input:MouseCoords">
+    <OutputPort OldName="World" NewName="WorldPosition" />
+  </Node>
+
+  <Node OldClass="Input:MultiTouchCoordsFiltered" NewClass="Input:MultiTouchCoordsFiltered">
+    <InputPort OldName="fingerIdFilter" NewName="FingerIdFilter" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntitiesInSphere" NewClass="Iterator:GetEntitiesInSphere">
+    <InputPort OldName="Range" NewName="Radius" />
+    <OutputPort Entity="World" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntitiesInBox" NewClass="Iterator:GetEntitiesInBox">
+    <OutputPort Entity="World" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntitiesInArea" NewClass="Iterator:GetEntitiesInArea">
+    <OutputPort Entity="World" NewName="OutEntityId" />
+  </Node>
+
+  <Node OldClass="Iterator:GetEntities" NewClass="Iterator:GetEntities">
+    <OutputPort Entity="World" NewName="OutEntityId" />
+  </Node>
+
+  <!-- LOGIC NODES -->
+
+  <Node OldClass="Logic:Condition" NewClass="Logic:IfCondition" />
+
+  <Node OldClass="Logic:ConditionInverse" NewClass="Logic:SelectCondition">
+    <InputPort OldName="True" NewName="InTrue" />
+    <InputPort OldName="False" NewName="InFalse" />
+  </Node>
+
+  <Node OldClass="Logic:AND" NewClass="Logic:AND">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Logic:OR" NewClass="Logic:OR">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Logic:XOR" NewClass="Logic:XOR">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Logic:NOT" NewClass="Logic:NOT"/>
+
+  <Node OldClass="Logic:Any" NewClass="Logic:Any">
+    <InputPort OldName="in10" NewName="In0" />
+  </Node>
+
+  <Node OldClass="Logic:All" NewClass="Logic:All"/>
+
+  <Node OldClass="Logic:Once" NewClass="Logic:Once">
+    <InputPort OldName="Input1" NewName="In0" />
+    <InputPort OldName="Input2" NewName="In1" />
+    <InputPort OldName="Input3" NewName="In2" />
+    <InputPort OldName="Input4" NewName="In3" />
+    <InputPort OldName="Input5" NewName="In4" />
+    <InputPort OldName="Input6" NewName="In5" />
+  </Node>
+
+  <Node OldClass="Logic:NoSerializeOnce" NewClass="Logic:OnceNoSerialize">
+    <InputPort OldName="Input1" NewName="In" />
+  </Node>
+
+  <Node OldClass="Logic:RandomSelect" NewClass="Logic:RandomSelect">
+    <InputPort OldName="outMin" NewName="MinOut" />
+    <InputPort OldName="outMax" NewName="MaxOut" />
+    <OutputPort OldName="Out10" NewName="Out0" />
+    <!-- This full renaming causes an issue because many of the new names are
+          the same as the old names, so substitution happens repeatedly with
+          undesired results.
+     <OutputPort OldName="Out1" NewName="Out0" />
+     <OutputPort OldName="Out2" NewName="Out1" />
+     <OutputPort OldName="Out3" NewName="Out2" />
+     <OutputPort OldName="Out4" NewName="Out3" />
+     <OutputPort OldName="Out5" NewName="Out4" />
+     <OutputPort OldName="Out6" NewName="Out5" />
+     <OutputPort OldName="Out7" NewName="Out6" />
+     <OutputPort OldName="Out8" NewName="Out7" />
+     <OutputPort OldName="Out9" NewName="Out8" />
+     <OutputPort OldName="Out10" NewName="Out9" />
+     -->
+  </Node>
+
+  <Node OldClass="Logic:RandomTrigger" NewClass="Logic:RandomTrigger">
+    <OutputPort OldName="Out10" NewName="Out0" />
+  </Node>
+
+  <Node OldClass="Logic:Sequentializer" NewClass="Logic:Sequencer">
+    <OutputPort OldName="Out10" NewName="Out0" />
+  </Node>
+
+  <Node OldClass="Logic:Indexer" NewClass="Logic:Indexer">
+    <InputPort OldName="Port1" NewName="In0" />
+    <InputPort OldName="Port2" NewName="In1" />
+    <InputPort OldName="Port3" NewName="In2" />
+    <InputPort OldName="Port4" NewName="In3" />
+    <InputPort OldName="Port5" NewName="In4" />
+    <InputPort OldName="Port6" NewName="In5" />
+    <InputPort OldName="Port7" NewName="In6" />
+    <InputPort OldName="Port8" NewName="In7" />
+    <OutputPort OldName="out" NewName="OutIndex" />
+  </Node>
+
+  <Node OldClass="Logic:Multiplexer" NewClass="Logic:Multiplexer">
+    <InputPort OldName="Port0" NewName="In0" />
+    <InputPort OldName="Port1" NewName="In1" />
+    <InputPort OldName="Port2" NewName="In2" />
+    <InputPort OldName="Port3" NewName="In3" />
+    <InputPort OldName="Port4" NewName="In4" />
+    <InputPort OldName="Port5" NewName="In5" />
+    <InputPort OldName="Port6" NewName="In6" />
+    <InputPort OldName="Port7" NewName="In7" />
+  </Node>
+
+  <Node OldClass="Logic:DeMultiplexer" NewClass="Logic:DeMultiplexer">
+    <InputPort OldName="Input" NewName="In" />
+    <OutputPort OldName="Port0" NewName="Out0" />
+    <OutputPort OldName="Port1" NewName="Out1" />
+    <OutputPort OldName="Port2" NewName="Out2" />
+    <OutputPort OldName="Port3" NewName="Out3" />
+    <OutputPort OldName="Port4" NewName="Out4" />
+    <OutputPort OldName="Port5" NewName="Out5" />
+    <OutputPort OldName="Port6" NewName="Out6" />
+    <OutputPort OldName="Port7" NewName="Out7" />
+  </Node>
+
+  <!-- MATERIAL NODES -->
+
+  <Node OldClass="Material:EntityMaterialChange" NewClass="Material:EntityMaterialChange">
+    <InputPort OldName="mat_Material" NewName="mat_MaterialName" />
+    <InputPort OldName="Set" NewName="Activate" />
+    <InputPort OldName="Serialize" NewName="SerializeChanges" />
+  </Node>
+
+  <Node OldClass="Material:MaterialParams" NewClass="Material:MaterialParams">
+    <InputPort OldName="Get" NewName="Activate" />
+    <InputPort OldName="mat_Material" NewName="mat_MaterialName" />
+    <InputPort OldName="Serialize" NewName="SerializeChanges" />
+    <OutputPort OldName="ValueFloat" NewName="FloatValue" />
+    <OutputPort OldName="ValueColor" NewName="ColorValue" />
+  </Node>
+
+  <Node OldClass="Material:EntityMaterialParams" NewClass="Material:EntityMaterialParams">
+    <InputPort OldName="Get" NewName="Activate" />
+    <OutputPort OldName="ValueFloat" NewName="FloatValue" />
+    <OutputPort OldName="ValueColor" NewName="ColorValue" />
+  </Node>
+
+  <Node OldClass="Material:MaterialClone" NewClass="Material:MaterialClone">
+    <InputPort OldName="Clone" NewName="Activate" />
+    <OutputPort OldName="Cloned" NewName="OnCloned" />
+    <OutputPort OldName="Reset" NewName="OnReset" />
+  </Node>
+
+  <Node OldClass="Engine:SetObjectMaterial" NewClass="Material:SetObjectMaterial" />
+
+  <!-- MATH NODES -->
+
+  <Node OldClass="Math:SetNumber" NewClass="Math:SetNumber">
+    <InputPort OldName="set" NewName="Activate" />
+  </Node>
+
+  <Node OldClass="Vec3:ToVec3" NewClass="Vec3:ToVec3">
+    <OutputPort OldName="vec3" NewName="Result" />
+  </Node>
+
+  <Node OldClass="Math:Calculate" NewClass="Math:Calculate">
+    <InputPort OldName="DoCalc" NewName="Activate" />
+    <InputPort OldName="Op" NewName="Operation" />
+  </Node>
+
+  <Node OldClass="Vec3:Calculate" NewClass="Vec3:Calculate">
+    <InputPort OldName="DoCalc" NewName="Activate" />
+    <InputPort OldName="Op" NewName="Operator" />
+  </Node>
+
+  <Node OldClass="Vec3:NormalizeVec3" NewClass="Vec3:NormalizeVec3">
+    <OutputPort OldName="lenght" NewName="Length" />
+  </Node>
+
+  <Node OldClass="Math:InRange" NewClass="Math:InRange">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Math:Equal" NewClass="Math:Equal">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Math:Less" NewClass="Math:Less">
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Math:Select2" NewClass="Math:EvenOrOdd">
+    <OutputPort OldName="one" NewName="Odd" />
+    <OutputPort OldName="two" NewName="Even" />
+  </Node>
+
+  <Node OldClass="Math:SetNumber" NewClass="Math:SetNumber">
+    <InputPort OldName="set" NewName="Activate" />
+  </Node>
+
+  <Node OldClass="Math:UpDownCounter" NewClass="Math:UpDownCounter">
+    <InputPort OldName="HighLimit" NewName="Max" />
+    <InputPort OldName="LowLimit" NewName="Min" />
+    <InputPort OldName="Dec" NewName="Decrement" />
+    <InputPort OldName="Inc" NewName="Increment" />
+    <InputPort OldName="out" NewName="Out" />
+  </Node>
+
+  <Node OldClass="Math:Ceil" NewClass="Math:Ceil">
+    <InputPort OldName="A" NewName="In" />
+  </Node>
+
+  <Node OldClass="Math:Mod" NewClass="Math:Mod">
+    <OutputPort OldName="out" NewName="Result" />
+  </Node>
+
+  <Node OldClass="Math:Floor" NewClass="Math:Floor">
+    <InputPort OldName="A" NewName="In" />
+  </Node>
+
+  <Node OldClass="Math:Sinus" NewClass="Math:Sine" />
+  <Node OldClass="Math:Cosinus" NewClass="Math:Cosine" />
+  <Node OldClass="Math:SinusInverse" NewClass="Math:ArcSin" />
+  <Node OldClass="Math:CosinusInverse" NewClass="Math:ArcCos" />
+  <Node OldClass="Math:TangentInverse" NewClass="Math:ArcTan" />
+
+  <Node OldClass="Math:Round" NewClass="Math:Round">
+    <OutputPort OldName="outRounded" NewName="OutRounded" />
+  </Node>
+
+  <Node OldClass="Math:InRange" NewClass="Math:InRange">
+    <OutputPort OldName="out" NewName="Out" />
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Math:EqualCheck" NewClass="Math:Equal">
+    <InputPort OldName="Check" NewName="Activate" />
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Math:LessCheck" NewClass="Math:Less">
+    <InputPort OldName="Check" NewName="Activate" />
+    <OutputPort OldName="true" NewName="OnTrue" />
+    <OutputPort OldName="false" NewName="OnFalse" />
+  </Node>
+
+  <!-- MOVEMENT NODES -->
+
+  <Node OldClass="Movement:RotateEntityToEx" NewClass="Movement:RotateEntityTo" />
+
+  <Node OldClass="Movement:RotateEntityTo" NewClass="Movement:RotateEntityTo">
+    <OutputPort OldName="Current" NewName="CurrentDeg" />
+    <OutputPort OldName="Start" NewName="OnStart" />
+    <OutputPort OldName="Stop" NewName="OnStop" />
+  </Node>
+
+  <Node OldClass="Movement:RotateEntity" NewClass="Movement:RotateEntity">
+    <InputPort OldName="Speed" NewName="Velocity" />
+    <InputPort OldName="paused" NewName="Disable" />
+  </Node>
+
+  <Node OldClass="Movement:MoveEntityTo" NewClass="Movement:MoveEntityTo">
+    <InputPort OldName="DynamicUpdate" NewName="DynamicDestination" />
+    <InputPort OldName="Speed" NewName="Value" />
+    <InputPort OldName="EaseDistance" NewName="EaseInDistance" />
+    <OutputPort OldName="Start" NewName="OnStart" />
+    <OutputPort OldName="Stop" NewName="OnStop" />
+  </Node>
+
+  <!-- MISSION NODES -->
+
+  <Node OldClass="Mission:ModifyToken" NewClass="Mission:GameTokenModify">
+    <InputPort OldName="Trigger" NewName="Activate" />
+    <InputPort OldName="Op" NewName="Operation" />
+    <InputPort OldName="Type" NewName="TokenType" />
+    <InputPort OldName="Value" NewName="OtherValue" />
+    <OutputPort OldName="OutValue" NewName="Result" />
+  </Node>
+
+  <Node OldClass="Mission:SetGameToken" NewClass="Mission:GameTokenSet">
+    <InputPort OldName="Trigger" NewName="Activate" />
+    <InputPort OldName="Value" NewName="TokenValue" />
+  </Node>
+
+  <Node OldClass="Mission:GameTokenSet" NewClass="Mission:GameTokenSet">
+    <InputPort OldName="Trigger" NewName="Activate" />
+  </Node>
+
+  <Node OldClass="Mission:GetGameToken" NewClass="Mission:GameTokenGet">
+    <InputPort OldName="Trigger" NewName="Activate" />
+  </Node>
+
+  <Node OldClass="Mission:CheckGameToken" NewClass="Mission:GameTokenCheck">
+    <InputPort OldName="Trigger" NewName="Activate" />
+    <InputPort OldName="CheckValue" NewName="CompareValue" />
+    <OutputPort OldName="OutValue" NewName="TokenValue" />
+    <OutputPort OldName="True" NewName="OnTrue" />
+    <OutputPort OldName="False" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Mission:GameTokenCheck" NewClass="Mission:GameTokenCheck">
+    <InputPort OldName="Trigger" NewName="Activate" />
+    <OutputPort OldName="False" NewName="OnFalse" />
+    <OutputPort OldName="True" NewName="OnTrue" />
+  </Node>
+
+  <Node OldClass="Mission:GameTokenCheckMulti" NewClass="Mission:GameTokenCheckMulti">
+    <InputPort OldName="Trigger" NewName="Activate" />
+    <OutputPort OldName="OutValue" NewName="TokenValue" />
+    <OutputPort OldName="One_True" NewName="OneTrue" />
+    <OutputPort OldName="All_False" NewName="AllFalse" />
+  </Node>
+
+  <Node OldClass="Mission:GameToken" NewClass="Mission:GameToken">
+    <InputPort OldName="compare_Value" NewName="CompareValue" />
+    <OutputPort OldName="Out" NewName="TokenValue" />
+    <OutputPort OldName="Equal True" NewName="OnTrue" />
+    <OutputPort OldName="Equal False" NewName="OnFalse" />
+  </Node>
+
+  <Node OldClass="Mission:GameTokensLevelToLevelStore" NewClass="Mission:GameTokensLevelToLevelStore">
+    <InputPort OldName="Trigger" NewName="Activate" />
+  </Node>
+
+  <Node OldClass="Mission:GameTokensLevelToLevelRestore" NewClass="Mission:GameTokensLevelToLevelRestore">
+    <InputPort OldName="Trigger" NewName="Activate" />
+  </Node>
+
+  <!-- PHYSICS NODES -->
+
+  <Node OldClass="Physics:Dynamics" NewClass="Physics:Dynamics">
+    <InputPort OldName="active" NewName="Enable" />
+    <OutputPort OldName="v" NewName="Velocity" />
+    <OutputPort OldName="a" NewName="Acceleration" />
+    <OutputPort OldName="w" NewName="AngularVelocity" />
+    <OutputPort OldName="wa" NewName="AngularAcceleration" />
+    <OutputPort OldName="m" NewName="Mass" />
+  </Node>
+
+  <Node OldClass="Physics:PhysicsSleepQuery" NewClass="Physics:PhysicsSleepQuery">
+    <OutputPort OldName="sleep" NewName="OnSleep" />
+    <OutputPort OldName="awake" NewName="OnAwake" />
+  </Node>
+
+  <Node OldClass="Physics:ActionImpulse" NewClass="Physics:ActionImpulse">
+    <InputPort OldName="angImpulse" NewName="AngularImpulse" />
+    <InputPort OldName="CoordSys" NewName="CoordSystem" />
+  </Node>
+
+  <Node OldClass="Physics:RayCast" NewClass="Physics:RayCast">
+    <InputPort OldName="go" NewName="Activate" />
+    <InputPort OldName="transformDir" NewName="TransformDirection" />
+    <OutputPort OldName="direction" NewName="RayDirection" />
+    <OutputPort OldName="distance" NewName="HitDistance" />
+    <OutputPort OldName="normal" NewName="HitNormal" />
+    <OutputPort OldName="surfacetype" NewName="HitSurfaceType" />
+    <OutputPort OldName="entity" NewName="HitEntity" />
+  </Node>
+
+  <Node OldClass="Physics:RayCastCamera" NewClass="Physics:RayCastCamera">
+    <InputPort OldName="go" NewName="Activate" />
+    <InputPort OldName="offset" NewName="PositionOffset" />
+    <OutputPort OldName="direction" NewName="RayDirection" />
+    <OutputPort OldName="distance" NewName="HitDistance" />
+    <OutputPort OldName="normal" NewName="HitNormal" />
+    <OutputPort OldName="surfacetype" NewName="HitSurfaceType" />
+    <OutputPort OldName="entity" NewName="HitEntity" />
+  </Node>
+
+  <Node OldClass="Physics:PhysicsEnable" NewClass="Physics:PhysicsEnable">
+    <InputPort OldName="Enable" NewName="EnablePhysics" />
+    <InputPort OldName="Disable" NewName="DisablePhysics" />
+    <InputPort OldName="AI_Enable" NewName="EnableAI" />
+    <InputPort OldName="AI_Disable" NewName="DisableAI" />
+  </Node>
+
+  <!-- Vector Nodes -->
+
+  <Node OldClass="Vec3:Calculate" NewClass="Vec3:Calculate">
+    <InputPort OldName="DoCalc" NewName="Activate" />
+    <InputPort OldName="Op" NewName="Operator" />
+    <OutputPort OldName="out" NewName="Out" />
+  </Node>
+
+  <Node OldClass="Vec3:NormalizeVec3" NewClass="Vec3:NormalizeVec3">
+    <InputPort OldName="lenght" NewName="length" />
+  </Node>
+  
+  <!-- VR Nodes -->
+  <Node OldClass="VR:SetTrackignLevel" NewClass="VR:SetTrackingLevel" />
+
+</Substitutions>

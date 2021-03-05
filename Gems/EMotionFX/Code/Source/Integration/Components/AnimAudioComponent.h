@@ -1,0 +1,147 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or 
+* a third party where indicated.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,  
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+*
+*/
+#pragma once
+
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
+
+#include <Integration/AnimationBus.h>
+#include <Integration/AnimAudioComponentBus.h>
+#include <IAudioSystem.h>
+
+namespace EMotionFX
+{
+    namespace Integration
+    {
+        struct AudioTriggerEvent
+        {
+            AZ_RTTI(AudioTriggerEvent, "{1AA35052-477B-4F8D-9DE3-6411E96B871D}");
+            AZ_CLASS_ALLOCATOR(AudioTriggerEvent, EMotionFXAllocator, 0);
+
+            AudioTriggerEvent() = default;
+            virtual ~AudioTriggerEvent() = default;
+
+            AudioTriggerEvent(const AZStd::string& eventName, const AZStd::string& triggerName, const AZStd::string& jointName)
+                : m_eventName(eventName)
+                , m_triggerName(triggerName)
+                , m_jointName(jointName)
+            {
+            }
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            AZStd::string m_eventName;
+            AZStd::string m_triggerName;
+            AZStd::string m_jointName;
+        };
+
+        class AnimAudioComponent
+            : public AZ::Component
+            , protected AZ::TickBus::Handler
+            , protected AZ::TransformNotificationBus::Handler
+            , protected ActorNotificationBus::Handler
+            , protected AnimAudioComponentRequestBus::Handler
+            , protected AnimAudioComponentNotificationBus::Handler
+        {
+        public:
+            AZ_COMPONENT(AnimAudioComponent, "{E39F772F-FE4C-405E-9008-A5B8F27CB57D}");
+
+            void Init() override;
+            void Activate() override;
+            void Deactivate() override;
+
+            // AZ::TickBus implementation
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+            // AZ::TransformNotificationBus interface implementation
+            void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+            // ActorNotificationBus interface implementation
+            void OnMotionEvent(EMotionFX::Integration::MotionEvent motionEvent) override;
+
+            // AnimAudioComponentRequestBus interface implementation
+            void AddTriggerEvent(const AZStd::string& eventName, const AZStd::string& triggerName, const AZStd::string& jointName) override;
+            void ClearTriggerEvents() override;
+            void RemoveTriggerEvent(const AZStd::string& eventName) override;
+            bool ExecuteSourceTrigger(
+                const Audio::TAudioControlID triggerID,
+                const Audio::SAudioCallBackInfos& callbackInfo,
+                const Audio::TAudioControlID& sourceId,
+                const AZStd::string& jointName) override;
+            bool ExecuteTrigger(
+                const Audio::TAudioControlID triggerID,
+                const Audio::SAudioCallBackInfos& callbackInfo,
+                const AZStd::string& jointName) override;
+            void KillTrigger(const Audio::TAudioControlID triggerID, const AZStd::string* jointName) override;
+            void KillAllTriggers(const AZStd::string* jointName) override;
+            void SetRtpcValue(const Audio::TAudioControlID rtpcID, float value, const AZStd::string* jointName) override;
+            void SetSwitchState(const Audio::TAudioControlID switchID, const Audio::TAudioSwitchStateID stateID, const AZStd::string* jointName) override;
+            void SetEnvironmentAmount(const Audio::TAudioEnvironmentID environmentID, float amount, const AZStd::string* jointName) override;
+
+            // AnimAudioComponentNotificationBus interface implementation
+            void OnTriggerStarted(const Audio::TAudioControlID triggerID) override;
+            void OnTriggerFinished(const Audio::TAudioControlID triggerID) override;
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+            {
+                provided.push_back(AZ_CRC("AnimationAudioService", 0xaed4f3ea));
+            }
+
+            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+            {
+                required.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
+                required.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+            }
+
+            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+            {
+                incompatible.push_back(AZ_CRC("AnimationAudioService", 0xaed4f3ea));
+            }
+
+        private:
+            class TriggerEventData
+            {
+            public:
+                TriggerEventData(const AZ::Entity& entity, Audio::TAudioControlID triggerId, AZ::s32 jointId);
+
+                AZ::s32 GetJointId() const;
+                Audio::TAudioControlID GetTriggerId() const;
+
+            private:
+                AZ::s32 m_jointId = -1;
+                Audio::TAudioControlID m_triggerId = INVALID_AUDIO_CONTROL_ID;
+            };
+
+            void AddTriggerEventInternal(const AZStd::string& eventName, const AZStd::string& triggerName, const AZStd::string& jointName);
+            void RemoveTriggerEventInternal(const AZ::Crc32& eventName);
+
+            void ActivateJointProxies();
+            void DeactivateJointProxies();
+
+            static void OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo);
+
+            AZ::u32 m_activeVoices = 0;
+
+            AZStd::vector<AudioTriggerEvent> m_eventsToAdd;
+            AZStd::vector<AZ::Crc32> m_eventsToRemove;
+
+            AZStd::unordered_map<AZ::Crc32, TriggerEventData> m_eventTriggerMap;
+            AZStd::unordered_map<AZ::s32, Audio::IAudioProxy*> m_jointProxies;
+            AZStd::unique_ptr<Audio::SAudioCallBackInfos> m_callbackInfo;
+
+            AZ::Transform m_transform;
+        };
+    } // namespace Integration
+} // namespace EMotionFX

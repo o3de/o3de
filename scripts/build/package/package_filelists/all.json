@@ -1,0 +1,7 @@
+{
+    "@lyengine": {
+        "**": "#include",
+        "**/*.pyc": "#exclude",
+        "**/*.pdb": "#exclude"
+    }
+}

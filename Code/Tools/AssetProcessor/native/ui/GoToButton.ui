@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GoToButton</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>18</width>
+    <height>18</height>
+   </rect>
+  </property>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QPushButton" name="goToPushButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>18</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>18</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>View this asset</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>:/AssetProcessor_goto.svg</normaloff>
+        <activeon>:/AssetProcessor_goto_hover.svg</activeon>:/AssetProcessor_goto.svg
+      </iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>18</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

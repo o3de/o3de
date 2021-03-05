@@ -1,0 +1,141 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/RPI.Public/Buffer/BufferSystem.h>
+#include <Atom/RPI.Public/FeatureProcessorFactory.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h>
+#include <Atom/RPI.Public/Image/ImageSystem.h>
+#include <Atom/RPI.Public/Material/MaterialSystem.h>
+#include <Atom/RPI.Public/Model/ModelSystem.h>
+#include <Atom/RPI.Public/Pass/PassSystem.h>
+#include <Atom/RHI/RHISystem.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
+#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
+#include <Atom/RPI.Public/GpuQuery/GpuQuerySystem.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
+
+#include <Atom/RPI.Reflect/RPISystemDescriptor.h>
+
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
+
+namespace UnitTest
+{
+    class RPITestFixture;
+}
+
+namespace AZ
+{
+    class ReflectContext;
+
+
+    namespace RPI
+    {
+        class FeatureProcessor;
+
+        class RPISystem final
+            : public RPISystemInterface
+            , public AZ::SystemTickBus::Handler
+            , public AZ::Debug::TraceMessageBus::Handler
+        {
+            friend class UnitTest::RPITestFixture;
+
+        public:
+            AZ_TYPE_INFO(RPISystem, "{D248ED01-1D68-4F76-9DD8-1332B11F452A}");
+            AZ_CLASS_ALLOCATOR(RPISystem, AZ::SystemAllocator, 0);
+
+            static void Reflect(ReflectContext* context);
+
+            RPISystem() = default;
+            ~RPISystem() = default;
+
+            void Initialize(const RPISystemDescriptor& descriptor);
+            void Shutdown();
+
+            // RPISystemInterface overrides...
+            void InitializeSystemAssets() override;
+            void RegisterScene(ScenePtr scene) override;
+            void UnregisterScene(ScenePtr scene) override;
+            ScenePtr GetScene(const SceneId& sceneId) const override;
+            ScenePtr GetDefaultScene() const override;
+            RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
+            Data::Asset<ShaderResourceGroupAsset> GetSceneSrgAsset() const override;
+            Data::Asset<ShaderResourceGroupAsset> GetViewSrgAsset() const override;
+            void SimulationTick() override;
+            void RenderTick() override;
+            void SetSimulationJobPolicy(RHI::JobPolicy jobPolicy) override;
+            RHI::JobPolicy GetSimulationJobPolicy() const override;
+            void SetRenderPrepareJobPolicy(RHI::JobPolicy jobPolicy) override;
+            RHI::JobPolicy GetRenderPrepareJobPolicy() const override;
+            const RPISystemDescriptor& GetDescriptor() const override;
+            Name GetRenderApiName() const override;
+            uint64_t GetCurrentTick() const override;
+
+            // AZ::Debug::TraceMessageBus::Handler overrides...
+            bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
+
+        private:
+            // Initializes the system assets for tests. Should only be called from tests
+            void InitializeSystemAssetsForTests();
+
+            // SystemTickBus::OnTick
+            void OnSystemTick() override;
+
+            // Fill system time and game time information for simulation or rendering
+            void FillTickTimeInfo();
+
+            // The set of core asset handlers registered by the system.
+            AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
+
+            RHI::RHISystem m_rhiSystem;
+            MaterialSystem m_materialSystem;
+            ModelSystem m_modelSystem;
+            ShaderSystem m_shaderSystem;
+            ShaderMetricsSystem m_shaderMetricsSystem;
+            BufferSystem m_bufferSystem;
+            ImageSystem m_imageSystem;
+            PassSystem m_passSystem;
+            DynamicDrawSystem m_dynamicDraw;
+            FeatureProcessorFactory m_featureProcessorFactory;
+            GpuQuerySystem m_querySystem;
+            ViewportContextManager m_viewportContextManager;
+
+            AZStd::vector<ScenePtr> m_scenes;
+
+            // The job policy used for feature processor's simulation
+            RHI::JobPolicy m_simulationJobPolicy = RHI::JobPolicy::Parallel;
+
+            // The job policy used for feature processor's rendering prepare
+            RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
+
+            TickTimeInfo m_tickTime;
+
+            RPISystemDescriptor m_descriptor;
+
+            Data::Asset<ShaderResourceGroupAsset> m_sceneSrgAsset;
+            Data::Asset<ShaderResourceGroupAsset> m_viewSrgAsset;
+
+            bool m_systemAssetsInitialized = false;
+
+            uint64_t m_renderTick = 0;
+        };
+
+    } // namespace RPI
+} // namespace AZ

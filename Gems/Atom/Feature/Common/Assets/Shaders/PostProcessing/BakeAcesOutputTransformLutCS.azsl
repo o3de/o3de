@@ -1,0 +1,93 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    RWTexture3D<float4> m_lutTexture;
+
+    // Bit flag for control the ODT shader behavior
+    int m_outputDisplayTransformFlags;
+    // The ODT output mode
+    int m_outputDisplayTransformMode;
+    // Reference white and black luminance values
+    float2 m_cinemaLimits;
+    // Color transformation matrix from XYZ to the display's color primaries
+    row_major float3x3 m_XYZtoDisplayPrimaries;
+    // ACES spline parameters
+    SegmentedSplineParamsC9 m_acesSplineParams;
+    // Gamma adjustment to be applied to compensate for the condition of the viewing environment.
+    // Note that ACES uses a value of 0.9811 for adjusting from dark to dim surrounding.
+    float m_surroundGamma;
+    // Optional gamma value that is applied as basic gamma curve OETF
+    float m_gamma;
+
+    // Shaper function parameters
+    float m_shaperBias;
+    float m_shaperScale;
+}
+
+/*
+* 1) Get normalized lut coordinates -> normCoord
+* 2) Apply shaper to convert normCoord -> shaperCoord
+* 3) Evaluate ACES -> acesValue
+* 4) Store in LUT
+*/
+[numthreads(4,4,4)]
+void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
+{
+    OutputTransformParameters outputTransformParams;
+    outputTransformParams.outputDisplayTransformFlags = PassSrg::m_outputDisplayTransformFlags;
+    outputTransformParams.outputDisplayTransformMode = PassSrg::m_outputDisplayTransformMode;
+    outputTransformParams.cinemaLimits = PassSrg::m_cinemaLimits;
+    outputTransformParams.acesSplineParams = PassSrg::m_acesSplineParams;
+    outputTransformParams.XYZtoDisplayPrimaries = PassSrg::m_XYZtoDisplayPrimaries;
+    outputTransformParams.surroundGamma = PassSrg::m_surroundGamma;
+    outputTransformParams.gamma = PassSrg::m_gamma;
+
+    // Get and output texture dimensions
+    uint3 outputDimensions;
+    uint3 outPixel = dispatch_id.xyz;
+
+    PassSrg::m_lutTexture.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
+    // Early out if thread is outside of the target image
+    if(outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y || outPixel.z >= outputDimensions.z)
+    {
+        return;
+    }
+
+    // Get coordinates within the 3D texture
+    float3 baseCoord = float3 (
+        (float)(dispatch_id.x)/(float)outputDimensions.x,
+        (float)(dispatch_id.y)/(float)outputDimensions.y,
+        (float)(dispatch_id.z)/(float)outputDimensions.z
+        );
+
+    float2 cinemaLimits = PassSrg::m_cinemaLimits; //[ATOM-5326] avoid azslc crash by assigning to temp variable.
+    // Log2 shaper
+    float3 lutCoord = pow(2.0,((baseCoord - PassSrg::m_shaperBias)/PassSrg::m_shaperScale));
+
+    // RRT + ODT
+    // Convert to ACES color space
+    float3 aces = mul(XYZToAP0Mat, mul(D65ToD60Cat,	mul(SRGBToXYZMat, lutCoord.rgb)));
+
+    float3 oces = ReferenceRenderingTransform(aces);
+    float4 output;
+    output.rgb = OutputDeviceTransform(oces, outputTransformParams);
+    output.a = 1.0;
+
+    PassSrg::m_lutTexture[outPixel] = output;
+}

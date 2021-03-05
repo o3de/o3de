@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59 (86127) - https://sketch.com -->
+    <title>Icons / System / Camera</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Camera" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M18,3 C19.6568542,3 21,4.34314575 21,6 L21,18 C21,19.6568542 19.6568542,21 18,21 L6,21 C4.34314575,21 3,19.6568542 3,18 L3,6 C3,4.34314575 4.34314575,3 6,3 L18,3 Z M12,7 C9.23857625,7 7,9.23857625 7,12 C7,14.7614237 9.23857625,17 12,17 C14.7614237,17 17,14.7614237 17,12 C17,9.23857625 14.7614237,7 12,7 Z M17.5,5 C16.6715729,5 16,5.67157288 16,6.5 C16,7.32842712 16.6715729,8 17.5,8 C18.3284271,8 19,7.32842712 19,6.5 C19,5.67157288 18.3284271,5 17.5,5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

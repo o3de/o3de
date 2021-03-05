@@ -1,0 +1,345 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "precompiled.h"
+
+#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
+#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
+#include <Editor/View/Widgets/StatisticsDialog/NodeUsageTreeItem.h>
+
+#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
+
+namespace ScriptCanvasEditor
+{
+    /////////////////////////////////
+    // NodePaletteNodeUsageRootItem
+    /////////////////////////////////
+
+    NodePaletteNodeUsageRootItem::NodePaletteNodeUsageRootItem(const NodePaletteModel& nodePaletteModel)
+        : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
+        , m_nodePaletteModel(nodePaletteModel)
+        , m_categorizer(nodePaletteModel)
+    {
+    }
+
+    NodePaletteNodeUsageRootItem::~NodePaletteNodeUsageRootItem()
+    {
+    }
+
+    GraphCanvas::NodePaletteTreeItem* NodePaletteNodeUsageRootItem::GetCategoryNode(const char* categoryPath, GraphCanvas::NodePaletteTreeItem* parentRoot)
+    {
+        if (parentRoot)
+        {
+            return static_cast<GraphCanvas::NodePaletteTreeItem*>(m_categorizer.GetCategoryNode(categoryPath, parentRoot));
+        }
+        else
+        {
+            return static_cast<GraphCanvas::NodePaletteTreeItem*>(m_categorizer.GetCategoryNode(categoryPath, this));
+        }
+    }
+
+    void NodePaletteNodeUsageRootItem::PruneEmptyNodes()
+    {
+        m_categorizer.PruneEmptyNodes();
+    }
+
+    ////////////////////////////////////
+    // NodePaletteNodeUsagePaletteItem
+    ////////////////////////////////////
+
+    NodePaletteNodeUsagePaletteItem::NodePaletteNodeUsagePaletteItem(const ScriptCanvas::NodeTypeIdentifier& nodeIdentifier, AZStd::string_view displayName)
+        : GraphCanvas::IconDecoratedNodePaletteTreeItem(displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_nodeIdentifier(nodeIdentifier)
+    {
+    }
+
+    NodePaletteNodeUsagePaletteItem::~NodePaletteNodeUsagePaletteItem()
+    {
+    }
+
+    const ScriptCanvas::NodeTypeIdentifier& NodePaletteNodeUsagePaletteItem::GetNodeTypeIdentifier() const
+    {
+        return m_nodeIdentifier;
+    }
+
+    //////////////////////////////
+    // ScriptCanvasAssetTreeItem
+    //////////////////////////////
+
+    ScriptCanvasAssetNodeUsageTreeItem::ScriptCanvasAssetNodeUsageTreeItem(AZStd::string_view assetName)
+        : m_name(QString::fromUtf8(assetName.data(), static_cast<int>(assetName.size())))
+        , m_icon(":/ScriptCanvasEditorResources/Resources/edit_icon.png")
+        , m_activeIdentifier(0)
+    {
+    }
+
+    int ScriptCanvasAssetNodeUsageTreeItem::GetColumnCount() const
+    {
+        return Column::Count;
+    }
+
+    QVariant ScriptCanvasAssetNodeUsageTreeItem::Data(const QModelIndex& index, int role) const
+    {
+        if (index.column() == Column::Name)
+        {
+            switch (role)
+            {
+            case Qt::DisplayRole:
+                return GetName();
+            case Qt::DecorationRole:
+                break;
+            default:
+                break;
+            }
+        }
+        else if (index.column() == Column::UsageCount && m_assetId.IsValid())
+        {
+            switch (role)
+            {
+            case Qt::DisplayRole:
+                return GetNodeCount();
+            default:
+                break;
+            }
+        }
+        else if (index.column() == Column::OpenIcon)
+        {
+            if (m_assetId.IsValid())
+            {
+                switch (role)
+                {
+                case Qt::DecorationRole:
+                    return m_icon;
+                default:
+                    break;
+                }
+            }
+        }
+
+        return QVariant();
+    }
+
+    Qt::ItemFlags ScriptCanvasAssetNodeUsageTreeItem::Flags([[maybe_unused]] const QModelIndex& index) const
+    {
+        Qt::ItemFlags baseFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+
+        return baseFlags;
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::SetAssetId(const AZ::Data::AssetId& assetId)
+    {
+        // If we are setting up a new assetId, we wantt o register for the bus.
+        // Otherwise we just want to reload the asset to scrape some data from it.
+        if (m_assetId != assetId)
+        {
+            if (AZ::Data::AssetBus::Handler::BusIsConnected())
+            {
+                AZ::Data::AssetBus::Handler::BusDisconnect();
+            }
+
+            m_assetId = assetId;
+
+            AZ::Data::AssetBus::Handler::BusConnect(assetId);
+        }
+
+        AZ::Data::Asset<ScriptCanvasAsset> newAsset;
+
+        const bool loadBlocking = false;
+
+        auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
+        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, azrtti_typeid<ScriptCanvasAsset>(), onAssetReady);
+
+        ProcessAsset(newAsset);
+    }
+
+    const AZ::Data::AssetId& ScriptCanvasAssetNodeUsageTreeItem::GetAssetId() const
+    {
+        return m_assetId;
+    }
+
+    const QString& ScriptCanvasAssetNodeUsageTreeItem::GetName() const
+    {
+        return m_name;
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::SetActiveNodeType(const ScriptCanvas::NodeTypeIdentifier& nodeTypeIdentifier)
+    {
+        if (m_activeIdentifier != nodeTypeIdentifier)
+        {
+            m_activeIdentifier = nodeTypeIdentifier;
+
+            SignalDataChanged();
+        }
+    }
+
+    int ScriptCanvasAssetNodeUsageTreeItem::GetNodeCount() const
+    {
+        auto nodeIter = m_statisticsHelper.m_nodeIdentifierCount.find(m_activeIdentifier);
+
+        if (nodeIter == m_statisticsHelper.m_nodeIdentifierCount.end())
+        {
+            return 0;
+        }
+
+        return nodeIter->second;
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        ProcessAsset(asset);
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool isSuccessful)
+    {
+        if (isSuccessful)
+        {
+            ProcessAsset(asset);
+        }
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        ProcessAsset(asset);
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<ScriptCanvasAsset>& scriptCanvasAsset)
+    {
+        if (scriptCanvasAsset.IsReady())
+        {
+            AZ::Entity* scriptCanvasEntity = scriptCanvasAsset.Get()->GetScriptCanvasEntity();
+
+            Graph* editorGraph = AZ::EntityUtils::FindFirstDerivedComponent<Graph>(scriptCanvasEntity);
+
+            if (editorGraph)
+            {
+                m_statisticsHelper = editorGraph->GetNodeUsageStatistics();
+
+                // Temporary measure to deal potentially unfilled out data.
+                if (m_statisticsHelper.m_nodeIdentifierCount.empty())
+                {
+                    m_statisticsHelper.PopulateStatisticData(editorGraph);
+                }
+
+                SignalDataChanged();
+            }
+        }
+    }
+
+    ///////////////////////////////////////////
+    // ScriptCanvasAssetNodeUsageTreeItemRoot
+    ///////////////////////////////////////////
+
+    ScriptCanvasAssetNodeUsageTreeItemRoot::ScriptCanvasAssetNodeUsageTreeItemRoot()
+        : ScriptCanvasAssetNodeUsageTreeItem("root")
+        , m_categorizer((*this))
+    {
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItemRoot::RegisterAsset(const AZ::Data::AssetId& assetId)
+    {
+        auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::Default);
+        if (!asset.IsReady())
+        {
+            // The asset must be loaded before it an be registered. We will connect to the AssetBus and wait for it to be ready.
+            AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+            return;
+        }
+
+        auto treeItem = GetAssetItem(assetId);
+
+        if (treeItem == nullptr)
+        {
+            AZ::Data::AssetInfo assetInfo;
+            const AZStd::string platformName = ""; // Empty for default
+            AZStd::string rootFilePath;
+            bool foundPath = false;
+
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundPath, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetInfoById, assetId, azrtti_typeid<ScriptCanvasAsset>(), platformName, assetInfo, rootFilePath);
+
+            if (foundPath)
+            {
+                AZStd::string relativePath = assetInfo.m_relativePath;
+                AZStd::string fileName;
+                    
+                if (AzFramework::StringFunc::Path::GetFileName(relativePath.c_str(), fileName))
+                {
+                    AzFramework::StringFunc::Path::Normalize(relativePath);
+
+                    const bool stripLastComponent = true;
+                    if (AzFramework::StringFunc::Path::StripComponent(relativePath, stripLastComponent))
+                    {
+                        AzFramework::StringFunc::Replace(relativePath, AZ_CORRECT_FILESYSTEM_SEPARATOR, '/');
+                        GraphCanvas::GraphCanvasTreeItem* treeItem2 = m_categorizer.GetCategoryNode(relativePath.c_str(), this);
+
+                        if (treeItem2)
+                        {
+                            ScriptCanvasAssetNodeUsageTreeItem* usageTreeItem = treeItem2->CreateChildNode<ScriptCanvasAssetNodeUsageTreeItem>(fileName);
+
+                            usageTreeItem->SetAssetId(assetId);
+
+                            m_scriptCanvasAssetItems[assetId] = usageTreeItem;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            treeItem->SetAssetId(assetId);
+        }
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItemRoot::RemoveAsset(const AZ::Data::AssetId& assetId)
+    {
+        auto assetIter = m_scriptCanvasAssetItems.find(assetId);
+
+        if (assetIter != m_scriptCanvasAssetItems.end())
+        {
+            assetIter->second->DetachItem();
+            delete assetIter->second;
+
+            m_categorizer.PruneEmptyNodes();
+        }
+    }
+
+    ScriptCanvasAssetNodeUsageTreeItem* ScriptCanvasAssetNodeUsageTreeItemRoot::GetAssetItem(const AZ::Data::AssetId& assetId)
+    {
+        auto assetIter = m_scriptCanvasAssetItems.find(assetId);
+
+        if (assetIter != m_scriptCanvasAssetItems.end())
+        {
+            return assetIter->second;
+        }
+
+        return nullptr;
+    }
+
+    GraphCanvas::GraphCanvasTreeItem* ScriptCanvasAssetNodeUsageTreeItemRoot::CreateCategoryNode([[maybe_unused]] AZStd::string_view categoryPath, AZStd::string_view categoryName, GraphCanvasTreeItem* parent) const
+    {
+        return parent->CreateChildNode<ScriptCanvasAssetNodeUsageTreeItem>(categoryName);
+    }
+
+    const ScriptCanvasAssetNodeUsageTreeItemRoot::ScriptCanvasAssetMap& ScriptCanvasAssetNodeUsageTreeItemRoot::GetAssetTreeItems() const
+    {
+        return m_scriptCanvasAssetItems;
+    }
+
+    void ScriptCanvasAssetNodeUsageTreeItemRoot::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect(*AZ::Data::AssetBus::GetCurrentBusId());
+        RegisterAsset(asset.GetId());
+    }
+}

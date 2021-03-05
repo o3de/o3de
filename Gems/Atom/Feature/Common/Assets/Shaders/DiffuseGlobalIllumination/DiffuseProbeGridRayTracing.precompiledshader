@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PrecompiledShaderAssetSourceData",
+    "ClassData":
+    {
+        "ShaderAssetFileName": "diffuseprobegridraytracing.azshader",
+        "ShaderResourceGroupAssets":
+        [
+            "diffuseprobegridraytracing_raytracingglobalsrg.azsrg",
+            "diffuseprobegridraytracing_raytracinglocalsrg.azsrg"
+        ],
+        "RootShaderVariantAssets":
+        [
+            {
+                "APIName": "dx12",
+                "RootShaderVariantAssetFileName": "diffuseprobegridraytracing_dx12_0.azshadervariant"
+            },
+            {
+                "APIName": "vulkan",
+                "RootShaderVariantAssetFileName": "diffuseprobegridraytracing_vulkan_0.azshadervariant"
+            }
+        ]
+    }
+}

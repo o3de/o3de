@@ -1,0 +1,26 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "eeffbd9211cf4ce0b5cc73696b427cbe",
+    "Name": "ImageProcessing",
+    "DisplayName": "Image Processing",
+    "Version": "0.1.0",
+    "Summary": "Contains ImageBuilder for Asset Processor processing image files and UI for texture property editing",
+    "Tags": ["Image Builder", "Texture Property Editor"],
+    "IconPath": "preview.png",
+    "IsRequired": false,
+    "Modules": [ 
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "5a149b6b3c964064bd4970f0e92f72e2",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "Texture Atlas"
+        }
+    ]
+}

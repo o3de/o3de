@@ -1,0 +1,488 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ResourceManagement QLabel
+{
+    /* 
+        This sets the indent Q_PROPERTY on QLabel to 0. The default value is -1,
+        which triggers some computation based on the font size. But that only 
+        happens under some cicumstances, such as when using a stylesheet to set
+        margins or padding on the QLabel. Adding such styling suddenly causes
+        the indent to be applied, causing the left alignment of the text to break.
+    */
+    qproperty-indent: 0
+}
+
+#ResourceManagement #TreeTitle
+{
+    font-size: 12px; 
+    font-weight: bold;
+}
+
+#ResourceManagement #ButtonBar {
+    margin-top: 6px;
+}
+
+#ResourceManagement #ButtonBar QPushButton {
+    padding: 6px 9px 6px 9px;
+    margin-right: 6px;
+}
+
+#ResourceManagement #Message, #ResourceManagement *[class='Message'] {
+    font-size: 12px;
+    margin-top: 6;
+}
+
+#ResourceManagement #Title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#ResourceManagement #Refreshing {
+    color: #F0C32D;
+}
+
+#ResourceManagement #LinkButton, #ResourceManagement *[class='Link'] {
+    border: none;
+    color: #00A1C9;
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+#ResourceManagement QHeaderView::section {
+    color: #999999;
+    font-weight: bold;
+    border: none;
+    padding-top: 0px;
+    padding-bottom: 3px;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+#ResourceManagement #Table {
+    qproperty-showGrid: false;
+    border: none;
+}
+
+#ResourceManagement #Table::item {
+    padding-right: 12px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+#ResourceManagement #TextContentHelp
+{
+    margin: 0px;
+    padding: 12px;
+    border-style: outset;
+    border-width: 1px;
+    border-color: #303030;
+}
+
+#ResourceManagement #TextContentEdit
+{
+}
+
+#ResourceManagement #TextContentFooter
+{
+    padding: 6px 12px 6px 12px;
+    border-style: outset;
+    border-width: 1px;
+    border-color: #303030;
+}
+
+#ResourceManagement #TextContentFooter QLabel
+{
+    min-width: 48px;
+    max-width: 48px;
+    margin-right: 12px;
+    color: #999999;
+}
+
+#ResourceManagement #TextContentFooter QPushButton
+{
+    padding: 6px 9px 6px 9px;
+    margin-left: 6px;
+}
+
+
+#ResourceManagement #Action {
+    padding: 12px;
+    background-color: #404040;
+}
+
+#ResourceManagement #Action #ButtonBar {
+    background-color: #404040;
+}
+
+#ResourceManagement #Action #Heading {
+    background-color: #404040;
+}
+
+#ResourceManagement #Heading #RefreshButton {
+    margin-left: 12px;
+    padding: 3px;
+}
+
+#ResourceManagement #Action #Heading #Title {
+    border: 0px solid #404040;
+}
+
+#ResourceManagement #Action #Heading #Message {
+    border: 0px solid #404040;
+}
+
+#ResourceManagement #Action #LearnMore {
+    background-color: #404040;
+}
+
+#ResourceManagement #Action #LearnMore #Title {
+    font-size: 12px;
+    margin-top: 24px;
+    font-weight:bold;
+}
+
+#ResourceManagement #Action #LearnMore #LinkButton {
+    background-color: #404040;
+}
+
+#ResourceManagement #Action #Title, #ResourceManagement #Action #Message {
+    background-color: #404040;
+}
+
+#ResourceManagement #Top {
+    padding: 12px; 
+    border-style: outset;
+    border-width: 1px;
+    border-color: #303030;
+}
+
+#ResourceManagement #Bottom {
+    background-color: #404040;
+    padding: 12px; 
+}
+
+#ResourceManagement #Bottom #Title {
+    background-color: #404040;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#ResourceManagement #Bottom #Message {
+    background-color: #404040;
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #Bottom #Table {
+    background-color: #404040;
+    qproperty-alternatingRowColors: true;
+}
+
+#ResourceManagement #Bottom #Table QHeaderView {
+    background-color: #404040;
+}
+
+#ResourceManagement #Bottom #Table QHeaderView::section {
+    background-color: #404040;
+}
+
+#ResourceManagement #Bottom #Table::item {
+    background-color: #393a3c;
+}
+
+#ResourceManagement #Bottom #Table::item:alternate {
+    background-color: #303030;
+}
+
+#ResourceManagement #Bottom #Resources {
+    background-color: #404040;
+}
+
+#ResourceManagement #Bottom #Refreshing {
+    background-color: #404040;
+}
+
+#ResourceManagement #Stack #Heading #Message
+{
+    margin-top: 0;
+}
+
+#ResourceManagement #Stack #Status #Title
+{
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #StackEvents #TitleBar {	
+    color: #CCCCCC;
+	background-color: #393a3c;
+    border-style: outset;
+    border-width: 1px;
+    border-color: #303030;
+}
+
+#ResourceManagement #StackEvents #TitleBar * {
+    font-size:12px; 
+} 
+
+#ResourceManagement #StackEvents #TitleBar #Title {
+    font-weight:bold;
+    margin-right: 12px;
+} 
+
+#ResourceManagement #StackEvents #TitleBar #InProgress #Text {
+    color: #F0C32D;
+}
+
+#ResourceManagement #StackEvents #TitleBar #Succeeded {
+    color: #43d96a;
+}
+
+#ResourceManagement #StackEvents #TitleBar #Failed {
+    color: #f44642;
+}
+
+#ResourceManagement #StackEvents #Content {	
+    border-style: inset;
+    border-width: 1px;
+    border-color: #303030;
+    padding: 12px;
+}
+
+#ResourceManagement #StackEvents #Table {
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+}
+
+#ResourceManagement #StackEvents QTableView::item {
+    background-color: #303030;
+}
+
+#ResourceManagement #StackEvents QTableView::item:focus {
+    selection-color: #FFFFFF;
+    selection-background-color: rgba(255, 153, 0, 128);
+}
+
+#ResourceManagement #StackEvents QTableView::item:alternate {
+    background-color: #393a3c;
+}
+
+#ResourceManagement #CreateDeployment #LearnMore
+{
+    margin-bottom: 12px;
+}
+
+#ResourceManagement #CreateDeployment #WarningMessage
+{
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+#ResourceManagement #LoadingError, #ResourceManagement #LoadingError #Title, #ResourceManagement #LoadingError #Message, #ResourceManagement #LoadingError #ErrorText
+{
+    background: #404040;
+}
+
+#ResourceManagement #LoadingError #ErrorText
+{
+    padding: 12px;
+    color: #f44642;
+}
+
+#ResourceManagement #Loading, #ResourceManagement #Loading #Title, #ResourceManagement #Loading #Message
+{
+    background: #404040;
+}
+
+#ResourceManagement #Loading, #ResourceManagement #LoadingError
+{
+    padding: 12px;
+}
+
+#ResourceManagement #MainToolbar
+{
+    padding: 6px;
+    border-style: inset;
+    border-width: 1px;
+    border-color: #303030;
+}
+
+#ResourceManagement #MainToolbar QPushButton
+{
+    border: none;
+    padding: 0px;
+}
+
+#ResourceManagement #MainToolbar #AddNewButton
+{
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+#ResourceManagement #ResourceImporter #RegionBox:disabled
+{
+    color: #555555;
+}
+
+#ResourceManagement #ResourceImporter #ListTable
+{
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+    border: none;
+}
+
+#ResourceManagement #ResourceImporter #ListTable::item
+{
+    padding-right: 12px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: #333436;
+}
+
+#ResourceManagement #ResourceImporter #ListTable::item:alternate
+{
+    background-color: #303030;
+}
+
+#ResourceManagement #ResourceImporter #SelectionTable
+{
+    qproperty-showGrid: false;
+    border: none;
+    gridline-color: #393a3c;
+}
+
+#ResourceManagement #ResourceImporter #SelectionTable::item
+{
+    padding: 1px 1px 1px 1px;
+
+}
+
+#ResourceManagement #ResourceImporter #LoadingLabel
+{
+    color : #F0C32D;
+}
+
+#ResourceManagement #MainToolbar #SaveButton,
+#ResourceManagement #MainToolbar #DeleteButton,
+#ResourceManagement #MainToolbar #SourceControlButton,
+#ResourceManagement #MainToolbar #AddNewButton
+{
+    qproperty-flat: true;
+}
+
+#ResourceManagement #MainToolbar #CurrentProfile
+{
+    margin-right: 12px;
+}
+
+#ResourceManagement #MainToolbar #CurrentDeployment
+{
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+#ResourceManagement #UpdateStack #Refreshing
+{
+    margin-top: 12px;
+    margin-left: 12px;
+}
+
+#ResourceManagement #UpdateStack #Message
+{
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #UpdateStack #Table {
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+}
+
+#ResourceManagement #UpdateStack #Table::item {
+    background-color: #303030;
+}
+
+#ResourceManagement #UpdateStack #Table::item:alternate {
+    background-color: #393a3c;
+}
+
+#ResourceManagement #UpdateStack #Status {
+    color: #F0C32D;
+}
+
+#ProfileSelector #DeleteProfile {
+    width: 38px;
+    height: 11px;
+    border: none;
+}
+
+#ProfileSelector #EditSelectedProfile {
+    color: #00A1C9;
+}
+
+#InitializeCloudCanvasProject #Profiles QRadioButton {
+    margin-left: 5px;
+}
+
+#InitializeCloudCanvasProject #ProfileEditButtons  {
+}
+
+#InitializeCloudCanvasProject #ProfileEditButtons QPushButton {
+}
+
+#InitializeCloudCanvasProject #ContentFrame {
+    x-margin: 6px;
+    x-padding: 6px;
+    border: 1px solid rgb(34, 35, 38);
+    x-background-color: purple;
+}
+
+#LoginDialog
+{
+    background-color: #F8F8F8;
+}
+
+#LoginDialog Amazon--LoginWelcomeTitle
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 21px;
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans Semibold";
+}
+
+#LoginDialog Amazon--LoginWelcomeText
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignLeft;
+}
+
+#LoginDialog Amazon--LoginFooterText
+{
+    color: #999999;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignCenter;
+}
+
+#LoginDialog Amazon--LoginWebViewFrame
+{
+    border: 2px solid #EEEEEE;
+}
+
+#LoginDialog Amazon--LoginWebView
+{
+    background-color: #F8F8F8;
+}

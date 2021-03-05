@@ -1,0 +1,82 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DeferredFogPassTemplate",
+            "PassClass": "DeferredFogPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepthTexture",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepthStencil",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthStencilTexture",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "Float3Mappings": [
+                        {
+                            "Name": "m_fogColor",
+                            "Value": [ 0.45, 0.45, 0.6 ]
+                        }
+                    ],
+                    "Float2Mappings": [
+                        {
+                            "Name": "m_noiseScaleUV",
+                            "Value": [ 0.1, 0.1 ]
+                        },
+                        {
+                            "Name": "m_noiseVelocityUV",
+                            "Value": [ 0.02, 0.01 ]
+                        }
+                    ],
+                    "FloatMappings": [
+                        {
+                            "Name": "m_fogStartDistance",
+                            "Value": 1.0
+                        },
+                        {
+                            "Name": "m_fogEndDistance",
+                            "Value": 5.0
+                        },
+                        {
+                            "Name": "m_fogMinHeight",
+                            "Value": 0.01
+                        },
+                        {
+                            "Name": "m_fogMaxHeight",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

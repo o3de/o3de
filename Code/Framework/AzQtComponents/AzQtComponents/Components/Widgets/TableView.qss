@@ -1,0 +1,112 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+QTableView
+{
+    qproperty-showGrid: false;
+}
+
+AzQtComponents--TableView,
+QTableView,
+QListView,
+QTreeView
+{
+    /* Use opaque colours because the ::branch subcontrol background is painted slightly differently
+       to the rest of the row */
+    alternate-background-color: rgb(77, 77, 77);
+
+    selection-background-color: rgb(101, 101, 101);
+    selection-color: #ffffff;
+
+    show-decoration-selected: 1;
+
+    border: none;
+}
+
+AzQtComponents--TableView::item,
+QTableView::item,
+QListView::item,
+QTreeView::item
+{
+    height: 24px;
+
+    padding-left: 4px; /* QStyle::PM_FocusFrameHMargin (2) + 1 + 4 = 7 */
+    border: none; /* A border, background or image is required to actually make use of the padding */
+}
+
+AzQtComponents--TableView::branch:selected,
+AzQtComponents--TableView::item:selected,
+QTableView::item:selected,
+QListView::item:selected,
+QTreeView::branch:selected,
+QTreeView::item:selected
+{
+    background: rgb(101, 101, 101);
+}
+
+AzQtComponents--TableView::branch:hover,
+AzQtComponents--TableView::item:hover,
+QTableView::item:hover,
+QListView::item:hover,
+QTreeView::branch:hover,
+QTreeView::item:hover
+{
+    background: rgb(90, 90, 90);
+}
+
+AzQtComponents--TableView QHeaderView::section,
+QTableView QHeaderView::section,
+QListView QHeaderView::section,
+QTreeView QHeaderView::section
+{
+    height: 24px;
+
+    background: #444444;
+    border: none;
+
+    font-size: 12px;
+    font-style: normal;
+
+    padding-left: 7px;
+}
+
+/* Undo QAbstractItemView::indicator rule in CheckBox.qss */
+QTreeView::indicator
+{
+    margin: 0px;
+    width: 16px;
+    height: 16px;
+    margin-left: -3px;
+}
+
+QTreeView::branch:open:has-children
+{
+    image: url(:/TreeView/open.svg);
+    padding: 10px 4px;
+}
+
+QTreeView::branch:closed:has-children
+{
+    image: url(:/TreeView/closed.svg);
+    padding: 8px 6px;
+}
+
+QTreeView::item:disabled 
+{ 
+    color: #777777; 
+}
+
+AzQtComponents--TableView::branch:open:has-children,
+AzQtComponents--TableView::branch:closed:has-children
+{
+    image: none;
+}

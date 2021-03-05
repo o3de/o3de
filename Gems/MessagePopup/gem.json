@@ -1,0 +1,24 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "89225422672547deaca9e7a22b883973",
+    "Name": "MessagePopup",
+    "DisplayName": "MessagePopup",
+    "Version": "0.1.0",
+    "Summary": "Show a message popup ",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Dependencies": [
+        {
+            "Uuid": "6bb61c9e547043f0afc5019d6d460b78",
+            "VersionConstraints": [
+                "~>0.1.0"
+            ],
+            "_comment": "UiBasics"
+        }
+    ],
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

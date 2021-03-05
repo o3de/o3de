@@ -1,0 +1,106 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <LyShine/Bus/UiDropTargetBus.h>
+#include <LyShine/UiComponentTypes.h>
+
+#include <AzCore/Component/Component.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include "UiInteractableState.h"
+#include "UiStateActionManager.h"
+#include "UiNavigationSettings.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+class UiDropTargetComponent
+    : public AZ::Component
+    , public UiDropTargetBus::Handler
+{
+public: // member functions
+
+    AZ_COMPONENT(UiDropTargetComponent, LyShine::UiDropTargetComponentUuid, AZ::Component);
+
+    UiDropTargetComponent();
+    ~UiDropTargetComponent() override;
+
+    // UiDropTargetInterface
+    const LyShine::ActionName& GetOnDropActionName() override;
+    void SetOnDropActionName(const LyShine::ActionName& actionName) override;
+    void HandleDropHoverStart(AZ::EntityId draggable) override;
+    void HandleDropHoverEnd(AZ::EntityId draggable) override;
+    void HandleDrop(AZ::EntityId draggable) override;
+    DropState GetDropState() override;
+    void SetDropState(DropState dropState) override;
+    // ~UiDropTargetInterface
+
+protected: // member functions
+
+    // AZ::Component
+    void Init() override;
+    void Activate() override;
+    void Deactivate() override;
+    // ~AZ::Component
+
+    void OnDropValidStateActionsChanged();
+    void OnDropInvalidStateActionsChanged();
+
+protected: // static member functions
+
+    static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC("UiDropTargetService", 0x39a63abd));
+        provided.push_back(AZ_CRC("UiNavigationService"));
+        provided.push_back(AZ_CRC("UiStateActionsService"));
+    }
+
+    static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC("UiDropTargetService", 0x39a63abd));
+        incompatible.push_back(AZ_CRC("UiNavigationService"));
+        incompatible.push_back(AZ_CRC("UiStateActionsService"));
+    }
+
+    static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
+        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+    }
+
+    static void Reflect(AZ::ReflectContext* context);
+
+private: // member functions
+
+    AZ_DISABLE_COPY_MOVE(UiDropTargetComponent);
+
+private: // static member functions
+
+    //! Get the drop targets that could be valid options for custom navigation from this drop target
+    static LyShine::EntityArray GetNavigableDropTargets(AZ::EntityId sourceEntity);
+
+private: // persistent data
+
+    using StateActions = AZStd::vector<UiInteractableStateAction*>;
+
+    //! Dragging state action properties - allow visual states to be defined
+    StateActions m_dropValidStateActions;
+    StateActions m_dropInvalidStateActions;
+
+private: // data
+
+    LyShine::ActionName m_onDropActionName;
+
+    DropState m_dropState;
+
+    UiStateActionManager m_stateActionManager;
+    UiNavigationSettings m_navigationSettings;
+};

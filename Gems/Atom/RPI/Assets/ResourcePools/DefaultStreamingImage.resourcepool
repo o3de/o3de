@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ResourcePoolSourceData",
+    "ClassData": {
+        "PoolName": "DefaultStreamingImagePool2",
+        "PoolType": "StreamingImagePool",
+        "BudgetInBytes": 2147483648
+    }
+}

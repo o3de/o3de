@@ -1,0 +1,88 @@
+{
+    "src" :
+    {
+        "main" :
+        {
+            "java" :
+            {
+                "${ANDROID_PACKAGE_PATH}" :
+                {
+                    "ProjectActivity.java" : "${ANDROID_PROJECT_ACTIVITY}.java"
+                }
+            },
+            "res" :
+            {
+                "values" :
+                [
+                    "strings.xml",
+                    "bools.xml"
+                ],
+                "drawable-land-mdpi" :
+                {
+                    "app_splash-land-mdpi.png" : "app_splash.png"
+                },
+                "drawable-land-hdpi" :
+                {
+                    "app_splash-land-hdpi.png" : "app_splash.png"
+                },
+                "drawable-land-xhdpi" :
+                {
+                    "app_splash-land-xhdpi.png" : "app_splash.png"
+                },
+                "drawable-land-xxhdpi" :
+                {
+                    "app_splash-land-xxhdpi.png" : "app_splash.png"
+                },
+                "drawable-port-mdpi" :
+                {
+                    "app_splash-port-mdpi.png" : "app_splash.png"
+                },
+                "drawable-port-hdpi" :
+                {
+                    "app_splash-port-hdpi.png" : "app_splash.png"
+                },
+                "drawable-port-xhdpi" :
+                {
+                    "app_splash-port-xhdpi.png" : "app_splash.png"
+                },
+                "drawable-port-xxhdpi" :
+                {
+                    "app_splash-port-xxhdpi.png" : "app_splash.png"
+                },
+                "layout" :
+                [
+                    "splash_screen.xml" ,
+                    "obb_downloader.xml"
+                ],
+                "mipmap-mdpi" :
+                {
+                    "app_icon-mdpi.png" : "app_icon.png"
+                },
+                "mipmap-hdpi" :
+                {
+                    "app_icon-hdpi.png" : "app_icon.png"
+                },
+                "mipmap-xhdpi" :
+                {
+                    "app_icon-xhdpi.png" : "app_icon.png"
+                },
+                "mipmap-xxhdpi" :
+                {
+                    "app_icon-xxhdpi.png" : "app_icon.png"
+                },
+                "mipmap-xxxhdpi" :
+                {
+                    "app_icon-xxxhdpi.png" : "app_icon.png"
+                }
+            },
+            "" :
+            [
+                "AndroidManifest.xml"
+            ]
+        }
+    },
+    "" :
+    [
+        "wscript"
+    ]
+}

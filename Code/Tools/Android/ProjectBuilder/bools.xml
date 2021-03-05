@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="use_main_obb">${ANDROID_USE_MAIN_OBB}</bool>
+    <bool name="use_patch_obb">${ANDROID_USE_PATCH_OBB}</bool>
+    <bool name="enable_keep_screen_on">${ANDROID_ENABLE_KEEP_SCREEN_ON}</bool>
+    <bool name="disable_immersive_mode">${ANDROID_DISABLE_IMMERSIVE_MODE}</bool>
+</resources>

@@ -1,0 +1,24 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/WornMetal/worn_metal_basecolor.jpg"
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "textureMap": "Materials/WornMetal/worn_metal_normal.jpg"
+        },
+        "roughness": {
+            "textureMap": "Materials/WornMetal/worn_metal_roughness.jpg"
+        },
+        "uv": {
+            "tileU": 1.5,
+            "tileV": 1.5
+        }
+    }
+}

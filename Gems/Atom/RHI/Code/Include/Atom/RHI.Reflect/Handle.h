@@ -1,0 +1,188 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AzCore/base.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        struct DefaultNamespaceType {
+            AZ_TYPE_INFO(DefaultNamespaceType, "{51372f60-2387-4d98-a66c-e6f0d6881087}");
+        };
+
+        /**
+         * Handle a simple wrapper around an integral type, which adds the formal concept of a 'Null' value. It
+         * is designed to accommodate a zero-based 'index' where a value of 0 is considered valid. As such, the null value
+         * is equal to -1 casted to the type.
+         *
+         * @tparam T
+         *  An integral type held by the Handle container. A value of -1 (or max value for unsigned types) is reserved for
+         *  the null index.
+         *
+         * @tparam NamespaceType
+         *  An optional typename used to create a compile-time unique variant of Handle. This disallows trivial
+         *  copying of unrelated 'types'. Useful to make a handle variant typed to a client class.
+         *
+         * Sample Usage:
+         * @code{.cpp}
+         *     class Foo;
+         *     using FooHandle = Handle<uint16_t, Foo>;
+         *     FooHandle fooHandle;
+         *
+         *     class Bar;
+         *     using BarHandle = Handle<uint16_t, Bar>;
+         *     BarHandle barHandle;
+         *
+         *     fooHandle = barHandle; // Error! Different types!
+         *     fooHandle.IsNull();    // true
+         *     fooHandle.GetIndex();  // FooHandle::NullIndex
+         *
+         *     fooHandle = 15;
+         *     fooHandle.GetIndex();  // 15
+         *     fooHandle.IsNull();    // false
+         * @endcode
+         */
+        template <typename T = uint32_t, typename NamespaceType = DefaultNamespaceType>
+        struct Handle
+        {
+            using IndexType = T;
+            static_assert(AZStd::is_integral<T>::value, "Integral type required for Handle<>.");
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            static const T NullIndex = T(-1);
+            static const Handle Null;
+
+            Handle() = default;
+            explicit Handle(T index) : m_index{index} {}
+
+            template <typename U>
+            explicit Handle(U index) : m_index{aznumeric_caster(index)} {}
+
+            bool operator == (const Handle& rhs) const;
+            bool operator != (const Handle& rhs) const;
+            bool operator < (const Handle& rhs) const;
+            bool operator > (const Handle& rhs) const;
+            bool operator <= (const Handle& rhs) const;
+
+            /// Resets the handle to NullIndex.
+            void Reset();
+
+            /// Returns the index currently stored in the handle.
+            T GetIndex() const;
+
+            /// Returns whether the handle is equal to NullIndex.
+            bool IsNull() const;
+
+            /// Returns whether the handle is NOT equal to NullIndex.
+            bool IsValid() const;
+
+            T m_index = NullIndex;
+        };
+
+        template <typename T, typename NamespaceType>
+        void Handle<T, NamespaceType>::Reflect(AZ::ReflectContext* context)
+        {
+            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<Handle<T, NamespaceType>>()
+                    ->Version(1)
+                    ->Field("m_index", &Handle<T, NamespaceType>::m_index);
+            }
+        }
+
+        template <typename HandleType, typename NamespaceType>
+        const Handle<HandleType, NamespaceType> Handle<HandleType, NamespaceType>::Null(
+            Handle<HandleType, NamespaceType>::NullIndex);
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::operator==(const Handle& rhs) const
+        {
+            return m_index == rhs.m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::operator!=(const Handle& rhs) const
+        {
+            return m_index != rhs.m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::operator<(const Handle& rhs) const
+        {
+            return m_index < rhs.m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::operator<=(const Handle& rhs) const
+        {
+            return m_index <= rhs.m_index;
+        }
+        
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::operator>(const Handle& rhs) const
+        {
+            return m_index > rhs.m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        void Handle<T, NamespaceType>::Reset()
+        {
+            m_index = NullIndex;
+        }
+
+        template <typename T, typename NamespaceType>
+        T Handle<T, NamespaceType>::GetIndex() const
+        {
+            return m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::IsNull() const
+        {
+            return m_index == Null.m_index;
+        }
+
+        template <typename T, typename NamespaceType>
+        bool Handle<T, NamespaceType>::IsValid() const
+        {
+            return m_index != Null.m_index;
+        }
+    }
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_TEMPLATE(AZ::RHI::Handle, "{273A36DB-D62B-45EB-9E05-E097EE9743BB}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_TYPENAME);
+}
+
+namespace AZStd
+{
+    template<class T>
+    struct hash;
+
+    template<typename HandleType, typename NamespaceType>
+    struct hash<AZ::RHI::Handle<HandleType, NamespaceType>>
+    {
+        typedef size_t                          result_type;
+        typedef AZ::RHI::Handle<HandleType, NamespaceType> argument;
+        using argument_type = typename argument::IndexType;
+
+        result_type operator()(const argument& value) const
+        {
+            return static_cast<result_type>(*reinterpret_cast<const argument_type*>(&value));
+        }
+    };
+}   // namespace AZStd

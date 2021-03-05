@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DragAndDropPage</class>
+ <widget class="QWidget" name="DragAndDropPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1094</width>
+    <height>828</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>522</width>
+        <height>802</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>QTreeView</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTreeWidget" name="treeWidget">
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::InternalMove</enum>
+         </property>
+         <column>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Comment</string>
+          </property>
+         </column>
+         <item>
+          <property name="text">
+           <string>Item</string>
+          </property>
+          <property name="text">
+           <string>An item</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>Sub item</string>
+           </property>
+           <property name="text">
+            <string>This is the sub item of Item</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sub item 2</string>
+           </property>
+           <property name="text">
+            <string>Another sub item</string>
+           </property>
+          </item>
+         </item>
+         <item>
+          <property name="text">
+           <string>Item 2</string>
+          </property>
+          <property name="text">
+           <string>Another item</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>Sub item</string>
+           </property>
+           <property name="text">
+            <string>This is the sub item of Item 2</string>
+           </property>
+          </item>
+         </item>
+         <item>
+          <property name="text">
+           <string>Item 3</string>
+          </property>
+          <property name="text">
+           <string>And one more</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>QTableView</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="tableWidget">
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::InternalMove</enum>
+         </property>
+         <row>
+          <property name="text">
+           <string>Row 1</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Row 2</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Row 3</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Row 4</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Column 1</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Column 2</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Column 3</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Column 4</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>Item</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>QListView</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidget">
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::InternalMove</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Item 1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Item 2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Item 3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Item 4</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

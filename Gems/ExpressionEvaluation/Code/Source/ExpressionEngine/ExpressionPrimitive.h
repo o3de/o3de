@@ -1,0 +1,84 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AzCore/std/string/regex.h>
+#include <AzCore/RTTI/RTTI.h>
+
+#include <ExpressionEvaluation/ExpressionEngine/ExpressionTree.h>
+
+#include <ExpressionEngine/ExpressionElementParser.h>
+#include <ExpressionEngine/InternalTypes.h>
+
+namespace ExpressionEvaluation
+{
+    // Shared interface for pushing Primitives onto the evaluation stack. Does not handle parsing.
+    class PrimitiveParser
+        : public ExpressionElementParser
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PrimitiveParser, AZ::SystemAllocator, 0);
+
+        PrimitiveParser() = default;
+
+        void EvaluateToken(const ElementInformation& parseResult, ExpressionResultStack& evaluationStack) const override;
+    };
+
+    namespace Primitive
+    {
+        template<typename T>
+        ElementInformation GetPrimitiveElement(const T& valueType)
+        {
+            ElementInformation primitiveInformation;
+
+            primitiveInformation.m_allowOnOperatorStack = false;
+            primitiveInformation.m_id = InternalTypes::Primitive;
+            primitiveInformation.m_extraStore = valueType;
+
+            return primitiveInformation;
+        }
+    }
+
+    // Parser for basic numeric types
+    class NumericPrimitiveParser
+        : public PrimitiveParser
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(NumericPrimitiveParser, AZ::SystemAllocator, 0);
+
+        NumericPrimitiveParser();
+
+        ExpressionParserId GetParserId() const override;
+            
+        ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const override;            
+
+    private:
+        AZStd::regex m_regex;
+    };
+        
+    // Parser for basic boolean types
+    class BooleanPrimitiveParser
+        : public PrimitiveParser
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(BooleanPrimitiveParser, AZ::SystemAllocator, 0);
+
+        BooleanPrimitiveParser();
+
+        ExpressionParserId GetParserId() const override;
+
+        ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const override;
+
+    private:
+        AZStd::regex m_regex;
+    };
+}

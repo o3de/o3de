@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DisplayMapperConfigurationDescriptor",
+    "ClassData": {
+        "Name": "MainPipeline",
+        "OperationType": "Aces",
+        "LdrGradingLutEnabled" : "False"
+    }
+}

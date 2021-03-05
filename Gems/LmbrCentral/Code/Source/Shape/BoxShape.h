@@ -1,0 +1,109 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Obb.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+
+namespace LmbrCentral
+{
+    struct ShapeDrawParams;
+
+    class BoxShape
+        : public ShapeComponentRequestsBus::Handler
+        , public BoxShapeComponentRequestsBus::Handler
+        , public AZ::TransformNotificationBus::Handler
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator, 0)
+        AZ_RTTI(BoxShape, "{36D1BA94-13CF-433F-B1FE-28BEBBFE20AA}")
+
+        BoxShape();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        void Activate(AZ::EntityId entityId);
+        void Deactivate();
+        void InvalidateCache(InvalidateShapeCacheReason reason);
+
+        // ShapeComponentRequestsBus::Handler
+        AZ::Crc32 GetShapeType() override { return AZ_CRC("Box", 0x08a9483a); }
+        AZ::Aabb GetEncompassingAabb() override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
+        bool IsPointInside(const AZ::Vector3& point) override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
+        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+
+        // BoxShapeComponentRequestBus::Handler
+        BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
+        AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+
+        // AZ::TransformNotificationBus::Handler
+        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+        const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
+
+        const BoxShapeConfig& GetBoxConfiguration() const { return m_boxShapeConfig; }
+        void SetBoxConfiguration(const BoxShapeConfig& boxShapeConfig) { m_boxShapeConfig = boxShapeConfig; }
+        const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
+
+        void SetDrawColor(const AZ::Color& color) { m_boxShapeConfig.SetDrawColor(color); }
+
+    protected:
+
+        friend class EditorBoxShapeComponent;        
+        BoxShapeConfig& ModifyConfiguration() { return m_boxShapeConfig; }
+
+    private:
+        /// Runtime data - cache potentially expensive operations.
+        class BoxIntersectionDataCache
+            : public IntersectionTestDataCache<BoxShapeConfig>
+        {
+            void UpdateIntersectionParamsImpl(
+                const AZ::Transform& currentTransform, const BoxShapeConfig& configuration,
+                const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne()) override;
+
+            friend BoxShape;
+
+            AZ::Aabb m_aabb; ///< Aabb representing this Box (including the effects of scale).
+            AZ::Obb m_obb; ///< Obb representing this Box (including the effects of scale).
+            AZ::Vector3 m_currentPosition; ///< Position of the Box.
+            AZ::Vector3 m_scaledDimensions; ///< Dimensions of Box (including entity scale and non-uniform scale).
+            bool m_axisAligned = true; ///< Indicates whether the box is axis or object aligned.
+        };
+
+        BoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
+        BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
+        AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
+        AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
+    };
+
+    void DrawBoxShape(
+        const ShapeDrawParams& shapeDrawParams, const BoxShapeConfig& boxShapeConfig,
+        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
+
+} // namespace LmbrCentral

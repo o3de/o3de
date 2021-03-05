@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>icon / Animation / Skinned Mesh</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M4.62430726,7.59923351 L4.62430726,15.8354909 L11.7571154,19.9536197 L18.8899236,15.8354909 L18.8899236,7.59923351 L11.7571154,3.4811048 L4.62430726,7.59923351 Z M20.3869902,6.73490169 L20.3869902,16.6998228 L11.7571154,21.6822833 L3.12724063,16.6998228 L3.12724063,6.73490169 L11.7571154,1.75244115 L20.3869902,6.73490169 Z M17.5823198,14.8717393 L5.75552727,14.8717393 L5.75552727,10.1005463 L7.29192075,10.1005463 L7.29192075,13.2813417 L16.0459264,13.2813417 L16.0459264,10.1005463 L17.5823198,10.1005463 L17.5823198,14.8717393 Z" id="path-1"></path>
+    </defs>
+    <g id="icon-/-Animation-/-Skinned-Mesh" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#5AA9D2" fill-rule="nonzero" xlink:href="#path-1"></use>
+    </g>
+</svg>

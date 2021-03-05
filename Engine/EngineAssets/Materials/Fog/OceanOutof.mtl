@@ -1,0 +1,3 @@
+<Material Diffuse="1,1,1" Emissive="0,0,0" GenMask="0" MtlFlags="0" Opacity="0.99000001" Shader="WaterFogVolume.OceanOutof" Shininess="10" Specular="0,0,0" SurfaceType="" >
+ <Textures />
+</Material>

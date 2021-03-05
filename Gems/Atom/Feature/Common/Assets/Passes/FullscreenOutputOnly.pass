@@ -1,0 +1,53 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FullscreenOutputOnlyTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "SwapChainOutput"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
+                    }
+                }
+            ]
+        }
+    }
+}

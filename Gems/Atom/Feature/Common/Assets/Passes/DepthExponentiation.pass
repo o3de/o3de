@@ -1,0 +1,72 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthExponentiationTemplate",
+            "PassClass": "DepthExponentiationPass",
+            "Slots": [
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputShadowmap",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare"
+                    },
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "Exponent",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputShadowmap",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    },
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Shadow/DepthExponentiation.shader"
+                }
+            },
+            "ImageAttachments": [
+                {
+                    "Name": "ExponentialShadowmapImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Depth"
+                        }
+                    },
+                    "ArraySizeSource": {
+                        "Pass": "This",
+                        "Attachment": "Depth"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Exponent",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ExponentialShadowmapImage"
+                    }
+                }
+            ]
+        }
+    }
+}

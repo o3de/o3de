@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "07375B61B1A2424BB03088BBDF28B2C9",
+    "Name": "GemB",
+    "DisplayName": "GemB",
+    "Version": "0.1.0",
+    "Summary": "Only for unit test purposes.",
+    "Tags": ["Foo"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

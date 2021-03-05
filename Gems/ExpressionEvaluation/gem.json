@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "4c6f9df57ca2468f93c8d860ee6a1167",
+    "Name": "ExpressionEvaluation",
+    "DisplayName": "Expression Evaluation",
+    "Version": "0.1.0",
+    "Summary": "Provides a method for parsing and executing various string expressions(e.g. 1+1 or 2>3).",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

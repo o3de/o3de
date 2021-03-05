@@ -1,0 +1,67 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthDownsampleTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "FullResDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "HalfResDepth",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DownsampledDepth",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "FullResDepth"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "HalfResDepth",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledDepth"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "FullResDepth",
+                    "Output": "HalfResDepth"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthDownsample.shader"
+                },
+                "Make Fullscreen Pass": true,
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

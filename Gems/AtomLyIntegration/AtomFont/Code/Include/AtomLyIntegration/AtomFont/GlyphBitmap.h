@@ -1,0 +1,53 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+// Purpose : Hold a glyph bitmap and blit it to the main texture
+
+#pragma once
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AtomLyIntegration/AtomFont/FontCommon.h>
+
+namespace AZ
+{
+    class GlyphBitmap
+    {
+    public:
+        GlyphBitmap();
+        ~GlyphBitmap();
+
+        int Create(int width, int height);
+        int Release();
+
+        unsigned char* GetBuffer() { return m_buffer.get(); };
+
+        int Blur(AZ::FontSmoothAmount smoothAmount);
+
+        int Clear();
+
+        int BlitTo8(unsigned char* buffer, int srcX, int srcY, int srcWidth, int srcHeight, int destX, int destY, int destWidth);
+
+        int BlitScaledTo8(unsigned char* buffer, int srcX, int srcY, int srcWidth, int srcHeight, int destX, int destY, int destWidth, int destHeight, int destBufferWidth);
+
+        int GetWidth() { return m_width; }
+        int GetHeight() { return m_height; }
+
+        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
+
+    private:
+
+        AZStd::unique_ptr<uint8_t[]> m_buffer;
+        int                          m_width;
+        int                          m_height;
+    };
+}

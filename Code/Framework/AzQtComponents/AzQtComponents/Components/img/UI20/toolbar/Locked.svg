@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / System / Locked</title>
+    <g id="Icons-/-System-/-Locked" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,2 C14.7614237,2 17,4.23857625 17,7 L17,11 L20,11 L20,22 L4,22 L4,11 L7,11 L7,7 C7,4.23857625 9.23857625,2 12,2 Z M13,15 L11,15 L11,18 L13,18 L13,15 Z M12,4 C10.3431458,4 9,5.34314575 9,7 L9,7 L9,11 L15,11 L15,7 C15,5.34314575 13.6568542,4 12,4 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

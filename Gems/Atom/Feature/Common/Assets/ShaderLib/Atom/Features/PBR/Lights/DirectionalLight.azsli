@@ -1,0 +1,89 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+
+void ApplyDirectionalLights(
+    float3 dirToCamera,
+    Surface surface,
+    float3 shadowCoords[ViewSrg::MaxCascadeCount],
+    inout float3 diffuseLighting,
+    inout float3 specularLighting,
+    inout float3 translucentBackLighting)
+{
+    DirectionalLightShadow::DebugInfo debugInfo = {0, false};
+
+    // Shadowed check
+    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+    float litRatio = 1.0f;
+    float backShadowRatio = 0.0f;
+    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
+    {
+        litRatio = DirectionalLightShadow::GetVisibility(
+            shadowIndex,
+            shadowCoords,
+            surface.normal,
+            debugInfo);
+            
+        if (o_transmission_mode == TransmissionMode::ThickObject)
+        {
+            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, shadowCoords);
+        }
+    }
+
+    // Add the lighting contribution for each directional light
+    for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
+    {
+        SceneSrg::DirectionalLight light = SceneSrg::m_directionalLights[index];
+        float3 dirToLight = normalize(-light.m_direction);
+
+        // Adjust the direction of the light based on its angular diameter.
+        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 lightDirToReflectionDir = reflectionDir - dirToLight;
+        float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
+        lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
+        lightDirToReflectionDirLen = min(light.m_angularRadius, lightDirToReflectionDirLen);
+        dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
+
+        // [GFX TODO][ATOM-2012] care of multiple directional light
+        // Currently shadow check is done only for index == shadowIndex.
+        float currentLitRatio = 1.0f;
+        float currentBackShadowRatio = 1.0f;
+        if (o_enableShadows)
+        {
+            currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
+            
+            currentBackShadowRatio = 1.0 - currentLitRatio;
+            if (o_transmission_mode == TransmissionMode::ThickObject)
+            {
+                currentBackShadowRatio = (index == shadowIndex) ?  backShadowRatio : 0.;
+            }
+        }
+        
+        diffuseLighting += GetDiffuseLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight) * currentLitRatio;
+        specularLighting += GetSpecularLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight) * currentLitRatio;
+        translucentBackLighting += GetBackLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight, currentBackShadowRatio);
+    }
+    
+    // Add debug coloring for directional light shadow
+    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
+    {
+        specularLighting = DirectionalLightShadow::AddDebugColoring(
+            specularLighting,
+            ViewSrg::m_shadowIndexDirectionalLight,
+            debugInfo);
+    }
+
+}

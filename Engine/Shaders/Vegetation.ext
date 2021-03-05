@@ -1,0 +1,137 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description: Vegetation extension used by the editor
+//               for automatic shader generation (based on "Vegetation" shader template)
+//
+////////////////////////////////////////////////////////////////////////////
+
+Version (1.00)
+
+UsesCommonGlobalFlags
+
+Property
+{
+  Name = %NORMAL_MAP
+  Mask = 0x1
+  Property    (Normal map)
+  Description (Use normal-map texture)
+  DependencySet = $TEX_Normals
+  DependencyReset = $TEX_Normals
+  Hidden
+}
+
+Property
+{
+  Name = %SPECULAR_MAP
+  Mask = 0x10
+  Property    (Specular map)
+  Description (Use specular map as separate texture)
+  DependencySet = $TEX_Specular
+  DependencyReset = $TEX_Specular
+  Hidden
+}
+
+Property
+{
+  Name = %LEAVES
+  Mask = 0x100
+  Property    (Leaves)
+  Description (Activate for leaves only ! Use leaf shading and leaves animation)
+}
+
+Property
+{
+  Name = %GRASS
+  Mask = 0x2000         
+  Property    (Grass)
+  Description (Activate for grass only ! Use simple grass rendering)
+}
+
+Property
+{
+  Name = %SPEEDTREE_BILLBOARD
+  Mask = 0x40000   
+  Property    (SpeedTree billboard)
+  Description (Activate for SpeedTree billboards only! Enables removal of non-camera-facing geometry from the billboard mesh)
+}
+
+Property
+{
+  Name = %DETAIL_BENDING
+  Mask = 0x10000
+  Property    (Detail bending)
+  Description (Activate for leaves and grass only. Make sure to paint required vertex colors also)
+}
+
+Property
+{
+  Name = %DETAIL_MAPPING
+  Mask = 0x20000
+  Property    (Detail mapping)
+  Description (Use detail mapping)
+  DependencyReset = $TEX_Detail
+}
+
+Property
+{
+  Name = %BLENDLAYER
+  Mask = 0x80000
+  Property    (Blendlayer)
+  Description (Normal-mapped diffuse layer blended on top of base material)
+}
+
+Property
+{
+  Name = %VERTCOLORS
+  Mask = 0x100000
+  DependencySet = $UserEnabled
+  Hidden
+}
+
+Property
+{
+  Name = %TEMP_VEGETATION
+  Mask = 0x8000000
+  DependencySet = $UserEnabled
+  Hidden
+}
+
+#ifdef FEATURE_MESH_TESSELLATION
+Property
+{
+  Name = %DISPLACEMENT_MAPPING
+  Mask = 0x10000000
+  Property    (Displacement mapping)
+  Description (Use displacement mapping (requires height map (_displ)))
+  //DependencySet = $TEX_Height
+  DependencyReset = $TEX_Normals
+}
+
+Property
+{
+  Name = %PHONG_TESSELLATION
+  Mask = 0x20000000
+  Property    (Phong tessellation)
+  Description (Use rough approximation of smooth surface subdivision)
+}
+
+Property
+{
+  Name = %PN_TESSELLATION
+  Mask = 0x40000000
+  Property    (PN triangles tessellation)
+  Description (Use rough approximation of smooth surface subdivision)
+}
+#endif

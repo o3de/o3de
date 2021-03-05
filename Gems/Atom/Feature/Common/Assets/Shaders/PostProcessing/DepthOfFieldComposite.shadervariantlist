@@ -1,0 +1,17 @@
+{
+    "Shader" : "DepthOfFieldComposite.shader",
+    "Variants" : [
+        {
+            "StableId": 1,
+            "Options" : {
+                "o_dofMode": "DepthOfFieldDebugColoring::Disabled"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options" : {
+                "o_dofMode": "DepthOfFieldDebugColoring::Enabled"
+            }
+        }
+    ]
+}

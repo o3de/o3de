@@ -1,0 +1,23 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.5521476864814758,
+                0.012909132987260819,
+                0.012909132987260819,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "Materials/MicrofiberFabric/microfiber_fabric_normal.png"
+        },
+        "uv": {
+            "tileU": 0.25,
+            "tileV": 0.25
+        }
+    }
+}

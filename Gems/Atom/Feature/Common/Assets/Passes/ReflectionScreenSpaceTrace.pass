@@ -1,0 +1,88 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceTracePassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "DepthStencilTextureInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "SpecularF0Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthStencilInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Stencil"
+                        ]
+                    }
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "TraceImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "SpecularF0Input"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "SpecularF0Input"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "TraceImage"
+                    }
+                }
+            ],
+            "PassData":
+            {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

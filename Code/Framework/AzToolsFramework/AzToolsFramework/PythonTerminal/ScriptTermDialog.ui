@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CScriptTermDialog</class>
+ <widget class="QWidget" name="CScriptTermDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>678</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QPlainTextEdit" name="SCRIPT_OUTPUT">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QToolButton" name="SCRIPT_HELP">
+       <property name="text">
+        <string>?</string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>:/stylesheet/img/UI20/Info.svg</normaloff>:/stylesheet/img/UI20/Info.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="SCRIPT_DOCS">
+       <property name="text">
+        <string>i</string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>:/stylesheet/img/UI20/Helpers.svg</normaloff>:/stylesheet/img/UI20/Helpers.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="SCRIPT_INPUT">
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="spacing" stdset="0">
+        <number>0</number>
+       </property>
+       <property name="leftMargin" stdset="0">
+        <number>0</number>
+       </property>
+       <property name="topMargin" stdset="0">
+        <number>0</number>
+       </property>
+       <property name="rightMargin" stdset="0">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin" stdset="0">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,114 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    native/AssetDatabase/AssetDatabase.cpp
+    native/AssetDatabase/AssetDatabase.h
+    native/AssetManager/AssetCatalog.cpp
+    native/AssetManager/AssetCatalog.h
+    native/AssetManager/assetProcessorManager.cpp
+    native/AssetManager/assetProcessorManager.h
+    native/AssetManager/AssetRequestHandler.cpp
+    native/AssetManager/AssetRequestHandler.h
+    native/AssetManager/assetScanFolderInfo.h
+    native/AssetManager/assetScanner.cpp
+    native/AssetManager/assetScanner.h
+    native/AssetManager/assetScannerWorker.cpp
+    native/AssetManager/assetScannerWorker.h
+    native/AssetManager/FileStateCache.cpp
+    native/AssetManager/FileStateCache.h
+    native/AssetManager/PathDependencyManager.cpp
+    native/AssetManager/PathDependencyManager.h
+    native/AssetManager/SourceFileRelocator.cpp
+    native/AssetManager/SourceFileRelocator.h
+    native/AssetManager/ControlRequestHandler.cpp
+    native/AssetManager/ControlRequestHandler.h
+    native/assetprocessor.h
+    native/connection/connection.cpp
+    native/connection/connection.h
+    native/connection/connectionManager.cpp
+    native/connection/connectionManager.h
+    native/connection/connectionMessages.h
+    native/connection/connectionworker.cpp
+    native/connection/connectionworker.h
+    native/FileProcessor/FileProcessor.cpp
+    native/FileProcessor/FileProcessor.h
+    native/FileWatcher/FileWatcher.cpp
+    native/FileWatcher/FileWatcher.h
+    native/FileWatcher/FileWatcherAPI.h
+    native/InternalBuilders/SettingsRegistryBuilder.cpp
+    native/InternalBuilders/SettingsRegistryBuilder.h
+    native/resourcecompiler/JobsModel.cpp
+    native/resourcecompiler/JobsModel.h
+    native/resourcecompiler/RCBuilder.cpp
+    native/resourcecompiler/RCBuilder.h
+    native/resourcecompiler/RCCommon.cpp
+    native/resourcecompiler/RCCommon.h
+    native/resourcecompiler/rccontroller.cpp
+    native/resourcecompiler/rccontroller.h
+    native/resourcecompiler/rcjob.cpp
+    native/resourcecompiler/rcjob.h
+    native/resourcecompiler/rcjoblistmodel.cpp
+    native/resourcecompiler/rcjoblistmodel.h
+    native/resourcecompiler/RCJobSortFilterProxyModel.cpp
+    native/resourcecompiler/RCJobSortFilterProxyModel.h
+    native/resourcecompiler/RCQueueSortModel.cpp
+    native/resourcecompiler/RCQueueSortModel.h
+    native/shadercompiler/shadercompilerjob.cpp
+    native/shadercompiler/shadercompilerjob.h
+    native/shadercompiler/shadercompilerManager.cpp
+    native/shadercompiler/shadercompilerManager.h
+    native/shadercompiler/shadercompilerMessages.h
+    native/shadercompiler/shadercompilerModel.cpp
+    native/shadercompiler/shadercompilerModel.h
+    native/utilities/ApplicationManagerAPI.h
+    native/utilities/ApplicationManager.cpp
+    native/utilities/ApplicationManager.h
+    native/utilities/ApplicationManagerBase.cpp
+    native/utilities/ApplicationManagerBase.h
+    native/utilities/ApplicationServer.cpp
+    native/utilities/ApplicationServer.h
+    native/utilities/AssetBuilderInfo.cpp
+    native/utilities/AssetBuilderInfo.h
+    native/utilities/AssetServerHandler.cpp
+    native/utilities/AssetServerHandler.h
+    native/utilities/AssetUtilEBusHelper.h
+    native/utilities/assetUtils.cpp
+    native/utilities/assetUtils.h
+    native/utilities/BuilderConfigurationBus.h
+    native/utilities/BuilderConfigurationManager.cpp
+    native/utilities/BuilderConfigurationManager.h
+    native/utilities/BuilderManager.cpp
+    native/utilities/BuilderManager.h
+    native/utilities/BuilderManager.inl
+    native/utilities/ByteArrayStream.cpp
+    native/utilities/ByteArrayStream.h
+    native/utilities/CommunicatorTracePrinter.cpp
+    native/utilities/CommunicatorTracePrinter.h
+    native/utilities/IniConfiguration.cpp
+    native/utilities/IniConfiguration.h
+    native/utilities/JobDiagnosticTracker.cpp
+    native/utilities/JobDiagnosticTracker.h
+    native/utilities/LineByLineDependencyScanner.cpp
+    native/utilities/LineByLineDependencyScanner.h
+    native/utilities/MissingDependencyScanner.cpp
+    native/utilities/MissingDependencyScanner.h
+    native/utilities/PlatformConfiguration.cpp
+    native/utilities/PlatformConfiguration.h
+    native/utilities/PotentialDependencies.h
+    native/utilities/SpecializedDependencyScanner.h
+    native/utilities/ThreadHelper.cpp
+    native/utilities/ThreadHelper.h
+)
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    native/resourcecompiler/JobsModel.cpp
+)

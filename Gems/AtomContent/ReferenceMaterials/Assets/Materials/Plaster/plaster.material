@@ -1,0 +1,44 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.7568017244338989,
+                0.7319905161857605,
+                0.7042343616485596,
+                1.0
+            ]
+        },
+        "clearCoat": {
+            "factor": 0.35353541374206545,
+            "roughness": 0.2626262903213501
+        },
+        "metallic": {
+            "factor": 0.13131310045719148
+        },
+        "normal": {
+            "factor": 0.7676767706871033,
+            "textureMap": "Materials/Plaster/plaster_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.8888888955116272
+        },
+        "specularF0": {
+            "factor": 1.0
+        },
+        "subsurfaceScattering": {
+            "quality": 0.9838383793830872,
+            "scatterColor": [
+                0.143602654337883,
+                0.012634470127522946,
+                0.0005798428319394589,
+                1.0
+            ],
+            "scatterDistance": 18.383838653564454,
+            "subsurfaceScatterFactor": 0.1414141058921814
+        }
+    }
+}

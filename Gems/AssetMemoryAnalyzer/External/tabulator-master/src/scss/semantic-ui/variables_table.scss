@@ -1,0 +1,247 @@
+@import "variables.scss";
+
+/*******************************
+             Table
+*******************************/
+
+/*-------------------
+       Element
+--------------------*/
+
+$verticalMargin: 1em !default;
+$horizontalMargin: 0em !default;
+$margin: $verticalMargin $horizontalMargin !default;
+$borderCollapse: separate !default;
+$borderSpacing: 0px !default;
+$borderRadius: $defaultBorderRadius !default;
+$transition:
+  background $defaultDuration $defaultEasing,
+  color $defaultDuration $defaultEasing !default;
+$background: $white !default;
+$color: $textColor !default;
+$borderWidth: 1px !default;
+$border: $borderWidth solid $borderColor !default;
+$boxShadow: none !default;
+$textAlign: left !default;
+
+/*--------------
+     Parts
+---------------*/
+
+/* Table Row */
+$rowBorder: 1px solid $internalBorderColor !default;
+
+/* Table Cell */
+$cellVerticalPadding: $relativeMini !default;
+$cellHorizontalPadding: $relativeMini !default;
+$cellVerticalAlign: inherit !default;
+$cellTextAlign: inherit !default;
+$cellBorder: 1px solid $internalBorderColor !default;
+
+/* Table Header */
+$headerBorder: 1px solid $internalBorderColor !default;
+$headerDivider: none !default;
+$headerBackground: $offWhite !default;
+$headerAlign: inherit !default;
+$headerVerticalAlign: inherit !default;
+$headerColor: $textColor !default;
+$headerVerticalPadding: $relativeSmall !default;
+$headerHorizontalPadding: $cellHorizontalPadding !default;
+$headerFontStyle: none !default;
+$headerFontWeight: bold !default;
+$headerTextTransform: none !default;
+$headerBoxShadow: none !default;
+
+/* Table Footer */
+$footerBoxShadow: none !default;
+$footerBorder: 1px solid $borderColor !default;
+$footerDivider: none !default;
+$footerBackground: $offWhite !default;
+$footerAlign: inherit !default;
+$footerVerticalAlign: middle !default;
+$footerColor: $textColor !default;
+$footerVerticalPadding: $cellVerticalPadding !default;
+$footerHorizontalPadding: $cellHorizontalPadding !default;
+$footerFontStyle: normal !default;
+$footerFontWeight: normal !default;
+$footerTextTransform: none !default;
+
+/* Responsive Size */
+$responsiveHeaderDisplay: block !default;
+$responsiveFooterDisplay: block !default;
+$responsiveRowVerticalPadding: 1em !default;
+$responsiveRowBoxShadow: 0px -1px 0px 0px rgba(0, 0, 0, 0.1) inset !important !default;
+$responsiveCellVerticalPadding: 0.25em !default;
+$responsiveCellHorizontalPadding: 0.75em !default;
+$responsiveCellBoxShadow: none !important !default;
+
+/*-------------------
+       Types
+--------------------*/
+
+/* Definition */
+$definitionPageBackground: $white !default;
+
+$definitionHeaderBackground: transparent !default;
+$definitionHeaderColor: $unselectedTextColor !default;
+$definitionHeaderFontWeight: normal !default;
+
+$definitionFooterBackground: $definitionHeaderBackground !default;
+$definitionFooterColor: $definitionHeaderColor !default;
+$definitionFooterFontWeight: $definitionHeaderFontWeight !default;
+
+$definitionColumnBackground: $subtleTransparentBlack !default;
+$definitionColumnFontWeight: bold !default;
+$definitionColumnColor: $selectedTextColor !default;
+$definitionColumnFontSize: $relativeMedium !default;
+$definitionColumnTextTransform: '' !default;
+$definitionColumnBoxShadow: '' !default;
+$definitionColumnTextAlign: '' !default;
+$definitionColumnHorizontalPadding: '' !default;
+
+
+/*--------------
+    Couplings
+---------------*/
+
+$iconVerticalAlign: baseline !default;
+
+/*--------------
+     States
+---------------*/
+
+$stateMarkerWidth: 0px !default;
+
+/* Positive */
+$positiveColor: $positiveTextColor !default;
+$positiveBoxShadow: $stateMarkerWidth 0px 0px $positiveBorderColor inset !default;
+$positiveBackgroundHover: darken($positiveBackgroundColor, 3) !default;
+$positiveColorHover: darken($positiveColor, 3) !default;
+
+/* Negative */
+$negativeColor: $negativeTextColor !default;
+$negativeBoxShadow: $stateMarkerWidth 0px 0px $negativeBorderColor inset !default;
+$negativeBackgroundHover: darken($negativeBackgroundColor, 3) !default;
+$negativeColorHover: darken($negativeColor, 3) !default;
+
+/* Error */
+$errorColor: $errorTextColor !default;
+$errorBoxShadow: $stateMarkerWidth 0px 0px $errorBorderColor inset !default;
+$errorBackgroundHover: darken($errorBackgroundColor, 3) !default;
+$errorColorHover: darken($errorColor, 3) !default;
+
+/* Warning */
+$warningColor: $warningTextColor !default;
+$warningBoxShadow: $stateMarkerWidth 0px 0px $warningBorderColor inset !default;
+$warningBackgroundHover: darken($warningBackgroundColor, 3) !default;
+$warningColorHover: darken($warningColor, 3) !default;
+
+/* Active */
+$activeColor: $textColor !default;
+$activeBackgroundColor: #E0E0E0 !default;
+$activeBoxShadow: $stateMarkerWidth 0px 0px $activeColor inset !default;
+
+$activeBackgroundHover: #EFEFEF !default;
+$activeColorHover: $selectedTextColor !default;
+
+/*--------------
+     Types
+---------------*/
+
+/* Attached */
+$attachedTopOffset: 0px !default;
+$attachedBottomOffset: 0px !default;
+$attachedHorizontalOffset: -$borderWidth !default;
+$attachedWidth: calc(100% + #{$attachedHorizontalOffset * -2}) !default;
+$attachedBoxShadow: none !default;
+$attachedBorder: $borderWidth solid $solidBorderColor !default;
+$attachedBottomBoxShadow:
+  $boxShadow,
+  $attachedBoxShadow
+ !default;
+
+/* Striped */
+$stripedBackground: rgba(0, 0, 50, 0.02) !default;
+$invertedStripedBackground: rgba(255, 255, 255, 0.05) !default;
+
+/* Selectable */
+$selectableBackground: $transparentBlack !default;
+$selectableTextColor: $selectedTextColor !default;
+$selectableInvertedBackground: $transparentWhite !default;
+$selectableInvertedTextColor: $invertedSelectedTextColor !default;
+
+/* Sortable */
+$sortableBackground: '' !default;
+$sortableColor: $textColor !default;
+
+$sortableBorder: 1px solid $borderColor !default;
+$sortableIconWidth: auto !default;
+$sortableIconDistance: 0.5em !default;
+$sortableIconOpacity: 0.8 !default;
+$sortableIconFont: 'Icons' !default;
+$sortableIconAscending: '\f0d8' !default;
+$sortableIconDescending: '\f0d7' !default;
+$sortableDisabledColor: $disabledTextColor !default;
+
+$sortableHoverBackground: $transparentBlack !default;
+$sortableHoverColor: $hoveredTextColor !default;
+
+$sortableActiveBackground: $transparentBlack !default;
+$sortableActiveColor: $selectedTextColor !default;
+
+$sortableActiveHoverBackground: $transparentBlack !default;
+$sortableActiveHoverColor: $selectedTextColor !default;
+
+$sortableInvertedBorderColor: transparent !default;
+$sortableInvertedHoverBackground: $transparentWhite $subtleGradient !default;
+$sortableInvertedHoverColor: $invertedHoveredTextColor !default;
+$sortableInvertedActiveBackground: $strongTransparentWhite $subtleGradient !default;
+$sortableInvertedActiveColor: $invertedSelectedTextColor !default;
+
+/* Colors */
+$coloredBorderSize: 0.2em !default;
+$coloredBorderRadius: 0em 0em $borderRadius $borderRadius !default;
+
+/* Inverted */
+$invertedBackground: #333333 !default;
+$invertedBorder: none !default;
+$invertedCellBorderColor: $whiteBorderColor !default;
+$invertedCellColor: $invertedTextColor !default;
+
+$invertedHeaderBackground: $veryStrongTransparentBlack !default;
+$invertedHeaderColor: $invertedTextColor !default;
+$invertedHeaderBorderColor: $invertedCellBorderColor !default;
+
+$invertedDefinitionColumnBackground: $subtleTransparentWhite !default;
+$invertedDefinitionColumnColor: $invertedSelectedTextColor !default;
+$invertedDefinitionColumnFontWeight: bold !default;
+
+/* Basic */
+$basicTableBackground: transparent !default;
+$basicTableBorder: $borderWidth solid $borderColor !default;
+$basicBoxShadow: none !default;
+
+$basicTableHeaderBackground: transparent !default;
+$basicTableCellBackground: transparent !default;
+$basicTableHeaderDivider: none !default;
+$basicTableCellBorder: 1px solid rgba(0, 0, 0, 0.1) !default;
+$basicTableCellPadding: '' !default;
+$basicTableStripedBackground: $transparentBlack !default;
+
+/* Padded */
+$paddedVerticalPadding: 1em !default;
+$paddedHorizontalPadding: 1em !default;
+$veryPaddedVerticalPadding: 1.5em !default;
+$veryPaddedHorizontalPadding: 1.5em !default;
+
+/* Compact */
+$compactVerticalPadding: 0.5em !default;
+$compactHorizontalPadding: 0.7em !default;
+$veryCompactVerticalPadding: 0.4em !default;
+$veryCompactHorizontalPadding: 0.6em !default;
+
+
+/* Sizes */
+$small: 0.9em !default;
+$medium: 1em !default;
+$large: 1.1em !default;

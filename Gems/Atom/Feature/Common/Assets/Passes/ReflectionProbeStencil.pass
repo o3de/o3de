@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionProbeStencilPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }    
+            ]
+        }
+    }
+}

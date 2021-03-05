@@ -1,0 +1,20 @@
+{
+    "Shader" : "AuxGeomWorld.shader",
+    "Variants" :
+    [
+        {
+            "StableId": 1,
+            "Options":
+            {
+                "o_viewProjMode": "ViewProjectionMode::ViewProjection"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options":
+            {
+                "o_viewProjMode": "ViewProjectionMode::ManualOverride"
+            }
+        }
+    ]
+}

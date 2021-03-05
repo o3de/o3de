@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Toolbar / X</title>
+    <g id="Icons-/-Toolbar-/-X" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <polygon id="X" fill="#FFFFFF" fill-rule="nonzero" points="8.71382637 20 11.9324759 14.0894661 15.1961415 20 19 20 13.8681672 11.6421356 18.6173633 4 14.903537 4 12.0450161 9.19480519 9.18649518 4 5.38263666 4 10.0643087 11.6883117 5 20"></polygon>
+    </g>
+</svg>

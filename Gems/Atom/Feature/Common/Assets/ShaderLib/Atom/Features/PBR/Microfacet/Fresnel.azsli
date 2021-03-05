@@ -1,0 +1,50 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+//! Calculate fresnel reflectance using the Schlick method.
+//! Reference Naty Hoffman, "Background:  Physics and Math of Shading":  https://blog.selfshadow.com/publications/s2013-shading-course/hoffman/s2013_pbs_physics_math_notes.pdf  Page 16, (6)
+//!
+//! @param H   half vector (which coincides with the normal vector at microlevel) 
+//! @param V   view vector (or light vector; the dot product is the same for both)
+//! @param F0  the characteristic specular reflectance of the material. Also referred to it as specular color.
+float3 FresnelSchlick(const float HdotV, const float3 F0)
+{
+    // At angles where (View = Normal) the dot product HdotV is 1.0
+    return F0 + (float3(1.0, 1.0, 1.0) - F0) * pow(1.0 - HdotV, 5.0);
+}
+
+float3 FresnelSchlickF90(const float HdotV, const float3 F0, const float F90)
+{
+    // At angles where (View = Normal) the dot product HdotV is 1.0
+    return F0 + (F90 - F0) * pow(1.0 - HdotV, 5.0);
+}
+
+//! Calculate fresnel reflectance using the Schlick method, taking roughness into account.
+//! We need to take into account roughness with fresnel when sampling from an environment map,
+//! as the halfway vector used to sample the BRDF (and generate the environment map) is also
+//! influenced by roughness.
+//! https://seblagarde.wordpress.com/2011/08/17/hello-world/
+//!
+//! @param N   surface normal
+//! @param V   view vector (or light vector; the dot product is the same for both)
+//! @param specularF0  the characteristic specular reflectance of the material. Also referred to it as specular color.
+//! @param roughness  roughness value used to further attenuate the fresnel response. This is a "fudge factor" and may or may not be perceptually linear.
+float3 FresnelSchlickWithRoughness(const float NdotV, const float3 specularF0, const float roughness)
+{
+    float smoothness = 1.0 - roughness;
+    float3 F0 = specularF0;
+
+    return F0 + (max(smoothness, F0) - F0) * pow(1.0 - saturate(NdotV), 5.0);
+}
+

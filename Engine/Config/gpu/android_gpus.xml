@@ -1,0 +1,28 @@
+<GPUList>
+    <!--
+    This file allows different config files containing cvar overrides to be loaded
+    depending on the GPU and API version. Both gpuName and apiVersion support regular
+    expressions. Some of the special characters include:
+    
+    .       - Matches any single character
+    *       - Matches the previous element zero or more times
+    \d      - Matches a digit
+    \w      - Matches a alphanumeric character
+    []      - Matches a single character contained by the brackets
+    {m,n}   - Matches the preceding character between m and n times
+    
+    To match Mali-T7x0 where x is any digit 0-9, the regular expression Mali-T7\d0 can
+    be used.
+    
+    For example loading MaliT760.cfg if the GPU description contains Mali-T760
+    <Config file="MaliT760.cfg">
+        <gpu gpuName="Mali.T760"/>
+    </Config>
+    
+    Or loading Adreno530.cfg if the GPU description contains Adreno 530 and the 
+    API Contains OpenGL ES 3.1
+    <Config file="Adreno530.cfg">
+        <gpu gpuName="Adreno.*530" apiVersion="OpenGL.*ES.*3\.1"/>
+    </Config>
+    -->
+</GPUList>

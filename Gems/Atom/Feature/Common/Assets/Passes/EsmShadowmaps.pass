@@ -1,0 +1,81 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EsmShadowmapsTemplate",
+            "PassClass": "EsmShadowmapsPass",
+            "Slots": [
+                {
+                    "Name": "DepthShadowmaps",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare"
+                    }
+                },
+                {
+                    "Name": "EsmShadowmaps",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "Exponentiation",
+                    "TemplateName": "DepthExponentiationTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthShadowmaps"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HorizontalGaussianFilter",
+                    "TemplateName": "FilterDepthHorizontalTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Exponentiation",
+                                "Attachment": "Exponent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "VerticalGaussianFiter",
+                    "TemplateName": "FilterDepthVerticalTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "HorizontalGaussianFilter",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "EsmShadowmaps",
+                    "AttachmentRef": {
+                        "Pass": "VerticalGaussianFiter",
+                        "Attachment": "Output"
+                    }
+                }
+            ]
+        }
+    }
+}

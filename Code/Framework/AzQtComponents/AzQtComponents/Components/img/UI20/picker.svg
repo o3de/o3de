@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60.1 (88133) - https://sketch.com -->
+    <title>Icons / System / Picker</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Picker" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,4 C16.418278,4 20,7.581722 20,12 C20,16.418278 16.418278,20 12,20 C7.581722,20 4,16.418278 4,12 C4,7.581722 7.581722,4 12,4 Z M12,6 C8.6862915,6 6,8.6862915 6,12 C6,15.3137085 8.6862915,18 12,18 C15.3137085,18 18,15.3137085 18,12 C18,8.6862915 15.3137085,6 12,6 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <circle id="Oval" fill="#FFFFFF" cx="12" cy="12" r="2"></circle>
+        <rect id="Rectangle" fill="#FFFFFF" x="11" y="2" width="2" height="6"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="11" y="16" width="2" height="6"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" transform="translate(19.000000, 12.000000) rotate(90.000000) translate(-19.000000, -12.000000) " x="18" y="9" width="2" height="6"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" transform="translate(5.000000, 12.000000) rotate(90.000000) translate(-5.000000, -12.000000) " x="4" y="9" width="2" height="6"></rect>
+    </g>
+</svg>

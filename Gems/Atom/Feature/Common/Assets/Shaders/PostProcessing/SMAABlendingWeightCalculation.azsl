@@ -1,0 +1,102 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+
+struct VSOutputBlendingWeightCalculation
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+    float2 m_pixcoord : TEXCOORD1;
+    float4 m_offset[3] : TEXCOORD2;
+};
+
+ShaderResourceGroup PassSrg : SRG_PerDraw
+{
+    Texture2D<float4> m_framebuffer;
+    Texture2D<float4> m_areaTexture;
+    Texture2D<float4> m_searchTexture;
+
+    // Information for render target.
+    // x = 1.0 / width
+    // y = 1.0 / height
+    // z = width
+    // w = height
+    float4 m_renderTargetMetrics;
+    // How many steps to be used in horizontal/vertical search process. For details please check comment related to SMAA_MAX_SEARCH_STEPS in SMAA.azsli.
+    int m_maxSearchSteps;
+    // How many steps to be used in diagonal search process. For details please check comment related to SMAA_MAX_SEARCH_STEPS_DIAG in SMAA.azsli.
+    int m_maxSearchStepsDiagonal;
+    // This is a tweak value for the sharp corner feature. For details please check comment related to SMAA_CORNER_ROUNDING in SMAA.azsli.
+    int m_cornerRounding;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+// Option shader variable to enable diagonal edge detection feature. This option value is used instead of SMAA_DISABLE_DIAG_DETECTION define in SMAA.azsli.
+option bool o_enableDiagonalDetectionFeature = true;
+// Option shader variable to enable corner detection feature. This option value will be used instead of SMAA_DISABLE_CORNER_DETECTION define in SMAA.azsli.
+option bool o_enableCornerDetectionFeature = true;
+
+// This macro being defined before being included in SMAA.azsli, we can control which function is enabled in SMAA.azsli.
+// This macro is intended to enable the blending weight calculation functions only.
+#define ATOM_SMAA_BLENDING_WEIGHT_CALCULATION_PASS_IMPLEMENTATION_ENABLE
+
+// Defining the elements below before including SMAA.azsli as they'll be used in it.
+// - PassSrg SRG to be used for the blending weight calculation implementation.
+// - The option shader variables to be used for the blending weight calculation implementation.
+#include "SMAA.azsli"
+
+VSOutputBlendingWeightCalculation MainVS(VSInput input)
+{
+    VSOutputBlendingWeightCalculation OUT;
+    
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+    
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+    
+    SMAABlendingWeightCalculationVS(OUT.m_texCoord, OUT.m_pixcoord, OUT.m_offset);
+
+    return OUT;
+}
+
+PSOutput MainPS(VSOutputBlendingWeightCalculation IN)
+{
+    PSOutput OUT;
+    
+    OUT.m_color = SMAABlendingWeightCalculationPS(IN.m_texCoord, IN.m_pixcoord, IN.m_offset, PassSrg::m_framebuffer, PassSrg::m_areaTexture, PassSrg::m_searchTexture, float4(0.0, 0.0, 0.0, 0.0));
+
+    return OUT;
+}

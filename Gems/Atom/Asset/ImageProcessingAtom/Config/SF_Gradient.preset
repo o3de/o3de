@@ -1,0 +1,57 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+            "Name": "SF_Gradient",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "IsPowerOf2": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+                "Name": "SF_Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "ios": {
+                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+                "Name": "SF_Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "osx_gl": {
+                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+                "Name": "SF_Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "provo": {
+                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+                "Name": "SF_Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "xenia": {
+                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
+                "Name": "SF_Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            }
+        }
+    }
+}

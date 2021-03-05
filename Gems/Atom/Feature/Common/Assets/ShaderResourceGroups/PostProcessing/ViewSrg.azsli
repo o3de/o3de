@@ -1,0 +1,68 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
+#endif
+
+partial ShaderResourceGroup ViewSrg
+{
+    // Shared data in PostProcessing
+
+    // Depth Of Field
+    struct DepthOfFieldData
+    {
+        // x : viewFar, y : viewNear, z : focusDistance
+        float3 m_cameraParameters;
+
+        // Used to determine the pencilMap texture coordinates from depth.
+        float m_pencilMapTexcoordToCocRadius;
+        float m_pencilMapFocusPointTexcoordU;
+
+        // circle of confusion to screen ratio;
+        float m_cocToScreenRatio;
+    };
+
+    DepthOfFieldData m_dof;
+    
+    struct ExposureControlParameters
+    {
+        // Minimum exposure for eye adaptation in stops (logarithmic space)
+        float m_exposureMinLog2;
+        
+        // Maximum exposure for eye adaptation in stops (logarithmic space)
+        float m_exposureMaxLog2;
+
+        // The speed at which exposure adjusts up to brighter scenes
+        float m_speedUp;
+        
+        // The speed at which exposure adjusts down to darker scenes
+        float m_speedDown;
+
+        // Manual exposure compensation value
+        float m_exposureValueCompensation;
+
+        // Eye adaptation feature flag.
+        uint m_eyeAdaptationEnabled;
+
+        // Explicit padding at the end
+        uint2 m_padding;
+    };
+
+    ConstantBuffer<ExposureControlParameters> m_exposureControl;
+    
+    float GetExposureValueCompensation()
+    {
+        return m_exposureControl.m_exposureValueCompensation;
+    }
+}
+

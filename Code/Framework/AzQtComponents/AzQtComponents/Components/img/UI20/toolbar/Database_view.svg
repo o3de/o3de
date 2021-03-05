@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Database view</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Database-view" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,2 C16.3178626,2 19.8367623,3.06898954 19.994482,4.40627572 L20,4.5 L20,9.5 C20,10.8807119 16.418278,12 12,12 C7.68213741,12 4.16323765,10.9310105 4.00551796,9.59372428 L4,9.5 L4,4.5 L4.00551796,4.40627572 C4.16323765,3.06898954 7.68213741,2 12,2 Z M12,3.5 C8.96243388,3.5 6.5,3.94771525 6.5,4.5 C6.5,5.05228475 8.96243388,5.5 12,5.5 C15.0375661,5.5 17.5,5.05228475 17.5,4.5 C17.5,3.94771525 15.0375661,3.5 12,3.5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M20,11 L20,15 C20,16.3807119 16.418278,17.5 12,17.5 C7.68213741,17.5 4.16323765,16.4310105 4.00551796,15.0937243 L4,15 L4,11 C4,12.3807119 7.581722,13.5 12,13.5 C16.3178626,13.5 19.8367623,12.4310105 19.994482,11.0937243 L20,11 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M20,16.5 L20,19.5 C20,20.8807119 16.418278,22 12,22 C7.68213741,22 4.16323765,20.9310105 4.00551796,19.5937243 L4,19.5 L4,16.5 C4,17.8807119 7.581722,19 12,19 C16.3178626,19 19.8367623,17.9310105 19.994482,16.5937243 L20,16.5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

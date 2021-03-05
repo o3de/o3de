@@ -1,0 +1,406 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#define THREADS 16
+#define NUM_THREADS (THREADS * THREADS)
+#define PADDING (THREADS / 2)
+#define LDS_WIDTH (PADDING + THREADS + PADDING)
+
+// LDS_SIZE = LDS_WIDTH * LDS_WIDTH = 32 * 32 = 1024
+#define LDS_SIZE 1024
+
+// LDS (local data store) will store depths from 32x32 region around the group in Phase I
+// of SSAO and then the sampled positions for sharing with neighbor threads in the Phase II
+groupshared float LDS[LDS_SIZE];
+
+// Number of AO samples to calculate from local depth values stored in LDS in Phase I
+// This value affects the size of the first loop which takes sample positions from
+// localSamplesForLDS array defined below, and should therefore be set to a multpile of
+// 4 and never exceed a value of 24, which is the size of the array.
+#define LOCAL_SAMPLE_COUNT 12
+
+// In Phase II we use additional samples from the depth input texture. Groups of 4x4 threads
+// will fetch samples in an outer loop and share these samples with each in an inner loop.
+// This sharing is accomplished by writing the samples to LDS prior to the inner loop:
+#define INNER_SAMPLE_COUNT 4
+#define OUTER_SAMPLE_LOOPS 10
+
+// Subgroups are groups of 4x4 threads. Because 16 consecutive threads execute simultaneously,
+// this removes the need for memory barriers when these groups write and read from LDS
+#define THREADS_PER_SUBGROUP 16
+#define SUBGROUP_COUNT (NUM_THREADS / THREADS_PER_SUBGROUP)
+
+#define OUTER_SAMPLE_ANGLE (TWO_PI / OUTER_SAMPLE_LOOPS)
+#define OUTER_SAMPLE_ANGLE_STEP (OUTER_SAMPLE_ANGLE / THREADS_PER_SUBGROUP)
+
+// Array used for calculating sample positions in Phase I
+static const int2 localSamplesForLDS[] = {
+    {  0, -4 },
+    { -4,  0 },
+    {  4,  0 },
+    {  0,  4 },
+    { -4, -4 },
+    {  4, -4 },
+    { -4,  4 },
+    {  4,  4 },
+    {  0, -8 },
+    { -8,  0 },
+    {  8,  0 },
+    {  0,  8 },
+    { -4, -8 },
+    {  4, -8 },
+    { -4,  8 },
+    {  4,  8 },
+    { -8, -4 },
+    { -8,  4 },
+    {  8, -4 },
+    {  8,  4 },
+    { -8, -8 },
+    {  8, -8 },
+    { -8,  8 },
+    {  8,  8 },
+};
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_linearDepth;
+    RWTexture2D<float> m_ssaoOutput;
+
+    // Must match the struct in SsaoPasses.cpp
+    struct SsaoConstants
+    {
+        // The texture dimensions of SSAO output
+        uint2 m_outputSize;
+
+        // The size of a pixel relative to screenspace UV
+        // Calculated by taking the inverse of the texture dimensions
+        float2 m_pixelSize;
+    
+        // The size of half a pixel relative to screenspace UV
+        float2 m_halfPixelSize;
+
+        // The strength of the SSAO effect
+        float m_strength;
+
+        // The sampling radius calculated in screen UV space 
+        float m_samplingRadius;
+
+    };
+    SsaoConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float2 GetOutputSize() { return PassSrg::m_constants.m_outputSize; }
+float2 GetPixelSize() { return PassSrg::m_constants.m_pixelSize; }
+float2 GetHalfPixelSize() { return PassSrg::m_constants.m_halfPixelSize; }
+
+// --- LDS DEPTH ---
+
+// In the first phase of SSAO, we store 32x32 depth samples in LDS.
+// We use these depth values to reconstruct view space positions and
+// normals from which we can then calculate SSAO contribution
+
+int GetLdsIndex(int2 index)
+{
+    return mad(index.y, LDS_WIDTH, index.x);
+}
+
+void WriteDepthGatherToLDS(int2 ldsPosition, float4 depthGather)
+{
+    // Write the gathered depth values to LDS
+    LDS[ GetLdsIndex(ldsPosition) ] = depthGather.w;
+    ++ldsPosition.x;
+    LDS[ GetLdsIndex(ldsPosition) ] = depthGather.z;
+    ++ldsPosition.y;
+    LDS[ GetLdsIndex(ldsPosition) ] = depthGather.y;
+    --ldsPosition.x;
+    LDS[ GetLdsIndex(ldsPosition) ] = depthGather.x;
+}
+
+float3 GetPositionFromDepthLDS(int2 ldsPosition, float2 ldsOffsetUV)
+{
+    float linearDepth = LDS[ GetLdsIndex(ldsPosition) ];
+    float2 screenSpaceUV = mad(float2(ldsPosition), GetPixelSize(), ldsOffsetUV);
+    return ViewSrg::GetViewSpacePosition(screenSpaceUV, linearDepth);
+}
+
+float3 CalculateNormalFromLDS(int2 ldsPosition, float2 ldsOffsetUV, float3 position)
+{
+    // Normal is calculated from the cross product between horizontal and vertical position derivatives
+    // We calculate two position derivatives and take the smallest to avoid neighboring pixels from separate objects.
+    float3 diffX;
+    {
+        float3 positionLeft = GetPositionFromDepthLDS(ldsPosition - int2(1, 0), ldsOffsetUV);
+        float3 positionRight = GetPositionFromDepthLDS(ldsPosition + int2(1, 0), ldsOffsetUV);
+        float3 diffLeft = position - positionLeft;
+        float3 diffRight = positionRight - position;
+        diffX = (abs(diffLeft.z) < abs(diffRight.z)) ? diffLeft : diffRight;
+    }
+    float3 diffY;
+    {
+        float3 positionUp = GetPositionFromDepthLDS(ldsPosition - int2(0, 1), ldsOffsetUV);
+        float3 positionDown = GetPositionFromDepthLDS(ldsPosition + int2(0, 1), ldsOffsetUV);
+        float3 diffUp = position - positionUp;
+        float3 diffDown = positionDown - position;
+        diffY = (abs(diffUp.z) < abs(diffDown.z)) ? diffUp : diffDown;
+    }
+
+    float3 normal = normalize( cross(diffX, diffY) );
+    return normal;
+}
+
+// --- LDS POSITION ---
+
+// In the second phase of SSAO, we store reconstructed positions in LDS.
+// Positions takes up 3x more space, but we only need 16x16 (4x less than 
+// the number of depth samples). To write positions, we store the X component
+// in the first quarter of LDS, the Y component in the second and Z in the third
+// Dividing this way yields better performance as it avoids memory bank conflicts
+
+#define LDS_QUARTER_SIZE (LDS_SIZE / 4)
+
+void WritePositionToLDS(uint index, float3 position)
+{
+    LDS[index] = position.x;
+    LDS[index + LDS_QUARTER_SIZE] = position.y;
+    LDS[index + (LDS_QUARTER_SIZE * 2)] = position.z;
+}
+
+float3 GetPositionFromLDS(uint index)
+{
+    float3 position;
+    position.x = LDS[index];
+    position.y = LDS[index + LDS_QUARTER_SIZE];
+    position.z = LDS[index + (LDS_QUARTER_SIZE * 2)];
+    return position;
+}
+
+uint GetNextLinearIndex(uint linearIndex, uint increment)
+{
+    // The next index in our group of 4x4
+    uint nextSubgroupIndex = (linearIndex + increment) & 0x0F;
+    
+    return (linearIndex & 0xF0) + nextSubgroupIndex;
+}
+
+// --- Occlusion ---
+
+// Adds occlusion from a potential occluder to the current thread with the provided surface position and normal
+void AccumulateOcclusion(float3 position, float3 normal, float3 occluderPosition, inout float totalOcclusion, inout float totalWeight)
+{
+    // Get the vector from the pixel position to the position
+    float3 diff = (occluderPosition - position);
+    float distanceSq = dot(diff, diff);
+    float invDistance = rsqrt(distanceSq);
+    float invDistanceSq = invDistance * invDistance;
+
+    // Calculate the cosine falloff based on occluder direction and surface normal
+    float3 direction = diff * invDistance;
+    float cosineFalloff = dot(direction, normal);
+
+    float weight;
+
+    // --- TODO ---
+    // When blur, temporal reprojection and the SSAO AtomSampleViewer sample are finished, revisit and test
+    // these various weighting strategies to see which produces the best results
+
+    // Option 1:
+    // weight = cosineFalloff >= -0.00001f ? invDistanceSq : 0.0f;
+
+    // Option 2:
+    // weight = invDistanceSq;
+
+    // Option 3:
+    // weight = saturate(1.0f + cosineFalloff);
+    // weight *= weight;
+    // weight *= invDistanceSq;
+
+    // Option 4:
+    const float minDistanceSq = 0.07f;
+    weight = rsqrt(distanceSq + minDistanceSq);
+    weight *= weight;
+
+    // Option 5: option 3 + 4
+    // const float minDistanceSq = 0.12f;
+    // invDistanceSq = rsqrt(distanceSq + minDistanceSq);
+    // invDistanceSq *= invDistanceSq;
+    // weight = saturate(1.0f + cosineFalloff);
+    // weight *= weight;
+    // weight *= invDistanceSq;
+
+    // --- END TODO ---
+
+    // Accumulate AO and weight
+    totalOcclusion += saturate(cosineFalloff) * weight;
+    totalWeight += weight;
+}
+
+
+[numthreads(THREADS, THREADS, 1)]
+void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uint3 dispatch_id: SV_DispatchThreadID, uint linear_id : SV_GroupIndex)
+{
+    // LDS covers 32x32 pixels. This is the on screen position of the upper left pixel in the 32x32 group.
+    float2 ldsOffsetPixel = mad(float2(group_id.xy), THREADS, -PADDING);
+
+    // The screen space UV of the above calculated pixel offset
+    float2 ldsOffsetUV = mad(ldsOffsetPixel, GetPixelSize(), GetHalfPixelSize());
+	
+    // Write depth to LDS
+    {
+        // Each thread will gather 4 depth values, so space them apart
+        int2 ldsPosition = int2(thread_id.xy) << 1;
+
+        // Gather depth values
+        float2 depthGatherUV = mad(float2(ldsPosition), GetPixelSize(), ldsOffsetUV);
+        float4 depthGather = PassSrg::m_linearDepth.Gather(PassSrg::PointSampler, depthGatherUV);
+
+        WriteDepthGatherToLDS(ldsPosition, depthGather);
+    }
+
+    // Sync after LDS
+    GroupMemoryBarrierWithGroupSync();
+
+    // Reshuffle thread indices so groups of 16 consecutive threads form 4x4 subgroups
+    // Initially 16 consecutive threads form a row as such:
+    //
+    //   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    //   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    //   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    //   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    //
+    // After the reshuffle the threads will be in a 4x4 pixel group like so:
+    //
+    //   0  1  4  5  |  0  1  4  5  |  0  1  4  5  |  0  1  4  5
+    //   2  3  6  7  |  2  3  6  7  |  2  3  6  7  |  2  3  6  7
+    //   8  9  C  D  |  8  9  C  D  |  8  9  C  D  |  8  9  C  D
+    //   A  B  E  F  |  A  B  E  F  |  A  B  E  F  |  A  B  E  F
+    //
+    uint2 subgroup = uint2((linear_id >> 4) & 3, (linear_id >> 6) & 3);
+    uint2 threadSubID;
+    threadSubID.x = (linear_id & 1) + ((linear_id >> 1) & 2);
+    threadSubID.y = ((linear_id >> 1) & 1) + ((linear_id >> 2) & 2);
+    uint2 newThreadID = mad(subgroup, 4, threadSubID);
+    uint newLinearID = mad(newThreadID.y, THREADS, newThreadID.x);
+
+    // Position + Normal
+    int2 ldsPosition = int2(newThreadID.xy) + int2(PADDING, PADDING);
+    float3 position = GetPositionFromDepthLDS(ldsPosition, ldsOffsetUV);
+    float3 normal = CalculateNormalFromLDS(ldsPosition, ldsOffsetUV, position);
+    
+    float totalOcclusion = 0.0f;
+    float totalWeight = 0.0f;
+
+    // PHASE I: accumulates AO from local depth samples stored in LDS
+    [unroll]
+    for (uint i = 0; i < LOCAL_SAMPLE_COUNT; ++i)
+    {
+        float3 occluderPosition = GetPositionFromDepthLDS(ldsPosition + localSamplesForLDS[i], ldsOffsetUV);
+        AccumulateOcclusion(position, normal, occluderPosition, totalOcclusion, totalWeight);
+    }
+
+    totalWeight = max(totalWeight, EPSILON);
+    float finalAO = totalOcclusion / totalWeight;
+    // TODO: these commented lines are tied to the options in AccumulateOcclusion
+    //totalWeight = 0.0f;
+    //totalOcclusion = 0.0f;
+
+    // Note: we want our sample offset to be at the center of the 4x4 subgroup, that's why we add 2.0f to groupOffsetPixel
+    float2 groupOffsetPixel = mad(float2(group_id.xy), THREADS, 2.0f);
+    float2 subgroupOffsetPixel = mad(float2(subgroup), 4.0f, groupOffsetPixel);
+
+    float subgroupAngleOffset = float((linear_id >> 4) & 0x0F) * float(OUTER_SAMPLE_ANGLE / SUBGROUP_COUNT);
+    float sampleFactor = (float(linear_id & 0x0F) + 1.0f) / float(THREADS_PER_SUBGROUP);
+
+    // Sync because otherwise position writes to LDS from PHASE II can mess up threads trying to read depth from LDS in Phase I
+    GroupMemoryBarrierWithGroupSync();
+
+    // PHASE II: sample depth buffer and share reconstructed positions between threads using LDS
+    [unroll]
+    for (uint i = 0; i < OUTER_SAMPLE_LOOPS; ++i)
+    {
+        // Get the sample radius and angle for this thread
+        float sampleRadius = sqrt(sampleFactor) * (GetOutputSize().y * PassSrg::m_constants.m_samplingRadius);
+        float sampleAngle = mad(sampleFactor, OUTER_SAMPLE_ANGLE_STEP, subgroupAngleOffset);
+
+        // Calculate which pixel to sample
+        float2 samplePixel;
+        sincos(sampleAngle, samplePixel.y, samplePixel.x);
+        samplePixel = mad(samplePixel, sampleRadius, subgroupOffsetPixel);
+
+        // We need the UV value to be at the exact pixel center for accurate position reconstruction from depth
+        // We therefore floor the sample pixel location and then add half pixel size to sampleUV in the next line
+        samplePixel = floor(samplePixel);
+
+        float2 sampleUV = mad(samplePixel, GetPixelSize(), GetHalfPixelSize());
+
+        // Caculate the sampled position and accumulate occluion
+        float occluderDepth = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, sampleUV, 0);
+        float3 occluderPosition = ViewSrg::GetViewSpacePosition(sampleUV, occluderDepth);
+        AccumulateOcclusion(position, normal, occluderPosition, totalOcclusion, totalWeight);
+
+        // Write the calculated occluder position to LDS
+        uint ldsIndex = linear_id;
+        WritePositionToLDS(ldsIndex, occluderPosition);
+        
+        // Note: No need for GroupMemoryBarrierWithGroupSync() here because we only read from the group
+        // of 16 consecutive threads that we're in, and those 16 threads all execute at the same time
+
+        // In this loop, groups of 16 consecutive threads will read positions from LDS written by other threads
+        // in the group. This effectively amounts to 4x4 pixel groups sharing samples to avoid texture fetches
+        [unroll]
+        for (uint j = 1; j < INNER_SAMPLE_COUNT; ++j)  // Start at 1 because we already have one sample
+        {
+            // Get the index for the next position in our group of 4x4 that we want to sample
+            ldsIndex = GetNextLinearIndex(ldsIndex, (THREADS_PER_SUBGROUP / INNER_SAMPLE_COUNT));
+
+            // Accumulate AO from the position stored in LDS
+            occluderPosition = GetPositionFromLDS(ldsIndex);
+            AccumulateOcclusion(position, normal, occluderPosition, totalOcclusion, totalWeight);
+        }
+
+        // Rotate for the next samples
+        subgroupAngleOffset += OUTER_SAMPLE_ANGLE;
+    }
+
+    totalWeight = max(totalWeight, EPSILON);
+    // TODO: this commented line is tied to the options in AccumulateOcclusion
+    //finalAO = (finalAO * 0.5f) + (0.5f * totalOcclusion / totalWeight);
+    finalAO = totalOcclusion / totalWeight;
+
+    uint2 outPixel = mad(int2(group_id.xy), THREADS, newThreadID.xy);
+
+    // This amounts to output = 1.0f - (finalAO * strength)
+    // We do 1.0 - AO because greater AO values should result in darker pixels, not lighter
+    float output = mad(-finalAO, PassSrg::m_constants.m_strength, 1.0f);
+
+    // Gamma compensation
+    output = pow(output, 2.2f);
+
+    // Output
+    PassSrg::m_ssaoOutput[outPixel] = output;
+}

@@ -1,0 +1,53 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "Atom_RHI_Vulkan_precompiled.h"
+#include <AzCore/std/utils.h>
+#include <AzCore/std/parallel/lock.h>
+#include <RHI/DescriptorSet.h>
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/ShaderResourceGroupPool.h>
+
+namespace AZ
+{
+    namespace Vulkan
+    {
+        RHI::Ptr<ShaderResourceGroup> ShaderResourceGroup::Create()
+        {
+            return aznew ShaderResourceGroup();
+        }
+
+        void ShaderResourceGroup::UpdateCompiledDataIndex(uint64_t frameIteration)
+        {
+            // Check that this is a new frame compilation.
+            if (frameIteration != m_lastCompileFrameIteration)
+            {
+                m_compiledDataIndex = (m_compiledDataIndex + 1) % m_compiledData.size();
+            }
+            m_lastCompileFrameIteration = frameIteration;
+        }
+
+        const DescriptorSet& ShaderResourceGroup::GetCompiledData() const
+        {
+            return *m_compiledData[m_compiledDataIndex];
+        }
+
+        uint32_t ShaderResourceGroup::GetCompileDataIndex() const
+        {
+            return m_compiledDataIndex;
+        }
+
+        uint64_t ShaderResourceGroup::GetLastCompileFrameIteration() const
+        {
+            return m_lastCompileFrameIteration;
+        }
+    }
+}

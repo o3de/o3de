@@ -1,0 +1,148 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <PostProcessing/BloomDownsamplePass.h>
+#include <PostProcess/Bloom/BloomSettings.h>
+#include <PostProcess/PostProcessFeatureProcessor.h>
+
+#include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameScheduler.h>
+
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/Pass/PassAttachment.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Scene.h>
+
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+
+
+namespace AZ
+{
+    namespace Render
+    {
+        RPI::Ptr<BloomDownsamplePass> BloomDownsamplePass::Create(const RPI::PassDescriptor& descriptor)
+        {
+            RPI::Ptr<BloomDownsamplePass> pass = aznew BloomDownsamplePass(descriptor);
+            return AZStd::move(pass);
+        }
+
+        BloomDownsamplePass::BloomDownsamplePass(const RPI::PassDescriptor& descriptor)
+            : ComputePass(descriptor)
+        {
+            FindShaderConstantInputIndex(m_sourceImageTexelSizeInputIndex, "m_sourceImageTexelSize");
+            FindShaderConstantInputIndex(m_thresholdConstantsInputIndex, "m_thresholdConstants");
+        }
+
+        void BloomDownsamplePass::FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* nameStr)
+        {
+            Name name(nameStr);
+            index = m_shaderResourceGroup->FindShaderInputConstantIndex(name);
+            AZ_Error("PassSystem", index.IsValid(), "[BloomBlurChildPass '%s']: Failed to find shader input constant %s.",
+                name.GetCStr());
+        }
+
+        void BloomDownsamplePass::BuildOutAttachmentBinding()
+        {
+            RPI::PassAttachmentBinding& finalOutBinding = GetOutputBinding(0);
+            RPI::Ptr<RPI::PassAttachment> outAttachment = m_ownedAttachments[0];
+
+            for (uint32_t i = 0; i < Render::Bloom::MaxStageCount; ++i)
+            {
+                // Create bindings
+
+                // Set pass slot
+                RPI::PassAttachmentBinding outBinding;
+                outBinding.m_name = Name{ AZStd::string::format("Downsampled%d", i) };
+                outBinding.m_shaderInputName = Name{ AZStd::string::format("m_targetMipLevel%d", i) };
+                outBinding.m_slotType = RPI::PassSlotType::Output;
+                outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+
+                outBinding.m_attachment = outAttachment;
+                
+                // Set image view descriptor
+                RHI::ImageViewDescriptor outViewDesc;
+                outViewDesc.m_mipSliceMin = i;
+                outViewDesc.m_mipSliceMax = i;
+                outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                outBinding.m_unifiedScopeDesc.m_attachmentId = outAttachment->GetAttachmentId();
+
+                AddAttachmentBinding(outBinding);
+            }
+
+            ComputePass::BuildAttachmentsInternal();
+        }
+
+        void BloomDownsamplePass::BuildAttachmentsInternal()
+        {
+            BuildOutAttachmentBinding();
+        }
+
+        AZ::Vector4 BloomDownsamplePass::CalThresholdConstants()
+        {
+            // These constants will be used in shader to compute a soft knee based threshold 
+            float x = m_threshold;
+            float y = x * m_knee;
+            float z = 2.0f * y;
+            float w = 1.0f / (4.0f * y + 1e-5f);
+            y -= x;
+
+            return AZ::Vector4(x, y, z, w);
+        }
+
+        void BloomDownsamplePass::FrameBeginInternal(FramePrepareParams params)
+        {
+            RPI::Scene* scene = GetScene();
+            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+            RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            if (fp)
+            {
+                PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
+                if (postProcessSettings)
+                {
+                    BloomSettings* bloomSettings = postProcessSettings->GetBloomSettings();
+                    if (bloomSettings)
+                    {
+                        m_threshold = bloomSettings->GetThreshold();
+                        m_knee = bloomSettings->GetKnee();
+                        m_shaderResourceGroup->SetConstant(m_thresholdConstantsInputIndex, CalThresholdConstants());
+                    }
+                }
+            }
+
+            RHI::Size targetImageSize;
+            if (m_isFullscreenPass)
+            {
+                RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+
+                targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
+                SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
+            }
+
+            RHI::Size sourceImageSize;
+            RPI::PassAttachment* inputAttachment = GetInputBinding(0).m_attachment.get();
+            sourceImageSize = inputAttachment->m_descriptor.m_image.m_size;
+
+            // Update shader constant
+            m_shaderResourceGroup->SetConstant(m_sourceImageTexelSizeInputIndex, AZ::Vector2(1.0f / static_cast<float>(sourceImageSize.m_width), 1.0f / static_cast<float>(sourceImageSize.m_height)));
+
+            RenderPass::FrameBeginInternal(params);
+        }
+    }   // namespace RPI
+}   // namespace AZ

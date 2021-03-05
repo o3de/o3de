@@ -1,0 +1,23 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.027313649654388429,
+                0.02842755801975727,
+                0.029556725174188615,
+                1.0
+            ]
+        },
+        "normal": {
+            "factor": 1.4343434572219849,
+            "textureMap": "Materials/Coal/coal_normal.jpg"
+        },
+        "roughness": {
+            "textureMap": "Materials/Coal/coal_roughness.jpg"
+        }
+    }
+}

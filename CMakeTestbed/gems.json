@@ -1,0 +1,53 @@
+{
+    "GemListFormatVersion": 2, 
+    "Gems": [
+        {
+            "Path": "Gems/ImageProcessing",
+            "Uuid": "eeffbd9211cf4ce0b5cc73696b427cbe",
+            "Version": "0.1.0",
+            "_comment": "ImageProcessing"
+        },
+        {
+            "Path": "Gems/TextureAtlas",
+            "Uuid": "5a149b6b3c964064bd4970f0e92f72e2",
+            "Version": "0.1.0",
+            "_comment": "TextureAtlas"
+        },
+        {
+            "Path": "Gems/LmbrCentral",
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "Version": "0.1.0",
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Path": "Gems/LyShine",
+            "Uuid": "0fefab3f13364722b2eab3b96ce2bf20",
+            "Version": "0.1.0",
+            "_comment": "LyShine"
+        },
+        {
+            "Path": "Gems/Maestro",
+            "Uuid": "3b9a978ed6f742a1acb99f74379a342c",
+            "Version": "0.1.0",
+            "_comment": "Maestro"
+        },
+        {
+            "Path": "Gems/SceneProcessing",
+            "Uuid": "7c2578f634df4345aca98d671e39b8ab",
+            "Version": "0.1.0",
+            "_comment": "SceneProcessing"
+        },
+        {
+            "Path": "Gems/Camera",
+            "Uuid": "f910686b6725452fbfc4671f95f733c6",
+            "Version": "0.1.0",
+            "_comment": "Camera"
+        },
+        {
+            "Path" : "CMakeTestbed/Gem",
+            "Uuid" : "e111dee500ed4812a7905093a73d3837",
+            "Version" : "0.1.0",
+            "_comment" : "CMakeTestbed"
+        }
+   ]
+}

@@ -1,0 +1,48 @@
+{
+    "Dependencies":
+    [
+        {
+            "Uuid" : "1a557ac19dc34f5697fe03f30be5b6e4",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "GameState"
+        },
+        {
+            "Uuid" : "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "LmbrCentral"
+        },
+        {
+            "Uuid" : "93ccb44a96b142f7942a3fb6b9ca36e1",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "LocalUser"
+        },
+        {
+            "Uuid" : "c7935ecf5e8047fe8ca947b34b11cadb",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "LyShineExamples"
+        },
+        {
+            "Uuid" : "89225422672547deaca9e7a22b883973",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "MessagePopup"
+        },
+        {
+            "Uuid" : "d96ab03f53d14c9e83f9b4528c8576d7",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "SaveData"
+        }
+    ],
+    "GemFormatVersion": 4,
+    "Uuid": "76db0b1bcff84224a92cbceb373f4a85",
+    "Name": "GameStateSamples",
+    "DisplayName": "GameStateSamples",
+    "Version": "0.1.0",
+    "Summary": "Provides a set of sample game states (built on top of the generic GameState Gem), including primary user selection, main menu, level loading, level running, and level paused.",
+    "Tags": ["Game State", "Main Menu", "Level Loading", "Pause Menu", "Primary User", "Local Multiplayer", "Local Co-op", "Split Screen"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

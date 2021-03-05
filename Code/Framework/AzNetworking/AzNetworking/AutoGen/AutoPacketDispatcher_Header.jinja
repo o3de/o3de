@@ -1,0 +1,23 @@
+#pragma once
+
+#include <AzCore/Console/ILogger.h>
+#include <AzNetworking/Serialization/ISerializer.h>
+#include <AzNetworking/PacketLayer/IPacketHeader.h>
+#include <AzNetworking/ConnectionLayer/IConnection.h>
+#include "{{ (outputFile|basename).replace(".AutoPacketDispatcher.h", ".AutoPackets.h") }}"
+
+{% for xml in dataFiles %}
+namespace {{ xml.attrib['Name'] }}
+{
+    //! Request dispatcher for incoming packets.
+    //! @param connection   pointer to the connection that sent this request
+    //! @param packetHeader the header of the received packet
+    //! @param serializer   serializer containing the raw packet payload
+    //! @param handler      the handler used to handle the received packet
+    //! @return boolean true on successful dispatch, false if the request was not handled
+    template <typename HANDLER>
+    bool DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler);
+}
+{% endfor %}
+
+#include "{{ (outputFile|basename).replace(".AutoPacketDispatcher.h", ".AutoPacketDispatcher.inl") }}"

@@ -1,0 +1,19 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/Ground/ground_diffuse.jpg"
+        },
+        "normal": {
+            "factor": 2.0,
+            "textureMap": "Materials/Ground/ground_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.8888888955116272,
+            "useTexture": false
+        }
+    }
+}

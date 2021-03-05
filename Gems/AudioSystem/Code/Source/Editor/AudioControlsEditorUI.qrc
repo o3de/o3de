@@ -1,0 +1,28 @@
+<RCC>
+  <qresource prefix="/Editor/Icons">
+    <file alias="Bank_Icon.png">Icons/Bank_Icon.png</file>
+    <file alias="Config_Blue_Icon.png">Icons/Config_Blue_Icon.png</file>
+    <file alias="Config_Green_Icon.png">Icons/Config_Green_Icon.png</file>
+    <file alias="Config_Purple_Icon.png">Icons/Config_Purple_Icon.png</file>
+    <file alias="Config_Red_Icon.png">Icons/Config_Red_Icon.png</file>
+    <file alias="Config_Yellow_Icon.png">Icons/Config_Yellow_Icon.png</file>
+    <file alias="Environment_Icon.svg">Icons/Environment_Icon.svg</file>
+    <file alias="Folder_Icon.svg">Icons/Folder_Icon.svg</file>
+    <file alias="Folder_Icon_Selected.svg">Icons/Folder_Icon_Selected.svg</file>
+    <file alias="Property_Icon.png">Icons/Property_Icon.png</file>
+    <file alias="RTPC_Icon.svg">Icons/RTPC_Icon.svg</file>
+    <file alias="Search_Icon.png">Icons/Search_Icon.png</file>
+    <file alias="Switch_Icon.svg">Icons/Switch_Icon.svg</file>
+    <file alias="Trigger_Icon.svg">Icons/Trigger_Icon.svg</file>
+    <file alias="Preload_Icon.svg">Icons/Preload_Icon.svg</file>
+    <file alias="Load_Icon.png">Icons/Load_Icon.png</file>
+    <file alias="Save_Icon.png">Icons/Save_Icon.png</file>
+    <file alias="folder blue.svg">Icons/folder blue.svg</file>
+    <file alias="folder green.svg">Icons/folder green.svg</file>
+    <file alias="folder purple.svg">Icons/folder purple.svg</file>
+    <file alias="folder red.svg">Icons/folder red.svg</file>
+    <file alias="folder yellow.svg">Icons/folder yellow.svg</file>
+    <file alias="folder white.svg">Icons/folder white.svg</file>
+    <file alias="Unassigned.svg">Icons/Unassigned.svg</file>
+  </qresource>
+</RCC>

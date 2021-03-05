@@ -1,0 +1,84 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--FilteredSearchWidget QLineEdit
+{
+    qproperty-frame: true;
+    width: 260px; /* This is just a reasonable default */
+}
+
+AzQtComponents--FilteredSearchWidget QPushButton
+{
+    background-color: transparent;
+    border: none;
+}
+
+AzQtComponents--FilteredSearchWidget #assetTypeSelector
+{
+    qproperty-icon: url(:/stylesheet/img/UI20/filter.svg);
+}
+
+AzQtComponents--FilterCriteriaButton
+{
+    padding: 0px;
+    border-radius: 2px;
+    border: 1px solid #808080;
+    background-color: rgb(46, 46, 46);
+    /* 22 + 2 * 1 = 24 */
+    min-height: 22px;
+    max-height: 22px;
+}
+
+AzQtComponents--FilterCriteriaButton QPushButton#closeTag
+{
+    qproperty-icon: url(:/stylesheet/img/close_x.svg);
+    qproperty-iconSize: 10px 10px;
+    qproperty-flat: true;
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
+    max-height: 16px;
+    max-width: 16px;
+    min-width: 16px;
+}
+
+AzQtComponents--FilterCriteriaButton QLabel
+{
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
+}
+
+AzQtComponents--FilterCriteriaButton #tagIcon
+{
+    margin-right: 4px;
+}
+
+AzQtComponents--FilterCriteriaButton #tagText
+{
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+AzQtComponents--SearchTypeSelector QTreeView
+{
+    border: none;
+    outline-style: none;
+
+    show-decoration-selected: 1;
+    background-color: transparent;
+}
+
+AzQtComponents--SearchTypeSelector QTreeView::item
+{
+    height: 24px;
+}

@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/Gallery">
+        <file>ExampleWidget.qss</file>
+        <file>StyleSheetLabel.qss</file>
+        <file>StyleSheetPage.qss</file>
+        <file>StyleSheetView.qss</file>
+    </qresource>
+    <qresource prefix="/Gallery/img">
+        <file>complex.png</file>
+        <file>intermediate.png</file>
+        <file>simple.png</file>
+    </qresource>
+</RCC>

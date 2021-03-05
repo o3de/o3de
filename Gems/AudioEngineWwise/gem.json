@@ -1,0 +1,27 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "67a80e2ac865406c990f2715feb55f7f",
+    "Name": "AudioEngineWwise",
+    "DisplayName": "Wwise Audio Integration",
+    "Version": "0.1.0",
+    "Summary": "Wwise engine integration and plugin to Audio Controls Editor.",
+    "Tags": ["Audio", "Sound", "Wwise"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "6f63f2b6d07f4b89b4b7c86ebee7feb8",
+            "VersionConstraints": [">=0.1.0"],
+            "_comment": "AudioSystem"
+        }
+    ]
+}

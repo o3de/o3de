@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AZ::SceneAPI::UI::SceneGraphInspectWidget</class>
+ <widget class="QWidget" name="AZ::SceneAPI::UI::SceneGraphInspectWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>314</width>
+    <height>275</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="m_splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QStackedWidget" name="m_infoStack">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="m_noSelection">
+       <layout class="QVBoxLayout" name="noSelectionLayout">
+        <item>
+         <widget class="QLabel" name="m_noSelectionLabel">
+          <property name="text">
+           <string>Select a node to inspect its properties in a read-only format.</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::Alignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop)</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_propertyEditor">
+       <layout class="QHBoxLayout" name="m_propertyEditorLayout"/>
+      </widget>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

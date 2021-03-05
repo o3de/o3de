@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>Selection Controls / Radio Button / On-focus</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Selection-Controls-/-Radio-Button-/-On-focus" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Oval" stroke="#00A1C9" fill="#0073BB" cx="9" cy="9" r="8.5"></circle>
+        <circle id="Oval" fill="#FFFFFF" cx="9" cy="9" r="4"></circle>
+    </g>
+</svg>

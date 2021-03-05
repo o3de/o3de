@@ -1,0 +1,93 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+            "Name": "Detail_MergedAlbedoNormalsSmoothness",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "FileMasks": [
+                "_detail"
+            ],
+            "PixelFormat": "BC7",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "PixelFormat": "ETC2a",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "PixelFormat": "ASTC_4x4",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "osx_gl": {
+                "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "PixelFormat": "BC3",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "PixelFormat": "BC7",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "xenia": {
+                "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
+                "Name": "Detail_MergedAlbedoNormalsSmoothness",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "FileMasks": [
+                    "_detail"
+                ],
+                "PixelFormat": "BC7",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

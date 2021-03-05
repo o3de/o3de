@@ -1,0 +1,25 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Uuid": "6bb61c9e547043f0afc5019d6d460b78",
+            "VersionConstraints": [ "~>0.1.0" ],
+            "_comment": "UiBasics"
+        }
+    ],
+    "GemFormatVersion": 3,
+    "Uuid": "c7935ecf5e8047fe8ca947b34b11cadb",
+    "Name": "LyShineExamples",
+    "DisplayName": "LyShineExamples",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Provides example code for using LyShine.",
+    "Tags": ["UI", "LyShine", "Example"],
+    "IconPath": "preview.png"
+}

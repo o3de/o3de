@@ -1,0 +1,110 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SsaoParentTemplate",
+            "PassClass": "SsaoParentPass",
+            "Slots": [
+                {
+                    "Name": "LinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "Upsample",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DepthDownsample",
+                    "TemplateName": "DepthDownsampleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "FullResDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SsaoCompute",
+                    "TemplateName": "SsaoComputeTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SsaoBlur",
+                    "TemplateName": "FastDepthAwareBlurTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "SsaoCompute",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Upsample",
+                    "TemplateName": "DepthUpsampleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "FullResDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HalfResDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HalfResSource",
+                            "AttachmentRef": {
+                                "Pass": "SsaoBlur",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

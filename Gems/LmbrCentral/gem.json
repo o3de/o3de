@@ -1,0 +1,13 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+    "Name": "LmbrCentral",
+    "DisplayName": "LmbrCentral",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Required LmbrCentral Engine Gem.",
+    "Tags": ["Required"],
+    "IconPath": "preview.png",
+    "EditorModule": true,
+    "IsRequired": true
+}

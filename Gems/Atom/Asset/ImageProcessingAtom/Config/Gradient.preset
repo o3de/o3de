@@ -1,0 +1,51 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+            "Name": "Gradient",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "IsPowerOf2": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+                "Name": "Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "IsPowerOf2": true
+            },
+            "ios": {
+                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+                "Name": "Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "IsPowerOf2": true
+            },
+            "osx_gl": {
+                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+                "Name": "Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "IsPowerOf2": true
+            },
+            "provo": {
+                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+                "Name": "Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "IsPowerOf2": true
+            },
+            "xenia": {
+                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
+                "Name": "Gradient",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "IsPowerOf2": true
+            }
+        }
+    }
+}

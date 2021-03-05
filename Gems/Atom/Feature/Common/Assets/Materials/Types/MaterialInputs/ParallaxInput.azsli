@@ -1,0 +1,78 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+#pragma import ViewSrg
+
+#include <Atom/Features/ParallaxMapping.azsli>
+
+// This file provides utilities for common handling of inputs for the parallax feature of materials.
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_PARALLAX(prefix) \
+Texture2D   prefix##m_depthMap;            \
+float       prefix##m_depthFactor;         \
+bool        prefix##m_depthInverted;
+
+#define COMMON_OPTIONS_PARALLAX(prefix) \
+option bool prefix##o_useDepthMap; 
+
+option bool o_parallax_feature_enabled;
+
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, 
+                      float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+                      inout float2 uv, inout float3 worldPosition, inout float depth)
+{
+    if(o_parallax_feature_enabled)
+    {
+        float3 dirToCamera;
+        if(ViewSrg::m_projectionMatrix[0].w)
+        {
+            // orthographic projection (directional light)
+            // No view position, use light direction
+            dirToCamera = ViewSrg::m_viewMatrix[2].xyz;
+        }
+        else
+        {
+            dirToCamera = ViewSrg::m_worldPosition.xyz - worldPosition;
+        }
+    
+        float3 tangentOffset = GetParallaxOffset( depthFactor,
+                                                  uv,
+                                                  dirToCamera, 
+                                                  tangent,
+                                                  bitangent,
+                                                  normal,
+                                                  uvMatrix);
+
+        uv += tangentOffset.xy;
+
+        if(o_parallax_enablePixelDepthOffset)
+        {
+            PixelDepthOffset pdo = CalcPixelDepthOffset(depthFactor,
+                                                        tangentOffset,
+                                                        worldPosition,
+                                                        tangent,
+                                                        bitangent,
+                                                        normal,
+                                                        uvMatrixInverse,
+                                                        objectWorldMatrix,
+                                                        ViewSrg::m_viewProjectionMatrix);
+            depth = pdo.m_depth;
+            worldPosition = pdo.m_worldPosition;
+        }
+    }
+}
+

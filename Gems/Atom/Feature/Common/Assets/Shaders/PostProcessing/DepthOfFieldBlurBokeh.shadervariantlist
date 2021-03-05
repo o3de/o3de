@@ -1,0 +1,29 @@
+{
+    "Shader" : "DepthOfFieldBlurBokeh.shader",
+    "Variants" : [
+        {
+            "StableId": 1,
+            "Options" : {
+                "o_sampleNumber": "SampleNumber::Sample6"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options" : {
+                "o_sampleNumber": "SampleNumber::Sample18"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options" : {
+                "o_sampleNumber": "SampleNumber::Sample36"
+            }
+        },
+        {
+            "StableId": 4,
+            "Options" : {
+                "o_sampleNumber": "SampleNumber::Sample60"
+            }
+        }
+    ]
+}

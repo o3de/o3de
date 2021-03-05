@@ -1,0 +1,76 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+#include "ObjectSrgLit.azsli"
+
+option enum class ViewProjectionMode { ViewProjection, ManualOverride } o_viewProjMode;
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    [[vk::builtin("PointSize")]]
+    float  m_pointSize  : PSIZE;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    OUT.m_position.xyz = mul(ObjectSrg::GetWorldMatrix(), float4(vsInput.m_position, 1.0)).xyz;
+    if (o_viewProjMode == ViewProjectionMode::ViewProjection)
+    {
+        OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_position.xyz, 1.0));
+    }
+    else if (o_viewProjMode == ViewProjectionMode::ManualOverride)
+    {
+        OUT.m_position = mul(ObjectSrg::m_viewProjectionOverride, float4(OUT.m_position.xyz, 1.0));
+    }
+    OUT.m_normal = mul(ObjectSrg::GetWorldMatrixInverseTranspose(), vsInput.m_normal);
+    OUT.m_pointSize = ObjectSrg::m_pointSize;
+
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput input)
+{
+    PSOutput OUT;
+
+    // Hard-coded fake light direction
+    float3 lightDirection = normalize(float3(1.0, -1.0, 1.0));
+
+    // Fake light intensity ranges from 1.0 for normals directly facing the light to zero for those
+    // directly facing away.
+    float lightDot = dot(normalize(input.m_normal), lightDirection);
+    float lightIntensity = lightDot * 0.5 + 0.5;
+
+    // add a small amount of ambient and reduce direct light to keep in 0-1 range
+    lightIntensity = saturate(0.1 + lightIntensity * 0.9);
+
+    // The lightIntensity should not affect alpha so only apply it to rgb.
+    OUT.m_color.rgb = ObjectSrg::m_color.rgb * lightIntensity;
+    OUT.m_color.a = ObjectSrg::m_color.a;
+
+    return OUT;
+}

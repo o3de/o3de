@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Vertex Snapping</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Vertex-Snapping" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="Group-4" transform="translate(2.500000, 4.000000)" fill="#FFFFFF">
+            <rect id="Rectangle" x="0.5" y="7.5" width="18" height="1"></rect>
+            <rect id="Rectangle" x="6.5" y="5" width="6" height="6"></rect>
+            <g id="Group-3" transform="translate(9.000000, 0.000000)">
+                <rect id="Rectangle" x="0" y="0" width="1" height="3" rx="0.5"></rect>
+                <rect id="Rectangle-Copy" x="0" y="13" width="1" height="3" rx="0.5"></rect>
+            </g>
+            <g id="Group-3-Copy" transform="translate(9.750000, 8.274094) rotate(45.000000) translate(-9.750000, -8.274094) translate(8.750000, -1.725906)">
+                <rect id="Rectangle" x="0.129409733" y="0.704788109" width="1" height="3" rx="0.5"></rect>
+                <rect id="Rectangle-Copy" x="0.129409733" y="16.2611373" width="1" height="3" rx="0.5"></rect>
+            </g>
+            <g id="Group-3-Copy-2" transform="translate(9.500000, 8.000000) rotate(-45.000000) translate(-9.500000, -8.000000) translate(9.000000, -2.000000)">
+                <rect id="Rectangle" x="1.15463195e-14" y="0.721825407" width="1" height="3" rx="0.5"></rect>
+                <rect id="Rectangle-Copy" x="1.0658141e-14" y="16.2781746" width="1" height="3" rx="0.5"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

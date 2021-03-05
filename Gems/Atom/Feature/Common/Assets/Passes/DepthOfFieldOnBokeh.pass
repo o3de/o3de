@@ -1,0 +1,295 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldOnBokehTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "ColorInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "CompositeResult",
+                        "Attachment": "OutputResult"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "ColorInput",
+                    "Output" : "Output"
+                }
+            ],            
+            "PassRequests": [
+                {
+                    "Name": "Prepare",
+                    "TemplateName": "DepthOfFieldPrepareTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputPrepare",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ColorInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputPrepare",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownSampleDivision2",
+                    "TemplateName": "DepthOfFieldDownSampleTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Prepare",
+                                "Attachment": "OutputPrepare"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownSampleDivision4",
+                    "TemplateName": "DepthOfFieldDownSampleTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision2",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownSampleDivision8",
+                    "TemplateName": "DepthOfFieldDownSampleTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision4",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MaskDivision2",
+                    "TemplateName": "DepthOfFieldMaskTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision2",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MaskDivision4",
+                    "TemplateName": "DepthOfFieldMaskTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision4",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MaskDivision8",
+                    "TemplateName": "DepthOfFieldMaskTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision8",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "FrontblurDivision2",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision2",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BackblurDivision2",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "MaskDivision2",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "FrontblurDivision4",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision4",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BackblurDivision4",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "MaskDivision4",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "FrontblurDivision8",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "DownSampleDivision8",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BackblurDivision8",
+                    "TemplateName": "DepthOfFieldBlurBokehTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Inputblur",
+                            "AttachmentRef": {
+                                "Pass": "MaskDivision8",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "CompositeResult",
+                    "TemplateName": "DepthOfFieldCompositeTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOriginal",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ColorInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOriginal",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FrontBlurDivision2",
+                            "AttachmentRef": {
+                                "Pass": "FrontblurDivision2",
+                                "Attachment": "Outputblur"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FrontBlurDivision4",
+                            "AttachmentRef": {
+                                "Pass": "FrontblurDivision4",
+                                "Attachment": "Outputblur"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FrontBlurDivision8",
+                            "AttachmentRef": {
+                                "Pass": "FrontblurDivision8",
+                                "Attachment": "Outputblur"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BackBlurDivision2",
+                            "AttachmentRef": {
+                                "Pass": "BackblurDivision2",
+                                "Attachment": "Outputblur"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BackBlurDivision4",
+                            "AttachmentRef": {
+                                "Pass": "BackblurDivision4",
+                                "Attachment": "Outputblur"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BackBlurDivision8",
+                            "AttachmentRef": {
+                                "Pass": "BackblurDivision8",
+                                "Attachment": "Outputblur"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

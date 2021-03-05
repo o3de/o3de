@@ -1,0 +1,36 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "7c2578f634df4345aca98d671e39b8ab",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "SceneProcessing"
+        },
+        {
+            "Uuid": "4e08125824434932a0fe3717259caa47",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "PhysX"
+        }
+    ],
+    "GemFormatVersion": 4,
+    "Uuid": "c58d2057f3724b22ae0df0be68a4e316",
+    "Name": "TouchBending",
+    "DisplayName": "Touch Bending [PREVIEW]",
+    "Version": "0.1.0",
+    "Summary": "The Amazon Touch Bending Gem enhances the FBX asset processing pipeline by enabling static geometry to be treated like skinned geometry that deforms when other physicalized objects collide with it.",
+    "Tags": [ "Scene", "FBX", "Assets", "Physics", "Vegetation" ],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ]
+}

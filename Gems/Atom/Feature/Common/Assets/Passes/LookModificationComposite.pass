@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LookModificationCompositeTemplate",
+            "PassClass": "LookModificationCompositePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "EyeAdaptationDataInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_eyeAdaptation"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "LookModificationTransformOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "LookModificationTransformOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "Input",
+                    "Output" : "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/LookModificationTransform.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

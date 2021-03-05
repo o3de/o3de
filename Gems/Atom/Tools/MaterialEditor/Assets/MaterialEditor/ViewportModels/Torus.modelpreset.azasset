@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::ModelPreset",
+    "ClassData": {
+        "displayName": "Torus",
+        "modelAsset": {
+            "assetId": {
+                "guid": "{0FF7CB59-2519-5D49-BAAD-FC3F552D26B6}",
+                "subId": 268715852
+            },
+            "assetHint": "materialeditor/viewportmodels/torus.azmodel"
+        }
+    }
+}

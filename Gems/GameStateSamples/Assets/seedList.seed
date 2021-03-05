@@ -1,0 +1,61 @@
+<ObjectStream version="3">
+	<Class name="AZStd::vector" type="{82FC5264-88D0-57CD-9307-FC52E4DAD550}">
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{18D52813-BC0F-5607-ADE9-8157E00C00EF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultlevelloadingscreen.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{D392CCAF-F591-52DD-979C-CD1598F4D9CC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultpausemenuscreen.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{175E81A3-0DB0-526E-AFDB-53D3814490DE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultpausebuttonfortouchscreens.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{D1D50062-283E-5E89-BBA0-BE9A260E76AF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultsignedinusersoverlay.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{544CAA3F-F27B-5525-B946-E649B7187265}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultmainmenuscreen.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{B2F3CA1A-7797-5442-A09C-76DABC5EBF48}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultoptionsmenuscreen.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
+			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+				<Class name="AZ::Uuid" field="guid" value="{8AD4BAA2-F3CC-5BAB-A985-533CDFBC3133}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			</Class>
+			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="AZStd::string" field="pathHint" value="ui/canvases/defaultprimaryuserselectionscreen.uicanvas" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		</Class>
+	</Class>
+</ObjectStream>
+

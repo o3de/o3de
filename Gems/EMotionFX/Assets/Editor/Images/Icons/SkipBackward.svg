@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / Video Control / Rewind to the beginning</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Video-Control-/-Rewind-to-the-beginning" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Rectangle-18" fill-opacity="0" fill="#D8D8D8" x="0" y="0" width="24" height="24"></rect>
+        <path d="M5,20 L5,4 L7,4 L13,12 L7,20 L5,20 Z" id="Combined-Shape" fill="#FFFFFF" transform="translate(9.000000, 12.000000) scale(-1, 1) translate(-9.000000, -12.000000) "></path>
+        <rect id="Rectangle-2" fill="#FFFFFF" x="2" y="4" width="2" height="16"></rect>
+        <path d="M14,20 L14,4 L16,4 L22,12 L16,20 L14,20 Z" id="Combined-Shape" fill="#FFFFFF" transform="translate(18.000000, 12.000000) scale(-1, 1) translate(-18.000000, -12.000000) "></path>
+    </g>
+</svg>

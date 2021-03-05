@@ -1,0 +1,1466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>821</width>
+    <height>638</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Asset Processor</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_1" stretch="0,1">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="header">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="statusContainer">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="APStatusValueLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Status:</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>Title</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="projectLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Project:</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>secondaryText</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="rootLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Root:</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>secondaryText</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="portLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Processor port</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>secondaryText</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QWidget" name="timerContainerWidget" native="true">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout" name="timerContainer">
+         <item>
+          <layout class="QHBoxLayout" name="timerLayout">
+           <item>
+            <widget class="QLabel" name="lastScanLabel">
+             <property name="text">
+              <string>Last Scan:</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>Title</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lastScanTimer">
+             <property name="text">
+              <string>00:00.0</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>APTimer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="lastScanSeparator">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>2</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="class" stdset="0">
+              <string>TimerLine</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="analysisLabel">
+             <property name="text">
+              <string>Analysis:</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>Title</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="analysisTimer">
+             <property name="text">
+              <string>00:00.0</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>APTimer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="analysisSeparator">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>2</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="class" stdset="0">
+              <string>TimerLine</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="processingLabel">
+             <property name="text">
+              <string>Processing:</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>Title</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="processingTimer">
+             <property name="text">
+              <string>00:00.0</string>
+             </property>
+             <property name="class" stdset="0">
+              <string>APTimer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="processingSeparator">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>2</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="class" stdset="0">
+              <string>TimerLine</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="timersVerticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>13</width>
+             <height>13</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="supportContainer">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="supportButton">
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>1</width>
+            <height>1</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="content">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <property name="leftMargin">
+       <number>8</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>8</number>
+      </property>
+      <property name="bottomMargin">
+       <number>8</number>
+      </property>
+      <item>
+       <widget class="AzQtComponents::SegmentBar" name="buttonList">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>130</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation" stdset="0">
+         <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QStackedWidget" name="dialogStack">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QSplitter" name="jobDialogSplitter">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="childrenCollapsible">
+          <bool>false</bool>
+         </property>
+         <widget class="QWidget" name="assetStatusContainer">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="assetStatusLabel">
+             <property name="text">
+              <string>Asset Status</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="AzQtComponents::FilteredSearchWidget" name="jobFilteredSearchWidget" native="true">
+             <property name="placeholderText" stdset="0">
+              <string>Filter by keyword or regular expression</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="AzQtComponents::TableView" name="jobTreeView">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>200</height>
+              </size>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="jobLogContainer" native="true">
+          <layout class="QVBoxLayout" name="jobLogLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="jobLogLabel">
+             <property name="text">
+              <string>Event Log Details</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="AzQtComponents::FilteredSearchWidget" name="detailsFilterWidget" native="true">
+             <property name="placeholderText" stdset="0">
+              <string>Filter by keyword or regular expression</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QStackedWidget" name="jobLogStackedWidget">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <widget class="AzQtComponents::TableView" name="jobLogTableView">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="contextMenuPolicy">
+               <enum>Qt::CustomContextMenu</enum>
+              </property>
+             </widget>
+             <widget class="QLabel" name="jobLogPlaceholderLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>No event log details can be shown for unselected rows</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QFrame" name="jobContextContainer">
+          <layout class="QVBoxLayout" name="jobContextLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QFrame" name="jobContextLogBar">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="jobContextLogLabel">
+                <property name="text">
+                 <string>Event Log Line Details</string>
+                </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignRight|Qt::AlignBottom">
+               <widget class="QCheckBox" name="jobContextLogDetails">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Context Details</string>
+                </property>
+                <property name="class" stdset="0">
+                 <string>ToggleSwitch</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QStackedWidget" name="jobContextLogStackedWidget">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
+             <widget class="AzQtComponents::TableView" name="jobContextLogTableView">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="contextMenuPolicy">
+               <enum>Qt::CustomContextMenu</enum>
+              </property>
+             </widget>
+             <widget class="QLabel" name="jobContextLogPlaceholderLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>No event context log details can be shown for unselected rows</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+        <widget class="QSplitter" name="assetDetailsDialogSplitter">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="childrenCollapsible">
+          <bool>false</bool>
+         </property>
+         <widget class="QWidget" name="assetDetailsTopElementsContainer">
+          <layout class="QHBoxLayout" name="assetDetailsHorizontalLayout1" stretch="3,2">
+           <property name="bottomMargin">
+            <number>5</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="assetDetailsVerticalLayout1">
+             <item>
+              <widget class="AzQtComponents::FilteredSearchWidget" name="assetDataFilteredSearchWidget" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="placeholderText" stdset="0">
+                <string>Search for assets by name or ID</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTabWidget" name="assetsTabWidget">
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="SourceAssetsTab">
+                <attribute name="title">
+                 <string>Source Assets</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="SourceAssetsVerticalLayout" stretch="0">
+                 <item>
+                  <widget class="QTreeView" name="SourceAssetsTreeView">
+                   <property name="editTriggers">
+                    <set>QAbstractItemView::NoEditTriggers</set>
+                   </property>
+                   <property name="sortingEnabled">
+                    <bool>true</bool>
+                   </property>
+                   <attribute name="headerDefaultSectionSize">
+                    <number>300</number>
+                   </attribute>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="ProductAssetsTab">
+                <attribute name="title">
+                 <string>Product Assets</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="ProductAssetsVerticalLayout" stretch="0">
+                 <item>
+                  <widget class="QTreeView" name="ProductAssetsTreeView">
+                   <property name="sortingEnabled">
+                    <bool>true</bool>
+                   </property>
+                   <attribute name="headerDefaultSectionSize">
+                    <number>300</number>
+                   </attribute>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="assetDetailsVerticalLayout2">
+             <item>
+              <widget class="AssetProcessor::SourceAssetDetailsPanel" name="sourceAssetDetailsPanel"/>
+             </item>
+             <item>
+              <widget class="AssetProcessor::ProductAssetDetailsPanel" name="productAssetDetailsPanel">
+               <property name="visible">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="missingDependencyScanResults">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>72</height>
+                </size>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::NoEditTriggers</set>
+               </property>
+               <property name="tabKeyNavigation">
+                <bool>true</bool>
+               </property>
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="defaultDropAction">
+                <enum>Qt::IgnoreAction</enum>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="LogDialog">
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="logTitleLabel">
+            <property name="text">
+             <string>Logs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="AssetProcessor::LogPanel" name="LoggingPanel" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="logButtonWrapper">
+            <layout class="QVBoxLayout" name="logButtonWrapperLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="logButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Open log files</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="shaderDialog">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="shaderLabel">
+            <property name="text">
+             <string>Shaders</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="shaderInfoPane" native="true">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="AzQtComponents::TableView" name="shaderTreeView"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="connectionsDialog">
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QWidget" name="connectHeader" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>75</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="activeConnectionsLabel">
+               <property name="text">
+                <string>Active Connections</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>479</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="editConnectionButton">
+               <property name="text">
+                <string>Edit Connection</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="addConnectionButton">
+               <property name="text">
+                <string>Add Connection</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="removeConnectionButton">
+               <property name="text">
+                <string>Remove Connection</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="AzQtComponents::TableView" name="connectionTreeView"/>
+          </item>
+          <item>
+           <widget class="QFrame" name="whiteListOuterFrame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <layout class="QVBoxLayout" name="whiteListVerticalLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QWidget" name="whiteListTopBarWidget" native="true">
+               <layout class="QHBoxLayout" name="whiteListHorizontalBar">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <property name="leftMargin">
+                 <number>4</number>
+                </property>
+                <property name="topMargin">
+                 <number>4</number>
+                </property>
+                <property name="rightMargin">
+                 <number>4</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>4</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="whiteListEnableCheckBox">
+                  <property name="toolTip">
+                   <string>Enable or Disable white listing. White listing is a security feature which limits what can connect to the asset processor.</string>
+                  </property>
+                  <property name="text">
+                   <string>Enable white listing</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="whiteListBarSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="Line" name="whiteListSeparatorLine">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="whiteListBottomBarWidget" native="true">
+               <layout class="QHBoxLayout" name="whiteListHorizontalBar2">
+                <property name="leftMargin">
+                 <number>4</number>
+                </property>
+                <property name="topMargin">
+                 <number>4</number>
+                </property>
+                <property name="rightMargin">
+                 <number>4</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>4</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="whiteListAddHostNameLabel">
+                  <property name="toolTip">
+                   <string>White list a hostname. EX. MyComputer321</string>
+                  </property>
+                  <property name="text">
+                   <string>Add Host Name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="whiteListAddHostNameLineEdit"/>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="whiteListAddHostNameToolButton">
+                  <property name="toolTip">
+                   <string>Add the hostname to the white list.</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="style/AssetProcessor.qrc">
+                    <normaloff>:/AssetProcessor_plus.svg</normaloff>:/AssetProcessor_plus.svg</iconset>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="whiteListHorizontalBar2Spacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="whiteListAddIPLabel">
+                  <property name="toolTip">
+                   <string>White list an ipv4 or ipv6 address with or without a CIDR range. EX.  192.168.0.20 or 192.168.0.0/24 or 2001:db8:85a3:8d3:1319:8a2e:370:7348  or  2001:db8:85a3:8d3:1319:8a2e:370:7348/32</string>
+                  </property>
+                  <property name="text">
+                   <string>Add IP Address</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="whiteListAddIPLineEdit"/>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="whiteListAddIPToolButton">
+                  <property name="toolTip">
+                   <string>Add the ip address to the white list.</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="style/AssetProcessor.qrc">
+                    <normaloff>:/AssetProcessor_plus.svg</normaloff>:/AssetProcessor_plus.svg</iconset>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="whiteListHorizontalBar3">
+               <item>
+                <widget class="Line" name="whiteListLine">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="whiteListHorizontalLabelsLayout">
+               <property name="leftMargin">
+                <number>4</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="whiteListWhiteListedConnnectionListLabel">
+                 <property name="toolTip">
+                  <string>White listed connection are addresses, ranges and name that will be allowed to connect to the asset processor.</string>
+                 </property>
+                 <property name="text">
+                  <string>White Listed Connections</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="whiteListHorizontalLabelSpacer1">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="whiteListRejectedConnectionListLabel">
+                 <property name="toolTip">
+                  <string>Rejected connections are addresses that failed to connect to the asset processor.</string>
+                 </property>
+                 <property name="text">
+                  <string>     Rejected Connections</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="whiteListHorizontalLabelSpacer2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="whiteListHorizontalViewsLayout">
+               <property name="spacing">
+                <number>9</number>
+               </property>
+               <property name="leftMargin">
+                <number>4</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>4</number>
+               </property>
+               <property name="bottomMargin">
+                <number>4</number>
+               </property>
+               <item>
+                <widget class="QListView" name="whiteListWhiteListedConnectionsListView">
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="whiteListButtonVerticalLayout">
+                 <item>
+                  <spacer name="whiteListVerticalSpacer1">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="whiteListToWhiteListToolButton">
+                   <property name="toolTip">
+                    <string>Move a entry from rejected to the white list.</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="style/AssetProcessor.qrc">
+                     <normaloff>:/AssetProcessor_arrow_left.svg</normaloff>:/AssetProcessor_arrow_left.svg</iconset>
+                   </property>
+                   <property name="autoRaise">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="whiteListToRejectedListToolButton">
+                   <property name="toolTip">
+                    <string>Remove an entry from the whtie list.</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="style/AssetProcessor.qrc">
+                     <normaloff>:/AssetProcessor_arrow_right.svg</normaloff>:/AssetProcessor_arrow_right.svg</iconset>
+                   </property>
+                   <property name="autoRaise">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="whiteListVerticalSpacer2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QListView" name="whiteListRejectedConnectionsListView">
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="ToolsPage">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QCheckBox" name="modtimeSkippingCheckBox">
+            <property name="styleSheet">
+             <string notr="true">font: 12pt;</string>
+            </property>
+            <property name="text">
+             <string>Faster Scanning Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <spacer name="indentSpacer1">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="modtimeSkippingDescription">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This mode completes the startup scan faster by skipping some steps to check if your assets have been modified.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="scaledContents">
+               <bool>false</bool>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="gapSpacer1">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="fullScanHeader">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Full Scan&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_12">
+            <item>
+             <spacer name="indentSpacer2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="fullScanDescriptionText">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you have deleted or modified any assets in the cache folder, you'll need to restore your asset cache by performing a full scan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="scaledContents">
+               <bool>false</bool>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="fullScanButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Start Scan</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="gapSpacer2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>16</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::FilteredSearchWidget</class>
+   <extends>QWidget</extends>
+   <header>AzQtComponents/Components/FilteredSearchWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::TableView</class>
+   <extends>QTreeView</extends>
+   <header>AzQtComponents/Components/Widgets/TableView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::SegmentBar</class>
+   <extends>QFrame</extends>
+   <header>AzQtComponents/Components/Widgets/SegmentBar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AssetProcessor::LogPanel</class>
+   <extends>QWidget</extends>
+   <header>native/utilities/LogPanel.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AssetProcessor::SourceAssetDetailsPanel</class>
+   <extends>QFrame</extends>
+   <header>native/ui/SourceAssetDetailsPanel.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AssetProcessor::ProductAssetDetailsPanel</class>
+   <extends>QFrame</extends>
+   <header>native/ui/ProductAssetDetailsPanel.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="style/AssetProcessor.qrc"/>
+ </resources>
+ <connections/>
+</ui>

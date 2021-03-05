@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "LinkType": "NoCode",
+    "Name": "UiBasics",
+    "DisplayName": "UI Basics",
+    "Summary": "Provides basic UI prefabs: image, text, button, and text input, as well as the textures that those prefabs require.",
+    "Uuid": "6bb61c9e547043f0afc5019d6d460b78",
+    "Version": "0.1.0",
+    "IconPath": "preview.png",
+    "Tags": ["UI", "Prefab", "Button", "Image"]
+}

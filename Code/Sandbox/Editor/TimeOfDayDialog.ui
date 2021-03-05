@@ -1,0 +1,980 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TimeOfDayDialog</class>
+ <widget class="QMainWindow" name="TimeOfDayDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1073</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <item>
+     <widget class="QWidget" name="widget_2" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QWidget" name="widget_3" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="tangentsToAutoButton">
+            <property name="toolTip">
+             <string>Set In/Out Tangents to Auto</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="inTangentToZeroButton">
+            <property name="toolTip">
+             <string>Set In Tangent to Zero</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="inTangentToStepButton">
+            <property name="toolTip">
+             <string>Set In Tangent to Step</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="inTangentToLinearButton">
+            <property name="toolTip">
+             <string>Set In Tangent to Linear</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="outTangentToZerobutton">
+            <property name="toolTip">
+             <string>Set Out Tangent to Zero</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="outTangentToStepButton">
+            <property name="toolTip">
+             <string>Set Out Tangent to Step</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="outTangentToLinearButton">
+            <property name="toolTip">
+             <string>Set Out Tangent to Linear</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="fitSplinesHorizontalButton">
+            <property name="toolTip">
+             <string>Fit Splines to the Visible Width</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="fitSplinesVerticalButton">
+            <property name="toolTip">
+             <string>Fit Splines to the Visible Height</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="splineSnapGridX">
+            <property name="toolTip">
+             <string>Snap to time grid</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="splineSnapGridY">
+            <property name="toolTip">
+             <string>Snap to value grid</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="previousKeyButton">
+            <property name="toolTip">
+             <string>Previous Key</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_6">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="nextKeyButton">
+            <property name="toolTip">
+             <string>Next Key</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="removeAllExceptSelectedButton">
+            <property name="toolTip">
+             <string>Remove all Keys BUT This</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>69</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_4" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="CColorGradientCtrl" name="colorGradient" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="SplineWidget" name="spline" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_7" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>Timeline</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
+             <property name="verticalSpacing">
+              <number>0</number>
+             </property>
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_18">
+               <property name="text">
+                <string>23:59</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_16">
+               <property name="text">
+                <string>00:00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLabel" name="label_17">
+               <property name="text">
+                <string>12:00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignHCenter|Qt::AlignTop</set>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="3">
+              <widget class="TimeOfDaySlider" name="timelineSlider" native="true">
+               <property name="focusPolicy">
+                <enum>Qt::WheelFocus</enum>
+               </property>
+               <property name="maximum" stdset="0">
+                <number>1439</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionUndo"/>
+   <addaction name="actionRedo"/>
+   <addaction name="separator"/>
+   <addaction name="actionImportFile"/>
+   <addaction name="actionExportFile"/>
+   <addaction name="separator"/>
+   <addaction name="actionPlayPause"/>
+   <addaction name="actionSetTimeTo0000"/>
+   <addaction name="actionSetTimeTo0600"/>
+   <addaction name="actionSetTimeTo1200"/>
+   <addaction name="actionSetTimeTo1800"/>
+   <addaction name="actionSetTimeTo2400"/>
+   <addaction name="separator"/>
+   <addaction name="actionStartStopRecording"/>
+   <addaction name="separator"/>
+   <addaction name="actionHold"/>
+   <addaction name="actionFetch"/>
+  </widget>
+  <widget class="QDockWidget" name="hdrPaneDock">
+   <property name="minimumSize">
+    <size>
+     <width>350</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>HDR Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>150</width>
+      <height>0</height>
+     </size>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_4"/>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="parametersDock">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>450</width>
+     <height>50</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Parameters</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout_8">
+     <item>
+      <widget class="ReflectedPropertyControl" name="parameters" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="tasksDock">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Time of Day Tasks</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <widget class="QWidget" name="widget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QCollapsibleGroupBox" name="groupBox">
+          <property name="title">
+           <string>Tasks</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="ClickableLabel" name="importFromFileClickable">
+             <property name="text">
+              <string>Import From File</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ClickableLabel" name="exportToFileClickable">
+             <property name="text">
+              <string>Export To File</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ClickableLabel" name="resetValuesClickable">
+             <property name="text">
+              <string>Reset Values</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ClickableLabel" name="expandAllClickable">
+             <property name="text">
+              <string>Expand All</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ClickableLabel" name="collapseAllClickable">
+             <property name="text">
+              <string>Collapse All</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCollapsibleGroupBox" name="groupBox_2">
+          <property name="title">
+           <string>Time</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Current Time</string>
+             </property>
+             <property name="buddy">
+              <cstring>currentTimeEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QTimeEdit" name="currentTimeEdit"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Start Time</string>
+             </property>
+             <property name="buddy">
+              <cstring>startTimeEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QTimeEdit" name="startTimeEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>End Time</string>
+             </property>
+             <property name="buddy">
+              <cstring>endTimeEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QTimeEdit" name="endTimeEdit"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Play Speed</string>
+             </property>
+             <property name="buddy">
+              <cstring>playSpeedDoubleSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="AzQtComponents::DoubleSpinBox" name="playSpeedDoubleSpinBox">
+             <property name="singleStep">
+              <double>0.001000000000000</double>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCollapsibleGroupBox" name="groupBox_3">
+          <property name="title">
+           <string>Update Tasks</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="ClickableLabel" name="playClickable">
+             <property name="text">
+              <string>Play</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ClickableLabel" name="stopClickable">
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="forceSkyUpdateCheckBox">
+             <property name="text">
+              <string>Force sky update</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>139</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="toolTip">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="toolTip">
+    <string>Redo</string>
+   </property>
+  </action>
+  <action name="actionImportFile">
+   <property name="text">
+    <string>Import File</string>
+   </property>
+   <property name="toolTip">
+    <string>Import File</string>
+   </property>
+  </action>
+  <action name="actionExportFile">
+   <property name="text">
+    <string>Export File</string>
+   </property>
+   <property name="toolTip">
+    <string>Export File</string>
+   </property>
+  </action>
+  <action name="actionPlayPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Play/Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Play/Pause</string>
+   </property>
+  </action>
+  <action name="actionSetTimeTo0000">
+   <property name="text">
+    <string>00</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Time to 00:00</string>
+   </property>
+  </action>
+  <action name="actionSetTimeTo0600">
+   <property name="text">
+    <string>06</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Time to 06:00</string>
+   </property>
+  </action>
+  <action name="actionSetTimeTo1200">
+   <property name="text">
+    <string>12</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Time to 12:00</string>
+   </property>
+  </action>
+  <action name="actionSetTimeTo1800">
+   <property name="text">
+    <string>18</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Time to 18:00</string>
+   </property>
+  </action>
+  <action name="actionSetTimeTo2400">
+   <property name="text">
+    <string>24</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Time to 23:59</string>
+   </property>
+  </action>
+  <action name="actionStartStopRecording">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Start/Stop Recording</string>
+   </property>
+   <property name="toolTip">
+    <string>Start/Stop Recording</string>
+   </property>
+  </action>
+  <action name="actionHold">
+   <property name="text">
+    <string>Hold</string>
+   </property>
+   <property name="toolTip">
+    <string>Hold</string>
+   </property>
+  </action>
+  <action name="actionFetch">
+   <property name="text">
+    <string>Fetch</string>
+   </property>
+   <property name="toolTip">
+    <string>Fetch</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ReflectedPropertyControl</class>
+   <extends>QWidget</extends>
+   <header>Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>QtUI/QCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>QtUI/ClickableLabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SplineWidget</class>
+   <extends>QWidget</extends>
+   <header>Controls/SplineCtrlEx.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CColorGradientCtrl</class>
+   <extends>QWidget</extends>
+   <header>Controls/ColorGradientCtrl.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>AzQtComponents/Components/Widgets/SpinBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TimeOfDaySlider</class>
+   <extends>QWidget</extends>
+   <header>Controls/TimeOfDaySlider.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>timelineSlider</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

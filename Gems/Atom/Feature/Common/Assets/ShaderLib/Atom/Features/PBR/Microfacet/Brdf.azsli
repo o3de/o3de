@@ -1,0 +1,164 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+/**
+ * This file is focused on providing BRDF (bi-directional reflectance distribution function)
+ * implementations. In other words, surface interactions that result light to reflect in some way
+ * rather than transmit.
+ **/
+
+#include <Atom/Features/PBR/Surface.azsli>
+#include <Atom/RPI/Math.azsli>
+#include "Ggx.azsli"
+#include "Fresnel.azsli"
+
+option bool o_applySpecularAA;
+option bool o_enableAnisotropy = false;
+
+// Normalized Disney diffuse function taken from Frostbite's PBR course notes (page 10):
+// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
+float3 NormalizedDisneyDiffuse(float3 albedo, float3 normal, float3 dirToCamera, float3 dirToLight, float roughnessLinear)
+{
+    float3 halfVector = normalize(dirToLight + dirToCamera);
+    float NdotV = saturate(dot(normal, dirToCamera));
+    float NdotL = saturate(dot(normal, dirToLight));
+    float HdotV = saturate(dot(halfVector, dirToCamera)); // Note that HdotL = HdotV, so we don't need to calculate both
+
+    float energyBias = lerp(0.0f, 0.5f, roughnessLinear);
+    float energyFactor = lerp(1.0f, 1.0f/1.51f, roughnessLinear);
+    float fd90 = energyBias + 2.0f * HdotV * HdotV * roughnessLinear;
+    float3 f0 = float3(1.0f, 1.0f, 1.0f);
+    float lightScatter = FresnelSchlickF90(NdotL, f0, fd90).r;
+    float viewScatter = FresnelSchlickF90(NdotV, f0, fd90).r;
+
+    return albedo * lightScatter * viewScatter * energyFactor * NdotL * INV_PI;
+}
+
+//! Extended Lambertian + Fresnel diffuse model from Respawn's GDC2017 slides(page 113):
+//! https://twvideo01.ubm-us.net/o1/vault/gdc2017/Presentations/Hammon_Earl_PBR_Diffuse_Lighting.pdf
+float3 DiffuseTitanfall(float roughnessA, float3 albedo, float3 normal, float3 dirToLight, float3 dirToCamera)
+{
+    float NdotL = saturate(dot(normal, dirToLight));
+    float NdotV = saturate(dot(normal, dirToCamera));
+    float LdotV = saturate(dot(dirToLight, dirToCamera));
+
+    // Squared length of L + V <=> | L + V |^2
+    float LplusV_LenSq = 2.0 + 2.0 * LdotV;
+    float NdotH = (NdotL + NdotV) * rsqrt(LplusV_LenSq);
+
+    float facing = LplusV_LenSq * 0.25;
+
+    // empirical formula for rough surfaces
+    float rough = facing * (0.9 - 0.4 * facing) * ((0.5 + NdotH) / NdotH);
+
+    // used double Fresnel as the smooth term, 
+    // though it can be replaced with other diffuse function as well like pure lambertian
+    float smooth = 1.05 * FresnelSchlickF90(NdotL, float3(1.0, 1.0, 1.0), 0.0).x * FresnelSchlickF90(NdotV, float3(1.0, 1.0, 1.0), 0.0).x;
+    float single = INV_PI * lerp(smooth, rough, roughnessA);
+
+    // coarse approximation of multiple scattering
+    float multi = 0.1159 * roughnessA;
+
+    return albedo * (single + albedo * multi) * NdotL;
+}
+
+//! Simple Lambertian BRDF. 
+float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
+{
+    float NdotL = saturate(dot(normal, dirToLight));
+    return albedo * NdotL * INV_PI;
+}
+
+// Specular Anti-Aliasing technique from this paper:
+// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+float ApplySpecularAA(float roughnessA2, float3 normal)
+{
+    // Constants for formula below
+    const float screenVariance = 0.25f;
+    const float varianceThresh = 0.18f;
+
+    // Specular Anti-Aliasing
+    float3 dndu = ddx_fine( normal );
+    float3 dndv = ddy_fine( normal );
+    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
+    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
+    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
+    return filteredRoughnessA2;
+}
+
+//! Computes specular response from surfaces with microgeometry. The common form for microfacet
+//! implementations is D * G * F / (4.0 * NdotL * NdotV), with D G F being swappable terms.
+//! This is currently set up to use GGX terms.
+//!
+//! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
+//! @param specularF0   the fresnel f0 spectral value of the surface
+float3 SpecularGGX( Surface surface, float3 dirToCamera, float3 dirToLight)
+{
+    float3 halfVector = normalize(dirToLight + dirToCamera);
+    float NdotH = saturate(dot(surface.normal, halfVector));
+    float NdotV = saturate(dot(surface.normal, dirToCamera));
+    float NdotL = saturate(dot(surface.normal, dirToLight));
+    float HdotV = saturate(dot(halfVector, dirToCamera)); // Note that HdotL = HdotV, so we don't need to calculate both
+
+    // Specular Anti-Aliasing correction
+    float roughnessA2 = surface.roughnessA * surface.roughnessA;
+    if(o_applySpecularAA)
+    {
+        roughnessA2 = ApplySpecularAA(roughnessA2, surface.normal);
+    }
+
+    // D, G and F from the lighting equation
+    // Note: the division by (4.0 * NdotL * NdotV) is already factored out in the G function as an optimization
+    float D, G;
+    if (o_enableAnisotropy)
+    {
+        D = NormalDistibution_AnisotropicGGX(
+                NdotH, halfVector, surface.tangentAniso, surface.bitangentAniso, surface.anisotropyFactors );
+        G = ShadowingMasking_AnisotropicSmithGGXCorrelated( 
+                surface.tangentAniso, surface.bitangentAniso, dirToCamera, dirToLight, NdotV, NdotL, surface.anisotropyFactors );
+    }
+    else
+    {
+        D = NormalDistributionGGX(NdotH, roughnessA2);
+        G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
+    }   
+    float3 F = FresnelSchlick(HdotV, surface.specularF0);
+
+    D = max(0.0, D);
+    G = max(0.0, G);
+
+    // Multiply with multiscattering compensation in order to take account for several specular light bounces.
+    return surface.multiScatterCompensation * (D * G * F * NdotL);
+}
+
+float3 ClearCoatGGX(float NdotH, float HdotL, float NdotL, float3 normal, float roughnessA, float3 F)
+{
+    // Specular Anti-Aliasing correction
+    float roughnessA2 = roughnessA * roughnessA;
+    if(o_applySpecularAA)
+    {
+        roughnessA2 = ApplySpecularAA(roughnessA2, normal);
+    }
+
+    float D = NormalDistributionGGX(NdotH, roughnessA2);
+    // Kelemen geometry term : Kelemen. C. and Szirmay-Kalos. L. 2001
+    // "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+    float G = 0.25 / max(HdotL * HdotL, 1e-4);
+    
+    D = max(0.0, D);
+    G = max(0.0, G);
+
+    // the common denominator 4 * NdotL * NdotV is included in the simplified G term
+    return D * G * F * NdotL;
+}

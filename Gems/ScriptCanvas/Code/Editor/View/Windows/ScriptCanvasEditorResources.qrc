@@ -1,0 +1,51 @@
+<RCC>
+    <qresource prefix="/ScriptCanvasEditorResources">
+      <file>Resources/add.png</file>
+      <file>Resources/arrow-curve-180.png</file>
+      <file>Resources/arrow-curve-270.png</file>
+      <file>Resources/arrow-curve.png</file>
+      <file>Resources/attach_to_entity.png</file>
+      <file>Resources/auto_record.png</file>
+      <file>Resources/breakpoints toggle.png</file>
+      <file>Resources/breakpoints.png</file>
+      <file>Resources/capture_live.png</file>
+      <file>Resources/capture_offline.png</file>
+      <file>Resources/create_function_input.png</file>
+      <file>Resources/create_function_output.png</file>
+      <file>Resources/CollapseAll_Icon.png</file>
+      <file>Resources/edit_icon.png</file>
+      <file>Resources/error_icon.png</file>
+      <file>Resources/error_icon_grey.png</file>
+      <file>Resources/ExpandAll_Icon.png</file>
+      <file>Resources/lineedit_clear.png</file>
+      <file>Resources/live_update.png</file>
+      <file>Resources/message_icon.png</file>
+      <file>Resources/open.png</file>
+      <file>Resources/Pause.png</file>
+      <file>Resources/pin.png</file>
+      <file>Resources/Play.png</file>
+      <file>Resources/reset.png</file>
+      <file>Resources/scriptcanvas_bookmark.png</file>
+      <file>Resources/scriptcanvas_commandline.png</file>
+      <file>Resources/scriptcanvas_debugger.png</file>
+      <file>Resources/scriptcanvas_debugger_off.png</file>
+      <file>Resources/scriptcanvas_minimap.png</file>
+      <file>Resources/scriptcanvas_nodes.png</file>
+      <file>Resources/scriptcanvas_outliner.png</file>
+      <file>Resources/scriptcanvas_properties.png</file>
+      <file>Resources/scriptcanvas_variables.png</file>      
+      <file>Resources/settings_icon.png</file>
+      <file>Resources/settings_dropdown_icon.png</file>
+      <file>Resources/step_forward.png</file>
+      <file>Resources/step_into.png</file>
+      <file>Resources/step_out.png</file>
+      <file>Resources/step_over.png</file>
+      <file>Resources/Stop.png</file>
+      <file>Resources/triangle.png</file>
+      <file>Resources/valid_icon.png</file>
+      <file>Resources/valid_icon_grey.png</file>
+      <file>Resources/validate_icon.png</file>
+      <file>Resources/warning_symbol.png</file>
+      <file>Resources/wrench_icon.png</file>
+    </qresource>
+</RCC>

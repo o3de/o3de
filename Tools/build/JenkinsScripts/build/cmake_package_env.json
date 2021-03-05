@@ -1,0 +1,111 @@
+{
+    "global":{
+        "ENGINE_ROOT":"",
+        "THIRDPARTY_HOME":"",
+        "PACKAGE_NAME_PATTERN":"lumberyard-${MAJOR_VERSION}.${MINOR_VERSION}-${P4_CHANGELIST}",
+        "BUILD_NUMBER":"0",
+        "P4_CHANGELIST":"0",
+        "MAJOR_VERSION":"0",
+        "MINOR_VERSION":"0",
+        "LAD_PACKAGE_STORAGE_URL":"https://d7qxx8qkrwa8l.cloudfront.net"
+    },
+    "platforms":{
+        "consoles":{
+            "PACKAGE_TARGETS":[
+                {
+                    "TYPE": "cmake_all",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-consoles-${BUILD_NUMBER}.zip"
+                },
+                {
+                    "TYPE": "symbols",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-consoles-symbols-${BUILD_NUMBER}.zip"
+                }
+            ],
+            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "SKIP_BUILD": 1,
+            "BUILD_TARGETS":[
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Windows",
+                    "TYPE": "profile_vs2017"
+                },
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Windows",
+                    "TYPE": "profile_vs2019"
+                },
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Provo",
+                    "TYPE": "profile"
+                },
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Xenia",
+                    "TYPE": "profile"
+                }
+            ]
+        },
+        "cmake_atom_pc":{
+            "PACKAGE_TARGETS":[
+                {
+                    "TYPE": "cmake_atom_pc",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-cmake_atom_pc-${BUILD_NUMBER}.zip"
+                }
+            ],
+            "BOOTSTRAP_CFG_GAME_FOLDER":"AtomSampleViewer;AtomTest",
+            "SKIP_BUILD": 1,
+            "BUILD_TARGETS":[
+                {
+                    "BUILD_CONFIG_FILENAME": "package_build_config.json",
+                    "PLATFORM": "Windows",
+                    "TYPE": "profile_vs2017_atom"
+                },
+                {
+                    "BUILD_CONFIG_FILENAME": "package_build_config.json",
+                    "PLATFORM": "Windows",
+                    "TYPE": "profile_vs2019_atom"
+                }
+            ]
+        },
+        "mac":{
+            "PACKAGE_TARGETS":[
+                {
+                    "TYPE": "cmake_all",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-cmake_mac_all-${BUILD_NUMBER}.zip"
+                }
+            ],
+            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "SKIP_BUILD": 1,
+            "BUILD_TARGETS":[
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Mac",
+                    "TYPE": "profile"
+                },
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "iOS",
+                    "TYPE": "profile"
+                }
+            ]
+        },
+        "linux":{
+            "PACKAGE_TARGETS":[
+                {
+                    "TYPE": "cmake_all",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-cmake_linux_all-${BUILD_NUMBER}.zip"
+                }
+            ],
+            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "SKIP_BUILD": 1,
+            "BUILD_TARGETS":[
+                {
+                    "BUILD_CONFIG_FILENAME": "build_config.json",
+                    "PLATFORM": "Linux",
+                    "TYPE": "profile"
+                }
+            ]
+        }
+    }
+}

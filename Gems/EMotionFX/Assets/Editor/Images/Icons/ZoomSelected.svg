@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>Icons / Toolbar / Zoom</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Zoom" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M21,14 L21,21 L14,21 L14,19 L19,19 L19,14 L21,14 Z M5,14 L5,19 L10,19 L10,21 L3,21 L3,14 L5,14 Z M12,8 C14.209139,8 16,9.790861 16,12 C16,14.209139 14.209139,16 12,16 C9.790861,16 8,14.209139 8,12 C8,9.790861 9.790861,8 12,8 Z M10,3 L10,5 L5,5 L5,10 L3,10 L3,3 L10,3 Z M21,3 L21,10 L19,10 L19,5 L14,5 L14,3 L21,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

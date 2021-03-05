@@ -1,0 +1,66 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ * 
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * move or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ */
+
+#pragma once
+
+static const uint MinShadowmapSize = 256;
+
+//! This class stores the shadowmap index for a specific shadowmap.
+//! This class corresponds to ShadowmapIndexNode defined in ShadowmapAtlas.h.
+//! A shadowmap index is shader light index for spot lights,
+//! and it is cascade index for directional lights.
+class ShadowmapIndexNode
+{
+    uint m_nextTableOffset;
+    uint m_shadowmapIndex;
+
+    static ShadowmapIndexNode Convert(uint2 rawData)
+    {
+        ShadowmapIndexNode data;
+        data.m_nextTableOffset = rawData.x;
+        data.m_shadowmapIndex = rawData.y;
+        return data;
+    }
+};
+
+//! This function searches the shadowmap index for a specific shadowmap from "dataTable".
+//! Note that "dataTable" is offered for entire of shadowmap atlas, not a single shadowmap.
+//! For the structure of "dataTable", refer comments in ShadowmapAtlas.h.
+uint GetShadowmapIndex(Buffer<uint2> dataTable, uint3 coord, uint atlasImageSize)
+{
+    ShadowmapIndexNode data;
+
+    // root subtable
+    data = ShadowmapIndexNode::Convert(dataTable[coord.z]);
+
+    // non root subtables
+    uint shadowmapSize = atlasImageSize;
+    uint2 shadowmapOffset = uint2(0, 0);
+    while (data.m_nextTableOffset != 0 && shadowmapSize > MinShadowmapSize)
+    {
+        const uint offset = data.m_nextTableOffset;
+        uint digit = 0;
+        if (coord.x >= shadowmapOffset.x + shadowmapSize / 2)
+        {
+            digit += 1;
+            shadowmapOffset.x += shadowmapSize / 2;
+        }
+        if (coord.y >= shadowmapOffset.y + shadowmapSize / 2)
+        {
+            digit += 2;
+            shadowmapOffset.y += shadowmapSize / 2;
+        }
+        data = ShadowmapIndexNode::Convert(dataTable[offset + digit]);
+        shadowmapSize /= 2;
+    }
+    
+    return data.m_shadowmapIndex;
+}

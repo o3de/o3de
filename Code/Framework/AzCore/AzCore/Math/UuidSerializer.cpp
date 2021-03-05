@@ -1,0 +1,121 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/UuidSerializer.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/std/string/string.h>
+
+namespace AZ
+{
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUuidSerializer, SystemAllocator, 0);
+
+    JsonUuidSerializer::MessageResult::MessageResult(AZStd::string_view message, JsonSerializationResult::ResultCode result)
+        : m_message(message)
+        , m_result(result)
+    {
+    }
+
+    JsonUuidSerializer::JsonUuidSerializer()
+    {
+        m_uuidFormat = AZStd::regex(R"(\{[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}\})",
+            AZStd::regex_constants::icase | AZStd::regex_constants::optimize);
+    }
+
+    JsonSerializationResult::Result JsonUuidSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        MessageResult result = UnreportedLoad(outputValue, outputValueTypeId, inputValue);
+        return context.Report(result.m_result, result.m_message);
+    }
+
+    JsonUuidSerializer::MessageResult JsonUuidSerializer::UnreportedLoad(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        AZ_Assert(azrtti_typeid<Uuid>() == outputValueTypeId,
+            "Unable to deserialize Uuid to json because the provided type is %s",
+            outputValueTypeId.ToString<AZStd::string>().c_str());
+        AZ_UNUSED(outputValueTypeId);
+        AZ_Assert(outputValue, "Expected a valid pointer to load from json value.");
+
+        Uuid* valAsUuid = reinterpret_cast<Uuid*>(outputValue);
+
+        switch (inputValue.GetType())
+        {
+        case rapidjson::kArrayType: // fallthrough
+        case rapidjson::kObjectType:// fallthrough
+        case rapidjson::kFalseType: // fallthrough
+        case rapidjson::kTrueType:  // fallthrough
+        case rapidjson::kNumberType:// fallthrough
+        case rapidjson::kNullType:
+            return MessageResult("Unsupported type. Uuids can only be read from strings.",
+                JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported));
+
+        case rapidjson::kStringType:
+        {
+            AZStd::smatch uuidMatch;
+            if (AZStd::regex_search(inputValue.GetString(), inputValue.GetString() + inputValue.GetStringLength(), uuidMatch, m_uuidFormat))
+            {
+                AZ_Assert(uuidMatch.size() > 0, "Regex found uuid pattern, but zero matches were returned.");
+                size_t stringLength = uuidMatch.suffix().first - uuidMatch[0].first;
+                AZ::Uuid temp = Uuid::CreateString(uuidMatch[0].first, stringLength);
+                if (temp.IsNull())
+                {
+                    return MessageResult("Failed to create uuid from string.",
+                        JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported));
+                }
+                *valAsUuid = temp;
+                return MessageResult("Successfully read uuid.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+            }
+            else
+            {
+                return MessageResult("No part of the string could be interpreted as a uuid.",
+                    JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported));
+            }
+        }
+
+        default:
+            return MessageResult("Unknown json type encountered in Uuid.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unknown));
+        }
+    }
+
+    JsonSerializationResult::Result JsonUuidSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
+        const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        MessageResult result = UnreportedStore(outputValue, inputValue, defaultValue, valueTypeId, context);
+        return context.Report(result.m_result, result.m_message);
+    }
+
+    JsonUuidSerializer::MessageResult JsonUuidSerializer::UnreportedStore(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        AZ_Assert(azrtti_typeid<Uuid>() == valueTypeId, "Unable to serialize Uuid to json because the provided type is %s",
+            valueTypeId.ToString<AZStd::string>().c_str());
+        AZ_UNUSED(valueTypeId);
+
+        const Uuid& valAsUuid = *reinterpret_cast<const Uuid*>(inputValue);
+        if (context.ShouldKeepDefaults() || !defaultValue || (valAsUuid != *reinterpret_cast<const Uuid*>(defaultValue)))
+        {
+            AZStd::string valAsString = valAsUuid.ToString<AZStd::string>();
+            outputValue.SetString(valAsString.c_str(), aznumeric_caster(valAsString.length()), context.GetJsonAllocator());
+            return MessageResult("Uuid successfully stored.", JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::Success));
+        }
+        
+        return MessageResult("Default Uuid used.", JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed));
+    }
+} // namespace AZ

@@ -1,0 +1,51 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+{%  macro ElementType(element) -%}
+{%      if ('Container' not in element.attrib) or (element.attrib['Container'] == 'None') %}
+{{ element.attrib['Type'] }}{% elif element.attrib['Container'] == 'Array' %}
+AZStd::array<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% elif element.attrib['Container'] == 'Vector' %}
+AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% endif %}
+{%- endmacro %}
+{% macro CamelCase(text) %}{{ text[0] | upper}}{{ text[1:] }}{% endmacro %}
+{%  macro DeclareInlineMethods(packetNode, name) %}
+    inline bool {{ name }}::operator !=(const {{ name }} &rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+{% for Member in packetNode.iter('Member') %}
+    inline void {{ name }}::Set{{ CamelCase(Member.attrib['Name']) }}(const {{ ElementType(Member) }}& value)
+    {
+        m_{{ Member.attrib['Name'] }} = value;
+    }
+
+    inline const {{ ElementType(Member) }}& {{ name }}::Get{{ CamelCase(Member.attrib['Name']) }}() const
+    {
+        return m_{{ Member.attrib['Name'] }};
+    }
+
+    inline {{ ElementType(Member) }}& {{ name }}::Modify{{ CamelCase(Member.attrib['Name']) }}()
+    {
+        return m_{{ Member.attrib['Name'] }};
+    }
+
+{% endfor %}
+{%  endmacro %}
+#pragma once
+
+{%  for xml in dataFiles %}
+namespace {{ xml.attrib['Name'] }}
+{
+{%      for Packet in xml.iter('Packet') %}
+{{          DeclareInlineMethods(Packet, Packet.attrib['Name']) -}}
+{%      endfor %}
+}
+{%  endfor %}

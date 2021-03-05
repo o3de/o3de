@@ -1,0 +1,273 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/Lights/Ltc.azsli>
+
+enum QuadLightFlag
+{
+    None = 0x00,
+    EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
+    UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
+};
+
+// Returns the solid angle at origin of a rectangle defined by points p0-p3. Does not handle horizon.
+// Modified from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Listing 11 on page 49.
+float RectangleSolidAngle(float3 v0, float3 v1, float3 v2, float3 v3)
+{
+    float3 n0 = normalize(cross(v0, v1));
+    float3 n1 = normalize(cross(v1, v2));
+    float3 n2 = normalize(cross(v2, v3));
+    float3 n3 = normalize(cross(v3, v0));
+    
+    float g0 = acos(dot (-n0, n1));
+    float g1 = acos(dot (-n1, n2));
+    float g2 = acos(dot (-n2, n3));
+    float g3 = acos(dot (-n3, n0));
+
+    return max(0.0, g0 + g1 + g2 + g3 - 2.0 * PI);
+}
+
+// Unlike standard ray-plane intersection, this version is made for light planes to avoid discontinuities when the
+// reflection vector is going away from a light plane.
+float3 RayLightPlaneIntersection(in float3 pos, in float3 rayDirection, in float3 lightOrigin, in float3 lightDirection)
+{
+    float3 lightToPos = pos - lightOrigin;
+    float reflectionDotLight = dot(rayDirection, -lightDirection);
+    
+    float distanceToPlane = dot(lightToPos, lightDirection);
+    if (reflectionDotLight >= 0.0001)
+    {
+        // Reflection going towards the light
+        return pos + rayDirection * distanceToPlane / reflectionDotLight;
+    }
+    else
+    {
+        // Reflection going away from the light. Choose a point far off and project it on the plane,
+        // then treat that as the reflection plane intersection.
+        float3 posToFarOffPoint = rayDirection * distanceToPlane * 10000.0;
+        float3 lightToFarOffPoint = lightToPos + posToFarOffPoint;
+        // Here "intersection" refers to the projection of the far off point onto the light plane.
+        float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, lightDirection) * lightDirection;
+        return pos + posToFarOffPoint - intersectionToFarOffPoint;
+    }
+}
+
+float3 ClosestPointRect(in float3 pos, in float3 planeOrigin, in float3 left, in float3 up, in float2 halfSize)
+{
+    float3 dir = pos - planeOrigin;
+    float2 dist2D = float2(dot(dir, left), dot(dir, up));
+    dist2D = clamp(dist2D, -halfSize, halfSize);
+    return planeOrigin + dist2D.x * left + dist2D.y * up;
+}
+
+float3 GetSpecularDominantDirection(float3 normal, float3 reflection, float roughness)
+{
+    float lerpFactor = 1.0 - roughness;
+    return normalize(lerp(normal, reflection, lerpFactor));
+}
+
+// Quad light approximation. Diffuse portion based on https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Pages 49-50.
+void ApplyQuadLight(ViewSrg::QuadLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
+
+    float3 posToLight = light.m_position - surface.position;
+    float posToLightDotLightDirection = dot(posToLight, -lightDirection);
+
+    float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = distanceToLight2 * light.m_invAttenuationRadiusSquared;
+
+    bool doubleSided = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    if (doubleSided)
+    {
+        lightDirection *= sign(posToLightDotLightDirection);
+        posToLightDotLightDirection = abs(posToLightDotLightDirection);
+    }
+
+    if(falloff < 1.0f && posToLightDotLightDirection > 0.0)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        float3 left = light.m_leftDir * light.m_halfWidth;
+        float3 up = light.m_upDir * light.m_halfHeight;
+
+        // Calculation positions for 4 corners relative to the surface
+        float3 p0 = posToLight + -left +  up;
+        float3 p1 = posToLight + -left + -up;
+        float3 p2 = posToLight +  left + -up;
+        float3 p3 = posToLight +  left +  up;
+
+        bool useFastApproximation = (light.m_flags & QuadLightFlag::UseFastApproximation) > 0;
+        if (!useFastApproximation)
+        {
+            float3 p[4] = {p0, p1, p2, p3};
+            
+            // Diffuse
+            float3x3 identityMatrix = float3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+            float diffuse = LtcQuadEvaluate(surface.normal, dirToCamera, identityMatrix, p, doubleSided);
+
+            // Specular
+            float2 ltcCoords = LtcCoords(dot(surface.normal, dirToCamera), surface.roughnessLinear);
+            float3x3 ltcMat = LtcMatrix(SceneSrg::m_ltcMatrix, ltcCoords);
+            float3 specular = LtcQuadEvaluate(surface.normal, dirToCamera, ltcMat, p, doubleSided);
+
+            // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
+            float2 schlick = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
+            specular *= schlick.x + (1.0 - surface.specularF0) * schlick.y;
+
+            // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
+            float3 intensity = 0.5 * INV_PI * radiusAttenuation * light.m_rgbIntensityNits;
+
+            diffuseLighting += surface.albedo * diffuse * intensity;
+            specularLighting += surface.specularF0 * specular * intensity;
+        }
+        else
+        {
+            // Calculate solid angle of light
+            float solidAngle = RectangleSolidAngle(p0, p1, p2, p3);
+
+            // Update positions to corners to be directions
+            p0 = normalize(p0);
+            p1 = normalize(p1);
+            p2 = normalize(p2);
+            p3 = normalize(p3);
+
+            float3 dirToLightCenter = normalize(posToLight);
+
+            // Intensity is the solid angle times the brightness of the light surface.
+            // Each position contributes 1/5 of the light (4 corners + center)
+            float3 intensity = solidAngle * 0.2 * radiusAttenuation * light.m_rgbIntensityNits;
+
+            diffuseLighting += 
+            (
+                GetDiffuseLighting(surface, intensity, dirToCamera, p0) +
+                GetDiffuseLighting(surface, intensity, dirToCamera, p1) +
+                GetDiffuseLighting(surface, intensity, dirToCamera, p2) +
+                GetDiffuseLighting(surface, intensity, dirToCamera, p3) +
+                GetDiffuseLighting(surface, intensity, dirToCamera, dirToLightCenter)
+            );
+            
+            translucentBackLighting +=
+            (
+                GetBackLighting(surface, intensity, dirToCamera, p0, 0.0) +
+                GetBackLighting(surface, intensity, dirToCamera, p1, 0.0) +
+                GetBackLighting(surface, intensity, dirToCamera, p2, 0.0) +
+                GetBackLighting(surface, intensity, dirToCamera, p3, 0.0) +
+                GetBackLighting(surface, intensity, dirToCamera, dirToLightCenter, 0.0)
+            );
+            
+            // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray
+            // Then adjusting it's brightness based on different factors.
+
+            // Calculate the reflection ray from the view direction and surface normal
+            float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+            
+            // First find the reflection-plane intersection, then find the closest point on the rectangle to that intersection.
+            float2 halfSize = float2(light.m_halfWidth, light.m_halfHeight);
+            float3 positionOnPlane = RayLightPlaneIntersection(surface.position, reflectionDir, light.m_position, lightDirection);
+            float3 lightPositionWorld = ClosestPointRect(positionOnPlane, light.m_position, light.m_leftDir, light.m_upDir, halfSize);
+            float3 lightPositionLocal = lightPositionWorld - surface.position;
+
+            // It's possible that the reflection-plane intersection is far from where the reflection ray passes the light when the light
+            // is at a grazing angle. This can cause the "closest" point to tend towards the corners of the rectangle. To correct this,
+            // we find the closest point on the reflection line to this first attempt, and use it for a second attempt.
+            float3 localPositionOnLine = reflectionDir * dot(reflectionDir, lightPositionLocal);
+            lightPositionLocal = ClosestPointRect(localPositionOnLine, posToLight, light.m_leftDir, light.m_upDir, halfSize);
+
+            float3 dirToLight = normalize(lightPositionLocal);
+            float lightPositionDist2 = dot(lightPositionLocal, lightPositionLocal);
+
+            // Adjust the specular intensity based on the roughness, solid angle, and distance to the light.
+            // The following are approximations that attempt to mimic ground truth results
+
+            // Rough surfaces reflect light from their entire hemisphere, so they should use the solid angle. This causes nearby quad lights to look more
+            // accurate at the cost of far away quad lights having dimmer specular than they should.
+            float rough = surface.roughnessA; // shorten the name for readability.
+            float roughnessAdjustment = lerp(0.0, solidAngle, pow(rough, 1.5));
+            // Decrease intensity when the light position doesn't line up well with the dominant reflection direction.
+            float3 dominantDir = GetSpecularDominantDirection(surface.normal, reflectionDir, rough);
+            roughnessAdjustment *= dot(dirToLight, dominantDir) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
+            // Smooth surfaces need to increase light intensity with distance to maintain constant perceptual
+            // intensity depending on the solid angle of the light.
+            float solidAngleCoverage = solidAngle / (2.0 * PI); // Adjust solid angle to 0-1 range of how much of the hemisphere is covered.
+            float distanceAdjustment = 1.0 + sqrt(lightPositionDist2) * (1.0 - rough * rough * solidAngleCoverage);
+
+            float3 specularintensity = light.m_rgbIntensityNits * roughnessAdjustment * distanceAdjustment;
+            specularLighting += GetSpecularLighting(surface, specularintensity, dirToCamera, dirToLight) * radiusAttenuation;
+        }
+    }
+}
+
+float3 SampleRectangle(float2 randomPoint, ViewSrg::QuadLight light)
+{
+    randomPoint = randomPoint * 2.0 - 1.0; // transform to -1 to 1 range.
+    randomPoint *= float2(light.m_halfWidth, light.m_halfHeight);
+    // Random point on light surface
+    float3 outPoint = light.m_position + light.m_leftDir * randomPoint.x + light.m_upDir * randomPoint.y;
+
+    return outPoint;
+}
+
+void ValidateQuadLight(ViewSrg::QuadLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
+
+    const uint sampleCount = 512;
+
+    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    float3 specularAcc = float3(0.0, 0.0, 0.0);
+    float3 translucentAcc = float3(0.0, 0.0, 0.0);
+
+    bool emitsBothDirections = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    float bothDirectionsFactor = emitsBothDirections ? -1.0 : 0.0;
+
+    for (uint i = 0; i < sampleCount; ++i)
+    {
+        float2 randomPoint = GetHammersleyPoint(i, sampleCount);
+        float3 samplePoint = SampleRectangle(randomPoint, light);
+        AddSampleContribution(surface, samplePoint, lightDirection, dirToCamera, bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
+    }
+
+    float area = light.m_halfWidth * light.m_halfHeight * 4.0;
+    float3 intensityCandelas = light.m_rgbIntensityNits * area;
+
+    diffuseLighting += (diffuseAcc / float(sampleCount)) * intensityCandelas;
+    translucentBackLighting += (translucentAcc / float(sampleCount)) * intensityCandelas;
+    specularLighting += (specularAcc / float(sampleCount)) * intensityCandelas;
+}
+
+void ApplyQuadLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    tileIterator.LoadAdvance();
+                
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+    
+        ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
+        
+        if (o_area_light_validation)
+        {
+            ValidateQuadLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+        else
+        {
+            ApplyQuadLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+    }
+}

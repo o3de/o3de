@@ -1,0 +1,799 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Modifications copyright Amazon.com, Inc. or its affiliates.  
+/*
+License Terms for Academy Color Encoding System Components
+
+Academy Color Encoding System (ACES) software and tools are provided by the
+ Academy under the following terms and conditions: A worldwide, royalty-free,
+ non-exclusive right to copy, modify, create derivatives, and use, in source and
+ binary forms, is hereby granted, subject to acceptance of this license.
+
+Copyright © 2015 Academy of Motion Picture Arts and Sciences (A.M.P.A.S.). 
+Portions contributed by others as indicated. All rights reserved.
+
+Performance of any of the aforementioned acts indicates acceptance to be bound
+ by the following terms and conditions:
+
+* Copies of source code, in whole or in part, must retain the above copyright
+  notice, this list of conditions and the Disclaimer of Warranty.
+* Use in binary form must retain the above copyright notice, this list of 
+  conditions and the Disclaimer of Warranty in the documentation and/or other 
+  materials provided with the distribution.
+* Nothing in this license shall be deemed to grant any rights to trademarks, 
+  copyrights, patents, trade secrets or any other intellectual property of 
+  A.M.P.A.S. or any contributors, except as expressly stated herein.
+* Neither the name "A.M.P.A.S." nor the name of any other contributors to this
+  software may be used to endorse or promote products derivative of or based on
+  this software without express prior written permission of A.M.P.A.S. or the 
+  contributors, as appropriate.
+
+This license shall be construed pursuant to the laws of the State of California,
+and any disputes related thereto shall be subject to the jurisdiction of the
+ courts therein.
+
+Disclaimer of Warranty: THIS SOFTWARE IS PROVIDED BY A.M.P.A.S. AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NON-INFRINGEMENT ARE DISCLAIMED. IN NO EVENT SHALL A.M.P.A.S., OR ANY 
+CONTRIBUTORS OR DISTRIBUTORS, BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+SPECIAL, EXEMPLARY, RESITUTIONARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+////////////////////////////////////////////////////////////////////////////////
+WITHOUT LIMITING THE GENERALITY OF THE FOREGOING, THE ACADEMY SPECIFICALLY 
+DISCLAIMS ANY REPRESENTATIONS OR WARRANTIES WHATSOEVER RELATED TO PATENT OR 
+OTHER INTELLECTUAL PROPERTY RIGHTS IN THE ACADEMY COLOR ENCODING SYSTEM, OR 
+APPLICATIONS THEREOF, HELD BY PARTIES OTHER THAN A.M.P.A.S.,WHETHER DISCLOSED OR
+UNDISCLOSED.
+*/
+
+//
+// Academy Color Encoding System(ACES) related implementation.
+//
+// You can find more detail about the ACES at the below link.
+// https://www.oscars.org/science-technology/sci-tech-projects/aces
+// 
+// You can find the ACES reference implementation repository at the below link.
+// The reference implementation is implemented by the Color Transformation Language(CTL)
+// which is defined by AMPAS. These implementations are find at the transforms directory.
+// https://github.com/ampas/aces-dev
+//
+// Also this implementation is partially ported from NVIDIA HDR sample.
+// https://developer.nvidia.com/high-dynamic-range-display-development
+//
+
+////////////////////////////////////////////////////////////////////////////////
+// Constants
+
+#include <Atom/RPI/Math.azsli>
+
+static const float HALF_MAX = 65504.0f;
+
+// Values passed to the MoncurveR function for sRGB output.
+// MoncurveR applied with a gamma of 2.4 and offset of 0.55 matches the EOTF found in IEC 61966-2-1:1999 (sRGB)
+static const float DISPGAMMA = 2.4;
+static const float OFFSET = 0.055;
+
+// Gamma compensation factor
+static const float DIM_SURROUND_GAMMA = 0.9811;
+
+enum class ShaperType
+{
+    ShaperLinear,
+    ShaperLog2
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Spline paramter structs
+struct SegmentedSplineParamsC5
+{
+    float coefsLow[6];      // coefs for B-spline between minPoint and midPoint (units of log luminance)
+    float coefsHigh[6];     // coefs for B-spline between midPoint and maxPoint (units of log luminance)
+    float2 minPoint;        // {luminance, luminance} linear extension below this
+    float2 midPoint;        // {luminance, luminance} 
+    float2 maxPoint;        // {luminance, luminance} linear extension above this
+    float slopeLow;         // log-log slope of low linear extension
+    float slopeHigh;        // log-log slope of high linear extension
+};
+
+struct SegmentedSplineParamsC9
+{
+    float4 coefs[10];       // coefs for B-spline between minPoint and midPoint (units of log luminance)
+    float2 minPoint;        // {luminance, luminance} linear extension below this
+    float2 midPoint;        // {luminance, luminance} 
+    float2 maxPoint;        // {luminance, luminance} linear extension above this
+    float slopeLow;         // log-log slope of low linear extension
+    float slopeHigh;        // log-log slope of high linear extension
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Color space conversion matrices
+
+#include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
+
+// Conversion factor from AP1 RGB to luminance
+static const float3 AP1RGBToY = { 0.27222872f, 0.67408168f, 0.05368952f };
+
+float MaxF3(float3 In)
+{
+    return max(In.r, max(In.g, In.b));
+}
+
+float MinF3(float3 In)
+{
+    return min(In.r, min(In.g, In.b));
+}
+
+float RGBToSaturation(float3 rgb)
+{
+    return (max(MaxF3(rgb), EPSILON) - max(MinF3(rgb), EPSILON)) / max(MaxF3(rgb), 1e-2);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Various transformations between color encodings and data representations
+
+float3 XYZToxyY(float3 XYZ)
+{
+    float3 xyY;
+    float divisor = (XYZ[0] + XYZ[1] + XYZ[2]);
+    divisor = max(divisor, 1e-10);
+    xyY[0] = XYZ[0] / divisor;
+    xyY[1] = XYZ[1] / divisor;
+    xyY[2] = XYZ[1];
+
+    return xyY;
+}
+
+float3 xyYToXYZ(float3 xyY)
+{
+    float3 XYZ;
+    XYZ[0] = xyY[0] * xyY[2] / max(xyY[1], 1e-10);
+    XYZ[1] = xyY[2];
+    XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / max(xyY[1], 1e-10);
+
+    return XYZ;
+}
+
+// Transformations from RGB to other color representations
+float RGBToHue(float3 rgb)
+{
+    // Returns a geometric hue angle in degrees (0-360) based on RGB values.
+    // For neutral colors, hue is undefined and the function will return a quiet NaN value.
+    float hue;
+    if (rgb[0] == rgb[1] && rgb[1] == rgb[2])
+    {
+        // RGB triplets where RGB are equal have an undefined hue
+        // Use 0 instead of Nan, which is used in the reference code
+        hue = 0.0f;
+    }
+    else
+    {
+        hue = (180.0 / PI) * atan2(sqrt(3.0)*(rgb[1] - rgb[2]), 2.0 * rgb[0] - rgb[1] - rgb[2]);
+    }
+
+    if (hue < 0.0)
+    {
+        hue = hue + 360.0;
+    }
+
+    return hue;
+}
+
+float RGBToYc(float3 rgb, float ycRadiusWeight = 1.75)
+{
+    // Converts RGB to a luminance proxy, here called YC
+    // YC is ~ Y + K * Chroma
+    // Constant YC is a cone-shaped surface in RGB space, with the tip on the 
+    // neutral axis, towards white.
+    // YC is normalized: RGB 1 1 1 maps to YC = 1
+    //
+    // ycRadiusWeight defaults to 1.75, although can be overridden in function 
+    // call to RGBToYc
+    // ycRadiusWeight = 1 -> YC for pure cyan, magenta, yellow == YC for neutral 
+    // of same value
+    // ycRadiusWeight = 2 -> YC for pure red, green, blue  == YC for  neutral of 
+    // same value.
+
+    float r = rgb[0];
+    float g = rgb[1];
+    float b = rgb[2];
+
+    float chroma = sqrt(b*(b - g) + g*(g - r) + r*(r - b));
+
+    return (b + g + r + ycRadiusWeight * chroma) / 3.0;
+}
+
+float YToLinearCV(float Y, float Ymax, float Ymin)
+{
+    return (Y - Ymin) / (Ymax - Ymin);
+}
+
+float LinearCVToY(float linCV, float Ymax, float Ymin)
+{
+    return linCV * (Ymax - Ymin) + Ymin;
+}
+
+float3 DarkSurroundToDimSurround(float3 linearCV)
+{
+    float3 XYZ = mul(AP1ToXYZMat, linearCV);
+
+    float3 xyY = XYZToxyY(XYZ);
+    xyY[2] = max(xyY[2], 0.0);
+    xyY[2] = pow(xyY[2], DIM_SURROUND_GAMMA);
+    XYZ = xyYToXYZ(xyY);
+
+    return mul(XYZToAP1Mat, XYZ);
+}
+
+float3 DimSurroundToDarkSurround(float3 linearCV)
+{
+    float3 XYZ = mul(AP1ToXYZMat,linearCV);
+
+    float3 xyY = XYZToxyY(XYZ);
+    xyY[2] = max(xyY[2], 0.0);
+    xyY[2] = pow(xyY[2], 1.0 / DIM_SURROUND_GAMMA);
+    XYZ = xyYToXYZ(xyY);
+
+    return mul(XYZToAP1Mat, XYZ);
+}
+
+float3 AlterSurround(float3 linearCV, float gamma)
+{
+    float3 XYZ = mul(AP1ToXYZMat, linearCV);
+
+    float3 xyY = XYZToxyY(XYZ);
+    xyY[2] = max(xyY[2], 0.0);
+    xyY[2] = pow(xyY[2], gamma);
+    XYZ = xyYToXYZ(xyY);
+
+    return mul(XYZToAP1Mat, XYZ);
+}
+
+float3x3 CalcSatAdjustMatrix(float sat, float3 rgb2Y)
+{
+    //
+    // This function determines the terms for a 3x3 saturation matrix that is
+    // based on the luminance of the input.
+    //
+    float3x3 M;
+    M[0][0] = (1.0 - sat) * rgb2Y[0] + sat;
+    M[1][0] = (1.0 - sat) * rgb2Y[0];
+    M[2][0] = (1.0 - sat) * rgb2Y[0];
+
+    M[0][1] = (1.0 - sat) * rgb2Y[1];
+    M[1][1] = (1.0 - sat) * rgb2Y[1] + sat;
+    M[2][1] = (1.0 - sat) * rgb2Y[1];
+
+    M[0][2] = (1.0 - sat) * rgb2Y[2];
+    M[1][2] = (1.0 - sat) * rgb2Y[2];
+    M[2][2] = (1.0 - sat) * rgb2Y[2] + sat;
+
+    // CTL matrix indexing is transposed, so the transpose in the reference code is omitted
+
+    return M;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Signal encode/decode functions
+
+float MoncurveF(float x, float gamma, float offs)
+{
+    // Forward monitor curve
+    float y;
+    const float fs = ((gamma - 1.0) / offs) * pow(offs * gamma / ((gamma - 1.0) * (1.0 + offs)), gamma);
+    const float xb = offs / (gamma - 1.0);
+    if (x >= xb)
+    {
+        y = pow((x + offs) / (1.0 + offs), gamma);
+    }
+    else
+    {
+        y = x * fs;
+    }
+    return y;
+}
+
+float MoncurveR(float y, float gamma, float offs)
+{
+    // Reverse monitor curve
+    float x;
+    const float yb = pow(offs * gamma / ((gamma - 1.0) * (1.0 + offs)), gamma);
+    const float rs = pow((gamma - 1.0) / offs, gamma - 1.0) * pow((1.0 + offs) / gamma, gamma);
+    if (y >= yb)
+    {
+        x = (1.0 + offs) * pow(y, 1.0 / gamma) - offs;
+    }
+    else
+    {
+        x = y * rs;
+    }
+    return x;
+}
+
+// Base functions from SMPTE ST 2084-2014
+
+// Constants from SMPTE ST 2084-2014
+static const float pq_m1 = 0.1593017578125; // ( 2610.0 / 4096.0 ) / 4.0;
+static const float pq_m2 = 78.84375; // ( 2523.0 / 4096.0 ) * 128.0;
+static const float pq_c1 = 0.8359375; // 3424.0 / 4096.0 or pq_c3 - pq_c2 + 1.0;
+static const float pq_c2 = 18.8515625; // ( 2413.0 / 4096.0 ) * 32.0;
+static const float pq_c3 = 18.6875; // ( 2392.0 / 4096.0 ) * 32.0;
+
+static const float pq_C = 10000.0;
+
+// Converts from the non-linear perceptually quantized space to linear cd/m^2
+// Note that this is in float, and assumes normalization from 0 - 1
+// (0 - pq_C for linear) and does not handle the integer coding in the Annex 
+// sections of SMPTE ST 2084-2014
+float PerceptualQuantizerFwd(float N)
+{
+    // Note that this does NOT handle any of the signal range
+    // considerations from 2084 - this assumes full range (0 - 1)
+    float Np = pow(N, 1.0 / pq_m2);
+    float L = Np - pq_c1;
+    if (L < 0.0)
+        L = 0.0;
+    L = L / (pq_c2 - pq_c3 * Np);
+    L = pow(L, 1.0 / pq_m1);
+    return L * pq_C; // returns cd/m^2
+}
+
+// Converts from linear cd/m^2 to the non-linear perceptually quantized space
+// Note that this is in float, and assumes normalization from 0 - 1
+// (0 - pq_C for linear) and does not handle the integer coding in the Annex 
+// sections of SMPTE ST 2084-2014
+float PerceptualQuantizerRev(float C)
+{
+    // Note that this does NOT handle any of the signal range
+    // considerations from 2084 - this returns full range (0 - 1)
+    float L = C / pq_C;
+    float Lm = pow(L, pq_m1);
+    float N = (pq_c1 + pq_c2 * Lm) / (1.0 + pq_c3 * Lm);
+    N = pow(N, pq_m2);
+    return N;
+}
+
+float3 PerceptualQuantizerRevF3(float3 In)
+{
+    // converts from linear cd/m^2 to PQ code values
+    float3 Out;
+    Out[0] = PerceptualQuantizerRev(In[0]);
+    Out[1] = PerceptualQuantizerRev(In[1]);
+    Out[2] = PerceptualQuantizerRev(In[2]);
+
+    return Out;
+}
+
+float3 PerceptualQuantizerFwdF3(float3 In)
+{
+    // converts from PQ code values to linear cd/m^2
+    float3 Out;
+    Out[0] = PerceptualQuantizerFwd(In[0]);
+    Out[1] = PerceptualQuantizerFwd(In[1]);
+    Out[2] = PerceptualQuantizerFwd(In[2]);
+
+    return Out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Below implementation ported from ACES_tonescales.hlsl on the NVIDIA's HDR sample.
+
+float Pow10(float f)
+{
+    return pow(10.0f, f);
+}
+
+// Textbook monomial to basis-function conversion matrix.
+static const float3x3 M = 
+{
+        { 0.5, -1.0, 0.5 },
+        { -1.0, 1.0, 0.5 },
+        { 0.5, 0.0, 0.0 }
+};
+
+static const SegmentedSplineParamsC5 RRT_PARAMS =
+{
+    // coefsLow[6]
+    { -4.0000000000, -4.0000000000, -3.1573765773, -0.4852499958, 1.8477324706, 1.8477324706 },
+    // coefsHigh[6]
+    { -0.7185482425, 2.0810307172, 3.6681241237, 4.0000000000, 4.0000000000, 4.0000000000 },
+    { 0.18*pow(2., -15), 0.0001 },    // minPoint
+    { 0.18, 4.8 },    // midPoint  
+    { 0.18*pow(2., 18), 10000. },    // maxPoint
+    0.0,  // slopeLow
+    0.0   // slopeHigh
+};
+
+
+float SegmentedSplineC5Fwd (float x,  SegmentedSplineParamsC5 C = RRT_PARAMS)
+{
+    const int N_KNOTS_LOW = 4;
+    const int N_KNOTS_HIGH = 4;
+
+    // Check for negatives or zero before taking the log. If negative or zero,
+    // set to ACESMIN.
+    float xCheck = x;
+    if (xCheck <= 0.0) xCheck = pow(2.0, -14.0);
+
+    float logx = log10(xCheck);
+
+    float logy;
+
+    if (logx <= log10(C.minPoint.x))
+    {
+        logy = logx * C.slopeLow + (log10(C.minPoint.y) - C.slopeLow * log10(C.minPoint.x));
+    }
+    else if ((logx > log10(C.minPoint.x)) && (logx < log10(C.midPoint.x)))
+    {
+        float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10(C.minPoint.x)) / (log10(C.midPoint.x) - log10(C.minPoint.x));
+        int j = knot_coord;
+        float t = knot_coord - j;
+
+        float3 cf = { C.coefsLow[j], C.coefsLow[j + 1], C.coefsLow[j + 2] };
+
+        float3 monomials = { t * t, t, 1.0 };
+        logy = dot(monomials, mul(cf, M));
+    }
+    else if ((logx >= log10(C.midPoint.x)) && (logx < log10(C.maxPoint.x)))
+    {
+        float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(C.midPoint.x)) / (log10(C.maxPoint.x) - log10(C.midPoint.x));
+        int j = knot_coord;
+        float t = knot_coord - j;
+
+        float3 cf = { C.coefsHigh[j], C.coefsHigh[j + 1], C.coefsHigh[j + 2] };
+
+        float3 monomials = { t * t, t, 1.0 };
+        logy = dot(monomials, mul(cf, M));
+    }
+    else
+    {
+        logy = logx * C.slopeHigh + (log10(C.maxPoint.y) - C.slopeHigh * log10(C.maxPoint.x));
+    }
+
+    return Pow10(logy);
+}
+
+float SegmentedSplineC9Fwd(float x, SegmentedSplineParamsC9 C)
+{
+    const int N_KNOTS_LOW = 8;
+    const int N_KNOTS_HIGH = 8;
+
+    // Check for negatives or zero before taking the log. If negative or zero,
+    // set to OCESMIN.
+    float xCheck = x;
+    if (xCheck <= 0.0)
+    {
+        xCheck = 1e-4;
+    }
+
+    float logx = log10(xCheck);
+
+    float logy;
+
+    if (logx <= log10(C.minPoint.x))
+    {
+        logy = logx * C.slopeLow + (log10(C.minPoint.y) - C.slopeLow * log10(C.minPoint.x));
+    }
+    else if ((logx > log10(C.minPoint.x)) && (logx < log10(C.midPoint.x)))
+    {
+        float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10(C.minPoint.x)) / (log10(C.midPoint.x) - log10(C.minPoint.x));
+        int j = knot_coord;
+        float t = knot_coord - j;
+
+        float3 cf = { C.coefs[j].x, C.coefs[j + 1].x, C.coefs[j + 2].x };
+        
+        float3 monomials = { t * t, t, 1. };
+        logy = dot(monomials, mul(cf, M));
+    }
+    else if ((logx >= log10(C.midPoint.x)) && (logx < log10(C.maxPoint.x)))
+    {
+        float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(C.midPoint.x)) / (log10(C.maxPoint.x) - log10(C.midPoint.x));
+        int j = knot_coord;
+        float t = knot_coord - j;
+
+        float3 cf = { C.coefs[j].y, C.coefs[j + 1].y, C.coefs[j + 2].y };
+
+        float3 monomials = { t * t, t, 1.0 };
+        logy = dot(monomials, mul(cf, M));
+    }
+    else
+    { 
+        logy = logx * C.slopeHigh + (log10(C.maxPoint.y) - C.slopeHigh * log10(C.maxPoint.x));
+    }
+
+    return Pow10(logy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Below implementation ported from ACES_rrt.hlsl on the NVIDIA's HDR sample.
+
+// For glow module.
+float GlowFwd(float ycIn, float glowGainIn, float glowMid)
+{
+    float glowGainOut;
+
+    if (ycIn <= 2.0 / 3.0 * glowMid)
+    {
+        glowGainOut = glowGainIn;
+    }
+    else if (ycIn >= 2.0 * glowMid)
+    {
+        glowGainOut = 0.0;
+    }
+    else
+    {
+        glowGainOut = glowGainIn * (glowMid / ycIn - 1.0 / 2.0);
+    }
+
+    return glowGainOut;
+}
+
+// For red modifier.
+float CubicBasisShaper(float x, float w   /* full base width of the shaper function (in degrees)*/)
+{
+    const float M[4][4] =
+    {
+        { -1.0 / 6.0, 3.0 / 6.0, -3.0 / 6.0, 1.0 / 6.0 },
+        { 3.0 / 6.0, -6.0 / 6.0, 3.0 / 6.0, 0.0 / 6.0 },
+        { -3.0 / 6.0, 0.0 / 6.0, 3.0 / 6.0, 0.0 / 6.0 },
+        { 1.0 / 6.0, 4.0 / 6.0, 1.0 / 6.0, 0.0 / 6.0 }
+    };
+
+    float knots[5] =
+    {
+        -w / 2.0,
+        -w / 4.0,
+        0.0,
+        w / 4.0,
+        w / 2.0
+    };
+
+    float y = 0;
+    if ((x > knots[0]) && (x < knots[4]))
+    {
+        float knot_coord = (x - knots[0]) * 4.0 / w;
+        int j = knot_coord;
+        float t = knot_coord - j;
+
+        float monomials[4] = { t*t*t, t*t, t, 1.0 };
+
+        // (if/else structure required for compatibility with CTL < v1.5.)
+        if (j == 3)
+        {
+            y = monomials[0] * M[0][0] + monomials[1] * M[1][0] +
+                monomials[2] * M[2][0] + monomials[3] * M[3][0];
+        }
+        else if (j == 2)
+        {
+            y = monomials[0] * M[0][1] + monomials[1] * M[1][1] +
+                monomials[2] * M[2][1] + monomials[3] * M[3][1];
+        }
+        else if (j == 1)
+        {
+            y = monomials[0] * M[0][2] + monomials[1] * M[1][2] +
+                monomials[2] * M[2][2] + monomials[3] * M[3][2];
+        }
+        else if (j == 0)
+        {
+            y = monomials[0] * M[0][3] + monomials[1] * M[1][3] +
+                monomials[2] * M[2][3] + monomials[3] * M[3][3];
+        }
+        else
+        {
+            y = 0.0;
+        }
+    }
+
+    return y * 3.0 / 2.0;
+}
+
+// For Glow module feature.
+float SigmoidShaper(float x)
+{
+    // Sigmoid function in the range 0 to 1 spanning -2 to +2.
+    float t = max(1.0 - abs(x / 2.0), 0.0);
+    float y = 1.0 + sign(x) * (1.0 - t * t);
+
+    return y / 2.0;
+}
+
+// For red modifier feature.
+float CenterHue(float hue, float centerH)
+{
+    float hueCentered = hue - centerH;
+    if (hueCentered < -180.0)
+    {
+        hueCentered = hueCentered + 360.0;
+    }
+    else if (hueCentered > 180.0)
+    {
+        hueCentered = hueCentered - 360.0;
+    }
+    return hueCentered;
+}
+
+// This function implemented the ACES reference rendering transform(RRT).
+// The RRT converts scene referred linear data to Output Color Encoding Specification(OCES).
+// Also the RRT apply the filmic tone mapper simulteniously.
+//
+// Reference implementation by the ACES is in the link below.
+// https://github.com/ampas/aces-dev/blob/master/transforms/ctl/rrt/RRT.ctl
+// As documented in the this link, the function has several implementations.
+// https://acescentral.com/t/aces-retrospective-and-enhancements/884
+// For example, Glow module, Red modifier, Global desaturation.
+float3 ReferenceRenderingTransform(float3 rgbIn)
+{
+    // "Glow" module constants
+    const float RRT_GLOW_GAIN = 0.05;
+    const float RRT_GLOW_MID = 0.08;
+    // Glow module
+    float saturation = RGBToSaturation(rgbIn);
+    float ycIn = RGBToYc(rgbIn);
+    float s = SigmoidShaper((saturation - 0.4) / 0.2);
+    float addedGlow = 1. + GlowFwd(ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+
+    float3 aces = addedGlow * rgbIn;
+
+    // Red modifier constants
+    const float RRT_RED_SCALE = 0.82;
+    const float RRT_RED_PIVOT = 0.03;
+    const float RRT_RED_HUE = 0.0;
+    const float RRT_RED_WIDTH = 135.;
+
+    // Red modifier
+    float hue = RGBToHue(aces);
+    float centeredHue = CenterHue(hue, RRT_RED_HUE);
+    float hueWeight = CubicBasisShaper(centeredHue, RRT_RED_WIDTH);
+
+    aces[0] = aces[0] + hueWeight * saturation *(RRT_RED_PIVOT - aces[0]) * (1.0 - RRT_RED_SCALE);
+
+    // ACES to RGB rendering space
+    aces = max(aces, 0.0f);  // avoids saturated negative colors from becoming positive in the matrix
+
+    float3 rgbPre = mul(AP0ToAP1Mat, aces);
+
+    rgbPre = clamp(rgbPre, 0.0, HALF_MAX);
+
+    // Global desaturation
+    const float RRT_SAT_FACTOR = 0.96;
+    const float3x3 RRT_SAT_MAT = CalcSatAdjustMatrix(RRT_SAT_FACTOR, AP1RGBToY);
+
+    rgbPre = mul(RRT_SAT_MAT, rgbPre);
+
+    // Apply the tonescale independently in rendering-space RGB
+    float3 rgbPost;
+    rgbPost[0] = SegmentedSplineC5Fwd(rgbPre[0]);
+    rgbPost[1] = SegmentedSplineC5Fwd(rgbPre[1]);
+    rgbPost[2] = SegmentedSplineC5Fwd(rgbPre[2]);
+
+    // RGB rendering space to OCES
+    float3 rgbOces = mul(AP1ToAP0Mat, rgbPost);
+
+    return rgbOces;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Below implementation ported from ACES_parameterized.hlsl on the NVIDIA's HDR sample.
+// The ACES implementation by ctl.
+// https://github.com/ampas/aces-dev/blob/master/transforms/ctl/odt/sRGB/ODT.Academy.sRGB_100nits_dim.ctl 
+
+static const int APPLY_ALTER_SURROUND = 0x1;
+static const int APPLY_DESATURATION = 0x2;
+static const int APPLY_CAT_D60TOD65 = 0x4;
+
+static const int OUTPUT_SRGB = 0;
+static const int OUTPUT_PERCEPTUALQUANTIZER = 1;
+static const int OUTPUT_LDR = 2;
+
+struct OutputTransformParameters
+{
+    int outputDisplayTransformFlags;            // Bit flag for control the ODT shader behavior
+    int outputDisplayTransformMode;             // The ODT output mode
+    float2 cinemaLimits;                        // Reference white and black luminance values
+    float surroundGamma;                        // Gamma adjustment to be applied to compensate 
+                                                // for the condition of the viewing environment.
+                                                // Note that ACES uses a value of 0.9811 for 
+                                                // adjusting from dark to dim surrounding.
+    float gamma;                                // Optional gamma value that is applied as basic gamma curve OETF
+    SegmentedSplineParamsC9 acesSplineParams;   // ACES spline parameters
+    row_major float3x3 XYZtoDisplayPrimaries;   // Color transformation matrix from XYZ to the display's color primaries
+};
+
+float3 OutputDeviceTransform(const float3 oces, OutputTransformParameters otParams)
+{
+    // OCES to RGB rendering space
+    float3 rgbPre = mul(AP0ToAP1Mat, oces);
+
+    // Apply the tonescale independently in rendering-space RGB
+    float3 rgbPost;
+    rgbPost[0] = SegmentedSplineC9Fwd(rgbPre[0], otParams.acesSplineParams);
+    rgbPost[1] = SegmentedSplineC9Fwd(rgbPre[1], otParams.acesSplineParams);
+    rgbPost[2] = SegmentedSplineC9Fwd(rgbPre[2], otParams.acesSplineParams);
+
+    // A linear mapping from the cinema limit range to a value between 0.0, to 1.0.
+    float3 linearCV = rgbPost;
+    // Scale luminance to linear code value
+    linearCV[0] = YToLinearCV(rgbPost[0], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+    linearCV[1] = YToLinearCV(rgbPost[1], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+    linearCV[2] = YToLinearCV(rgbPost[2], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+
+    if (otParams.outputDisplayTransformFlags & APPLY_ALTER_SURROUND)
+    {
+        // Apply gamma adjustment to compensate for dim surround
+        linearCV = AlterSurround(linearCV, otParams.surroundGamma);
+    }
+
+    if (otParams.outputDisplayTransformFlags & APPLY_DESATURATION)
+    {
+        // Apply desaturation to compensate for luminance difference
+        // Saturation compensation factor
+        const float ODT_SAT_FACTOR = 0.93;
+        const float3x3 ODT_SAT_MAT = CalcSatAdjustMatrix(ODT_SAT_FACTOR, AP1RGBToY);
+        linearCV = mul(ODT_SAT_MAT, linearCV);
+    }
+
+    // Convert to display primary encoding
+    // Rendering space RGB to XYZ
+    float3 XYZ = mul(AP1ToXYZMat, linearCV);
+
+    if (otParams.outputDisplayTransformFlags & APPLY_CAT_D60TOD65)
+    {
+        // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+        // PC content usually always assumes a D65 whitespace, so this should usually be enabled.
+        XYZ = mul(D60ToD65Cat, XYZ);
+    }
+
+    // CIE XYZ to display primaries
+    linearCV = mul(otParams.XYZtoDisplayPrimaries, XYZ);
+
+    // Encode linear code values with transfer function
+    float3 outputCV = linearCV;
+
+    if (otParams.outputDisplayTransformMode == OUTPUT_SRGB)
+    { 
+        // SRGB
+        // clamp 0/1 and encode 
+        linearCV = clamp(linearCV, 0., 1.);
+
+        outputCV[0] = MoncurveR(linearCV[0], DISPGAMMA, OFFSET);
+        outputCV[1] = MoncurveR(linearCV[1], DISPGAMMA, OFFSET);
+        outputCV[2] = MoncurveR(linearCV[2], DISPGAMMA, OFFSET);
+    }
+    else if (otParams.outputDisplayTransformMode == OUTPUT_PERCEPTUALQUANTIZER)
+    {
+        //scale to bring the ACES data back to the proper range
+        linearCV[0] = LinearCVToY(linearCV[0], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+        linearCV[1] = LinearCVToY(linearCV[1], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+        linearCV[2] = LinearCVToY(linearCV[2], otParams.cinemaLimits.y, otParams.cinemaLimits.x);
+
+        linearCV = max(linearCV, 0.);
+
+        // Encode with PQ transfer function
+        outputCV = PerceptualQuantizerRevF3(linearCV);
+    }
+    else if (otParams.outputDisplayTransformMode == OUTPUT_LDR)
+    {
+        // LDR mode, clamp 0/1 and encode with given gamma value for the OETF
+        linearCV = clamp(linearCV, 0., 1.);
+
+        outputCV = outputCV > 0.0f ? pow(linearCV, 1.0f / otParams.gamma) : 0.0f;
+    }
+
+    return outputCV;
+}

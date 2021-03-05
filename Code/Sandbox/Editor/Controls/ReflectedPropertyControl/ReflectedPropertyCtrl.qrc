@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/reflectedPropertyCtrl/img">
+		<file alias="apply.png">resources/apply.png</file>
+		<file alias="file_browse.png">resources/file_browse.png</file>
+	</qresource>
+</RCC>

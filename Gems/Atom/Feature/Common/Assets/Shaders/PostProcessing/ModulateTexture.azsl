@@ -1,0 +1,63 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_modifier;
+    RWTexture2D<float4> m_inputOutput;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+[numthreads(16,16,1)]
+void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
+{
+    // Get output texture dimensions
+    uint2 outputDimensions;
+    PassSrg::m_inputOutput.GetDimensions(outputDimensions.x, outputDimensions.y);
+    uint2 outPixel = dispatch_id.xy;
+
+    // Early out
+    if(outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
+    {
+        return;
+    }
+    
+    // Calculate the size of a pixel in screen UV space
+    float2 pixelSize = 1.0f / float2(outputDimensions.xy);
+
+    // Want to sample at the center of the pixel, so we need a half pixel offset
+    float2 halfPixelSize = pixelSize * 0.5f;
+
+    // Sample the modifier texture
+    float2 sampleUV = mad(float2(outPixel.xy), pixelSize, halfPixelSize);
+    float modifier = PassSrg::m_modifier.SampleLevel(PassSrg::LinearSampler, sampleUV, 0).r;
+
+    // Sample the output target
+    float4 sampleColor = PassSrg::m_inputOutput[outPixel].rgba;
+
+    // Apply the modifer as a simple multiplier
+    sampleColor.rgb *= modifier.xxx;
+
+    // Write the modified value to the target
+    PassSrg::m_inputOutput[outPixel] = sampleColor;
+}

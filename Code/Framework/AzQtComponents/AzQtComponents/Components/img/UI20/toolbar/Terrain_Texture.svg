@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Editor / Terrain Texture</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Editor-/-Terrain-Texture" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <polygon id="Combined-Shape" fill="#FFFFFF" points="8 8 14 20 2 20"></polygon>
+        <path d="M15,4 L22,20 L8,20 L15,4 Z M15,7 L13,12 L17,12 L15,7 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <rect id="Rectangle" fill="#444444" x="12" y="13" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-3" fill="#444444" x="18" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-6" fill="#444444" x="12" y="17" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy" fill="#444444" x="16" y="13" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-4" fill="#444444" x="22" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-7" fill="#444444" x="16" y="17" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-10" fill="#444444" x="10" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-11" fill="#444444" x="8" y="17" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-16" fill="#444444" x="6" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-18" fill="#444444" x="8" y="13" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-19" fill="#444444" x="6" y="11" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-21" fill="#444444" x="4" y="13" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-22" fill="#444444" x="2" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-12" fill="#444444" x="10" y="19" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-2" fill="#444444" x="14" y="15" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-5" fill="#444444" x="20" y="17" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-8" fill="#444444" x="14" y="19" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-13" fill="#444444" x="18" y="19" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-15" fill="#444444" x="6" y="19" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-17" fill="#444444" x="4" y="17" width="2" height="2"></rect>
+    </g>
+</svg>

@@ -1,0 +1,8 @@
+<RCC>
+ <qresource prefix="/MockupAssetModel">
+  <file>01_Cave.png</file>
+  <file>01_Concrete.png</file>
+  <file>01_Planes_Materials.png</file>
+  <file>01_Redpatch.png</file>
+ </qresource>
+</RCC>

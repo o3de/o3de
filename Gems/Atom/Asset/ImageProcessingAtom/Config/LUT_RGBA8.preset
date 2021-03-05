@@ -1,0 +1,45 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+            "Name": "LUT_RGBA8",
+            "SourceColor": "Linear",
+            "DestColor": "Linear"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+                "Name": "LUT_RGBA8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear"
+            },
+            "ios": {
+                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+                "Name": "LUT_RGBA8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear"
+            },
+            "osx_gl": {
+                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+                "Name": "LUT_RGBA8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear"
+            },
+            "provo": {
+                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+                "Name": "LUT_RGBA8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear"
+            },
+            "xenia": {
+                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
+                "Name": "LUT_RGBA8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear"
+            }
+        }
+    }
+}

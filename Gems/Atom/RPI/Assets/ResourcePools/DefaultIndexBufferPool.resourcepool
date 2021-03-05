@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ResourcePoolSourceData",
+    "ClassData": {
+        "PoolName": "DefaultIndexBufferPool",
+        "PoolType": "BufferPool",
+        "BudgetInBytes": 25165824,
+        "BufferPoolHeapMemoryLevel": "Device",
+        "BufferPoolhostMemoryAccess": "Write",
+        "BufferPoolBindFlags": [
+            "InputAssembly",
+            "ShaderRead"
+        ]
+    }
+}

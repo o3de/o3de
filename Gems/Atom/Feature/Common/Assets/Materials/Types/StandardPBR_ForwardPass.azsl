@@ -1,0 +1,269 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+#include "StandardPBR_Common.azsli"
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_METALLIC()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_CLEAR_COAT()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EMISSIVE()
+COMMON_OPTIONS_PARALLAX()
+
+// Alpha
+#include "MaterialInputs/AlphaInput.azsli"
+
+// Subsurface
+#include "MaterialInputs/SubsurfaceInput.azsli"
+
+// Transmission
+#include "MaterialInputs/TransmissionInput.azsli"
+
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_DepthLessEqual to compile
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+};
+
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/PBR/LightingModel.azsli>
+
+VSOutput StandardPbr_ForwardPassVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+ 
+    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
+
+    // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
+    OUT.m_uv[1] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv1, 1.0)).xy;
+
+    PbrVsHelper(IN, OUT, worldPosition, o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset);
+
+    return OUT;
+}
+
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
+{
+    // ------- Tangents & Bitangets -------
+
+    // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
+
+    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
+        || (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0)
+        || (o_clearCoat_enabled && o_clearCoat_normal_useTexture && MaterialSrg::m_clearCoatNormalMapUvIndex != 0)
+        )
+    {
+        // Generate the tangent/bitangent for UV[1+]
+        const int startIndex = 1;
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, startIndex);
+    }
+
+    // ------- Depth & Parallax -------
+
+    depth = IN.m_position.z;
+
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scatteirng is enabled
+    if(!o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap)
+    {
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, 
+                         ObjectSrg::GetWorldMatrix(), MaterialSrg::m_uvMatrix, MaterialSrg::m_uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+
+        // Adjust directional light shadow coorinates for parallax correction
+        if(o_parallax_enablePixelDepthOffset)
+        {
+            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
+            {
+                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_shadowCoords);
+            }
+        }
+    }
+
+    // ------- Alpha & Clip -------
+
+    float2 baseColorUV = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
+    float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUV, opacityUV, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
+
+    // ------- Normal -------
+
+    float2 normalUV = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
+    float3 normalWS = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUV, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
+                                       tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], MaterialSrg::m_uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
+
+    // ------- Base Color -------
+
+    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUV, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    
+    // ------- Metalic -------
+
+    float metallic = 0;
+    if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
+    {
+        float2 metallicUV = IN.m_uv[MaterialSrg::m_metallicMapUvIndex];
+        metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUV, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
+    }
+
+    // ------- Roughness -------
+
+    float2 roughnessUV = IN.m_uv[MaterialSrg::m_roughnessMapUvIndex];
+    float roughness = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUV, MaterialSrg::m_roughnessFactor,
+                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+
+    // ------- Specular -------
+
+    float2 specularUV = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUV, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+
+    // ------- Emissive -------
+
+    float2 emissiveUV = IN.m_uv[MaterialSrg::m_emissiveMapUvIndex];
+    float3 emissive = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUV, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+
+    // ------- Occlusion -------
+
+    float2 occlusionUV = IN.m_uv[MaterialSrg::m_ambientOcclusionMapUvIndex];
+    float occlusion = GetOcclusionInput(MaterialSrg::m_ambientOcclusionMap, MaterialSrg::m_sampler, occlusionUV, MaterialSrg::m_ambientOcclusionFactor, o_ambientOcclusion_useTexture);
+
+    // ------- Subsurface -------
+
+    float2 subsurfaceUV = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUV, MaterialSrg::m_subsurfaceScatteringFactor);
+
+    // ------- Transmission -------
+
+    float2 transmissionUV = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUV, MaterialSrg::m_transmissionTintThickness);
+
+    // ------- Clearcoat -------
+    
+    float clearCoatFactor = 0.0;
+    float clearCoatRoughness = 0.0;
+    float3 clearCoatNormal = float3(0.0, 0.0, 0.0);
+    // [GFX TODO][ATOM-14603]: Clean up the double uses of these clear coat flags
+    if(o_clearCoat_enabled && o_clearCoat_feature_enabled)
+    {
+        GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, IN.m_uv[MaterialSrg::m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_clearCoatFactor, o_clearCoat_factor_useTexture,
+                           MaterialSrg::m_clearCoatRoughnessMap, IN.m_uv[MaterialSrg::m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
+                           MaterialSrg::m_clearCoatNormalMap,    IN.m_uv[MaterialSrg::m_clearCoatNormalMapUvIndex], IN.m_normal, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
+                           MaterialSrg::m_uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
+                           MaterialSrg::m_sampler, isFrontFace,
+                           clearCoatFactor, clearCoatRoughness, clearCoatNormal);
+    }
+
+    // ------- Lighting Calculation -------
+
+    const float2 anisotropy = 0.0;    // Does not affect calculations unless 'o_enableAnisotropy' is enabled
+
+    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
+        normalWS, tangents[0], bitangents[0], anisotropy,
+        emissive, occlusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
+
+    // ------- Opacity -------
+
+    if (o_opacity_mode == OpacityMode::Blended)
+    {
+        // [GFX_TODO ATOM-13187] PbrLighting shouldn't be writing directly to render targets. It's confusing when
+        // specular is being added to diffuse just because we're calling render target 0 "diffuse".
+
+        // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
+        // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
+        // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
+        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
+    }
+    else
+    {
+        // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
+        uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
+        lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
+        lightingOutput.m_scatterDistance = MaterialSrg::m_scatterDistance;
+    }
+
+    return lightingOutput;
+}
+
+ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutputWithDepth OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
+    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
+    OUT.m_depth = depth;
+    return OUT;
+}
+
+[earlydepthstencil]
+ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutput OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
+    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
+
+    return OUT;
+}
+

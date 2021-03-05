@@ -1,0 +1,97 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/MemorySubAllocator.h>
+#include <Atom/RHI/FrameEventBus.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
+
+namespace AZ
+{
+    namespace DX12
+    {
+        class BufferView;
+        class ImageView;
+        class ShaderResourceGroupLayout;
+        class DescriptorContext;
+
+        class ShaderResourceGroupPool final
+            : public RHI::ShaderResourceGroupPool
+        {
+            using Base = RHI::ShaderResourceGroupPool;
+        public:
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+
+            static RHI::Ptr<ShaderResourceGroupPool> Create();
+
+        private:
+            ShaderResourceGroupPool() = default;
+
+            //////////////////////////////////////////////////////////////////////////
+            // Platform API
+            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
+            RHI::ResultCode InitGroupInternal(RHI::ShaderResourceGroup& groupBase) override;
+            void ShutdownInternal() override;
+            RHI::ResultCode CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // FrameEventBus::Handler
+            void OnFrameEnd() override;
+            //////////////////////////////////////////////////////////////////////////
+
+            void UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+
+            void UpdateDescriptorTableRange(
+                DescriptorTable descriptorTable,
+                const AZStd::vector<DescriptorHandle>& descriptors,
+                RHI::ShaderInputBufferIndex bufferInputIndex);
+
+            void UpdateDescriptorTableRange(
+                DescriptorTable descriptorTable,
+                const AZStd::vector<DescriptorHandle>& descriptors,
+                RHI::ShaderInputImageIndex imageIndex);
+
+            void UpdateDescriptorTableRange(
+                DescriptorTable descriptorTable,
+                RHI::ShaderInputSamplerIndex samplerIndex,
+                AZStd::array_view<RHI::SamplerState> samplerStates);
+
+            DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
+            DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;
+            DescriptorTable GetSamplerTable(DescriptorTable descriptorTable, RHI::ShaderInputSamplerIndex samplerInputIndex) const;
+
+            template<typename T, typename U>
+            AZStd::vector<DescriptorHandle> GetSRVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension);
+
+            template<typename T, typename U>
+            AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
+
+            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+
+            AZStd::mutex m_constantAllocatorMutex;
+            MemoryPoolSubAllocator m_constantAllocator;
+            DescriptorContext* m_descriptorContext = nullptr;
+            uint32_t m_constantBufferSize = 0;
+            uint32_t m_constantBufferRingSize = 0;
+            uint32_t m_viewsDescriptorTableSize = 0;
+            uint32_t m_viewsDescriptorTableRingSize = 0;
+            uint32_t m_samplersDescriptorTableSize = 0;
+            uint32_t m_samplersDescriptorTableRingSize = 0;
+            uint32_t m_descriptorTableBufferOffset = 0;
+            uint32_t m_descriptorTableImageOffset = 0;
+        };
+    }
+}

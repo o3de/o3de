@@ -1,0 +1,146 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/*
+* QToolBarLayout only supports homogeneous spacing and margin values. That is,
+* we cannot have different top, right, bottom, left values.
+*/
+
+QToolBar
+{
+    /* QToolBar required a background colour to ensure it has a background when
+     * displaying an overflow menu, or when floating
+     */
+    background-color: #444444;
+    qproperty-iconSize: 16px 16px;
+    border: 0 none;
+
+    /*
+    * desired height is 28px
+    * 5 = (28 - (iconSize + 2 * (ToolButton::Config.defaultButtonMargin = 1))) / 2
+    */
+    padding: 5px;
+}
+
+MainWindow QToolBar
+{
+    border-bottom: 2px solid #111111;
+}
+
+AzQtComponents--DockMainWindow QToolBar
+{
+    border: 0 none;
+}
+
+QToolBar.MainToolBar
+{
+    qproperty-iconSize: 20px 20px;
+    padding: 5px;
+}
+
+QToolBar.IconNormal,
+QToolBar.IconNormal QToolButton
+{
+    qproperty-iconSize: 16px 16px;
+}
+
+QToolBar.MainToolBar.IconNormal,
+QToolBar.MainToolBar.IconNormal QToolButton
+{
+    qproperty-iconSize: 20px 20px;
+}
+
+QToolBar.IconLarge,
+QToolBar.IconLarge QToolButton
+{
+    qproperty-iconSize: 20px 20px;
+}
+
+QToolBar.MainToolBar.IconLarge,
+QToolBar.MainToolBar.IconLarge QToolButton
+{
+    qproperty-iconSize: 32px 32px;
+}
+
+QToolBar::separator
+{
+    background-color: #111111;
+    width: 1px;
+    height: 1px;
+
+    margin: 4px 0px;
+    padding: 0px;
+}
+
+QToolBar::handle:horizontal
+{
+    image: url(:/stylesheet/img/UI20/tear.svg);
+}
+
+QToolBar::handle:vertical
+{
+    image: url(:/stylesheet/img/UI20/tear-vertical.svg);
+}
+
+/* height/width: 52 */
+QToolBar.MainToolBar.IconLarge::handle:horizontal
+{
+    padding: 1px 4px;
+}
+
+QToolBar.MainToolBar.IconLarge::handle:vertical
+{
+    padding: 2px 1px;
+}
+
+/* height/width: 40 */
+QToolBar.MainToolBar::handle:horizontal,
+QToolBar.MainToolBar.IconNormal::handle:horizontal
+{
+    padding: 1px 4px;
+}
+
+QToolBar.MainToolBar::handle:vertical,
+QToolBar.MainToolBar.IconNormal::handle:vertical
+{
+    padding: 2px -2px;
+}
+
+/* height/width: 32 */
+QToolBar.IconLarge::handle:horizontal
+{
+    padding: 4px 3px;
+}
+
+QToolBar.IconLarge::handle:vertical
+{
+    padding: 2px -2px;
+}
+
+/* height/width: 28 */
+QToolBar::handle:horizontal,
+QToolBar.IconNormal::handle:horizontal
+{
+    padding: 2px 4px;
+}
+
+QToolBar::handle:vertical,
+QToolBar.IconNormal::handle:vertical
+{
+    padding: 2px -2px;
+}
+
+QToolBarExtension#qt_toolbar_ext_button
+{
+    qproperty-icon: url(:/stylesheet/img/hidden-icons.svg);
+}

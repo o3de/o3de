@@ -1,0 +1,11 @@
+<RCC>
+  <qresource>
+    <file>refresh-active.png</file>
+    <file>warning.png</file>
+    <file>refresh.png</file>
+    <file>info.png</file>
+    <file>Backward.png</file>
+    <file>Forward.png</file>
+    <file>Reset.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,23 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "bfbc60c63ffd4b00927003735b26ce99",
+    "Name": "ChatPlay",
+    "DisplayName": "ChatPlay",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Interface for triggering events based on Twitch chat activity.",
+    "Tags": ["Twitch", "Chat", "Community", "Social", "Interaction"],
+    "IconPath": "preview.png",
+    "Dependencies": [
+        {
+            "Uuid": "28479e255bde466e91fc34eec808d9c7",
+            "VersionConstraints": [ "~>1.0" ],
+            "_comment": "HttpRequestor"
+        },
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [ "~>0.1" ],
+            "_comment": "LmbrCentral"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="14px" viewBox="0 0 12 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Toolbar / Selection Copy 24</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Lens-Flare-Editor-Tool-Bar-Redesign" transform="translate(-295.000000, -101.000000)">
+            <g id="Sub-Toolbar" transform="translate(34.000000, 95.000000)">
+                <g id="Group-7" transform="translate(7.000000, 1.000000)">
+                    <g id="Group" transform="translate(16.000000, 4.000000)">
+                        <g transform="translate(236.000000, 0.000000)" id="Sky-Icon-/-Editor-File-/-Material-Copy">
+                            <rect id="Icon-Background" x="0" y="0" width="16" height="16"></rect>
+                            <path d="M8,14.6666667 L6,12.6666667 L8,10.6666667 L8,12 C10.209139,12 12,10.209139 12,8 C12,7.1362536 11.7262285,6.33644997 11.2607259,5.6826296 L12.213332,4.72969131 C12.9153161,5.63279422 13.3333333,6.76758053 13.3333333,8 C13.3333333,10.9455187 10.9455187,13.3333333 8,13.3333333 L8,14.6666667 Z M8,1.33333333 L10,3.33333333 L8,5.33333333 L8,4 C5.790861,4 4,5.790861 4,8 C4,8.8641811 4.27404717,9.66435505 4.73997709,10.3183574 L3.78666802,11.2703087 C3.08468387,10.3672058 2.66666667,9.23241947 2.66666667,8 C2.66666667,5.05448133 5.05448133,2.66666667 8,2.66666667 L8,1.33333333 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

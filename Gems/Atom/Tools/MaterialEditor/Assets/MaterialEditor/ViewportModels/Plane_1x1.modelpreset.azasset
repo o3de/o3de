@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::ModelPreset",
+    "ClassData": {
+        "displayName": "Plane (1m x 1m)",
+        "modelAsset": {
+            "assetId": {
+                "guid": "{767B3209-EDF7-503A-BF3D-6A69DAABC966}",
+                "subId": 285003870
+            },
+            "assetHint": "materialeditor/viewportmodels/plane_1x1.azmodel"
+        }
+    }
+}

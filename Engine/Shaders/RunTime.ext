@@ -1,0 +1,1259 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+// its licensors.
+//
+// For complete copyright and license terms please see the LICENSE at the root of this
+// distribution (the "License"). All use of this software is governed by the License,
+// or, if provided, by the license below or the license accompanying this file. Do not
+// remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+//
+
+//  Description:
+//
+////////////////////////////////////////////////////////////////////////////
+
+Version (1.00)
+
+Property
+{
+    Name = %_RT_FOG
+    Mask = 0x1    // 1 << 0
+    Precache = GeneralPS
+    Precache = GeneralVS
+    Precache = GeneralGS
+    Precache = GeneralDS
+    Precache = GeneralHS
+    Precache = TerrainPS
+    Precache = TerrainVS
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+    Precache = SkinPS
+    Precache = SkinVS
+    Precache = HairPS
+    Precache = HairVS
+    Precache = EyePS
+    Precache = EyeVS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = CustomRenderHS
+    Precache = CustomRenderDS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_VS
+    Precache = WaterFogVolume_PS
+    Precache = MeshBakerPS
+    Precache = ParticleImposterVS
+    Precache = ParticleImposterPS
+}
+
+Property
+{
+    Name = %_RT_AMBIENT
+    Mask = 0x2    // 1 << 1
+    Precache = GeneralPS
+    Precache = SkinPS
+    Precache = HairPS
+    Precache = EyePS
+    Precache = GlassPS
+    Precache = TerrainPS
+    Precache = VegetationPS
+    Precache = ParticlePS
+    Precache = MeshBakerPS
+}
+
+Property
+{
+    Name = %_RT_OCEAN_PARTICLE
+    Mask = 0x4    // 1 << 2
+    Precache = PostProcessGamePS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_PS
+}
+
+Property
+{
+    //Using the same mask as _RT_OCEAN_PARTICLE as we have run out of them.
+    //It should be safe to do this as this flag is not used in water rendering
+    Name = %_RT_DEPTHFIXUP
+    Mask = 0x4    // 1 << 2
+    Precache = FurShellPS
+    Precache = GlassPS
+    Precache = IlluminationPS
+    Precache = GeneralPS
+}
+
+Property
+{
+    Name = %_RT_DECAL_TEXGEN_2D
+    Mask = 0x8    // 1 << 3
+    Precache = GeneralVS
+    Precache = GeneralDS
+    Precache = GeneralHS
+    Precache = ShadowGenVS
+    Precache = CausticsVS
+    Precache = GeneralPS
+    Precache = CustomRenderHS
+    Precache = CustomRenderDS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = MeshBakerPS
+    Precache = TiledShadingCS
+}
+
+Property
+{
+    Name = %_RT_DISSOLVE
+    Mask = 0x10    // 1 << 4
+    Precache = ZPS
+    Precache = ZVS
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = GeneralPS
+    Precache = GeneralVS
+}
+
+Property
+{
+    Name = %_RT_VOLUMETRIC_FOG
+    Mask = 0x20    // 1 << 5
+    Precache = GeneralPS
+    Precache = GeneralVS
+    Precache = GeneralGS
+    Precache = GeneralDS
+    Precache = GeneralHS
+    Precache = TerrainPS
+    Precache = TerrainVS
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+    Precache = SkinPS
+    Precache = SkinVS
+    Precache = HairPS
+    Precache = HairVS
+    Precache = EyePS
+    Precache = EyeVS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = WaterSurfacePS
+    Precache = WaterFogVolume_VS
+    Precache = WaterFogVolume_PS
+    Precache = MeshBakerPS
+    Precache = CloudVS
+    Precache = CloudPS
+    Precache = FogPostProcessPS
+    Precache = ParticleImposterVS
+    Precache = ParticleImposterPS
+}
+
+Property
+{
+    Name = %_RT_NEAREST
+    Mask = 0x40    // 1 << 6
+    Precache = ShadowGenVS
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+    Precache = ZVS
+    Precache = MotionBlurVS
+    Precache = SkinVS
+    Precache = GeneralVS
+    Precache = VegetationVS
+    Precache = CausticsVS
+    Precache = CustomRenderVS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_GLOBAL_ILLUMINATION
+    Mask = 0x80    // 1 << 7
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_ALPHATEST
+    Mask = 0x100    // 1 << 8
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = ZPS
+    Precache = ZVS
+    Precache = MotionBlurPS
+    Precache = CustomRenderPS
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+    Precache = GeneralPS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = MotionBlurVS
+    Precache = MeshBakerPS
+}
+
+Property
+{
+    Name = %_RT_SOFT_PARTICLE
+    Mask = 0x200    // 1 << 9
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_HDR_MODE
+    Mask = 0x400    // 1 << 10
+    Precache = GeneralPS
+    Precache = TerrainPS
+    Precache = VegetationPS
+    Precache = SkinPS
+    Precache = HairPS
+    Precache = EyePS
+    Precache = GlassPS
+    Precache = ParticlePS
+    Precache = WaterSurfacePS
+    Precache = ParticleImposterPS
+}
+
+Property
+{
+    Name = %_RT_PARTICLE_SHADOW
+    Mask = 0x800    // 1 << 11
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+}
+
+Property
+{
+    Name = %_RT_SAMPLE1
+    Mask = 0x1000    // 1 << 12
+    Precache = CustomRenderHS
+    Precache = CustomRenderDS
+    Precache = CustomRenderVS
+    Precache = CustomRenderPS
+    Precache = SkinPS
+    Precache = HDRPostProcessPS
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostSunShaftsPS
+    Precache = PostProcessGamePS
+    Precache = PostDofPS
+    Precache = PostEffectsVS
+    Precache = PostEffectsPS
+    Precache = PostAA_PS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = PostHUD3D_VS
+    Precache = PostHUD3D_PS
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = DeferredRainPS
+    Precache = ShadowMaskGenPS
+
+    Precache = WaterFogVolume_VS
+    Precache = WaterFogVolume_PS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+
+    Precache = BeamPS
+    Precache = ParticleHS
+    Precache = ParticleDS
+
+    Precache = TiledShadingCS
+    Precache = VolumeLightInjectionCS
+    Precache = ResolvePS
+    Precache = VideoPS
+}
+
+Property
+{
+    Name = %_RT_SAMPLE2
+    Mask = 0x2000    // 1 << 13
+
+    Precache = HDRPostProcessPS
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostAA_PS
+    Precache = PostSunShaftsPS
+    Precache = PostProcessGamePS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = CustomRenderPS
+    Precache = DeferredRainPS
+
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+
+    Precache = BeamPS
+    Precache = LensOpticsPS
+    Precache = WaterFogVolume_PS
+    Precache = TiledShadingCS
+    Precache = FogPostProcessPS
+    Precache = VideoPS
+}
+
+Property
+{
+    Name = %_RT_SAMPLE3
+    Mask = 0x4000    // 1 << 14
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = PostAA_PS
+    Precache = HDRPostProcessPS
+    Precache = BeamPS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = DeferredRainPS
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+    Precache = ResolvePS
+
+    Precache = LensOpticsPS
+    Precache = WaterFogVolume_PS
+    Precache = TiledShadingCS
+    Precache = VideoPS
+}
+
+Property
+{
+    Name = %_RT_POINT_LIGHT
+    Mask = 0x8000    // 1 << 15
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = WaterFogVolume_PS
+    Precache = ConeTraceDiffusePS
+}
+
+Property
+{
+    Name = %_RT_ALPHABLEND
+    Mask = 0x10000    // 1 << 16
+    Precache = GeneralHS
+    Precache = GeneralDS
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = HairVS
+    Precache = EyeVS
+    Precache = VegetationVS
+    Precache = GeneralVS
+    Precache = GlassVS
+    Precache = CustomRenderHS
+    Precache = CustomRenderDS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = MotionBlurPS
+}
+
+Property
+{
+    Name = %_RT_ANIM_BLEND
+    Mask = 0x20000    // 1 << 17
+    Precache = ParticlePS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticleGS
+}
+
+Property
+{
+    Name = %_RT_QUALITY
+    Mask = 0x40000    // 1 << 18
+    AutoPrecache
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = GeneralPS
+    Precache = GeneralVS
+    Precache = SkinPS
+    Precache = SkinVS
+    Precache = HairPS
+    Precache = HairVS
+    Precache = EyePS
+    Precache = EyeVS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = TerrainPS
+    Precache = TerrainVS
+    Precache = VegetationPS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationVS
+    Precache = MotionBlurVS
+    Precache = MotionBlurPS
+    Precache = CausticsVS
+    Precache = ParticlePS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostSunShaftsPS
+    Precache = SpriteDilatePS
+    Precache = ShadowMaskGenPS
+
+    Precache = HDRPostProcessVS
+    Precache = HDRPostProcessPS
+    Precache = FogPostProcessPS
+    Precache = PostProcessGameVS
+    Precache = PostProcessGamePS
+
+    Precache = DistanceCloudsPS
+    Precache = DeferredLightPassPS
+    Precache = VolumeLightInjectionCS
+}
+
+Property
+{
+    Name = %_RT_QUALITY1
+    Mask = 0x80000    // 1 << 19
+    AutoPrecache
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = GeneralPS
+    Precache = GeneralVS
+    Precache = SkinPS
+    Precache = SkinVS
+    Precache = HairPS
+    Precache = HairVS
+    Precache = EyePS
+    Precache = EyeVS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = TerrainPS
+    Precache = TerrainVS
+    Precache = VegetationPS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationVS
+    Precache = MotionBlurVS
+    Precache = MotionBlurPS
+    Precache = CausticsVS
+    Precache = ParticlePS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostSunShaftsPS
+    Precache = SpriteDilatePS
+    Precache = ShadowMaskGenPS
+
+    Precache = HDRPostProcessVS
+    Precache = HDRPostProcessPS
+    Precache = FogPostProcessPS
+    Precache = PostProcessGameVS
+    Precache = PostProcessGamePS
+
+    Precache = DistanceCloudsPS
+    Precache = DeferredLightPassPS
+    Precache = VolumeLightInjectionCS
+}
+
+Property
+{
+    Name = %_RT_INSTANCING_ATTR
+    Mask = 0x100000    // 1 << 20
+    Precache = GeneralVS
+    Precache = SkinVS
+    Precache = HairVS
+    Precache = EyeVS
+    Precache = GlassVS
+    Precache = VegetationVS
+    Precache = ShadowGenVS
+    Precache = ZVS
+    Precache = MotionBlurVS
+    Precache = CausticsVS
+    Precache = CustomRenderVS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_ENVIRONMENT_CUBEMAP
+    Mask = 0x200000    // 1 << 21
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_TILED_SHADING
+    Mask = 0x400000    // 1 << 22
+    Precache = EyePS
+    Precache = HairPS
+    Precache = GlassPS
+    Precache = IlluminationPS
+}
+
+Property
+{
+    Name = %_RT_NO_TESSELLATION
+    Mask = 0x800000    // 1 << 23
+    Precache = GeneralVS
+    Precache = GeneralPS
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = MotionBlurVS
+    Precache = MotionBlurPS
+    Precache = CustomRenderVS
+    Precache = SkinVS
+    Precache = SkinPS
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_APPLY_TOON_SHADING
+    Mask = 0x1000000    // 1 << 24
+    Precache = DeferredLightPassPS
+    Precache = TiledShadingCS
+}
+
+
+Property
+{
+    Name = %_RT_LIGHT_TEX_PROJ
+    Mask = 0x2000000    // 1 << 25
+    Precache = DeferredLightPassPS
+    Precache = ParticleVS
+    Precache = ParticleDS
+    Precache = ConeTraceDiffusePS
+}
+
+Property
+{
+    Name = %_RT_VERTEX_VELOCITY
+    Mask = 0x4000000    // 1 << 26
+    Precache = ZVS
+    Precache = MotionBlurVS
+}
+
+Property
+{
+    Name = %_RT_SKINNING_DUAL_QUAT
+    Mask = 0x8000000    // 1 << 27
+    Precache = GeneralVS
+    Precache = SkinVS
+    Precache = HairVS
+    Precache = EyeVS
+    Precache = GlassVS
+    Precache = VegetationVS
+    Precache = ShadowGenVS
+    Precache = ZVS
+    Precache = MotionBlurVS
+    Precache = CausticsVS
+    Precache = CustomRenderVS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_SKINNING_DQ_LINEAR
+    Mask = 0x10000000    // 1 << 28
+    Precache = GeneralVS
+    Precache = SkinVS
+    Precache = HairVS
+    Precache = EyeVS
+    Precache = GlassVS
+    Precache = VegetationVS
+    Precache = ShadowGenVS
+    Precache = ZVS
+    Precache = MotionBlurVS
+    Precache = CausticsVS
+    Precache = CustomRenderVS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_BLEND_WITH_TERRAIN_COLOR
+    Mask = 0x20000000    // 1 << 29
+    Precache = ZVS
+    Precache = ZPS
+    Precache = GeneralHS
+    Precache = GeneralDS
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+    Precache = ConeTraceDiffusePS
+}
+
+Property
+{
+    Name = %_RT_MOTION_BLUR
+    Mask = 0x40000000    // 1 << 30
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = GPUParticleCS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = ZVS
+    Precache = ZGS
+    Precache = ZPS
+    Precache = GeneralHS
+    Precache = GeneralDS
+}
+
+Property
+{
+    Name = %_RT_LIGHTVOLUME0
+    Mask = 0x80000000    // 1 << 31
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = VolumeLightInjectionCS
+    Precache = RenderDownscaledShadowMapPS
+}
+
+Property
+{
+    //Using the same mask as _RT_LIGHTVOLUME0 as we have run out of them.
+    //It should be safe to do this as this flag is not used in the deferred lighting pass or particles.
+
+    Name = %_RT_SRGB0
+    Mask = 0x80000000    // 1 << 31
+    Precache = PostAA_PS
+    Precache = ResolvePS
+    Precache = HDRPostProcessPS
+}
+
+Property
+{
+    Name = %_RT_LIGHTVOLUME1
+    Mask = 0x100000000    // 1 << 32
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = VolumeLightInjectionCS
+    Precache = RenderDownscaledShadowMapPS
+}
+
+Property
+{
+    //Using the same mask as _RT_LIGHTVOLUME1 as we have run out of them.
+    //It should be safe to do this as this flag is not used in the deferred lighting pass or particles.
+
+    Name = %_RT_SRGB1
+    Mask = 0x100000000    // 1 << 32
+    Precache = PostAA_PS
+    Precache = ResolvePS
+    Precache = HDRPostProcessPS
+}
+
+Property
+{
+    Name = %_RT_NOZPASS
+    Mask = 0x200000000    // 1 << 33
+    Precache = VegetationVS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationPS
+}
+
+Property
+{
+    //Using the same mask as _RT_NOZPASS as we have run out of them.
+    //It should be safe to do this as this flag is not used in vegetation pass.
+
+    Name = %_RT_SRGB2
+    Mask = 0x200000000    // 1 << 33
+    Precache = PostAA_PS
+    Precache = ResolvePS
+    Precache = HDRPostProcessPS
+}
+
+Property
+{
+    Name = %_RT_SHADOW_MIXED_MAP_G16R16
+    Mask = 0x400000000    // 1 << 34
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = WaterFogVolume_PS
+
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+}
+
+Property
+{
+    Name = %_RT_SHADOW_JITTERING
+    Mask = 0x800000000    // 1 << 35
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = TerrainPS
+    Precache = WaterFogVolume_PS
+
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+
+    Precache = HairPS
+    Precache = EyePS
+}
+
+Property
+{
+    Name = %_RT_ADDITIVE_BLENDING
+    Mask = 0x1000000000 // 1 << 36
+    Precache = GlassPS
+    Precache = GeneralPS
+    Precache = HairPS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_SAMPLE0
+    Mask = 0x2000000000    // 1 << 37
+    Precache = CustomRenderVS
+    Precache = CustomRenderPS
+    Precache = SkinPS
+    Precache = GlassPS
+
+    Precache = FogPostProcessPS
+    Precache = HDRPostProcessPS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+    Precache = PostHUD3D_VS
+    Precache = PostHUD3D_PS
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostAA_PS
+    Precache = PostSunShaftsPS
+    Precache = PostProcessGameVS
+    Precache = PostProcessGamePS
+    Precache = PostDofPS
+    Precache = PostEffectsVS
+    Precache = PostEffectsPS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = SceneRainVS
+    Precache = SceneRainPS
+    Precache = DeferredRainPS
+    Precache = ResolveVS
+    Precache = ResolvePS
+
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_PS
+
+    Precache = BeamPS
+    Precache = LensOpticsVS
+    Precache = TiledShadingCS
+    Precache = VolumeLightInjectionCS
+    Precache = VideoPS
+}
+
+// Reserved for post processes/deferred - do not use for light/common shaders
+Property
+{
+    Name = %_RT_SAMPLE5
+    Mask = 0x4000000000    // 1 << 38
+
+    Precache = ZVS
+    Precache = GeneralVS
+    Precache = GeneralHS
+    Precache = GeneralDS
+
+    Precache = HDRPostProcessPS
+    Precache = PostSunShaftsPS
+    Precache = PostProcessGamePS
+    Precache = DeferredPassPS
+    Precache = DeferredPassVS
+    Precache = DeferredLightPassPS
+    Precache = PostMotionBlurPS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+    Precache = ResolvePS
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = CustomRenderHS
+    Precache = CustomRenderDS
+    Precache = CustomRenderPS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_PS
+    Precache = PostAA_PS
+
+    Precache = BeamPS
+    Precache = LensOpticsVS
+    Precache = TiledShadingCS
+    Precache = VolumeLightInjectionCS
+    Precache = ReprojectVolumetricFogCS
+}
+
+Property
+{
+    Name = %_RT_HW_PCF_COMPARE
+    Mask = 0x8000000000    // 1 << 39
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+
+    Precache = DeferredLightPassPS
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+
+    Precache = WaterFogVolume_PS
+    Precache = ConeTraceDiffusePS
+}
+
+Property
+{
+    Name = %_RT_REVERSE_DEPTH
+    Mask = 0x10000000000    // 1 << 40
+    Precache = DistanceCloudsVS
+    Precache = PostProcessGamePS
+    Precache = TerrainVS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = UnderwaterGodRays
+    Precache = WaterSurfaceVS
+    Precache = WaterFogVolume_VS
+    Precache = GeneralVS
+    Precache = LensOpticsVS
+}
+
+Property
+{
+    Name = %_RT_DEBUG0
+    Mask = 0x20000000000    // 1 << 41
+
+    Runtime
+}
+
+Property
+{
+    Name = %_RT_DEBUG1
+    Mask = 0x40000000000    // 1 << 42
+    Runtime
+}
+
+Property
+{
+    Name = %_RT_DEBUG2
+    Mask = 0x80000000000    // 1 << 43
+    Runtime
+}
+
+Property
+{
+    Name = %_RT_DEBUG3
+    Mask = 0x100000000000    // 1 << 44
+    Runtime
+}
+
+Property
+{
+    Name = %_RT_CUBEMAP0
+    Mask = 0x200000000000    // 1 << 45
+    Precache = ShadowGenPS
+    Precache = ShadowGenVS
+
+    Precache = PostSunShaftsPS
+    Precache = PostProcessGamePS
+
+    Precache = DeferredDecalPassVS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+    Precache = DeferredLightPassVS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassVS
+    Precache = DeferredPassPS
+
+    Precache = WaterFogVolume_PS
+    Precache = TiledShadingCS
+}
+
+Property
+{
+    Name = %_RT_SAMPLE4
+    Mask = 0x400000000000    // 1 << 46
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = PostAA_PS
+
+    Precache = HDRPostProcessPS
+    Precache = PostProcessGamePS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = PostSunShaftsPS
+    Precache = PostMotionBlurPS
+
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_PS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+
+    Precache = BeamPS
+    Precache = LensOpticsPS
+
+    Precache = TiledShadingCS
+
+    Precache = ConeTraceDiffusePS
+    Precache = VolumeLightInjectionCS
+}
+
+Property
+{
+    Name = %_RT_SPRITE
+    Mask = 0x800000000000    // 1 << 47
+    Precache = VegetationVS
+    Precache = VegetationPS
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHADOW_PASS
+    Mask = 0x1000000000000  // 1 << 48
+    Precache = ParticleVS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_DEPTH_COLLISION
+    Mask = 0x2000000000000 // 1 << 49
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_TURBULENCE
+    Mask = 0x4000000000000 // 1 << 50
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_UV_ANIMATION
+    Mask = 0x8000000000000 // 1 << 51
+    Precache = ParticleVS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_NORMAL_MAP
+    Mask = 0x10000000000000 // 1 << 52
+    Precache = ParticleVS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_GLOW_MAP
+    Mask = 0x20000000000000 // 1 << 53
+    Precache = ParticleVS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_CUBEMAP_DEPTH_COLLISION
+    Mask = 0x40000000000000 // 1 << 54
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_WRITEBACK_DEATH_LOCATIONS
+    Mask = 0x80000000000000 // 1 << 55
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_TARGET_ATTRACTION
+    Mask = 0x100000000000000 // 1<< 56
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    // Using the same mask as _RT_GPU_PARTICLE_TARGET_ATTRACTION as we have run out of them.
+    //It should be safe to do this as this flag is not used in the deferred lighting pass.
+	
+    Name = %_RT_DEFERRED_RENDER_TARGET_OPTIMIZATION
+    Mask = 0x100000000000000 // 1<< 56
+    
+    Precache = DeferredPassPS
+    Precache = DeferredPassVS
+    Precache = DeferredLightPassPS
+    Precache = TiledShadingCS
+    Precache = LightPassPS
+    Precache = LightPassGmemPS
+    Precache = ConeTraceDiffusePS
+    Precache = VolumeLightInjectionCS
+    Precache = CubemapPassPS
+    Precache = CubemapPassGmemPS
+    Precache = DeferredShadowGmemPS
+    Precache = DeferredShadingPassPS
+    Precache = DeferredShadingPassGmemPS
+    Precache = AmbientPS
+    Precache = ShadowMaskGenVS
+    Precache = ShadowMaskGenPS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHAPE_ANGLE
+    Mask = 0x200000000000000 // 1 << 57
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    
+    // Using the same mask as _RT_GPU_PARTICLE_SHAPE_ANGLE as we have run out of them.
+    //It should be safe to do this as this flag is not used in the deferred lighting pass.
+
+    Name = %_RT_SLIM_GBUFFER
+    Mask = 0x200000000000000 // 1 << 57
+    AutoPrecache
+    Precache = ShadowGenVS
+    Precache = ShadowGenPS
+    Precache = ZVS
+    Precache = ZPS
+    Precache = FogPassVolShadowsInterleavePassPS
+    Precache = GeneralPS
+    Precache = GeneralVS
+    Precache = SkinPS
+    Precache = SkinVS
+    Precache = HairPS
+    Precache = HairVS
+    Precache = EyePS
+    Precache = EyeVS
+    Precache = GlassPS
+    Precache = GlassVS
+    Precache = TerrainPS
+    Precache = TerrainVS
+    Precache = VegetationPS
+    Precache = VegetationHS
+    Precache = VegetationDS
+    Precache = VegetationVS
+    Precache = MotionBlurVS
+    Precache = MotionBlurPS
+    Precache = CausticsVS
+    Precache = ParticlePS
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+
+    Precache = PostMotionBlurVS
+    Precache = PostMotionBlurPS
+    Precache = PostSunShaftsPS
+    Precache = SpriteDilatePS
+    Precache = ShadowMaskGenPS
+
+    Precache = HDRPostProcessVS
+    Precache = HDRPostProcessPS
+    Precache = FogPostProcessPS
+    Precache = PostProcessGameVS
+    Precache = PostProcessGamePS
+
+    Precache = DistanceCloudsPS
+    Precache = DeferredLightPassPS
+    Precache = VolumeLightInjectionCS
+    Precache = HDRPostProcessPS
+    Precache = PostProcessGamePS
+    Precache = DeferredLightPassPS
+    Precache = DeferredPassPS
+    Precache = PostSunShaftsPS
+    Precache = PostMotionBlurPS
+
+    Precache = WaterSurfaceVS
+    Precache = WaterSurfacePS
+    Precache = WaterSurfaceHS
+    Precache = WaterSurfaceDS
+    Precache = WaterFogVolume_PS
+    Precache = DeferredDecalPassPS
+    Precache = DeferredDecalEmissivePassPS
+
+    Precache = BeamPS
+    Precache = LensOpticsPS
+
+    Precache = DeferredShadingPassPS
+    Precache = DeferredPassVS
+    Precache = DeferredLightPassPS
+    Precache = TiledShadingCS
+    Precache = LightPassPS
+    Precache = ConeTraceDiffusePS
+    Precache = VolumeLightInjectionCS
+    Precache = CubemapPassPS
+    Precache = CubemapPassGmemPS
+
+    Precache = DeferredSnowPS
+    Precache = DeferredRainPS
+    Precache = SSRCompositionPS
+    Precache = SSRRaytracePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHAPE_BOX
+    Mask = 0x400000000000000 // 1 << 58
+    Precache = GPUParticleCS
+    Precache = ParticleVS
+}
+
+Property
+{
+    // Using the same mask as _RT_GPU_PARTICLE_SHAPE_BOX as we have run out of them.
+    // It should be safe to do this as this (GPU Particles shouldn't have skinning)
+
+    Name = %_RT_SKINNING_MATRIX
+    Mask = 0x400000000000000 // 1 << 58
+    Precache = GeneralVS
+    Precache = SkinVS
+    Precache = HairVS
+    Precache = EyeVS
+    Precache = GlassVS
+    Precache = VegetationVS
+    Precache = ShadowGenVS
+    Precache = ZVS
+    Precache = MotionBlurVS
+    Precache = CausticsVS
+    Precache = CustomRenderVS
+    Precache = DebugPassVS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHAPE_POINT
+    Mask = 0x800000000000000 // 1 << 59
+    Precache = GPUParticleCS
+}
+
+Property
+{
+    //Using the same mask as _RT_GPU_PARTICLE_SHAPE_POINT as we have run out of them.
+    //It should be safe to do this as this flag is not used in the deferred lighting pass.
+    Name = %_RT_APPLY_SSDO
+    Mask = 0x800000000000000 // 1 << 59.
+    Precache = DeferredPassPS
+    Precache = DeferredPassVS
+    Precache = DeferredLightPassPS
+    Precache = TiledShadingCS
+}
+
+//Using the same mask as _RT_APPLY_SSDO as we have run out of them.
+//It should be safe to do this as this flag is not used in particle shaders.
+Property
+{
+    Name = %_RT_FOG_VOLUME_HIGH_QUALITY_SHADER
+    Mask = 0x800000000000000    // 1 << 59
+    Precache = ParticleVS
+    Precache = ParticleHS
+    Precache = ParticleDS
+    Precache = ParticlePS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHAPE_CIRCLE
+    Mask = 0x1000000000000000 // 1 << 60
+    Precache = GPUParticleCS
+    Precache = ParticleVS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_SHAPE_SPHERE
+    Mask = 0x2000000000000000 // 1 << 61
+    Precache = GPUParticleCS
+    Precache = ParticleVS
+}
+
+Property
+{
+    Name = %_RT_GPU_PARTICLE_WIND
+    Mask = 0x4000000000000000 // 1 << 62
+    Precache = GPUParticleCS
+
+}
+Property
+{
+    Name = %_RT_MULTI_LAYER_ALPHA_BLEND
+    Mask = 0x8000000000000000 // 1 << 63
+    Precache = FurShellPS
+    Precache = FurFinsPS
+    Precache = GlassPS
+    Precache = GeneralPS
+    Precache = HairPS
+    Precache = ParticlePS
+    Precache = MultiLayerAlphaBlendResolvePS
+}
+
+

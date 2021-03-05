@@ -1,0 +1,18 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/Suede/suede_diffuse.jpg"
+        },
+        "normal": {
+            "factor": 1.1717171669006348,
+            "textureMap": "Materials/Suede/suede_normal.jpg"
+        },
+        "roughness": {
+            "textureMap": "Materials/Suede/suede_roughness.jpg"
+        }
+    }
+}

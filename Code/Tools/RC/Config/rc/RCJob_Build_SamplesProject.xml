@@ -1,0 +1,152 @@
+<RCJobs>
+    <!-- 
+        DefaultProperties can be overriden from command line
+    -->
+    <DefaultProperties
+        game="SamplesProject"
+        engine="Engine"
+        loc="LY_Localization"
+        src="."
+        trg="TempRC"
+        gems="Gems"
+        pak_root=".\Build"
+        vertex_index="u16"
+        streaming="auto"
+    />
+
+    <Properties
+        image_types="*.tif;*.png;*.bmp;*.jpg;*.jpe;*.jpeg;*.tga;*.gif"
+        geometry_types="*.cgf;*.cga"
+        animation_types="*.i_caf"
+      
+        xml_types="*.animevents;*.animsettings;*.adb;*.bspace;*.cdf;*.chrparams;*.comb;*.dlg;*.ent;*.fsq;*.fxl;*.ik;*.json;*.lmg;*.mtl;*.setup;*.xml;*.node;*.veg;*.prototype;*.uicanvas;*.uiprefab;*.prefab"
+        
+        copy_types="${xml_types};*.txt;*.skel;*.skin;*.cfg;*.csv;*.dat;*.ini;*.xls;*.as;*.p;*.chr;*.caf;*.dba;*.ctc;*.lua;*.lut;*.bnk;*.wem;*.cal;*.grd;*.grp;*.ext;*.cfx;*.cfi;*.ttf;*.pak;*.abc;*.cbc;*.bin"
+        
+        copynooverwrite_types="*.dds;*.dds.*;*.cga;*.cgf"
+               
+        gems_excludes="*.h;*.c;*.cpp;*.lib;*.dll;*.inl;*.obj"
+        
+        exclude_types="${gems_excludes};*.$*;*.exportsettings;*.psd;wwise_project*\*;*\ShaderCache\*"
+        
+        levels_pak_types="Levels\*"
+        levels_pak_excludes="${exclude_types}"
+        
+        game_data_pak_types="Config\*.*;Difficulty\*.*;Libs\*.*;Materials\*.*;Prefabs\*.*;Levels\*.*xml;Levels\*.*dds"
+        game_data_pak_excludes="${exclude_types};*filelist.*"
+        animation_pak_types="Animations\*.*"
+        animation_pak_excludes="${exclude_types}"
+        objects_pak_types="Objects\*.*"
+        objects_pak_excludes="${exclude_types};Objects\level_specific\*.*;Objects\multiplayer\*.*;Objects\weapons\*.*;Objects\characters\*.*;Objects\props\*.*"
+        objects_multiplayer_pak_types="Objects\multiplayer\*.*"
+        objects_multiplayer_pak_excludes="${exclude_types}"
+        weapons_pak_types="Objects\weapons\*.*"
+        weapons_pak_excludes="${exclude_types}"
+        character_pak_types="Objects\characters\*.*;Objects\props\*.*"
+        character_pak_excludes="${exclude_types}"
+        level_specific_pak_types="Objects\level_specific\*.*"
+        level_specific_pak_excludes="${exclude_types}"
+        textures_pak_types="Textures\*.*"
+        textures_pak_excludes="{exclude_types}"
+        sounds_pak_types="Sounds\*.*"
+        sounds_pak_excludes="${exclude_types}"
+        videos_pak_types="Videos\*.*"
+        videos_pak_excludes="${exclude_types}"
+        scripts_pak_types="Entities\*.*;Scripts\*.*"
+        scripts_pak_excludes="${exclude_types}"
+        
+        shader_pak_types="Shaders\*.ext;Shaders\*.cfi;Shaders\*.cfx"
+        shader_pak_excludes="${exclude_types}"
+        engine_pak_types="Config\*.*;Fonts\*.*;EngineAssets\*.*;Libs\*.*;Material\*.*"
+        engine_pak_excludes="${exclude_types}"
+        
+        gems_pak_types="*"
+        gems_pak_excludes="${exclude_types}"
+        
+        src_game="${game}"
+        src_engine="${src}\${engine}"
+        src_gems="${src}\${gems}"
+        src_loc="${src}\${loc}"
+
+        trg_game="${trg}\${game}"
+        trg_engine="${trg}\${engine}"
+        trg_gems="${trg}\${gems}"
+        trg_loc="${trg}\${loc}"
+
+        pak_game="${pak_root}\${game}"
+        pak_engine="${pak_root}\${engine}"
+        
+        vtx_idx="${vertex_index}"
+        streaming="0"
+    />
+
+    <ConvertJob>
+        <!-- process source animation files into staging -->
+        <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${animation_types}" animConfigFolder="Animations" cafAlignTracks="1" dbaStreamPrepare="1" />
+        <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${animation_types}" animConfigFolder="Animations" cafAlignTracks="1" dbaStreamPrepare="1" />
+        <Job sourceroot="${src_gems}"   targetroot="${trg_gems}"   input="${animation_types}" animConfigFolder="Animations" cafAlignTracks="1" dbaStreamPrepare="1" />
+
+        <!-- process source geometry files into staging -->
+        <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${geometry_types}" VertexPositionFormat="exporter" SplitLODs="1" vertexindexformat="${vtx_idx}" />
+        <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${geometry_types}" VertexPositionFormat="exporter" SplitLODs="1" vertexindexformat="${vtx_idx}" />
+        <Job sourceroot="${src_gems}"   targetroot="${trg_gems}"   input="${geometry_types}" VertexPositionFormat="exporter" SplitLODs="1" vertexindexformat="${vtx_idx}" />
+
+        <!-- process source image files into staging -->
+        <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${image_types}" imagecompressor="${imagecompressor}" streaming="${streaming}" />
+        <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${image_types}" imagecompressor="${imagecompressor}" streaming="${streaming}" />
+        <Job sourceroot="${src_gems}"   targetroot="${trg_gems}"   input="${image_types}" imagecompressor="${imagecompressor}" streaming="${streaming}" />
+    </ConvertJob>
+
+    <CopyJob>
+        <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${copynooverwrite_types}" copyonlynooverwrite="1" exclude="${exclude_types}" />
+        <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${copynooverwrite_types}" copyonlynooverwrite="1" exclude="${exclude_types}" />
+        <Job sourceroot="${src_gems}"   targetroot="${trg_gems}"   input="${copynooverwrite_types}" copyonlynooverwrite="1" exclude="${exclude_types}" />
+    
+        <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${copy_types}" copyonly="1" exclude="${exclude_types}" />
+        <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${copy_types}" copyonly="1" exclude="${exclude_types}" />
+        <Job sourceroot="${src_gems}"   targetroot="${trg_gems}"   input="${copy_types}" copyonly="1" exclude="${exclude_types}" />
+    </CopyJob>
+
+    <PakJob>
+        <Job sourceroot="${trg_game}" input="${levels_pak_types}" zip="${pak_game}\Levels.pak" exclude="${levels_pak_excludes}" />
+
+        <Job sourceroot="${trg_game}" input="${game_data_pak_types}" zip="${pak_game}\GameData.pak" exclude="${game_data_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${animation_pak_types}" zip="${pak_game}\Animations.pak" exclude="${animation_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${objects_pak_types}" zip="${pak_game}\Objects.pak" exclude="${objects_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${objects_multiplayer_pak_types}" zip="${pak_game}\ObjectsMP.pak" exclude="${objects_multiplayer_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${weapons_pak_types}" zip="${pak_game}\Weapons.pak" exclude="${weapons_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${character_pak_types}" zip="${pak_game}\Characters.pak" exclude="${character_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${level_specific_pak_types}" zip="${pak_game}\LevelSpecific.pak" exclude="${level_specific_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${textures_pak_types}" zip="${pak_game}\Textures.pak" exclude="${textures_pak_excludes}" />
+        <Job sourceroot="${trg_game}" input="${sounds_pak_types}" zip="${pak_game}\Sounds.pak" exclude="${sounds_pak_excludes}" zip_compression="0" />
+        <Job sourceroot="${trg_game}" input="${videos_pak_types}" zip="${pak_game}\Videos.pak" exclude="${videos_pak_excludes}" zip_compression="0" />
+        <Job sourceroot="${trg_game}" input="${scripts_pak_types}" zip="${pak_game}\Scripts.pak" exclude="${scripts_pak_excludes}" />
+
+        <Job sourceroot="${trg_engine}" input="${shader_pak_types}" zip="${pak_engine}\Shaders.pak" exclude="${shader_pak_excludes}" />
+        <Job sourceroot="${trg_engine}" input="${engine_pak_types}" zip="${pak_engine}\Engine.pak" exclude="${engine_pak_excludes}" />
+
+        <Job sourceroot="${trg_gems}" input="${gems_pak_types}" zip="${pak_game}\${gems}.pak" exclude="${gems_pak_excludes}" />
+    </PakJob>
+    
+    <CopyPakJob>
+        <Job sourceroot="${pak_game}"               targetroot="${src_game}"            input="*.pak"                                       copyonly="1"/>
+        <Job sourceroot="${pak_engine}"             targetroot="${src_game}"            input="*.pak"                                       copyonly="1"/>
+    </CopyPakJob>
+
+    <CleanJob>
+        <Job input="" targetroot="${trg}" clean_targetroot="1" />
+    </CleanJob>
+
+    <ValidateJob>
+        <Run Job="ConvertJob"/>
+        <Job input="" targetroot="${trg}" clean_targetroot="1" refs_scan="1" />
+    </ValidateJob>
+
+    <Run Job="ConvertJob"/>
+    <Run Job="CopyJob"/>
+    <Run Job="PakJob"/>
+    <Run Job="CopyPakJob"/>
+    <Run Job="CleanJob"/>
+    <Run Job="ValidateJob"/>
+
+</RCJobs>

@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "92fe57eae7d3402a90761973678c079a",
+    "Name": "InAppPurchases",
+    "DisplayName": "In-App Purchases",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Provides the in-app purchasing API for iOS and Android",
+    "Tags": ["InAppPurchases", "iOS", "Android"],
+    "IconPath": "preview.png"
+}

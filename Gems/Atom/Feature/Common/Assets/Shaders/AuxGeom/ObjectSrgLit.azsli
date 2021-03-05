@@ -1,0 +1,46 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup ObjectSrg : SRG_PerDraw
+{
+    float4 m_color;
+    row_major float3x4 m_modelToWorld;
+    row_major float3x3 m_normalMatrix;
+    row_major float4x4 m_viewProjectionOverride;
+    float m_pointSize;
+
+    //! Returns the matrix for transforming points from Object Space to World Space.
+    float4x4 GetWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorld[0] = m_modelToWorld[0];
+        modelToWorld[1] = m_modelToWorld[1];
+        modelToWorld[2] = m_modelToWorld[2];
+        return modelToWorld;
+    }
+
+    //! Returns the inverse-transpose of the world matrix.
+    //! Commonly used to transform normals while supporting non-uniform scale.
+    float3x3 GetWorldMatrixInverseTranspose()
+    {
+        return m_normalMatrix;
+    }
+}

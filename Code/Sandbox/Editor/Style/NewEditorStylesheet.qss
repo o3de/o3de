@@ -1,0 +1,2923 @@
+/* ============================================================= */
+/* Global styles                                                 */
+/* ============================================================= */
+*
+{
+	background-color: @WindowBackgroundColor;
+	color:  @TextColor;
+}
+
+QMainWindow, QDialog
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QDockWidget
+{
+	color: @DockWidgetTextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QDockWidget::title {
+    text-align: left;
+    background: @DockWindowTitleBarColor;
+    padding-left: 5px;
+}
+
+QLabel
+{
+	color: @TextColor;
+	background-color: @WindowBackgroundColor;
+}
+
+QToolBar > QLabel
+{
+	background: transparent;
+}
+
+QTextEdit
+{
+	color: @TextColor;
+	border: 1px solid @PanelBackgroundColor;
+	background: @PanelBackgroundColor;
+}
+
+QGroupBox::title 
+{
+    color: @TextColor;
+	font-weight:bold;
+	font-size: 16pt;
+}
+
+QListView[class="SingleRequiredSelection"]::item:selected {
+    border: 1px solid rgba(255, 153, 0, 255);
+}
+
+QListView[class="SingleRequiredSelection"]::item {
+    margin: 1px 0px;
+}
+
+NetPromoterScoreDialog QDialog
+{
+	background: #333333;
+}
+
+NetPromoterScoreDialog QPushButton[RatingButton="true"], QPushButton[class="RatingButtonLeave"]
+{
+	background-color: #f6f6f6;
+	color: black;
+	border-right: 1px solid black;
+	border-left: 1px #333333;	
+	border-top: 1px #333333;	
+	border-bottom: 1px #333333;		
+}
+
+NetPromoterScoreDialog QPushButton[class="RatingButtonHover"]
+{
+	background-color: #FFC400;
+	color: black;
+	border-right: 1px solid black;
+	border-left: 1px #333333;	
+	border-top: 1px #333333;	
+	border-bottom: 1px #333333;	
+}
+
+NetPromoterScoreDialog QPushButton[class="RatingButtonPress"]
+{
+	background-color: #FFA724;
+	color: black;
+	border-right: 1px solid black;
+	border-left: 1px #333333;	
+	border-top: 1px #333333;	
+	border-bottom: 1px #333333;	
+}
+
+NetPromoterScoreDialog QTextEdit, QTextEdit[class="CommentBoxBefore"]
+{
+	background: #BBBBBB;
+	color: black;
+}
+
+
+NetPromoterScoreDialog QTextEdit[class="CommentBoxAfter"]
+{
+	background: white;
+	color: black;
+}
+
+NetPromoterScoreDialog QLabel[NPSLabel="true"]
+{
+	font-family: "Open Sans";
+	font-size: 12px;
+}
+
+NetPromoterScoreDialog QLabel[NPSMessage="true"]
+{
+	font-family: "Open Sans";
+	font-size: 13px;
+}
+
+QTreeView[class="DuplicateAssetImporterTreeView"]::branch
+{
+	border-image: url(none.png);
+}
+
+QLabel[class="AssetImporterLabel"]
+{
+	font-family: "Open Sans";
+	font-size: 14px;
+	color: #EEEEEE;
+}
+
+QLabel[class="AssetImporterFilesMessage"]
+{
+	font-family: "Open Sans";
+	font: bold 14px;
+	color: #EEEEEE;
+}
+
+QWidget[class="AssetImporterDialog"] QPushButton[class="AssetImporterButton"]
+{
+	font-family: "Open Sans Semibold";
+	font-size: 14px;
+	color: #999999;
+	text-shadow: 0 0.5px 1px;
+	width: 76px;
+	height: 28px;
+	padding: 1px;
+}
+
+QWidget[class="AssetImporterDialog"] QPushButton[class="Primary"],
+QDialog[class="AssetImporterDialog"] QDialogButtonBox[class="AssetImporterDialog"] QPushButton[class="Primary"],
+QDialogButtonBox[class="AssetImporterDialog"] QPushButton[class="Primary"]
+{
+	font-family: "Open Sans Semibold";
+	font-size: 14px;
+	text-shadow: 0 0.5px 1px;
+	width: 96px;
+	height: 28px;
+	padding: 1px;
+	color: white;
+}
+
+QWidget[class="AssetImporterDialog"] QPushButton[class="Primary"]:disabled,
+QDialog[class="AssetImporterDialog"] QDialogButtonBox[class="AssetImporterDialog"] QPushButton[class="Primary"]:disabled,
+QDialogButtonBox[class="AssetImporterDialog"] QPushButton[class="Primary"]:disabled
+{
+	font-family: "Open Sans Semibold";
+	font-size: 14px;
+	text-shadow: 0 0.5px 1px;
+	width: 96px;
+	height: 28px;
+	padding: 1px;
+	color: #999999;
+}
+
+QWidget[class="AssetImporterDialog"] QPushButton[class="AssetImporterLargerButton"]
+{
+	font-family: "Open Sans Semibold";
+	font-size: 14px;
+	color: #999999;
+	text-shadow: 0 0.5px 1px;
+	
+	width: 85px;
+	height: 28px;
+	padding: 1px;
+}
+
+SelectFilesDialogPage QLabel[SelectFileMessage="true"]
+{
+	font-family: "Open Sans";
+	font-size: 14px;
+	color: #EEEEEE;
+	letter-spacing: 0.47px;
+}
+
+SelectFilesDialogPage QLabel[DragAndDropMessage="true"]
+{
+	font-family: "Open Sans";
+	font-size: 14px;
+	color: #FFFFFF;
+	letter-spacing: 0.41px;
+}
+
+StatusBarItem
+{
+	background-color: @PanelBackgroundColor;
+	border: 1px solid @ScrollbarBackgroundColor;
+}
+
+StatusBarItem[clickable="true"]
+{
+	border: 1px solid @ScrollbarHandleBackgroundColor;
+}
+
+StatusBarItem[clickable="true"]:hover
+{
+	border: 1px solid @ToolButtonHoverBorderColor;
+	background-color: @ToolButtonHoverBackgroundColor
+}
+
+OutlinerTreeView::branch:has-children:closed
+{
+    image: url(:/PropertyEditor/Resources/group_closed.png);
+}
+
+OutlinerTreeView::branch:has-children:open
+{
+    image: url(:/PropertyEditor/Resources/group_open.png);
+}
+OutlinerTreeView
+{
+    show-decoration-selected:0;
+}
+
+/* ============================================================= */
+/* Styles applied through programmatically-set QT properties      */
+/* ============================================================= */
+
+/* Style for pulse highlight widgets (outliner highlight, etc) */
+OutlinerWidget QWidget[PulseHighlight="true"]
+{
+    background-color: @MenuItemSelectedColor;
+}
+
+OutlinerWidget QLineEdit
+{
+    background: #FFFFFFFF;
+}
+
+OutlinerWidget #m_display_options
+{
+    qproperty-icon: url(:/stylesheet/img/UI20/menu-centered.svg);
+    qproperty-iconSize: 18px 18px;
+    qproperty-flat: true;
+}
+
+AzToolsFramework--EntityIdQLineEdit
+{
+    max-height: 16px;
+    min-height: 16px;
+}
+
+/* Style for highlighting valid drag-drops (entity references, etc) */
+AzToolsFramework--PropertyEntityIdCtrl AzToolsFramework--EntityIdQLabel[DropHighlight="true"]
+{
+    background-color: @MenuItemSelectedColor;
+}
+
+/* Style for properties that fail validation */
+AzToolsFramework--PropertyEntityIdCtrl[MismatchedServices="true"] AzToolsFramework--EntityIdQLabel,
+AzToolsFramework--PropertyEntityIdCtrl[MismatchedServices="true"] AzToolsFramework--EntityIdQLineEdit
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    color: red;
+}
+
+/* Style for delineating component blocks in the entity property editor */
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"]
+{
+    margin: 0px;
+    padding: 0 0 0 5;
+    border-radius: 0px;
+    background-color: @ComponentPanelFrameColor;
+}
+
+/* Style for setting internal padding on PropertyRowWidget */
+AzToolsFramework--PropertyRowWidget
+{
+    padding: 0px 2px 0px 2px;
+}
+
+/* Style for visualizing property values overridden from their prefab values */
+AzToolsFramework--PropertyRowWidget QLabel#Name
+{
+    color: @TextColor;
+    padding: 0 0 0 5;
+}
+
+/* Style for visualizing property values overridden from their prefab values */
+AzToolsFramework--PropertyRowWidget QWidget
+{
+    color: @MenuEnabledTextColor;
+}
+
+/* Style for visualizing property values overridden from their prefab values */
+AzToolsFramework--PropertyRowWidget[IsOverridden="true"] AzQtComponents--ElidingLabel#Name
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    color: @MenuItemSelectedColor;
+}
+
+/* Style for visualizing the root of components in the prop grid */
+AzToolsFramework--ReflectedPropertyEditor[ComponentBlock="true"] AzToolsFramework--PropertyRowWidget[Root="true"] QLabel
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+/* Style for transform properties */
+AzToolsFramework--ReflectedPropertyEditor QLabel#X
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    color: rgb(184,51,51);
+}
+AzToolsFramework--ReflectedPropertyEditor QLabel#Y
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    color: rgb(48,208,120);
+}
+AzToolsFramework--ReflectedPropertyEditor QLabel#Z
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    color: rgb(66,133,244);
+}
+
+/* Style for EntityPropertyEditor */
+AzToolsFramework--EntityPropertyEditor #LabelEntityDetails
+{
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+/* Style for slice push UI */
+
+AzToolsFramework--SlicePushWidget QLabel[Title="true"]
+{
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+AzToolsFramework--SlicePushWidget QWidget#WarningLine
+{
+    background-color:#F5A623
+}
+
+AzToolsFramework--NoChangesOverlay
+{
+    background-color: rgba(0,0,0,50);
+}
+
+AzToolsFramework--NoChangesOverlay QLabel
+{
+    font-size: 14pt; 
+    font-family: "Open Sans Extrabold";
+    font-weight: bold; 
+    color: rgba(180,180,180,255);
+}
+
+AzToolsFramework--SlicePushWidget QRadioButton
+{
+    color: @MenuItemSelectedColor;
+}
+
+AzToolsFramework--ComponentPaletteWidget
+{
+    border: 1px solid @ScrollbarHandleBorderColor;
+}
+
+AzToolsFramework--ComponentPaletteWidget #SearchFrame
+{
+}
+
+AzToolsFramework--ComponentPaletteWidget #SearchText
+{
+    selection-background-color: rgb(233, 99, 0);
+    background: #6e7071;
+    image: url(:/PropertyEditor/Resources/search.png);
+    background-repeat: no-repeat;
+    background-position: left;
+    padding: 2 2 2 24;
+}
+
+AzToolsFramework--ComponentPaletteWidget #SearchClearButton
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/PropertyEditor/Resources/close.png);
+}
+
+AzToolsFramework--ComponentPaletteWidget #Tree
+{
+    background-color: #222222;
+    color: white;
+    font-size: 12px;
+    outline: none;
+    padding: 5 0 8 8;
+    selection-color: #4285F4;
+    selection-background-color: #222222;
+}
+
+AzToolsFramework--ComponentPaletteWidget #Tree::item::hover
+{
+	color: #4285F4;
+}
+
+AzToolsFramework--ComponentEditor
+{
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid rgb(33, 34, 35);
+    border-radius: 2px;
+}
+
+AzToolsFramework--ComponentEditor #ComponentEditorNotification
+{
+    background-color: #1AFDC32D;
+    margin: 2px;
+    border: 1px solid #FDC32D;
+    border-radius: 2px;
+}
+
+AzToolsFramework--ComponentEditor #ComponentEditorNotification #HeaderFrame 
+{
+    background-color: transparent;
+    border: none;
+}
+
+AzToolsFramework--ComponentEditor #ComponentEditorNotification #Icon
+{
+    background-color: transparent;
+    border: none;
+}
+
+AzToolsFramework--ComponentEditor #ComponentEditorNotification #Title
+{
+    background-color: transparent;
+    border: none;
+}
+
+/**
+ * ComponentEditorHeader is a QFrame with a QHBoxLayout that contains the following children:
+ * #Expander: a QCheckBox used as a "tree expander".
+ * #Icon: a QLabel displaying an icon. The icon is set from c++.
+ * #Title: a QLabel displaying text.
+ * #ContextMenu: a QPushButton used to launch a context menu.
+ */
+
+AzToolsFramework--ComponentEditorHeader
+{
+    margin: 0px;
+    padding: 0px;
+    border: none;
+    border-radius: 2px;
+    background-color: #222222;
+}
+
+AzToolsFramework--ComponentEditorHeader #Background
+{
+    margin: 2px;
+    padding: 0px;
+    border: none;
+    border-radius: 2px;
+    background-color: #222222;
+    background-image: none;
+}
+
+AzToolsFramework--ComponentEditorHeader #Background[readOnly=true]
+{
+    background-image: url(:/PropertyEditor/Resources/disabled_header.png);
+    background-repeat: repeat-xy;
+}
+
+AzToolsFramework--ComponentEditorHeader #Background[readOnly=false]
+{
+    background-image: none;
+}
+
+AzToolsFramework--ComponentEditorHeader #Title[IsOverridden="false"]
+{
+    font-weight: bold;
+    background-color: transparent;
+}
+
+AzToolsFramework--ComponentEditorHeader #Title[IsOverridden="true"]
+{
+    font-weight: bold;
+    background-color: transparent;
+    color: @MenuItemSelectedColor;
+}
+
+AzToolsFramework--ComponentEditorHeader #Expander
+{
+    width: 16px;
+    height: 16px;
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: none;
+}
+
+AzToolsFramework--ComponentEditorHeader #Expander:enabled:checked
+{
+    image: url(:/PropertyEditor/Resources/group_open.png);
+}
+
+AzToolsFramework--ComponentEditorHeader #Expander:enabled:!checked
+{
+    image: url(:/PropertyEditor/Resources/group_closed.png);
+}
+
+AzToolsFramework--ComponentEditorHeader #Icon
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    background-color: transparent;
+}
+
+AzToolsFramework--ComponentEditorHeader #WarningIcon
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    background-color: transparent;
+}
+
+AzToolsFramework--ComponentEditorHeader #ContextMenu
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/PropertyEditor/Resources/menu_ico.png);
+}
+
+AzToolsFramework--ComponentEditorHeader #Help
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/PropertyEditor/Resources/help.png);
+}
+
+QLabel #NumOverrides 
+{
+    color: @MenuItemSelectedColor;
+    font-size:30px; 
+}
+
+QWidget#SliceHierarchyMenuItem
+{
+    background-color: transparent;
+}
+
+QWidget#SliceHierarchyMenuItem QLabel
+{
+    background-color: transparent;
+    color: @MenuEnabledTextColor;
+}
+
+QWidget#SliceHierarchyMenuItem QLabel:disabled
+{
+    background-color: transparent;
+    color: @MenuDisabledTextColor;
+}
+
+QWidget#SliceHierarchyMenuItem QLabel#NumOverrides
+{
+    background-color: transparent;
+    color: @MenuItemSelectedColor;
+}
+
+QWidget#SliceHierarchyMenuItem QLabel#ContextLabelEnabled
+{
+    color: @MenuEnabledTextColor;
+}
+
+QWidget#SliceHierarchyMenuItem QMessageBox#ContextWarning QLabel
+{
+    color: @MenuEnabledTextColor;
+}
+
+QWidget#SliceHierarchyMenuItem QMessageBox#ContextWarning QLabel:hover
+{
+    color: @MenuEnabledTextColor;
+}
+
+QWidget#SliceHierarchyMenuItem QLabel:hover
+{
+    color: @LinkColor;
+}
+
+QWidget#LayerHierarchyMenuItem
+{
+    background-color: transparent;
+}
+
+QWidget#LayerHierarchyMenuItem QLabel
+{
+    background-color: transparent;
+    color: @MenuEnabledTextColor;
+}
+
+QWidget#LayerHierarchyMenuItem QLabel:disabled
+{
+    background-color: transparent;
+    color: @LayerMenuDisabled;
+}
+
+QWidget#LayerHierarchyMenuItem:hover
+{
+    background-color: @LayerMenuSelected;
+}
+
+MessageDetailWidget
+{
+    border: 1px solid @MenuBorderColor;
+}
+
+PopupDialogWidget #MarginFrame
+{
+    margin: 12px 14px 12px 14px;
+}
+
+PopupDialogWidget #DialogButton
+{
+    padding: 6px 9px 6px 9px;
+    margin-top: 12px;
+}
+
+QLabel[class='Error'] {color: @ResourceProgressError; }
+QLabel[class='Working'] {color: @ResourceProgressWorking; }
+
+QPushButton[class='Link'] { color: @LinkColor; }
+
+#ResourceManagement QLabel
+{
+    /* 
+        This sets the indent Q_PROPERTY on QLabel to 0. The default value is -1,
+        which triggers some computation based on the font size. But that only 
+        happens under some cicumstances, such as when using a stylesheet to set
+        margins or padding on the QLabel. Adding such styling suddenly causes
+        the indent to be applied, causing th left alignment of the text to break.
+    */
+    qproperty-indent: 0
+}
+
+#ResourceManagement #TreeTitle
+{
+    font-size:12px; 
+    font-weight:bold;
+}
+
+#ResourceManagement #ButtonBar {
+    margin-top: 6px;
+}
+
+#ResourceManagement #ButtonBar QPushButton {
+    padding: 6px 9px 6px 9px;
+    margin-right: 6px;
+}
+
+#ResourceManagement #Message, #ResourceManagement *[class='Message'] {
+    color: @LabelTextColor;
+    font-size: 12px;
+    margin-top: 6;
+}
+
+#ResourceManagement #Title {
+    font-size: 14px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+#ResourceManagement #Refreshing {
+    color: @TextWarningColor;
+}
+
+#ResourceManagement #LinkButton, #ResourceManagement *[class='Link'] {
+    border: none;
+    color: @LinkColor;
+    margin-top: 6px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+#ResourceManagement QHeaderView::section {
+    color: @LabelTextColor;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    border: none;
+    padding-top: 0px;
+    padding-bottom: 3px;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+#ResourceManagement #Table {
+    qproperty-showGrid: false;
+    border: none;
+}
+
+#ResourceManagement #Table::item {
+    padding-right: 12px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+#ResourceManagement #TextContentHelp
+{
+    margin: 0px;
+    padding: 12px;
+    border-style: outset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #TextContentEdit
+{
+}
+
+#ResourceManagement #TextContentFooter
+{
+    padding: 6px 12px 6px 12px;
+    border-style: outset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #TextContentFooter QLabel
+{
+    min-width: 48px;
+    max-width: 48px;
+    margin-right: 12px;
+    color: @LabelTextColor;
+}
+
+#ResourceManagement #TextContentFooter QPushButton
+{
+    padding: 6px 9px 6px 9px;
+    margin-left: 6px;
+}
+
+
+#ResourceManagement #Action {
+    padding: 12px;
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #ButtonBar {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #Heading {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Heading #RefreshButton {
+    margin-left: 12px;
+    padding: 3px;
+}
+
+#ResourceManagement #Action #Heading #Title {
+    border: 0px solid @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #Heading #Message {
+    border: 0px solid @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #LearnMore {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #LearnMore #Title {
+    font-size: 12px;
+    margin-top: 24px;
+    font-weight:bold;
+}
+
+#ResourceManagement #Action #LearnMore #LinkButton {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Action #Title, #ResourceManagement #Action #Message {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Top {
+    padding: 12px; 
+    border-style: outset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #Bottom {
+    background-color: @DarkPanelBackgroundColor;
+    padding: 12px; 
+}
+
+#ResourceManagement #Bottom #Title {
+    background-color: @DarkPanelBackgroundColor;
+    font-size: 12px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+#ResourceManagement #Bottom #Message {
+    background-color: @DarkPanelBackgroundColor;
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #Bottom #Table {
+    background-color: @DarkPanelBackgroundColor;
+    qproperty-alternatingRowColors: true;
+}
+
+#ResourceManagement #Bottom #Table QHeaderView {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Bottom #Table QHeaderView::section {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Bottom #Table::item {
+    background-color: @WindowBackgroundColor;
+}
+
+#ResourceManagement #Bottom #Table::item:alternate {
+    background-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #Bottom #Resources {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Bottom #Refreshing {
+    background-color: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Stack #Heading #Message
+{
+    margin-top: 0;
+}
+
+#ResourceManagement #Stack #Status #Title
+{
+    font-size: 12px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #StackEvents #TitleBar {	
+    color: @TextColor;
+	background-color: @WindowBackgroundColor;
+    border-style: outset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #StackEvents #TitleBar * {
+    font-size:12px; 
+} 
+
+#ResourceManagement #StackEvents #TitleBar #Title {
+    font-weight:bold;
+    margin-right: 12px;
+} 
+
+#ResourceManagement #StackEvents #TitleBar #InProgress #Text {
+    color: @TextWarningColor;
+}
+
+#ResourceManagement #StackEvents #TitleBar #Succeeded {
+    color: @TextPositiveColor;
+}
+
+#ResourceManagement #StackEvents #TitleBar #Failed {
+    color: @TextErrorColor;
+}
+
+#ResourceManagement #StackEvents #Content {	
+    border-style: inset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+    padding: 12px;
+}
+
+#ResourceManagement #StackEvents #Table {
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+}
+
+#ResourceManagement #StackEvents QTableView::item {
+    background-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #StackEvents QTableView::item:focus {
+    selection-color: @MenuEnabledTextColor;
+    selection-background-color: @ToolButtonPressedBackgroundColor;
+}
+
+#ResourceManagement #StackEvents QTableView::item:alternate {
+    background-color: @WindowBackgroundColor;
+}
+
+#ResourceManagement #CreateDeployment #LearnMore
+{
+    margin-bottom: 12px;
+}
+
+#ResourceManagement #CreateDeployment #WarningMessage
+{
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+#ResourceManagement #LoadingError, #ResourceManagement #LoadingError #Title, #ResourceManagement #LoadingError #Message, #ResourceManagement #LoadingError #ErrorText
+{
+    background: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #LoadingError #ErrorText
+{
+    padding: 12px;
+    color: @TextErrorColor;
+}
+
+#ResourceManagement #Loading, #ResourceManagement #Loading #Title, #ResourceManagement #Loading #Message
+{
+    background: @DarkPanelBackgroundColor;
+}
+
+#ResourceManagement #Loading, #ResourceManagement #LoadingError
+{
+    padding: 12px;
+}
+
+#ResourceManagement #MainToolbar
+{
+    padding: 6px;
+    border-style: inset;
+    border-width: 1px;
+    border-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #MainToolbar QPushButton
+{
+    border: none;
+    padding: 0px;
+}
+
+#ResourceManagement #MainToolbar #AddNewButton
+{
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+#ResourceManagement #ResourceImporter #RegionBox:disabled
+{
+    color: #555555;
+}
+
+#ResourceManagement #ResourceImporter #ListTable
+{
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+    border: none;
+}
+
+#ResourceManagement #ResourceImporter #ListTable::item
+{
+    padding-right: 12px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: #333436;
+}
+
+#ResourceManagement #ResourceImporter #ListTable::item:alternate
+{
+    background-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #ResourceImporter #SelectionTable
+{
+    qproperty-showGrid: true;
+    border: none;
+    gridline-color: @WindowBackgroundColor;
+}
+
+#ResourceManagement #ResourceImporter #SelectionTable::item
+{
+    padding: 1px 1px 1px 1px;
+
+}
+
+#ResourceManagement #ResourceImporter #LoadingLabel
+{
+    color : @TextWarningColor;
+}
+
+#ResourceManagement #MainToolbar #SaveButton
+{
+    margin-left: 12px;
+    margin-right: 6px;
+}
+
+#ResourceManagement #MainToolbar #DeleteButton
+{
+    margin-right: 12px;
+}
+
+#ResourceManagement #MainToolbar #AddNewButton
+{
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+#ResourceManagement #MainToolbar #SourceControlButton
+{
+    margin-left: 6px;
+}
+
+#ResourceManagement #MainToolbar #CurrentProfile
+{
+    margin-right: 12px;
+}
+
+#ResourceManagement #MainToolbar #CurrentDeployment
+{
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+#ResourceManagement #UpdateStack #Refreshing
+{
+    margin-top: 12px;
+    margin-left: 12px;
+}
+
+#ResourceManagement #UpdateStack #Message
+{
+    margin-bottom: 6px;
+}
+
+#ResourceManagement #UpdateStack #Table {
+    qproperty-alternatingRowColors: true;
+    qproperty-showGrid: false;
+}
+
+#ResourceManagement #UpdateStack #Table::item {
+    background-color: @PanelBackgroundColor;
+}
+
+#ResourceManagement #UpdateStack #Table::item:alternate {
+    background-color: @WindowBackgroundColor;
+}
+
+#ResourceManagement #UpdateStack #Status {
+    color: @TextWarningColor;
+}
+
+#ProfileSelector #DeleteProfile {
+    width: 38px;
+    height: 11px;
+    border: none;
+}
+
+#ProfileSelector #EditSelectedProfile {
+    color: @LinkColor;
+}
+
+#LoginDialog
+{
+    background-color: #F8F8F8;
+}
+
+#LoginDialog Amazon--LoginWelcomeTitle
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 21px;
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans Semibold";
+}
+
+#LoginDialog Amazon--LoginWelcomeText
+{
+    color: #444444;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignLeft;
+    font-family: "Open Sans";
+}
+
+#LoginDialog Amazon--LoginFooterText
+{
+    color: #999999;
+    background-color: #F8F8F8;
+    font-size: 13px;
+    qproperty-alignment: AlignCenter;
+    font-family: "Open Sans";
+}
+
+#LoginDialog Amazon--LoginWebViewFrame
+{
+    border: 2px solid #EEEEEE;
+}
+
+#LoginDialog Amazon--LoginWebView
+{
+    background-color: #F8F8F8;
+}
+
+QLineEdit[inputValid="false"]
+{
+    font: bold;
+    border-style: solid;
+    border: 2px solid @TextErrorColor;
+    background-image: url(:/Icons/Error.png);
+    background-repeat: no-repeat;
+    background-position: right;
+    padding-right: 20px;
+    background-color: rgb(250, 163, 160);
+}
+
+QLineEdit[inputValid="false"]:focus
+{
+    background-color: rgb(253, 218, 217);
+}
+
+QWidget#ViewportTitleDlgContainer, QWidget#ViewportTitleDlgContainer QWidget {
+    background-color: rgba(47, 46, 46, 217);
+}
+
+QLineEdit#filteredSearchWidget
+{
+    selection-background-color: rgb(233, 99, 0);
+    background: #6e7071;
+    background-image: url(:/stylesheet/img/search.png);
+    background-repeat: no-repeat;
+    background-position: left;
+    padding: 2 2 2 24;
+    color: rgb(255, 255, 255);
+}
+
+QPushButton#m_display_options:menu-indicator
+{
+    image:  url(none.jpg)
+}
+
+QPushButton#m_display_options
+{
+    border: none;
+    image : url(:/stylesheet/img/menu.png);
+    padding: 0 2 0 0;
+}
+
+QPushButton#m_display_options:hover
+{
+    border: none;
+    image : url(:/stylesheet/img/menu_selected.png);
+}
+
+QPushButton#m_display_options:focus
+{
+    border: none;
+    image : url(:/stylesheet/img/menu_selected.png);
+}
+
+QToolButton#assetTypeSelector
+{
+    border: none;
+    image : url(:/stylesheet/img/filter.png);
+    padding: 0 0 0 2;
+}
+
+QToolButton#assetTypeSelector::menu-indicator
+{
+    image : url(none.jpg);
+}
+
+QToolButton#assetTypeSelector:hover
+{
+    border: none;
+    image : url(:/stylesheet/img/filter_selected.png);
+}
+
+QToolButton#assetTypeSelector:focus
+{
+    border: none;
+    image : url(:/stylesheet/img/filter_selected.png);
+}
+
+/*****************************************************************************
+                                Qt Widgets
+******************************************************************************/
+
+QWidget {
+    background-color: rgb(56, 58, 59);
+    font-family: "Open Sans";
+    font-weight: 400;
+}
+
+QMenuBar {
+    background-color: rgb(47, 46, 46);
+    color: rgb(204, 204, 204);
+    min-height: 24px;
+    font-size: 13px;
+}
+
+QMenuBar::item {
+    spacing: 13px;
+    padding: 1px 0px 0px 10px;
+    background: transparent;
+}
+
+QMenuBar::item:selected {
+    color: rgb(66, 133, 244);
+}
+
+QMenuBar::item:pressed {
+    color: rgb(66, 133, 244);
+}
+
+QLabel, QGroupBox::title, QTabBar::tab, QDockWidget::title, QDockWidget {
+    color: rgb(204, 204, 204);
+}
+
+QPushButton::menu-indicator:enabled {
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+    left: -7px;
+    top: 2px;
+    image: url(":/stylesheet/img/triangle1.png")
+}
+
+
+QPushButton::menu-indicator:disabled {
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+    left: -7px;
+    top: 2px;
+    image: url(":/stylesheet/img/triangle2.png")
+}
+
+QPushButton[class="FixedMenu"]::menu-indicator:enabled, QPushButton[class="FixedMenu"]::menu-indicator:disabled {
+    left: -3px;
+}
+
+QPushButton {
+    font-size: 14px;
+    color: #EEEEEE;
+}
+
+QPushButton:hover {
+    color: rgb(204, 204, 204);
+}
+
+QPushButton:pressed {
+    color: #cccccc;
+}
+
+QPushButton:disabled {
+    color: #999999;
+}
+
+
+QPushButton[class="Primary"] {
+	color: white;
+}
+
+QPushButton[class="Primary"]:disabled {
+    color: #999999;
+}
+
+QPushButton[class="tiny"] {
+    font-size: 11px;
+    border: 1px solid rgb(40,41,42);
+    border-radius: 2px;
+    padding: 0 2 0 2;
+}
+
+QPushButton[class="tiny"]:checked {
+    border: 1px solid rgb(243,129,29);
+    border-radius: 2px;
+    padding: 0 2 0 2;
+}
+
+QRadioButton, QCheckBox {
+    font-size: 12px;
+    line-height: 18px;
+    color: rgb(204, 204, 204);
+}
+
+QRadioButton:hover {
+    color: white;
+}
+
+QRadioButton:hover, QCheckBox:hover {
+    color: white;
+}
+
+QRadioButton:disabled, QCheckBox:disabled {
+    color: @CheckBoxDisabledColor;
+}
+
+
+QRadioButton::indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    image: url(:/stylesheet/img/radio-unselected.png);
+}
+
+QRadioButton::indicator:checked {
+    image: url(:/stylesheet/img/radio-selected.png);
+}
+
+QRadioButton::indicator:hover:unchecked {
+    image: url(:/stylesheet/img/radio-hover.png);
+}
+
+QRadioButton::indicator:disabled {
+    image: url(:/stylesheet/img/radio-disabled.png);
+}
+
+QCheckBox::indicator:PartiallyChecked {
+    width: 11px;
+    height: 11px;
+	border: 1px solid white;
+	border-radius: 2px;
+	image: url(:/stylesheet/img/combo-tristate.png);
+}
+
+QCheckBox::indicator:Unchecked {
+    width: 11px;
+    height: 11px;
+    border: 1px solid white;
+    border-radius: 2px;
+	image: none;
+}
+
+QCheckBox::indicator:Checked {
+    width: 11px;
+    height: 11px;
+    image: url(:/stylesheet/img/combo-checked.png);
+}
+
+QCheckBox::indicator:unchecked:disabled {
+    width: 11px;
+    height: 11px;
+    border: 1px solid rgb(126, 119, 116);
+    border-radius: 2px;
+}
+
+QTextEdit {
+    color: rgb(204, 204, 204);
+    font-size: 12px;
+    line-height: 20px;
+
+    background-color: rgb(34, 35, 38);
+    border: 1px solid rgb(34, 35, 38);
+}
+
+
+QScrollBar {
+    background-color: #333333;
+    border: 1px solid rgb(34, 35, 38);
+}
+
+QScrollBar:horizontal {
+    height: 14px;
+    padding: 2 0 2 0;
+}
+
+QScrollBar:vertical {
+    width: 14px;
+    padding: 0 2 0 2;
+}
+
+QScrollBar::handle {
+    background-color: #555555;
+    border: 0.5px solid rgb(51, 52, 56);
+    border-radius: 2px;
+}
+
+QScrollBar::handle:horizontal {
+    height: 8px;
+    min-width: 60px;
+}
+
+QScrollBar::handle:vertical {
+    width: 8px;
+    min-height: 60px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line, QScrollBar::add-page, QScrollBar::sub-page {
+      border: none;
+      background: none;
+}
+
+QProgressBar {
+    height: 7px;
+    background: rgb(108, 111, 112);
+    border-radius: 2px;
+    color: transparent; /* no label */
+}
+
+QProgressBar::chunk {
+    background-color: rgb(17, 102, 187);
+    border-radius: 2px;
+}
+
+
+QSlider:horizontal {
+    height: 20px;
+}
+QSlider:vertical {
+    width: 20px;
+}
+
+QSlider::groove {
+    background: rgb(108, 111, 112);
+    border-radius: 2px;
+}
+QSlider::groove:horizontal {
+    height: 8px;
+    left: 9px;
+    right: 9px;
+}
+QSlider::groove:vertical {
+    width: 8px;
+    top: 9px;
+    bottom: 9px;
+}
+
+/* right side of the slider */
+QSlider::add-page:horizontal, QSlider::add-page:vertical {
+     background-color: rgb(108, 111, 112);
+     border-radius: 2px;
+}
+
+/* left side of the slider */
+QSlider::sub-page:horizontal, QSlider::sub-page:vertical {
+    background-color: rgb(17, 102, 187);
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal:disabled, QSlider::sub-page:vertical:disabled {
+    background: rgb(108, 111, 112);
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal[invertedAppearance=true], QSlider::sub-page:vertical[invertedAppearance=true] {
+     background: rgb(108, 111, 112);
+     border-radius: 2px;
+}
+QSlider::add-page:horizontal[invertedAppearance=true], QSlider::add-page:vertical[invertedAppearance=true] {
+    background-color: rgb(17, 102, 187);
+    border-radius: 2px;
+}
+
+QSlider::handle {
+    margin: -9px -9px;
+    image: url(:/stylesheet/img/slider-handle.png);
+}
+
+QSlider::handle:disabled {
+    image: url(:/stylesheet/img/slider-handle-disabled.png);
+}
+
+QMenu {
+    background-color: #333333;
+    margin: 3 5 5 5;
+}
+
+/* Setting padding-left explicitly only pads the text,
+ * without taking into account the action icon, so it
+ * may result in text and icon overlapping. */
+QMenu::item {
+    color: white;
+    font-size: 12px;
+    padding-right: 25px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+QMenu::item:selected {
+    color: #4285F4;
+}
+
+QMenu::item:disabled {
+    color: #555555;
+}
+
+QMenu::separator
+{
+    height: 0px;
+    margin: 2px 6px 2px 6px;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: #303030;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #222222;
+}
+
+QComboBox {
+    height: 17px;
+    border-radius: 1px;
+    color: white;
+    padding: 1px 6px 1px;
+}
+
+QComboBox:enabled:!focus {
+    background-color: #555555;
+}
+
+QComboBox:enabled:!focus:on {
+    background-color: #555555;
+    border: 1px solid rgb(66, 133, 244);
+}
+
+QComboBox:focus {
+    background-color: #555555;
+    border: 1px solid rgb(66, 133, 244);
+}
+
+QComboBox QListView {
+    background-color: #222222;
+    color: white;
+    font-size: 12px;
+    outline: none;
+    padding: 5 0 8 8;
+    selection-color: #4285F4;
+    selection-background-color: #222222;
+}
+
+QComboBox QListView::item {
+    min-height: 17;
+    color: white;
+}
+
+QComboBox QListView::item:selected {
+    background-color: #222222;
+    color: #4285F4;
+}
+
+QComboBox QScrollBar {
+    background-color: #222222;
+    border: 0px;
+}
+
+QComboBox QScrollBar:vertical {
+    width: 4px;
+    padding: 0 1 0 0;
+}
+
+QComboBox QScrollBar::handle:vertical {
+    width: 2px;
+}
+
+QComboBox::drop-down
+{
+    /** Disabled until we get an asset */
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(:/stylesheet/img/dropdowns/double_arrows.png);
+}
+
+QComboBox::down-arrow:disabled {
+    image: url(:/stylesheet/img/dropdowns/double_arrows_disabled.png);
+}
+
+QComboBox::down-arrow:!editable {
+    image: url(:/stylesheet/img/dropdowns/down_arrow.png);
+}
+
+QComboBox::down-arrow:!editable:disabled {
+    image: url(:/stylesheet/img/dropdowns/down_arrow_disabled.png);
+}
+
+QComboBox:disabled {
+    color: rgb(105, 105, 105);
+    background-color: rgb(78, 80, 81);
+}
+
+QToolBar QComboBox {
+    border-radius: 2px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+QTabBar::close-button {    
+    image: url(:/PropertyEditor/Resources/close.png);
+}
+
+QTreeView::item:hover {
+    color: rgb(66, 133, 244);
+}
+
+/*****************************************************************************
+                                Amazon widgets
+******************************************************************************/
+QLineEdit {
+    font-family: "Open Sans";
+    font-size: 12px;
+    font-weight: 400;
+    color: black;
+}
+
+QLineEdit:focus {
+    color: black;
+}
+
+VectorEdit QLineEdit {
+    height: 16px;
+    font-size: 12px;
+    padding: 0px 3px;
+    border-width: 1px;
+    border-radius: 2px;
+    color: "black";
+}
+
+VectorEdit QLineEdit:enabled:focus {
+    background-color: rgb(204, 204, 204);
+}
+
+VectorEdit QLineEdit:enabled {
+    background-color: rgb(110, 112, 113);
+    border: 1px solid rgb(66, 133, 244);
+}
+
+VectorEdit QLineEdit:disabled {
+    color: rgb(56, 58, 59);
+    background-color: rgb(78, 80, 81);
+}
+
+QAbstractSpinBox:disabled {
+    color: rgb(0, 0, 0);
+    background-color: rgb(90, 90, 90);
+}
+
+VectorEdit[flavor="1"] QLineEdit { /* Information */
+    border-color: rgb(239, 124, 24);
+}
+
+VectorEdit[flavor="2"] QLineEdit { /* Question */
+    border-color: rgb(66, 133, 244);
+}
+
+VectorEdit[flavor="3"] QLineEdit { /* Invalid */
+    color: rgb(226, 82, 67);
+    border-color: rgb(226, 82, 67);
+}
+
+VectorEdit[flavor="4"] QLineEdit { /* Valid */
+    border-color: rgb(84, 190, 93);
+}
+
+QExpandingLineEdit {
+    background-color: rgb(255, 255, 255);
+}
+
+QAbstractItemView {
+    background-color: rgb(56, 58, 59);
+    alternate-background-color: rgb(66, 68, 69);
+    color: rgb(153, 153, 153);
+    border: none;
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(255, 255, 255, 41);
+}
+
+QAbstractItemView::indicator:unchecked {
+    width: 10px;
+    height: 10px;
+    border: 1px solid white;
+    border-radius: 2px;
+}
+
+QAbstractItemView::indicator:checked {
+    image: url(:/stylesheet/img/combo-checked.png);
+}
+
+QAbstractItemView::indicator:disabled {
+    width: 10px;
+    height: 10px;
+    border: 1px solid rgb(126, 119, 116);
+    border-radius: 2px;
+}
+
+QHeaderView::section {
+	background-color: transparent;
+	color: rgb(204, 204, 204);
+	padding: 5px;
+}
+
+QHeaderView::section::horizontal {
+	border-right: 1px solid #999999;
+}
+
+QHeaderView::section::horizontal:last, QHeaderView::section:horizontal:only-one {
+	border-right: none;
+}
+
+/**
+* TitleBar is a QFrame with a QHBoxLayout that contains the following children.
+* qproperty-windowTitleOverride can be used to override the title.
+* #icon: a QLabel displaying an icon. The icon is set using qproperty-pixmap.
+* #title: an AzQtComponents::ElidingLabel displaying text.
+* #buttons: a QFrame containing the DockBarButtons in a QHBoxLayout.
+*/
+
+AzQtComponents--TitleBar {
+    padding-left: 1px;
+    padding-right: 7px; /* DockBar::ButtonsSpacing + DockBar::CloseButtonRightMargin */
+}
+
+AzQtComponents--TitleBar * {
+    /* The normal TitleBar background is a gradient, so make sure all child widgets have transparent
+     * backgrounds.
+     */
+    background-color: "transparent";
+}
+
+AzQtComponents--TitleBar[drawSimple="true"] {
+    background: rgb(221, 221, 221);
+    margin-bottom: 1px; /* Hardcoded in DockBar::drawSolidFrame */
+    padding-bottom: -1px; /* Use negative padding to offset margin-bottom and keep things centered */
+    padding-right: 1px; /* g_simpleBarButtonMarginsInPixels */
+}
+
+AzQtComponents--TitleBar QLabel#icon {
+    margin-left: 2px; /* DockBar::HandleLeftMargin */
+    qproperty-pixmap: url(:/stylesheet/img/ly_application_icon.png);
+}
+
+AzQtComponents--TitleBar[drawSimple="false"][tearEnabled="true"] QLabel#icon {
+    qproperty-pixmap: url(:/stylesheet/img/titlebar_tear.png);
+}
+
+AzQtComponents--TitleBar AzQtComponents--ElidingLabel#title {
+    font-family: "Open Sans";
+    font-size: 8pt;
+
+    padding-left: 6px; /* TitleLeftMargin - 2px added by QLabel paint code */
+    margin-right: 18px; /* DockBar::TitleRightMargin */
+    margin-bottom: 1px /* Hardcoded in DockBar::drawTitle */
+}
+
+AzQtComponents--TitleBar[drawSimple="true"] AzQtComponents--ElidingLabel#title {
+    color: rgb(0, 0, 0);
+}
+
+AzQtComponents--DockBarButton {
+    background-color: "transparent";
+    border: 0px;
+    min-width: 19px;
+    max-width: 19px;
+    min-height: 19px;
+    max-height: 19px;
+    qproperty-iconSize: 16px 16px;
+}
+
+AzQtComponents--DockBarButton.close {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close.png);
+}
+AzQtComponents--DockBarButton.close:hover {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close_hover.png);
+}
+AzQtComponents--DockBarButton.close:pressed {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close_press.png);
+}
+
+AzQtComponents--DockBarButton.close.dark {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close_dark.png);
+}
+AzQtComponents--DockBarButton.close.dark:hover {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close_hover_dark.png);
+}
+AzQtComponents--DockBarButton.close.dark:pressed {
+    titlebar-close-icon: url(:/stylesheet/img/titlebar/titlebar_close_press_dark.png);
+}
+
+AzQtComponents--DockBarButton.maximize {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize.png);
+}
+AzQtComponents--DockBarButton.maximize:hover {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize_hover.png);
+}
+AzQtComponents--DockBarButton.maximize:pressed {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize_press.png);
+}
+
+AzQtComponents--DockBarButton.maximize.dark {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize_dark.png);
+}
+AzQtComponents--DockBarButton.maximize.dark:hover {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize_hover_dark.png);
+}
+AzQtComponents--DockBarButton.maximize.dark:pressed {
+    titlebar-maximize-icon: url(:/stylesheet/img/titlebar/titlebar_maximize_press_dark.png);
+}
+
+AzQtComponents--DockBarButton.minimize{
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize.png);
+}
+AzQtComponents--DockBarButton.minimize:hover {
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize_hover.png);
+}
+AzQtComponents--DockBarButton.minimize:pressed {
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize_press.png);
+}
+
+AzQtComponents--DockBarButton.minimize.dark {
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize_dark.png);
+}
+AzQtComponents--DockBarButton.minimize.dark:hover {
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize_hover_dark.png);
+}
+AzQtComponents--DockBarButton.minimize.dark:pressed {
+    titlebar-minimize-icon: url(:/stylesheet/img/titlebar/titlebar_minimize_press_dark.png);
+}
+
+AzQtComponents--DockTabBar {
+    qproperty-singleTabFillsWidth: true;
+}
+
+AzQtComponents--ButtonDivider {
+    background-image: url(:/stylesheet/img/titlebar_divider.png);
+    min-width: 2px;
+    max-width: 2px;
+    min-height: 14px;
+    max-height: 14px;
+}
+
+AzQtComponents--SearchLineEdit[HasExternalError="true"] {
+    color: rgb(224, 83, 72);
+}
+
+AzQtComponents--SearchLineEdit[HasExternalError="false"] {
+    color: rgb(192, 192, 192);
+}
+
+AzQtComponents--StyledDetailsTableView {
+    color: rgb(255, 255, 255);
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(255, 255, 255, 41);
+}
+
+AzQtComponents--StyledDetailsTableView QHeaderView::section {
+	padding: 0px;
+}
+
+AzQtComponents--StyledDetailsTableView::item {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+QTableView {
+    gridline-color: rgb(56, 58, 59);
+}
+
+QToolBar::handle:horizontal {
+    image: url(:/stylesheet/img/toolbar_tear.png);
+    padding: 0 4 0 4;
+}
+
+QToolBar::handle:vertical {
+    image: url(:/stylesheet/img/toolbar_tear_horiz.png);
+    padding: 4 0 4 0;
+}
+
+QToolBar::separator:horizontal {
+    image: url(:/stylesheet/img/separator.png);
+    width: 8px;
+}
+
+QToolBar::separator:vertical {
+    image: url(:/stylesheet/img/separator_horiz.png);
+    height: 8px;
+}
+
+QToolButton {
+    background: transparent;
+    color: rgb(204, 204, 204);
+}
+
+StyledSliderPrivate::groove:horizontal
+{
+    margin-bottom: 5px;
+    margin-top: 12px;
+    background: rgb(61,63,64);
+}
+StyledSliderPrivate::groove:horizontal
+{
+    height: 10px;
+    width : 178px;
+    left: 9px;
+    right: 9px;
+}
+
+StyledSliderPrivate::handle:horizontal
+{
+    image: url(:/stylesheet/img/styledslider-handle.png);
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
+StyledSliderPrivate::sub-page:horizontal
+{
+    background: url(":/stylesheet/img/slider-subpage-groove-shadow-185.png");
+    border-radius: 0px;
+    margin-bottom: 5px;
+    margin-top: 12px;
+}
+
+StyledSliderPrivate::add-page:horizontal
+{
+    background: url(":/stylesheet/img/slider-addpage-groove-shadow-185.png");
+    border-radius: 4px;
+    margin-bottom: 5px;
+    margin-top: 12px;
+}
+
+QDoubleSpinBox[class=SliderSpinBox] {
+    color: black;
+}
+
+AzQtComponents--ToolButtonWithWidget QToolButton {
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    border-image: url(":/stylesheet/img/toolbutton_button.png") 0 0 0 0 stretch stretch;
+    padding: 0 0 0 0;
+}
+
+AzQtComponents--ToolButtonWithWidget QToolButton:hover {
+    min-width: 0px;
+    border-image: url(":/stylesheet/img/toolbutton_button.png") 0 0 0 0 stretch stretch;
+}
+
+AzQtComponents--ToolButtonWithWidget QToolButton:pressed {
+    min-width: 0px;
+    border-image: url(":/stylesheet/img/toolbutton_button_down.png") 0 0 0 0 stretch stretch;
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox, QLineEdit[class="ToolButtonLineEdit"] {
+    border-image: url(:/stylesheet/img/toolbar_combo_border_image.png) 2 2 2 2;
+    height: 23px;
+    border-width: 2px;
+    border-radius: 0px;
+    color: rgb(204, 204, 204);
+    font-size: 11px;
+    padding: 0 0 0 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+QLineEdit[class="ToolButtonLineEdit"]:focus {
+    border-image: url(:/stylesheet/img/toolbar_combo_border_image_focus.png) 2 2 2 2;
+    color: black;
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox:focus {
+    border-width: 2px;
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox:enabled:!focus:on {
+    border-image: url(:/stylesheet/img/toolbar_combo_border_image_open.png) 2 2 2 2;
+    border-width: 2px;
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox::drop-down {
+    width: 6px;
+    padding: 0 4 0 0;
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox::down-arrow {
+    image: url(:/stylesheet/img/toolbar_combo_arrows.png);
+}
+
+AzQtComponents--ToolButtonComboBox QComboBox::down-arrow:!focus:on {
+    image: url(:/stylesheet/img/toolbar_combo_arrows_unfold.png);
+}
+
+QPushButton[class="ButtonStripeButtonFirst"] {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_unchecked_bg.png);
+    border-radius: 0px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    width: 68px;
+    height: 27px;
+}
+
+QPushButton[class="ButtonStripeButtonFirst"]:checked {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    color: white;
+}
+
+QPushButton[class="ButtonStripeButtonFirst"]:pressed {
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    color: white;
+}
+
+QPushButton[class="ButtonStripeButtonCenter"] {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_unchecked_bg.png);
+    border-radius: 0px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 1px;
+    width: 68px;
+    height: 27px;
+}
+
+QPushButton[class="ButtonStripeButtonCenter"]:checked {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 1px;
+    color: white;
+}
+
+QPushButton[class="ButtonStripeButtonCenter"]:pressed {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    color: white;
+}
+
+
+QPushButton[class="ButtonStripeButtonLast"] {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_unchecked_bg.png);
+    border-radius: 0px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-left-width: 0px;
+    border-right-width: 1px;
+    width: 68px;
+    height: 27px;
+}
+
+QPushButton[class="ButtonStripeButtonLast"]:checked {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    color: white;
+}
+
+QPushButton[class="ButtonStripeButtonLast"]:pressed {
+    border: 1px solid rgb(33, 34, 35);
+    background-image: url(:/stylesheet/img/button_stripe_button_checked_bg.png);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    color: white;
+}
+
+QComboBox[class="condition"]
+{
+    border-image: url(:/stylesheet/img/condition_combo_bg.png) 2 2 2 2;
+    height: 21px;
+    border-width: 2px;
+    border-radius: 0px;
+    color: rgb(204, 204, 204);
+    font-size: 12px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+    padding: 0 0 0 4;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+QComboBox[class="condition"]:enabled:!focus:on {
+    /** override to stop the jumping */
+    border-width: 2px;
+}
+
+ConditionGroupWidget QLineEdit
+{
+    height: 21;
+    border: 1px solid rgb(40, 41, 42);
+    border-radius: 2px;
+    background-color: rgb(110, 112, 113);
+    padding: 0 0 0 4;
+}
+
+AzQtComponents--TagWidget
+{
+    padding: 2 5 4 3;
+}
+
+QLabel[class="addDeployment"]
+{
+    color: rgb(62, 112, 200);
+    font-size: 13px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+
+}
+
+QLabel[class="addDeployment"]:hover
+{
+    color: rgb(81, 124, 206);
+    font-size: 13px;
+    font-family: "Open Sans Extrabold";
+    font-weight: bold;
+}
+
+#m_clearFiltersButton
+{
+    color: @LinkColor;
+}
+
+#m_clearFiltersButton:hover
+{
+    color: rgb(145, 189, 255);
+}
+
+QPushButton[class="rounded"] {
+    width: 8;
+    height: 24;
+    min-width:  8;
+    min-height: 24;
+    padding: 0 8 0 8;
+    border: none;
+    background-repeat: none;
+    background-color: transparent;
+    background-image: url(:/stylesheet/img/round_button.png);
+}
+
+QPushButton[class="rounded"]:pressed {
+    background-image: url(:/stylesheet/img/round_button_press.png);
+}
+
+QPushButton[class="rounded"]:hover:!pressed {
+    background-image: url(:/stylesheet/img/round_button_hover.png);
+}
+
+QPushButton[class="smallRounded"] {
+    width: 3;
+    height: 19;
+    min-width: 3;
+    max-width: 3;
+    min-height: 19;
+
+    border: none;
+    background-repeat: none;
+    background-color: transparent;
+    background-image: url(:/stylesheet/img/round_button_small.png);
+}
+
+QPushButton[class="smallRounded"]:pressed {
+    background-image: url(:/stylesheet/img/round_button_small_press.png);
+}
+
+QPushButton[class="BrowserButton"] {
+    height: 20px;
+    min-height: 20x;
+}
+
+QPushButton[class="BrowserButtonSmall"] {
+    height: 20px;
+    min-height: 20x;
+    padding: 0;
+    spacing: 0;
+    font-size: 10px;
+}
+
+QPushButton[class="BrowserButtonSmall"]::menu-indicator{
+    image: url(:/stylesheet/img/16x16/Browser_button_menu_arrow.png);
+    left: -3px;
+}
+
+QPushButton[class="smallRounded"]:hover:!pressed {
+    background-image: url(:/stylesheet/img/round_button_small_hover.png);
+}
+
+
+WelcomeScreenDialog QLabel
+{
+    font-size: 12px;
+    color: #FFFFFF;
+    line-height: 20px;
+    font-family: "Open Sans";
+    background-color: transparent;
+}
+
+WelcomeScreenDialog QLabel#titleLabel
+{
+    font-size: 24px;
+    line-height: 32px;
+}
+
+WelcomeScreenDialog QLabel#bodyLabel
+{
+    font-size: 14px;
+    line-height: 20px;
+}
+
+WelcomeScreenDialog QLabel[fontStyle="sectionTitle"], QLabel#titleLabel[fontStyle="sectionTitle"], QLabel#documentationLink
+{
+    font-size: 16px;
+    line-height: 24px;
+}
+
+WelcomeScreenDialog QLabel[class="link"]:hover
+{
+    color: #4990E2;
+}
+
+WelcomeScreenDialog QPushButton
+{
+    font-size: 14px;
+    line-height: 16px;
+}
+
+WelcomeScreenDialog QListView::item::hover
+{
+    color: #4990E2;
+}
+
+WelcomeScreenDialog QFrame#viewContainer
+{
+    background-color: transparent;
+}
+
+WelcomeScreenDialog QFrame#viewContainer[articleStyle="pinned"]
+{
+    background: rgba(180,139,255,5%);
+    border: 1px solid #B48BFF;
+    box-shadow: 0 0 4px 0 rgba(0,0,0,50%);
+}
+
+WelcomeScreenDialog QWidget#articleViewContainerRoot
+{
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:0.3, stop:0 rgba(100,65,164,50%), stop:1 rgba(0,0,0,100%));
+}
+
+WelcomeScreenDialog QScrollArea#previewArea
+{
+    background-color: transparent;
+}
+
+WelcomeScreenDialog QWidget#articleViewContents
+{
+    background-color: transparent;
+}
+
+WelcomeScreenDialog QFrame#imageFrame
+{
+    background-color: transparent;
+}
+
+AzQtComponents--FilteredSearchWidget QLineEdit#textSearch
+{
+    qproperty-frame: false;
+    selection-background-color: rgb(233, 99, 0);
+    background: #6e7071;
+    background-image: url(:/stylesheet/img/search.svg);
+    background-repeat: no-repeat;
+    background-position: left;
+    padding: 2 2 2 24;
+    color: rgb(255, 255, 255);
+}
+
+AzQtComponents--FilteredSearchWidget #filteredParent
+{
+    /* correct for some kind of weird margin/padding on
+       the left side moving the tag buttons and making
+       them misaligned */
+    margin-left: -4px;
+}
+
+AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector
+{
+    icon-size: 16px 14px;
+    max-height: 24px;
+    max-width: 24px;
+}
+
+AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector::menu-indicator
+{
+    image: url(none.jpg);
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+}
+
+AzQtComponents--FilteredSearchWidget QLabel#label
+{
+    color: white;
+}
+
+AzQtComponents--FilteredSearchWidget AzQtComponents--ExtendedLabel#clearLabel
+{
+    color: rgb(66, 133, 234);
+}
+
+AzQtComponents--FilteredSearchWidget AzQtComponents--ExtendedLabel#clearLabel:hover
+{
+    color: rgb(145, 189, 255);
+}
+
+AzQtComponents--FilterCriteriaButton
+{
+    padding: 0px;
+    border-radius: 2px;
+    border: 1px solid #808080;
+    background-color: #2E2E2E;
+}
+
+AzQtComponents--FilterCriteriaButton QLabel,
+AzQtComponents--FilterCriteriaButton QPushButton
+{
+    border: 0px;
+    background-color: transparent;
+}
+
+AzQtComponents--FilterCriteriaButton #tagIcon
+{
+    margin-right: 4px;
+}
+
+AzQtComponents--FilterCriteriaButton QPushButton
+{
+    qproperty-icon: url(:/stylesheet/img/titlebar/titlebar_close.png);
+    max-height: 18px;
+    min-height: 18px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+AzQtComponents--BrowseEdit QLineEdit
+{
+    max-height: 16px;
+    min-height: 16px;
+}
+
+AzQtComponents--BrowseEdit #attached-button
+{
+    max-width: 16px;
+    min-width: 16px;
+    max-height: 16px;
+    min-height: 16px;
+}
+
+
+/* Tooltip font styles */
+.QLabel[tooltipLabel="Title"]
+{
+  color: @CToolTipText;
+  font: "Open Sans";
+  font-size: 12px;
+  font-weight: 600; /*CSS semibold value*/
+  background: transparent;
+}
+
+.QLabel[tooltipLabel="Shortcut"]
+{
+  color: @CToolTipText;
+  font: "Open Sans";
+  font-size: 12px;
+  font-style: italic;
+  background: transparent;
+}
+.QLabel[tooltipLabel="Content"]
+{
+  color: @CToolTipText;
+  font: "Open Sans";
+  font-size: 11px;
+  background: transparent;
+}
+
+QWidget[tooltip="Background"]
+{
+  background: @CToolTipBackground;
+  margin: 5px;
+  padding: 10px;
+}
+
+#ToolTip
+{
+  background: transparent;
+  margin: 5px;
+}
+
+QWidget[tableRow="Odd"]
+{
+  background: @CTableRowOdd;
+}
+
+QWidget[tableRow="Even"]
+{
+  background: @CTableRowEven;
+}
+
+/* ============================================================= */
+/* Style specific to the outliner                                */
+/* ============================================================= */
+QTreeView#m_objectTree::branch
+{
+    image: none;
+}
+
+QTreeView#m_objectTree::branch::open
+{
+    image: url(:/Icons/Default_open.svg);
+}
+
+QTreeView#m_objectTree::branch::!has-children
+{
+    image: none;
+}
+
+QTreeView#m_objectTree::branch::closed:has-children
+{
+    image: url(:/Icons/Default_closed.svg);
+}
+
+OutlinerWidget QTreeView::branch:selected
+, OutlinerWidget QTreeView::item:selected
+, OutlinerWidget QTreeView::branch:selected:active
+, OutlinerWidget QTreeView::item:selected:active
+{
+    background: rgba(255, 255, 255, 45);
+}
+
+/* ============================================================= */
+/* Style specific to the outliner visibility and lock icons      */
+/* ============================================================= */
+
+OutlinerCheckBox
+{
+    border: 0px solid transparent;
+    border-radius: 0px;
+    spacing: 0px;
+    padding: 0px;
+    line-height: 0px;
+    font-size: 0px;
+    margin: 2px 2px 0 2px;
+    background-color: none;
+    max-height: 20px;
+}
+
+OutlinerCheckBox#VisibilityMixed::indicator:checked
+, OutlinerCheckBox#VisibilityMixed::indicator:unchecked
+, OutlinerCheckBox#VisibilityMixed::indicator:indeterminate
+, OutlinerCheckBox#VisibilityMixedHover::indicator:checked
+, OutlinerCheckBox#VisibilityMixedHover::indicator:unchecked
+, OutlinerCheckBox#VisibilityMixedHover::indicator:indeterminate
+, OutlinerCheckBox#LockMixed::indicator:checked
+, OutlinerCheckBox#LockMixed::indicator:unchecked
+, OutlinerCheckBox#LockMixed::indicator:indeterminate
+, OutlinerCheckBox#LockMixedHover::indicator:checked
+, OutlinerCheckBox#LockMixedHover::indicator:unchecked
+, OutlinerCheckBox#LockMixedHover::indicator:indeterminate
+{
+    border: 1px solid rgb(240, 195, 45);
+    border-radius: 3px;
+}
+
+OutlinerCheckBox::indicator:checked
+, OutlinerCheckBox::indicator:unchecked
+, OutlinerCheckBox::indicator:indeterminate
+{
+    width: 16px;
+    height: 16px;
+    image-position:center;
+
+    border: 1px solid transparent;
+    image: none;
+    spacing: 0px;
+    padding: 0px;
+    line-height: 0px;
+    font-size: 0px;
+    margin: 0px;
+}
+
+OutlinerCheckBox#Visibility::indicator:checked,
+OutlinerCheckBox#VisibilityHover::indicator:checked,
+OutlinerCheckBox#VisibilityMixed::indicator:checked,
+OutlinerCheckBox#VisibilityMixedHover::indicator:checked
+{
+    image: url(:/Icons/vis_circle_default.svg);
+}
+
+OutlinerCheckBox#Visibility::indicator:unchecked,
+OutlinerCheckBox#VisibilityHover::indicator:unchecked,
+OutlinerCheckBox#VisibilityMixed::indicator:unchecked,
+OutlinerCheckBox#VisibilityMixedHover::indicator:unchecked
+{
+    image: url(:/Icons/vis_on_NotTransparent.svg);
+}
+
+OutlinerCheckBox#VisibilityLayerOverride::indicator:checked,
+OutlinerCheckBox#VisibilityLayerOverrideHover::indicator:checked
+{
+    image: url(:/Icons/vis_circle_transparent.svg);
+}
+
+OutlinerCheckBox#VisibilityLayerOverride::indicator:unchecked,
+OutlinerCheckBox#VisibilityLayerOverrideHover::indicator:unchecked
+{
+    image: url(:/Icons/vis_on_transparent.svg);
+}
+
+OutlinerCheckBox#Lock::indicator:unchecked,
+OutlinerCheckBox#LockHover::indicator:unchecked,
+OutlinerCheckBox#LockMixed::indicator:unchecked,
+OutlinerCheckBox#LockMixedHover::indicator:unchecked
+{
+    image: url(:/Icons/lock_circle_default.svg);
+}
+
+OutlinerCheckBox#Lock::indicator:checked,
+OutlinerCheckBox#LockHover::indicator:checked,
+OutlinerCheckBox#LockMixed::indicator:checked,
+OutlinerCheckBox#LockMixedHover::indicator:checked
+{
+    image: url(:/Icons/lock_on_NotTransparent.svg);
+}
+
+OutlinerCheckBox#LockLayerOverride::indicator:unchecked,
+OutlinerCheckBox#LockLayerOverrideHover::indicator:unchecked
+{
+    image: url(:/Icons/lock_circle_transparent.svg);
+}
+
+OutlinerCheckBox#LockLayerOverride::indicator:checked,
+OutlinerCheckBox#LockLayerOverrideHover::indicator:checked
+{
+    image: url(:/Icons/lock_on_transparent.svg);
+}
+
+
+
+
+
+
+/***********************************************************************************************
+ ***********************************************************************************************
+ ***********************************************************************************************
+ ***********************************************************************************************
+
+ The following is copied from Card.qss - that's for UI2.0, this is for backwards compatibility with UI1.0
+ 
+ ***********************************************************************************************
+ ***********************************************************************************************
+ ***********************************************************************************************
+*/
+
+AzQtComponents--Card
+{
+    margin: 0 0 10px 0;
+    padding: 0px;
+    border: 1px solid rgb(33, 34, 35);
+    border-radius: 2px;
+}
+
+AzQtComponents--Card[hideFrame=true]
+{
+    border: 1px transparent rgba(0, 0, 0, 0);
+}
+
+AzQtComponents--CardNotification
+{
+    background-color: #1AFDC32D;
+    margin: 2px;
+    padding: 5px;
+    border: 1px solid #FDC32D;
+    border-radius: 2px;
+}
+
+AzQtComponents--CardNotification #HeaderFrame
+{
+    margin: 5px;
+}
+
+AzQtComponents--CardNotification #HeaderFrame,
+AzQtComponents--CardNotification #Icon,
+AzQtComponents--CardNotification #Title
+{
+    background-color: transparent;
+    border: none;
+}
+
+/**
+ * CardHeader is a QFrame with a QHBoxLayout that contains the following children:
+ * #Expander: a QCheckBox used as a "tree expander".
+ * #Icon: a QLabel displaying an icon. The icon is set from c++.
+ * #Title: a QLabel displaying text.
+ * #ContextMenu: a QPushButton used to launch a context menu.
+ */
+
+AzQtComponents--CardHeader
+{
+    margin: 0px;
+    padding: 0px;
+    border: none;
+}
+
+AzQtComponents--CardHeader #Background
+{
+    margin: 0px;
+    padding: 2px;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.primaryCardHeader
+{
+    background-color: #222222;
+}
+
+.secondaryCardHeader
+{
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader[readOnly=true] #Background
+{
+
+    background-repeat: repeat-xy;
+}
+
+AzQtComponents--CardHeader[readOnly=false] #Background
+{
+    background-image: none;
+}
+
+AzQtComponents--CardHeader #Title
+{
+    font-weight: bold;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #Title QLabel
+{
+    background-color: transparent;
+    margin: 0 2px;
+}
+
+QCheckBox.Expander
+{
+    background-color: transparent;
+    spacing: 0px;
+    margin: 0px;
+    padding: 0px;
+    min-height: 16px;
+    max-height: 16px;
+    min-width: 16px;
+    max-width: 16px;
+}
+
+QCheckBox.Expander::indicator
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    margin: 0px;
+}
+
+QCheckBox.Expander::indicator:checked,
+QCheckBox.Expander::indicator:checked:disabled,
+QCheckBox.Expander::indicator:checked:focus
+{
+    image: url(:/Cards/img/UI20/Cards/group_open.png);
+}
+
+QCheckBox.Expander::indicator:unchecked,
+QCheckBox.Expander::indicator:unchecked:disabled,
+QCheckBox.Expander::indicator:unchecked:focus
+{
+    image: url(:/Cards/img/UI20/Cards/group_closed.png);
+}
+
+AzQtComponents--CardHeader #Icon,
+AzQtComponents--CardHeader #WarningIcon
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #ContextMenu
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/Cards/img/UI20/Cards/menu_ico.png);
+    qproperty-icon: none;
+}
+
+AzQtComponents--CardHeader #Help
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/Cards/img/UI20/Cards/help.png);
+    qproperty-icon: none;
+}
+
+AzQtComponents--CardHeader #Help:hover
+{
+    image: url(:/Cards/img/UI20/Cards/help_hover.png);
+}
+
+.separator
+{
+    color: #999999;
+}
+
+AzQtComponents--Card #SeparatorContainer
+{
+    margin-left: 7px;
+    margin-right: 7px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border: none;
+}
+
+AzQtComponents--Card[selected="true"]
+{
+    border-color: #E57829;
+}
+
+/** 
+* These are down here so that they override the generic "widget" specs above
+*/
+
+AzToolsFramework--AssetBrowser--SearchWidget QLineEdit
+{
+    selection-background-color: rgb(233, 99, 0);
+    background: #6e7071;
+    background-image: url(:/AssetBrowser/Resources/search.png);
+    background-repeat: no-repeat;
+    background-position: left;
+    padding: 2 2 2 24;
+    color: rgb(255, 255, 255);
+}
+
+AzToolsFramework--AssetBrowser--SearchWidget QPushButton#m_buttonClearFilter
+{
+    border: none; 
+    background: #6e7071;
+}
+
+
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView
+{
+    font-family: "Amazon Ember";
+    font-size: 12px;
+    color: #FFFFFF;
+    show-decoration-selected:0;  /* this prevents the carets from being rendered with an extra square of highlight around them */
+}
+
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView::item
+{
+    padding: 4px;
+}
+
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView:disabled
+{
+    color: #999999;
+    selection-color: #999999;
+}
+
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView::branch:has-children:!has-siblings:closed,
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView::branch:closed:has-children:has-siblings {
+        border-image: none;
+        image: url("EDITOR:Icons/AssetBrowser/CaretClosed_16.png");
+}
+
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView::branch:open:has-children:!has-siblings,
+AzToolsFramework--AssetBrowser--AssetBrowserTreeView::branch:open:has-children:has-siblings  {
+        border-image: none;
+        image: url("EDITOR:Icons/AssetBrowser/CaretOpen_16.png");
+}
+
+AzQtComponents--SegmentBar QAbstractButton
+{
+    background-color: #333333;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+
+    font-size: 12px;
+
+    height: 28px;
+
+    line-height: 24px;
+
+    margin-left: 0px;
+
+    margin-bottom: 15px;
+
+    min-width: 68px; /* 100 - (padding-left + padding-right) */
+
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+AzQtComponents--SegmentBar[orientation="1"] QAbstractButton.TabMiddle,
+AzQtComponents--SegmentBar[orientation="1"] QAbstractButton.TabLast
+{
+    margin-left: -1px;
+}
+
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton
+{
+    text-align: left;
+}
+
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabMiddle,
+AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabLast
+{
+    margin-top: -1px;
+}
+
+AzQtComponents--SegmentBar QAbstractButton:checked
+{
+    background-color: #222222;
+}
+
+AzQtComponents--SegmentBar QAbstractButton:hover:!checked,
+AzQtComponents--SegmentBar QAbstractButton:pressed:!checked
+{
+    background-color: #444444;
+}
+
+AzToolsFramework--AssetCompleterListView
+{
+    color: #fff;
+    background: #000;
+}
+
+QLineEdit#m_entitySearchBox
+{
+    border: none;
+    selection-background-color: rgb(233, 99, 0);
+    background: #6e7071;
+    background-repeat: no-repeat;
+    background-position: left;
+    padding: 2 2 2 24;
+    color: rgb(255, 255, 255);
+}

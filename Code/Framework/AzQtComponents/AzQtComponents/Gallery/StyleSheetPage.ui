@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StyleSheetPage</class>
+ <widget class="QWidget" name="StyleSheetPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>827</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTextEdit" name="exampleText">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>These all work:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="qrcLabel">
+       <property name="text">
+        <string>qrc</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="absolutePathLabel">
+       <property name="text">
+        <string>absolutePath</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="noPrefixLabel">
+       <property name="text">
+        <string>noPrefix</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>This is how the style should be set from code:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="exampleWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QLabel" name="exampleLabel">
+          <property name="text">
+           <string>prefix</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="placeholderText">
+           <string>A styled QLineEdit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="AzQtComponents::SegmentBar" name="segmentBar" native="true"/>
+        </item>
+        <item>
+         <widget class="AzQtComponents::FilteredSearchWidget" name="filteredSearchWidget" native="true">
+          <property name="placeholderText" stdset="0">
+           <string>Use a keyword or regular expressions</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Example::Widget" name="widget" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="AzQtComponents::TitleBar" name="titleBar" native="true"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="drawSimpleToggle">
+       <property name="text">
+        <string>Toggle drawSimple</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="tearEnabledToggle">
+       <property name="text">
+        <string>Toggle tearEnabled</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::SegmentBar</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/SegmentBar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::FilteredSearchWidget</class>
+   <extends>QWidget</extends>
+   <header>AzQtComponents/Components/FilteredSearchWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Example::Widget</class>
+   <extends>QWidget</extends>
+   <header>StyleSheetPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::TitleBar</class>
+   <extends>QWidget</extends>
+   <header>AzQtComponents/Components/Titlebar.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

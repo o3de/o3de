@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "7bf5a77dacd8438bb4966a66b5a678d8",
+    "Name": "Atom_DccScriptingInterface",
+    "DisplayName": "Atom DccScriptingInterface (DCCsi)",
+    "Version": "0.1.0",
+    "Summary": "A python framework for working with various DCC tools and workflows.",
+    "Tags": ["DCC","Digital","Content","Creation"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ]
+}

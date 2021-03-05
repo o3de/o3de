@@ -1,0 +1,25 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "0844f64a3acf4f5abf3a535dc9b63bc9",
+    "Name": "GraphModel",
+    "DisplayName": "GraphModel",
+    "Version": "0.1.0",
+    "Summary": "A generic node graph data model framework.",
+    "Tags": ["GraphModel", "Scripting", "Vegetation"],
+    "IconPath": "graphModelIcon.svg",
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "GraphCanvas"
+        }
+    ]
+}

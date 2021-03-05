@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Toolbar / Environment</title>
+    <g id="Icons-/-Toolbar-/-Environment" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M7.53846154,3 L11.447,12.074 L14.2222222,9 L19.3581615,16.1116245 C18.8228734,16.3163436 18.2361227,16.4187032 17.5979096,16.4187032 C15.540229,16.4187032 14,15 12,15 C10,15 9.90741869,16.4187032 7.56246755,16.4187032 C6.10338684,16.4187032 4.6813094,16.0067538 3.29623523,15.1828551 L3.088,15.054 L7.53846154,3 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M3,17 C4.47834428,17.9458021 5.99916679,18.4187032 7.56246755,18.4187032 C9.90741869,18.4187032 10,17 12,17 C14,17 15.540229,18.4187032 17.5979096,18.4187032 C18.9696966,18.4187032 20.1037268,17.9458021 21,17 L21,21 L3,21 L3,17 Z" id="Rectangle" fill="#FFFFFF"></path>
+        <circle id="Oval" fill="#FFFFFF" cx="18" cy="6" r="3"></circle>
+    </g>
+</svg>

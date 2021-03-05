@@ -1,0 +1,62 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldBlurBokehTemplate",
+            "PassClass": "DepthOfFieldBokehBlurPass",
+            "Slots": [
+                {
+                    "Name": "Inputblur",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Outputblur",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputblurAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Inputblur"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Outputblur",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputblurAttachment"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "Inputblur",
+                    "Output" : "Outputblur"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthOfFieldBlurBokeh.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

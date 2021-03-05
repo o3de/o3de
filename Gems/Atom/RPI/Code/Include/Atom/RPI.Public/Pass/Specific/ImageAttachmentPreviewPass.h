@@ -1,0 +1,179 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AtomCore/Instance/Instance.h>
+
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/ScopeProducer.h>
+
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        class RenderPass;
+
+        //! A scope producer to copy the input attachment and output a copy of this attachment
+        class ImageAttachmentCopy final
+            : public RHI::ScopeProducer
+        {
+            friend class ImageAttachmentPreviewPass;
+        public:
+            AZ_RTTI(ImageAttachmentCopy, "{27E35230-48D1-4950-8489-F301A45D4A0B}", RHI::ScopeProducer);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator, 0);
+
+            ImageAttachmentCopy() = default;
+            ~ImageAttachmentCopy() = default;
+
+            void SetImageAttachment(RHI::AttachmentId srcAttachmentId, RHI::AttachmentId destAttachmentId);
+
+            void FrameBegin(Pass::FramePrepareParams params);
+
+            void Reset();
+
+            void InvalidateDestImage();
+
+        protected:
+            // Scope producer functions
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
+
+        private:
+            RHI::AttachmentId m_srcAttachmentId;
+            RHI::AttachmentId m_destAttachmentId;
+
+            Data::Instance<AttachmentImage> m_destImage;
+
+            // Copy item to be submitted to command list
+            RHI::CopyItem m_copyItem;
+        };
+
+        //! Render preview of specified image attachment to the selected output attachment.
+        class ImageAttachmentPreviewPass final
+            : public Pass
+            , public RHI::ScopeProducer
+            , public Data::AssetBus::Handler
+        {
+            AZ_RPI_PASS(ImageAttachmentPreviewPass);
+
+        public:
+            AZ_RTTI(ImageAttachmentPreviewPass, "{E6076B8E-E840-4C22-89A8-32C73FEEEBF9}", Pass);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator, 0);
+
+            //! Creates an ImageAttachmentPreviewPass
+            static Ptr<ImageAttachmentPreviewPass> Create(const PassDescriptor& descriptor);
+
+            ~ImageAttachmentPreviewPass();
+            
+            //! Preview the PassAttachment of a pass' PassAttachmentBinding
+            void PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment);
+
+            //! Set the output color attachment for this pass
+            void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);
+
+            //! clear the image attachments for preview
+            void ClearPreviewAttachment();
+
+            //! Set the preview location on the output attachment.
+            //! Assuming the left top corner of output is (0, 0) and right bottom corner is (1, 1)
+            void SetPreviewLocation(AZ::Vector2 position, AZ::Vector2 size, bool keepAspectRatio = true);
+
+            //! Readback the output color attachment
+            bool ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback);
+
+        private:
+            explicit ImageAttachmentPreviewPass(const PassDescriptor& descriptor);
+
+            // Data::AssetBus::Handler overrides...
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+
+            // Creation render related resources
+            void LoadShader();
+
+            // Pass overrides
+            void FrameBeginInternal(FramePrepareParams params) override;
+
+            // Scope producer functions
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
+
+            void ClearDrawData();
+
+            // Image types. This is matching the option defined in ImageAttachmentsPreview.azsl
+            enum class ImageType : uint32_t
+            {
+                Image2d = 0,        // Regular 2d image
+                Image2dMs,          // 2d image with multisampler
+
+                ImageTypeCount,
+                Unsupported = ImageTypeCount
+            };
+
+            // For each type of images, they are using one set of data used for preview
+            struct ImageTypePreviewInfo
+            {
+                RHI::ShaderInputImageIndex m_imageInput;
+                // Cached pipeline state descriptor
+                RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
+                // The draw item for drawing the image preview for this type of image
+                RHI::DrawItem m_item;
+
+                // Key to pass to the SRG when desired shader variant isn't found
+                ShaderVariantKey m_shaderVariantKeyFallback;
+
+                uint32_t m_imageCount = 0;
+            };
+            
+            // image attachment to be rendered for preview
+            RHI::AttachmentId m_imageAttachmentId;
+
+            // render target for the preview
+            RHI::Ptr<PassAttachment> m_outputColorAttachment;
+
+            // shader for render images to the output
+            Data::Instance<Shader> m_shader;
+
+            // The shader resource group for this pass
+            Data::Instance<ShaderResourceGroup> m_passSrg;
+            bool m_passSrgChanged = false;
+                        
+            AZStd::array<ImageTypePreviewInfo, static_cast<uint32_t>(ImageType::ImageTypeCount)> m_imageTypePreviewInfo;
+
+            // whether to update the draw data for both srg data and draw item
+            bool m_updateDrawData = false;
+            
+            bool m_needsShaderLoad = true;
+
+            RHI::Viewport m_viewport;
+            RHI::Scissor m_scissor;
+
+            AZStd::shared_ptr<ImageAttachmentCopy> m_attachmentCopy;
+
+            // preview location info
+            // defaults to left bottom corner
+            AZ::Vector2 m_position = AZ::Vector2(0, 0.6f);
+            AZ::Vector2 m_size = AZ::Vector2(0.4f, 0.4f);
+            bool m_keepAspectRatio = true;
+
+            // For readback the output image attachment 
+            AZStd::shared_ptr<AttachmentReadback> m_readback;
+        };
+    }   // namespace RPI
+}   // namespace AZ

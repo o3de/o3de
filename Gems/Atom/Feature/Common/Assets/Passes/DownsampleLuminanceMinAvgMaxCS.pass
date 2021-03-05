@@ -1,0 +1,65 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DownsampleLuminanceMinAvgMaxCS",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "MipSliceMin": "0",
+                        "MipSliceMax": "0"
+                    }
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "LuminanceMinAvgMax",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT"
+                    },
+                    "GenerateFullMipChain": true
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "LuminanceMinAvgMax"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.shader"
+                },
+                "Make Fullscreen Pass": true
+            }
+        }
+    }
+}

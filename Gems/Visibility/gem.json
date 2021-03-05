@@ -1,0 +1,12 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "3b4ab3f54c2749328934c5b864355a61",
+    "Name": "Visibility",
+    "DisplayName": "Visibility",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Provides components for defining visible regions of a scene",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

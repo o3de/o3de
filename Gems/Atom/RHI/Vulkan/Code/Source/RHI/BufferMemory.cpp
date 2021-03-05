@@ -1,0 +1,91 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "Atom_RHI_Vulkan_precompiled.h"
+#include <RHI/BufferMemory.h>
+#include <RHI/Device.h>
+#include <RHI/Conversion.h>
+
+namespace AZ
+{
+    namespace Vulkan
+    {
+        RHI::Ptr<BufferMemory> BufferMemory::Create()
+        {
+            return aznew BufferMemory();
+        }
+
+        RHI::ResultCode BufferMemory::Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor)
+        {
+            return Init(device, device.CreateBufferResouce(descriptor), memoryView, descriptor);
+        }
+
+        RHI::ResultCode BufferMemory::Init(Device& device, VkBuffer vkBuffer, const MemoryView& memoryView, const Descriptor& descriptor)
+        {
+            AZ_Assert(vkBuffer != VK_NULL_HANDLE, "Null vulkan buffer");
+            Base::Init(device);
+            m_memoryView = memoryView;
+            m_vkBuffer = vkBuffer;
+            m_descriptor = descriptor;
+
+            VkResult vkResult = vkBindBufferMemory(device.GetNativeDevice(), m_vkBuffer, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
+            AssertSuccess(vkResult);
+            RHI::ResultCode result = ConvertResult(vkResult);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            return result;
+        }
+
+        CpuVirtualAddress BufferMemory::Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess)
+        {
+            return m_memoryView.GetMemory()->Map(m_memoryView.GetOffset() + offset, size, hostAccess);
+        }
+
+        void BufferMemory::Unmap(size_t offset, RHI::HostMemoryAccess hostAccess)
+        {
+            return m_memoryView.GetMemory()->Unmap(m_memoryView.GetOffset() + offset, hostAccess);
+        }
+
+        const VkBuffer BufferMemory::GetNativeBuffer()
+        {
+            return m_vkBuffer;
+        }
+
+        const BufferMemory::Descriptor& BufferMemory::GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+        void BufferMemory::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (IsInitialized() && !name.empty())
+            {
+                Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_vkBuffer), name.data(), VK_OBJECT_TYPE_BUFFER, static_cast<Device&>(GetDevice()));
+            }
+
+            if (m_memoryView.GetAllocationType() == MemoryAllocationType::Unique)
+            {
+                m_memoryView.SetName(name);
+            }
+        }
+
+        void BufferMemory::Shutdown()
+        {
+            if (m_vkBuffer != VK_NULL_HANDLE)
+            {
+                Device& device = static_cast<Device&>(GetDevice());
+                device.DestroyBufferResource(m_vkBuffer);
+                m_vkBuffer = VK_NULL_HANDLE;
+            }
+
+            m_memoryView = MemoryView();
+        }
+    }
+}

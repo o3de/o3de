@@ -1,0 +1,119 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include <Tests/TransientAttachmentPool.h>
+#include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/Buffer.h>
+
+namespace UnitTest
+{
+    using namespace AZ;
+
+    RHI::ResultCode TransientAttachmentPool::InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor&)
+    {
+        {
+            m_imagePool = RHI::Factory::Get().CreateImagePool();
+
+            RHI::ImagePoolDescriptor desc;
+            desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
+            m_imagePool->Init(device, desc);
+        }
+
+        {
+            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+
+            RHI::BufferPoolDescriptor desc;
+            desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            m_bufferPool->Init(device, desc);
+        }
+
+        return RHI::ResultCode::Success;
+    }
+
+    void TransientAttachmentPool::ShutdownInternal()
+    {
+        m_imagePool = nullptr;
+        m_bufferPool = nullptr;
+        m_attachments.clear();
+    }
+
+    void TransientAttachmentPool::BeginInternal([[maybe_unused]] const RHI::TransientAttachmentPoolCompileFlags flags, [[maybe_unused]] const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint)
+    {
+    }
+
+    RHI::Image* TransientAttachmentPool::ActivateImage(
+        const RHI::TransientImageDescriptor& descriptor)
+    {
+        using namespace AZ;
+        auto findIt = m_attachments.find(descriptor.m_attachmentId);
+        if (findIt != m_attachments.end())
+        {
+            return azrtti_cast<RHI::Image*>(findIt->second.get());
+        }
+
+        RHI::Ptr<RHI::Image> image = RHI::Factory::Get().CreateImage();
+
+        RHI::ImageInitRequest request;
+        request.m_image = image.get();
+        request.m_descriptor = descriptor.m_imageDescriptor;
+        m_imagePool->InitImage(request);
+
+        m_attachments.emplace(descriptor.m_attachmentId, image);
+        m_activeSet.emplace(descriptor.m_attachmentId);
+
+        return image.get();
+    }
+
+    RHI::Buffer* TransientAttachmentPool::ActivateBuffer(
+        const RHI::TransientBufferDescriptor& descriptor)
+    {
+        using namespace AZ;
+        auto findIt = m_attachments.find(descriptor.m_attachmentId);
+        if (findIt != m_attachments.end())
+        {
+            return azrtti_cast<RHI::Buffer*>(findIt->second.get());
+        }
+
+        RHI::Ptr<RHI::Buffer> buffer = RHI::Factory::Get().CreateBuffer();
+
+        RHI::BufferInitRequest request;
+        request.m_descriptor = descriptor.m_bufferDescriptor;
+        request.m_buffer = buffer.get();
+        m_bufferPool->InitBuffer(request);
+
+        m_attachments.emplace(descriptor.m_attachmentId, buffer);
+        m_activeSet.emplace(descriptor.m_attachmentId);
+
+        return buffer.get();
+    }
+
+    void TransientAttachmentPool::DeactivateBuffer(const RHI::AttachmentId& attachmentId)
+    {
+        AZ_Assert(m_activeSet.find(attachmentId) != m_activeSet.end(), "buffer not in the active set.");
+        m_activeSet.erase(attachmentId);
+    }
+
+    void TransientAttachmentPool::DeactivateImage(const RHI::AttachmentId& attachmentId)
+    {
+        AZ_Assert(m_activeSet.find(attachmentId) != m_activeSet.end(), "image not in the active set.");
+        m_activeSet.erase(attachmentId);
+    }
+
+    void TransientAttachmentPool::EndInternal()
+    {
+        AZ_Assert(m_currentScope == nullptr, "Scope not properly ended.");
+        AZ_Assert(m_activeSet.empty(), "active set is not empty.");
+        m_attachments.clear();
+    }
+}

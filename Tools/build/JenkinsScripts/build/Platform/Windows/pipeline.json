@@ -1,0 +1,8 @@
+{
+    "JOB_NAME": "WIN",
+    "LABEL": "windows",
+    "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
+    "TIMEOUT": 30,
+    "WORKSPACE": "D:/workspace",
+    "MOUNT_VOLUME": true
+}

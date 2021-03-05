@@ -1,0 +1,112 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include <Atom/Features/SrgSemantics.azsli>
+
+// Ratio between input and output texture size
+#define INPUT_OUTPUT_SIZE_RATIO 0.5
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>     m_inputTexture;
+    RWTexture2D<float4>   m_outputTexture;
+
+    float  m_intensity;
+    float2 m_sourceImageSize;
+
+    // 1.0 / m_sourceImageSize
+    float2 m_sourceImageTexelSize;
+    float2 m_targetImageSize;
+    float3 m_tint;
+
+    uint m_enableBicubic;
+    uint m_sourceMipLevel;
+    
+    Sampler LinearSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+
+    float4 GetCubicWeights(float x)
+    {
+        // Cubic b-spline weights
+        float x2 = x * x;
+        float x3 = x2 * x;
+        float4 w;
+        w.x =     -x3 + 3.0*x2 - 3.0*x + 1.0;
+        w.y =  3.0*x3 - 6.0*x2         + 4.0;
+        w.z = -3.0*x3 + 3.0*x2 + 3.0*x + 1.0;
+        w.w =  x3;
+        return w / 6.0;
+    }
+
+    // Input:
+    // texelSize -> 1.0 / source texture resolution
+    // coord -> pixel coordinate (unnormalized) in source texture 
+    // For more information please refer to:
+    //   https://groups.google.com/forum/#!topic/comp.graphics.api.opengl/kqrujgJfTxo
+    float3 TexBicubic(float2 texelSize, float2 coord)
+    {
+        float2 fxy = frac(coord);
+        coord -= fxy;
+
+        float4 xCubic = GetCubicWeights(fxy.x);
+        float4 yCubic = GetCubicWeights(fxy.y);
+
+        // Recompute center for horizontal/vertical 4x2/2x4 subregions in a 4x4 texture patch
+        // Typically bicubic filter needs 4x4 = 16 samples per pixel for interpolation
+        // But with gpu we can utilize the hardware sampler to fetch a 2x2 tap with bilinear interpolation
+        // at one time, and reduce the number of texture fetch to 4.
+        float4 center = coord.xxyy + float2(-0.5, 1.5).xyxy;
+
+        // Combined spline weights along x/y axis since we merged sample points
+        // left: xCubix.x + xCubic.y, right: xCubix.z + xCubix.w, top: yCubic.x + yCubic.y, bottom: yCubic.z + yCubic.w
+        float4 weightSum = float4(xCubic.xz + xCubic.yw, yCubic.xz + yCubic.yw);
+
+        // Texture coordinates to get proper prefiltered 2x2 tap
+        float4 offset = center + float4(xCubic.yw, yCubic.yw) / weightSum;
+
+        float3 sample0 = m_inputTexture.SampleLevel(LinearSampler, offset.xz * texelSize, m_sourceMipLevel).rgb;
+        float3 sample1 = m_inputTexture.SampleLevel(LinearSampler, offset.yz * texelSize, m_sourceMipLevel).rgb;
+        float3 sample2 = m_inputTexture.SampleLevel(LinearSampler, offset.xw * texelSize, m_sourceMipLevel).rgb;
+        float3 sample3 = m_inputTexture.SampleLevel(LinearSampler, offset.yw * texelSize, m_sourceMipLevel).rgb;
+
+        // Renormalize weight for linear interpolation
+        float weightX = weightSum.x / (weightSum.x + weightSum.y);
+        float weightY = weightSum.z / (weightSum.z + weightSum.w);
+
+        return lerp(lerp(sample3, sample2, weightX), lerp(sample1, sample0, weightX), weightY);
+    }
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dID : SV_DispatchThreadID)
+{
+    if(dID.x >= PassSrg::m_targetImageSize.x || dID.y >= PassSrg::m_targetImageSize.y)
+    {
+        return;
+    }
+
+    float2 sourceUv = (dID.xy + 0.5) * INPUT_OUTPUT_SIZE_RATIO * PassSrg::m_sourceImageTexelSize;
+
+    float3 color0 = PassSrg::m_enableBicubic ? 
+        PassSrg::TexBicubic(PassSrg::m_sourceImageTexelSize, dID.xy * INPUT_OUTPUT_SIZE_RATIO) : 
+        PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, sourceUv, PassSrg::m_sourceMipLevel).rgb;    
+    float3 color1 = PassSrg::m_outputTexture[dID.xy].xyz;
+
+    float3 color = color0 * PassSrg::m_intensity * PassSrg::m_tint + color1;
+
+    PassSrg::m_outputTexture[dID.xy] = float4(color, 1.0);
+}

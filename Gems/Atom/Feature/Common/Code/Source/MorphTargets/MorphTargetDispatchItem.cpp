@@ -1,0 +1,201 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <MorphTargets/MorphTargetDispatchItem.h>
+#include <MorphTargets/MorphTargetComputePass.h>
+
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Model/ModelLod.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/BufferView.h>
+
+#include <limits>
+
+namespace AZ
+{
+    namespace Render
+    {
+        MorphTargetDispatchItem::MorphTargetDispatchItem(
+            const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
+            const MorphTargetMetaData& morphTargetMetaData,
+            RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
+            uint32_t accumulatedDeltaOffsetInBytes,
+            float morphDeltaIntegerEncoding)
+            : m_inputBuffers(inputBuffers)
+            , m_morphTargetMetaData(morphTargetMetaData)
+            , m_accumulatedDeltaOffsetInBytes(accumulatedDeltaOffsetInBytes)
+            , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
+        {
+            m_morphTargetShader = morphTargetComputePass->GetShader();
+            RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
+        }
+
+        MorphTargetDispatchItem::~MorphTargetDispatchItem()
+        {
+            RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
+        }
+
+        bool MorphTargetDispatchItem::Init()
+        {
+            if (!m_morphTargetShader)
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Cannot initialize a MorphTargetDispatchItem with a null shader");
+                return false;
+            }
+
+            // Get the shader variant and instance SRG
+            const RPI::ShaderVariant& shaderVariant = m_morphTargetShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+
+            if (!InitPerInstanceSRG())
+            {
+                return false;
+            }
+
+            InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
+
+            m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor);
+
+            // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
+            const auto& numThreads = m_morphTargetShader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, AZ::Name{ "numthreads" });
+            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            if (numThreads)
+            {
+                const auto& args = *numThreads;
+                // Check that the arguments are valid integers, and fall back to 1,1,1 if there is an error
+                arguments.m_threadsPerGroupX = args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1;
+                arguments.m_threadsPerGroupY = args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1;
+                arguments.m_threadsPerGroupZ = args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1;
+            }
+
+            arguments.m_totalNumberOfThreadsX = m_morphTargetMetaData.m_vertexCount;
+            arguments.m_totalNumberOfThreadsY = 1;
+            arguments.m_totalNumberOfThreadsZ = 1;
+
+            return true;
+        }
+
+        bool MorphTargetDispatchItem::InitPerInstanceSRG()
+        {
+            auto perInstanceSrgAsset = m_morphTargetShader->FindShaderResourceGroupAsset(AZ::Name{ "MorphTargetInstanceSrg" });
+            if (!perInstanceSrgAsset.GetId().IsValid())
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group asset");
+                return false;
+            }
+            else if (!perInstanceSrgAsset.IsReady())
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Shader resource group asset is not loaded");
+                return false;
+            }
+
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            if (!m_instanceSrg)
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to create shader resource group for morph target");
+                return false;
+            }
+            
+            m_inputBuffers->SetBufferViewsOnShaderResourceGroup(m_instanceSrg);
+
+            m_instanceSrg->Compile();
+
+            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
+            return true;
+        }
+
+        void MorphTargetDispatchItem::InitRootConstants(const RHI::ConstantsLayout* rootConstantsLayout)
+        {
+            auto vertexCountIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_vertexCount" });
+            AZ_Error("MorphTargetDispatchItem", vertexCountIndex.IsValid(), "Could not find root constant 's_vertexCount' in the shader");
+            auto positionOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetPositionOffset" });
+            AZ_Error("MorphTargetDispatchItem", positionOffsetIndex.IsValid(), "Could not find root constant 's_targetPositionOffset' in the shader");
+            auto minIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_min" });
+            AZ_Error("MorphTargetDispatchItem", minIndex.IsValid(), "Could not find root constant 's_min' in the shader");
+            auto maxIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_max" });
+            AZ_Error("MorphTargetDispatchItem", maxIndex.IsValid(), "Could not find root constant 's_max' in the shader");
+            auto morphDeltaIntegerEncodingIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_accumulatedDeltaIntegerEncoding" });
+            AZ_Error("MorphTargetDispatchItem", morphDeltaIntegerEncodingIndex.IsValid(), "Could not find root constant 's_accumulatedDeltaIntegerEncoding' in the shader");
+            m_weightIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_weight" });
+            AZ_Error("MorphTargetDispatchItem", m_weightIndex.IsValid(), "Could not find root constant 's_weight' in the shader");
+
+            m_rootConstantData = AZ::RHI::ConstantsData(rootConstantsLayout);
+            m_rootConstantData.SetConstant(minIndex, m_morphTargetMetaData.m_minDelta);
+            m_rootConstantData.SetConstant(maxIndex, m_morphTargetMetaData.m_maxDelta);
+            m_rootConstantData.SetConstant(morphDeltaIntegerEncodingIndex, m_accumulatedDeltaIntegerEncoding);
+            m_rootConstantData.SetConstant(m_weightIndex, 0.0f);
+            m_rootConstantData.SetConstant(vertexCountIndex, m_morphTargetMetaData.m_vertexCount);
+            // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
+            m_rootConstantData.SetConstant(positionOffsetIndex, m_accumulatedDeltaOffsetInBytes / 4);
+
+            m_dispatchItem.m_rootConstantSize = m_rootConstantData.GetConstantData().size();
+            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
+        }
+
+        void MorphTargetDispatchItem::SetWeight(float weight)
+        {
+            m_rootConstantData.SetConstant(m_weightIndex, weight);
+            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
+        }
+
+        float MorphTargetDispatchItem::GetWeight() const
+        {
+            return m_rootConstantData.GetConstant<float>(m_weightIndex);
+        }
+
+        const RHI::DispatchItem& MorphTargetDispatchItem::GetRHIDispatchItem() const
+        {
+            return m_dispatchItem;
+        }
+
+        void MorphTargetDispatchItem::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
+        {
+            if (!Init())
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to re-initialize after the shader was re-loaded.");
+            }
+        }
+
+        float ComputeMorphTargetIntegerEncoding(const AZStd::vector<MorphTargetMetaData>& morphTargetMetaDatas)
+        {
+            // The accumulation buffer must be stored as an int to support InterlockedAdd in AZSL
+            // Conservatively determine the largest value, positive or negative across the entire skinned mesh lod, which is used for encoding/decoding the accumulation buffer
+            float range = 0.0f;
+            for (const MorphTargetMetaData& metaData : morphTargetMetaDatas)
+            {
+                float maxWeight = AZStd::max(std::abs(metaData.m_minWeight), std::abs(metaData.m_maxWeight));
+                float maxDelta = AZStd::max(std::abs(metaData.m_minDelta), std::abs(metaData.m_maxDelta));
+                // Since multiple morphs can be fully active at once, sum the maximum offset in either positive or negative direction
+                // that can be applied each individual morph to get the maximum offset that could be applied across all morphs
+                range += maxWeight * maxDelta;
+            }
+
+            // Protect against divide-by-zero
+            if (range < std::numeric_limits<float>::epsilon())
+            {
+                AZ_Assert(false, "MorphTargetDispatchItem - attempting to create a morph targets that have no min or max for the metadata");
+                range = 1.0f;
+            }
+
+            // Given a conservative maximum value of a delta (minimum if negated), set a value for encoding a float as an integer that maximizes precision
+            // while still being able to represent the entire range of possible offset values for this instance
+            // For example, if at most all the deltas accumulated fell between a -1 and 1 range, we'd encode it as an integer by multiplying it by 2,147,483,647.
+            // If the delta has a larger range, we multiply it by a smaller number, increasing the range of representable values but decreasing the precision
+            return static_cast<float>(std::numeric_limits<int>::max()) / range;
+        }
+    } // namespace Render
+} // namespace AZ

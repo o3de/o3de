@@ -1,0 +1,307 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ForwardCheckerboardPassTemplate",
+            "PassClass": "CheckerboardPass",
+            "Slots": [
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DirectionalLightShadowmap",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ExponentialShadowmapDirectional",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "SpotLightShadowmap",
+                    "ShaderInputName": "m_spotLightShadowmaps",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ExponentialShadowmapSpot",
+                    "ShaderInputName": "m_spotLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lightListRemapped",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DiffuseOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "SpecularOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "AlbedoOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "SpecularF0Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "NormalOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "ClearCoatNormalOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "ScatterDistanceOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DiffuseImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "SpecularImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "ScatterDistanceImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R11G11B10_FLOAT",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "AlbedoImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8G8B8A8_UNORM",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "SpecularF0Image",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8G8B8A8_UNORM",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "NormalImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R10G10B10A2_UNORM",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                },
+                {
+                    "Name": "ClearCoatNormalImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 2
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DiffuseOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DiffuseImage"
+                    }
+                },
+                {
+                    "LocalSlot": "SpecularOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "SpecularImage"
+                    }
+                },
+                {
+                    "LocalSlot": "ScatterDistanceOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ScatterDistanceImage"
+                    }
+                },
+                {
+                    "LocalSlot": "AlbedoOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "AlbedoImage"
+                    }
+                },
+                {
+                    "LocalSlot": "SpecularF0Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "SpecularF0Image"
+                    }
+                },
+                {
+                    "LocalSlot": "NormalOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "NormalImage"
+                    }
+                },
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "ClearCoatNormalOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ClearCoatNormalImage"
+                    }
+                }
+            ]
+        }
+    }
+}

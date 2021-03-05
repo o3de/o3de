@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LuminanceHistogramGeneratorTemplate",
+            "PassClass": "LuminanceHistogramGeneratorPass",
+            "Slots": [
+                {
+                    "Name": "ColorInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_inputTexture"                                       
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputTexture",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "UintValue": [
+                                0,
+                                0, 
+                                0,
+                                0 
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }                       
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/LuminanceHistogramGenerator.shader"
+                },
+                "Make Fullscreen Pass": false
+            }
+        }
+    }
+}

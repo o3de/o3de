@@ -1,0 +1,14 @@
+{
+    "project_name": "CMakeTestbed",
+    "product_name": "CMakeTestbed",
+    "executable_name": "CMakeTestbedLauncher",
+    "modules" : [],
+    "project_id": "{4F3363D3-4A7C-47A6-B464-B21524771358}",
+
+    "android_settings" : {
+        "package_name" : "com.lumberyard.yourgame",
+        "version_number" : 1,
+        "version_name" : "1.0.0.0",
+        "orientation" : "landscape"
+    }
+}

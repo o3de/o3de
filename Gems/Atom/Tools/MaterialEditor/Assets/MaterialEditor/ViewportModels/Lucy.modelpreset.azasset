@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::ModelPreset",
+    "ClassData": {
+        "displayName": "Lucy",
+        "modelAsset": {
+            "assetId": {
+                "guid": "{CF4634D9-EC73-51D4-8F8E-AA25E7A6561A}",
+                "subId": 277335264
+            },
+            "assetHint": "materialeditor/viewportmodels/lucy.azmodel"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/GalvanizedSteel/galvanized_steel.jpg"
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "Materials/GalvanizedSteel/galvanized_steel.jpg"
+        },
+        "uv": {
+            "tileU": 2.0,
+            "tileV": 2.0
+        }
+    }
+}

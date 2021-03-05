@@ -1,0 +1,12 @@
+{
+  "Type": "JsonSerialization",
+  "Version": 1,
+  "ClassName": "SMAAConfigurationDescriptor",
+  "ClassData": {
+    "Name": "Default",
+    "Enable": 0,
+    "EdgeDetectionMode": 2,
+    "OutputMode": 0,
+    "Quality": 3
+  }
+}

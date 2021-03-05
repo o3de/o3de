@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/StyleSheetTests1">
+        <file alias="sheet1.qss">qrc1/sheet1.qss</file>
+        <file alias="sheet2.qss">qrc1/sheet2.qss</file>
+    </qresource>
+</RCC>

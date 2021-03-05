@@ -1,0 +1,129 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    Source/PhysX_precompiled.cpp
+    Source/PhysX_precompiled.h
+    Include/PhysX/SystemComponentBus.h
+    Include/PhysX/ColliderComponentBus.h
+    Include/PhysX/NativeTypeIdentifiers.h
+    Include/PhysX/MeshColliderComponentBus.h
+    Include/PhysX/MeshAsset.h
+    Include/PhysX/HeightFieldAsset.h
+    Include/PhysX/UserDataTypes.h
+    Include/PhysX/UserDataTypes.inl
+    Include/PhysX/Utils.h
+    Include/PhysX/Utils.inl
+    Include/PhysX/MathConversion.h
+    Include/PhysX/ComponentTypeIds.h
+    Include/PhysX/ForceRegionComponentBus.h
+    Include/PhysX/ColliderShapeBus.h
+    Include/PhysX/TriggerEventCallback.h
+    Include/PhysX/PhysXLocks.h
+    Include/PhysX/CharacterControllerBus.h
+    Include/PhysX/CharacterGameplayBus.h
+    Source/RigidBodyComponent.cpp
+    Source/RigidBodyComponent.h
+    Source/BaseColliderComponent.cpp
+    Source/BaseColliderComponent.h
+    Source/MeshColliderComponent.cpp
+    Source/MeshColliderComponent.h
+    Source/BoxColliderComponent.h
+    Source/BoxColliderComponent.cpp
+    Source/SphereColliderComponent.h
+    Source/SphereColliderComponent.cpp
+    Source/CapsuleColliderComponent.h
+    Source/CapsuleColliderComponent.cpp
+    Source/ShapeColliderComponent.cpp
+    Source/ShapeColliderComponent.h
+    Source/ForceRegionComponent.cpp
+    Source/ForceRegionComponent.h
+    Source/StaticRigidBodyComponent.cpp
+    Source/StaticRigidBodyComponent.h
+    Source/BallJointComponent.cpp
+    Source/BallJointComponent.h
+    Source/FixedJointComponent.cpp
+    Source/FixedJointComponent.h
+    Source/HingeJointComponent.cpp
+    Source/HingeJointComponent.h
+    Source/JointComponent.cpp
+    Source/JointComponent.h
+    Source/Pipeline/MeshAssetHandler.cpp
+    Source/Pipeline/MeshAssetHandler.h
+    Source/Pipeline/HeightFieldAssetHandler.cpp
+    Source/Pipeline/HeightFieldAssetHandler.h
+    Source/Pipeline/StreamWrapper.cpp
+    Source/Pipeline/StreamWrapper.h
+    Source/Utils.h
+    Source/Utils.cpp
+    Source/World.cpp
+    Source/World.h
+    Source/RigidBody.cpp
+    Source/RigidBody.h
+    Source/RigidBodyStatic.cpp
+    Source/RigidBodyStatic.h
+    Source/Collision.cpp
+    Source/Collision.h
+    Source/Shape.h
+    Source/Shape.cpp
+    Source/Material.cpp
+    Source/Material.h
+    Source/Joint.cpp
+    Source/Joint.h
+    Source/ForceRegionForces.cpp
+    Source/ForceRegionForces.h
+    Source/ForceRegion.cpp
+    Source/ForceRegion.h
+    Source/NameConstants.cpp
+    Source/NameConstants.h
+    Source/DefaultWorldComponent.cpp
+    Source/DefaultWorldComponent.h
+    Source/WindProvider.cpp    
+    Source/WindProvider.h
+    Source/PhysXCharacters/API/CharacterController.cpp
+    Source/PhysXCharacters/API/CharacterController.h
+    Source/PhysXCharacters/API/Ragdoll.cpp
+    Source/PhysXCharacters/API/Ragdoll.h
+    Source/PhysXCharacters/API/RagdollNode.cpp
+    Source/PhysXCharacters/API/RagdollNode.h
+    Source/PhysXCharacters/API/CharacterUtils.cpp
+    Source/PhysXCharacters/API/CharacterUtils.h
+    Source/PhysXCharacters/Components/CharacterControllerComponent.cpp
+    Source/PhysXCharacters/Components/CharacterControllerComponent.h
+    Source/PhysXCharacters/Components/CharacterGameplayComponent.cpp
+    Source/PhysXCharacters/Components/CharacterGameplayComponent.h
+    Source/PhysXCharacters/Components/RagdollComponent.cpp
+    Source/PhysXCharacters/Components/RagdollComponent.h
+
+    Include/PhysX/Debug/PhysXDebugConfiguration.h
+    Include/PhysX/Debug/PhysXDebugInterface.h
+    Include/PhysX/Configuration/PhysXConfiguration.h
+    Source/Configuration/PhysXConfiguration.cpp
+    Source/Configuration/PhysXSettingsRegistryManager.h
+    Source/Configuration/PhysXSettingsRegistryManager.cpp
+    Source/Debug/PhysXDebug.h
+    Source/Debug/PhysXDebug.cpp
+    Source/Debug/Configuration/PhysXDebugConfiguration.cpp
+    Source/Scene/PhysXScene.h
+    Source/Scene/PhysXScene.cpp
+    Source/System/PhysXAllocator.h
+    Source/System/PhysXAllocator.cpp
+    Source/System/PhysXCookingParams.h
+    Source/System/PhysXCookingParams.cpp
+    Source/System/PhysXCpuDispatcher.cpp
+    Source/System/PhysXCpuDispatcher.h
+    Source/System/PhysXJob.cpp
+    Source/System/PhysXJob.h
+    Source/System/PhysXSdkCallbacks.h
+    Source/System/PhysXSdkCallbacks.cpp
+    Source/System/PhysXSystem.h
+    Source/System/PhysXSystem.cpp
+)

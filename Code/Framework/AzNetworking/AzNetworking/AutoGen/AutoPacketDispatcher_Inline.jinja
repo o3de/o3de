@@ -1,0 +1,25 @@
+{% for xml in dataFiles %}
+namespace {{ xml.attrib['Name'] }}
+{
+    template <typename HANDLER>
+    inline bool DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler)
+    {
+        switch (aznumeric_cast<int32_t>(packetHeader.GetPacketType()))
+        {
+{%      for Packet in xml.iter('Packet') %}
+            case aznumeric_cast<int32_t>({{ Packet.attrib['Name'] }}::Type):
+            {
+                AZLOG(Debug_DispatchPackets, "Received packet %s", "{{ Packet.attrib['Name'] }}");
+                {{ Packet.attrib['Name'] }} packet;
+                if (!serializer.Serialize(packet, "Packet"))
+                {
+                    return false;
+                }
+                return handler.HandleRequest(connection, packetHeader, packet);
+            }
+{%      endfor %}
+        }
+        return false;
+    }
+}
+{% endfor %}

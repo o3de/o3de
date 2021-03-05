@@ -1,0 +1,83 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+//
+// ACES implementation
+// This implementation is partially ported from NVIDIA HDR sample.
+// https://developer.nvidia.com/high-dynamic-range-display-development
+//
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+////////////////////////////////////////////////////////////////////////////////
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_framebuffer;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    // ACES spline parameters
+    SegmentedSplineParamsC9 m_acesSplineParams;
+    // Color transformation matrix from XYZ to the display's color primaries
+    row_major float3x3 m_XYZtoDisplayPrimaries;
+    // Reference white and black luminance values
+    float2 m_cinemaLimits;
+    // Bit flag for control the ODT shader behavior
+    int m_outputDisplayTransformFlags;
+    // The ODT output mode
+    int m_outputDisplayTransformMode;
+    // Gamma adjustment to be applied to compensate for the condition of the viewing environment.
+    // Note that ACES uses a value of 0.9811 for adjusting from dark to dim surrounding.
+    float m_surroundGamma;
+    // Optional gamma value that is applied as basic gamma curve OETF
+    float m_gamma;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// A entry point of pixel shader.
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    OutputTransformParameters outputTransformParams;
+    outputTransformParams.outputDisplayTransformFlags = PassSrg::m_outputDisplayTransformFlags;
+    outputTransformParams.outputDisplayTransformMode = PassSrg::m_outputDisplayTransformMode;
+    outputTransformParams.cinemaLimits = PassSrg::m_cinemaLimits;
+    outputTransformParams.acesSplineParams = PassSrg::m_acesSplineParams;
+    outputTransformParams.XYZtoDisplayPrimaries = PassSrg::m_XYZtoDisplayPrimaries;
+    outputTransformParams.surroundGamma = PassSrg::m_surroundGamma;
+    outputTransformParams.gamma = PassSrg::m_gamma;
+
+    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+
+    // Convert to ACEScg to ACES color space
+    float3 aces = mul(AP1ToAP0Mat, color.rgb);
+
+    float3 oces = ReferenceRenderingTransform(aces);
+    OUT.m_color.rgb = OutputDeviceTransform(oces, outputTransformParams);
+    OUT.m_color.w = 1;
+
+    return OUT;
+}

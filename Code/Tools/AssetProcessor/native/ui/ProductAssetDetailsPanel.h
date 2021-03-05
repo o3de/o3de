@@ -1,0 +1,118 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#if !defined(Q_MOC_RUN)
+#include "AssetDetailsPanel.h"
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <QDateTime>
+#include <QHash>
+#include <QScopedPointer>
+#endif
+
+class QItemSelection;
+class QLabel;
+class QListWidget;
+class QListWidgetItem;
+
+namespace AZ
+{
+    namespace Data
+    {
+        struct AssetId;
+    }
+}
+
+namespace Ui
+{
+    class ProductAssetDetailsPanel;
+}
+
+namespace AssetProcessor
+{
+    class AssetTreeItem;
+    class AssetDatabaseConnection;
+    class ProductAssetTreeItemData;
+
+    class ProductAssetDetailsPanel
+        : public AssetDetailsPanel
+    {
+        Q_OBJECT
+    public:
+        explicit ProductAssetDetailsPanel(QWidget* parent = nullptr);
+        ~ProductAssetDetailsPanel() override;
+
+        // The scan results widget is in a separate section of the UI, but updates when scans are added / completed.
+        void SetScannerInformation(QListWidget* missingDependencyScanResults, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
+        {
+            m_missingDependencyScanResults = missingDependencyScanResults;
+            m_assetDatabaseConnection = assetDatabaseConnection;
+        }
+
+        void SetScanQueueEnabled(bool enabled);
+
+    public Q_SLOTS:
+        void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+    protected:
+        struct MissingDependencyScanGUIInfo
+        {
+            QListWidgetItem* m_scanWidgetRow = nullptr;
+            size_t m_remainingFiles = 0;
+            QDateTime m_scanTimeStart;
+        };
+
+        void ResetText();
+        void SetDetailsVisible(bool visible);
+        void OnSupportClicked(bool checked);
+        void OnScanFileClicked(bool checked);
+        void OnScanFolderClicked(bool checked);
+        void OnClearScanFileClicked(bool checked);
+        void OnClearScanFolderClicked(bool checked);
+
+        void ScanFolderForMissingDependencies(QString scanName, AssetTreeItem& folder);
+        void ScanFileForMissingDependencies(QString scanName, const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData);
+
+        void ClearMissingDependenciesForFile(const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData);
+        void ClearMissingDependenciesForFolder(AssetTreeItem& folder);
+
+        void RefreshUI();
+
+        void BuildOutgoingProductDependencies(
+            const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
+            const AZStd::string& platform);
+
+        void BuildIncomingProductDependencies(
+            const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
+            const AZ::Data::AssetId& assetId,
+            const AZStd::string& platform);
+
+        void BuildMissingProductDependencies(
+            const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData);
+
+        void AddProductIdToScanCount(AZ::s64 scannedProductId, QString scanName);
+        void RemoveProductIdFromScanCount(AZ::s64 scannedProductId, QString scanName);
+        void UpdateScannerUI(MissingDependencyScanGUIInfo& scannerUIInfo, QString scanName);
+
+        QScopedPointer<Ui::ProductAssetDetailsPanel> m_ui;
+        AssetTreeItem* m_currentItem = nullptr;
+        // Track how many files are being scanned in the UI.
+        QHash<AZ::s64, QString> m_productIdToScanName;
+        QHash<QString, MissingDependencyScanGUIInfo> m_scanNameToScanGUIInfo;
+        mutable AZStd::recursive_mutex m_scanCountMutex;
+        QListWidget* m_missingDependencyScanResults = nullptr;
+        // The asset database connection in the AzToolsFramework namespace is read only. The AssetProcessor connection allows writing.
+        AZStd::shared_ptr<AssetDatabaseConnection> m_assetDatabaseConnection;
+    };
+} // namespace AssetProcessor

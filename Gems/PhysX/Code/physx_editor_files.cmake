@@ -1,0 +1,137 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    Include/PhysX/EditorColliderComponentRequestBus.h
+    Include/PhysX/EditorJointBus.h
+    Source/ComponentDescriptors.cpp
+    Source/ComponentDescriptors.h
+    Source/EditorComponentDescriptors.cpp
+    Source/EditorComponentDescriptors.h
+    Source/EditorRigidBodyComponent.cpp
+    Source/EditorRigidBodyComponent.h
+    Source/EditorColliderComponent.cpp
+    Source/EditorColliderComponent.h
+    Source/EditorShapeColliderComponent.cpp
+    Source/EditorShapeColliderComponent.h
+    Source/EditorForceRegionComponent.cpp
+    Source/EditorForceRegionComponent.h
+    Source/EditorBallJointComponent.cpp
+    Source/EditorBallJointComponent.h
+    Source/EditorFixedJointComponent.cpp
+    Source/EditorFixedJointComponent.h
+    Source/EditorHingeJointComponent.cpp
+    Source/EditorHingeJointComponent.h
+    Source/EditorJointComponent.cpp
+    Source/EditorJointComponent.h
+    Source/Pipeline/MeshExporter.cpp
+    Source/Pipeline/MeshExporter.h
+    Source/Pipeline/MeshGroup.cpp
+    Source/Pipeline/MeshGroup.h
+    Source/Pipeline/MeshBehavior.cpp
+    Source/Pipeline/MeshBehavior.h
+    Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.cpp
+    Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h
+    Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.cpp
+    Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.h
+    Source/Pipeline/PrimitiveShapeFitter/Utils.cpp
+    Source/Pipeline/PrimitiveShapeFitter/Utils.h
+    Source/PhysXCharacters/Components/EditorCharacterControllerComponent.cpp
+    Source/PhysXCharacters/Components/EditorCharacterControllerComponent.h
+    Source/PhysXCharacters/Components/EditorCharacterGameplayComponent.cpp
+    Source/PhysXCharacters/Components/EditorCharacterGameplayComponent.h
+    Editor/ConfigurationWidget.h
+    Editor/ConfigurationWidget.cpp
+    Editor/EditorWindow.h
+    Editor/EditorWindow.cpp
+    Editor/EditorWindow.ui
+    Editor/SettingsWidget.h
+    Editor/SettingsWidget.cpp
+    Editor/CollisionLayersWidget.h
+    Editor/CollisionLayersWidget.cpp
+    Editor/CollisionLayerWidget.h
+    Editor/CollisionLayerWidget.cpp
+    Editor/CollisionGroupWidget.h
+    Editor/CollisionGroupWidget.cpp
+    Editor/CollisionGroupsWidget.h
+    Editor/CollisionGroupsWidget.cpp
+    Editor/CollisionFilteringWidget.h
+    Editor/CollisionFilteringWidget.cpp
+    Editor/PropertyTypes.h
+    Editor/PropertyTypes.cpp
+    Editor/MaterialIdWidget.h
+    Editor/MaterialIdWidget.cpp
+    Editor/EditorClassConverters.cpp
+    Editor/EditorClassConverters.h
+    Editor/PvdWidget.h
+    Editor/PvdWidget.cpp
+    Editor/DocumentationLinkWidget.h
+    Editor/DocumentationLinkWidget.cpp
+    Editor/InertiaPropertyHandler.h
+    Editor/InertiaPropertyHandler.cpp
+    Editor/ConfigStringLineEditCtrl.h
+    Editor/ConfigStringLineEditCtrl.cpp
+    Editor/UniqueStringContainer.h
+    Editor/UniqueStringContainer.cpp
+    Editor/ComboBoxEditButtonPair.h
+    Editor/ComboBoxEditButtonPair.cpp
+    Editor/ColliderComponentMode.h
+    Editor/ColliderComponentMode.cpp
+    Editor/ColliderSubComponentMode.h
+    Editor/ColliderOffsetMode.h
+    Editor/ColliderOffsetMode.cpp
+    Editor/ColliderBoxMode.h
+    Editor/ColliderBoxMode.cpp
+    Editor/ColliderRotationMode.h
+    Editor/ColliderRotationMode.cpp
+    Editor/ColliderSphereMode.h
+    Editor/ColliderSphereMode.cpp
+    Editor/ColliderCapsuleMode.h
+    Editor/ColliderCapsuleMode.cpp
+    Editor/ColliderAssetScaleMode.h
+    Editor/ColliderAssetScaleMode.cpp
+    Editor/DebugDraw.cpp
+    Editor/DebugDraw.h
+    Editor/PolygonPrismMeshUtils.cpp
+    Editor/PolygonPrismMeshUtils.h
+    Editor/EditorJointComponentMode.cpp
+    Editor/EditorJointComponentMode.h
+    Editor/EditorJointConfiguration.cpp
+    Editor/EditorJointConfiguration.h
+    Editor/EditorJointTypeDrawer.cpp
+    Editor/EditorJointTypeDrawer.h
+    Editor/EditorJointTypeDrawerBus.h
+    Editor/EditorSubComponentModeAngleCone.cpp
+    Editor/EditorSubComponentModeAngleCone.h
+    Editor/EditorSubComponentModeAnglePair.cpp
+    Editor/EditorSubComponentModeAnglePair.h
+    Editor/EditorSubComponentModeBase.cpp
+    Editor/EditorSubComponentModeBase.h
+    Editor/EditorSubComponentModeLinear.cpp
+    Editor/EditorSubComponentModeLinear.h
+    Editor/EditorSubComponentModeRotation.cpp
+    Editor/EditorSubComponentModeRotation.h
+    Editor/EditorSubComponentModeSnap.cpp
+    Editor/EditorSubComponentModeSnap.h
+    Editor/EditorSubComponentModeSnapPosition.cpp
+    Editor/EditorSubComponentModeSnapPosition.h
+    Editor/EditorSubComponentModeSnapRotation.cpp
+    Editor/EditorSubComponentModeSnapRotation.h
+    Editor/EditorSubComponentModeVec3.cpp
+    Editor/EditorSubComponentModeVec3.h
+    Editor/EditorViewportEntityPicker.cpp
+    Editor/EditorViewportEntityPicker.h
+
+    Editor/Source/Components/EditorSystemComponent.h
+    Editor/Source/Components/EditorSystemComponent.cpp
+    Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h
+    Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.cpp
+)

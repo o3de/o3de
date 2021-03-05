@@ -1,0 +1,137 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+  
+#pragma once
+
+// NOTE: Nest this array, so Azslc will output a size of the bindingslot to 1
+struct FloatBuffer
+{
+    float buffer;
+};
+
+// Listed on update frequency
+ShaderResourceGroupSemantic FrequencyPerScene 
+{
+    FrequencyId = 6;
+};
+
+ShaderResourceGroupSemantic FloatBufferSemanticId
+{
+    FrequencyId = 7;
+};
+
+ShaderResourceGroup ImageSrg : FrequencyPerScene
+{
+    // Array of textures
+    // NOTE: The size of the texture array has to match the number of textures in the example
+    Texture2D m_textureArray[8];
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+}
+
+ShaderResourceGroup FloatBufferSrg : FloatBufferSemanticId
+{
+    StructuredBuffer<FloatBuffer> m_floatBuffer;
+};
+
+// Helper functions to read data from the FloatBuffer. The FloatBuffer is accessed with a descriptor and a index.
+// The descriptor holds the initial offset within the FloatBuffer, and the index is a sub-index, which increments with each property that is being read.
+// The data needs to be read in the same order as it is allocated on the host.
+
+// All float setters
+void SetFloat(out float outFloat, in uint desc, inout uint index)
+{
+    outFloat = FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer;
+    index += 1;
+}
+
+void SetFloat2(out float2 outFloat, in uint desc, inout uint index)
+{
+    outFloat.x = FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer;
+    outFloat.y = FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer;
+    index += 2;
+}
+
+void SetFloat3(out float3 outFloat, in uint desc, inout uint index)
+{
+    outFloat.x = FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer;
+    outFloat.y = FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer;
+    outFloat.z = FloatBufferSrg::m_floatBuffer[desc + index + 2].buffer;
+    index += 3;
+}
+
+void SetFloat4(out float4 outFloat, in uint desc, inout uint index)
+{
+    outFloat.x = FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer;
+    outFloat.y = FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer;
+    outFloat.z = FloatBufferSrg::m_floatBuffer[desc + index + 2].buffer;
+    outFloat.w = FloatBufferSrg::m_floatBuffer[desc + index + 3].buffer;
+    index += 4;
+}
+
+// All matrix setters
+void SetFloat4x4(out float4x4 outFloat, in uint desc, inout uint index)
+{
+    [unroll(4)] 
+    for(uint i = 0; i < 4; i++)
+    {
+        SetFloat4(outFloat[i], desc, index);
+    }
+}
+
+// All uint setters
+void SetUint(out uint outUInt, in uint desc, inout uint index)
+{
+    outUInt = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer);
+    index += 1;
+}
+
+void SetUint2(out uint2 outUInt, in uint desc, inout uint index)
+{
+    outUInt.x = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer);
+    outUInt.y = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer);
+    index += 2;
+}
+
+void SetUint3(out uint3 outUInt, in uint desc, inout uint index)
+{
+    outUInt.x = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer);
+    outUInt.y = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer);
+    outUInt.z = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 2].buffer);
+    index += 3;
+}
+
+void SetUint4(out uint4 outUInt, in uint desc, inout uint index)
+{
+    outUInt.x = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 0].buffer);
+    outUInt.y = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 1].buffer);
+    outUInt.z = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 2].buffer);
+    outUInt.w = asuint(FloatBufferSrg::m_floatBuffer[desc + index + 3].buffer);
+    index += 4;
+}
+
+// All double setters
+void SetDouble(out double outDouble, in uint desc, inout uint index)
+{
+    uint lowBits;
+    uint highBits;
+    SetUint(highBits,  desc, index);
+    SetUint(lowBits, desc, index);
+
+    outDouble = asdouble(lowBits, highBits);
+}

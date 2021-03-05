@@ -1,0 +1,16 @@
+<tag1>
+    <tag2 path="dependency1.txt">
+        <tag3 path="dependency2.txt" attribute2="2" attribute3="3"/>
+    </tag2>
+    <tag4 dependency="dependency3.txt">
+        <tag4 dependency="dependency4.txt">
+            <tag4 dependency="dependency5.txt">
+            </tag4>
+        </tag4>
+    </tag4>
+    <tag1>
+        <tag2 path="dependency6.txt">
+            <tag3 path="dependency7.txt"/>
+        </tag2>
+    </tag1>
+</tag1>

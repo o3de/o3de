@@ -1,0 +1,69 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SubsurfaceScatteringPassTemplate",
+            "PassClass": "SubsurfaceScatteringPass",
+            "Slots": [
+                {
+                    "Name": "InputDiffuse",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputScatterDistance",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "FilteredOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                     "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputDiffuse"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": 3
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "FilteredOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputDiffuse",
+                    "Output" : "Output"
+                }
+            ]
+        }
+    }
+}

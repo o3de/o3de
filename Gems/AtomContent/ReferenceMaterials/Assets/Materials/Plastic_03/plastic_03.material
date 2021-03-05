@@ -1,0 +1,25 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.22696268558502198,
+                0.0,
+                0.09758144617080689,
+                1.0
+            ]
+        },
+        "metallic": {
+            "factor": 0.010100999847054482
+        },
+        "roughness": {
+            "factor": 0.19191919267177583
+        },
+        "specularF0": {
+            "factor": 0.5353534817695618
+        }
+    }
+}

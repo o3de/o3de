@@ -1,0 +1,217 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#define EPSILON 10e-5f
+
+ 
+float4x4 CreateIdentity()
+{
+    float4x4 result;
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < 4; ++j)
+        {
+            if(i == j)
+            {
+                result[i][j] = 1.0;
+            }
+            else
+            {
+                result[i][j] = 0.0;
+            }
+        }
+    }
+    return result;
+}
+
+//! Fast inversion assumes the matrix consists of an upper 3x3 orthogonal matrix (i.e. a rotation)
+//! and a translation in the last column
+float4x4 InverseFast(float4x4 m)
+{
+    float4x4 result;
+
+    for(int i =0; i < 3; ++i)
+    {
+        for(int j = 0; j < 3; ++j)
+        {
+            result[i][j] = m[j][i];
+        }
+    }
+
+    result[0][3] = -(m[0][3]*m[0][0] + m[1][3]*m[0][1] + m[2][3]*m[0][2]);
+    result[1][3] = -(m[0][3]*m[1][0] + m[1][3]*m[1][1] + m[2][3]*m[1][2]);
+    result[2][3] = -(m[0][3]*m[2][0] + m[1][3]*m[2][1] + m[2][3]*m[2][2]);
+    result[3][3] = 1.0;
+    result[3][0] = 0.0;
+    result[3][1] = 0.0;
+    result[3][2] = 0.0;
+
+    return result;
+}
+
+//! Gets the inverse of the matrix, assumes that the last row is (0,0,0,1), 
+//! use InverseFull if this is not true.
+float4x4 Inverse(float4x4 m)
+{
+    float4x4 result;
+    /* compute matrix of cofactors */
+    result[0][0] = m[1][1] * m[2][2] - m[1][2] * m[2][1];
+    result[1][0] = m[1][2] * m[2][0] - m[1][0] * m[2][2];
+    result[2][0] = m[1][0] * m[2][1] - m[1][1] * m[2][0];
+
+    result[0][1] = m[2][1] * m[0][2] - m[2][2] * m[0][1];
+    result[1][1] = m[2][2] * m[0][0] - m[2][0] * m[0][2];
+    result[2][1] = m[2][0] * m[0][1] - m[2][1] * m[0][0];
+
+    result[0][2] = m[0][1] * m[1][2] - m[0][2] * m[1][1];
+    result[1][2] = m[0][2] * m[1][0] - m[0][0] * m[1][2];
+    result[2][2] = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+
+    /* Calculate the determinant */
+    float det = m[0][0] * result[0][0] + m[1][0] * result[0][1] + m[2][0] * result[0][2];
+
+    /* divide cofactors by determinant */
+    bool isDetZero = step(-EPSILON, det) * (1 - step(EPSILON, det));
+    float f = (isDetZero? 10000000.0 : 1.0/det);
+
+    result[0][0] = result[0][0] * f;
+    result[0][1] = result[0][1] * f;
+    result[0][2] = result[0][2] * f;
+    result[1][0] = result[1][0] * f;
+    result[1][1] = result[1][1] * f;
+    result[1][2] = result[1][2] * f;
+    result[2][0] = result[2][0] * f;
+    result[2][1] = result[2][1] * f;
+    result[2][2] = result[2][2] * f;
+
+    /* Translation */
+    result[0][3] = -(m[0][3] * result[0][0] + m[1][3] * result[0][1] + m[2][3] * result[0][2]);
+    result[1][3] = -(m[0][3] * result[1][0] + m[1][3] * result[1][1] + m[2][3] * result[1][2]);
+    result[2][3] = -(m[0][3] * result[2][0] + m[1][3] * result[2][1] + m[2][3] * result[2][2]);
+
+    /* The remaining parts of the 4x4 matrix */
+    result[3][0] = 0.0;
+    result[3][1] = 0.0;
+    result[3][2] = 0.0;
+    result[3][3] = 1.0;
+
+    return result;
+}
+
+//! Performs a full inversion for an arbitrary 4x4 matrix. 
+//! Using Inverse or InverseFast will often be possible, use them in preference to this.
+float4x4 InverseFull(float4x4 m)
+{
+    float det;
+    float d12, d13, d23, d24, d34, d41;
+    float4x4 result;
+
+    // Inverse = adjoint / det.
+
+    // pre-compute 2x2 dets for last two rows when computing
+    // cofactors of first two rows.
+    d12 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+    d13 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+    d23 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+    d24 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+    d34 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+    d41 = m[2][3] * m[3][0] - m[3][3] * m[2][0];
+
+    result[0][0] =   m[1][1] * d34 - m[1][2] * d24 + m[1][3] * d23;
+    result[1][0] = -(m[1][0] * d34 + m[1][2] * d41 + m[1][3] * d13);
+    result[2][0] =   m[1][0] * d24 + m[1][1] * d41 + m[1][3] * d12;
+    result[3][0] = -(m[1][0] * d23 - m[1][1] * d13 + m[1][2] * d12);
+
+    // Compute determinant as early as possible using these cofactors.
+    det = m[0][0] * result[0][0] + m[0][1] * result[1][0] + m[0][2] * result[2][0] + m[0][3] * result[3][0];
+
+    bool isDetZero = step(-EPSILON, det) * (1 - step(EPSILON, det));
+    if(isDetZero)
+    {
+        result = CreateIdentity();
+    }
+    else
+    {
+        float invDet = 1.0 / det;
+
+        // Compute rest of inverse.
+        result[0][0] = result[0][0] * invDet;
+        result[1][0] = result[1][0] * invDet;
+        result[2][0] = result[2][0] * invDet;
+        result[3][0] = result[3][0] * invDet;
+
+        result[0][1] = -(m[0][1] * d34 - m[0][2] * d24 + m[0][3] * d23) * invDet;
+        result[1][1] =  (m[0][0] * d34 + m[0][2] * d41 + m[0][3] * d13) * invDet;
+        result[2][1] = -(m[0][0] * d24 + m[0][1] * d41 + m[0][3] * d12) * invDet;
+        result[3][1] =  (m[0][0] * d23 - m[0][1] * d13 + m[0][2] * d12) * invDet;
+
+        // Pre-compute 2x2 dets for first two rows when computing
+        // cofactors of last two rows.
+        d12 = m[0][0] * m[1][1] - m[1][0] * m[0][1];
+        d13 = m[0][0] * m[1][2] - m[1][0] * m[0][2];
+        d23 = m[0][1] * m[1][2] - m[1][1] * m[0][2];
+        d24 = m[0][1] * m[1][3] - m[1][1] * m[0][3];
+        d34 = m[0][2] * m[1][3] - m[1][2] * m[0][3];
+        d41 = m[0][3] * m[1][0] - m[1][3] * m[0][0];
+
+        result[0][2] =  (m[3][1] * d34 - m[3][2] * d24 + m[3][3] * d23) * invDet;
+        result[1][2] = -(m[3][0] * d34 + m[3][2] * d41 + m[3][3] * d13) * invDet;
+        result[2][2] =  (m[3][0] * d24 + m[3][1] * d41 + m[3][3] * d12) * invDet;
+        result[3][2] = -(m[3][0] * d23 - m[3][1] * d13 + m[3][2] * d12) * invDet;
+        result[0][3] = -(m[2][1] * d34 - m[2][2] * d24 + m[2][3] * d23) * invDet;
+        result[1][3] =  (m[2][0] * d34 + m[2][2] * d41 + m[2][3] * d13) * invDet;
+        result[2][3] = -(m[2][0] * d24 + m[2][1] * d41 + m[2][3] * d12) * invDet;
+        result[3][3] =  (m[2][0] * d23 - m[2][1] * d13 + m[2][2] * d12) * invDet;
+    }
+
+    return result;
+}
+
+//! Performs a fast inversion of a 3x3 matrix
+//! This optimized version costs approximately 13 instructions
+float3x3 InverseTransposeMatrixFast(float3x3 worldMat)
+{
+    const float3x3    trWrlMat = transpose(worldMat);
+    const float3      scaleVec = 1.0 / float3(dot(trWrlMat[0], trWrlMat[0]), dot(trWrlMat[1], trWrlMat[1]), dot(trWrlMat[2], trWrlMat[2]));
+    float3x3          invScaleWorldMat;
+
+    invScaleWorldMat[0] = trWrlMat[0] * scaleVec.x;
+    invScaleWorldMat[1] = trWrlMat[1] * scaleVec.y;
+    invScaleWorldMat[2] = trWrlMat[2] * scaleVec.z;
+
+    invScaleWorldMat = transpose(invScaleWorldMat);
+
+    return invScaleWorldMat;
+}
+
+float3x3 MatrixFromQuaternion(float4 quaternion)
+{
+    float tx = quaternion.x * 2.0f;
+    float ty = quaternion.y * 2.0f;
+    float tz = quaternion.z * 2.0f;
+    float twx = quaternion.w * tx;
+    float twy = quaternion.w * ty;
+    float twz = quaternion.w * tz;
+    float txy = quaternion.x * ty;
+    float txx = quaternion.x * tx;
+    float txz = quaternion.x * tz;
+    float tyy = quaternion.y * ty;
+    float tyz = quaternion.y * tz;
+    float tzz = quaternion.z * tz;
+    
+    float3x3 m = float3x3(1.0f - tyy - tzz, txy - twz, txz + twy, 
+                            txy + twz, 1.0f - txx - tzz, tyz - twx, 
+                            txz - twy, tyz + twx, 1.0f - txx - tyy);
+    return m;
+}

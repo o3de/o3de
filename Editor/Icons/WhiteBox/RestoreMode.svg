@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="24px" viewBox="0 0 22 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Restore Mode</title>
+    <defs>
+        <polygon id="path-1" points="11.1238069 12.4974069 11.1238069 23.957269 21.0482207 18.2276138 21.0482207 6.76857931"></polygon>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="9.92441379" height="17.1886897" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+    </defs>
+    <g id="Working-Design-Page" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(-1.000000, 0.000000)">
+            <rect id="Rectangle-Copy-9" x="0" y="0" width="24" height="24"></rect>
+            <g id="Restore-Mode" transform="translate(1.000000, 0.000000)">
+                <g id="Group-3" transform="translate(0.000000, -0.000083)">
+                    <use id="Stroke-1" stroke="#FFFFFF" mask="url(#mask-2)" stroke-dasharray="1,1" xlink:href="#path-1"></use>
+                    <polygon id="Fill-3" fill="#FFFFFF" points="10.5239172 1.02140518e-13 0.599503448 5.72910345 10.5239172 11.4582069 20.4466759 5.72910345"></polygon>
+                    <polygon id="Fill-4" fill="#FFFFFF" points="-3.55271368e-13 18.227669 9.92386207 23.9573241 9.92386207 12.4974621 -3.55271368e-13 6.76835862"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,58 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <Atom/RHI/PipelineLibrary.h>
+#include <AzCore/Memory/SystemAllocator.h>
+
+namespace AZ
+{
+    namespace DX12
+    {
+        class PipelineLibrary final
+            : public RHI::PipelineLibrary
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+            AZ_DISABLE_COPY_MOVE(PipelineLibrary);
+
+            static RHI::Ptr<PipelineLibrary> Create();
+
+            RHI::Ptr<ID3D12PipelineState> CreateGraphicsPipelineState(uint64_t hash, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pipelineStateDesc);
+            RHI::Ptr<ID3D12PipelineState> CreateComputePipelineState(uint64_t hash, const D3D12_COMPUTE_PIPELINE_STATE_DESC& pipelineStateDesc);
+
+        private:
+            PipelineLibrary() = default;
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::PipelineLibrary
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryData* serializedData) override;
+            void ShutdownInternal() override;
+            RHI::ResultCode MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> libraries) override;
+            RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
+            //////////////////////////////////////////////////////////////////////////
+
+            ID3D12DeviceX* m_dx12Device = nullptr;
+
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            // This is stored because the DX12 library doesn't actually copy the data.
+            RHI::ConstPtr<RHI::PipelineLibraryData> m_serializedData;
+
+            mutable AZStd::mutex m_mutex;
+            RHI::Ptr<ID3D12PipelineLibraryX> m_library;
+
+            // Internally tracks additions to the library. Used when merging libraries together.
+            AZStd::unordered_map<AZStd::wstring, RHI::Ptr<ID3D12PipelineState>> m_pipelineStates;
+#endif
+        };
+    }
+}

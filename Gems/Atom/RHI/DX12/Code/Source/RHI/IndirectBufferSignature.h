@@ -1,0 +1,53 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <AzCore/Memory/PoolAllocator.h>
+
+namespace AZ
+{
+    namespace DX12
+    {
+        //! DX12 implementation of the RHI IndirectBufferSignature. 
+        //! It represents the DX12 object ID3D12CommandSignature when doing indirect rendering. 
+        class IndirectBufferSignature final
+            : public RHI::IndirectBufferSignature
+        {
+            using Base = RHI::IndirectBufferSignature;
+        public:
+            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator, 0);
+            AZ_RTTI(IndirectBufferSignature, "{3BAE9C56-555B-4145-96B6-07C81FF9D3AC}", Base);
+
+            static RHI::Ptr<IndirectBufferSignature> Create();
+
+            ID3D12CommandSignature* Get() const;
+
+        private:
+            IndirectBufferSignature() = default;
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::IndirectBufferSignature
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::IndirectBufferSignatureDescriptor& descriptor) override;
+            uint32_t GetByteStrideInternal() const override;
+            uint32_t GetOffsetInternal(RHI::IndirectCommandIndex index) const override;
+            void ShutdownInternal() override;
+            //////////////////////////////////////////////////////////////////////////
+
+            RHI::Ptr<ID3D12CommandSignature> m_signature;
+
+            uint32_t m_stride = 0;
+            AZStd::vector<uint32_t> m_offsets;
+        };
+    }
+}

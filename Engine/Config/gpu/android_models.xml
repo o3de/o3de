@@ -1,0 +1,88 @@
+<!-- 
+    This file uses the model names as a regular expression, so it is possible to search and match multiple devices or
+    variants with a single string. Some of the special characters used in this file are:
+
+    ^       - Matches the start of the string
+    $       - Matches the end of the string
+    \d      - Matches a digit
+    \w      - Matches a alphanumeric character
+    []      - Matches a single character contained by the brackets
+    {m,n}   - Matches the preceding character between m and n times
+
+    For example, to match the Samsung Galaxy S5, which includes models SM-G900F, SM-G900I, SM-G900A and SM-G900W8, the
+    regular expression ^SM-G900\w{1,2}$ matches models starting SM-G900 and ending in 1 or 2 alphanumeric characters.
+-->
+<DeviceList>
+    <Config file="android_low.cfg">
+        <Device model="KFTHWI"/> <!-- Amazon Kindle Fire HDX -->
+        <Device model="Nexus\s7"/> <!-- Nexus 7 -->
+        <Device model="Nexus\s5"/> <!-- Nexus 5 -->
+        <Device model="^LG-D85\d"/> <!-- LG G3 -->
+        <Device model="^LG-H81\d"/> <!-- LG G4 -->
+        <Device model="^SM-N910\w{1,2}$"/> <!-- Samsung Galaxy Note 4 -->
+        <Device model="^SM-G900\w{1,2}$"/> <!-- Samsung Galaxy S5 -->
+    </Config>
+    <Config file="android_medium.cfg">
+        <Device model="^LG-H8[235]\d"/> <!-- LG G5 -->
+        <Device model="^SM-T21\d\w$"/> <!-- Samsung Galaxy Tab 3 -->
+        <Device model="^SM-G92[058]\w{1,2}$"/> <!-- Samsung Galaxy S6/S6 Edge/S6 Edge+ -->
+        <Device model="^SM-N920\w{1,2}$"/> <!-- Samsung Note 5 -->
+    </Config>
+    <Config file="android_high.cfg">
+        <Device model="^LG-H87\d"/> <!-- LG G6 -->
+        <Device model="Nexus\s6"/> <!-- Motorola Nexus 6 -->
+        <Device model="Pixel"/> <!-- Google Pixel -->
+        <Device model="^SM-G93[058]\w{1,2}$"/> <!-- Samsung Galaxy S7/S7 Edge -->
+        <Device model="^SM-N93[05]\w{1,2}$"/> <!-- Samsung Note 7 (+FE) -->
+        <Device model="Pixel\s2"/> <!-- Google Pixel 2 -->
+        <Device model="^SM-G95[058]\w{1,2}$"/> <!-- Samsung Galaxy S8/S8+ -->
+        <Device model="^SM-N950\w{1,2}$"/> <!-- Samsung Note8 -->
+    </Config>
+    <Config file="android_veryhigh.cfg">
+    </Config>
+    <Config file="android_MaliT760.cfg">
+        <Device model="SM-N920C"/> <!-- Samsung Note 5 (Europe, Asia)--> 
+        <Device model="SM-N920T"/> <!-- Samsung Note 5 (T-Mobile)-->
+        <Device model="SM-N920A"/> <!-- Samsung Note 5 (AT&T)-->
+        <Device model="SM-N920I"/> <!-- Samsung Note 5 (Australia)-->
+        <Device model="SM-N920G"/> <!-- Samsung Note 5 (LATAM)-->
+        
+        <Device model="SM-G920F"/> <!-- Samsung S6 (Europe)-->
+        <Device model="SM-G920FD"/> <!-- Samsung S6 (Philippines, Pakistan, Russia, Ukraine)-->
+        <Device model="SM-G920FQ"/> <!-- Samsung S6 (Turkey)-->
+        <Device model="SM-G920I"/> <!-- Samsung S6 (LATAM, Singapore, India, Australia, New Zealand)-->
+        <Device model="SM-G920A"/> <!-- Samsung S6 (AT&T)-->
+        <Device model="SM-G920T"/> <!-- Samsung S6 (T-Mobile)-->
+        <Device model="SM-G920S"/> <!-- Samsung S6 (Korea)-->
+        <Device model="SM-G920K"/> <!-- Samsung S6 (Korea)-->
+        <Device model="SM-G9200"/> <!-- Samsung S6 (Hong Kong)-->
+        <Device model="SM-G9208"/> <!-- Samsung S6 (China)-->
+        <Device model="SM-G9209"/> <!-- Samsung S6 (China)-->
+        
+        <Device model="SM-G925F"/> <!-- Samsung S6 edge (Global)-->
+        <Device model="SM-G925FQ"/> <!-- Samsung S6 edge (Turkey)-->
+        <Device model="SM-G925I"/> <!-- Samsung S6 edge (LATAM, India, Australia)-->
+        <Device model="SM-G925A"/> <!-- Samsung S6 edge (AT&T)-->
+        <Device model="SM-G925T"/> <!-- Samsung S6 edge (T-Mobile)-->
+        <Device model="SM-G925S"/> <!-- Samsung S6 edge (Korea)-->
+        <Device model="SM-G925K"/> <!-- Samsung S6 edge (Korea)-->
+        <Device model="SM-G925L"/> <!-- Samsung S6 edge (Korea)-->
+        <Device model="SM-G9250"/> <!-- Samsung S6 edge (China, HK)-->
+        
+        <Device model="SM-G928F"/> <!-- Samsung S6 edge+ (Europe)-->
+        <Device model="SM-G928G"/> <!-- Samsung S6 edge+ (India)-->
+        <Device model="SM-G928T"/> <!-- Samsung S6 edge+ (T-Mobile)-->
+        <Device model="SM-G928A"/> <!-- Samsung S6 edge+ (AT&T)-->
+        <Device model="SM-G928I"/> <!-- Samsung S6 edge+ (Australia, New Zealand, Singapore)-->
+    </Config>
+    <Config file="android_high_nogmem.cfg">
+        <!-- Disable gmem for Samsung S7 devices with Adreno GPUs due to a driver bug.
+        Reading from any inout RT always returns the value of the first RT-->
+        <Device model="SM-G930A"/>  <!-- Samsung S7 (AT&T)--> 
+        <Device model="SM-G930AZ"/> <!-- Samsung S7 (Cricket)-->
+        <Device model="SM-G930P"/>  <!-- Samsung S7 (Boost/Virgin)-->
+        <Device model="SM-G930T"/>  <!-- Samsung S7 (T-Mobile)-->
+        <Device model="SM-G930U"/>  <!-- Samsung S7 (Unlocked)-->
+        <Device model="SM-G930V"/>  <!-- Samsung S7 (Verizon)-->
+    </Config>
+</DeviceList>

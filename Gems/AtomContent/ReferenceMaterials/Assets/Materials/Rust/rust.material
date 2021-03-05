@@ -1,0 +1,17 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/Rust/rust_diffuse.jpg"
+        },
+        "normal": {
+            "textureMap": "Materials/Rust/rust_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.9191918969154358
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+            "Name": "SF_Font",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "IsPowerOf2": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+                "Name": "SF_Font",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "ios": {
+                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+                "Name": "SF_Font",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "osx_gl": {
+                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+                "Name": "SF_Font",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "provo": {
+                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+                "Name": "SF_Font",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            },
+            "xenia": {
+                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
+                "Name": "SF_Font",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "IsPowerOf2": true
+            }
+        }
+    }
+}

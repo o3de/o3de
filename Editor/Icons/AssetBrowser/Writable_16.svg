@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Writable_16</title>
+    <g id="Writable_16" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons-/-Notification-/-Checkmark---black" transform="translate(0.000000, 8.000000)">
+            <rect id="Icon-Background" x="0" y="0" width="8" height="8"></rect>
+            <path d="M4,0.666666667 C5.84094917,0.666666667 7.33333333,2.15905083 7.33333333,4 C7.33333333,5.84094917 5.84094917,7.33333333 4,7.33333333 C2.15905083,7.33333333 0.666666667,5.84094917 0.666666667,4 C0.666666667,2.15905083 2.15905083,0.666666667 4,0.666666667 Z M6.04737854,2 L2.98324916,5.06412939 L1.80473785,3.88561808 L1.33333333,4.3570226 L2.98324916,6.00693843 L6.51878306,2.47140452 L6.04737854,2 Z" id="Combined-Shape" fill="#58BC61"></path>
+        </g>
+    </g>
+</svg>

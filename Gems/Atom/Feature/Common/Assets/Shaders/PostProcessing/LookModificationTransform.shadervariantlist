@@ -1,0 +1,9 @@
+{ 
+    "Shader" : "LookModificationTransform.shader",
+    "Variants" : [ 
+        {   "StableId": 1, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "true" } },
+        {   "StableId": 2, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "false" } },
+        {   "StableId": 3, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "true" } },
+        {   "StableId": 4, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "false" } }
+    ]    
+}

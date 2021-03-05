@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/AssetBrowser/Resources">
+    <file>search.svg</file>
+    <file>close.svg</file>
+    <file>filter.svg</file>
+  </qresource>
+</RCC>

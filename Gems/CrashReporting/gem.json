@@ -1,0 +1,20 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "089562a2cbbd41749b359f85fa04f1c9",
+    "Name": "CrashReporting",
+    "DisplayName": "CrashReporting",
+    "Version": "0.1.0",
+    "Summary": "Enable external crash reporting for a game project",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "StaticLib",
+            "Name": "StaticLibrary"
+        },
+        {
+            "Type": "Standalone",
+            "Name": "Uploader"
+        }
+    ]
+}

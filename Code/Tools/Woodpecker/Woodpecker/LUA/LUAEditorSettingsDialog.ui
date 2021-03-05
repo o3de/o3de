@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LUAEditorSettingsDialog</class>
+ <widget class="QDialog" name="LUAEditorSettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <widget class="AzToolsFramework::ReflectedPropertyEditor" name="propertyEditor" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>100</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel{font-size: 13px;}
+</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancelButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>80</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="saveButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>80</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="saveCloseButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>80</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Save &amp;&amp; Close</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzToolsFramework::ReflectedPropertyEditor</class>
+   <extends>QWidget</extends>
+   <header location="global">AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>cancelButton</tabstop>
+  <tabstop>saveButton</tabstop>
+  <tabstop>saveCloseButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorSettingsDialog</receiver>
+   <slot>OnCancel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>368</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorSettingsDialog</receiver>
+   <slot>OnSave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>368</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveCloseButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorSettingsDialog</receiver>
+   <slot>OnSaveClose()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>368</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

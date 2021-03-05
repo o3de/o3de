@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "c02d7efe05134983b5699d9ee7594c3a",
+    "Name": "Metastream",
+    "DisplayName": "Metastream",
+    "Version": "1.0.0",
+    "LinkType": "Dynamic",
+    "Summary": "When the Metastream Gem is installed, it will set up a project to run an HTTP server that can service requests for the purpose of allowing broadcasters to customize game streams with overlays of statistics and event data from a game session creating a more engaging experience for the viewer.",
+    "Tags": ["Twitch", "Metastream", "Streaming", "Broadcasting", "Overlay"],
+    "IconPath": "preview.png"
+}

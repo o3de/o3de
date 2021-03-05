@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="group_closed.png">icons/group_closed.png</file>
+        <file alias="group_open.png">icons/group_open.png</file>
+        <file alias="link.svg">icons/link.svg</file>
+        <file alias="broken_link.svg">icons/broken_link.svg</file>
+    </qresource>
+</RCC>

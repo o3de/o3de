@@ -1,0 +1,11 @@
+
+Version (1.00)
+
+Profile 'Low'
+{
+}
+
+Profile 'High'
+{
+  UseNormalAlpha
+}

@@ -1,0 +1,177 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+#include "UiCanvasEditor_precompiled.h"
+#include "EditorDefs.h"
+#include "UiAnimViewFindDlg.h"
+#include "UiAnimViewDialog.h"
+#include "UiAnimViewSequenceManager.h"
+
+#include <LyShine/Animation/IUiAnimation.h>
+#include <StringUtils.h>
+#include <QtUtilWin.h>
+
+#include <QListWidgetItem>
+
+#include <Animation/ui_UiAnimViewFindDlg.h>
+
+/////////////////////////////////////////////////////////////////////////////
+// CUiAnimViewFindDlg dialog
+
+
+CUiAnimViewFindDlg::CUiAnimViewFindDlg(const char* title, QWidget* pParent /*=NULL*/)
+    : QDialog(pParent)
+    , ui(new Ui::UiAnimViewFindDlg)
+{
+    setWindowTitle(title);
+
+    m_tvDlg = 0;
+    m_numSeqs = 0;
+
+    ui->setupUi(this);
+    ui->LIST->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    connect(ui->OK, &QPushButton::clicked, this, &CUiAnimViewFindDlg::OnOK);
+    connect(ui->CANCEL, &QPushButton::clicked, this, &CUiAnimViewFindDlg::OnCancel);
+    connect(ui->FILTER, &QLineEdit::textEdited, this, &CUiAnimViewFindDlg::OnFilterChange);
+    connect(ui->LIST, &QListWidget::itemDoubleClicked, this, &CUiAnimViewFindDlg::OnItemDoubleClicked);
+
+    FillData();
+}
+
+CUiAnimViewFindDlg::~CUiAnimViewFindDlg()
+{
+}
+
+void CUiAnimViewFindDlg::FillData()
+{
+    IUiAnimationSystem* animationSystem = nullptr;
+    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+
+    m_numSeqs = 0;
+    m_objs.resize(0);
+    for (int k = 0; k < animationSystem->GetNumSequences(); ++k)
+    {
+        IUiAnimSequence* seq = animationSystem->GetSequence(k);
+        for (int i = 0; i < seq->GetNodeCount(); i++)
+        {
+            IUiAnimNode* pNode = seq->GetNode(i);
+            ObjName obj;
+            obj.m_objName = pNode->GetName();
+            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
+            string fullname = seq->GetName();
+            obj.m_seqName = fullname.c_str();
+            m_objs.push_back(obj);
+        }
+        m_numSeqs++;
+    }
+    FillList();
+}
+
+
+void CUiAnimViewFindDlg::Init(CUiAnimViewDialog* tvDlg)
+{
+    m_tvDlg = tvDlg;
+}
+
+void CUiAnimViewFindDlg::FillList()
+{
+    QString filter = ui->FILTER->text();
+    ui->LIST->clear();
+
+    for (int i = 0; i < m_objs.size(); i++)
+    {
+        ObjName pObj = m_objs[i];
+        if (filter.isEmpty() || pObj.m_objName.contains(filter, Qt::CaseInsensitive))
+        {
+            QString text = pObj.m_objName;
+            if (!pObj.m_directorName.isEmpty())
+            {
+                text += " (";
+                text += pObj.m_directorName;
+                text += ")";
+            }
+            if (m_numSeqs > 1)
+            {
+                text += " / ";
+                text += pObj.m_seqName;
+            }
+            ui->LIST->addItem(text);
+        }
+    }
+    ui->LIST->setCurrentRow(0);
+}
+
+void CUiAnimViewFindDlg::OnOK()
+{
+    ProcessSel();
+    accept();
+}
+
+void CUiAnimViewFindDlg::OnCancel()
+{
+    reject();
+}
+
+void CUiAnimViewFindDlg::OnFilterChange([[maybe_unused]] const QString& text)
+{
+    FillList();
+}
+
+void CUiAnimViewFindDlg::ProcessSel()
+{
+    QList<QListWidgetItem*> selection = ui->LIST->selectedItems();
+
+    if (selection.size() != 1)
+    {
+        return;
+    }
+    int index = ui->LIST->row(selection.first());
+
+    if (index >= 0 && m_tvDlg)
+    {
+        ObjName object = m_objs[index];
+
+        const CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
+        CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByName(object.m_seqName);
+
+        if (pSequence)
+        {
+            CUiAnimationContext* pAnimationContext = nullptr;
+            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            pAnimationContext->SetSequence(pSequence, false, false, true);
+
+            CUiAnimViewAnimNode* pParentDirector = pSequence;
+            CUiAnimViewAnimNodeBundle foundDirectorNodes = pSequence->GetAnimNodesByName(object.m_directorName.toUtf8().data());
+            if (foundDirectorNodes.GetCount() > 0 && foundDirectorNodes.GetNode(0)->GetType() == eUiAnimNodeType_Director)
+            {
+                pParentDirector = foundDirectorNodes.GetNode(0);
+            }
+
+            CUiAnimViewAnimNodeBundle foundNodes = pParentDirector->GetAnimNodesByName(object.m_objName.toUtf8().data());
+
+            const uint numNodes = foundNodes.GetCount();
+            for (uint i = 0; i < numNodes; ++i)
+            {
+                foundNodes.GetNode(i)->SetSelected(true);
+            }
+        }
+    }
+}
+
+void CUiAnimViewFindDlg::OnItemDoubleClicked()
+{
+    ProcessSel();
+}
+
+#include <Animation/moc_UiAnimViewFindDlg.cpp>

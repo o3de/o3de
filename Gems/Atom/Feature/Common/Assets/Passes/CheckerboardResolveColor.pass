@@ -1,0 +1,227 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CheckerboardResolveColorTemplate",
+            "PassClass": "CheckerboardColorResolvePass",
+            "Slots": [
+                {
+                    "Name": "InputDepth_curr",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth0",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    },
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Stencil"
+                        ]
+                    }
+                },
+                {
+                    "Name": "InputDepth_prev",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth1",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    },
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Stencil"
+                        ]
+                    }
+                },
+                {
+                    "Name": "InputColor0_curr",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "0",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "InputColor0_prev",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "1",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "InputColor1_curr",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "2",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "InputColor1_prev",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "3",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "InputColor2_curr",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "4",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "InputColor2_prev",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_color",
+                    "ShaderInputArrayIndex": "5",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "DontCare",
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "Output0",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputColor",
+                    "ShaderInputArrayIndex": "0",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output1",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputColor",
+                    "ShaderInputArrayIndex": "1",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output2",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputColor",
+                    "ShaderInputArrayIndex": "2",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ResolvedOutput0",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor0_curr"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "ResolvedOutput1",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor1_curr"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "ResolvedOutput2",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor2_curr"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output0",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ResolvedOutput0"
+                    }
+                },
+                {
+                    "LocalSlot": "Output1",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ResolvedOutput1"
+                    }
+                },
+                {
+                    "LocalSlot": "Output2",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ResolvedOutput2"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Checkerboard/CheckerboardColorResolveCS.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "Make Fullscreen Pass": true
+            }
+        }
+    }
+}

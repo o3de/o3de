@@ -1,0 +1,81 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SMAANeighborhoodBlendingTemplate",
+            "PassClass": "SMAANeighborhoodBlendingPass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputColorPassThrough",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputBlendingWeight",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputEdgeDetectionResult",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }     
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "SMAANeighborhoodBlendingOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "InputColor"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "CopyRead",
+                            "Color",
+                            "ShaderReadWrite",
+                            "ShaderWrite",
+                            "ShaderRead"
+                        ]                        
+                    }                    
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "SMAANeighborhoodBlendingOutput"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/SMAANeighborhoodBlending.shader"
+                }
+            }
+        }
+    }
+}

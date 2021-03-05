@@ -1,0 +1,81 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+            "Name": "ReflectanceWithSmoothness_Legacy",
+            "FileMasks": [
+                "_spec"
+            ],
+            "PixelFormat": "BC7",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+                "Name": "ReflectanceWithSmoothness_Legacy",
+                "FileMasks": [
+                    "_spec"
+                ],
+                "PixelFormat": "ETC2a",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+                "Name": "ReflectanceWithSmoothness_Legacy",
+                "FileMasks": [
+                    "_spec"
+                ],
+                "PixelFormat": "ASTC_4x4",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "osx_gl": {
+                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+                "Name": "ReflectanceWithSmoothness_Legacy",
+                "FileMasks": [
+                    "_spec"
+                ],
+                "PixelFormat": "BC3",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+                "Name": "ReflectanceWithSmoothness_Legacy",
+                "FileMasks": [
+                    "_spec"
+                ],
+                "PixelFormat": "BC7",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "xenia": {
+                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
+                "Name": "ReflectanceWithSmoothness_Legacy",
+                "FileMasks": [
+                    "_spec"
+                ],
+                "PixelFormat": "BC7",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

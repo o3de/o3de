@@ -1,0 +1,29 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "869a0d0ec11a45c299917d45c81555e6",
+    "Name": "ScriptCanvasGem",
+    "DisplayName": "Script Canvas",
+    "Version": "0.1.0",
+    "LinkType": "DynamicStatic",
+    "EditorModule": true,
+    "Summary": "The Script Canvas Gem contains Lumberyard's visual scripting environment that enables content creators with little to no engineering experience to build game logic.",
+    "Tags": ["Scripting", "Game"],
+    "IconPath": "preview.png",
+    "Dependencies" : [
+      {
+        "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
+        "VersionConstraints": [ ">=0.1.0" ],
+        "_comment": "GraphCanvas"
+      },
+      {
+        "Uuid": "32d8ba21703e4bbbb08487366e48dd69",
+        "VersionConstraints": [ ">=0.1.0" ],
+        "_comment": "ScriptEvents"
+      },
+      {
+        "Uuid": "4c6f9df57ca2468f93c8d860ee6a1167",
+        "VersionConstraints": [ ">=0.1.0" ],
+        "_comment": "ExpressionEvaluation"
+      }
+    ]
+}

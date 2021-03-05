@@ -1,0 +1,146 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+// This is the class that can read the directory from Zip file,
+// and store it into the directory cache
+
+#pragma once
+
+#include <AzFramework/Archive/IArchive.h>
+
+namespace AZ::IO::ZipDir
+{
+    class Cache;
+
+    // an instance of this class is temporarily created on stack to initialize the CZipFile instance
+    class CacheFactory
+    {
+    public:
+        enum
+        {
+            // open RW cache in read-only mode
+            FLAGS_READ_ONLY = 1,
+            // do not compact RW-cached zip upon destruction
+            FLAGS_DONT_COMPACT = 1 << 1,
+            // if this is set, then the zip paths won't be memorized in the cache objects
+            FLAGS_DONT_MEMORIZE_ZIP_PATH = 1 << 2,
+            // if this is set, the archive will be created anew (the existing file will be overwritten)
+            FLAGS_CREATE_NEW = 1 << 3,
+
+            // Cache will be loaded completely into the memory.
+            FLAGS_IN_MEMORY = 1 << 4,
+            FLAGS_IN_MEMORY_CPU = 1 << 5,
+
+            // Store all file names as crc32 in a flat directory structure.
+            FLAGS_FILENAMES_AS_CRC32 = 1 << 6,
+
+            // if this is set, zip path will be searched inside other zips
+            FLAGS_READ_INSIDE_PAK = 1 << 7,
+        };
+
+        // initializes the internal structures
+        // nFlags can have FLAGS_READ_ONLY flag, in this case the object will be opened only for reading
+        CacheFactory (InitMethodEnum nInitMethod, uint32_t nFlags = 0);
+        ~CacheFactory();
+
+        // the new function creates a new cache
+        CachePtr New(const char* szFileName);
+
+    protected:
+        // reads the zip file into the file entry tree.
+        bool ReadCache(Cache& rwCache);
+
+        void Clear();
+
+        // reads everything and prepares the maps
+        bool Prepare();
+
+        // searches for CDREnd record in the given file
+        bool FindCDREnd();// throw(ErrorEnum);
+
+        // uses the found CDREnd to scan the CDR and probably the Zip file itself
+        // builds up the m_mapFileEntries
+        bool BuildFileEntryMap();// throw (ErrorEnum);
+
+        // give the CDR File Header entry, reads the local file header to validate and determine where
+        // the actual file lies
+        // This function can actually modify strFilePath variable, make sure you use a copy of the real path.
+        void AddFileEntry(char* strFilePath, const ZipFile::CDRFileHeader* pFileHeader, const SExtraZipFileData& extra);// throw (ErrorEnum);
+
+        // extracts the file path from the file header with subsequent information
+        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
+        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
+        char* GetFilePath(const ZipFile::CDRFileHeader* pFileHeader)
+        {
+            return GetFilePath((const char*)(pFileHeader + 1), pFileHeader->nFileNameLength);
+        }
+        // extracts the file path from the file header with subsequent information
+        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
+        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
+        char* GetFilePath(const ZipFile::LocalFileHeader* pFileHeader)
+        {
+            return GetFilePath((const char*)(pFileHeader + 1), pFileHeader->nFileNameLength);
+        }
+        // extracts the file path from the file header with subsequent information
+        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
+        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
+        char* GetFilePath(const char* pFileName, uint16_t nFileNameLength);
+
+        // validates (if the init method has the corresponding value) the given file/header
+        void Validate(const FileEntryBase& fileEntry);
+
+        // initializes the actual data offset in the file in the fileEntry structure
+        // searches to the local file header, reads it and calculates the actual offset in the file
+        void InitDataOffset(FileEntryBase& fileEntry, const ZipFile::CDRFileHeader* pFileHeader);
+
+        // seeks in the file relative to the starting position
+        void Seek(uint32_t nPos, int nOrigin = 0); // throw
+        int64_t Tell(); // throw
+        bool Read(void* pDest, uint32_t nSize); // throw
+        bool ReadHeaderData(void* pDest, uint32_t nSize); // throw
+
+
+    protected:
+
+        AZStd::string m_szFilename;
+        CZipFile m_fileExt;
+
+        InitMethodEnum m_nInitMethod;
+        uint32_t m_nFlags;
+        ZipFile::CDREnd m_CDREnd;
+
+        size_t m_nZipFileSize;
+
+        uint32_t m_nCDREndPos; // position of the CDR End in the file
+
+        // Map: Relative file path => file entry info
+        using FileEntryMap = AZStd::map<AZStd::string, ZipDir::FileEntryBase>;
+        FileEntryMap m_mapFileEntries;
+
+        FileEntryTree m_treeFileEntries;
+
+        AZStd::vector<uint8_t> m_CDR_buffer;
+
+        bool m_bBuildFileEntryMap;
+        bool m_bBuildFileEntryTree;
+        bool m_bBuildOptimizedFileEntry;
+        ZipFile::EHeaderEncryptionType m_encryptedHeaders;
+        ZipFile::EHeaderSignatureType m_signedHeaders;
+
+        ZipFile::CryCustomEncryptionHeader m_headerEncryption;
+        ZipFile::CrySignedCDRHeader m_headerSignature;
+        ZipFile::CryCustomExtendedHeader m_headerExtended;
+
+    };
+}
+

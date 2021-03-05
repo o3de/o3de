@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59 (86127) - https://sketch.com -->
+    <title>Icons / System / Rotate</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Rotate" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,5 C17.5228475,5 22,7.3608081 22,12 C22,16.0635474 18.5649911,18.3790487 14.0010174,18.8911124 L14.0009061,16.4168268 C17.3303835,15.9561668 19.5351812,14.3225002 19.5351812,12 C19.5351812,9.23857625 16.418278,7.49466813 12,7.49466813 C7.581722,7.49466813 4.51608017,9.23857625 4.51608017,12 C4.51608017,13.8140495 5.83906099,15.2078553 7.99939095,15.9507002 L8.00012145,18.5317791 C4.46824702,17.6330816 2,15.4445755 2,12 C2,7.3608081 6.4771525,5 12,5 Z" id="Combined-Shape" fill="#D8D8D8"></path>
+        <polygon id="Rectangle" fill="#D8D8D8" transform="translate(16.000000, 17.000000) rotate(45.000000) translate(-16.000000, -17.000000) " points="13 14 19 20 13 20"></polygon>
+    </g>
+</svg>

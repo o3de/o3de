@@ -1,0 +1,12 @@
+{
+    "product_name"      : "AzTestRunner Project",
+	"android_settings": {
+        "package_name"  : "com.lumberyard.tests",
+        "version_number": 1,
+        "version_name"  : "1.0.0",
+        "orientation"   : "landscape",
+        "app_obfuscator_salt" : "MY_OBFUSCATOR_SALT_BASE_64",
+        "use_main_obb" : "false",
+        "use_patch_obb" : "false"
+    }
+}

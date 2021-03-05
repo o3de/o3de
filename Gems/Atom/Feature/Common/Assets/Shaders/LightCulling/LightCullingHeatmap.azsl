@@ -1,0 +1,248 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// The heatmap will change color as the light count increases up to TileCountMax, at which point and beyond it will be white.
+static const int TileCountMax = 75;
+
+
+
+static const float3 BARELY_USED_COLOR = float3(0.05, 0.05, 0.20);
+static const float3 LIGHTLY_USED_COLOR = float3(0.05, 0.05, 0.60);
+static const float3 MODERATELY_USED_COLOR = float3(0.05, 0.60, 0.05);
+static const float3 HEAVILY_USED_COLOR = float3(1.00, 1.00, 0.05);
+static const float3 OVER_USED_COLOR = float3(1.00, 0.05, 0.05);
+
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+
+
+#define X                                       1
+#define _                                       0
+
+#define PACK_GLYPH_UINT(a, b, c, d)             ((d << 3) | (c << 2) | (b << 1) | a)
+
+#define CHAR_W                                  4
+#define GLYPH_HEIGHT                            6
+
+
+#define MAX_CHARS                               10
+
+
+static const uint NumberGlyphs[GLYPH_HEIGHT * MAX_CHARS] =
+{
+    // Glpyh for the number 0
+    PACK_GLYPH_UINT(_, X, X, _),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(_, X, X, _),
+
+    // Glpyh for the number 1
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+
+    // Glpyh for the number 2
+    PACK_GLYPH_UINT(X, X, X, _),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, _),
+    PACK_GLYPH_UINT(X, _, _, _), 
+    PACK_GLYPH_UINT(X, X, X, X),
+
+    // Glpyh for the number 3
+    PACK_GLYPH_UINT(X, X, X, _),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, X, X, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, _),
+
+    // Glpyh for the number 4
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+
+    // Glpyh for the number 5
+    PACK_GLYPH_UINT(X, X, X, _),
+    PACK_GLYPH_UINT(X, _, _, _),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+
+    // Glpyh for the number 6
+    PACK_GLYPH_UINT(_, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, _),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, _),
+
+    // Glpyh for the number 7
+    PACK_GLYPH_UINT(_, X, X, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+
+    // Glpyh for the number 8
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+
+    // Glpyh for the number 9
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(X, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(_, _, _, X),
+    PACK_GLYPH_UINT(X, X, X, _),
+};
+
+#define IS_UNINITIALIZED        0x0
+#define IS_BACKGROUND           0x1
+#define IS_FOREGROUND           0x2
+
+#define PRINT_ITERATION(ch)  \
+    { \
+        r.x += r.z; \
+        if( r.x < r.z ) \
+        { \
+            r.xy /= scale; \
+            mask = (NumberGlyphs[r.y + ch * GLYPH_HEIGHT] & (1 << r.x)) != 0 ? IS_FOREGROUND : IS_BACKGROUND; \
+        } \
+    }
+    
+uint4 InitPrintCoords(uint2 uv, uint2 origin, uint scale)
+{
+    uint4 r;
+
+    r.xy = uv - origin;
+    r.zw = uint2(CHAR_W + 1, GLYPH_HEIGHT) * scale;
+
+    return r;
+}
+
+uint PrintNumbersInsideTileImpl(inout uint4 r, uint x, uint scale)
+{
+    uint mask = IS_UNINITIALIZED;
+
+    while( x > 0 && mask == IS_UNINITIALIZED )
+    {
+        uint n = x % 10;
+        x /= 10;
+
+        PRINT_ITERATION(n);
+    }
+
+    return mask;
+}
+
+uint PrintNumbersInsideTile(uint x, uint2 origin, uint2 uv, uint scale)
+{
+    uint4 r = InitPrintCoords(uv, origin, scale);
+    uint mask = IS_UNINITIALIZED;
+
+    if( r.y < r.w )
+    {
+        mask = PrintNumbersInsideTileImpl(r, x, scale);    
+    }
+
+    return mask;
+}
+   
+
+float3 ComputeTileColor(uint2 uv, uint print_me, uint maximum)
+{
+    int2 local_uv = int2( uv % uint2(TILE_DIM_X, TILE_DIM_Y) );
+
+    float x = float(print_me) / float(maximum);
+    x = sqrt(x);
+    x = saturate(x);
+
+    float3 color;
+
+    if( x <= 0.0 )
+    {
+        color = float3(0.0, 0.0, 0.0);        
+    }
+    else if( x >= 1.0 )
+    {
+        color = float3(1.0, 1.0, 1.0);    
+    }
+    else
+    {
+        color = lerp(BARELY_USED_COLOR, LIGHTLY_USED_COLOR, saturate((x - 0.00) * 4.0));
+        color = lerp(color, MODERATELY_USED_COLOR, saturate((x - 0.25) * 4.0));
+        color = lerp(color, HEAVILY_USED_COLOR, saturate((x - 0.50) * 4.0));
+        color = lerp(color, OVER_USED_COLOR, saturate((x - 0.75) * 4.0));
+    }
+
+    float border = (local_uv.x == TILE_DIM_X - 1 || local_uv.y == TILE_DIM_Y - 1) ? 1.0 : 0.0;
+    color *= lerp(1.0, 0.75, border);
+    
+    // NOTE: numbers
+
+    uint mask = PrintNumbersInsideTile(print_me, uint2(TILE_DIM_X - 1, 1), local_uv, 1);
+
+    if( (mask & IS_FOREGROUND) != 0 )
+    {
+        color = float3(0.0, 0.0, 0.0);    
+    }   
+    
+    return color;
+}
+   
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<uint> m_lightCount;
+    Texture2D<float4> m_framebuffer;
+    Texture2D<uint4> m_tileLightData;
+    float m_heatmapOpacity;
+}  
+
+PSOutput MainPS(VSOutput IN)
+{
+    uint2 tileId = ComputeTileId(IN.m_position.xy);
+    
+    // We subtract NUM_LIGHT_TYPES because it includes termination markers
+    uint lightCount = PassSrg::m_tileLightData[tileId].w - NUM_LIGHT_TYPES;
+
+    float3 tileColor = ComputeTileColor(IN.m_position.xy, lightCount, TileCountMax);
+                             
+    PSOutput OUT;
+    OUT.m_color.rgb = tileColor; 
+    
+    // Set this value to > 0 to actually see this pass. It is currently always active.
+    OUT.m_color.w = PassSrg::m_heatmapOpacity;     
+    // https://jira.agscollab.com/browse/ATOM-3682 (improve heatmap integration with the pass system)
+
+    return OUT;
+}

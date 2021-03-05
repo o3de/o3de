@@ -1,0 +1,9 @@
+{
+    "name": "cubemapgen",
+    "source": "@GEM@/External/CubeMapGen",
+    "description": "CubeMapGen",
+    "defines": [],
+    "lib_required": "False",
+    "includes": [""]
+}
+

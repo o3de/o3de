@@ -1,0 +1,6 @@
+<ObjectStream version="3">
+	<Class name="FileTagAsset" version="1" type="{F3BE5CAB-85B7-44B7-9495-863863F6B267}">
+		<Class name="AZStd::map" field="FileTagMap" type="{51ED4492-FBA4-5DFC-B622-BD7D4F5A881B}"/>
+	</Class>
+</ObjectStream>
+

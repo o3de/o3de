@@ -1,0 +1,30 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Should match PhotometricValue.h/.cpp
+static const float Ev100LightMeterConstantLuminance = 12.5f;
+static const float Ev100ShutterSpeed = 1.0f;
+static const float Ev100Iso = 100.0f;
+
+float NitsToEv100Luminance(float nits)
+{
+    nits = max(nits, 1e-9);
+    return log2((Ev100Iso * Ev100ShutterSpeed * nits) / Ev100LightMeterConstantLuminance);
+}
+
+float EV100LuminanceToNits(const float ev100Luminance)
+{   
+    return pow(2.0f, ev100Luminance - 3.0f);
+
+// Note that this is a simplification of:
+// return (Ev100LightMeterConstantLuminance * pow(2.0f, ev100Luminance)) / (Ev100Iso * Ev100ShutterSpeed);
+}

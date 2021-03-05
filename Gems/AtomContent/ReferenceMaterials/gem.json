@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "99eac95298d847a6914d7b9e69db6f84",
+    "Name": "ReferenceMaterials",
+    "DisplayName": "ReferenceMaterials",
+    "Version": "0.1.0",
+    "LinkType": "NoCode",
+    "Summary": "Atom Asset Gem with a library of reference materials for StandardPBR (and others in the future)",
+    "Tags": ["Asset"],
+    "IconPath": "preview.png"
+}

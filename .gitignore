@@ -1,0 +1,18 @@
+.idea/
+.vscode/
+__pycache__
+AssetProcessorTemp/**
+build/**
+Cache/**
+Editor/EditorEventLog.xml
+Editor/EditorLayout.xml
+Tools/**/*egg-info/**
+Tools/**/*egg-link
+UserSettings.xml
+.idea/
+user/Registry/**
+FrameCapture/**
+.DS_Store
+
+#Output folder for test results when running Automated Tests
+TestResults/**

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="6px" viewBox="0 0 24 6" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / System / drag-dot-horizontal</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-drag-dot-horizontal" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="6"></rect>
+        <path d="M12,8 C12.5522847,8 13,8.44771525 13,9 C13,9.55228475 12.5522847,10 12,10 C11.4477153,10 11,9.55228475 11,9 C11,8.44771525 11.4477153,8 12,8 Z M12,2 C12.5522847,2 13,2.44771525 13,3 C13,3.55228475 12.5522847,4 12,4 C11.4477153,4 11,3.55228475 11,3 C11,2.44771525 11.4477153,2 12,2 Z M12,-4 C12.5522847,-4 13,-3.55228475 13,-3 C13,-2.44771525 12.5522847,-2 12,-2 C11.4477153,-2 11,-2.44771525 11,-3 C11,-3.55228475 11.4477153,-4 12,-4 Z" id="dots" fill="#CCCCCC" transform="translate(12.000000, 3.000000) rotate(90.000000) translate(-12.000000, -3.000000) "></path>
+    </g>
+</svg>

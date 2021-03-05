@@ -1,0 +1,53 @@
+<RCJobs>
+  <!--
+        DefaultProperties can be overriden from command line.
+    -->
+  <DefaultProperties
+      p="pc"
+      game="samplesproject"
+      src="cache\${game}\${p}"
+      trg="${game}_${p}_paks"
+    />
+
+  <Properties
+
+      levels_pak_types="levels\*.*"
+      levels_pak_excludes="*\leveldata\*;*.pak"
+
+      gems_pak_types="gems\*.json;${game}\gems.json;${game}\gem\*.*"
+      gems_pak_excludes=""
+      
+      shader_pak_types="shaders\*.ext;shaders\*.cfi;shaders\*.cfx"
+      shader_pak_excludes=""
+
+      src_game="${src}\${game}"
+      trg_paks="${trg}\${game}"
+    />
+
+  <!--
+        Copy just the basic files needed to run
+    -->
+  <CopyJob>
+    <IfNot SkipLevelPaks="1">
+        <Job sourceroot="${src_game}\levels" targetroot="${trg_paks}\levels" input="*.pak" copyonly="1"/>
+    </IfNot>
+    <Job sourceroot="${src_game}\config" targetroot="${trg_paks}\config" input="game.xml" copyonly="1"/>
+    <Job sourceroot="${src_game}\config" targetroot="${trg_paks}\config" input="editor.xml" copyonly="1"/>
+    <Job sourceroot="${src_game}\config" targetroot="${trg_paks}\config" input="*.awslogicalmappings.json" copyonly="1"/>
+    <Job sourceroot="${src_game}\config" targetroot="${trg_paks}\config" input="launcher.deployment.json" copyonly="1"/>
+    <Job sourceroot="${src}" targetroot="${trg}" input="engine.json" copyonly="1"/>
+    <Job sourceroot="${src}" targetroot="${trg}" input="engineroot.txt" copyonly="1"/>
+    <Job sourceroot="${src}" targetroot="${trg}" input="bootstrap.cfg" copyonly="1" recursive="0"/>
+    <Job sourceroot="${src}" targetroot="${trg}" input="system_windows_pc.cfg" copyonly="1" recursive="0"/>
+  </CopyJob>
+
+  <!--
+        Pack everything else up from the cache.
+    -->
+  <PakJob>
+    <Job sourceroot="${src_game}" input="${shader_pak_types}" zip="${trg_paks}\shaders.pak" exclude="${shader_pak_excludes}" />
+    <Job sourceroot="${src}"      input="${gems_pak_types}" zip="${trg_paks}\gems\gems.pak" exclude="${gems_pak_excludes}" />
+  </PakJob>
+  <Run Job="CopyJob"/>
+  <Run Job="PakJob"/>
+</RCJobs>

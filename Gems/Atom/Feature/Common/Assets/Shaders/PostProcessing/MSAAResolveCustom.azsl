@@ -1,0 +1,79 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+#define PROVISIONAL_TONEMAP_GAMMA 2.2f
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> m_albedoMap;
+}
+
+float3 ApplyProvisionalTonemap(float3 color)
+{
+    // Provisional tone mapping will be applied using Reinhard, then applying gamma to handle the color in perceptual color space.
+    float3 toneMappedColor = color.xyz / (1.0 + color.xyz);
+    return float3(pow(toneMappedColor, 1.0 / PROVISIONAL_TONEMAP_GAMMA));
+}
+
+float3 ApplyInverseProvisionalTonemap(float3 color)
+{
+    // This is inverse function of provisional tone mapping.
+    float3 linearValue = pow(color.xyz, PROVISIONAL_TONEMAP_GAMMA);
+    return float3(linearValue / (1.0 - linearValue));
+}
+
+float3 ConvertLighting(float3 color)
+{
+    return ApplyProvisionalTonemap(color);
+}
+
+float3 ConvertBack(float3 color)
+{
+    return ApplyInverseProvisionalTonemap(color);
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    uint width = 0;
+    uint height = 0;
+    uint numberOfSamples = 0;
+
+    PassSrg::m_albedoMap.GetDimensions(width, height, numberOfSamples);
+
+    float3 albedo = float3(0, 0, 0);
+
+    // Just average the samples equally
+    for (uint i = 0; i < numberOfSamples; ++i)
+    {
+        float3 sampleColor = PassSrg::m_albedoMap.Load(int2(width * IN.m_texCoord.x, height * IN.m_texCoord.y), i).rgb;
+        sampleColor = ConvertLighting(sampleColor);
+        albedo += sampleColor;
+    }
+
+    albedo = albedo / float(numberOfSamples);
+    albedo = ConvertBack(albedo);
+
+    OUT.m_color = float4(albedo, 1.0);
+    return OUT;
+}

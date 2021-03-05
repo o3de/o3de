@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Toolbar / XY</title>
+    <g id="Icons-/-Toolbar-/-XY" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="Group" transform="translate(3.000000, 5.000000)" fill="#FFFFFF">
+            <rect id="Rectangle" x="0" y="0" width="18" height="2"></rect>
+            <polygon id="X" fill-rule="nonzero" points="2.38745981 14 4.45659164 10.3059163 6.55466238 14 9 14 5.70096463 8.77633478 8.75401929 4 6.36655949 4 4.52893891 7.24675325 2.69131833 4 0.245980707 4 3.25562701 8.80519481 0 14"></polygon>
+            <polygon id="Y" fill-rule="nonzero" points="14.9442623 14 14.9442623 10.3347763 18 4 15.9409836 4 14.0262295 8.67532468 12.1639344 4 10 4 13.0032787 10.3059163 13.0032787 14"></polygon>
+        </g>
+    </g>
+</svg>

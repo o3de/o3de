@@ -1,0 +1,28 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "387b1b2d39ce45fbbfbb6faa5f902cac",
+    "Name": "ScriptCanvasTesting",
+    "DisplayName": "Script Canvas Testing",
+    "Version": "0.1.0",
+    "Summary": "Provides a framework for testing for and with ScriptCanvas",
+    "Tags": ["Scripting", "Testing"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "EditorModule",
+            "Name": "Editor"
+        }
+    ],
+    "Dependencies" : [
+      {
+        "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
+        "VersionConstraints": [ ">=0.1.0" ],
+        "_comment": "GraphCanvas"
+      },
+      {
+        "Uuid": "869a0d0ec11a45c299917d45c81555e6",
+        "VersionConstraints": [ ">=0.1.0" ],
+        "_comment": "ScriptCanvas"
+      }
+    ]
+}

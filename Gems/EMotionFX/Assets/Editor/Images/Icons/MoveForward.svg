@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / Video Control / Move Forward</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Video-Control-/-Move-Forward" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <polygon id="Combined-Shape" fill="#FFFFFF" transform="translate(12.000000, 10.500000) rotate(-90.000000) translate(-12.000000, -10.500000) " points="16.7222222 9.72222222 12 5.83333333 12 3.5 20.5 10.5 12 17.5 12 15.1666667 16.7222222 11.2777778 3.5 11.2777778 3.5 9.72222222"></polygon>
+        <path d="M20,13 L20,17 L4,17 L4,13 L20,13 Z M19,14 L5,14 L5,16 L19,16 L19,14 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <rect id="Rectangle" fill="#FFFFFF" x="4" y="19" width="16" height="3"></rect>
+    </g>
+</svg>

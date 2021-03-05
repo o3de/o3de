@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "044A63EA67D04479AA5DAF62DED9D9CB",
+    "Name": "GemA",
+    "DisplayName": "GemA",
+    "Version": "0.1.0",
+    "Summary": "Only for unit test purposes.",
+    "Tags": ["Foo"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

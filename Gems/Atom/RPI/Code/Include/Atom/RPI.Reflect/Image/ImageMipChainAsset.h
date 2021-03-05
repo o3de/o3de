@@ -1,0 +1,139 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+
+#include <Atom/RHI.Reflect/ImageSubresource.h>
+
+#include <Atom/RHI/StreamingImagePool.h>
+
+#include <AtomCore/std/containers/array_view.h>
+
+#include <AzCore/Asset/AssetCommon.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        class ImageMipChainAssetTester;
+
+        //! A container of packed image data.
+        //! This asset is designed to represent image data located on disk. It may contain multiple mip levels, each with an
+        //! array of sub-images. Support for multiple mip levels allows the streaming system to partition mip levels into groups.
+        //! For example, the lowest N mips can be streamed at once and loaded as a unit.
+        //! The mip data is defined independently from any parent image asset. Only the topology of the sub-images is known (i.e.
+        //! the number of mip levels and the array size). The first slice (index 0) is the highest detail mip. The lowest detail mip is
+        //! N-1. Since the mip chain is independent, the slice index is local to the container. That means you will have to translate
+        //! a parent image mip slice to the local container slice index.
+        //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using ImageMipChainAssetCreator.
+        //! See RPI::ImageMipChain for runtime features based on this asset.
+        class ImageMipChainAsset final
+            : public Data::AssetData
+        {
+            friend class ImageMipChainAssetCreator;
+            friend class ImageMipChainAssetHandler;
+            friend class ImageMipChainAssetTester;
+            friend class StreamingImageAssetCreator;
+            friend class StreamingImageAssetHandler;
+        public:
+            static const char* DisplayName;
+            static const char* Extension;
+            static const char* Group;
+
+            AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
+            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator, 0);
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            ImageMipChainAsset() = default;
+
+            //! Returns the number of mip levels in the group.
+            uint16_t GetMipLevelCount() const;
+
+            //! Returns the number of array slices in the group.
+            uint16_t GetArraySize() const;
+
+            //! Returns the number of sub-images in the group.
+            size_t GetSubImageCount() const;
+
+            //! Returns the sub-image data blob for a given mip slice and array slice (local to the group).
+            AZStd::array_view<uint8_t> GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const;
+
+            //! Returns the sub-image data blob for a linear index (local to the group).
+            AZStd::array_view<uint8_t> GetSubImageData(uint32_t subImageIndex) const;
+            
+            //! Returns the sub-image layout for a single sub-image by index.
+            const RHI::ImageSubresourceLayout& GetSubImageLayout(uint32_t subImageIndex) const;
+
+            using MipSliceList = AZStd::fixed_vector<RHI::StreamingImageMipSlice, RHI::Limits::Image::MipCountMax>;
+
+            //! Returns the array of streaming image mip slices used to update RHI image content.
+            const MipSliceList& GetMipSlices() const;
+
+            //! Returns the total size of pixel data across all mips in this chain. 
+            size_t GetImageDataSize() const;
+
+        protected:
+            // AssetData overrides...
+            bool HandleAutoReload() override { return false; }
+
+        private:
+
+            // Copy content from another ImageMipChainAsset
+            void CopyFrom(const ImageMipChainAsset& source);
+
+            // Initializes mip chain data after serialization.
+            void Init();
+
+            /// Called by asset creators to assign the asset to a ready state.
+            void SetReady();
+
+            // Array of mip slice pointers; initialized after serialization. Used for constructing the RHI update request.
+            MipSliceList m_mipSlices;
+
+            // The list of subresource datas, fixed up from serialization.
+            AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
+
+            // [Serialized] Topology of sub-images in the mip group.
+            uint16_t m_mipLevels = 0;
+            uint16_t m_arraySize = 0;
+
+            // [Serialized] Maps the local mip level to a region of the sub-image array.
+            AZStd::array<uint16_t, RHI::Limits::Image::MipCountMax> m_mipToSubImageOffset;
+
+            // [Serialized] Maps the local mip level to a sub resource layout.
+            AZStd::array<RHI::ImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subImageLayouts;
+
+            // [Serialized] Contains a flat list of sub-images which reference the flat data blob.
+            AZStd::vector<AZ::u64> m_subImageDataOffsets;
+
+            // [Serialized] Flat image data interpreted by m_subImages.
+            AZStd::vector<uint8_t> m_imageData;
+        };
+
+        class ImageMipChainAssetHandler final
+            : public AssetHandler<ImageMipChainAsset>
+        {
+            using Base = AssetHandler<ImageMipChainAsset>;
+        public:
+            ImageMipChainAssetHandler() = default;
+
+        protected:
+            Data::AssetHandler::LoadResult LoadAssetData(
+                const Data::Asset<Data::AssetData>& asset,
+                AZStd::shared_ptr<Data::AssetDataStream> stream,
+                const Data::AssetFilterCB& assetLoadFilterCB) override;
+        };
+    }
+}

@@ -1,0 +1,115 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+void ApplyPointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    float3 posToLight = light.m_position - surface.position;
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+        // Standard quadratic falloff
+        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+
+        // Diffuse contribution
+        diffuseLighting += GetDiffuseLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+
+        // Tranmission contribution
+        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, normalize(posToLight), 0.0);
+
+        // Adjust the light direcion for specular based on bulb size
+
+        // Calculate the reflection off the normal from the view direction
+        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+
+        // Calculate a vector from the reflection vector to the light
+        float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
+
+        // Adjust the direction to light based on the bulb size
+        posToLight -= reflectionPosToLight * saturate(light.m_bulbRadius / length(reflectionPosToLight));
+        
+        // Adjust the intensity of the light based on the bulb size to conserve energy
+        float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
+
+        // Specular contribution
+        specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+    }
+}
+
+float3 SampleSphere(float2 randomPoint)
+{
+    // Generates uniformly distributed sample on a unit sphere from a 2d position in the 0.0 -> 1.0 range.
+    float angle = 2.0 * PI * randomPoint.y;
+    float cosTheta = 1.0 - 2.0 * randomPoint.x; // Transform x from 0.0 -> 1.0 to -1.0 -> 1.0
+    float sinTheta = sqrt(saturate(1.0 - cosTheta * cosTheta));
+    return float3(sinTheta * cos(angle), sinTheta * sin(angle), cosTheta);
+}
+
+void ValidatePointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    const uint sampleCount = 512;
+
+    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    float3 specularAcc = float3(0.0, 0.0, 0.0);
+    float3 translucentAcc = float3(0.0, 0.0, 0.0);
+
+    for (uint i = 0; i < sampleCount; ++i)
+    {
+        float2 randomPoint = GetHammersleyPoint(i, sampleCount);
+        float3 sampleDirection = SampleSphere(randomPoint);
+        float3 samplePoint = light.m_position + sampleDirection * light.m_bulbRadius;
+        AddSampleContribution(surface, samplePoint, sampleDirection, dirToCamera, 0.0, diffuseAcc, specularAcc, translucentAcc);
+    }
+
+    // Lighting value is in Candela, convert to Lumen for total light output of the light
+    float3 intensityLumens = light.m_rgbIntensityCandelas * 4.0 * PI;
+    // Each of the N samples will contribute intensity / N lumens. However it will radiate in
+    // equal directions across the hemisphere, so we need to account for that
+    float3 intensity = intensityLumens * INV_PI;
+
+    diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
+    translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
+    specularLighting += (specularAcc / float(sampleCount)) * intensity;
+}
+
+void ApplyPointLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+{
+    tileIterator.LoadAdvance();
+                
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+    
+        ViewSrg::PointLight light = ViewSrg::m_pointLights[currLightIndex];
+        
+        if (o_area_light_validation)
+        {
+            ValidatePointLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+        else
+        {
+            ApplyPointLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        }
+    }
+}

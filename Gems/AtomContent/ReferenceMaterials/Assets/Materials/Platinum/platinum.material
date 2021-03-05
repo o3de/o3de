@@ -1,0 +1,29 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.7307698130607605,
+                0.7307698130607605,
+                0.7307698130607605,
+                1.0
+            ]
+        },
+        "clearCoat": {
+            "enable": true
+        },
+        "metallic": {
+            "factor": 1.0
+        },
+        "normal": {
+            "factor": 1.0303030014038087,
+            "textureMap": "Materials/Copper/metal_normal.jpg"
+        },
+        "roughness": {
+            "factor": 0.18181820213794709
+        }
+    }
+}

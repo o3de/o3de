@@ -1,0 +1,11 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "0d1f5f05559c4a99aaefd30633a0158e",
+    "Name": "ScriptedEntityTweener",
+    "DisplayName": "Scripted Entity Tweener",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Entity Animator can be used to transform entity properties in Lumberyard",
+    "Tags": ["UI"],
+    "IconPath": "preview.png"
+}

@@ -1,0 +1,25 @@
+{
+    "GemListFormatVersion": 2,
+    "Gems": [
+        {
+            "Path": "Gems/GemA",
+            "Uuid": "044a63ea67d04479aa5daf62ded9d9cb",
+            "Version": "0.1.0",
+            "_comment": "GemA"
+        },
+        {
+            "Path": "Gems/GemB",
+            "Uuid": "07375b61b1a2424bb03088bbdf28b2c9",
+            "Version": "0.1.0",
+            "_comment": "GemB"
+        },
+        {
+            "Path": "Gems/GemC",
+            "Uuid": "0945e21b7ae848ac80b4ec1f34c459cd",
+            "Version": "0.1.0",
+            "_comment": "GemC"
+        }
+    ]
+}
+
+

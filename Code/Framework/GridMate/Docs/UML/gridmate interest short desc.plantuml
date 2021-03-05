@@ -1,0 +1,17 @@
+@startuml Interest Manager high level
+
+package Client {
+    [Peer] - [Rules]
+
+    package Entity {
+        [Replica] - [Attributes]
+    }
+}
+
+package Authority {
+    [RuleHandlers] - [InterestManager]
+}
+
+[Rules] - [InterestManager]
+
+@enduml

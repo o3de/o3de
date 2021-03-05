@@ -1,0 +1,18 @@
+<budgets>
+	<fps value="60"/>
+	<fpsBucketMax value="60"/>
+	<drawPrim value="2000"/>
+	<tris value="1000000"/>
+	<postEffects value="3"/>
+	<shadowCastingLights value="2"/>
+	<fpsBucketSize value="10"/>
+	<particles value="1000"/>
+	<dpBucketValues>
+		<bucket value="2500"/>
+		<bucket value="2000"/>
+		<bucket value="1500"/>
+		<bucket value="1000"/>
+		<bucket value="500"/>
+	</dpBucketValues>
+</budgets>
+

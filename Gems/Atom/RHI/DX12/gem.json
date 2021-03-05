@@ -1,0 +1,34 @@
+{
+    "Dependencies": [
+        {
+            "Uuid": "fb7f322c8bdb42228d9e155c954f98bd",
+            "VersionConstraints": [
+                "~>0.1.0"
+            ],
+            "_comment": "Atom RHI"
+        }
+    ],
+    "GemFormatVersion": 4,
+    "Uuid": "e011969cf32442fdaac2443a960ab5ff",
+    "Name": "Atom_RHI_DX12",
+    "DisplayName": "Atom RHI.DX12",
+    "Version": "0.1.0",
+    "Summary": "The DirectX 12 backend for the Atom Render Hardware Interface",
+    "Tags": ["Atom", "RHI", "DX12"],
+    "LinkType": "Dynamic",
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Name": "Private",
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Reflect",
+            "Type": "StaticLib"
+        },
+        {
+            "Name": "Builders",
+            "Type": "EditorModule"
+        }
+    ]
+}

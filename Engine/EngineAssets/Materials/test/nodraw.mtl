@@ -1,0 +1,3 @@
+<Material MtlFlags="525312" Shader="NoDraw" GenMask="0" StringGenMask="" SurfaceType="mat_nodraw" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" CloakAmount="0" LayerAct="1">
+ <Textures />
+</Material>

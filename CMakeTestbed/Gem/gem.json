@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "e111dee500ed4812a7905093a73d3837",
+    "Name": "CMakeTestbed",
+    "DisplayName": "CMakeTestbed",
+    "Version": "0.1.0",
+    "Summary": "A short description of my Gem.",
+    "Tags": ["Game"],
+    "IconPath": "preview.png",
+    "IsGameGem": true,
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}

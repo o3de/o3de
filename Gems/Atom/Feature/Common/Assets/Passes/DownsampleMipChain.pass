@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DownsampleMipChainTemplate",
+            "PassClass": "DownsampleMipChainPass",
+            "Slots": [
+                {
+                    "Name": "MipChainInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ]
+        }
+    }
+}

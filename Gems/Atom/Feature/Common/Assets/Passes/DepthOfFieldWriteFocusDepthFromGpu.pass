@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldWriteFocusDepthFromGpuTemplate",
+            "PassClass": "DepthOfFieldWriteFocusDepthFromGpuPass",
+            "Slots": [
+                {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DofDepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "Target Thread Count X": "1",
+                "Target Thread Count Y": "1",
+                "Target Thread Count Z": "1",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthOfFieldWriteFocusDepthFromGpu.shader"
+                }
+            }
+        }
+    }
+}

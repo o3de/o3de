@@ -1,0 +1,9 @@
+<EngineDependencies versionnumber="1.0.0">
+    <Dependency path="textures/defaults/unchecked_nohover.tif" optional="true" />
+    <Dependency path="textures/defaults/unchecked_nohover.sprite" optional="true" />
+    <Dependency path="textures/defaults/checkmark.tif" optional="true" />
+    <Dependency path="textures/defaults/checkmark.sprite" optional="true" />
+    <Dependency path="textures/defaults/sliderManipulator.tif" optional="true" />
+    <Dependency path="textures/defaults/sliderManipulator.sprite" optional="true" />
+    <Dependency path="engineassets/textures/cursor_green.sprite" optional="true" />
+</EngineDependencies>

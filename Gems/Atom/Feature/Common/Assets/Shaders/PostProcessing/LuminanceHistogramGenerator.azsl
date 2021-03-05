@@ -1,0 +1,91 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/CoreLights/PhotometricValue.azsli>
+#include "LuminanceHistogramCommon.azsli"
+
+#define NUM_THREADS_PER_DIM 32
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputTexture;
+    RWBuffer<uint> m_outputTexture;
+}
+
+groupshared uint shared_histogramBins[NUM_HISTOGRAM_BINS];
+
+uint2 GetColorInputDimensions()
+{
+    uint numLevels;
+    uint2 colorInputBufferDimensions;
+    PassSrg::m_inputTexture.GetDimensions(0, colorInputBufferDimensions.x, colorInputBufferDimensions.y, numLevels);
+    return colorInputBufferDimensions;
+}
+
+void ClearSharedMemory(uint groupIndex)
+{
+    if (groupIndex < NUM_HISTOGRAM_BINS)
+    {
+        shared_histogramBins[groupIndex] = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+} 
+
+// remaps a number x from [a,b] into [c,d] 
+float Remap(float x, float a, float b, float c, float d)
+{
+    return (x-a)/(b-a)*(d-c)+c;
+}
+
+uint GetHistogramBinFromEv(float ev)
+{
+    const float deltaEvRange = GetEvDisplayRangeMinMax().y - GetEvDisplayRangeMinMax().x;
+    const float bin = (ev - GetEvDisplayRangeMinMax().x) / deltaEvRange * NUM_HISTOGRAM_BINS;
+    return clamp(bin, 0, NUM_HISTOGRAM_BINS - 1);    
+}
+
+[numthreads(NUM_THREADS_PER_DIM, NUM_THREADS_PER_DIM, 1)]
+void MainCS( 
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{ 
+     
+    const uint2 colorInputBufferDim = GetColorInputDimensions();
+    ClearSharedMemory(groupIndex);
+
+    const uint2 textureIndex = dispatchThreadID.xy;
+    const bool isThreadReadingValidIndex = textureIndex.x < colorInputBufferDim.x && textureIndex.y < colorInputBufferDim.y;
+    if (isThreadReadingValidIndex)
+    {
+        const float4 color = PassSrg::m_inputTexture[textureIndex]; 
+        const float luminance = CalculateLuminance(color.rgb, ColorSpaceId::ACEScg);                    
+                            
+        const float ev = NitsToEv100Luminance(luminance);
+        const uint bin = GetHistogramBinFromEv(ev);
+        uint originalValue;
+        InterlockedAdd(shared_histogramBins[bin], 1, originalValue);
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+    
+    if (groupIndex < NUM_HISTOGRAM_BINS)
+    {
+        uint originalValue;
+        InterlockedAdd(PassSrg::m_outputTexture[groupIndex], shared_histogramBins[groupIndex], originalValue);        
+    }    
+}
+
+
+

@@ -1,0 +1,100 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerDraw
+{
+    Texture2D<float4> m_framebuffer;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    // Reference white and black luminance values
+    float2 m_cinemaLimits;
+}
+
+// Option shader variable to select tone mapper feature.
+option enum class ToneMapperType {None, Reinhard} o_tonemapperType = ToneMapperType::None;
+// Option shader variable to select transfer function.
+option enum class TransferFunctionType {None, Gamma22, PerceptualQuantizer} o_transferFunctionType = TransferFunctionType::None;
+
+// Simple reinhard tone mapping algorithm based on below paper.
+// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+float3 TonemapReinhard(const float3 inputColor)
+{
+    return inputColor / (1.0 + inputColor);
+}
+
+float3 NormalizedToCinemaLimits(const float3 inputColor)
+{
+    float3 linearColor;
+
+    // Scale from normalized range to the proper range
+    linearColor.r = LinearCVToY(inputColor.r, PassSrg::m_cinemaLimits.y, PassSrg::m_cinemaLimits.x);
+    linearColor.g = LinearCVToY(inputColor.g, PassSrg::m_cinemaLimits.y, PassSrg::m_cinemaLimits.x);
+    linearColor.b = LinearCVToY(inputColor.b, PassSrg::m_cinemaLimits.y, PassSrg::m_cinemaLimits.x);
+
+    linearColor = max(linearColor, 0.);
+    return linearColor;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    // Fetch the pixel color from the input texture
+    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    
+    // Applying tone mapper.
+    switch (o_tonemapperType)
+    {
+        case ToneMapperType::Reinhard:
+            color = TonemapReinhard(color);
+            break;
+        default:
+            break;
+    }
+
+    switch (o_transferFunctionType)
+    {
+        case TransferFunctionType::Gamma22:
+            color = pow(color, 1.0 / 2.2);
+            break;
+        case TransferFunctionType::PerceptualQuantizer:
+            if (o_tonemapperType == ToneMapperType::Reinhard)
+            {
+                color = NormalizedToCinemaLimits(color);
+            }
+            // Encode with PQ transfer function
+            color = PerceptualQuantizerRevF3(color);
+            break;
+        default:
+            break;
+    }
+
+    OUT.m_color.rgb = color;
+    OUT.m_color.w = 1;
+
+    return OUT;
+}

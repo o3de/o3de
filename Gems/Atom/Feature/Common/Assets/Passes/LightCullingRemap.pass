@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LightCullingRemapTemplate",
+            "PassClass": "LightCullingRemapPass",
+            "Slots": [
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader"                    
+                },
+                {
+                    "Name": "LightCount",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lightCount",
+                    "ScopeAttachmentUsage": "Shader"                    
+                },
+                {
+                    "Name": "LightList",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lightList",
+                    "ScopeAttachmentUsage": "Shader"                  
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_lightListRemapped",
+                    "ScopeAttachmentUsage": "Shader"                    
+                }                   
+            ],          
+            "PassData": { 
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/LightCulling/LightCullingRemap.shader"
+                }  
+            }
+        }
+    }
+}

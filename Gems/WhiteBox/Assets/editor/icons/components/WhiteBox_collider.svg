@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon / Shapes / Whitebox Collider</title>
+    <g id="icon-/-Shapes-/-Whitebox-Collider" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2" transform="translate(1.454110, 0.036024)" fill="#5A69A1">
+            <polygon id="Path-Copy-2" fill-rule="nonzero" points="6.4296782 5.47554808 12.9295578 8.43452443 12.9295578 9.96840975 11.5009864 10.74695 11.5009864 9.185864 6.39868182 6.8923847 1.74728286 9.0612458 1.74728286 10.7252621 6.29225432 12.9183815 12.9295578 9.96840975 12.9295578 11.5399499 6.29225432 14.4068299 9.09494702e-13 11.3146817 9.09494702e-13 8.43927603"></polygon>
+            <polygon id="Path-Copy-4" fill-rule="nonzero" points="1.74728286 11.8455912 1.74728286 13.5096074 6.29225432 15.6152397 6.29225432 17.1036881 0 14.0990271 0 10.8838988"></polygon>
+            <polygon id="Path-Copy-5" fill-rule="nonzero" points="1.74728286 14.6157632 1.74728286 16.4438851 6.29225432 18.5495174 6.29225432 20.0379658 9.09494702e-13 17.0333048 9.09494702e-13 13.9937934"></polygon>
+            <polygon id="Path-Copy-6" fill-rule="nonzero" points="9.08474184 18.2825383 9.08474184 19.9465545 13.6297133 22.0521868 13.6297133 23.5406352 7.33745898 20.5359742 7.33745898 17.6605685"></polygon>
+            <polygon id="Path-Copy-7" fill-rule="nonzero" transform="translate(17.120890, 20.600602) scale(-1, 1) translate(-17.120890, -20.600602) " points="15.7220453 18.2825383 15.7220453 19.9465545 20.2670168 22.0521868 20.2670168 23.5406352 13.9747624 20.5359742 13.9747624 17.6605685"></polygon>
+            <polygon id="Path-Copy-3" fill-rule="nonzero" points="12.6909859 14.3162269 9.08474184 15.9282397 9.08474184 17.592256 13.6297133 19.6978882 20.2670168 16.6910599 20.2670168 18.2345504 13.6297133 21.1863367 7.33745898 18.1816757 7.33745898 15.30627 12.6400358 12.9360148"></polygon>
+            <ellipse id="Oval" cx="16.9646878" cy="13.5728413" rx="3.30232895" ry="3.23642692"></ellipse>
+            <polygon id="Path-63" fill-rule="nonzero" transform="translate(7.772281, 3.026938) rotate(-2.000000) translate(-7.772281, -3.026938) " points="8.75167656 1.20915192 9.72358797 2.35168778 6.79288582 4.84472364 5.8209744 3.70218778"></polygon>
+            <polygon id="Path-68" fill-rule="nonzero" transform="translate(12.196010, 1.967933) rotate(-3.000000) translate(-12.196010, -1.967933) " points="10.4305089 2.48653165 10.6310673 1 13.961511 1.44933346 13.7609526 2.93586511"></polygon>
+            <polygon id="Path-69" fill-rule="nonzero" transform="translate(15.772002, 3.989294) rotate(8.000000) translate(-15.772002, -3.989294) " points="14.1723773 3.58656862 15.1599202 2.45751642 17.3716267 4.39201973 16.3840837 5.52107192"></polygon>
+            <polygon id="Path-70" fill-rule="nonzero" transform="translate(17.502016, 7.895715) rotate(7.000000) translate(-17.502016, -7.895715) " points="16.3235972 6.61844483 17.757074 6.1766936 18.6804342 9.17298496 17.2469574 9.61473619"></polygon>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,113 @@
+<ObjectStream version="3">
+	<Class name="SceneManifest" version="1" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}">
+		<Class name="AZStd::vector" field="values" type="{5D6A7C67-11CA-59A4-829B-0B20B781B292}">
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MeshGroup" field="element" version="1" type="{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B}">
+					<Class name="ISceneNodeGroup" field="BaseClass1" version="1" type="{1D20FA11-B184-429E-8C86-745852234845}">
+						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="cloth_locked_corners_two" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="bool" field="export as convex" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="float" field="AreaTestEpsilon" value="0.0600000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="PlaneTolerance" value="0.0007000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="bool" field="Use16bitIndices" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="CheckZeroAreaTriangles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="QuantizeInput" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="UsePlaneShifting" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="ShiftVertices" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="unsigned int" field="GaussMapLimit" value="32" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="bool" field="MergeMeshes" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="WeldVertices" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="DisableCleanMesh" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="Force32BitIndices" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="SuppressTriangleMeshRemapTable" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="bool" field="BuildTriangleAdjacencies" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="float" field="MeshWeldTolerance" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned int" field="NumTrisPerLeaf" value="4" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="bool" field="BuildGPUData" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+					<Class name="SceneNodeSelectionList" field="NodeSelectionList" version="1" type="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}">
+						<Class name="ISceneNodeSelectionList" field="BaseClass1" version="1" type="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}"/>
+						<Class name="AZStd::vector" field="selectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
+						<Class name="AZStd::vector" field="unselectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
+							<Class name="AZStd::string" field="element" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.colorSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.map1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.lambert1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZ::Uuid" field="id" value="{69377926-2371-511C-B222-19024594C2BB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}"/>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MeshGroup" field="element" version="3" type="{07B356B7-3635-40B5-878A-FAC4EFD5AD86}">
+					<Class name="IMeshGroup" field="BaseClass1" version="2" type="{74D45E45-81EE-4AD4-83B5-F37EB98D847C}">
+						<Class name="ISceneNodeGroup" field="BaseClass1" version="1" type="{1D20FA11-B184-429E-8C86-745852234845}">
+							<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+								<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="cloth_locked_corners_two" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="SceneNodeSelectionList" field="nodeSelectionList" version="1" type="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}">
+						<Class name="ISceneNodeSelectionList" field="BaseClass1" version="1" type="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}"/>
+						<Class name="AZStd::vector" field="selectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
+							<Class name="AZStd::string" field="element" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.colorSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.map1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="element" value="RootNode.pPlane1.lambert1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+						<Class name="AZStd::vector" field="unselectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
+					</Class>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="StaticMeshAdvancedRule" field="element" version="6" type="{AE82749D-A68A-4FE7-A8BA-0F4CE67607AC}">
+									<Class name="IMeshAdvancedRule" field="BaseClass1" version="1" type="{ADF04C44-5786-466A-AE69-63E5E3474D21}">
+										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+										</Class>
+									</Class>
+									<Class name="bool" field="use32bitVertices" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="mergeMeshes" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="useCustomNormals" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="AZStd::string" field="vertexColorStreamName" value="Disabled" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="MaterialRule" field="element" version="2" type="{35620013-A27C-4F6D-87BF-72F11688ACAD}">
+									<Class name="IMaterialRule" field="BaseClass1" version="1" type="{428C9752-6EDF-4FA2-9BDF-DBDFCEB4CC0F}">
+										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+										</Class>
+									</Class>
+									<Class name="bool" field="updateMaterials" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="removeMaterials" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="ClothRule" field="element" version="1" type="{2F5AC324-314A-4C53-AFFF-DDFA46605DDB}">
+									<Class name="IClothRule" field="BaseClass1" version="1" type="{5185510A-50BF-418A-ACB4-1A9E014C7E43}">
+										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+										</Class>
+									</Class>
+									<Class name="AZStd::string" field="meshNodeName" value="RootNode.pPlane1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="AZStd::string" field="vertexColorStreamName" value="colorSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="AZ::Uuid" field="id" value="{45EFD81A-7FBC-59E3-B495-280376B40AC5}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

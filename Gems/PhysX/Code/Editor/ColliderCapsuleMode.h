@@ -1,0 +1,51 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include "ColliderSubComponentMode.h"
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
+namespace PhysX
+{
+    /// Sub component mode for modifying the height and radius on a capsule collider.
+    class ColliderCapsuleMode
+        : public PhysX::ColliderSubComponentMode
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
+    {
+    public:
+        AZ_CLASS_ALLOCATOR_DECL
+
+        // ColliderSubComponentMode ...
+        void Setup(const AZ::EntityComponentIdPair& idPair) override;
+        void Refresh(const AZ::EntityComponentIdPair& idPair) override;
+        void Teardown(const AZ::EntityComponentIdPair& idPair) override;
+        void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
+
+    private:
+        // AzFramework::EntityDebugDisplayEventBus ...
+        void DisplayEntityViewport(
+            const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        void SetupRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
+        void SetupHeightManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
+        void OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
+        void OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
+        void AdjustRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleHeight);
+        void AdjustHeightManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleRadius);
+
+        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
+        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator;
+    };
+} //namespace PhysX

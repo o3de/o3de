@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Toolbar / Align to object</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Align-to-object" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M14.2922516,7.1621557 L8.5645937,10.4254632 L3.31424061,7.1621557 L8.5645937,4.13194158 L14.2922516,7.1621557 Z M12.1561083,12.9966887 L18.3861659,13.0560172 L16.3298828,14.5594424 L19.1863694,16.8180747 L16.1760859,19.0198796 L13.2371413,16.7043033 L10.8559094,18.2735174 L12.1561083,12.9966887 Z M2.83693579,7.86143588 L8.08728887,11.2230429 L8.08728887,18.1319416 L2.83693579,14.6714237 L2.83693579,7.86143588 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero" transform="translate(11.011653, 11.575911) scale(-1, 1) translate(-11.011653, -11.575911) "></path>
+        <polygon id="Line" fill="#FFFFFF" fill-rule="nonzero" points="21.2779298 2.62191594 21.2779298 16.0779319 20.2779298 16.0779319 20.2779298 2.62191594"></polygon>
+        <polygon id="Line-Copy" fill="#FFFFFF" fill-rule="nonzero" transform="translate(17.128627, 18.313489) rotate(-124.000000) translate(-17.128627, -18.313489) " points="17.6286268 13.5743802 17.6286268 23.0525981 16.6286268 23.0525981 16.6286268 13.5743802"></polygon>
+    </g>
+</svg>

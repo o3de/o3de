@@ -1,0 +1,107 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "RHI/Atom_RHI_DX12_precompiled.h"
+#include <RHI/FrameGraphExecuteGroupMerged.h>
+#include <RHI/SwapChain.h>
+
+namespace AZ
+{
+    namespace DX12
+    {
+        void FrameGraphExecuteGroupMerged::Init(
+            Device& device,
+            AZStd::vector<const Scope*>&& scopes,
+            const RHI::ScopeId& mergedScopeId)
+        {
+            SetDevice(device);
+
+            m_scopes = AZStd::move(scopes);
+
+            // Constructing a new name is slow but copying one is fast, so we copy one passed in from the FrameGraphExecuter
+            m_mergedScopeId = mergedScopeId;
+
+            m_hardwareQueueClass = m_scopes.back()->GetHardwareQueueClass();
+            m_workRequest.m_waitFences = m_scopes.front()->GetWaitFences();
+            m_workRequest.m_signalFence = m_scopes.back()->GetSignalFenceValue();
+            m_workRequest.m_commandLists.resize(1);
+
+            AZStd::vector<RHI::ScopeId> scopeIds;
+            scopeIds.reserve(m_scopes.size());
+            for (const Scope* scope : m_scopes)
+            {
+                scopeIds.push_back(scope->GetId());
+
+                {
+                    auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
+
+                    swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
+                    for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+                    {
+                        swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
+                    }
+                }
+
+                {
+                    auto& fencesToSignal = m_workRequest.m_userFencesToSignal;
+
+                    fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
+                    for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToSignal())
+                    {
+                        fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                    }
+                }
+            }
+
+            InitMergedRequest request;
+            request.m_scopeIds = scopeIds.data();
+            request.m_scopeCount = static_cast<uint32_t>(scopeIds.size());
+            Base::Init(request);
+        }
+
+        void FrameGraphExecuteGroupMerged::BeginInternal()
+        {
+            CommandList* commandList = AcquireCommandList();
+            commandList->Open(m_mergedScopeId);
+            m_workRequest.m_commandLists.back() = commandList;
+        }
+
+        void FrameGraphExecuteGroupMerged::EndInternal()
+        {
+            static_cast<CommandList*>(m_workRequest.m_commandLists.back())->Close();
+        }
+
+        void FrameGraphExecuteGroupMerged::BeginContextInternal(
+            RHI::FrameGraphExecuteContext& context,
+            uint32_t contextIndex)
+        {
+            AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
+
+            const Scope* scope = m_scopes[contextIndex];
+
+            CommandList* commandList = static_cast<CommandList*>(m_workRequest.m_commandLists.back());
+            context.SetCommandList(*commandList);
+
+            scope->Begin(*commandList, context.GetCommandListIndex(), context.GetCommandListCount());
+        }
+
+        void FrameGraphExecuteGroupMerged::EndContextInternal(
+            RHI::FrameGraphExecuteContext& context,
+            uint32_t contextIndex)
+        {
+            m_lastCompletedScope = contextIndex;
+
+            const Scope* scope = m_scopes[contextIndex];
+            CommandList* commandList = static_cast<CommandList*>(context.GetCommandList());
+            scope->End(*commandList, context.GetCommandListIndex(), context.GetCommandListCount());
+        }
+    }
+}

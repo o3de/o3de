@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>Selection Controls / Checkbox / On - Disabled</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Selection-Controls-/-Checkbox-/-On---Disabled" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="checkbox-(on)">
+            <path d="M1.77777778,0 C0.8,0 0,0.8 0,1.77777778 L0,14.2222222 C0,15.2 0.8,16 1.77777778,16 L14.2222222,16 C15.2,16 16,15.2 16,14.2222222 L16,1.77777778 C16,0.8 15.2,0 14.2222222,0 L1.77777778,0 Z" id="Shape" fill="#7092A7"></path>
+            <polygon id="Path" fill="#BBBBBB" points="1 8.19230769 2.4 6.84615385 6 10.3076923 13.6 3 15 4.34615385 6 13"></polygon>
+        </g>
+    </g>
+</svg>

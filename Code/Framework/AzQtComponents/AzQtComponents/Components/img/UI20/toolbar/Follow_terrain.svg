@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Icons / Editor / Follow Terrain</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Editor-/-Follow-Terrain" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <polygon id="Triangle" fill="#FFFFFF" transform="translate(4.230211, 15.168583) rotate(-154.000000) translate(-4.230211, -15.168583) " points="4.23021145 13.1685826 7.73021145 17.1685826 0.73021145 17.1685826"></polygon>
+        <rect id="Rectangle" fill="#FFFFFF" transform="translate(7.250000, 9.000000) rotate(26.000000) translate(-7.250000, -9.000000) " x="6" y="4" width="2.5" height="10"></rect>
+        <path d="M15,4 L22,20 L8,20 L15,4 Z M15,7 L13,12 L17,12 L15,7 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

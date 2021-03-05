@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/InfoBar">
+    <file alias="CameraCollision-default.svg">res/infobar/CameraCollision-default.svg</file>
+    <file alias="GotoLocation-default.svg">res/infobar/GotoLocation-default.svg</file>
+    <file alias="LockScale-default.svg">res/infobar/LockScale-default.svg</file>
+    <file alias="LockSelection-default.svg">res/infobar/LockSelection-default.svg</file>
+    <file alias="Mute-default.svg">res/infobar/Mute-default.svg</file>
+    <file alias="NoPlayerSync-default.svg">res/infobar/NoPlayerSync-default.svg</file>
+    <file alias="NoPlayerSync-selected.svg">res/infobar/NoPlayerSync-selected.svg</file>
+    <file alias="Pause-default.svg">res/infobar/Pause-default.svg</file>
+    <file alias="PausePlay-default.svg">res/infobar/PausePlay-default.svg</file>
+    <file alias="PhysicsCol-default.svg">res/infobar/PhysicsCol-default.svg</file>
+    <file alias="VR-default.svg">res/infobar/VR-default.svg</file>
+    <file alias="XYZ-default.svg">res/infobar/XYZ-default.svg</file>
+    </qresource>
+</RCC>

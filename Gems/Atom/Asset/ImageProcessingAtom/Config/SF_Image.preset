@@ -1,0 +1,63 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+            "Name": "SF_Image",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "BC1",
+            "IsPowerOf2": true
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+                "Name": "SF_Image",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "ETC2",
+                "IsPowerOf2": true
+            },
+            "ios": {
+                "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+                "Name": "SF_Image",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "PVRTC4",
+                "IsPowerOf2": true
+            },
+            "osx_gl": {
+                "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+                "Name": "SF_Image",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1",
+                "IsPowerOf2": true
+            },
+            "provo": {
+                "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+                "Name": "SF_Image",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1",
+                "IsPowerOf2": true
+            },
+            "xenia": {
+                "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
+                "Name": "SF_Image",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC1",
+                "IsPowerOf2": true
+            }
+        }
+    }
+}

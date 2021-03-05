@@ -1,0 +1,57 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <AzCore/EBus/EBus.h>
+
+namespace AZ
+{
+    namespace RHI
+    {
+        class ShaderPlatformInterface;
+
+        /**
+         * A request to register a new ShaderPlatformInterface for a specific RHI backend.
+         * The shader asset builder will use the registered object to compile and create the proper
+         * shader asset. Each enabled RHI must register one ShaderPlatformInterface if the shader
+         * can be generated in the current platform.
+         */
+        class ShaderPlatformInterfaceRegister
+            : public AZ::EBusTraits
+        {
+        public:
+
+            virtual ~ShaderPlatformInterfaceRegister() = default;
+
+            /**
+             * Register a new ShaderPlatformInterface to generate shader assets.
+             *
+             *  @param shaderPlatformInterface The object used for generating the shader.
+             */
+            virtual void RegisterShaderPlatformHandler(ShaderPlatformInterface* shaderPlatformInterface) = 0;
+
+            /**
+             * Unregister the ShaderPlatformInterface for an RHI.
+             *
+             *  @param shaderPlatformInterface The object to unregister.
+             */
+            virtual void UnregisterShaderPlatformHandler(ShaderPlatformInterface* shaderPlatformInterface) = 0;
+
+        public:
+
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        };
+
+        /// EBus for registering a ShaderPlatformInterface for shader generation.
+        using ShaderPlatformInterfaceRegisterBus = AZ::EBus<ShaderPlatformInterfaceRegister>;
+    }
+}

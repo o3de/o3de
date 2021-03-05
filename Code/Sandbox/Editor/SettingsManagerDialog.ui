@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsManagerDialog</class>
+ <widget class="QDialog" name="SettingsManagerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>262</width>
+    <height>422</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="groupBox_1">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="m_exportBtn">
+        <property name="text">
+         <string>Export To File</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Import</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="m_readBtn">
+        <property name="text">
+         <string>Preview From File</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_1">
+        <property name="text">
+         <string>Select Tool Layouts To Import :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListWidget" name="m_layoutListBox">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_importSettingsChk">
+        <property name="text">
+         <string>Import Editor Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="m_importBtn">
+        <property name="text">
+         <string>Perform Import</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+     <widget class="QCheckBox" name="m_skipToolsChk">
+      <property name="visible">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Skip Tools on Start</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="m_closeAllToolsBtn">
+      <property name="visible">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Close Tools</string>
+      </property>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/GraphCanvasEditorResources">
+      <file>bottom_right.png</file>
+      <file>bottom_align_icon.svg</file>
+      <file>comment.svg</file>
+      <file>center_icon.png</file>
+      <file>default_style.json</file>
+      <file>group.svg</file>      
+      <file>left_align_icon.svg</file>
+      <file>lineedit_clear.png</file>
+      <file>right_align_icon.svg</file>      
+      <file>settings_icon.png</file>
+      <file>search_icon.png</file>
+      <file>toast_error_icon.png</file>
+      <file>toast_information_icon.png</file>
+      <file>toast_warning_icon.png</file>      
+      <file>top_left.png</file>
+      <file>top_align_icon.svg</file>
+      <file>ungroup.svg</file>      
+    </qresource>
+</RCC>

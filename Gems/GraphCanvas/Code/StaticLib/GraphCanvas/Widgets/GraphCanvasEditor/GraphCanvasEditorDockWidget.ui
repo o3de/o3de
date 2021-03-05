@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphCanvasEditorDockWidget</class>
+ <widget class="AzQtComponents::StyledDockWidget" name="GraphCanvasEditorDockWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>847</width>
+    <height>631</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>5</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="GraphCanvas::GraphCanvasGraphicsView" name="graphicsView"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphCanvas::GraphCanvasGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::StyledDockWidget</class>
+   <extends>QDockWidget</extends>
+   <header>AzQtComponents/Components/StyledDockWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../Resources/GraphCanvasEditorResources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

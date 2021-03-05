@@ -1,0 +1,36 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "414bd211c99d4f74aef3a266b9ca208c",
+    "Name": "Blast",
+    "DisplayName": "NVIDIA Blast [Experimental]",
+    "Version": "0.1.0",
+    "Summary": "Enables support for NVIDIA Blast objects in Lumberyard for high-fidelity destruction.",
+    "Tags": [ "Physics" ],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Uuid": "4e08125824434932a0fe3717259caa47",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "PhysX"
+        }
+    ]
+}

@@ -1,0 +1,129 @@
+<!--
+= Platform names = 
+(case insensitive) 
+"ANDROID"
+"XENIA"
+"PROVO"
+"PC"
+"MAC"
+
+= Basic Layout =
+<ThreadConfig>
+	<Platform name="XXX">
+		<ThreadDefault Affinity="XX" Priority="XX" StackSizeKB="XX"> 
+		<Thread name ="A" Affinity="XX" Priority="XX" StackSizeKB="XX">  
+		<Thread name ="B" Affinity="XX" >
+		...
+	</Platform> 
+	
+	<Platform name="YYY">
+	...
+	</Platform> 
+</ThreadConfig>
+
+= Parser Order for Platform = 
+1. PlatformName_Common (valid for all potential platform configurations. Can be overridden by concert platform configuration)
+2. PlatformName or PlatformName_X (for platforms with unknown CPU count where X is the number of potential cores. The equal or next lower matching configuration for the identified core count at runtime will be taken)
+
+Note: Overriding of thread configuration by later parsed configuration allowed.
+
+= <ThreadDefault> and <Thread> XML attributes =
+
+!!!
+Note: Use "ignore" as value if you do not want the thread system to set the value specifically!
+			If a value is not defines the <ThreadDefault> value of the parameter will be used.
+			This is useful when dealing with 3rdParty threads where you are not in control of the parameter setup.
+!!!
+
+Name:
+	"x" (string)		: Name of thread
+	"x*y" (string)	: Name of thread with wildcard character
+	
+Affinity:
+	"-1" 					: Put SW thread affinity in the hands of the scheduler - (default) -
+	"x" 					: Run thread on specified core 
+	"x, y, ..." 	: Run thread on specified cores 
+	
+Priority: 
+ "idle" 						: Hint to CryEngine to run thread with pre-set priority
+ "below_normal"			: Hint to CryEngine to run thread with pre-set priority 
+ "normal" 					: Hint to CryEngine to run thread with pre-set priority - (default) -
+ "above_normal"			: Hint to CryEngine to run thread with pre-set priority
+ "highest"					: Hint to CryEngine to run thread with pre-set priority
+ "time_critical"		: Hint to CryEngine to run thread with pre-set priority 
+
+ "x" (number)				: User defined thread priority number
+
+StackSizeKB:
+ "0" 	: Let platform decide on the stack size - (default) -
+ "x" 	: Create thread with "x" KB of stack size
+ 
+ DisablePriorityBoost:
+ "true" 	: Disable priority boosting - (default) -
+ "false"	: Enable priority boosting 
+-->
+
+
+<ThreadConfig>
+	<!-- ============ -->
+	<!-- === PC_Common === -->
+	<!-- ============ -->
+	<Platform name="PC_Common">
+		<ThreadDefault Affinity="-1" Priority="Normal" StackSizeKB="32"/>
+		
+		<!-- [SANDBOX] -->
+		<Thread name ="TextureViewer"/>			
+		<Thread name ="TextureDatabaseCreator"/>
+
+		<Thread name ="MaterialFilesScanning"/>
+		<Thread name ="FileChangeMonitor"/>	
+		
+		<Thread name ="FileSystemSearcher"/>
+		<Thread name ="BackgroundTask_IO"/>
+		<Thread name ="BackgroundTask_*"/>
+		
+		<!-- [SANDBOX] - Dialogues -->
+		<Thread name ="ResourceCompilerDialog"/>				
+		
+		<!-- [SANDBOX] - Telemetry -->		
+	  <Thread name ="TelemetryPipeThread"/>		
+		
+		<!-- [SANDBOX] - Asset Browser -->
+		<Thread name ="AssetMetaDataFileDB_CachingInfo"/>
+		<Thread name ="AssetMetaDataFileDB_LoadAndUpdate"/>		
+
+		<!-- [SANDBOX] - Console -->
+		<Thread name ="ConsoleHotUpdate"/>
+		<Thread name ="Console Synchronization"/>			
+		
+		<!-- [SANDBOX] - LiveCreate -->
+		<Thread name ="LiveCreate_PeerComm"/>			
+		<Thread name ="LiveCreate_SyncFiles"/>				
+		<Thread name ="LiveCreate_CheckPowerOn"/>	
+		
+		<!-- [SANDBOX] - Plug-ins -->
+		<Thread name ="PerforcePlugin"/>		
+								
+		<!-- [SANDBOX] - Utility -->
+		<Thread name ="FileIndexing"/>	
+		<Thread name ="LODChainGenerateThread"/>
+		<Thread name ="VisualChangeCalculatorView"/>		
+		
+		<!-- [SANDBOX] - Segmented World -->
+		<Thread name ="SegWorld_MapUpdater"/>
+		<Thread name ="SegWorld_WorldUpdater"/>		
+		<Thread name ="SegWorld_ExportSurfaceTexture_*"/>
+
+		<!-- [SANDBOX] - Indirect Lighting -->
+		<Thread name ="SHLighting_*" StackSizeKB="1024"/>		
+		<Thread name ="SHLighting_TriRaster" StackSizeKB="1024"/>		
+		
+	</Platform>
+	
+	<!-- ============ -->
+	<!-- === PC_8 === -->
+	<!-- ============ -->
+	<Platform name="PC_8">
+		<!-- Empty Example - Extend for 8 core specific machines. May override Common settings -->
+	</Platform>	
+</ThreadConfig>

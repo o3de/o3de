@@ -1,0 +1,115 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+set(FILES
+    DXGL/CryDXGL.cpp
+    DXGL/CryDXGL.hpp
+    DXGL/RenderCapabilities.cpp
+    DXGL/Definitions/CryDXGLGuid.hpp
+    DXGL/Definitions/CryDXGLLegacy.hpp
+    DXGL/Definitions/CryDXGLMisc.hpp
+    DXGL/Definitions/DXGL_D3D11.h
+    DXGL/Definitions/DXGL_D3D11Shader.h
+    DXGL/Definitions/DXGL_D3DCommon.h
+    DXGL/Definitions/DXGL_D3DCompiler.h
+    DXGL/Definitions/DXGL_D3DX11.h
+    DXGL/Definitions/DXGL_D3DX11tex.h
+    DXGL/Definitions/DXGL_DXGIFormat.h
+    DXGL/Definitions/DXGL_ID3D11Device.h
+    DXGL/Definitions/DXGL_ID3D11DeviceContext.h
+    DXGL/Definitions/DXGL_IDXGIFactory1.h
+    DXGL/Definitions/DXGL_IDXGISwapChain.h
+    DXGL/Definitions/DXGL_dxgi.h
+    DXGL/Definitions/DXGL_dxgitype.h
+    DXGL/Definitions/ICryDXGLUnknown.hpp
+    DXGL/Implementation/AppleGPUInfoUtils.h
+    DXGL/Implementation/GLCommon.hpp
+    DXGL/Implementation/GLContext.cpp
+    DXGL/Implementation/GLContext.hpp
+    DXGL/Implementation/GLCryPlatform.hpp
+    DXGL/Implementation/GLDevice.cpp
+    DXGL/Implementation/GLDevice.hpp
+    DXGL/Implementation/GLFeatures.hpp
+    DXGL/Implementation/GLFormat.cpp
+    DXGL/Implementation/GLFormat.hpp
+    DXGL/Implementation/GLInstrument.hpp
+    DXGL/Implementation/GLPlatform.hpp
+    DXGL/Implementation/GLResource.cpp
+    DXGL/Implementation/GLResource.hpp
+    DXGL/Implementation/GLShader.cpp
+    DXGL/Implementation/GLShader.hpp
+    DXGL/Implementation/GLState.cpp
+    DXGL/Implementation/GLState.hpp
+    DXGL/Implementation/GLView.cpp
+    DXGL/Implementation/GLView.hpp
+    DXGL/Interfaces/CCryDXGLBase.cpp
+    DXGL/Interfaces/CCryDXGLBase.hpp
+    DXGL/Interfaces/CCryDXGLBlendState.cpp
+    DXGL/Interfaces/CCryDXGLBlendState.hpp
+    DXGL/Interfaces/CCryDXGLBlob.cpp
+    DXGL/Interfaces/CCryDXGLBlob.hpp
+    DXGL/Interfaces/CCryDXGLBuffer.cpp
+    DXGL/Interfaces/CCryDXGLBuffer.hpp
+    DXGL/Interfaces/CCryDXGLDepthStencilState.cpp
+    DXGL/Interfaces/CCryDXGLDepthStencilState.hpp
+    DXGL/Interfaces/CCryDXGLDepthStencilView.cpp
+    DXGL/Interfaces/CCryDXGLDepthStencilView.hpp
+    DXGL/Interfaces/CCryDXGLDevice.cpp
+    DXGL/Interfaces/CCryDXGLDevice.hpp
+    DXGL/Interfaces/CCryDXGLDeviceChild.cpp
+    DXGL/Interfaces/CCryDXGLDeviceChild.hpp
+    DXGL/Interfaces/CCryDXGLDeviceContext.cpp
+    DXGL/Interfaces/CCryDXGLDeviceContext.hpp
+    DXGL/Interfaces/CCryDXGLGIAdapter.cpp
+    DXGL/Interfaces/CCryDXGLGIAdapter.hpp
+    DXGL/Interfaces/CCryDXGLGIFactory.cpp
+    DXGL/Interfaces/CCryDXGLGIFactory.hpp
+    DXGL/Interfaces/CCryDXGLGIObject.cpp
+    DXGL/Interfaces/CCryDXGLGIObject.hpp
+    DXGL/Interfaces/CCryDXGLGIOutput.cpp
+    DXGL/Interfaces/CCryDXGLGIOutput.hpp
+    DXGL/Interfaces/CCryDXGLInputLayout.cpp
+    DXGL/Interfaces/CCryDXGLInputLayout.hpp
+    DXGL/Interfaces/CCryDXGLQuery.cpp
+    DXGL/Interfaces/CCryDXGLQuery.hpp
+    DXGL/Interfaces/CCryDXGLRasterizerState.cpp
+    DXGL/Interfaces/CCryDXGLRasterizerState.hpp
+    DXGL/Interfaces/CCryDXGLRenderTargetView.cpp
+    DXGL/Interfaces/CCryDXGLRenderTargetView.hpp
+    DXGL/Interfaces/CCryDXGLResource.cpp
+    DXGL/Interfaces/CCryDXGLResource.hpp
+    DXGL/Interfaces/CCryDXGLSamplerState.cpp
+    DXGL/Interfaces/CCryDXGLSamplerState.hpp
+    DXGL/Interfaces/CCryDXGLShader.cpp
+    DXGL/Interfaces/CCryDXGLShader.hpp
+    DXGL/Interfaces/CCryDXGLShaderReflection.cpp
+    DXGL/Interfaces/CCryDXGLShaderReflection.hpp
+    DXGL/Interfaces/CCryDXGLShaderResourceView.cpp
+    DXGL/Interfaces/CCryDXGLShaderResourceView.hpp
+    DXGL/Interfaces/CCryDXGLSwapChain.cpp
+    DXGL/Interfaces/CCryDXGLSwapChain.hpp
+    DXGL/Interfaces/CCryDXGLSwitchToRef.cpp
+    DXGL/Interfaces/CCryDXGLSwitchToRef.hpp
+    DXGL/Interfaces/CCryDXGLTexture1D.cpp
+    DXGL/Interfaces/CCryDXGLTexture1D.hpp
+    DXGL/Interfaces/CCryDXGLTexture2D.cpp
+    DXGL/Interfaces/CCryDXGLTexture2D.hpp
+    DXGL/Interfaces/CCryDXGLTexture3D.cpp
+    DXGL/Interfaces/CCryDXGLTexture3D.hpp
+    DXGL/Interfaces/CCryDXGLTextureBase.cpp
+    DXGL/Interfaces/CCryDXGLTextureBase.hpp
+    DXGL/Interfaces/CCryDXGLUnorderedAccessView.cpp
+    DXGL/Interfaces/CCryDXGLUnorderedAccessView.hpp
+    DXGL/Interfaces/CCryDXGLView.cpp
+    DXGL/Interfaces/CCryDXGLView.hpp
+    DXGL/Interfaces/DXEmulation.hpp
+    DXGL/Implementation/AppleGPUInfoUtils.mm
+)

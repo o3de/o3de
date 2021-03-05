@@ -1,0 +1,24 @@
+{
+    "GemFormatVersion": 3,
+    "Uuid": "d969b997bb7f4342ba0b3eedc378025d",
+    "Name": "ScriptCanvasDiagnosticLibrary",
+    "DisplayName": "Script Canvas Diagnostic Library",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "The Script Canvas Diagnostic Library comes with a library of diagnostic nodes for use in Script Canvas such as logging, debug text, etc.",
+    "Tags": ["Scripting", "Game"],
+    "IconPath": "preview.png",
+    "Dependencies" : [
+            {
+              "Uuid": "869a0d0ec11a45c299917d45c81555e6",
+              "VersionConstraints": [ ">=0.1.0" ],
+              "_comment": "ScriptCanvasGem"
+            },
+            {
+            "Uuid" : "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "LmbrCentral"
+        }
+    ]
+}
+

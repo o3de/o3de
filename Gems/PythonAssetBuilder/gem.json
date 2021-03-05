@@ -1,0 +1,16 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "0a5fda05323649009444bb7c3ee2b9c4",
+    "Name": "PythonAssetBuilder",
+    "DisplayName": "PythonAssetBuilder",
+    "Version": "0.1.0",
+    "Summary": "Runs asset builders written in Python scripts.",
+    "Tags": ["asset"],
+    "IconPath": "preview.png",
+    "Modules": [
+      {
+        "Name": "Editor",
+        "Type": "EditorModule"
+      }
+    ]
+}

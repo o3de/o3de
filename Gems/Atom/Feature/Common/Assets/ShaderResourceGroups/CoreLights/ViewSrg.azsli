@@ -1,0 +1,200 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
+#endif
+
+partial ShaderResourceGroup ViewSrg
+{ 
+    // Light visibility grid is this wide 
+    // e.g. if the screen resolution is 1904 x 800 with 16x16 bins then grid width is 1904/16 = 119 
+    uint m_tileGridWidth;
+
+    // This struct is coherent to the ones in Shadow.azsli and EsmShadowmapsPass.h.
+    struct FilterParameter
+    {
+        uint m_isEnabled;
+        uint2 m_shadowmapOriginInSlice;
+        uint m_shadowmapSize;
+        uint m_parameterOffset;
+        uint m_parameterCount;
+        float m_lightDistanceOfCameraViewFrustum;
+        float m_n_f_n; // n / (f - n)
+        float m_n_f;   // n - f
+        float m_f;     // f
+                       // where n: nearDepth, f: farDepth.
+        float2 m_padding; // explicit padding
+    };
+
+    // Point lights
+
+    struct PointLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensityCandelas;
+        float m_bulbRadius;
+    };
+
+    StructuredBuffer<PointLight> m_pointLights;
+    uint m_pointLightCount;
+
+    // Spot Lights
+    
+    struct SpotLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+
+        float3 m_rgbIntensityCandelas;
+        float m_innerConeAngle; // cosine of the angle from the direction axis at which this light starts to fall off.
+
+        float3 m_direction; // the direction of the spot light
+        float m_outerConeAngle; // cosine of the angle from the direction axis at which this light no longer has an effect.
+
+        float m_penumbraBias; // bias of the falloff curve between inner and outer cone angles.
+
+        int m_shadowIndex; // index for SpotLightShadow.
+
+        float m_bulbRadius; // Radius disk representing the spot light bulb
+        float m_bulbPositionOffset; // Amount of offset from the disk of the spot light to the tip of the cone.
+    };
+
+    StructuredBuffer<SpotLight> m_spotLights;
+    uint m_spotLightCount;
+    
+    struct SpotLightShadow
+    {
+        float4x4 m_depthBiasMatrix;
+        uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
+        uint2 m_shadowmapOriginInSlice; // shadowmap origin in the slice of the atlas.
+        uint m_shadowmapSize; // width and height of shadowmap
+        uint m_shadowFilterMethod;
+        float m_boundaryScale;
+        uint m_predictionSampleCount;
+        uint m_filteringSampleCount;
+        float2 m_unprojectConstants;
+        float m_bias;
+        float m_padding;
+    };
+
+    StructuredBuffer<SpotLightShadow> m_spotLightShadows;
+    StructuredBuffer<FilterParameter> m_esmsSpot;
+
+    uint m_shadowmapAtlasSize; // image size of shadowmap atlas. width and height has the same value.
+
+    // Directional Light shadows
+
+    static const uint MaxCascadeCount = 4;
+    static const uint DirectionalLightShadowDebugColoringBitMask = 1;
+
+    struct DirectionalLightShadow
+    {
+        float4x4 m_depthBiasMatrices[MaxCascadeCount];
+        float4x4 m_lightViewToShadowmapMatrices[MaxCascadeCount];
+        float4x4 m_worldToLightViewMatrices[MaxCascadeCount];
+        float m_slopeBiasBase[MaxCascadeCount];
+        float m_boundaryScale;
+        uint m_shadowmapSize; // width and height of shadowmap
+        uint m_cascadeCount;
+        uint m_predictionSampleCount;
+        uint m_filteringSampleCount;
+        uint m_debugFlags;
+        uint m_shadowFilterMethod;
+        float m_far_minus_near;
+    };
+
+    enum ShadowFilterMethod
+    {
+        ShadowFilterMethodNone = 0,
+        ShadowFilterMethodPcf,
+        ShadowFilterMethodEsm,
+        ShadowFilterMethodEsmPcf
+    };
+
+    StructuredBuffer<DirectionalLightShadow> m_directionalLightShadows;
+    uint m_directionalLightCount;
+    uint m_shadowIndexDirectionalLight;
+
+    StructuredBuffer<FilterParameter> m_esmsDirectional;
+
+    // Disk Lights
+    
+    struct DiskLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_direction;
+        float m_bothDirectionsFactor; // 0.0f for one direction, -1.0f for both.
+        float3 m_rgbIntensityCandelas;
+        float m_diskRadius;
+    };
+
+    StructuredBuffer<DiskLight> m_diskLights;
+    uint m_diskLightCount;
+    
+    // Capsule Lights
+    
+    struct CapsuleLight
+    {
+        float3 m_startPoint;   // One of the end points of the capsule
+        float m_radius;        // Radius of the capsule, ie distance from line segment to surface.
+        float3 m_direction;    // normalized vector from m_startPoint towards the other end point.
+        float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
+        float3 m_rgbIntensityCandelas; // total rgb luminous intensity of the capsule in candelas
+        float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+    };
+
+    StructuredBuffer<CapsuleLight> m_capsuleLights;
+    uint m_capsuleLightCount;
+    
+    // Quad Lights
+    
+    struct QuadLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_leftDir; // Direction from center of quad to the left edge
+        float m_halfWidth; // Half the width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
+        float3 m_upDir; // Direction from center of quad to the top edge
+        float m_halfHeight; // Half the height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
+        float3 m_rgbIntensityNits;
+        uint m_flags; // See QuadLightFlag enum
+    };
+
+    StructuredBuffer<QuadLight> m_quadLights;
+    uint m_quadLightCount;
+    
+    // Polygon Lights
+
+    struct PolygonLight
+    {
+        float3 m_position;
+        uint m_startEndIndex; // 16 bit start and end indices packed into one 32 bit uint
+        float3 m_rgbIntensityNits; // sign bit on red indicates winding order of first two edges. Used to determine direction.
+        float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
+    };
+
+    StructuredBuffer<PolygonLight> m_polygonLights;
+    uint m_polygonLightCount;
+    StructuredBuffer<float4> m_polygonLightPoints; // points for each polygon. Max 64 points per polygon.
+    
+    uint PolygonLightGetStartIndex(uint index)
+    {
+        return index >> 16;
+    }
+    uint PolygonLightGetEndIndex(uint index)
+    {
+        return index & 0x0000FFFF;
+    }
+}

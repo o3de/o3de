@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "BRDFTextureTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime" :  "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "Target Thread Count X": "256",
+                "Target Thread Count Y": "256",
+                "Target Thread Count Z": "1",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/BRDFTexture/BRDFTextureCS.shader"
+                }
+            }
+        }
+    }
+}

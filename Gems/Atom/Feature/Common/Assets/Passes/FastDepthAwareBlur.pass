@@ -1,0 +1,85 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FastDepthAwareBlurTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "LinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BlurSource",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "HorizontalBlur",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "BlurSource",
+                    "Output": "Output"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "VerticalBlur",
+                    "TemplateName": "FastDepthAwareBlurVerTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "BlurSource"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HorizontalBlur",
+                    "TemplateName": "FastDepthAwareBlurHorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "VerticalBlur",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

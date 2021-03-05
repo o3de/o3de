@@ -1,0 +1,80 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PBR/Hammersley.azsli>
+#include <Atom/Features/PBR/Microfacet/Ggx.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    RWTexture2D<float2> m_outputTexture;
+} 
+
+// See Real Shading in Unreal Engine 4 (page 7)
+// https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+[numthreads(8,8,1)]
+void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
+{
+    // get output texture dimensions
+    // Note: the call to GetDimensions() is not a performance concern here since this shader runs once at startup
+    uint2 dimensions;
+    PassSrg::m_outputTexture.GetDimensions(dimensions.x, dimensions.y);
+    uint textureSize = dimensions.x;
+
+    float roughness   = (float)(dispatch_id.y + 0.5f) / textureSize;
+    float roughnessA  = roughness * roughness;
+    float roughnessA2 = roughnessA * roughnessA;
+    float NdotV = (float)(dispatch_id.x + 0.5f) / textureSize;
+    
+    // setup View and Normal vectors
+    float3 V = float3(sqrt(1.0f - NdotV * NdotV), 0.0f, NdotV);    
+    float3 N = float3(0.0f, 0.0f, 1.0f);
+    
+    // accumulation variables
+    float A = 0.0f; // scale
+    float B = 0.0f; // bias
+    
+    // compute importance samples from the BRDF
+    const uint NumSamples = 1024;
+    for (uint i = 0; i < NumSamples; ++i)
+    {
+        // determine micronormal (H) for this sample
+        float2 Xi = GetHammersleyPoint(i, NumSamples);
+        float3 H  = ImportanceSampleGGX(Xi, roughnessA, N);
+        float3 L  = normalize(2.0f * dot(V, H) * H - V);
+    
+        // compute angles from micronormal
+        float NdotL = max(L.z, 0.0f);
+        float NdotH = max(H.z, 0.0f);
+        float VdotH = max(dot(V, H), 0.0f);
+    
+        if (NdotL > 0.0f)
+        {
+            // use the correlated Smith-GGX geometry term from our BRDF
+            // note that we include the (4.0f * VdotH * NdotL) term in G_Vis since it is optimized out of G
+            precise float G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
+            precise float G_Vis = (G * 4.0f * VdotH * NdotL) / NdotH;
+            precise float Fc = pow(1.0f - VdotH, 5.0);
+        
+            A += (1.0f - Fc) * G_Vis;
+            B += (Fc * G_Vis);
+        }
+    }
+       
+    // average the results and store in output texel
+    A /= (float)NumSamples;
+    B /= (float)NumSamples;
+
+    uint2 outTexel = uint2(dispatch_id.x, (textureSize - 1) - dispatch_id.y);
+    PassSrg::m_outputTexture[outTexel] = float2(A, B);
+}

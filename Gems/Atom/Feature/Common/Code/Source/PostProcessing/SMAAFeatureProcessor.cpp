@@ -1,0 +1,296 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <PostProcessing/SMAAConfigurationDescriptor.h>
+#include <PostProcessing/SMAAFeatureProcessor.h>
+#include <PostProcessing/SMAAEdgeDetectionPass.h>
+#include <PostProcessing/SMAABlendingWeightCalculationPass.h>
+#include <PostProcessing/SMAANeighborhoodBlendingPass.h>
+
+#include <AzCore/Debug/EventTrace.h>
+
+#include <Atom/RHI/Factory.h>
+
+#include <Atom/RHI/CpuProfiler.h>
+
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+        void SMAAFeatureProcessor::Reflect(ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext
+                    ->Class<SMAAFeatureProcessor, FeatureProcessor>()
+                    ->Version(0);
+            }
+
+            SMAAConfigurationDescriptor::Reflect(context);
+        }
+
+        SMAAFeatureProcessor::SMAAFeatureProcessor()
+            : SMAAFeatureProcessorInterface()
+            , m_convertToPerceptualColorPassTemplateNameId(SMAAConvertToPerceptualColorPassTemplateName)
+            , m_edgeDetectioPassTemplateNameId(SMAAEdgeDetectionPassTemplateName)
+            , m_blendingWeightCalculationPassTemplateNameId(SMAABlendingWeightCalculationPassTemplateName)
+            , m_neighborhoodBlendingPassTemplateNameId(SMAANeighborhoodBlendingPassTemplateName)
+        {
+        }
+
+        void SMAAFeatureProcessor::Activate()
+        {
+            Data::Asset<RPI::AnyAsset> smaaAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>("passes/SMAAConfiguration.azasset", RPI::AssetUtils::TraceLevel::Error);
+            const SMAAConfigurationDescriptor* smaaConfigurationDescriptor = RPI::GetDataFromAnyAsset<SMAAConfigurationDescriptor>(smaaAsset);
+            m_data.m_enable = smaaConfigurationDescriptor->m_enable != 0;
+            SetQualityByPreset(static_cast<SMAAQualityPreset>(smaaConfigurationDescriptor->m_quality));
+            m_data.m_edgeDetectionMode = static_cast<SMAAEdgeDetectionMode>(smaaConfigurationDescriptor->m_edgeDetectionMode);
+            m_data.m_outputMode = static_cast<SMAAOutputMode>(smaaConfigurationDescriptor->m_outputMode);
+            smaaAsset.Release();
+        }
+
+        void SMAAFeatureProcessor::Deactivate()
+        {
+            m_data = {};
+        }
+
+        void SMAAFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
+        {
+            AZ_TRACE_METHOD();
+            AZ_UNUSED(packet);
+        }
+
+        void SMAAFeatureProcessor::UpdateConvertToPerceptualPass()
+        {
+            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+
+            if (passSystem->HasPassesForTemplateName(m_convertToPerceptualColorPassTemplateNameId))
+            {
+                const AZStd::vector<RPI::Pass*>& convertToPerceptualColorPasses = passSystem->GetPassesForTemplateName(m_convertToPerceptualColorPassTemplateNameId);
+                for (RPI::Pass* pass : convertToPerceptualColorPasses)
+                {
+                    pass->SetEnabled(m_data.m_enable);
+                }
+            }
+        }
+
+        void SMAAFeatureProcessor::UpdateEdgeDetectionPass()
+        {
+            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+
+            if (passSystem->HasPassesForTemplateName(m_edgeDetectioPassTemplateNameId))
+            {
+                const AZStd::vector<RPI::Pass*>& edgeDetectionPasses = passSystem->GetPassesForTemplateName(m_edgeDetectioPassTemplateNameId);
+                for (RPI::Pass* pass : edgeDetectionPasses)
+                {
+                    auto* edgeDetectionPass = azrtti_cast<AZ::Render::SMAAEdgeDetectionPass*>(pass);
+
+                    edgeDetectionPass->SetEnabled(m_data.m_enable);
+                    if (m_data.m_enable)
+                    {
+                        edgeDetectionPass->SetEdgeDetectionMode(m_data.m_edgeDetectionMode);
+                        edgeDetectionPass->SetChromaThreshold(m_data.m_chromaThreshold);
+                        edgeDetectionPass->SetDepthThreshold(m_data.m_depthThreshold);
+                        edgeDetectionPass->SetLocalContrastAdaptationFactor(m_data.m_localContrastAdaptationFactor);
+                        edgeDetectionPass->SetPredicationEnable(m_data.m_predicationEnable);
+                        edgeDetectionPass->SetPredicationThreshold(m_data.m_predicationThreshold);
+                        edgeDetectionPass->SetPredicationScale(m_data.m_predicationScale);
+                        edgeDetectionPass->SetPredicationStrength(m_data.m_predicationStrength);
+                    }
+                }
+            }
+        }
+
+        void SMAAFeatureProcessor::UpdateBlendingWeightCalculationPass()
+        {
+            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+
+            if (passSystem->HasPassesForTemplateName(m_blendingWeightCalculationPassTemplateNameId))
+            {
+                const AZStd::vector<RPI::Pass*>& blendingWeightCalculationPasses = passSystem->GetPassesForTemplateName(m_blendingWeightCalculationPassTemplateNameId);
+                for (RPI::Pass* pass : blendingWeightCalculationPasses)
+                {
+                    auto* blendingWeightCalculationPass = azrtti_cast<AZ::Render::SMAABlendingWeightCalculationPass*>(pass);
+
+                    blendingWeightCalculationPass->SetEnabled(m_data.m_enable);
+                    if (m_data.m_enable)
+                    {
+                        blendingWeightCalculationPass->SetMaxSearchSteps(m_data.m_maxSearchSteps);
+                        blendingWeightCalculationPass->SetMaxSearchStepsDiagonal(m_data.m_maxSearchStepsDiagonal);
+                        blendingWeightCalculationPass->SetCornerRounding(m_data.m_cornerRounding);
+                        blendingWeightCalculationPass->SetDiagonalDetectionEnable(m_data.m_enableDiagonalDetection);
+                        blendingWeightCalculationPass->SetCornerDetectionEnable(m_data.m_enableCornerDetection);
+                    }
+                }
+            }
+        }
+
+        void SMAAFeatureProcessor::UpdateNeighborhoodBlendingPass()
+        {
+            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+
+            if (passSystem->HasPassesForTemplateName(m_neighborhoodBlendingPassTemplateNameId))
+            {
+                const AZStd::vector<RPI::Pass*>& neighborhoodBlendingPasses = passSystem->GetPassesForTemplateName(m_neighborhoodBlendingPassTemplateNameId);
+                for (RPI::Pass* pass : neighborhoodBlendingPasses)
+                {
+                    auto* neighborhoodBlendingPass = azrtti_cast<AZ::Render::SMAANeighborhoodBlendingPass*>(pass);
+
+                    if (m_data.m_enable)
+                    {
+                        neighborhoodBlendingPass->SetOutputMode(m_data.m_outputMode);
+                    }
+                    else
+                    {
+                        neighborhoodBlendingPass->SetOutputMode(SMAAOutputMode::PassThrough);
+                    }
+                }
+            }
+        }
+
+        void SMAAFeatureProcessor::Render([[maybe_unused]] const SMAAFeatureProcessor::RenderPacket& packet)
+        {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "SMAAFeatureProcessor: Render");
+
+            UpdateConvertToPerceptualPass();
+            UpdateEdgeDetectionPass();
+            UpdateBlendingWeightCalculationPass();
+            UpdateNeighborhoodBlendingPass();
+        }
+
+        void SMAAFeatureProcessor::SetEnable(bool enable)
+        {
+            m_data.m_enable = enable;
+        }
+
+        void SMAAFeatureProcessor::SetQualityByPreset(SMAAQualityPreset preset)
+        {
+            switch (preset)
+            {
+            case SMAAQualityPreset::Low:
+                // SMAA_PRESET_LOW
+                SetChromaThreshold(0.15f);
+                SetMaxSearchSteps(4);
+                SetDiagonalDetectionEnable(false);
+                SetCornerDetectionEnable(false);
+                break;
+            case SMAAQualityPreset::Middle:
+                // SMAA_PRESET_MEDIUM
+                SetChromaThreshold(0.1f);
+                SetMaxSearchSteps(8);
+                SetDiagonalDetectionEnable(false);
+                SetCornerDetectionEnable(false);
+                break;
+            case SMAAQualityPreset::High:
+                // SMAA_PRESET_HIGH
+                SetChromaThreshold(0.1f);
+                SetMaxSearchSteps(16);
+                SetMaxSearchStepsDiagonal(8);
+                SetCornerRounding(25);
+                SetDiagonalDetectionEnable(true);
+                SetCornerDetectionEnable(true);
+                break;
+            case SMAAQualityPreset::Ultra:
+                // SMAA_PRESET_ULTRA
+                SetChromaThreshold(0.05f);
+                SetMaxSearchSteps(32);
+                SetMaxSearchStepsDiagonal(16);
+                SetCornerRounding(25);
+                SetDiagonalDetectionEnable(true);
+                SetCornerDetectionEnable(true);
+                break;
+            }
+        }
+
+        void SMAAFeatureProcessor::SetEdgeDetectionMode(SMAAEdgeDetectionMode mode)
+        {
+            m_data.m_edgeDetectionMode = mode;
+        }
+
+        void SMAAFeatureProcessor::SetChromaThreshold(float threshold)
+        {
+            m_data.m_chromaThreshold = threshold;
+        }
+
+        void SMAAFeatureProcessor::SetDepthThreshold(float threshold)
+        {
+            m_data.m_depthThreshold = threshold;
+        }
+
+        void SMAAFeatureProcessor::SetLocalContrastAdaptationFactor(float factor)
+        {
+            m_data.m_localContrastAdaptationFactor = factor;
+        }
+
+        void SMAAFeatureProcessor::SetPredicationEnable(bool enable)
+        {
+            m_data.m_predicationEnable = enable;
+        }
+
+        void SMAAFeatureProcessor::SetPredicationThreshold(float threshold)
+        {
+            m_data.m_predicationThreshold = threshold;
+        }
+
+        void SMAAFeatureProcessor::SetPredicationScale(float scale)
+        {
+            m_data.m_predicationScale = scale;
+        }
+
+        void SMAAFeatureProcessor::SetPredicationStrength(float strength)
+        {
+            m_data.m_predicationStrength = strength;
+        }
+
+        void SMAAFeatureProcessor::SetMaxSearchSteps(int steps)
+        {
+            m_data.m_maxSearchSteps = steps;
+        }
+
+        void SMAAFeatureProcessor::SetMaxSearchStepsDiagonal(int steps)
+        {
+            m_data.m_maxSearchStepsDiagonal = steps;
+        }
+
+        void SMAAFeatureProcessor::SetCornerRounding(int cornerRounding)
+        {
+            m_data.m_cornerRounding = cornerRounding;
+        }
+
+        void SMAAFeatureProcessor::SetDiagonalDetectionEnable(bool enable)
+        {
+            m_data.m_enableDiagonalDetection = enable;
+        }
+
+        void SMAAFeatureProcessor::SetCornerDetectionEnable(bool enable)
+        {
+            m_data.m_enableCornerDetection = enable;
+        }
+
+        void SMAAFeatureProcessor::SetOutputMode(SMAAOutputMode mode)
+        {
+            m_data.m_outputMode = mode;
+        }
+
+        const SMAAData& SMAAFeatureProcessor::GetSettings() const
+        {
+            return m_data;
+        }
+
+    } // namespace Render
+} // namespace AZ

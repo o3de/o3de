@@ -1,0 +1,57 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SsaoComputeTemplate",
+            "PassClass": "SsaoComputePass",
+            "Slots": [
+                {
+                    "Name": "LinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Ssao",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "LinearDepth"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8_UNORM"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Ssao"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/SsaoCompute.shader"
+                },
+                "Make Fullscreen Pass": true,
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

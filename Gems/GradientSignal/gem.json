@@ -1,0 +1,36 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "8825563d9d964ec3be3bab681f3bd9f2",
+    "Name": "GradientSignal",
+    "DisplayName": "Gradient Signal [PREVIEW]",
+    "Version": "0.1.0",
+    "Summary": "A Lumberyard Gem that provides a number of components for generating (ex: Random, Perlin), modifying (ex: Levels, Threshold), and mixing gradient signals.",
+    "Tags": ["Gradient", "Surface"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        },
+        {
+            "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "SurfaceData"
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "platform": {
+        "linux_x64" : {
+            "sharedlibpath": [
+                "lib/linux"
+            ],
+            "shared": [
+                "libGLEW.so"
+            ]
+        }
+    }
+}

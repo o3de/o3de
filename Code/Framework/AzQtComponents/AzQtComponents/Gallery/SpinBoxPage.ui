@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SpinBoxPage</class>
+ <widget class="QWidget" name="SpinBoxPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>827</width>
+    <height>716</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="childrenCollapsible">
+      <bool>false</bool>
+     </property>
+     <widget class="QTextEdit" name="exampleText">
+      <property name="undoRedoEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>SpinBox::setHasError</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="errorDoubleSpinBox"/>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Vector input (meters)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="disabledDoubleSpinBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1" colspan="4">
+          <widget class="AzQtComponents::VectorInput" name="vectorInput" native="true"/>
+         </item>
+         <item row="2" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="focusDoubleSpinBox"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Disabled state</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="1" colspan="4">
+          <widget class="AzQtComponents::VectorInput" name="styleVectorInput" native="true"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Selected (focus) state</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="AzQtComponents::SpinBox" name="focusSpinBox"/>
+         </item>
+         <item row="6" column="1">
+          <widget class="AzQtComponents::SpinBox" name="disabledSpinBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1" colspan="4">
+          <widget class="AzQtComponents::VectorInput" name="labelsVectorInput" native="true"/>
+         </item>
+         <item row="5" column="1">
+          <widget class="AzQtComponents::SpinBox" name="hasErrorSpinBox"/>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Vector input (custom labels)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="defaultDoubleSpinBox"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Filled in with data</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="class" stdset="0">
+            <string>secondaryText</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="AzQtComponents::SpinBox" name="errorSpinBox"/>
+         </item>
+         <item row="0" column="1">
+          <widget class="AzQtComponents::SpinBox" name="defaultSpinBox">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="filledInDoubleSpinBox"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="AzQtComponents::SpinBox" name="filledInSpinBox">
+           <property name="maximum">
+            <number>1024</number>
+           </property>
+           <property name="value">
+            <number>1024</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Default</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="class" stdset="0">
+            <string>secondaryText</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1" colspan="4">
+          <widget class="AzQtComponents::VectorInput" name="metersVectorInput" native="true"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Vector input (pure number)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>QAbstractSpinBox::acceptableInput</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="hasErrorDoubleSpinBox"/>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Vector input (custom styles)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>SpinBox (suffix)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="AzQtComponents::SpinBox" name="suffixSpinBox">
+           <property name="suffix">
+            <string> m</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="AzQtComponents::DoubleSpinBox" name="suffixDoubleSpinBox">
+           <property name="suffix">
+            <string> m</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::SpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">AzQtComponents/Components/Widgets/SpinBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header location="global">AzQtComponents/Components/Widgets/SpinBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::VectorInput</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/VectorInput.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

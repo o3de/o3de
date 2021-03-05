@@ -1,0 +1,16 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "Materials/white.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.21585412323474885,
+                0.21585412323474885,
+                0.21585412323474885,
+                1.0
+            ]
+        }
+    }
+}

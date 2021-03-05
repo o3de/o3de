@@ -1,0 +1,65 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PerDrawSrg : SRG_PerDraw
+{
+    row_major float4x4 m_viewProjectionOverride;
+    float m_pointSize;
+}
+
+option enum class ViewProjectionMode { ViewProjection, ManualOverride } o_viewProjMode;
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float4 m_color : COLOR;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color : COLOR;
+    [[vk::builtin("PointSize")]]
+    float  m_pointSize  : PSIZE;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    if (o_viewProjMode == ViewProjectionMode::ViewProjection)
+    {
+        OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(vsInput.m_position.xyz, 1.0));
+    }
+    else if (o_viewProjMode == ViewProjectionMode::ManualOverride)
+    {
+        OUT.m_position = mul(PerDrawSrg::m_viewProjectionOverride, float4(vsInput.m_position.xyz, 1.0));
+    }
+    OUT.m_color = vsInput.m_color;
+
+    // On Vulkan you need to specify the point size in the VS when using the point topology.
+    OUT.m_pointSize = PerDrawSrg::m_pointSize;
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput input)
+{
+    PSOutput OUT;
+    OUT.m_color = input.m_color;
+    return OUT;
+}

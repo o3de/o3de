@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LUAEditorFindDialog</class>
+ <widget class="QDialog" name="LUAEditorFindDialog">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>691</width>
+    <height>394</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Block Ops</string>
+  </property>
+  <widget class="QGroupBox" name="textSearchGroupBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>671</width>
+     <height>251</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Text Search</string>
+   </property>
+   <widget class="QPushButton" name="cancelButton">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>140</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Stop!</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="textToFindLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Text to Find:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+    <property name="LUAEditorFindDialogLabel" stdset="0">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtFind">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>401</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="findNextButton">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>100</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Find &amp;Next</string>
+    </property>
+    <property name="shortcut">
+     <string>F3</string>
+    </property>
+    <property name="autoRepeat">
+     <bool>true</bool>
+    </property>
+    <property name="autoRepeatDelay">
+     <number>500</number>
+    </property>
+    <property name="autoRepeatInterval">
+     <number>200</number>
+    </property>
+    <property name="autoDefault">
+     <bool>true</bool>
+    </property>
+    <property name="default">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="findAllButton">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>60</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Find &amp;All</string>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="searchWhereComboBox">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>60</y>
+      <width>401</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Current File</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>All Open Files</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="busyLabel">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>190</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="lineWidth">
+     <number>2</number>
+    </property>
+    <property name="midLineWidth">
+     <number>0</number>
+    </property>
+    <property name="text">
+     <string>Idle</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="IdleLabel" stdset="0">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>161</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Search Direction</string>
+    </property>
+    <widget class="QRadioButton" name="searchUpRadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>140</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Search Up</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="searchDownRadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>140</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Search Down</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>90</y>
+      <width>181</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <widget class="QCheckBox" name="caseSensitiveCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>135</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Case Sensitive</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="wholeWordsCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>135</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Whole Word</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="wrapCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>135</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Wrap</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="regularExpressionCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>200</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Regular Expression</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>90</y>
+      <width>141</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Results Window</string>
+    </property>
+    <widget class="QRadioButton" name="m_find1RadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>82</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Find 1</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="m_find2RadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>82</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Find 2</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="m_find3RadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>82</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Find 3</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="m_find4RadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>82</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Find 4</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="searchAndReplaceGroupBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>270</y>
+     <width>671</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Search &amp;&amp; Replace</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <widget class="QPushButton" name="replaceAllButton">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>70</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace All</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="replaceWithLabel">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>30</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace With:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+    <property name="LUAEditorFindDialogLabel" stdset="0">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtReplaceWith">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>401</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="replaceButton">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>30</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>txtFind</tabstop>
+  <tabstop>searchWhereComboBox</tabstop>
+  <tabstop>searchDownRadioButton</tabstop>
+  <tabstop>searchUpRadioButton</tabstop>
+  <tabstop>caseSensitiveCheckBox</tabstop>
+  <tabstop>wholeWordsCheckBox</tabstop>
+  <tabstop>wrapCheckBox</tabstop>
+  <tabstop>regularExpressionCheckBox</tabstop>
+  <tabstop>findAllButton</tabstop>
+  <tabstop>findNextButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+  <tabstop>txtReplaceWith</tabstop>
+  <tabstop>replaceButton</tabstop>
+  <tabstop>replaceAllButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>findNextButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorFindDialog</receiver>
+   <slot>OnFindNext()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>303</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorFindDialog</receiver>
+   <slot>OnCancel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>368</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>replaceAllButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorFindDialog</receiver>
+   <slot>OnReplaceAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>323</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>replaceButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorFindDialog</receiver>
+   <slot>OnReplace()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>425</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>109</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>findAllButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LUAEditorFindDialog</receiver>
+   <slot>OnFindAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>423</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>124</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnReplaceAll()</slot>
+  <slot>OnReplace()</slot>
+  <slot>OnCancel()</slot>
+  <slot>OnFindNext()</slot>
+  <slot>OnFindAll()</slot>
+ </slots>
+</ui>

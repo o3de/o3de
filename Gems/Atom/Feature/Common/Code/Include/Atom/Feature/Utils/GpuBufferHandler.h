@@ -1,0 +1,81 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/std/string/string.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+
+        // This helper class manages a re-sizable structured buffer which is (only) used for a shader's SRV
+        class GpuBufferHandler
+        {
+        public:
+
+            struct Descriptor
+            {
+                AZStd::string m_bufferName; // Name of the buffer itself
+                AZStd::string m_bufferSrgName; // Name of the buffer in the SRG
+                AZStd::string m_elementCountSrgName; // Name of the constant for buffer size in the SRG
+                const RHI::ShaderResourceGroupLayout* m_srgLayout = nullptr; // The srg to query for the buffer name and count.
+                uint32_t m_elementSize = 1; // The size of the elements stored in the buffer.
+            };
+
+            GpuBufferHandler() = default;
+            GpuBufferHandler(const Descriptor& descriptor);
+
+            template <typename T>
+            bool UpdateBuffer(const T* data, uint32_t elementCount);
+            template <typename T>
+            bool UpdateBuffer(const AZStd::vector<T>& data);
+
+            void UpdateSrg(RPI::ShaderResourceGroup* srg) const;
+
+            bool IsValid() const;
+            void Release();
+
+            uint32_t GetElementCount()const { return m_elementCount; }
+            const Data::Instance<RPI::Buffer> GetBuffer()const { return m_buffer; }
+
+        private:
+
+            bool UpdateBuffer(uint32_t elementCount, const void* data);
+
+            Data::Instance<RPI::Buffer> m_buffer;
+            RHI::ShaderInputBufferIndex m_bufferIndex;
+            RHI::ShaderInputConstantIndex m_elementCountIndex;
+            uint32_t m_elementCount = 0;
+            uint32_t m_elementSize = 0;
+        };
+
+        template <typename T>
+        bool GpuBufferHandler::UpdateBuffer(const T* data, uint32_t elementCount)
+        {
+            AZ_Assert(sizeof(T) == m_elementSize, "Size of templated type doesn't match the size this GpuBuffer was initialized with.");
+            return UpdateBuffer(elementCount, data);
+        }
+
+        template <typename T>
+        bool GpuBufferHandler::UpdateBuffer(const AZStd::vector<T>& data)
+        {
+            AZ_Assert(sizeof(T) == m_elementSize, "Size of templated type doesn't match the size this GpuBuffer was initialized with.");
+            return UpdateBuffer(aznumeric_cast<uint32_t>(data.size()), data.data());
+        }
+    } // namespace Render
+} // namespace AZ

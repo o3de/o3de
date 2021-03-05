@@ -1,0 +1,6 @@
+<RCC>
+    <qresource>
+        <file>Icons/group_closed.png</file>
+        <file>Icons/group_open.png</file>
+    </qresource>
+</RCC>

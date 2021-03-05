@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BEGIN_INCLUDE(manifest) -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="${ANDROID_PACKAGE}"
+    android:versionCode="${ANDROID_VERSION_NUMBER}"
+    android:versionName="${ANDROID_VERSION_NAME}">
+
+    <!-- SDK_VERSIONS -->
+
+    <!-- OpenGL ES 3.0 -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+
+    <!-- Required for Kindle devices, which is based off Android 5.0, to access app specific public storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="21" />
+
+    <!-- Allow TCP/IP.  Needed for PerfHUD ES -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+     <!-- Required to poll the state of the network connection and respond to changes (Obb Download)-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Required to check whether Wi-Fi is enabled (Obb Download) -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+    <!-- Required to keep CPU alive while downloading the Obb files (NOT to keep screen awake) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Required to for IAP -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+    <application
+        android:icon="@mipmap/app_icon"
+        android:label="@string/app_name"
+        ${ANDROID_MULTI_WINDOW} >
+
+        <!-- Our activity loads the generated bootstrapping class in order to prelaod any third party shared libraries -->
+        <activity
+            android:name="${ANDROID_PROJECT_ACTIVITY}"
+            android:screenOrientation="${ANDROID_SCREEN_ORIENTATION}"
+            android:configChanges="${ANDROID_CONFIG_CHANGES}" >
+
+            <!-- Multi-window properties, following line can be blank if not specified -->
+            ${ANDROID_MULTI_WINDOW_PROPERTIES}
+
+            <!-- Tell NativeActivity the name of or .so -->
+            <meta-data android:name="android.app.lib_name"
+                android:value="${ANDROID_LAUNCHER_NAME}" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.amazon.lumberyard.io.obb.ObbDownloaderActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="${ANDROID_SCREEN_ORIENTATION}"/>
+
+        <!-- Services for IAP -->
+        <service android:name="com.android.vending.billing.InAppBillingService" />
+
+        <!-- Services for downloading the Obb -->
+        <service android:name="com.amazon.lumberyard.io.obb.ObbDownloaderService" />
+        <receiver android:name="com.amazon.lumberyard.io.obb.ObbDownloaderAlarmReceiver" />
+
+        <!-- Samsung DEX specific properties, the following line(s) can be blank if not specified -->
+        ${SAMSUNG_DEX_KEEP_ALIVE}
+        ${SAMSUNG_DEX_LAUNCH_WIDTH}
+        ${SAMSUNG_DEX_LAUNCH_HEIGHT}
+    </application>
+
+</manifest>
+<!-- END_INCLUDE(manifest) -->

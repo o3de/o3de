@@ -1,0 +1,29 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
+    "Name": "SurfaceData",
+    "DisplayName": "Surface Data [PREVIEW]",
+    "Version": "0.1.0",
+    "Summary": "A Lumberyard Gem that allows you to attach user-defined tags to surfaces and volumes, and fetch data like positions, normals, and tags for those surfaces.",
+    "Tags": ["Surface", "Geometry", "Tags"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        }
+    ]
+}

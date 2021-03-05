@@ -1,0 +1,130 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Components/CameraBus.h>
+#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+
+#include <IViewSystem.h>
+#include <ISystem.h>
+#include <Cry_Camera.h>
+
+namespace Camera
+{
+    static constexpr float DefaultFoV = 75.0f;
+    static constexpr float MinFoV = std::numeric_limits<float>::epsilon();
+    static constexpr float MaxFoV = AZ::RadToDeg(AZ::Constants::Pi);
+    static constexpr float DefaultNearPlaneDistance = 0.2f;
+    static constexpr float DefaultFarClipPlaneDistance = 1024.0f;
+    static constexpr float DefaultFrustumDimension = 256.f;
+
+    struct CameraComponentConfig final
+        : public AZ::ComponentConfig
+    {
+        AZ_RTTI(CameraComponentConfig, "{064A5D64-8688-4188-B3DE-C80CE4BB7558}", AZ::ComponentConfig);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        float GetFarClipDistance() const;
+        float GetNearClipDistance() const;
+        AZ::EntityId GetEditorEntityId() const;
+
+        // Reflected members
+        float m_fov = DefaultFoV;
+        float m_nearClipDistance = DefaultNearPlaneDistance;
+        float m_farClipDistance = DefaultFarClipPlaneDistance;
+        float m_frustumWidth = DefaultFrustumDimension;
+        float m_frustumHeight = DefaultFrustumDimension;
+        bool m_specifyFrustumDimensions = false;
+        AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
+    };
+
+    class CameraComponentController
+        : public CameraBus::Handler
+        , public CameraRequestBus::Handler
+        , public AZ::TransformNotificationBus::Handler
+        , public AZ::RPI::ViewportContextNotificationBus::Handler
+        , public AZ::RPI::ViewProviderBus::Handler
+    {
+    public:
+        AZ_TYPE_INFO(CameraComponentController, "{A27A0725-8C07-4BF2-BF95-B6CB0CBD01B8}");
+
+        CameraComponentController() = default;
+        explicit CameraComponentController(const CameraComponentConfig& config);
+
+        void ActivateAtomView();
+        void DeactivateAtomView();
+
+        // Controller interface
+        static void Reflect(AZ::ReflectContext* context);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        void Activate(AZ::EntityId entityId);
+        void Deactivate();
+        void SetConfiguration(const CameraComponentConfig& config);
+        const CameraComponentConfig& GetConfiguration() const;
+
+        // CameraBus::Handler interface
+        AZ::EntityId GetCameras() override;
+
+        // CameraRequestBus::Handler interface
+        float GetFovDegrees() override;
+        float GetFovRadians() override;
+        float GetNearClipDistance() override;
+        float GetFarClipDistance() override;
+        float GetFrustumWidth() override;
+        float GetFrustumHeight() override;
+        void SetFovDegrees(float fov) override;
+        void SetFovRadians(float fov) override;
+        void SetNearClipDistance(float nearClipDistance) override;
+        void SetFarClipDistance(float farClipDistance) override;
+        void SetFrustumWidth(float width) override;
+        void SetFrustumHeight(float height) override;
+        void MakeActiveView() override;
+
+        // AZ::TransformNotificationBus::Handler interface
+        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        // AZ::RPI::ViewportContextNotificationBus::Handler interface
+        void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+
+        // AZ::RPI::ViewProviderBus::Handler interface
+        AZ::RPI::ViewPtr GetView() const override;
+
+    private:
+        AZ_DISABLE_COPY(CameraComponentController);
+
+        void UpdateCamera();
+        void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
+
+        CameraComponentConfig m_config;
+        AZ::EntityId m_entityId;
+
+        // Atom integration
+        AZ::RPI::ViewPtr m_atomCamera;
+        AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
+
+        // Cry view integration
+        IView* m_view = nullptr;
+        AZ::u32 m_prevViewId = 0;
+        IViewSystem* m_viewSystem = nullptr;
+        ISystem* m_system = nullptr;
+    };
+} // namespace Camera

@@ -1,0 +1,21 @@
+{
+    "platform": {
+        "win_x64_vs2017": {
+            "libpath_debug": [
+                "lib/x64_vc140/Debug"
+            ],
+            "libpath_profile": [
+                "lib/x64_vc140/Release"
+            ],
+            "libpath_performance": [
+                "lib/x64_vc140/Release"
+            ],
+            "libpath_release": [
+                "lib/x64_vc140/Release"
+            ],
+            "lib": [
+                "${lib_names}.lib"
+            ]
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "bab8807a1bc646b3909f3cc200ffeedf",
+    "Name": "ImGui",
+    "DisplayName": "ImGui",
+    "Version": "0.1.0",
+    "Summary": "A GEM that houses 3rdParty lib IMGUI. Great for quick programmer art GUI fit for debug type menus.",
+    "Tags": ["Debug"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        },
+        {
+            "Name": "Editor",
+            "Type": "EditorModule",
+            "Extends": "GameModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "LmbrCentral"
+        }
+    ]
+}

@@ -1,0 +1,195 @@
+[
+    {
+        "selectors": [ "graph" ],
+
+        "background-color": "#222326",
+
+        "grid-major-color": "#6D7072",
+        "grid-major-width": 0.5,
+        "grid-major-style": "solid",
+
+        "grid-minor-color": "#969B9E",
+        "grid-minor-width": 0.4,
+        "grid-minor-style": "dotted"
+    },
+    {
+        "selectors": [ "node" ],
+
+        "background-color": "#6E7071",
+
+        "font-family": "default",
+        "font-size": "default",
+        "font-style": "default",
+        "font-variant": "default",
+        "font-weight": "default",
+
+        "color": "black",
+
+        "border-width": 2,
+        "border-style": "solid",
+        "border-color": "#494949",
+        "border-radius": 3,
+
+        "padding": 0,
+        "margin": 0,
+
+        "spacing": 0
+    },
+    {
+        "selectors": [ "node:disabled" ],
+
+        "color": "#4E5051",
+
+        "border-color": "#4E5051"
+    },
+    {
+        "selectors": [ "node:hovered" ],
+
+        "border-color": "#CCCCCC"
+    },
+    {
+        "selectors": [ "node:selected" ],
+
+        "border-color": "#4285F4"
+    },
+    {
+        "selectors": [ "node:highlighted" ],
+
+        "border-color": "#E25243"
+    },
+    {
+        "selectors": [ "node > title" ],
+
+        "background-color": "rgba(0, 0, 0, 0)",
+
+        "font-family": "default",
+        "font-size": "120%",
+        "font-style": "default",
+        "font-variant": "default",
+        "font-weight": "bold",
+
+        "color": "black",
+
+        "padding": 4,
+        "margin": 0
+    },
+    {
+        "selectors": [ "node > .subtitle" ],
+
+        "background-color": "rgba(0, 0, 0, 0)",
+
+        "font-family": "default",
+        "font-size": "120%",
+        "font-style": "italic",
+        "font-variant": "default",        
+
+        "color": "#ff0000",
+
+        "padding": 4,
+        "margin": 0
+    },
+    {
+        "selectors": [ "node:disabled > title" ],
+
+        "color": "#515151"
+    },
+    {
+        "selectors": [ "node.comment" ],
+
+        "border-color": "#EF7C18"
+    },
+    {
+        "selectors": [ "dataSlot" ],
+
+        "background-color": "rgba(0, 0, 0, 0)",
+
+        "font-family": "default",
+        "font-size": "90%",
+        "font-style": "default",
+        "font-variant": "default",
+        "font-weight": "default",
+
+        "color": "black",
+
+        "padding": 0,
+        "margin": 0,
+        "spacing": 2
+    },
+    {
+        "selectors": [ "dataSlot:disabled" ],
+
+        "color": "#4E5051",
+
+        "border-color": "#4E5051"
+    },
+    {
+        "selectors": [ "dataSlot:hovered" ],
+
+        "border-color": "#CCCCCC"
+    },
+    {
+        "selectors": [ "dataSlot:highlighted" ],
+
+        "border-color": "#E25243"
+    },
+    {
+        "selectors": [ "dataSlot > connectionPin" ],
+
+        "background-color": "#4285F4",
+
+        "border-width": 2,
+        "border-style": "solid",
+        "border-color": "#4E5051",
+
+        "width": 12,
+        "height": 12,
+        "padding": 0
+    },
+    {
+        "selectors": [ "dataSlot > connectionPin.connectable" ],
+
+        "background-color": "#62DB6C",
+
+        "border-color": "#54BE5D"
+    },
+    {
+        "selectors": [ "dataSlot > connectionPin.notConnectable" ],
+
+        "background-color": "#FF5B4C",
+
+        "border-width": 2,
+        "border-color": "#E25243"
+    },
+    {
+        "selectors": [ "connection" ],
+
+        "line-width": 2,
+        "line-style": "solid",
+        "line-color": "#CB4B16",
+        "line-selection-padding": 20
+    },
+    {
+        "selectors": [ "connection:selected" ],
+
+        "line-color": "#4285F4"
+    },
+    {
+        "selectors": [ "connection:hovered" ],
+
+        "line-color": "#4285F4"
+    },
+    {
+        "selectors": [ "connection.proposal" ],
+
+        "line-width": 3,
+        "line-style": "dashed",
+        "line-color": "#CB4B16"
+    },
+    {
+        "selectors": [ "group" ],
+
+        "background-color": "#00000071",
+        "margin": 3,
+        "border-width": 0
+    }
+]

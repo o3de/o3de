@@ -1,0 +1,204 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/AzNetworking_Traits_Platform.h>
+#include <AzNetworking/Utilities/Endian.h>
+#include <AzNetworking/Utilities/NetworkIncludes.h>
+
+namespace AzNetworking
+{
+    NetworkOutputSerializer::NetworkOutputSerializer(const uint8_t* buffer, uint32_t bufferCapacity)
+        : m_bufferPosition(0)
+        , m_bufferCapacity(bufferCapacity)
+        , m_buffer(buffer)
+    {
+        ;
+    }
+
+    SerializerMode NetworkOutputSerializer::GetSerializerMode() const
+    {
+        return SerializerMode::WriteToObject;
+    }
+
+    bool NetworkOutputSerializer::Serialize(bool& value, [[maybe_unused]] const char* name)
+    {
+        uint8_t byteValue = 0;
+        SerializeBytes((uint8_t*)&byteValue, sizeof(byteValue));
+        value = (byteValue > 0);
+        return m_serializerValid;
+    }
+
+    bool NetworkOutputSerializer::Serialize(char& value, [[maybe_unused]] const char* name, char minValue, char maxValue)
+    {
+        return SerializeBoundedValue<char>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, int8_t minValue, int8_t maxValue)
+    {
+        return SerializeBoundedValue<int8_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(int16_t& value, [[maybe_unused]] const char* name, int16_t minValue, int16_t maxValue)
+    {
+        return SerializeBoundedValue<int16_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(int32_t& value, [[maybe_unused]] const char* name, int32_t minValue, int32_t maxValue)
+    {
+        return SerializeBoundedValue<int32_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(int64_t& value, [[maybe_unused]] const char* name, int64_t minValue, int64_t maxValue)
+    {
+        return SerializeBoundedValue<int64_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(uint8_t& value, [[maybe_unused]] const char* name, uint8_t minValue, uint8_t maxValue)
+    {
+        return SerializeBoundedValue<uint8_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(uint16_t& value, [[maybe_unused]] const char* name, uint16_t minValue, uint16_t maxValue)
+    {
+        return SerializeBoundedValue<uint16_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(uint32_t& value, [[maybe_unused]] const char* name, uint32_t minValue, uint32_t maxValue)
+    {
+        return SerializeBoundedValue<uint32_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(uint64_t& value, [[maybe_unused]] const char* name, uint64_t minValue, uint64_t maxValue)
+    {
+        return SerializeBoundedValue<uint64_t>(minValue, maxValue, value);
+    }
+
+    bool NetworkOutputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
+    {
+        uint32_t networkOrder = 0;
+        m_serializerValid &= SerializeBytes((uint8_t*)&networkOrder, sizeof(float));
+        networkOrder = ntohl(networkOrder);
+        value = m_serializerValid ? *reinterpret_cast<float*>(&networkOrder) : value;
+        return m_serializerValid;
+    }
+
+    bool NetworkOutputSerializer::Serialize(double& value, [[maybe_unused]] const char* name, [[maybe_unused]] double minValue, [[maybe_unused]] double maxValue)
+    {
+        uint64_t networkOrder = 0;
+        m_serializerValid &= SerializeBytes((uint8_t *)&networkOrder, sizeof(double));
+        networkOrder = ntohll(networkOrder);
+        value = m_serializerValid ? *reinterpret_cast<double*>(&networkOrder) : value;
+        return m_serializerValid;
+    }
+
+    bool NetworkOutputSerializer::SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, [[maybe_unused]] bool isString, uint32_t& outSize, [[maybe_unused]] const char* name)
+    {
+        return SerializeBoundedValue<uint32_t>(0, bufferCapacity, outSize) && SerializeBytes(reinterpret_cast<uint8_t*>(buffer), outSize);
+    }
+
+    bool NetworkOutputSerializer::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    {
+        return true;
+    }
+
+    bool NetworkOutputSerializer::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    {
+        return true;
+    }
+
+    const uint8_t* NetworkOutputSerializer::GetBuffer() const
+    {
+        return m_buffer;
+    }
+
+    uint32_t NetworkOutputSerializer::GetCapacity() const
+    {
+        return m_bufferCapacity;
+    }
+
+    uint32_t NetworkOutputSerializer::GetSize() const
+    {
+        return m_bufferPosition;
+    }
+
+    template <typename ORIGINAL_TYPE>
+    bool NetworkOutputSerializer::SerializeBoundedValue(ORIGINAL_TYPE minValue, ORIGINAL_TYPE maxValue, ORIGINAL_TYPE& outValue)
+    {
+        const uint64_t valueRange = static_cast<uint64_t>(maxValue - minValue);
+        if (valueRange <= AZStd::numeric_limits<uint8_t>::max())
+        {
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(maxValue - minValue))) + minValue;
+        }
+        else if (valueRange <= AZStd::numeric_limits<uint16_t>::max())
+        {
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(maxValue - minValue))) + minValue;
+        }
+        else if (valueRange <= AZStd::numeric_limits<uint32_t>::max())
+        {
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(maxValue - minValue))) + minValue;
+        }
+        else
+        {
+            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(maxValue - minValue))) + minValue;
+        }
+        return m_serializerValid;
+    }
+
+    inline uint8_t NetworkToHost(uint8_t value)
+    {
+        return value;
+    }
+
+    inline uint16_t NetworkToHost(uint16_t value)
+    {
+        return ntohs(value);
+    }
+
+    inline uint32_t NetworkToHost(uint32_t value)
+    {
+        return ntohl(value);
+    }
+
+    inline uint64_t NetworkToHost(uint64_t value)
+    {
+        return ntohll(value);
+    }
+
+    template <typename SERIALIZE_TYPE>
+    SERIALIZE_TYPE NetworkOutputSerializer::SerializeBoundedValueHelper(SERIALIZE_TYPE maxValue)
+    {
+        SERIALIZE_TYPE result = 0;
+        m_serializerValid &= SerializeBytes((uint8_t*)&result, sizeof(SERIALIZE_TYPE));
+        result = m_serializerValid ? NetworkToHost(result) : result;
+        m_serializerValid &= (result <= maxValue);
+        return result;
+    }
+
+    bool NetworkOutputSerializer::SerializeBytes(uint8_t* data, uint32_t count)
+    {
+        const uint32_t currSize = m_bufferPosition;
+        const uint32_t nextSize = m_bufferPosition + count;
+
+        if (!m_serializerValid || (nextSize > m_bufferCapacity))
+        {
+            // Keep the failed boolean so we can verify serialization success
+            m_serializerValid = false;
+            return false;
+        }
+
+        const uint8_t* readBuffer = (const uint8_t*)(m_buffer + currSize);
+        memcpy(data, readBuffer, count);
+        m_bufferPosition += count;
+        return true;
+    }
+}

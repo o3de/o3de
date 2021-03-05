@@ -1,0 +1,153 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DiffuseGlobalIlluminationPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "AlbedoInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DiffuseInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DiffuseProbeGridDownsamplePass",
+                    "TemplateName": "DiffuseProbeGridDownsamplePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "NormalInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DiffuseProbeGridRenderPass",
+                    "TemplateName": "DiffuseProbeGridRenderPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "DownsampledNormalOutput"
+
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "DownsampledDepthOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "DownsampledDepthOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "IrradianceOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DiffuseCompositePass",
+                    "TemplateName": "DiffuseCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DownsampledIrradianceInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridRenderPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DownsampledDepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "DownsampledDepthOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DownsampledNormalInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Attachment": "DownsampledNormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AlbedoInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "AlbedoInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "NormalInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DiffuseInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DiffuseInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+ 

@@ -1,0 +1,22 @@
+{
+    "none": {
+        "Source": [
+            "Source/MultiplayerCompression_precompiled.cpp",
+            "Source/MultiplayerCompression_precompiled.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/MultiplayerCompression/MultiplayerCompressionBus.h"
+        ],
+        "Source": [
+            "Source/LZ4Compressor.cpp",
+            "Source/LZ4Compressor.h",
+            "Source/MultiplayerCompressionFactory.cpp",
+            "Source/MultiplayerCompressionFactory.h",
+            "Source/MultiplayerCompressionModule.cpp",
+            "Source/MultiplayerCompressionSystemComponent.cpp",
+            "Source/MultiplayerCompressionSystemComponent.h"
+        ]
+    }
+}

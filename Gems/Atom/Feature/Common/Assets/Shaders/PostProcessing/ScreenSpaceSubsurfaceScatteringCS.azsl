@@ -1,0 +1,332 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PBR/Hammersley.azsli>
+#include <Atom/RPI/Math.azsli>
+
+#define GROUP_DIM_X    16
+#define GROUP_DIM_Y    16
+
+// Padding of one side, e.g. 16x16 block + 2 pixel pad = 20x20 padded block
+// Intended to provide at least some LDS neighbours for boundary pixels
+#define PAD 2
+#define PAD2 (PAD * 2)
+
+// This size should be number of element in thread group + number of padding element
+#define SHARED_MEMORY_SIZE 400
+
+// Use 60% / 30% of total samples for relatively far / far objects
+#define SAMPLE_RATIO_1  0.3
+#define SAMPLE_RATIO_2  0.6
+
+#define NUMBER_OF_SAMPLE 200
+
+// How large the diffusion profile (filter) is on the screen in pixel, sampling rate of small filters will be reduced
+// to improve performance
+#define FOOTPRINT_SMALL     1
+#define FOOTPRINT_MEDIUM 4
+
+// Unit conversion
+#define MILLIMETER_TO_METER 1e-3
+#define METER_TO_MILLIMETER 1e3
+
+#define EPSILON 1e-4
+#define DEPTH_CLIP_THRESHOLD_SCALE (0.5 * MILLIMETER_TO_METER)
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>     m_diffuseTexture;
+    Texture2D<float>       m_linearDepthTexture;
+    Texture2D<float3>     m_scatterDistanceTexture;
+    
+    RWTexture2D<float4>  m_outputTexture;
+
+    // Passed by SubsurfaceScatterPass.cpp from cpu
+    float2 m_screenSize;
+
+    // float3 -> diffuse color
+    // float  -> linear depth
+    groupshared float  sColorR[SHARED_MEMORY_SIZE];
+    groupshared float  sColorG[SHARED_MEMORY_SIZE];
+    groupshared float  sColorB[SHARED_MEMORY_SIZE];
+    groupshared float  sDepth [SHARED_MEMORY_SIZE];
+ 
+    void SetColorDepth(uint index, float3 color, float depth)
+    {
+        sColorR[index] = color.r;
+        sColorG[index] = color.g;
+        sColorB[index] = color.b;
+        sDepth[index] = depth;
+    }
+    
+    float3 GetRadiance(uint index)
+    {
+        return float3(sColorR[index], sColorG[index], sColorB[index]);
+    }
+    
+    float GetDepth(uint index)
+    {
+        return sDepth[index];
+    }
+} 
+
+// --Return Monte-Carlo importance for the given kernel element, whose equation is :
+//   DiffusionProfile(l, s) * l / DiffusionProfilePDF(r, minS)
+//   ->  (s / (8 * PI * l) * (exp(-s * l) + exp(-s * l / 3.0))) * l / (minS / (8 * PI) * (exp(-minS * r) + exp(-minS * r / 3.0))) 
+//   ->  (exp(-s * l) + exp(-s * l / 3.0)) / (exp(-minS * r) + exp(-minS * r / 3.0))
+// --Smallest element of shape parameter 's' is used for PDF because we sampled from this single lobe during importance sampling.
+// --Since volume albedo A is a constant for all samples, thus been removed from equation of diffusion profile, which can be multiplied back later
+// --For more information about Burley's normalized diffusion please refer to: 
+//     Christensen H.P. Burley B. 2015, Approximate Reflectance Profiles for Efficient Subsurface Scattering
+//     https://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
+float3 Kernel(float l, float r, float3 s, float minS)
+{
+    return l > 0 ? (exp(-s * l) + exp(-s * l / 3.0)) / (exp(-minS * r) + exp(-minS * r / 3.0)) : float3(0.0, 0.0, 0.0);
+}
+
+// Helper function of inverse cdf approximation
+float G(float u)
+{
+    return 4.0 * u * (2.0 * u + sqrt(1.0 + 4.0 * u * u)) + 1.0;
+}
+
+// Approximation of inverse CDF via curve fitting, surves as an excellent model for graphical computation 
+float GetSampleInverseCDFApprox(float u, float s)
+{
+    // complementary value of u
+    float uc = 1.0 - u;
+    float oneDivThree = 1.0 / 3.0;
+    return 3.0 * log((1.0 + 1.0 / pow(G(uc), oneDivThree) + pow(G(uc), oneDivThree)) / (4.0 * uc)) / s;
+}
+
+// 1D Spherical fibonacci point set for uniformly sampling azimuth angle
+float SF(uint index)
+{
+    return 2 * PI * index *  2 / (1 + sqrt(5));
+}
+
+// Cosine value of  pseudo random (hammersley) angle theta,
+// which used to rotate the direction of diffusion profile, which is a 2d plane at surface point parallel to viewing plane,
+// to eliminate structured noise pattern introduced by low-discrepancy sequence, this value equivalent to:
+//     theta    = 2 * pi * hammersley(index)
+//     cosTheta = cos(theta)
+static const float cosTheta[4] = { 1.0, -1.0,  6.123233995736766e-17, -1.8369701987210297e-16 };
+
+// Same as above but sine value instead
+static const float sinTheta[4] = { 0.0,  1.2246467991473532e-16, 1.0, -1.0 };
+
+// --Get low-discrepancy 2d sample using sample index 'index' and inverse scatter distance 's'
+// --Radius 'r' sampled from hammersley sequance (see Hammersley.azsli::GetVanDerCorputRadicalInverse() for more information)
+// --Planar angle 'phi' sampled from spherical fibonacci's azimuthal component
+// --Sample rotated using interleaved sample strategy to avoid obvious artifacts, which repeat a 
+//   2x2 block sampling pattern (generated using 'gridIndex', which from 0-7 to select rotation angle) across the whole image to generate well distributed noise that can be easily filtered 
+//   by a 2x2 box filter afterwards
+void GetSample(in uint index, in uint gridIndex, in float s, out float3 sp)
+{
+    float r = GetSampleInverseCDFApprox(GetVanDerCorputRadicalInverse(index), s);
+    float x = r * cos(SF(index));
+    float y = r * sin(SF(index));
+
+    // Rotate samples to reduce visible pattern:
+    sp = float3(x * cosTheta[gridIndex] - y * sinTheta[gridIndex], 
+                x * sinTheta[gridIndex] + y * cosTheta[gridIndex], r);
+}
+
+[numthreads(GROUP_DIM_X,GROUP_DIM_Y,1)]
+void MainCS(
+    uint3 dispatchID    : SV_DispatchThreadID,
+    uint3 groupThreadID : SV_GroupThreadID,
+    uint3 groupID       : SV_GroupID,
+    uint  groupIndex    : SV_GroupIndex )
+{
+    // Input diffuse color of current pixel, alpha channel is matte mask identify which pixel needs convolution
+    float4 colorX = PassSrg::m_diffuseTexture.Load(uint3(dispatchID.x, dispatchID.y, 0));
+
+    // unpack strength factor and quality factor
+    float2 factorAndQuality = frac(colorX.w / float2(65536, 256));
+    float factor = factorAndQuality.x < 0.99 ? factorAndQuality.x : 1.0;
+    float quality = factorAndQuality.y < 0.99 ? factorAndQuality.y : 1.0;
+
+    //+---------------------------+
+    //|  shared memory allocation |
+    //+---------------------------+
+    
+    // X/Y thread group dimension include pad on both sides
+    uint dimXWithPad = GROUP_DIM_X + PAD2;
+
+    // Pre integration of constants used to convert thread group id to 
+    // texture coordinates, to avoid duplicate calculation, don't have special meaning
+    uint texelOffsetX = groupID.x * GROUP_DIM_X - PAD;
+    uint texelOffsetY = groupID.y * GROUP_DIM_Y - PAD;
+
+    // --Corresponding texel coordinate for each element in the (GROUP_DIM_X + PAD) x (GROUP_DIM_Y + PAD) shared memory
+    //   due to the existence of padding to avoid bank conflicts threads are offseted to
+    //   load pixels based on coordinates in shared memory, instead of with original groupThreadID. 
+    // --All threads will load first GROUP_DIM_X x GROUP_DIM_Y elements into shared memory start from 
+    //   top left corner, then portion of threads will continuously load rest of elements
+    // --Note: since shared memory ID use top left as origin but texture coordinates use bottom left
+    //         as origin, image patch stored in shared memory is flipped vertically, but it's fine as
+    //         our profile is radial symmetric
+    uint3 texelIndex = uint3( 
+        texelOffsetX + (groupIndex % dimXWithPad), 
+        texelOffsetY + (groupIndex / dimXWithPad),
+        0
+    );
+
+    PassSrg::SetColorDepth(groupIndex, 
+        PassSrg::m_diffuseTexture.Load(texelIndex).rgb,
+        PassSrg::m_linearDepthTexture.Load(texelIndex).r
+    );
+
+    uint totalLoadingThread = SHARED_MEMORY_SIZE - GROUP_DIM_X * GROUP_DIM_Y;
+    if(groupIndex < totalLoadingThread)
+    {
+        // load rest pixels into shared memory
+
+        uint index = GROUP_DIM_X * GROUP_DIM_Y + groupIndex;
+        texelIndex = uint3(
+            texelOffsetX + (index % dimXWithPad), 
+            texelOffsetY + (index / dimXWithPad),
+            0
+        );
+
+        PassSrg::SetColorDepth(index, 
+            PassSrg::m_diffuseTexture.Load(texelIndex).rgb,
+            PassSrg::m_linearDepthTexture.Load(texelIndex).r
+        );
+    }
+
+    // If current thread don't need further convolution then terminate and return
+    // Case 1: factor < EPSILON, factor is zero so further computation is not necessary
+    // Case 2: factor is nonzero but subsurface scattering is disabled at this pixel
+    if(factor < EPSILON || colorX.w < 0)
+    {
+        PassSrg::m_outputTexture[dispatchID.xy] = float4(colorX.rgb, 0.0f);
+        return;
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+
+    //+--------------------------------------+
+    //|  subsurface scattering preprocessing |
+    //+--------------------------------------+
+    
+    // Flattened index of current pixel in shared memory
+    uint2 sMemID = groupThreadID.xy + uint2(PAD, PAD);
+    uint sMemIndex = sMemID.y * dimXWithPad + sMemID.x;
+
+    // Inverse of scatter distance, symbol 's' is used to match with literatures
+    float3 s =  rcp(PassSrg::m_scatterDistanceTexture.Load(uint3(dispatchID.x, dispatchID.y, 0)).rgb + EPSILON);
+    float  minS = min(s.x, min(s.y, s.z));
+    
+    // Input view space linear depth of current pixel
+    float2 texelSize = float2(1.0 / PassSrg::m_screenSize.x, 1.0 / PassSrg::m_screenSize.y);
+    
+    float depthX = PassSrg::GetDepth(sMemIndex); 
+    
+    // Map radius sampled from profile (in millimeter) to distance on view plane (in pixel), consists of three steps
+    // 'MILLIMETER_TO_METER' converts unit of radius on diffusion profile from millimeter to meter
+    // '(ViewSrg::m_projectionMatrix[0][0] / depthX)' projects radius on profile to distance on viewing plane
+    // 'texelSize' maps viewing plane distance to distance in pixel
+    float profileToScreenX = (ViewSrg::m_projectionMatrix[0][0] / depthX) * MILLIMETER_TO_METER / texelSize.x;
+    float profileToScreenY = (ViewSrg::m_projectionMatrix[1][1] / depthX) * MILLIMETER_TO_METER / texelSize.y;
+
+    // This quantity controls the strength of depth based lod mechanism
+    // 90% confidence interval, gives a roughly linear response with respect to input minS which more stable than true maximum radius
+    float maxRadius = GetSampleInverseCDFApprox(0.9, minS);
+
+    // Radius of diffusion profile on viewing plane in pixel, accounting for projection distortion
+    // Use longer axis of ellipsoid as footprint
+    uint maxFootPrint = max(maxRadius * profileToScreenX, maxRadius * profileToScreenY);
+
+    // Determine how much sample will be used based on the depth of current pixel
+    uint numSample = uint(NUMBER_OF_SAMPLE * quality * (maxFootPrint <= FOOTPRINT_MEDIUM ?  maxFootPrint <=  FOOTPRINT_SMALL ? SAMPLE_RATIO_1 : SAMPLE_RATIO_2 : 1.0));
+
+    // Grid index used for interleaved sampling
+    // range from 0-3 in a local 2x2 block as following shows:
+    // -+---+---+-
+    //  | 0 | 1 |
+    // -+---+---+-
+    //  | 2 | 3 |
+    // -+---+---+-
+    uint sampleGridIndex = (dispatchID.y % 2) * 2 + dispatchID.x % 2;
+ 
+    //+------------------------------------+
+    //|  subsurface scattering convolution |
+    //+------------------------------------+
+   
+    float3 totalSum = float3(0.0, 0.0, 0.0);
+    float3 weightSum = float3(0.0, 0.0, 0.0);
+    for(uint i = 0; i < numSample; ++i)
+    {
+        float3 sp;
+        GetSample(i, sampleGridIndex, minS, sp);
+
+        // Distance in pixel
+        int u = round(sp.x * profileToScreenX);
+        int v = round(sp.y * profileToScreenY);
+        
+        // Sampled neightbor's ID in shared memory
+        uint2 nbrSMemID = sMemID + uint2(u, v);
+        
+        // Neighbor's depth
+        float depthNbr = 0.0;
+        
+        // Neighbor's color
+        float3 colorNbr = float3(0.0, 0.0, 0.0);
+
+        // Fall back to global memory to fetch pixel information
+        // ortherwise unable to render wide range scatter effect, e.g. (scatter distance > 1)
+        if(nbrSMemID.x >= dimXWithPad || nbrSMemID.x < 0 || nbrSMemID.y >= (GROUP_DIM_Y + PAD2) || nbrSMemID.y < 0)
+        { 
+            // Fall back to fetch from global memory
+            uint3 nbrTexelIndex = uint3(dispatchID.x + u, dispatchID.y + v, 0);
+            depthNbr = PassSrg::m_linearDepthTexture.Load(nbrTexelIndex).r;
+            colorNbr = PassSrg::m_diffuseTexture.Load(nbrTexelIndex).rgb;
+        }
+        else
+        {
+            // Fetch depth and color from shared memory
+            nbrSMemID = sMemID + uint2(u, v);
+            uint nbrSMemIndex = nbrSMemID.y * dimXWithPad + nbrSMemID.x;
+            depthNbr = PassSrg::GetDepth(nbrSMemIndex);
+            colorNbr = PassSrg::GetRadiance(nbrSMemIndex);
+        }
+
+        // Skip invalid samples (i.e. sample out of valid region (depth = 0), totally black pixel - no energy spread out (color = 0))
+        if(depthNbr > 0.0 && (colorNbr.x + colorNbr.y + colorNbr.z) > 0.0)
+        {
+            // Radial distance between current pixel and its neighbour 
+            float r = sp.z;
+            float d = abs(depthX - depthNbr) * METER_TO_MILLIMETER;
+
+            // Distance taking depth into account, in theory only surface points on convex objects can be computed in this way,
+            // but in practice it works well as an approximation in all cases
+            float surfaceDistance = sqrt(r * r + d * d);
+           
+            // As the sample is drawn from the distribution of color channel with longest scatter distance,
+            // the pdf should follows the same rule as well for consistency
+            float3 weight = Kernel(surfaceDistance, r, s, minS);
+
+            totalSum  += weight * colorNbr;    
+            weightSum += weight;
+        } 
+    }
+
+    // Force normalization with sum of weights
+    float3 outColor = lerp(colorX.rgb, totalSum / (weightSum + EPSILON), factor);
+
+    // 1.0 in alpha channel will trigger 2x2 noise reduction filter in output merger to remove low discrepancy noises
+    PassSrg::m_outputTexture[dispatchID.xy] = float4(outColor, 1.0);
+}

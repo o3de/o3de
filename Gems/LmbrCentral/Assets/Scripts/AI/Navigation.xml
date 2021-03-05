@@ -1,0 +1,5 @@
+<Navigation version="6" >
+	<AgentTypes>
+		<AgentType name="MediumSizedCharacters" voxelSize="0.125, 0.125, 0.125" radius="4" height="16" climbableHeight="3" maxWaterDepth="8" />
+	</AgentTypes>
+</Navigation>

@@ -1,0 +1,38 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.1109330877661705,
+                0.3665522336959839,
+                0.3665522336959839,
+                1.0
+            ],
+            "useTexture": false
+        },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.9393938779830933,
+            "roughness": 0.19191919267177583,
+            "useInfluenceMap": false,
+            "useNormalMap": false,
+            "useRoughnessMap": false
+        },
+        "metallic": {
+            "useTexture": false
+        },
+        "normal": {
+            "useTexture": false
+        },
+        "roughness": {
+            "factor": 0.0,
+            "useTexture": false
+        },
+        "specularF0": {
+            "useTexture": false
+        }
+    }
+}

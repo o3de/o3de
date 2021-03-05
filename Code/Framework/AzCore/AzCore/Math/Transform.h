@@ -1,0 +1,181 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class TransformSerializer
+        : public SerializeContext::IDataSerializer
+    {
+    public:
+        // number of floats in the serialized representation, 4 for rotation, 3 for scale and 3 for translation
+        static constexpr int NumFloats = 10;
+
+        // number of floats in the old format, which stored a 3x4 matrix
+        static constexpr int NumFloatsVersion0 = 12;
+
+        size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
+        size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
+        size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian) override;
+        bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian) override;
+        bool CompareValueData(const void* lhs, const void* rhs) override;
+    };
+
+    //! The basic transformation class, represented using a quaternion rotation, vector scale and vector translation.
+    //! By design, cannot represent skew transformations.
+    class Transform
+    {
+    public:
+
+        AZ_TYPE_INFO(Transform, "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}");
+
+        using Axis = Constants::Axis;
+
+        //! AzCore Reflection.
+        //! @param context reflection context
+        static void Reflect(ReflectContext* context);
+
+        //! Default constructor does not initialize the matrix.
+        Transform() = default;
+
+        //! Construct a transform from components.
+        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
+
+        //! Creates an identity transform.
+        static Transform CreateIdentity();
+
+        //! Sets the matrix to be a rotation around a specified axis.
+        //! @{
+        static Transform CreateRotationX(float angle);
+        static Transform CreateRotationY(float angle);
+        static Transform CreateRotationZ(float angle);
+        //! @}
+
+        //! Sets the matrix from a quaternion, translation is set to zero.
+        static Transform CreateFromQuaternion(const class Quaternion& q);
+
+        //! Sets the matrix from a quaternion and a translation.
+        static Transform CreateFromQuaternionAndTranslation(const class Quaternion& q, const Vector3& p);
+
+        //! Constructs from a Matrix3x3, translation is set to zero.
+        static Transform CreateFromMatrix3x3(const class Matrix3x3& value);
+
+        //! Constructs from a Matrix3x3, translation is set to zero.
+        static Transform CreateFromMatrix3x3AndTranslation(const class Matrix3x3& value, const Vector3& p);
+
+        static Transform CreateFromMatrix3x4(const Matrix3x4& value);
+
+        //! Sets the matrix to be a scale matrix, translation is set to zero.
+        static Transform CreateScale(const Vector3& scale);
+
+        //! Sets the matrix to be a translation matrix, rotation part is set to identity.
+        static Transform CreateTranslation(const Vector3& translation);
+
+        //! Creates a "look at" transform.
+        //! Given a source position and target position, computes a transform at the source position that points
+        //! toward the target along a chosen local-space axis.
+        //! @param from The source position (world space).
+        //! @param to The target position (world space).
+        //! @param forwardAxis The local-space basis axis that should "look at" the target.
+        //! @return The resulting Matrix3x4 or the identity if the source and target coincide.
+        static Transform CreateLookAt(const Vector3& from, const Vector3& to, Transform::Axis forwardAxis = Transform::Axis::YPositive);
+
+        static const Transform& Identity();
+
+        Vector3 GetBasis(int index) const;
+        Vector3 GetBasisX() const;
+        Vector3 GetBasisY() const;
+        Vector3 GetBasisZ() const;
+        void GetBasisAndTranslation(Vector3* basisX, Vector3* basisY, Vector3* basisZ, Vector3* pos) const;
+
+        const Vector3& GetTranslation() const;
+        void SetTranslation(float x, float y, float z);
+        void SetTranslation(const Vector3& v);
+
+        const Quaternion& GetRotation() const;
+        void SetRotation(const Quaternion& rotation);
+
+        const Vector3& GetScale() const;
+        void SetScale(const Vector3& v);
+
+        //! Sets the transforms scale to a unit value and returns the previous scale value.
+        Vector3 ExtractScale();
+
+        void MultiplyByScale(const Vector3& scale);
+
+        Transform operator*(const Transform& rhs) const;
+        Transform& operator*=(const Transform& rhs);
+
+        Vector3 TransformPoint(const Vector3& rhs) const;
+        Vector4 TransformPoint(const Vector4& rhs) const;
+
+        //! Applies rotation and scale, but not translation.
+        Vector3 TransformVector(const Vector3& rhs) const;
+
+        Transform GetInverse() const;
+        void Invert();
+
+        bool IsOrthogonal(float tolerance = Constants::Tolerance) const;
+        Transform GetOrthogonalized() const;
+
+        void Orthogonalize();
+
+        bool IsClose(const Transform& rhs, float tolerance = Constants::Tolerance) const;
+
+        bool operator==(const Transform& rhs) const;
+        bool operator!=(const Transform& rhs) const;
+
+        Vector3 GetEulerDegrees() const;
+        Vector3 GetEulerRadians() const;
+        void SetFromEulerDegrees(const Vector3& eulerDegrees);
+        void SetFromEulerRadians(const Vector3& eulerRadians);
+
+        bool IsFinite() const;
+
+    private:
+
+        Quaternion m_rotation;
+        Vector3 m_scale;
+        Vector3 m_translation;
+    };
+
+    extern const Transform g_transformIdentity;
+
+    //! Non-member functionality belonging to the AZ namespace
+    //!
+    //! Converts a transform to corresponding component-wise Euler angles.
+    //! @param Transform transform The input transform to decompose.
+    //! @return Vector3 A vector containing component-wise rotation angles in degrees.
+    Vector3 ConvertTransformToEulerDegrees(const Transform& transform);
+    Vector3 ConvertTransformToEulerRadians(const Transform& transform);
+
+    //! Create a transform from Euler Angles (e.g. rotation angles in X, Y, and Z)
+    //! @param Vector3 eulerDegrees A vector containing component-wise rotation angles in degrees.
+    //! @return Transform A transform made from the rotational components.
+    Transform ConvertEulerDegreesToTransform(const Vector3& eulerDegrees);
+
+    //! Create a rotation transform from Euler angles in radian around each base axis.
+    //!        This version uses precise sin/cos for a more accurate conversion.
+    //! @param Vector3 eulerDegrees A vector containing component-wise rotation angles in radian.
+    //! @return Transform A transform made from the composite of rotations first around z-axis, and y-axis and then x-axis.
+    Transform ConvertEulerRadiansToTransform(const Vector3& eulerRadians);
+} // namespace AZ
+
+#include <AzCore/Math/Transform.inl>

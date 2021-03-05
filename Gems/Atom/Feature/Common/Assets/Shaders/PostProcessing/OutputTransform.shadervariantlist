@@ -1,0 +1,11 @@
+{ 
+    "Shader" : "OutputTransform.shader",
+	"Variants" : [ 
+        {   "StableId": 1, "Options" : { "o_tonemapperType": "ToneMapperType::None", "o_transferFunctionType": "TransferFunctionType::None" } },
+        {   "StableId": 2, "Options" : { "o_tonemapperType": "ToneMapperType::Reinhard", "o_transferFunctionType": "TransferFunctionType::None" } },
+        {   "StableId": 3, "Options" : { "o_tonemapperType": "ToneMapperType::None", "o_transferFunctionType": "TransferFunctionType::Gamma22" } },
+        {   "StableId": 4, "Options" : { "o_tonemapperType": "ToneMapperType::Reinhard", "o_transferFunctionType": "TransferFunctionType::Gamma22" } },
+        {   "StableId": 5, "Options" : { "o_tonemapperType": "ToneMapperType::None", "o_transferFunctionType": "TransferFunctionType::PerceptualQuantizer" } },
+        {   "StableId": 6, "Options" : { "o_tonemapperType": "ToneMapperType::Reinhard", "o_transferFunctionType": "TransferFunctionType::PerceptualQuantizer" } }
+    ]  
+}

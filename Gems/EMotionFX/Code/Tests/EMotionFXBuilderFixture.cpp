@@ -1,0 +1,97 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "EMotionFX_precompiled.h"
+#include "EMotionFXBuilderFixture.h"
+
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Allocators.h>
+#include <EMotionFX/Source/AnimGraphObjectFactory.h>
+#include <EMotionFX/Source/Parameter/ParameterFactory.h>
+#include <Integration/Assets/MotionSetAsset.h>
+#include <Integration/Assets/AnimGraphAsset.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
+
+using namespace AZ::Data;
+using ::testing::Return;
+using ::testing::_;
+
+namespace EMotionFX
+{
+    void BuilderMockComponent::Activate()
+    {
+        EMotionFX::Integration::EMotionFXAllocator::Descriptor allocatorDescriptor;
+        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create(allocatorDescriptor);
+
+        ASSERT_TRUE(MCore::Initializer::Init());
+        ASSERT_TRUE(EMotionFX::Initializer::Init());
+
+        // Initialize asset handlers.
+        m_assetHandlers.emplace_back(aznew EMotionFX::Integration::MotionSetAssetBuilderHandler);
+        m_assetHandlers.emplace_back(aznew EMotionFX::Integration::AnimGraphAssetBuilderHandler);
+
+        // Initialize an AssetCatalog AssetStreamInfo that will appear valid.
+        AssetStreamInfo mockAssetStreamInfo;
+        mockAssetStreamInfo.m_streamFlags = AZ::IO::OpenMode::ModeRead;
+        mockAssetStreamInfo.m_streamName = "test";
+
+        m_assetCatalog.reset(aznew EMotionFXTest_MockCatalog());
+        EXPECT_CALL(*(m_assetCatalog.get()), GetAssetInfoById(_)).WillRepeatedly(Return(AssetInfo()));
+        EXPECT_CALL(*(m_assetCatalog.get()), GetStreamInfoForLoad(_, _)).WillRepeatedly(Return(mockAssetStreamInfo));
+
+        AZ::Data::AssetManager::Instance().RegisterCatalog(m_assetCatalog.get(), azrtti_typeid<EMotionFX::Integration::MotionSetAsset>());
+        AZ::Data::AssetManager::Instance().RegisterCatalog(m_assetCatalog.get(), azrtti_typeid<EMotionFX::Integration::AnimGraphAsset>());
+    }
+
+    void BuilderMockComponent::Deactivate()
+    {
+        m_assetCatalog->DisableCatalog();
+        m_assetCatalog.reset();
+        m_assetHandlers.clear();
+
+        EMotionFX::Initializer::Shutdown();
+        MCore::Initializer::Shutdown();
+        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Destroy();
+    }
+
+    void BuilderMockComponent::ReflectAnimGraphAndMotionSet(AZ::ReflectContext* context)
+    {
+        // Motion set
+        EMotionFX::MotionSet::Reflect(context);
+        EMotionFX::MotionSet::MotionEntry::Reflect(context);
+
+        // Base AnimGraph objects
+        EMotionFX::AnimGraphObject::Reflect(context);
+        EMotionFX::AnimGraph::Reflect(context);
+        EMotionFX::AnimGraphNodeGroup::Reflect(context);
+        EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
+
+        // Anim graph objects
+        EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);
+
+        // Anim graph's parameters
+        EMotionFX::ParameterFactory::ReflectParameterTypes(context);
+    }
+
+    void BuilderMockComponent::Reflect(AZ::ReflectContext* context)
+    {
+        ReflectAnimGraphAndMotionSet(context);
+
+        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<BuilderMockComponent, AZ::Component>()
+                ->Version(1);
+        }
+    }
+}

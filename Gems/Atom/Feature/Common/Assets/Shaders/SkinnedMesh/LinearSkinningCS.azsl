@@ -1,0 +1,195 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include "LinearSkinningPassSRG.azsli"
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/RPI/Math.azsli>
+
+
+option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
+option bool o_applyMorphTargets = false;
+
+float DecodeIntToFloat(int i)
+{
+    return float(i) / InstanceSrg::m_morphTargetDeltaIntegerEncoding;
+}
+
+//! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space based on MikkT conventions.
+//! Structured like ConstructTBN from TangentSpace.azsli, but uses a float3x3 for the localToWorld matrix.
+//! It does not flip the bitangent using the w component of the tangent, and instead assumes that the input bitangent is already oriented correctly.
+void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float3 vertexBitangent, float3x3 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+{
+    normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
+    tangentWS = normalize(mul(localToWorld, vertexTangent.xyz));
+    bitangentWS = normalize(mul(localToWorld, vertexBitangent));
+}
+
+void SkinTBN(float3x3 skinToWorldMatrix, inout float3 normal, inout float4 tangent, inout float3 bitangent)
+{
+    // For non-uniform scaling the Normal needs the inverse scale
+    float3x3 skinToWorldInvTrans = InverseTransposeMatrixFast(skinToWorldMatrix);
+    
+    ConstructTBN(normal, tangent, bitangent, skinToWorldMatrix, skinToWorldInvTrans, normal, tangent.xyz, bitangent);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Skinning support
+void SkinVertexLinear(int4 indices, float4 weights, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
+{
+    float3x4 skinToWorldMatrix = (float3x4)0;
+    
+    [unroll]
+    for(uint i = 0; i < 4; ++i)
+    {
+        skinToWorldMatrix += InstanceSrg::m_boneTransformsLinear[ indices[i] ] * weights[i];
+    }
+
+    position = mul(skinToWorldMatrix, float4(position, 1.0));
+
+    // Cast to float3x3 because we only need the rotation and scale when computing the TBN
+    SkinTBN((float3x3)skinToWorldMatrix, normal, tangent, bitangent);
+}
+
+void AddWeightedDualQuaternion(inout float2x4 lhs, float2x4 rhs, float weight)
+{
+    float flip = dot(lhs[0], rhs[0]) < 0.0f ? -1.0f : 1.0f;
+    lhs += rhs * weight * flip;
+}
+
+void NormalizeDualQuaternion(inout float2x4 dualQuaternion)
+{
+    float invLength = rsqrt(dot(dualQuaternion[0], dualQuaternion[0]));
+    dualQuaternion *= invLength;
+}
+
+void SkinVertexDualQuaternion(int4 indices, float4 weights, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
+{
+    float2x4 skinToWorldDualQuaternion = (float2x4)0;
+    
+    [unroll]
+    for(uint i = 0; i < 4; ++i)
+    {
+        AddWeightedDualQuaternion(skinToWorldDualQuaternion, InstanceSrg::m_boneTransformsDualQuaternion[ indices[i] ], weights[i]);
+    }
+
+    NormalizeDualQuaternion(skinToWorldDualQuaternion);
+    const float4 rotation = skinToWorldDualQuaternion[0];
+    const float4 translation = skinToWorldDualQuaternion[1];
+                
+    position.xyz =
+        RotateVectorByQuaternion(position.xyz, rotation) +
+        (rotation.w * translation.xyz - translation.w * rotation.xyz + cross(rotation.xyz, translation.xyz)) * 2;
+
+    normal = normalize(RotateVectorByQuaternion(normal, rotation));
+    tangent.xyz = normalize(RotateVectorByQuaternion(tangent.xyz, rotation));
+    bitangent = normalize(RotateVectorByQuaternion(bitangent, rotation));
+}
+
+[numthreads(256,1,1)]
+void MainCS(uint3 thread_id: SV_DispatchThreadID)
+{
+    // Each thread is responsible for one vertex
+    // The total number of threads in a per-ActorInstance dispatch item matches the total number of vertices in the skinned mesh
+
+    // The thread id for each dimension is limited to uint16_t max, so to support more than 65535 vertices we get the real index from both the x and y dimensions 
+    const uint i = (thread_id.x) + InstanceSrg::m_totalNumberOfThreadsX * (thread_id.y);
+    if(i < InstanceSrg::m_numVertices)
+    {
+        // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
+
+        float4 blendWeights;
+        blendWeights.x = InstanceSrg::m_sourceBlendWeights[i * 4];
+        blendWeights.y = InstanceSrg::m_sourceBlendWeights[i * 4 + 1];
+        blendWeights.z = InstanceSrg::m_sourceBlendWeights[i * 4 + 2];
+        blendWeights.w = InstanceSrg::m_sourceBlendWeights[i * 4 + 3];
+
+        // When all the blend weights of a vertex are zero it means its data is set by the CPU directly
+        // and skinning must be skipped to not overwrite it (e.g. cloth simulation).
+        if(!any(blendWeights))
+        {
+            return;
+        }
+
+        float3 position;
+        position.x = InstanceSrg::m_sourcePositions[i * 3];
+        position.y = InstanceSrg::m_sourcePositions[i * 3 + 1];
+        position.z = InstanceSrg::m_sourcePositions[i * 3 + 2];
+        
+        int4 blendIndices;
+        blendIndices.x = InstanceSrg::m_sourceBlendIndices[i * 4];
+        blendIndices.y = InstanceSrg::m_sourceBlendIndices[i * 4 + 1];
+        blendIndices.z = InstanceSrg::m_sourceBlendIndices[i * 4 + 2];
+        blendIndices.w = InstanceSrg::m_sourceBlendIndices[i * 4 + 3];
+        
+        float3 normal;
+        normal.x = InstanceSrg::m_sourceNormals[i * 3];
+        normal.y = InstanceSrg::m_sourceNormals[i * 3 + 1];
+        normal.z = InstanceSrg::m_sourceNormals[i * 3 + 2];
+        
+        float4 tangent;
+        tangent.x = InstanceSrg::m_sourceTangents[i * 4];
+        tangent.y = InstanceSrg::m_sourceTangents[i * 4 + 1];
+        tangent.z = InstanceSrg::m_sourceTangents[i * 4 + 2];
+        tangent.w = InstanceSrg::m_sourceTangents[i * 4 + 4];
+        
+        float3 bitangent;
+        bitangent.x = InstanceSrg::m_sourceBiTangents[i * 3];
+        bitangent.y = InstanceSrg::m_sourceBiTangents[i * 3 + 1];
+        bitangent.z = InstanceSrg::m_sourceBiTangents[i * 3 + 2];
+        // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
+
+        if(o_applyMorphTargets)
+        {
+            position.x += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3]));
+            position.y += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 1]));
+            position.z += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 2]));
+
+            // Since we're done reading, re-set the accumulation to 0 for the next frame
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3] = asfloat(0);
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 1] = asfloat(0);
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 2] = asfloat(0);
+        }
+        
+        switch(o_skinningMethod)
+        {
+        case SkinningMethod::LinearSkinning:
+            SkinVertexLinear(blendIndices, blendWeights, position, normal, tangent, bitangent);
+            break;
+        case SkinningMethod::DualQuaternion:
+            SkinVertexDualQuaternion(blendIndices, blendWeights, position, normal, tangent, bitangent);
+            break;
+        }
+
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3] = position.x;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1] = position.y;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2] = position.z;
+        
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetNormals + i * 3] = normal.x;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetNormals + i * 3 + 1] = normal.y;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetNormals + i * 3 + 2] = normal.z;
+
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetTangents + i * 4] = tangent.x;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetTangents + i * 4 + 1] = tangent.y;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetTangents + i * 4 + 2] = tangent.z;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetTangents + i * 4 + 3] = tangent.w;
+        
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetBiTangents + i * 3] = bitangent.x;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetBiTangents + i * 3 + 1] = bitangent.y;
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetBiTangents + i * 3 + 2] = bitangent.z;
+
+    }
+}

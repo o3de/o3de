@@ -1,0 +1,103 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthOfFieldCompositeTemplate",
+            "PassClass": "DepthOfFieldCompositePass",
+            "Slots": [
+                {
+                    "Name": "ColorInputOriginal",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthInputOriginal",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "FrontBlurDivision2",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FrontBlurDivision4",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FrontBlurDivision8",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BackBlurDivision2",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BackBlurDivision4",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BackBlurDivision8",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputResult",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputResultAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "ColorInputOriginal"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "ColorInputOriginal"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputResult",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputResultAttachment"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "ColorInputOriginal",
+                    "Output" : "OutputResult"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DepthOfFieldComposite.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

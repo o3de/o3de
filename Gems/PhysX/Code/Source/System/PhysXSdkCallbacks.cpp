@@ -1,0 +1,73 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
+* a third party where indicated.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#include <System/PhysXSdkCallbacks.h>
+
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Math/Crc.h>
+
+namespace PhysX
+{
+    void PxAzErrorCallback::reportError(physx::PxErrorCode::Enum code, [[maybe_unused]] const char* message, [[maybe_unused]] const char* file, [[maybe_unused]] int line)
+    {
+        switch (code)
+        {
+        case physx::PxErrorCode::eDEBUG_INFO: [[fallthrough]];
+        case physx::PxErrorCode::eNO_ERROR:
+            AZ_TracePrintf("PhysX", "PxErrorCode %i: %s (line %i in %s)", code, message, line, file);
+            break;
+
+        case physx::PxErrorCode::eDEBUG_WARNING: [[fallthrough]];
+        case physx::PxErrorCode::ePERF_WARNING:
+            AZ_Warning("PhysX", false, "PxErrorCode %i: %s (line %i in %s)", code, message, line, file);
+            break;
+
+        case physx::PxErrorCode::eINVALID_OPERATION: [[fallthrough]];
+        case physx::PxErrorCode::eINTERNAL_ERROR: [[fallthrough]];
+        case physx::PxErrorCode::eOUT_OF_MEMORY: [[fallthrough]];
+        case physx::PxErrorCode::eABORT:
+            AZ_Assert(false, "PhysX - PxErrorCode %i: %s (line %i in %s)", code, message, line, file)
+                break;
+
+        case physx::PxErrorCode::eINVALID_PARAMETER: [[fallthrough]];
+        default:
+            AZ_Error("PhysX", false, "PxErrorCode %i: %s (line %i in %s)", code, message, line, file);
+            break;
+        }
+    }
+
+    void* PxAzProfilerCallback::zoneStart([[maybe_unused]] const char* eventName, bool detached, [[maybe_unused]] uint64_t contextId)
+    {
+        if (!detached)
+        {
+            AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Physics, eventName);
+        }
+        else
+        {
+            AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::Physics, AZ::Crc32(eventName), eventName);
+        }
+        return nullptr;
+    }
+
+    void PxAzProfilerCallback::zoneEnd([[maybe_unused]]void* profilerData,
+        [[maybe_unused]] const char* eventName, bool detached, [[maybe_unused]] uint64_t contextId)
+    {
+        if (!detached)
+        {
+            AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Physics);
+        }
+        else
+        {
+            AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::Physics, AZ::Crc32(eventName));
+        }
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "cd50c7a1e31f4c9495dcffdacc3bde92",
+    "Name": "QtForPython",
+    "DisplayName": "QtForPython",
+    "Version": "0.1.0",
+    "Summary": "Adds the ability to use the PySide2 Python libraries to manage Qt widgets.",
+    "Tags": ["Editor"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ],
+    "Dependencies": [
+        {
+            "Uuid": "b658359393884c4381c2fe2952b1472a",
+            "VersionConstraints": [
+                "~>0.1"
+            ],
+            "_comment": "EditorPythonBindings"
+        }
+    ]
+}

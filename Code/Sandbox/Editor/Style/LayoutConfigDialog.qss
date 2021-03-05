@@ -1,0 +1,9 @@
+#CLayoutConfigDialog QListView::item
+{
+    padding: 2px 4px;
+}
+
+#CLayoutConfigDialog QListView::item:selected
+{
+    background: #00A1C9;
+}

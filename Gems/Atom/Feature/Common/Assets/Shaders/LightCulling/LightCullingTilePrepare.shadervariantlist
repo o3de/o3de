@@ -1,0 +1,29 @@
+{
+    "Shader": "LightCullingTilePrepare.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_msaaMode": "MsaaMode::None"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_msaaMode": "MsaaMode::Msaa2x"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_msaaMode": "MsaaMode::Msaa4x"
+            }
+        },
+        {
+            "StableId": 4,
+            "Options": {
+                "o_msaaMode": "MsaaMode::Msaa8x"
+            }
+        }               
+    ]        
+}  

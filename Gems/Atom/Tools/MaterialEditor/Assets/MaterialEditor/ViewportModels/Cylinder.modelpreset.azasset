@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::ModelPreset",
+    "ClassData": {
+        "displayName": "Cylinder",
+        "modelAsset": {
+            "assetId": {
+                "guid": "{8A2E7A82-D7C3-5E9C-A56C-6EDA70876347}",
+                "subId": 268721130
+            },
+            "assetHint": "materialeditor/viewportmodels/cylinder.azmodel"
+        }
+    }
+}

@@ -1,0 +1,148 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "native/utilities/BuilderConfigurationManager.h"
+#include <native/unittests/UnitTestRunner.h>
+#include <AzCore/UnitTest/TestTypes.h>
+
+
+class BuilderConfigurationTests
+    : public ::UnitTest::ScopedAllocatorSetupFixture
+{
+public:
+    BuilderConfigurationTests()
+    {
+
+    }
+    virtual ~BuilderConfigurationTests()
+    {
+    }
+
+    void SetUp() override
+    {
+
+    }
+    void TearDown() override
+    {
+
+    }
+
+    void CreateTestConfig(QString iniStr, AssetProcessor::BuilderConfigurationManager& configurationManager)
+    {
+        QDir tempPath(m_tempDir.path());
+        UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath(AssetProcessor::BuilderConfigFile).toUtf8().data(), iniStr);
+        configurationManager.LoadConfiguration(tempPath.absoluteFilePath(AssetProcessor::BuilderConfigFile).toUtf8().data());
+    }
+
+    QTemporaryDir m_tempDir;
+
+};
+
+const char SampleConfig[] = 
+"[Job PNG Compile]\n"
+"checkServer=true\n"
+"priority=3\n"
+"critical=true\n"
+"checkExclusiveLock=true\n"
+"fingerprint=finger\n"
+"jobFingerprint=somejob7\n"
+"params=something=true,otherthing,somethingelse=7\n"
+
+"[Builder Image Worker Builder]\n"
+"fingerprint=fingerprint11\n"
+"version=7\n"
+"patterns=*.png\n"
+
+"[Job TIFF Compile]\n"
+"checkServer=false\n"
+"priority=9\n"
+"critical=false\n"
+"checkExclusiveLock=true\n"
+"fingerprint=fingerprint1\n"
+"params=something=false,otheing,somethingelse=6\n";
+
+TEST_F(BuilderConfigurationTests, TestBuilderConfig_LoadConfig_Success)
+{
+    AssetProcessor::BuilderConfigurationManager builderConfig;
+    CreateTestConfig(SampleConfig, builderConfig);
+    ASSERT_TRUE(builderConfig.IsLoaded());
+}
+
+TEST_F(BuilderConfigurationTests, TestBuilderConfig_InvalidKey_NoUpdate)
+{
+    AssetProcessor::BuilderConfigurationManager builderConfig;
+    CreateTestConfig(SampleConfig, builderConfig);
+
+    AssetBuilderSDK::JobDescriptor baseDescriptor;
+    AssetBuilderSDK::JobDescriptor testDescriptor;
+
+    // Verify an undefined key does not update our data
+    ASSERT_FALSE(builderConfig.UpdateJobDescriptor("False Key", testDescriptor));
+    ASSERT_EQ(testDescriptor.m_checkServer, baseDescriptor.m_checkServer);
+    ASSERT_EQ(testDescriptor.m_critical, baseDescriptor.m_critical);
+    ASSERT_EQ(testDescriptor.m_priority, baseDescriptor.m_priority);
+    ASSERT_EQ(testDescriptor.m_checkExclusiveLock, baseDescriptor.m_checkExclusiveLock);
+    ASSERT_EQ(testDescriptor.m_additionalFingerprintInfo, baseDescriptor.m_additionalFingerprintInfo);
+    ASSERT_EQ(testDescriptor.m_jobParameters, baseDescriptor.m_jobParameters);
+}
+
+TEST_F(BuilderConfigurationTests, TestBuilderConfig_JobEntry_Success)
+{
+    AssetProcessor::BuilderConfigurationManager builderConfig;
+    CreateTestConfig(SampleConfig, builderConfig);
+
+    AssetBuilderSDK::JobDescriptor testDescriptor;
+
+    // Verify a JobEntry makes the expected updates from data
+    ASSERT_TRUE(builderConfig.UpdateJobDescriptor("PNG Compile", testDescriptor));
+    ASSERT_EQ(testDescriptor.m_checkServer, true);
+    ASSERT_EQ(testDescriptor.m_critical, true);
+    ASSERT_EQ(testDescriptor.m_priority, 3);
+    ASSERT_EQ(testDescriptor.m_checkExclusiveLock, true);
+    ASSERT_EQ(testDescriptor.m_additionalFingerprintInfo, "finger");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("something", 0x09da31fb)], "true");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("somethingelse", 0x237edebb)], "7");
+    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC("otherthing", 0x6f2d0a4a)), testDescriptor.m_jobParameters.end());
+}
+
+TEST_F(BuilderConfigurationTests, TestBuilderConfig_SecondJobEntry_Success)
+{
+    AssetProcessor::BuilderConfigurationManager builderConfig;
+    CreateTestConfig(SampleConfig, builderConfig);
+
+    AssetBuilderSDK::JobDescriptor testDescriptor;
+
+    // Verify a second JobEntry defined in an .ini file makes the expected updates from data
+    ASSERT_TRUE(builderConfig.UpdateJobDescriptor("TIFF Compile", testDescriptor));
+    ASSERT_EQ(testDescriptor.m_checkServer, false);
+    ASSERT_EQ(testDescriptor.m_critical, false);
+    ASSERT_EQ(testDescriptor.m_priority, 9);
+    ASSERT_EQ(testDescriptor.m_checkExclusiveLock, true);
+    ASSERT_EQ(testDescriptor.m_additionalFingerprintInfo, "fingerprint1");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("something", 0x09da31fb)], "false");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("somethingelse", 0x237edebb)], "6");
+    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC("otheing", 0xba35d565)), testDescriptor.m_jobParameters.end());
+}
+
+TEST_F(BuilderConfigurationTests, TestBuilderConfig_BuilderEntry_Success)
+{
+    AssetProcessor::BuilderConfigurationManager builderConfig;
+    CreateTestConfig(SampleConfig, builderConfig);
+
+    // Verify a Builder makes the expected updates from data
+    AssetBuilderSDK::AssetBuilderDesc testBuilder;
+    ASSERT_TRUE(builderConfig.UpdateBuilderDescriptor("Image Worker Builder", testBuilder));
+    ASSERT_EQ(testBuilder.m_analysisFingerprint, "fingerprint11");
+    ASSERT_EQ(testBuilder.m_version, 7);
+    ASSERT_EQ(testBuilder.m_patterns.size(), 1);
+    ASSERT_EQ(testBuilder.m_patterns[0].m_pattern, "*.png");
+}

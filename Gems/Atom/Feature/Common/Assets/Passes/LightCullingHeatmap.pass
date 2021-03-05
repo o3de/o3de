@@ -1,0 +1,30 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LightCullingHeatmapTemplate",
+            "PassClass": "FullScreenTriangle",
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/LightCulling/LightCullingHeatmap.shader"
+                } 
+            },
+            "Slots": [
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader"                    
+                },                  
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }         
+            ]            
+        }
+    }
+}
