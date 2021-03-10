@@ -1,9 +1,8 @@
-# Amazon Project Spectra Private Preview
+# Project Spectra Private Preview
 
-Copyright (c) 2016-2021 Amazon Technologies, Inc., its affiliates or licensors.  All Rights Reserved.  
+## Confidentiality; Pre-Release Access  
 
-
-
+Welcome to the Project Spectra Private Preview.  This is a confidential pre-release project; your use is subject to the nondisclosure agreement between you (or your organization) and Amazon.  Do not disclose the existence of this project, your participation in it, or any of the  materials provided, to any unauthorized third party.  To request access for a third party, please contact [Royal O'Brien, obriroya@amazon.com](mailto:obriroya@amazon.com).
 
 ## Download and Install
 
@@ -49,6 +48,6 @@ If you have the Git credential manager core installed, you should not be prompte
 
 ## License
 
-For complete copyright and license terms please see the LICENSE.txt file at the root of this distribution (the "License").
+For terms please see the LICENSE*.TXT file at the root of this distribution.
 
 
