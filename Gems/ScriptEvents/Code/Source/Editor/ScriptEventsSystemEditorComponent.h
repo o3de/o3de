@@ -46,6 +46,7 @@ namespace ScriptEventsEditor
             const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
         bool SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream) override;
 
+        void InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload) override;
 
         // AssetEditorValidationRequestBus::Handler
         AZ::Outcome<bool, AZStd::string> IsAssetDataValid(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
@@ -83,7 +84,7 @@ namespace ScriptEventsEditor
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         ////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component...
         void Init() override {}
         void Activate() override;
         void Deactivate() override;
@@ -92,7 +93,7 @@ namespace ScriptEventsEditor
         AZStd::vector<AZStd::unique_ptr<AzToolsFramework::PropertyHandlerBase>> m_propertyHandlers;
 
         // Script Event Assets
-        AZStd::unordered_map<ScriptEvents::ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent>> m_scriptEvents;
+        AZStd::unordered_map<ScriptEvents::ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>> m_scriptEvents;
 
     };
 }

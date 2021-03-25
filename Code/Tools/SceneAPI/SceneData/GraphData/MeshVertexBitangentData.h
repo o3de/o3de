@@ -32,6 +32,8 @@ namespace AZ
             public:                
                 AZ_RTTI(MeshVertexBitangentData, "{F56FB088-4C92-4453-AFE9-4E820F03FA90}", AZ::SceneAPI::DataTypes::IMeshVertexBitangentData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API ~MeshVertexBitangentData() override = default;
 
                 SCENE_DATA_API size_t GetCount() const override;

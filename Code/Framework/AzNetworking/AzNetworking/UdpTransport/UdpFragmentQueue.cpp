@@ -155,7 +155,17 @@ namespace AzNetworking
             }
         }
         connection->GetPacketTracker().ProcessReceived(connection, header);
-        return connectionListener.OnPacketReceived(connection, header, networkSerializer);
+        bool handledPacket = false;
+        if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
+        {
+            handledPacket = connection->HandleCorePacket(connectionListener, header, networkSerializer);
+        }
+        else
+        {
+            handledPacket = connectionListener.OnPacketReceived(connection, header, networkSerializer);
+        }
+
+        return handledPacket;
     }
 
     TimeoutResult UdpFragmentQueue::HandleTimeout(TimeoutQueue::TimeoutItem& item)

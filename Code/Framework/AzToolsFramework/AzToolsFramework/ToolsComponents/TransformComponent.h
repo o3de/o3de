@@ -62,6 +62,10 @@ namespace AzToolsFramework
             void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
 
             // AZ::TransformBus
+            void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler) override;
+            void BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler& handler) override;
+            void BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler& handler) override;
+            void NotifyChildChangedEvent(AZ::ChildChangeType changeType, AZ::EntityId entityId) override;
             const AZ::Transform& GetLocalTM() override;
             void SetLocalTM(const AZ::Transform& tm) override;
             const AZ::Transform& GetWorldTM() override;
@@ -185,9 +189,6 @@ namespace AzToolsFramework
             void UpdateCachedWorldTransform();
             void ClearCachedWorldTransform();
 
-            bool IsPositionInterpolated() override;
-            bool IsRotationInterpolated() override;
-
             // SliceEntityHierarchyRequestBus
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
@@ -227,19 +228,18 @@ namespace AzToolsFramework
 
             void CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld);
 
-            bool m_isStatic;
+            // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
+            AZ::TransformConfig::ParentActivationTransformMode m_parentActivationTransformMode;
 
-            AZ::EntityId m_parentEntityId;
-            AZ::EntityId m_previousParentEntityId;
+            AZ::TransformChangedEvent m_transformChangedEvent; ///< Event used to signal when a transform changes.
+            AZ::ParentChangedEvent    m_parentChangedEvent;    ///< Event used to signal when a transforms parent changes.
+            AZ::ChildChangedEvent     m_childChangedEvent;     ///< Event used to signal when a transform has a child entity added or removed.
 
             EditorTransform m_editorTransform;
 
-            //these are only used to hold onto the references returned by GetLocalTM and GetWorldTM
+            // These are only used to hold onto the references returned by GetLocalTM and GetWorldTM
             AZ::Transform m_localTransformCache;
             AZ::Transform m_worldTransformCache;
-
-            // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
-            AZ::TransformConfig::ParentActivationTransformMode m_parentActivationTransformMode;
 
             // Keeping a world transform along with a parent Id at the time of capture.
             // This is required for dealing with external changes to parent assignment (i.e. slice propagation).
@@ -249,17 +249,21 @@ namespace AzToolsFramework
             AZ::Transform m_cachedWorldTransform;
             AZ::EntityId m_cachedWorldTransformParent;
 
+            AZ::EntityId m_parentEntityId;
+            AZ::EntityId m_previousParentEntityId;
+
             EntityIdList m_childrenEntityIds;
 
             bool m_suppressTransformChangedEvent;
 
             bool m_localTransformDirty = true;
             bool m_worldTransformDirty = true;
+            bool m_isStatic = false;
 
-            // Used to serialize data required for NetBindable
-            bool m_netSyncEnabled;
+            // Deprecated
             AZ::InterpolationMode m_interpolatePosition;
             AZ::InterpolationMode m_interpolateRotation;
+            bool m_netSyncEnabled = false;
         };
     }
 } // namespace AzToolsFramework

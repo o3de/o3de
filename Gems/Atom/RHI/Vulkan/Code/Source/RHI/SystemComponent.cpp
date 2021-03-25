@@ -46,6 +46,11 @@
 #include <RHI/PipelineLibrary.h>
 #include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/TransientAttachmentPool.h>
+#include <RHI/RayTracingBufferPools.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
@@ -233,32 +238,29 @@ namespace AZ
             return IndirectBufferWriter::Create();
         }
 
+        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        {
+            return RayTracingBufferPools::Create();
+        }
+
         RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
-            return nullptr;
+            return RayTracingBlas::Create();
         }
 
         RHI::Ptr<RHI::RayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
-            return nullptr;
+            return RayTracingTlas::Create();
         }
 
         RHI::Ptr<RHI::RayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
-            return nullptr;
+            return RayTracingPipelineState::Create();
         }
 
         RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
-            return nullptr;
+            return RayTracingShaderTable::Create();
         }
     }
 }

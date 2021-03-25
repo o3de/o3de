@@ -56,7 +56,7 @@ namespace GraphCanvas
         AZ::Entity* entity = NodeComponent::CreateCoreNodeEntity(config);
         entity->SetName("NodeGroup");
 
-        entity->CreateComponent<StylingComponent>(Styling::Elements::BlockComment::BlockComment, AZ::EntityId());
+        entity->CreateComponent<StylingComponent>(Styling::Elements::NodeGroup::NodeGroup, AZ::EntityId());
         entity->CreateComponent<NodeGroupFrameComponent>();
         entity->CreateComponent<NodeGroupLayoutComponent>();
         entity->CreateComponent<CommentNodeTextComponent>("Untitled Group");

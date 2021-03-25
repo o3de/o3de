@@ -34,6 +34,18 @@ namespace GraphCanvas
     
     using GraphCanvasPropertyBus = AZ::EBus<GraphCanvasPropertyInterface>;
 
+    class GraphCanvasPropertyInterfaceNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
+
+        virtual void OnPropertyComponentChanged() = 0;
+    };
+
+    using GraphCanvasPropertyInterfaceNotificationBus = AZ::EBus<GraphCanvasPropertyInterfaceNotifications>;
+
     class GraphCanvasPropertyBusHandler
         : public GraphCanvasPropertyBus::MultiHandler
     {

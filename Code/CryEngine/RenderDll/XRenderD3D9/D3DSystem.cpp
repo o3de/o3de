@@ -62,17 +62,6 @@
     #define RegisterClass  RegisterClassA
     #define LoadLibrary  LoadLibraryA
   #endif // !UNICODE
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-    // We cannot use the static version of this library, it has exceptions disabled and was compiled with
-    // _MSC_VER 1600
-    // _ITERATOR_DEBUG_LEVEL' 0
-    // So linking fails. We are disabling this functionality for monolithic
-    #include <amd_ags.h>
-#endif
-
-#include <nvapi.h>
-
 #endif // defined(WIN32)
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -2017,126 +2006,6 @@ bool CD3D9Renderer::CheckSSAAChange()
 }
 
 //==========================================================================
-
-void CD3D9Renderer::InitAMDAPI()
-{
-#if defined (WIN32) && !defined(AZ_MONOLITHIC_BUILD)
-    AGSReturnCode status = AGSInit();
-    iLog->Log("AGS: AMD GPU Services API init %s (%d)", status == AGS_SUCCESS ? "ok" : "failed", status);
-    m_bVendorLibInitialized = status == AGS_SUCCESS;
-
-    if (!m_bVendorLibInitialized)
-    {
-        return;
-    }
-    AGSDriverVersionInfoStruct driverInfo = {};
-    status = AGSDriverGetVersionInfo(&driverInfo);
-
-    if (status != AGS_SUCCESS)
-    {
-        iLog->LogError("AGS: Unable to get driver version (%d)", status);
-    }
-    else
-    {
-        iLog->Log("AGS: Catalyst Version: %s  Driver Version: %s", driverInfo.strCatalystVersion, driverInfo.strDriverVersion);
-    }
-
-    int outputIndex = 0;
-#if defined (SUPPORT_DEVICE_INFO)
-    outputIndex = (int)m_devInfo.OutputIndex();
-#else
-    if (AGSGetDefaultDisplayIndex(&outputIndex) != AGS_SUCCESS)
-    {
-        outputIndex = 0;
-    }
-#endif
-
-    m_nGPUs = 1;
-    int numGPUs = 1;
-    status = AGSCrossfireGetGPUCount(outputIndex, &numGPUs);
-
-    if (status != AGS_SUCCESS)
-    {
-        iLog->LogError("AGS: Unable to get crossfire info (%d)", status);
-    }
-    else
-    {
-        m_nGPUs = numGPUs;
-        iLog->Log("AGS: Multi GPU count = %d", numGPUs);
-    }
-
-#endif // defined(WIN32)
-}
-
-void CD3D9Renderer::InitNVAPI()
-{
-#if defined(WIN32) && !defined(OPENGL)
-    NvAPI_Status stat = NvAPI_Initialize();
-    iLog->Log("NVAPI: API init %s (%d)", stat ? "failed" : "ok", stat);
-    m_bVendorLibInitialized = stat == 0;
-
-    if (!m_bVendorLibInitialized)
-    {
-        return;
-    }
-
-    NvU32 version2;
-    char branchVersion[NVAPI_SHORT_STRING_MAX];
-
-    NvAPI_Status status = NvAPI_SYS_GetDriverAndBranchVersion(&version2, branchVersion);
-    if (status != NVAPI_OK)
-    {
-        iLog->LogError("NVAPI: Unable to get driver version (%d)", status);
-    }
-    SetNvidiaDriverVersion(version2);
-
-    // enumerate displays
-    for (int i = 0; i < NVAPI_MAX_DISPLAYS; ++i)
-    {
-        NvDisplayHandle displayHandle;
-        status = NvAPI_EnumNvidiaDisplayHandle(i, &displayHandle);
-        if (status != NVAPI_OK)
-        {
-            break;
-        }
-    }
-
-    m_nGPUs = 1;
-
-    // check SLI state to get number of GPUs available for rendering
-    NV_GET_CURRENT_SLI_STATE sliState;
-    sliState.version = NV_GET_CURRENT_SLI_STATE_VER;
-    D3DDevice* device = NULL;
-# if defined(DIRECT3D10)
-    device = &GetDevice();
-# elif defined(DIRECT3D9)
-    device = m_pd3dDevice;
-# endif
-    status = NvAPI_D3D_GetCurrentSLIState(device, &sliState);
-    if (status != NVAPI_OK)
-    {
-        iLog->LogError("NVAPI: Unable to get SLI state (%d)", status);
-    }
-    else
-    {
-        m_nGPUs = sliState.numAFRGroups;
-        if (m_nGPUs < 2)
-        {
-            iLog->Log("NVAPI: Single GPU system");
-        }
-        else
-        {
-            m_nGPUs = min((int)m_nGPUs, 31);
-            iLog->Log("NVAPI: System configured as SLI: %d GPU(s) for rendering", m_nGPUs);
-        }
-    }
-
-    m_bDeviceSupports_NVDBT = 1;
-    iLog->Log("NVDBT supported");
-
-#endif // defined(WIN32)
-}
-
 bool CD3D9Renderer::SetRes()
 {
     LOADING_TIME_PROFILE_SECTION;
@@ -2436,13 +2305,11 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D11CreateDevice(D3DDevice* pd3dDevice)
         if (adapterDesc.VendorId == RenderCapabilities::s_gpuVendorIdAMD)
         {
             rd->m_Features |= RFT_HW_ATI;
-            rd->InitAMDAPI();
             iLog->Log ("D3D Detected: AMD video card");
         }
         else if (adapterDesc.VendorId == RenderCapabilities::s_gpuVendorIdNVIDIA)
         {
             rd->m_Features |= RFT_HW_NVIDIA;
-            rd->InitNVAPI();
             iLog->Log ("D3D Detected: NVIDIA video card");
         }
         else if (adapterDesc.VendorId == RenderCapabilities::s_gpuVendorIdQualcomm)

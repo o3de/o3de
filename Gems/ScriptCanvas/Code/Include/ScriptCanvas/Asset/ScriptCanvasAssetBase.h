@@ -89,6 +89,4 @@ namespace ScriptCanvas
         }
 
     };
-
-
-} // namespace ScriptCanvas
+}

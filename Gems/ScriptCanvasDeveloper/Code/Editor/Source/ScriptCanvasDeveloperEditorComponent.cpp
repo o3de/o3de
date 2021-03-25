@@ -11,6 +11,9 @@
 */
 #include "precompiled.h"
 
+#include <QMainWindow>
+#include <QMenuBar>
+
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 #include <ScriptCanvas/Libraries/Libraries.h>
@@ -19,12 +22,20 @@
 #include <ScriptCanvasDeveloperEditor/NodeListDumpAction.h>
 #include <ScriptCanvasDeveloperEditor/TSGenerateAction.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/DynamicSlotFullCreation.h>
+#include <ScriptCanvasDeveloperEditor/AutomationActions/FullyConnectedNodePaletteCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/NodePaletteFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/VariableListFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/Developer.h>
 
+#include <EditorAutomationTestDialog.h>
+
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
+
 namespace ScriptCanvasDeveloperEditor
 {
+    ////////////////////
+    // SystemComponent
+    ////////////////////
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
         ScriptCanvasDeveloper::Libraries::Developer::Reflect(context);
@@ -59,12 +70,14 @@ namespace ScriptCanvasDeveloperEditor
 
     void SystemComponent::Activate()
     {
-        QWidget* mainWindow{};
+        QMainWindow* mainWindow = nullptr;
         ScriptCanvasEditor::UIRequestBus::BroadcastResult(mainWindow, &ScriptCanvasEditor::UIRequests::GetMainWindow);
+
         if (mainWindow)
         {
             MainWindowCreationEvent(mainWindow);
         }
+
         ScriptCanvasEditor::UINotificationBus::Handler::BusConnect();
 
         AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::Data::Type>();
@@ -75,13 +88,42 @@ namespace ScriptCanvasDeveloperEditor
         ScriptCanvasEditor::UINotificationBus::Handler::BusDisconnect();
     }
 
-    void SystemComponent::MainWindowCreationEvent(QWidget* mainWindow)
+    void SystemComponent::MainWindowCreationEvent(QMainWindow* mainWindow)
     {
-        NodeListDumpAction::CreateNodeListDumpAction(mainWindow);
-        TSGenerateAction::SetupTSFileAction(mainWindow);
-        DynamicSlotFullCreation::CreateDynamicSlotFullCreationAction(mainWindow);
-        NodePaletteFullCreation::CreateNodePaletteFullCreationAction(mainWindow);
-        VariablePaletteFullCreation::CreateVariablePaletteFullCreationAction(mainWindow);
+        QMenuBar* menuBar = mainWindow->menuBar();
+
+        QMenu* developerMenu = menuBar->addMenu("Developer");
+
+        VariablePaletteFullCreation::CreateVariablePaletteFullCreationAction(developerMenu);
+
+        developerMenu->addSeparator();
+
+        NodePaletteFullCreation::CreateNodePaletteFullCreationAction(developerMenu);
+        DynamicSlotFullCreation::CreateDynamicSlotFullCreationAction(developerMenu);
+
+        developerMenu->addSeparator();
+
+        NodeListDumpAction::CreateNodeListDumpAction(developerMenu);
+        TSGenerateAction::SetupTSFileAction(developerMenu);
+
+        developerMenu->addSeparator();
+
+        QAction* action = developerMenu->addAction("Open Menu Test");
+
+        QObject::connect(action, &QAction::triggered, [mainWindow]()
+        {
+            ScriptCanvasDeveloper::EditorAutomationTestDialogRequests* requests = ScriptCanvasDeveloper::EditorAutomationTestDialogRequestBus::FindFirstHandler(ScriptCanvasEditor::AssetEditorId);
+
+            if (requests)
+            {
+                requests->ShowTestDialog();
+            }
+            else
+            {
+                ScriptCanvasDeveloper::EditorAutomationTestDialog* testDialog = new ScriptCanvasDeveloper::EditorAutomationTestDialog(mainWindow);
+                testDialog->ShowTestDialog();
+            }
+        });
 
     }
 }

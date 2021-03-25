@@ -36,6 +36,7 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzCore/JSON/document.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -307,10 +308,13 @@ struct SANDBOX_API SEditorSettings
 {
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SEditorSettings();
-    ~SEditorSettings();
+    ~SEditorSettings() = default;
     void    Save();
     void    Load();
     void    LoadCloudSettings();
+
+    void Connect();
+    void Disconnect();
 
     // EditorSettingsAPIBus...
     AZStd::vector<AZStd::string> BuildSettingsList() override;
@@ -495,6 +499,8 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SSliceSettings sliceSettings;
 
+    bool prefabSystem = false;                  ///< Toggle to enable the Prefab system for level entities.
+
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);
     void SaveValue(const char* sSection, const char* sKey, const QColor& value);
@@ -509,6 +515,20 @@ private:
     void LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value);
 
     void SaveCloudSettings();
+
+    void SaveSettingsRegistryFile();
+
+    //! Set a boolean setting value from the registry.
+    //! \param key[in] The key to set.
+    //! \param value[in] The new value for the setting.
+    //! \return Whether the value for the key was correctly set in the registry.
+    bool SetSettingsRegistry_Bool(const char* key, bool value);
+
+    //! Gets a boolean setting value from the registry.
+    //! \param key[in] The key to query.
+    //! \param value[out] The variable the queried value will be saved to, by reference.
+    //! \return Whether a value for the key was found in the registry.
+    bool GetSettingsRegistry_Bool(const char* key, bool& value);
 };
 
 //! Single instance of editor settings for fast access.

@@ -103,7 +103,7 @@ namespace TestNodes
         static void Reflect(AZ::ReflectContext* reflection);
         ScriptCanvas::SlotId AddSlot(AZStd::string_view slotName);
 
-        bool RemoveSlot(const ScriptCanvas::SlotId& slotId);
+        bool RemoveSlot(const ScriptCanvas::SlotId& slotId, bool emitWarning = true);
 
     protected:
         void OnInputSignal(const ScriptCanvas::SlotId& slotId) override;
@@ -150,7 +150,7 @@ namespace TestNodes
 
         void OnInit() override;
     };
-
+    
     //////////////////////////////////////////////////////////////////////////////
     class ConfigurableUnitTestNode
         : public ScriptCanvas::Node
@@ -172,4 +172,6 @@ namespace TestNodes
 
     protected:
     };
+
+
 }

@@ -50,13 +50,26 @@ namespace GraphCanvas
     {
         if (m_setSelectionEnableState)
         {
+            m_setSelectionEnableState->setEnabled(true);
+
             AZStd::vector< NodeId > selectedNodes;
             SceneRequestBus::EventResult(selectedNodes, graphId, &SceneRequests::GetSelectedNodes);
 
             bool isEnabled = true;
 
+            int nonInteractiveElements = 0;
+
             for (const NodeId& nodeId : selectedNodes)
             {
+                // Bypass collapsed node groups for now.
+                if (GraphUtils::IsCollapsedNodeGroup(nodeId)
+                    || GraphUtils::IsComment(nodeId)
+                    || GraphUtils::IsNodeGroup(nodeId))
+                {
+                    ++nonInteractiveElements;
+                    continue;
+                }
+
                 RootGraphicsItemEnabledState enabledState = RootGraphicsItemEnabledState::ES_Enabled;
                 RootGraphicsItemRequestBus::EventResult(enabledState, nodeId, &RootGraphicsItemRequests::GetEnabledState);
 
@@ -67,7 +80,15 @@ namespace GraphCanvas
                 }
             }
 
-            static_cast<SetEnabledStateMenuAction*>(m_setSelectionEnableState)->SetEnableState(!isEnabled);
+            // If we have a single selection, and it's a nodeGroup, don't enable this action.
+            if (selectedNodes.size() == nonInteractiveElements)
+            {
+                m_setSelectionEnableState->setEnabled(false);
+            }
+            else
+            {
+                static_cast<SetEnabledStateMenuAction*>(m_setSelectionEnableState)->SetEnableState(!isEnabled);
+            }
         }
     }
 }

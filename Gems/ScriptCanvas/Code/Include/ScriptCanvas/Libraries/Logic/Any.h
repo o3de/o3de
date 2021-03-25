@@ -16,8 +16,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Logic/Any.generated.h>
 
 namespace ScriptCanvas
@@ -26,15 +24,10 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Will trigger the Out pin whenever any of the In pins get triggered
             class Any
                 : public Node
             {
-                ScriptCanvas_Node(Any,
-                    ScriptCanvas_Node::Uuid("{6359C34F-3C34-4784-9FFD-18F1C8E3482D}")
-                    ScriptCanvas_Node::Description("Will trigger the Out pin whenever any of the In pins get triggered")
-                    ScriptCanvas_Node::Version(1, AnyNodeVersionConverter)
-                );
-
                 enum Version
                 {
                     InitialVersion = 0,
@@ -45,11 +38,14 @@ namespace ScriptCanvas
                 
             public:
 
+                SCRIPTCANVAS_NODE(Any);
+
+
                 static bool AnyNodeVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
 
                 Any() = default;
 
-                // Node
+                // Node...
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
 
@@ -61,14 +57,23 @@ namespace ScriptCanvas
 
                 void OnSlotRemoved(const SlotId& slotId) override;
                 ////
-    
+
+                /// Translation
+                bool IsNoOp() const override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
+
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+                    
             protected:
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
 
                 AZ::Crc32 GetInputExtensionId() const { return AZ_CRC("Output", 0xccde149e); }
 
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled when the node receives a signal from the selected index"));
-                
             private:
 
                 AZStd::string GenerateInputName(int counter);

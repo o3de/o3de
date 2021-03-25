@@ -4561,7 +4561,7 @@ ED3DShError CHWShader_D3D::mfFallBack(SHWSInstance*& pInst, int nStatus)
     //  - ShadowGen pass
     //  - Z-prepass
     //  - Shadow-pass
-    if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_JASPER | SF_GL4 | SF_GLES3 | SF_METAL))
+    if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_JASPER | SF_GL4 | SF_GLES3 | SF_METAL))
     {
         //assert(gRenDev->m_cEF.m_nCombinationsProcess >= 0);
         return ED3DShError_CompilingError;

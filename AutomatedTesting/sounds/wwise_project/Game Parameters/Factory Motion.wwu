@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{D7135222-D1DB-42D0-ADC0-930743567776}" SchemaVersion="97">
+	<GameParameters>
+		<WorkUnit Name="Factory Motion" ID="{D7135222-D1DB-42D0-ADC0-930743567776}" PersistMode="Standalone">
+			<ChildrenList>
+				<GameParameter Name="RPM" ID="{9112AA05-F577-44FD-9F4E-4424158129E6}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Playback_Rate" ID="{28387EE3-C13A-4316-B9C3-DB5C521624AF}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="1"/>
+						<Property Name="Max" Type="Real64" Value="4"/>
+						<Property Name="Min" Type="Real64" Value="0.1"/>
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>

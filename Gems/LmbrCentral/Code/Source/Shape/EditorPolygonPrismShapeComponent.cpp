@@ -43,6 +43,11 @@ namespace LmbrCentral
         incompatible.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
+    void EditorPolygonPrismShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorPolygonPrismShapeComponent::Init()
     {
         EditorBaseShapeComponent::Init();
@@ -122,6 +127,7 @@ namespace LmbrCentral
             vertexUpdated,
             verticesSet,
             verticesCleared,
+            shapeModified,
             shapeModified);
 
         GenerateVertices();
@@ -195,6 +201,7 @@ namespace LmbrCentral
                         debugDisplay, AzToolsFramework::VariableVerticesVertexContainer<AZ::Vector2>(
                             m_polygonPrismShape.GetPolygonPrism()->m_vertexContainer),
                         AzToolsFramework::TransformUniformScale(m_polygonPrismShape.GetCurrentTransform()),
+                        m_polygonPrismShape.GetCurrentNonUniformScale(),
                         IsSelected());
                 }
             },
@@ -230,6 +237,6 @@ namespace LmbrCentral
     {
         GeneratePolygonPrismMesh(
             m_polygonPrismShape.GetPolygonPrism()->m_vertexContainer.GetVertices(),
-            m_polygonPrismShape.GetPolygonPrism()->GetHeight(), m_polygonPrismMesh);
+            m_polygonPrismShape.GetPolygonPrism()->GetHeight(), m_polygonPrismShape.GetCurrentNonUniformScale(), m_polygonPrismMesh);
     }
 } // namespace LmbrCentral

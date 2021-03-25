@@ -29,18 +29,11 @@ namespace AZ
             // Generates a destination file path for exporting material source data
             AZStd::string GetExportPathByAssetId(const AZ::Data::AssetId& assetId);
 
-            enum class ExportAction : int
-            {
-                Nothing = 0,
-                UseExisting = 1,
-                GenerateNew = 2,
-            };
-
             struct ExportItem
             {
+                bool m_enabled = true;
                 AZ::Data::AssetId m_assetId;
                 AZStd::string m_exportPath;
-                ExportAction m_exportAction = ExportAction::GenerateNew;
             };
 
             using ExportItemsContainer = AZStd::vector<ExportItem>;

@@ -33,118 +33,6 @@ namespace AZ
         }
 #endif
 
-        void RayTracingPipelineState::CreateRootSignature(RHI::Device& deviceBase,
-                                                          [[maybe_unused]]const RHI::RayTracingRootSignature& rayTracingRootSignature,
-                                                          [[maybe_unused]]bool isLocalRootSignature,
-                                                          [[maybe_unused]]Microsoft::WRL::ComPtr<ID3D12RootSignature>& rootSignatureComPtr)
-        {
-            Device& device = static_cast<Device&>(deviceBase);
-
-#ifdef AZ_DX12_DXR_SUPPORT
-            size_t numRootParameters =
-                (rayTracingRootSignature.m_cbvParam.m_addedToRootSignature ? 1 : 0) +
-                (rayTracingRootSignature.m_descriptorTableParam.m_addedToRootSignature ? 1 : 0);
-
-            AZStd::vector<D3D12_ROOT_PARAMETER> rootParameters(numRootParameters);
-            AZStd::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges(rayTracingRootSignature.m_descriptorTableParam.m_ranges.size());
-            uint32_t rootParameterIndex = 0;
-            uint32_t descriptorRangeIndex = 0;
-
-            // build the cbv parameter
-            if (rayTracingRootSignature.m_cbvParam.m_addedToRootSignature)
-            {
-                D3D12_ROOT_PARAMETER& cbvParam = rootParameters[rootParameterIndex++];
-                cbvParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-                cbvParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-                cbvParam.Descriptor.ShaderRegister = rayTracingRootSignature.m_cbvParam.m_shaderRegister;
-                cbvParam.Descriptor.RegisterSpace = rayTracingRootSignature.m_cbvParam.m_registerSpace;
-            }
-
-            // build the descriptor table parameter
-            if (rayTracingRootSignature.m_descriptorTableParam.m_addedToRootSignature)
-            {
-                D3D12_ROOT_PARAMETER& descriptorTableParam = rootParameters[rootParameterIndex++];
-                descriptorTableParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-                // add the ranges
-                for (const auto& range : rayTracingRootSignature.m_descriptorTableParam.m_ranges)
-                {
-                    D3D12_DESCRIPTOR_RANGE& descriptorRange = descriptorRanges[descriptorRangeIndex++];
-                    descriptorRange.NumDescriptors = 1;
-                    descriptorRange.BaseShaderRegister = range.m_shaderRegister;
-                    descriptorRange.RegisterSpace = range.m_registerSpace;
-                    descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-                    switch (range.m_type)
-                    {
-                    case RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Constant:
-                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-                        break;
-                    case RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read:
-                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                        break;
-                    case RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::ReadWrite:
-                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-                        break;
-                    default:
-                        AZ_Assert(false, "Unknown descriptor range type");
-                        break;
-                    };
-                }
-
-                descriptorTableParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                descriptorTableParam.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptorRanges.size());
-                descriptorTableParam.DescriptorTable.pDescriptorRanges = descriptorRanges.data();
-            }
-
-            // build static samplers
-            uint32_t staticSamplerIndex = 0;
-            AZStd::vector<D3D12_STATIC_SAMPLER_DESC> staticSamplers(rayTracingRootSignature.m_staticSamplers.size());
-            for (const auto& staticSampler : rayTracingRootSignature.m_staticSamplers)
-            {
-                D3D12_STATIC_SAMPLER_DESC& samplerDesc = staticSamplers[staticSamplerIndex++];
-                
-                samplerDesc.AddressU = ConvertAddressMode(staticSampler.m_addressMode);
-                samplerDesc.AddressV = ConvertAddressMode(staticSampler.m_addressMode);
-                samplerDesc.AddressW = ConvertAddressMode(staticSampler.m_addressMode);
-                samplerDesc.BorderColor = ConvertBorderColor(RHI::BorderColor::TransparentBlack);
-                samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-                D3D12_FILTER_TYPE min = ConvertFilterMode(staticSampler.m_filterMode);
-                D3D12_FILTER_TYPE mag = ConvertFilterMode(staticSampler.m_filterMode);
-                D3D12_FILTER_TYPE mip = ConvertFilterMode(staticSampler.m_filterMode);
-                samplerDesc.Filter = D3D12_ENCODE_BASIC_FILTER(min, mag, mip, D3D12_FILTER_REDUCTION_TYPE_STANDARD);
-                samplerDesc.MaxAnisotropy = uint8_t(0);
-                samplerDesc.MaxLOD = uint8_t(15);
-                samplerDesc.MinLOD = uint8_t(0);
-                samplerDesc.MipLODBias = 0.0f;
-                samplerDesc.ShaderRegister = staticSampler.m_shaderRegister;
-                samplerDesc.RegisterSpace = staticSampler.m_registerSpace;
-                samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            }
-
-            D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-            rootSignatureDesc.NumParameters = static_cast<UINT>(rootParameters.size());
-            rootSignatureDesc.pParameters = rootParameters.data();
-            rootSignatureDesc.Flags = isLocalRootSignature ? D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE : D3D12_ROOT_SIGNATURE_FLAG_NONE;
-            rootSignatureDesc.NumStaticSamplers = static_cast<UINT>(staticSamplers.size());
-            rootSignatureDesc.pStaticSamplers = staticSamplers.data();
-
-            ID3DBlob* rootSignatureBlob = nullptr;
-            ID3DBlob* errorBlob = nullptr;
-            HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &rootSignatureBlob, &errorBlob);
-            if (FAILED(hr))
-            {
-                const char* errorString = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
-                AZ_Assert(false, "D3D12SerializeRootSignature failed: [%s]", errorString);
-                errorBlob->Release();
-            }
-
-            hr = device.GetDevice()->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(), rootSignatureBlob->GetBufferSize(), IID_GRAPHICS_PPV_ARGS(rootSignatureComPtr.GetAddressOf()));
-            AZ_Assert(SUCCEEDED(hr), "CreateRootSignature failed");
-            rootSignatureBlob->Release();
-#endif
-        }
-
         RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
         {
             Device& device = static_cast<Device&>(deviceBase);
@@ -152,14 +40,11 @@ namespace AZ
 #ifdef AZ_DX12_DXR_SUPPORT
             size_t dxilLibraryCount = descriptor->GetShaderLibraries().size();
             size_t hitGroupCount = descriptor->GetHitGroups().size();
-            size_t localRootSignatureCount = descriptor->GetLocalRootSignatures().size();
        
             // calculate the number of state sub-objects
             size_t subObjectCount =
                 dxilLibraryCount +          // DXIL shader libraries
                 hitGroupCount +             // hit groups
-                localRootSignatureCount +   // local root signatures
-                localRootSignatureCount +   // local root signature shader associations
                 1 +                         // payload
                 1 +                         // global root signature
                 1;                          // pipeline configuration
@@ -229,66 +114,6 @@ namespace AZ
                 subObjects[currentIndex++] = hitGroupSubObject;
             }
 
-            // each local root signature is associated with one or more shaders using an association subObject
-            AZStd::vector<D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION> localRootSignatureAssociations;
-            localRootSignatureAssociations.reserve(localRootSignatureCount);
-
-            // each association for a local root signature points to a list of shader names
-            // count the total number of shader associations across all local root signatures
-            size_t localRootSignatureShaderAssociationsCount = 0;
-            for (auto& localRootSignature : descriptor->GetLocalRootSignatures())
-            {
-                localRootSignatureShaderAssociationsCount += localRootSignature.m_shaderAssociations.size();
-            }
-
-            // pre-allocate a vector to hold the names, and an index to the start of each shader name list for each local root signature
-            AZStd::vector<LPCWSTR> localRootSignatureShaderNames;
-            localRootSignatureShaderNames.reserve(localRootSignatureShaderAssociationsCount);
-            AZStd::vector<AZStd::wstring> localRootSignatureShaderNameWstrings;
-            localRootSignatureShaderNameWstrings.reserve(localRootSignatureShaderAssociationsCount);
-            uint32_t localRootSignatureShaderNamesIndex = 0;
-
-            // add local root signatures
-            m_localRootSignatures.reserve(localRootSignatureCount);
-            for (const RHI::RayTracingLocalRootSignature& localRootSignature : descriptor->GetLocalRootSignatures())
-            {
-                // create the root signature
-                // [GFX TODO][ATOM-5570] Use the shader PipelineLayout to set DXR root signatures
-                Microsoft::WRL::ComPtr<ID3D12RootSignature> localRootSignatureComPtr;
-                CreateRootSignature(deviceBase, localRootSignature, true, localRootSignatureComPtr);
-                m_localRootSignatures.push_back(localRootSignatureComPtr.Get());
-
-                // add the root signature to the pipeline state
-                D3D12_STATE_SUBOBJECT localRootSignatureSubObject;
-                localRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
-                localRootSignatureSubObject.pDesc = &m_localRootSignatures.back();
-                subObjects[currentIndex++] = localRootSignatureSubObject;
-
-                // build a list of the shader names for this local root signature
-                for (auto& shaderName : localRootSignature.m_shaderAssociations)
-                {
-                    AZStd::wstring shaderNameWstring;
-                    AZStd::to_wstring(shaderNameWstring, shaderName.GetStringView().data(), shaderName.GetStringView().size());
-                    localRootSignatureShaderNameWstrings.push_back(shaderNameWstring);
-
-                    localRootSignatureShaderNames.push_back(localRootSignatureShaderNameWstrings.back().c_str());
-                }
-
-                // add the shader association to the pipeline state
-                D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION shaderAssociation = {};
-                shaderAssociation.NumExports = (UINT)localRootSignature.m_shaderAssociations.size();
-                shaderAssociation.pExports = &localRootSignatureShaderNames[localRootSignatureShaderNamesIndex];
-                shaderAssociation.pSubobjectToAssociate = &subObjects[(currentIndex - 1)];    // points to the local root signature subObject
-                localRootSignatureAssociations.push_back(shaderAssociation);
-
-                D3D12_STATE_SUBOBJECT shaderAssociationSubObject = {};
-                shaderAssociationSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
-                shaderAssociationSubObject.pDesc = &localRootSignatureAssociations.back();
-                subObjects[currentIndex++] = shaderAssociationSubObject;
-
-                localRootSignatureShaderNamesIndex += static_cast<uint32_t>(localRootSignature.m_shaderAssociations.size());
-            }
-
             // add shader payload and attribute sizes
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig = {};
             shaderConfig.MaxPayloadSizeInBytes = descriptor->GetConfiguration().m_maxPayloadSize;
@@ -298,19 +123,18 @@ namespace AZ
             shaderConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
             shaderConfigSubObject.pDesc = &shaderConfig;
             subObjects[currentIndex++] = shaderConfigSubObject;
-        
-            // create the global root signature
-            // [GFX TODO][ATOM-5570] Use the shader PipelineLayout to set DXR root signatures
-            Microsoft::WRL::ComPtr<ID3D12RootSignature> globalRootSignatureComPtr;
-            CreateRootSignature(deviceBase, descriptor->GetGlobalRootSignature(), false, globalRootSignatureComPtr);
-            m_globalRootSignature = globalRootSignatureComPtr.Get();
 
             // add global root signature
+            const PipelineLayout& pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
+            m_globalRootSignature = pipelineLayout.Get();
             D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = {};
             globalRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
             globalRootSignatureSubObject.pDesc = &m_globalRootSignature;
             subObjects[currentIndex++] = globalRootSignatureSubObject;
-        
+
+            // note: local root signatures are not currently supported, ray tracing shaders must currently use unbounded arrays
+            // [GFX TODO][ATOM-13653] AZSLc support for ray tracing local root signatures
+
             // add pipeline configuration
             D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig = {};
             pipelineConfig.MaxTraceRecursionDepth = descriptor->GetConfiguration().m_maxRecursionDepth;

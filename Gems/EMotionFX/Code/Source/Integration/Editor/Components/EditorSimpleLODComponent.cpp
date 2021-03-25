@@ -44,9 +44,9 @@ namespace EMotionFX
                 if (editContext)
                 {
                     editContext->Class<EditorSimpleLODComponent>(
-                        "Simple LOD Distance (DEPRECATED By Atom)", "This component does not work with Atom renderer. The Simple LOD distance component alters the actor LOD level based on")
+                        "Simple LOD Distance", "The Simple LOD distance component alters the actor skeleton LOD level based on camera distance.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Animation (Legacy)")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Mannequin.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))

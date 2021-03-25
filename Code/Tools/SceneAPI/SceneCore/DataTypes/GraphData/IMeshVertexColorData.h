@@ -44,6 +44,7 @@ namespace AZ
                     float m_channels[4];
                 };
 
+                Color() = default;
                 Color(float r, float g, float b, float a)
                     : red(r), green(g), blue(b), alpha(a)
                 {
@@ -52,6 +53,30 @@ namespace AZ
                 float GetChannel(ColorChannel channel) const
                 {
                     return m_channels[static_cast<AZ::u8>(channel)];
+                }
+
+                bool IsClose(const Color& c, float tolerance = AZ::Constants::Tolerance) const
+                {
+                    return (c - (*this)).Abs().IsLessEqualThan(tolerance);
+                }
+
+                bool IsLessEqualThan(float tolerance) const
+                {
+                    return AZStd::all_of(AZStd::begin(m_channels), AZStd::end(m_channels), [tolerance] (float channel) { return channel <= tolerance; } );
+                }
+
+                Color& Abs()
+                {
+                    for (float& channel : m_channels)
+                    {
+                        channel = std::abs(channel);
+                    }
+                    return *this;
+                }
+
+                Color operator-(const Color& rhs) const
+                {
+                    return Color(red - rhs.red, green - rhs.green, blue - rhs.blue, alpha - rhs.alpha);
                 }
             };
 

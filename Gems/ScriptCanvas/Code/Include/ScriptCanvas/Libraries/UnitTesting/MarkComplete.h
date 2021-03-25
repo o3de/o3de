@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.generated.h>
 
@@ -22,30 +21,17 @@ namespace ScriptCanvas
     {
         namespace UnitTesting
         {
+            //! Reports that the graph completed to the unit testing framework, it is required in all unit test graphs
             class MarkComplete
                 : public Node
             {
             public:
-                ScriptCanvas_Node(MarkComplete,
-                    ScriptCanvas_Node::Name("Mark Complete", "reports that the graph completed to the unit testing framework")
-                    ScriptCanvas_Node::Uuid("{DC0BCFE9-3066-4232-AA68-AAFB206C917F}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/MarkComplete.png")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(MarkComplete);
 
                 void OnInputSignal(const SlotId& slotId) override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report"),
-                    ScriptCanvas_Property::Input);
-            }; // class MarkClompletion
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            }; 
+        }
+    }
+}

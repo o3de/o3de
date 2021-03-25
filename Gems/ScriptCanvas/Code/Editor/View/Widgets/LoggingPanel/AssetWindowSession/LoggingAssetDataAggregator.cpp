@@ -63,11 +63,6 @@ namespace ScriptCanvasEditor
         ProcessInputSignal(loggableEvent);
     }
     
-    void LoggingAssetDataAggregator::Visit(ScriptCanvas::OutputDataSignal& loggableEvent)
-    {
-        ProcessOutputDataSignal(loggableEvent);
-    }
-
     void LoggingAssetDataAggregator::Visit(ScriptCanvas::OutputSignal& loggableEvent)
     {
         ProcessOutputSignal(loggableEvent);

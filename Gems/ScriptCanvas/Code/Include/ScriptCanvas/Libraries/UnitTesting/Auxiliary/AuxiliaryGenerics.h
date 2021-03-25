@@ -39,6 +39,6 @@ namespace ScriptCanvas
                 > ;
 
 
-        } // namespace Auxiliary
-    } // namespace UnitTesting
-} // namespace ScriptCanvas
+        }
+    } 
+} 

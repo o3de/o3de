@@ -15,8 +15,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Logic/Cycle.generated.h>
 
 namespace ScriptCanvas
@@ -25,18 +23,14 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Performs a cyclic execution signaling
             class Cycle
                 : public Node
             {
-                ScriptCanvas_Node(Cycle,
-                    ScriptCanvas_Node::Name("Cycle")
-                    ScriptCanvas_Node::Uuid("{974258F5-EE1B-4AEE-B956-C7B303801847}"),
-                    ScriptCanvas_Node::Description("")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Logic")
-                );
 
             public:
+
+                SCRIPTCANVAS_NODE(Cycle);
 
                 Cycle();
 
@@ -50,19 +44,15 @@ namespace ScriptCanvas
 
                 SlotId HandleExtension(AZ::Crc32 extensionId);
 
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
+
             protected:
 
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out 0", "Output 0")
-                    ScriptCanvas_Out::DisplayGroup("OutputGroup")
-                );
-
-            protected:
 
                 void OnInputSignal(const SlotId& slot) override;
                 void OnSlotRemoved(const SlotId& slotId) override;

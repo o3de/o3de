@@ -23,24 +23,20 @@ namespace AZ
     class Entity;
 }
 
-namespace ScriptCanvas
+namespace ScriptCanvasEditor
 {
     class ScriptCanvasFunctionAsset;
-}
-
-namespace ScriptCanvas
-{
     class Graph;
 
-    class ScriptCanvasFunctionDescription : public AssetDescription
+    class ScriptCanvasFunctionDescription : public ScriptCanvas::AssetDescription
     {
     public:
 
         AZ_TYPE_INFO(ScriptCanvasFunctionDescription, "{B53569F6-8408-40FC-9A72-ED873BEF162E}");
 
         ScriptCanvasFunctionDescription()
-            : ScriptCanvas::AssetDescription(
-                azrtti_typeid<ScriptCanvasFunctionAsset>(),
+            : AssetDescription(
+                azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(),
                 "Script Canvas Function",
                 "Script Canvas Function Graph Asset",
                 "@devassets@/scriptcanvas/functions",
@@ -56,10 +52,6 @@ namespace ScriptCanvas
                 )
         {}
     };
-}
-
-namespace ScriptCanvas
-{
 
     // TODO-LS: move these to their own file
     class ScriptCanvasDataRequests : public AZ::ComponentBus
@@ -70,7 +62,7 @@ namespace ScriptCanvas
         virtual AZStd::string GetPrettyName() = 0;
     };
 
-    using ScriptCanvasDataRequestBus = AZ::EBus< ScriptCanvasDataRequests>;
+    using ScriptCanvasDataRequestBus = AZ::EBus<ScriptCanvasDataRequests>;
 
 
     class ScriptCanvasFunctionDataComponent
@@ -108,23 +100,19 @@ namespace ScriptCanvas
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
             {
                 serializeContext->Class<ScriptCanvasFunctionDataComponent, AZ::Component>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_assetPrettyName", &ScriptCanvasFunctionDataComponent::m_assetPrettyName)
-                    ->Field("m_executionNodeOrder", &ScriptCanvasFunctionDataComponent::m_executionNodeOrder)
-                    ->Field("m_variableOrder", &ScriptCanvasFunctionDataComponent::m_variableOrder)
-                    ->Field("m_version", &ScriptCanvasFunctionDataComponent::m_version)
+                    ->Field("m_version", &ScriptCanvasFunctionDataComponent::m_functionDataComponentVersion)
                     ;
             }
         }
 
-        size_t m_version = 0;
+        size_t m_functionDataComponentVersion = 0;
         AZStd::string m_assetPrettyName;
-        AZStd::vector<ScriptCanvas::ID> m_executionNodeOrder; // These represent execution inputs or outputs
-        AZStd::vector<VariableId> m_variableOrder;
     };
 
     class ScriptCanvasFunctionAsset
-        : public ScriptCanvasAssetBase
+        : public ScriptCanvas::ScriptCanvasAssetBase
     {
     public:
         AZ_RTTI(ScriptCanvasFunctionAsset, "{ED078D3C-938D-41F8-A5F6-CC04311ECF4F}", ScriptCanvasAssetBase);
@@ -133,7 +121,7 @@ namespace ScriptCanvas
         ScriptCanvasFunctionAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom()), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
             : ScriptCanvasAssetBase(assetId, status)
         {
-            m_data = aznew ScriptCanvasData();
+            m_data = aznew ScriptCanvas::ScriptCanvasData();
         }
 
         ~ScriptCanvasFunctionAsset() override
@@ -141,7 +129,7 @@ namespace ScriptCanvas
 
         ScriptCanvas::AssetDescription GetAssetDescription() const override
         {
-            return ScriptCanvas::ScriptCanvasFunctionDescription();
+            return ScriptCanvasFunctionDescription();
         }
 
         using Description = ScriptCanvasFunctionDescription;
@@ -159,4 +147,4 @@ namespace ScriptCanvas
         }
     };
 
-} // namespace ScriptCanvasEditor
+}

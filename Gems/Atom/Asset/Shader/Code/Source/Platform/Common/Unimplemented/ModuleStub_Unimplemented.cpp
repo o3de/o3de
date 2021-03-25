@@ -20,7 +20,7 @@ namespace AZ
             : public AZ::Module
         {
         public:
-            AZ_RTTI(AzslShaderBuilderModule, "{A5C04CF5-715E-4456-ABF3-A8DB30868D77}", AZ::Module);
+            AZ_RTTI(AzslShaderBuilderModule, "{18F6276E-09B7-4C1D-B658-FADA2DB22148}", AZ::Module);
 
             AzslShaderBuilderModule() = default;
             ~AzslShaderBuilderModule() override = default;

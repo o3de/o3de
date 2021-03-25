@@ -59,9 +59,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();

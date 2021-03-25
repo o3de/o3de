@@ -1313,11 +1313,6 @@ namespace EMStudio
         commandGroup.AddCommandString(loadActorCommand.c_str());
         commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
 
-        // if the current scene is replaced or merge on an empty scene, focus on the new actor instance
-        if (replaceCurrentScene || EMotionFX::GetActorManager().GetNumActorInstances() == 0)
-        {
-            commandGroup.AddCommandString("ReInitRenderActors -resetViewCloseup true");
-        }
 
         // execute the group command
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult) == false)

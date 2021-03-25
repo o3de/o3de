@@ -132,7 +132,7 @@ namespace EMotionFX
         ActorMorphBuilderContext::ActorMorphBuilderContext(const AZ::SceneAPI::Containers::Scene& scene,
             AZStd::vector<AZ::u32>* meshNodeIndices, const Group::IActorGroup& actorGroup,
             EMotionFX::Actor* actor,
-            CoordinateSystemConverter& coordinateSystemConverter,
+            AZ::SceneAPI::CoordinateSystemConverter& coordinateSystemConverter,
             AZ::RC::Phase phase)
             : m_scene(scene)
             , m_meshNodeIndices(meshNodeIndices)

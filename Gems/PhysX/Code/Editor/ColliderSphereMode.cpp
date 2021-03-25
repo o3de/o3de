@@ -86,7 +86,7 @@ namespace PhysX
         AZ_UNUSED(debugDisplay);
 
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-        float radius = m_radiusManipulator->GetPosition().GetLength();
+        float radius = m_radiusManipulator->GetLocalPosition().GetLength();
 
         m_radiusManipulator->SetAxis(cameraState.m_side);
         m_radiusManipulator->SetLocalPosition(cameraState.m_side * radius);

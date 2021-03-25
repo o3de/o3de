@@ -42,6 +42,7 @@ namespace AZ
         }
     };
 
+    class Name;
     class ScheduledEvent;
 
     //! @class EventSchedulerSystemComponent
@@ -75,7 +76,8 @@ namespace AZ
 
         //! IEventScheduler interface
         //! @{
-        ScheduledEventHandle* Add(ScheduledEvent* scheduledEvent, TimeMs durationMs) override;
+        ScheduledEventHandle* AddEvent(ScheduledEvent* scheduledEvent, TimeMs durationMs) override;
+        void AddCallback(const AZStd::function<void()>& callback, const Name& eventName, TimeMs durationMs) override;
         // @}
 
         //! EventSchedulerSystemComponent stats
@@ -88,6 +90,8 @@ namespace AZ
 
     private:
         ScheduledEventHandle* AllocateHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent);
+        // Allocates a single use event to capture the passed in callback. Event is cleaned up on completion.
+        ScheduledEvent* AllocateManagedEvent(TimeMs executeTimeMs, TimeMs durationTimeMs, const AZStd::function<void()>& callback, const Name& eventName);
         void FreeHandle(ScheduledEventHandle* handle);
 
         // Bind the DumpStats member function to the console as 'EventSchedulerSystemComponent.DumpStats'

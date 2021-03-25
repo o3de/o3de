@@ -303,7 +303,7 @@ namespace GraphCanvas
         UpdateOffset();
     }
 
-    void ConnectionGraphicsItem::OnItemChange([[maybe_unused]] const AZ::EntityId& entityId, QGraphicsItem::GraphicsItemChange change, [[maybe_unused]] const QVariant& value)
+    void ConnectionGraphicsItem::OnItemChange(const AZ::EntityId& /*entityId*/, QGraphicsItem::GraphicsItemChange change, const QVariant& /*value*/)
     {
         switch (change)
         {
@@ -441,6 +441,11 @@ namespace GraphCanvas
     void ConnectionGraphicsItem::SetAltDeletionEnabled(bool enabled)
     {
         SetAllowQuickDeletion(enabled);
+    }
+
+    void ConnectionGraphicsItem::SetGraphicsItemFlags(QGraphicsItem::GraphicsItemFlags flags)
+    {
+        setFlags(flags);
     }
 
     void ConnectionGraphicsItem::OnSceneMemberHidden()

@@ -10,7 +10,12 @@
 #
 
 set(FILES
-    Tests/SceneBuilder/SceneBuilderTests.cpp
+    Tests/InitSceneAPIFixture.h
+    Tests/MeshBuilder/MeshBuilderTests.cpp
+    Tests/MeshBuilder/MeshVerticesTests.cpp
+    Tests/MeshBuilder/SkinInfluencesTests.cpp
+    Tests/MeshOptimizer/HasBlendshapes.cpp
     Tests/SceneBuilder/SceneBuilderPhasesTests.cpp
+    Tests/SceneBuilder/SceneBuilderTests.cpp
     Tests/SceneProcessingConfigTest.cpp
 )

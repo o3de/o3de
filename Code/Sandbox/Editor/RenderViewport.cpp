@@ -1402,7 +1402,7 @@ void CRenderViewport::Update()
             AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
         }
     }
-    
+
     {
         SScopedCurrentContext context(this);
 
@@ -1470,11 +1470,6 @@ void CRenderViewport::SetViewEntity(const AZ::EntityId& viewEntityId, bool lockC
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::ResetToViewSourceType(const ViewSourceType& viewSourceType)
 {
-    if (m_pCameraFOVVariable)
-    {
-        m_pCameraFOVVariable->RemoveOnSetCallback(
-            functor(*this, &CRenderViewport::OnCameraFOVVariableChanged));
-    }
     LockCameraMovement(true);
     m_pCameraFOVVariable = nullptr;
     m_viewEntityId.SetInvalid();
@@ -2270,24 +2265,28 @@ void CRenderViewport::OnMenuSelectCurrentCamera()
     }
 }
 
-AzFramework::CameraState CRenderViewport::GetCameraState()
+static AzFramework::CameraState CameraStateFromCCamera(
+    const CCamera& camera, const float fov, const float width, const float height)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
     AzFramework::CameraState state;
-    const CCamera& camera = GetCamera();
-
     state.m_forward = LYVec3ToAZVec3(camera.GetViewdir());
     state.m_up = LYVec3ToAZVec3(camera.GetUp());
     state.m_side = state.m_forward.Cross(state.m_up);
     state.m_position = LYVec3ToAZVec3(camera.GetPosition());
-    state.m_fovOrZoom = GetFOV();
+    state.m_fovOrZoom = fov;
     state.m_nearClip = camera.GetNearPlane();
     state.m_farClip = camera.GetFarPlane();
     state.m_orthographic = false;
-    state.m_viewportSize = AZ::Vector2(m_rcClient.width(), m_rcClient.height());
+    state.m_viewportSize = AZ::Vector2(width, height);
 
     return state;
+}
+
+AzFramework::CameraState CRenderViewport::GetCameraState()
+{
+    return CameraStateFromCCamera(GetCamera(), GetFOV(), m_rcClient.width(), m_rcClient.height());
 }
 
 bool CRenderViewport::GridSnappingEnabled()
@@ -3508,7 +3507,7 @@ Vec3 CRenderViewport::ViewToWorld(const QPoint& vp, bool* collideWithTerrain, bo
     AZ_UNUSED(bSkipVegetation)
     AZ_UNUSED(bSkipVegetation)
     AZStd::optional<AZStd::pair<float, AZ::Vector3>> hitDistancePosition;
-    
+
     if (!onlyTerrain && !GetIEditor()->IsTerrainAxisIgnoreObjects())
     {
         AzFramework::EntityContextId editorContextId;
@@ -4189,6 +4188,28 @@ bool CRenderViewport::GetActiveCameraPosition(AZ::Vector3& cameraPos)
         {
             // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
             cameraPos = LYVec3ToAZVec3(m_viewTM.GetTranslation());
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool CRenderViewport::GetActiveCameraState(AzFramework::CameraState& cameraState)
+{
+    if (m_pPrimaryViewport == this)
+    {
+        if (GetIEditor()->IsInGameMode())
+        {
+            const auto& renderingCamera = m_engine->GetRenderingCamera();
+            cameraState = CameraStateFromCCamera(
+                renderingCamera, renderingCamera.GetFov(), m_rcClient.width(), m_rcClient.height());
+        }
+        else
+        {
+            const auto& camera = GetCamera();
+            cameraState = CameraStateFromCCamera(camera, GetFOV(), m_rcClient.width(), m_rcClient.height());
         }
 
         return true;

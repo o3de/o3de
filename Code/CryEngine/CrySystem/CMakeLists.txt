@@ -51,8 +51,6 @@ ly_add_target(
             Legacy::CrySystem.DLMalloc.C
         PRIVATE
             3rdParty::expat
-            3rdParty::LibTomCrypt
-            3rdParty::LibTomMath
             3rdParty::lz4
             3rdParty::md5
             3rdParty::tiff
@@ -64,7 +62,6 @@ ly_add_target(
             AZ::AzFramework
     RUNTIME_DEPENDENCIES
         Legacy::Cry3DEngine
-        Legacy::CryNetwork
 )
 
 ly_add_source_properties(

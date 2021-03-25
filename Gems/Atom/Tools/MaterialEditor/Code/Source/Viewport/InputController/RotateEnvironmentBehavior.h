@@ -34,7 +34,7 @@ namespace MaterialEditor
         void Start() override;
 
     protected:
-        void TickInternal(float x, float y) override;
+        void TickInternal(float x, float y, float z) override;
         float GetSensitivityX() override;
         float GetSensitivityY() override;
 

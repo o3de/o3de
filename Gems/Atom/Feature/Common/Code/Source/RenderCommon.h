@@ -22,11 +22,13 @@ namespace AZ
         {
             const uint32_t None = 0x00;
 
-            // ForwardMSAA -> Reflections passes
-            // ForwardMSAA pass sets UseSpecularIBLPass on any geometry that should receive IBL reflections.
-            // Reflections pass reads this value to restrict rendering to geometry that requires IBL.
-            // Note: the Reflections pass may also overwrite the rest of the bits in the stencil buffer.
-            const uint32_t UseSpecularIBLPass = 0xF;
+            // The MeshFeatureProcessor sets this stencil bit on any geometry that should receive IBL specular in the reflections pass,
+            // otherwise IBL specular is rendered in the Forward pass.
+            // The Reflections pass only renders to areas with this stencil bit set.
+            //
+            // Pass Range: Forward -> Reflections.
+            // Note: The Reflections pass may also overwrite other bits in the stencil buffer.
+            const uint32_t UseIBLSpecularPass = 0xF;
         }
     }
 }

@@ -496,6 +496,67 @@ namespace SettingsRegistryScriptUtilsTests
         AZStd::visit(ExpectedValueVisitor, testParam.m_expectedValue);
     }
 
+    TEST_P(SettingsRegistryBehaviorContextParamFixture, GetNotifyEvent_AllowsRegistrationOfAzEventHandler_Succeeds)
+    {
+        auto&& testParam = GetParam();
+
+        bool updateNotifySent{};
+
+        // Set the expected value within the SettingsRegistry
+        auto ExpectedValueVisitor = [this, jsonPath = testParam.m_jsonPointerPath, setMethodName = testParam.m_setMethodName,
+            &updateNotifySent](auto&& value)
+        {
+            using ValueType = AZStd::remove_cvref_t<decltype(value)>;
+            const auto classIter = m_behaviorContext->m_classes.find(SettingsRegistryScriptClassName);
+            ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
+            AZ::BehaviorClass* settingsRegistryInterfaceClass = classIter->second;
+            ASSERT_NE(nullptr, settingsRegistryInterfaceClass);
+            // Lookup the SettingsRegistry Proxy GetNotifyEvent
+            auto foundIt = settingsRegistryInterfaceClass->m_methods.find("GetNotifyEvent");
+            ASSERT_NE(settingsRegistryInterfaceClass->m_methods.end(), foundIt);
+            // Create local settings registry proxy object
+            AZ::SettingsRegistryScriptUtils::Internal::SettingsRegistryScriptProxy settingsRegistryObject(m_registry.get());
+
+            // Register a notification call back
+            AZ::SettingsRegistryScriptUtils::Internal::SettingsRegistryScriptProxy::ScriptNotifyEvent::Handler scriptNotifyHandler(
+                [&updateNotifySent, jsonPath](AZStd::string_view path)
+            {
+                if (path == jsonPath)
+                {
+                    updateNotifySent = true;
+                }
+            });
+            AZ::SettingsRegistryScriptUtils::Internal::SettingsRegistryScriptProxy::ScriptNotifyEvent* scriptNotifyEvent{};
+            EXPECT_TRUE(foundIt->second->InvokeResult(scriptNotifyEvent, &settingsRegistryObject));
+            ASSERT_NE(nullptr, scriptNotifyEvent);
+
+            // connect the scriptNotifyHandler to the settings registry script proxy event
+            scriptNotifyHandler.Connect(*scriptNotifyEvent);
+
+            // Find Reflected SettingsRegistryInterface Set* Method
+            foundIt = settingsRegistryInterfaceClass->m_methods.find(setMethodName);
+            ASSERT_NE(settingsRegistryInterfaceClass->m_methods.end(), foundIt);
+
+            // Invoke Set* method
+            bool setResult{};
+            EXPECT_TRUE(foundIt->second->InvokeResult(setResult, &settingsRegistryObject, jsonPath, value));
+            EXPECT_TRUE(setResult);
+
+            // Check value set through the BehaviorContext against the Settings Registry instance
+
+            // SettingsRegistryInterface::Get() can store the string result in an AZStd::fixed_string/AZStd::string
+            // So the AZStd::string_view is mapped to an AZStd::fixed_string for the purpose of calling Get()
+            using GetValueType = AZStd::conditional_t<AZStd::is_same_v<AZStd::string_view, ValueType>,
+                AZ::SettingsRegistryInterface::FixedValueString, ValueType>;
+            GetValueType outputValue{};
+            EXPECT_TRUE(m_registry->Get(outputValue, jsonPath));
+            EXPECT_EQ(value, outputValue);
+        };
+
+        AZStd::visit(ExpectedValueVisitor, testParam.m_expectedValue);
+        EXPECT_TRUE(updateNotifySent);
+    }
+
     INSTANTIATE_TEST_CASE_P(
         SettingsRegistryBehaviorContextGetFunctions,
         SettingsRegistryBehaviorContextParamFixture,

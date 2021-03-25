@@ -31,6 +31,7 @@ namespace AzNetworking
     class UdpFragmentQueue
         : public ITimeoutHandler
     {
+
     public:
 
         //! Updates the UdpFragmentQueue timeout queue.

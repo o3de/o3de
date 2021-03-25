@@ -50,7 +50,7 @@ namespace ScriptCanvas
             };
         }
 
-        enum Scope : AZ::u8
+        enum class Scope : AZ::u8
         {
             Local = 0,
             Input = 1,
@@ -76,7 +76,7 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(GraphVariable, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* context);
 
-        static const char* GetVariableNotificationBusName() { return "VariableNotification"; }
+        static const char* GetVariableNotificationBusName() { return k_OnVariableWriteEbusName; }
 
         class Comparator
         {
@@ -125,6 +125,9 @@ namespace ScriptCanvas
         const VariableId& GetVariableId() const;
 
         const Datum*    GetDatum() const;
+
+        bool IsExposedAsComponentInput() const;
+
         void            ConfigureDatumView(ModifiableDatumView& accessController);
         
         void SetVariableName(AZStd::string_view displayName);
@@ -137,6 +140,7 @@ namespace ScriptCanvas
 
         AZ::Crc32 GetInputControlVisibility() const;
         AZ::Crc32 GetScriptInputControlVisibility() const;
+        AZ::Crc32 GetNetworkSettingsVisibility() const;
         AZ::Crc32 GetFunctionInputControlVisibility() const;
         
         AZ::Crc32 GetVisibility() const;
@@ -163,7 +167,7 @@ namespace ScriptCanvas
 
         // Editor Callbacks
         void OnDatumEdited(const Datum* datum) override;
-        AZStd::vector<AZStd::pair<AZ::u8, AZStd::string>> GetScopes() const;
+        AZStd::vector<AZStd::pair<VariableFlags::Scope, AZStd::string>> GetScopes() const;
         ////
 
         int GetSortPriority() const;

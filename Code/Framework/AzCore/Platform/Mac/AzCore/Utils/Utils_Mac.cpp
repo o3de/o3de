@@ -20,4 +20,9 @@ namespace AZ::Utils
     {
         return AZStd::nullopt;
     }
+
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+    {
+        return AZStd::nullopt;
+    }
 }

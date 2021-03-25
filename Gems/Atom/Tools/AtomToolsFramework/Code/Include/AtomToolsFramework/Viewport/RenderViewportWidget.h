@@ -34,6 +34,7 @@ namespace AtomToolsFramework
     class RenderViewportWidget
         : public QWidget
         , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
         , protected AZ::TickBus::Handler
@@ -88,7 +89,12 @@ namespace AtomToolsFramework
         QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
         AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) override;
         AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) override;
+
+        // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
+        void BeginCursorCapture() override;
+        void EndCursorCapture() override;
         QPoint ViewportCursorScreenPosition() override;
+        AZStd::optional<QPoint> PreviousViewportCursorScreenPosition() override;
 
         // AzFramework::WindowRequestBus::Handler ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -111,7 +117,6 @@ namespace AtomToolsFramework
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-        void timerEvent(QTimerEvent *event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
 
     private:
@@ -137,5 +142,9 @@ namespace AtomToolsFramework
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.
         AZ::ScriptTimePoint m_time;
+        // Whether the Viewport is currently hiding and capturing the cursor position.
+        bool m_capturingCursor = false;
+        // The last known position of the mouse cursor, if one is available.
+        AZStd::optional<QPoint> m_lastCursorPosition;
     };
 } //namespace AtomToolsFramework

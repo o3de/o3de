@@ -193,13 +193,13 @@ namespace AZ
 
         // Scope producer functions
 
-        void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer)
+        void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
             frameGraph.SetEstimatedItemCount(1);
         }
 
-        void FullscreenTrianglePass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void FullscreenTrianglePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_shaderResourceGroup != nullptr)
             {
@@ -214,7 +214,7 @@ namespace AZ
             }
         }
 
-        void FullscreenTrianglePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void FullscreenTrianglePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

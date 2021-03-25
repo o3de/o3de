@@ -30,8 +30,8 @@ namespace AzToolsFramework
     }
 
     MultiLinearManipulator::MultiLinearManipulator(const AZ::Transform& worldFromLocal)
-        : m_worldFromLocal(worldFromLocal)
     {
+        SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
     }
 
@@ -56,7 +56,7 @@ namespace AzToolsFramework
     }
 
     static MultiLinearManipulator::Action BuildMultiLinearManipulatorAction(
-        const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform,
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
         const ViewportInteraction::MouseInteraction& interaction,
         const AZStd::vector<LinearManipulator::Fixed>& fixedAxes,
         const AZStd::vector<LinearManipulator::Starter>& starterStates, const GridSnapAction& gridSnapAction)
@@ -68,8 +68,8 @@ namespace AzToolsFramework
         {
             action.m_actions.push_back(
                 CalculateLinearManipulationDataAction(
-                    fixedAxes[fixedIndex], starterStates[fixedIndex], worldFromLocal, localTransform, gridSnapAction,
-                    interaction));
+                    fixedAxes[fixedIndex], starterStates[fixedIndex], worldFromLocal, nonUniformScale, localTransform,
+                    gridSnapAction, interaction));
         }
 
         return action;
@@ -78,7 +78,7 @@ namespace AzToolsFramework
     void MultiLinearManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(m_worldFromLocal);
+        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
 
         const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
         const AzFramework::CameraState cameraState = GetCameraState(interaction.m_interactionId.m_viewportId);
@@ -88,7 +88,7 @@ namespace AzToolsFramework
         {
             // note: m_localTransform must not be made uniform as it may contain a local scale we want to snap
             const auto linearStart = CalculateLinearManipulationDataStart(
-                fixed, worldFromLocalUniformScale, m_localTransform,
+                fixed, worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(),
                 GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt()), interaction,
                 rayIntersectionDistance, cameraState);
 
@@ -100,7 +100,8 @@ namespace AzToolsFramework
             const GridSnapAction gridSnapAction = GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt());
             // pass action containing all linear actions for each axis to handler
             m_onLeftMouseDownCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, m_localTransform, interaction, m_fixedAxes, m_starters, gridSnapAction));
+                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(),
+                interaction, m_fixedAxes, m_starters, gridSnapAction));
         }
     }
 
@@ -108,12 +109,13 @@ namespace AzToolsFramework
     {
         if (m_onMouseMoveCallback)
         {
-            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(m_worldFromLocal);
+            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
             const GridSnapAction gridSnapAction = GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt());
 
             m_onMouseMoveCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, m_localTransform, interaction, m_fixedAxes, m_starters, gridSnapAction));
+                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(),
+                interaction, m_fixedAxes, m_starters, gridSnapAction));
         }
     }
 
@@ -121,12 +123,13 @@ namespace AzToolsFramework
     {
         if (m_onLeftMouseUpCallback)
         {
-            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(m_worldFromLocal);
+            const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
             const GridSnapAction gridSnapAction = GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt());
 
             m_onLeftMouseUpCallback(BuildMultiLinearManipulatorAction(
-                worldFromLocalUniformScale, m_localTransform, interaction, m_fixedAxes, m_starters, gridSnapAction));
+                worldFromLocalUniformScale, GetNonUniformScale(), GetLocalTransform(),
+                interaction, m_fixedAxes, m_starters, gridSnapAction));
 
             m_starters.clear();
         }
@@ -140,7 +143,7 @@ namespace AzToolsFramework
     {
         if (cl_manipulatorDrawDebug)
         {
-            const AZ::Transform combined = TransformUniformScale(m_worldFromLocal) * m_localTransform;
+            const AZ::Transform combined = TransformUniformScale(GetSpace()) * GetLocalTransform();
             for (const auto& fixed : m_fixedAxes)
             {
                 DrawAxis(
@@ -153,7 +156,7 @@ namespace AzToolsFramework
             view->Draw(
                 GetManipulatorManagerId(), managerState,
                 GetManipulatorId(), {
-                    m_worldFromLocal * m_localTransform,
+                    ApplySpace(GetLocalTransform()), GetNonUniformScale(),
                     AZ::Vector3::CreateZero(), MouseOver()
                 },
                 debugDisplay, cameraState, mouseInteraction);
@@ -174,27 +177,6 @@ namespace AzToolsFramework
             {
                 return LinearManipulator::Fixed{axis};
             });
-    }
-
-    void MultiLinearManipulator::SetSpace(const AZ::Transform& worldFromLocal)
-    {
-        m_worldFromLocal = worldFromLocal;
-    }
-
-    void MultiLinearManipulator::SetLocalTransform(const AZ::Transform& localTransform)
-    {
-        m_localTransform = localTransform;
-    }
-
-    void MultiLinearManipulator::SetLocalPosition(const AZ::Vector3& localPosition)
-    {
-        m_localTransform.SetTranslation(localPosition);
-    }
-
-    void MultiLinearManipulator::SetLocalOrientation(const AZ::Quaternion& localOrientation)
-    {
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
     void MultiLinearManipulator::ClearAxes()

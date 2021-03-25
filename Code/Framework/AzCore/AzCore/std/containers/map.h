@@ -196,6 +196,54 @@ namespace AZStd
             return m_tree.node_handle_insert_unique(hint, AZStd::move(nodeHandle));
         }
 
+        //! C++17 insert_or_assign function assigns the element to the mapped_type if the key exist in the container
+        //! Otherwise a new value is inserted into the container
+        template <typename M>
+        pair<iterator, bool> insert_or_assign(const key_type& key, M&& value)
+        {
+            return m_tree.insert_or_assign_unique(key, AZStd::forward<M>(value));
+        }
+        template <typename M>
+        pair<iterator, bool> insert_or_assign(key_type&& key, M&& value)
+        {
+            return m_tree.insert_or_assign_unique(AZStd::move(key), AZStd::forward<M>(value));
+        }
+        template <typename M>
+        iterator insert_or_assign(const_iterator hint, const key_type& key, M&& value)
+        {
+            return m_tree.insert_or_assign_unique(hint, key, AZStd::forward<M>(value));
+        }
+        template <typename M>
+        iterator insert_or_assign(const_iterator hint, key_type&& key, M&& value)
+        {
+            return m_tree.insert_or_assign_unique(hint, AZStd::move(key), AZStd::forward<M>(value));
+        }
+
+        //! C++17 try_emplace function that does nothing to the arguments if the key exist in the container,
+        //! otherwise it constructs the value type as if invoking
+        //! value_type(AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<KeyType>(key)),
+        //!  AZStd::forward_as_tuple(AZStd::forward<Args>(args)...))
+        template <typename... Args>
+        pair<iterator, bool> try_emplace(const key_type& key, Args&&... arguments)
+        {
+            return m_tree.try_emplace_unique(key, AZStd::forward<Args>(arguments)...);
+        }
+        template <typename... Args>
+        pair<iterator, bool> try_emplace(key_type&& key, Args&&... arguments)
+        {
+            return m_tree.try_emplace_unique(AZStd::move(key), AZStd::forward<Args>(arguments)...);
+        }
+        template <typename... Args>
+        iterator try_emplace(const_iterator hint, const key_type& key, Args&&... arguments)
+        {
+            return m_tree.try_emplace_unique(hint, key, AZStd::forward<Args>(arguments)...);
+        }
+        template <typename... Args>
+        iterator try_emplace(const_iterator hint, key_type&& key, Args&&... arguments)
+        {
+            return m_tree.try_emplace_unique(hint, AZStd::move(key), AZStd::forward<Args>(arguments)...);
+        }
+
         node_type extract(const key_type& key)
         {
             return m_tree.template node_handle_extract<node_type>(key);

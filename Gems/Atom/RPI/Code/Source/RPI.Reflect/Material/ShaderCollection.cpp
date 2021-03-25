@@ -79,6 +79,19 @@ namespace AZ
                     ->Field("ShaderTag", &ShaderCollection::Item::m_shaderTag)
                     ;
             }
+
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<Item>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Shader")
+                    ->Attribute(AZ::Script::Attributes::Module, "shader")
+                    ->Method("GetShaderAsset", &Item::GetShaderAsset)
+                    ->Method("GetShaderAssetId", &Item::GetShaderAssetId)
+                    ->Method("GetShaderVariantId", &Item::GetShaderVariantId)
+                    ->Method("GetShaderOptionGroup", &Item::GetShaderOptionGroup)
+                ;
+            }
         }
 
         size_t ShaderCollection::size() const
@@ -234,6 +247,16 @@ namespace AZ
         const AZ::Name& ShaderCollection::Item::GetShaderTag() const
         {
             return m_shaderTag;
+        }
+
+        const Data::AssetId& ShaderCollection::Item::GetShaderAssetId() const
+        {
+            return m_shaderAsset->GetId();
+        }
+
+        const AZ::RPI::ShaderOptionGroup& ShaderCollection::Item::GetShaderOptionGroup() const
+        {
+            return m_shaderOptionGroup;
         }
 
     } // namespace RPI

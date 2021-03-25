@@ -73,8 +73,8 @@ namespace AzToolsFramework
     }
 
     SurfaceManipulator::SurfaceManipulator(const AZ::Transform& worldFromLocal)
-        : m_worldFromLocal(worldFromLocal)
     {
+        SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
     }
 
@@ -95,7 +95,7 @@ namespace AzToolsFramework
     void SurfaceManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, float /*rayIntersectionDistance*/)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(m_worldFromLocal);
+        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
 
         const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
@@ -107,7 +107,7 @@ namespace AzToolsFramework
                 interaction.m_mousePick.m_screenCoordinates));
 
         m_startInternal = CalculateManipulationDataStart(
-            worldFromLocalUniformScale, worldSurfacePosition, m_position,
+            worldFromLocalUniformScale, worldSurfacePosition, GetLocalPosition(),
             gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
             interaction.m_interactionId.m_viewportId);
 
@@ -135,7 +135,7 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                m_startInternal, TransformUniformScale(m_worldFromLocal), worldSurfacePosition,
+                m_startInternal, TransformUniformScale(GetSpace()), worldSurfacePosition,
                 gridSnapParams.m_gridSnap,
                 gridSnapParams.m_gridSize,
                 interaction.m_keyboardModifiers, interaction.m_interactionId.m_viewportId));
@@ -156,7 +156,7 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onMouseMoveCallback(CalculateManipulationDataAction(
-                m_startInternal, TransformUniformScale(m_worldFromLocal), worldSurfacePosition,
+                m_startInternal, TransformUniformScale(GetSpace()), worldSurfacePosition,
                 gridSnapParams.m_gridSnap,
                 gridSnapParams.m_gridSize,
                 interaction.m_keyboardModifiers, interaction.m_interactionId.m_viewportId));
@@ -177,8 +177,8 @@ namespace AzToolsFramework
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState,
             GetManipulatorId(), {
-                TransformUniformScale(m_worldFromLocal),
-                m_position, MouseOver()
+                TransformUniformScale(GetSpace()), GetNonUniformScale(),
+                GetLocalPosition(), MouseOver()
             },
             debugDisplay, cameraState, mouseInteraction);
     }

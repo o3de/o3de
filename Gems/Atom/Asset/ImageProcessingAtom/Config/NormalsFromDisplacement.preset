@@ -78,21 +78,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{8AE5D8D7-ECF8-4B7D-91DE-8F787E3B4210}",
-                "Name": "NormalsFromDisplacement",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_bump"
-                ],
-                "PixelFormat": "BC5s",
-                "IsPowerOf2": true,
-                "MipRenormalize": true,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

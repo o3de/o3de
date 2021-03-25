@@ -76,6 +76,8 @@ namespace AZ
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
             AZStd::sys_time_t GetShaderAssetBuildTimestamp() const;
 
+            bool IsRootVariant() const { return m_stableId == RPI::RootShaderVariantStableId; } 
+
         private:
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();

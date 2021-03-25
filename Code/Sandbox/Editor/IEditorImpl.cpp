@@ -213,6 +213,9 @@ CEditorImpl::CEditorImpl()
     SetPrimaryCDFolder();
     gSettings.Load();
 
+    // retrieve this after the settings have been loaded
+    m_isPrefabSystemEnabled = gSettings.prefabSystem;
+
     m_pErrorReport = new CErrorReport;
     m_pClassFactory = CClassFactory::Instance();
     m_pCommandManager = new CEditorCommandManager;
@@ -2093,6 +2096,11 @@ void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
 {
     return m_isNewViewportInteractionModelEnabled;
+}
+
+bool CEditorImpl::IsPrefabSystemEnabled() const
+{
+    return m_isPrefabSystemEnabled;
 }
 
 void CEditorImpl::OnStartPlayInEditor()

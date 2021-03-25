@@ -303,7 +303,7 @@ namespace LmbrCentral
         {
             AzToolsFramework::VertexContainerDisplay::DisplayVertexContainerIndices(
                 debugDisplay, AzToolsFramework::VariableVerticesVertexContainer<AZ::Vector3>(
-                    m_splineCommon.m_spline->m_vertexContainer), m_cachedUniformScaleTransform, IsSelected());
+                    m_splineCommon.m_spline->m_vertexContainer), m_cachedUniformScaleTransform, AZ::Vector3::CreateOne(), IsSelected());
         }
     }
 

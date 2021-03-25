@@ -248,11 +248,17 @@ namespace SceneBuilder
         EntityConstructor::EntityPointer exporter = EntityConstructor::BuildEntity("Scene Generation", azrtti_typeid<GenerationComponent>());
 
         ProcessingResultCombiner result;
-        AZ_TracePrintf(Utilities::LogWindow, "Preparing for scene generation.\n");
+        AZ_TracePrintf(Utilities::LogWindow, "Preparing for generation.\n");
         result += Process<PreGenerateEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Generating...\n");
         result += Process<GenerateEventContext>(*scene, platformIdentifier);
-        AZ_TracePrintf(Utilities::LogWindow, "Finalizing scene generation.\n");
+        AZ_TracePrintf(Utilities::LogWindow, "Generating LODs...\n");
+        result += Process<GenerateLODEventContext>(*scene, platformIdentifier);
+        AZ_TracePrintf(Utilities::LogWindow, "Generating additions...\n");
+        result += Process<GenerateAdditionEventContext>(*scene, platformIdentifier);
+        AZ_TracePrintf(Utilities::LogWindow, "Simplifing scene...\n");
+        result += Process<GenerateSimplificationEventContext>(*scene, platformIdentifier);
+        AZ_TracePrintf(Utilities::LogWindow, "Finalizing generation process.\n");
         result += Process<PostGenerateEventContext>(*scene, platformIdentifier);
 
         if (result.GetResult() == ProcessingResult::Failure)
@@ -364,7 +370,7 @@ namespace SceneBuilder
 
     void WriteAndLog(AZ::IO::SystemFile& dbgFile, const char* strToWrite)
     {
-        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, strToWrite);
+        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "%s", strToWrite);
         dbgFile.Write(strToWrite, strlen(strToWrite));
         dbgFile.Write("\n", strlen("\n"));
 
@@ -405,6 +411,7 @@ namespace SceneBuilder
 
                 AZ::SceneAPI::DataTypes::IGraphObject* graphObject = const_cast<AZ::SceneAPI::DataTypes::IGraphObject*>(viewIt.second.get());
                 
+                WriteAndLog(dbgFile, AZStd::string::format("Node Name: %s", viewIt.first.GetName()).c_str());
                 WriteAndLog(dbgFile, AZStd::string::format("Node Path: %s", viewIt.first.GetPath()).c_str());
                 WriteAndLog(dbgFile, AZStd::string::format("Node Type: %s", graphObject->RTTI_GetTypeName()).c_str());
 

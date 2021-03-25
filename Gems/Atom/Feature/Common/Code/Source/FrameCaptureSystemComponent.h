@@ -27,7 +27,7 @@ namespace AZ
         class FrameCaptureSystemComponent final
             : public AZ::Component
             , public FrameCaptureRequestBus::Handler
-            , public AZ::TickBus::Handler
+            , public AZ::SystemTickBus::Handler
         {
         public:
             AZ_COMPONENT(FrameCaptureSystemComponent, "{53931220-19E7-4DE4-AF29-C4BB16E251D1}");
@@ -50,7 +50,8 @@ namespace AZ
 
             void InitReadback();
 
-            void OnTick(float deltaTime, ScriptTimePoint time) override;
+            // SystemTickBus overrides ...
+            void OnSystemTick() override;
 
             AZStd::string ResolvePath(const AZStd::string& filePath);
 

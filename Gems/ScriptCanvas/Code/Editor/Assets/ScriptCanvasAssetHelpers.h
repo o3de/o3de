@@ -16,6 +16,8 @@
 #include <AzCore/Component/EntityUtils.h>
 #include <cinttypes>
 
+#include <ScriptCanvas/Core/Core.h>
+
 namespace ScriptCanvasEditor
 {
     namespace AssetHelpers
@@ -50,5 +52,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetInfo GetSourceInfoByProductId(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType);
 
         void DumpAssetInfo(AZ::Data::AssetId assetId, const char* extra);
+
+        bool IsValidSourceFile(const AZStd::string& filePath, ScriptCanvas::ScriptCanvasId scriptCanvasId);
     }
 }

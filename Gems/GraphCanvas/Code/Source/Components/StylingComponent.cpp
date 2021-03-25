@@ -236,7 +236,7 @@ namespace GraphCanvas
         StyleNotificationBus::Event(GetEntityId(), &StyleNotificationBus::Events::OnStyleChanged);
     }
 
-    void StylingComponent::OnRemovedFromScene([[maybe_unused]] const AZ::EntityId& scene)
+    void StylingComponent::OnRemovedFromScene(const AZ::EntityId& /*scene*/)
     {
         SceneNotificationBus::Handler::BusDisconnect();
     }

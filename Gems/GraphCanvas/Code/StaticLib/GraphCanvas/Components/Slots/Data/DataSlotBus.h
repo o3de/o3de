@@ -101,11 +101,11 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void OnVariableAssigned([[maybe_unused]] const AZ::EntityId& variableId) {};
-        virtual void OnDataSlotTypeChanged([[maybe_unused]] const DataSlotType& dataSlotType) {};
-        virtual void OnDisplayTypeChanged([[maybe_unused]] const AZ::Uuid& dataType, [[maybe_unused]] const AZStd::vector<AZ::Uuid>& typeIds) {};
+        virtual void OnVariableAssigned([[maybe_unused]] const AZ::EntityId& variableId) {}
+        virtual void OnDataSlotTypeChanged([[maybe_unused]] const DataSlotType& dataSlotType) {}
+        virtual void OnDisplayTypeChanged([[maybe_unused]] const AZ::Uuid& dataType, [[maybe_unused]] const AZStd::vector<AZ::Uuid>& typeIds) {}
         
-        virtual void OnDragDropStateStateChanged(const DragDropState& dragDropState) { AZ_UNUSED(dragDropState); };
+        virtual void OnDragDropStateStateChanged([[maybe_unused]] const DragDropState& dragDropState) { }
     };
     
     using DataSlotNotificationBus = AZ::EBus<DataSlotNotifications>;
@@ -121,6 +121,8 @@ namespace GraphCanvas
         virtual const DataSlotConnectionPin* GetConnectionPin() const = 0;
 
         virtual void UpdateDisplay() = 0;
+
+        virtual QRectF GetWidgetSceneBoundingRect() const = 0;
     };
 
     using DataSlotLayoutRequestBus = AZ::EBus<DataSlotLayoutRequests>;
@@ -149,5 +151,6 @@ namespace GraphCanvas
         virtual AZ::Outcome<DragDropState> OnDragEnterEvent(QGraphicsSceneDragDropEvent* dragDropEvent) = 0;
         virtual void OnDragLeaveEvent(QGraphicsSceneDragDropEvent* dragDropEvent) = 0;
         virtual void OnDropEvent(QGraphicsSceneDragDropEvent* dropEvent) = 0;
+        virtual void OnDropCancelled() = 0;
     };
 }

@@ -76,8 +76,14 @@ namespace EMotionFX
             m_entityId = AZ::EntityId(740216387);
             m_entity->SetId(m_entityId);
 
+            AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+            AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
+            AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
+            Integration::ActorComponent::Configuration actorConf;
+            actorConf.m_actorAsset = actorAsset;
+
             auto transformComponent = m_entity->CreateComponent<AzFramework::TransformComponent>();
-            auto actorComponent = m_entity->CreateComponent<Integration::ActorComponent>();
+            m_actorComponent = m_entity->CreateComponent<Integration::ActorComponent>(&actorConf);
             m_animGraphComponent = m_entity->CreateComponent<Integration::AnimGraphComponent>();
 
             m_entity->Init();
@@ -100,17 +106,15 @@ namespace EMotionFX
             motionSetAsset.GetAs<Integration::MotionSetAsset>()->SetData(new MotionSet());
             EXPECT_EQ(motionSetAsset.IsReady(), true) << "Motion set asset is not ready yet.";
             m_animGraphComponent->OnAssetReady(motionSetAsset);
-
-            // Actor asset.
-            AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-            AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
-            AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
-            actorComponent->OnAssetReady(actorAsset);
         }
 
         void ActivateEntity()
         {
+            // Set the actor asset and create the actor instance.
+            m_actorComponent->SetActorAsset(m_actorComponent->GetActorAsset());
+
             m_entity->Activate();
+
             m_animGraphInstance = m_animGraphComponent->GetAnimGraphInstance();
             EXPECT_NE(m_animGraphInstance, nullptr) << "Expecting valid anim graph instance.";
         }
@@ -140,6 +144,7 @@ namespace EMotionFX
         AZ::EntityId m_entityId;
         AZStd::unique_ptr<AZ::Entity> m_entity;
         TwoMotionNodeAnimGraph* m_animGraph = nullptr;
+        Integration::ActorComponent* m_actorComponent = nullptr;
         Integration::AnimGraphComponent* m_animGraphComponent = nullptr;
         AnimGraphInstance* m_animGraphInstance = nullptr;
         AZ::u32 m_parameterIndex = InvalidIndex32;

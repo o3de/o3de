@@ -43,12 +43,12 @@ set(FILES
     DataTypes/Rules/ICommentRule.h
     DataTypes/Rules/ILodRule.h
     DataTypes/Rules/IMeshAdvancedRule.h
-    DataTypes/Rules/IOriginRule.h
     DataTypes/Rules/IMaterialRule.h
     DataTypes/Rules/IScriptProcessorRule.h
     DataTypes/Rules/ISkeletonProxyRule.h
-    DataTypes/Rules/ITouchBendingRule.h
+    DataTypes/Rules/ICoordinateSystemRule.h
     DataTypes/Rules/IClothRule.h
+    DataTypes/Rules/ISkinRule.h
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h
@@ -123,6 +123,8 @@ set(FILES
     Import/ManifestImportRequestHandler.cpp
     Export/MtlMaterialExporter.h
     Export/MtlMaterialExporter.cpp
+    Utilities/CoordinateSystemConverter.h
+    Utilities/CoordinateSystemConverter.cpp
     Utilities/SceneGraphSelector.h
     Utilities/SceneGraphSelector.cpp
     Utilities/FileUtilities.h

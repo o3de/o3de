@@ -26,10 +26,11 @@
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
-#include <SceneAPI/SceneData/Rules/OriginRule.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
+#include <SceneAPI/SceneData/Rules/SkinRule.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 namespace AZ
 {
@@ -79,9 +80,13 @@ namespace AZ
                     {
                         modifiers.push_back(SceneData::StaticMeshAdvancedRule::TYPEINFO_Uuid());
                     }
-                    if (existingRules.find(SceneData::OriginRule::TYPEINFO_Uuid()) == existingRules.end())
+                    if (existingRules.find(SceneData::SkinRule::TYPEINFO_Uuid()) == existingRules.end())
                     {
-                        modifiers.push_back(SceneData::OriginRule::TYPEINFO_Uuid());
+                        modifiers.push_back(SceneData::SkinRule::TYPEINFO_Uuid());
+                    }
+                    if (existingRules.find(azrtti_typeid<CoordinateSystemRule>()) == existingRules.end())
+                    {
+                        modifiers.push_back(azrtti_typeid<CoordinateSystemRule>());
                     }
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))

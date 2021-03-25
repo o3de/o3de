@@ -30,4 +30,20 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     {
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
+
+    //! Reflection Probe (smallest probe volume that overlaps the object position)
+    struct ReflectionProbeData
+    {
+        float3 m_aabbPos;
+        float3 m_outerAabbMin;
+        float3 m_outerAabbMax;
+        float3 m_innerAabbMin;
+        float3 m_innerAabbMax;
+        float m_padding;
+        bool m_useReflectionProbe;
+        bool m_useParallaxCorrection;
+    };
+
+    ReflectionProbeData m_reflectionProbeData;
+    TextureCube m_reflectionProbeCubeMap;
 }

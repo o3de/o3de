@@ -107,6 +107,8 @@ set(FILES
     Source/RHI/ComputePipeline.h
     Source/RHI/GraphicsPipeline.cpp
     Source/RHI/GraphicsPipeline.h
+    Source/RHI/RayTracingPipeline.cpp
+    Source/RHI/RayTracingPipeline.h
     Source/RHI/Pipeline.cpp
     Source/RHI/Pipeline.h
     Source/RHI/PipelineLibrary.cpp
@@ -156,4 +158,13 @@ set(FILES
     Source/RHI/BufferMemoryPageAllocator.h
     Source/RHI/BufferMemoryView.h
     Source/RHI/BufferMemoryAllocator.h
+    Source/RHI/RayTracingBufferPools.h
+    Source/RHI/RayTracingBlas.cpp
+    Source/RHI/RayTracingBlas.h
+    Source/RHI/RayTracingTlas.cpp
+    Source/RHI/RayTracingTlas.h
+    Source/RHI/RayTracingPipelineState.cpp
+    Source/RHI/RayTracingPipelineState.h
+    Source/RHI/RayTracingShaderTable.cpp
+    Source/RHI/RayTracingShaderTable.h
 )

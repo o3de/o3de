@@ -433,7 +433,6 @@ void CReadStream::FreeTemporaryMemory()
     if (m_pFileRequest)
     {
         m_pFileRequest->SyncWithDecompress();
-        m_pFileRequest->SyncWithDecrypt();
         m_pFileRequest->FreeBuffer();
     }
     m_pBuffer = 0;

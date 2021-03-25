@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
@@ -83,6 +84,9 @@ namespace LmbrCentral
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+        const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
+
         void ShapeChanged();
 
         AZ::PolygonPrismPtr GetPolygonPrism() const { return m_polygonPrism;  }
@@ -95,7 +99,7 @@ namespace LmbrCentral
         {
             void UpdateIntersectionParamsImpl(const AZ::Transform& currentTransform,
                 const AZ::PolygonPrism& polygonPrism,
-                const AZ::Vector3& currentNonUniformScale) override;
+                const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne()) override;
 
             friend PolygonPrismShape;
 
@@ -105,13 +109,15 @@ namespace LmbrCentral
 
         AZ::PolygonPrismPtr m_polygonPrism; ///< Reference to the underlying polygon prism data.
         PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
-        AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
+        AZ::Transform m_currentTransform = AZ::Transform::CreateIdentity(); ///< Caches the current transform for this shape.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
+        AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
     };
 
     /// Generate mesh used for rendering top and bottom of PolygonPrism shape.
     void GeneratePolygonPrismMesh(
-        const AZStd::vector<AZ::Vector2>& vertices, float height,
+        const AZStd::vector<AZ::Vector2>& vertices, float height, const AZ::Vector3& nonUniformScale,
         PolygonPrismMesh& polygonPrismMeshOut);
 
     void DrawPolygonPrismShape(

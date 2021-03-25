@@ -14,6 +14,7 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 
 namespace AzToolsFramework
@@ -23,6 +24,7 @@ namespace AzToolsFramework
         using PrefabDom = rapidjson::Document;
         using PrefabDomValue = rapidjson::Value;
         using PrefabDomPath = rapidjson::Pointer;
+        using PrefabDomList = AZStd::vector<PrefabDom>;
 
         using PrefabDomValueReference = AZStd::optional<AZStd::reference_wrapper<PrefabDomValue>>;
         using PrefabDomValueConstReference = AZStd::optional<AZStd::reference_wrapper<const PrefabDomValue>>;

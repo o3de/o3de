@@ -66,11 +66,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -shared
 
     )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions -fno-aligned-allocation -stdlib=libc++")
+    ly_set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions -fno-aligned-allocation -stdlib=libc++")
 
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
-    set(CMAKE_CXX_EXTENSIONS OFF)
+    ly_set(CMAKE_CXX_EXTENSIONS OFF)
 
     include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 else()

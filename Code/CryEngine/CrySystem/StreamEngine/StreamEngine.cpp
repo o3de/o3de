@@ -58,7 +58,6 @@ CStreamEngine::CStreamEngine()
     m_Statistics.nPendingReadBytes = 0;
 
     m_Statistics.nCurrentAsyncCount = 0;
-    m_Statistics.nCurrentDecryptCount = 0;
     m_Statistics.nCurrentDecompressCount = 0;
     m_Statistics.nCurrentFinishedCount = 0;
 
@@ -548,13 +547,10 @@ void CStreamEngine::Update()
     {
         // Repeat every second.
         m_nUnzipBandwidth = m_decompressStats.m_tempUnzipTime.GetValue() == 0 ? 0 : (uint32)(m_decompressStats.m_nTempBytesUnziped / m_decompressStats.m_tempUnzipTime.GetSeconds());
-        m_nDecryptBandwidth = m_decompressStats.m_tempDecryptTime.GetValue() == 0 ? 0 : (uint32)(m_decompressStats.m_nTempBytesDecrypted / m_decompressStats.m_tempDecryptTime.GetSeconds());
         m_nVerifyBandwidth = m_decompressStats.m_tempVerifyTime.GetValue() == 0 ? 0 : (uint32)(m_decompressStats.m_nTempBytesVerified / m_decompressStats.m_tempVerifyTime.GetSeconds());
 
         m_decompressStats.m_tempUnzipTime.SetValue(0);
         m_decompressStats.m_nTempBytesUnziped = 0;
-        m_decompressStats.m_tempDecryptTime.SetValue(0);
-        m_decompressStats.m_nTempBytesDecrypted = 0;
         m_decompressStats.m_tempVerifyTime.SetValue(0);
         m_decompressStats.m_nTempBytesVerified = 0;
 
@@ -564,20 +560,14 @@ void CStreamEngine::Update()
     {
         m_nUnzipBandwidthAverage = (uint32)(m_decompressStats.m_nTotalBytesUnziped / m_decompressStats.m_totalUnzipTime.GetSeconds());
     }
-    if (m_decompressStats.m_totalDecryptTime.GetValue() != 0)
-    {
-        m_nDecryptBandwidthAverage = (uint32)(m_decompressStats.m_nTotalBytesDecrypted / m_decompressStats.m_totalDecryptTime.GetSeconds());
-    }
     if (m_decompressStats.m_totalVerifyTime.GetValue() != 0)
     {
         m_nVerifyBandwidthAverage = (uint32)(m_decompressStats.m_nTotalBytesVerified / m_decompressStats.m_totalVerifyTime.GetSeconds());
     }
 
     m_Statistics.nDecompressBandwidth = m_nUnzipBandwidth;
-    m_Statistics.nDecryptBandwidth = m_nDecryptBandwidth;
     m_Statistics.nVerifyBandwidth = m_nVerifyBandwidth;
     m_Statistics.nDecompressBandwidthAverage = m_nUnzipBandwidthAverage;
-    m_Statistics.nDecryptBandwidthAverage = m_nDecryptBandwidthAverage;
     m_Statistics.nVerifyBandwidthAverage = m_nVerifyBandwidthAverage;
 
     CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
@@ -1388,14 +1378,14 @@ void CStreamEngine::DrawStatistics()
 
     const char* sMediaType = m_bStreamDataOnHDD ? "HDD" : "DVD";
     const char* sStatus = (m_bStreamingStatsPaused) ? "Paused" : "";
-    DrawText(tx, ty += ystep, clText, "Streaming IO: %.2f|%.2fMB/s, ACT: %3dmsec, Unzip: %.2fMB/s, Decrypt: %.2fMB/s, Verify: %.2fMB/s, Jobs:%5d (%4d) %s %s",
+    DrawText(tx, ty += ystep, clText, "Streaming IO: %.2f|%.2fMB/s, ACT: %3dmsec, Unzip: %.2fMB/s, Verify: %.2fMB/s, Jobs:%5d (%4d) %s %s",
         (float)stats.nTotalCurrentReadBandwidth / (1024 * 1024), (float)stats.nTotalSessionReadBandwidth / (1024 * 1024),
-        (uint32)stats.fAverageCompletionTime, (float)stats.nDecompressBandwidth / (1024 * 1024), (float)stats.nDecryptBandwidth / (1024 * 1024), (float)stats.nVerifyBandwidth / (1024 * 1024),
+        (uint32)stats.fAverageCompletionTime, (float)stats.nDecompressBandwidth / (1024 * 1024), (float)stats.nVerifyBandwidth / (1024 * 1024),
         (uint32)stats.nTotalStreamingRequestCount, (uint32)(stats.nTotalRequestCount - stats.nTotalStreamingRequestCount),
         sMediaType, sStatus);
 
-    DrawText(tx, ty += ystep, clText, "\t Request: Active:%2d (%2.1fMB) Live:%2d Decrypt:%2d Decompress:%2d Async:%2d Finished:%2d Temp Pool Max:%2.1fMB", openStats.nOpenRequestCount,
-        (float)stats.nPendingReadBytes / (1024 * 1024), CAsyncIOFileRequest::s_nLiveRequests, stats.nCurrentDecryptCount,   stats.nCurrentDecompressCount, stats.nCurrentAsyncCount, stats.nCurrentFinishedCount,
+    DrawText(tx, ty += ystep, clText, "\t Request: Active:%2d (%2.1fMB) Live:%2d Decompress:%2d Async:%2d Finished:%2d Temp Pool Max:%2.1fMB", openStats.nOpenRequestCount,
+        (float)stats.nPendingReadBytes / (1024 * 1024), CAsyncIOFileRequest::s_nLiveRequests, stats.nCurrentDecompressCount, stats.nCurrentAsyncCount, stats.nCurrentFinishedCount,
         (float)stats.nMaxTempMemory / (1024 * 1024));
 
     ty += ystep;
@@ -1577,10 +1567,8 @@ void CStreamEngine::ClearStatistics()
     m_PerExtensionInfo.clear();
 
     m_Statistics.nDecompressBandwidth = 0;
-    m_Statistics.nDecryptBandwidth = 0;
     m_Statistics.nVerifyBandwidth = 0;
     m_Statistics.nDecompressBandwidthAverage = 0;
-    m_Statistics.nDecryptBandwidthAverage = 0;
     m_Statistics.nVerifyBandwidthAverage = 0;
 
     m_Statistics.nTotalBytesRead = 0;

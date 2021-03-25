@@ -192,10 +192,6 @@ EShaderLanguage GetShaderLanguage()
     {
         shaderLanguage = eSL_Orbis;
     }
-    else if (CParserBin::m_nPlatform == SF_DURANGO)
-    {
-        shaderLanguage = eSL_Durango;
-    }
     else if (CParserBin::m_nPlatform == SF_D3D11)
     {
         shaderLanguage = eSL_D3D11;
@@ -226,7 +222,6 @@ const char* GetShaderLanguageName()
     {
         "Unknown",
         "Orbis",
-        "Durango",
         "D3D11",
         "GL4",
         "GL4",
@@ -246,7 +241,6 @@ const char* GetShaderLanguageResourceName()
     {
         "(UNK)",
         "(O)",
-        "(D)",
         "(DX1)",
         "(G4)",
         "(G4)",
@@ -3427,7 +3421,7 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
         szProfile = "ps_5_0";
         break;
     case eHWSC_Geometry:
-        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
+        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
         {
             szProfile = "gs_5_0";
         }
@@ -3437,7 +3431,7 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
         }
         break;
     case eHWSC_Domain:
-        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
+        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
         {
             szProfile = "ds_5_0";
         }
@@ -3447,7 +3441,7 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
         }
         break;
     case eHWSC_Hull:
-        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
+        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4)
         {
             szProfile = "hs_5_0";
         }
@@ -3457,7 +3451,7 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
         }
         break;
     case eHWSC_Compute:
-        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_METAL || CParserBin::m_nPlatform == SF_GLES3)
+        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_METAL || CParserBin::m_nPlatform == SF_GLES3)
         {
             szProfile = "cs_5_0";
         }

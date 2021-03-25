@@ -49,12 +49,12 @@ namespace AZ
         {
         }
 
-        void LightCullingRemap::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void LightCullingRemap::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            ComputePass::SetupFrameGraphDependencies(frameGraph, producer);
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
         }
 
-        void LightCullingRemap::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void LightCullingRemap::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (!m_initialized)
             {
@@ -75,7 +75,7 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void LightCullingRemap::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void LightCullingRemap::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

@@ -22,4 +22,4 @@ namespace ScriptCanvas
         AZ_INLINE NumberType ToleranceSIMD() { return 0.01; }
         AZ_INLINE NumberType Zero() { return 0.0; }
     }
-} // namespace ScriptCanvas
+} 

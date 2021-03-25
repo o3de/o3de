@@ -43,14 +43,6 @@
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "IsPowerOf2": true
-            },
-            "xenia": {
-                "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
-                "Name": "SF_Gradient",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "SuppressEngineReduce": true,
-                "IsPowerOf2": true
             }
         }
     }

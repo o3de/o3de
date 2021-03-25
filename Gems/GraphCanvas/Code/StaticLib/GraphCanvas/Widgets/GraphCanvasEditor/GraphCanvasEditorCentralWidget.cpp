@@ -337,7 +337,7 @@ namespace GraphCanvas
         return m_editorDockWidgets;
     }
 
-    void AssetEditorCentralDockWindow::OnFocusChanged([[maybe_unused]] QWidget* oldFocus, QWidget* newFocus)
+    void AssetEditorCentralDockWindow::OnFocusChanged(QWidget* /*oldFocus*/, QWidget* newFocus)
     {
         if (newFocus != nullptr)
         {

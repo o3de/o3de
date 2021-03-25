@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Tests/ActorBuilderTests.cpp
     Tests/BlendTreeParameterNodeTests.cpp
     Tests/CommandRemoveMotionTests.cpp
     Tests/EMotionFXTest.cpp

@@ -47,13 +47,12 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator, 0);
-            MorphTargetInputBuffers(const AZStd::vector<uint32_t>& vertexNumbers, const AZStd::vector<uint32_t>& vertexDeltas, const AZStd::string& bufferNamePrefix);
+            MorphTargetInputBuffers(uint32_t vertexCount, const AZStd::vector<uint32_t>& vertexDeltas, const AZStd::string& bufferNamePrefix);
 
             //! Set the buffer views and vertex count on the given SRG
             void SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
         private:
-            Data::Instance<RPI::Buffer> m_positionDeltas;
-            Data::Instance<RPI::Buffer> m_vertexNumbers;
+            Data::Instance<RPI::Buffer> m_vertexDeltas;
         };
 
         struct MorphTargetMetaData
@@ -68,10 +67,22 @@ namespace AZ
 
         namespace MorphTargetConstants
         {
-            // Morph targets output a position with three 32-bit components
-            static constexpr uint32_t s_unpackedMorphTargetDeltaSize = 12;
+            // Morph targets output deltas with three 32-bit components
+            static constexpr uint32_t s_unpackedMorphTargetDeltaSizeInBytes = 12;
+            // Position, normal, tangent, and bitangent is output for each morph
+            static constexpr uint32_t s_morphTargetDeltaTypeCount = 4;
             static constexpr uint32_t s_invalidDeltaOffset = std::numeric_limits<uint32_t>::max();
         }
+
+        //! Unlike MorphTargetMetaData which is the same for every instance of a given skinned mesh,
+        //! this data varies between instances
+        struct MorphTargetInstanceMetaData
+        {
+            uint32_t m_accumulatedPositionDeltaOffsetInBytes;
+            uint32_t m_accumulatedNormalDeltaOffsetInBytes;
+            uint32_t m_accumulatedTangentDeltaOffsetInBytes;
+            uint32_t m_accumulatedBitangentDeltaOffsetInBytes;
+        };
 
     }// Render
 }// AZ

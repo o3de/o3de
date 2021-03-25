@@ -83,6 +83,9 @@ namespace AZ
             //! Get the number of vertices for the lod
             uint32_t GetVertexCount() const;
 
+            //! Set the index buffer asset
+            void SetIndexBuffer(const Data::Asset<RPI::BufferAsset> bufferAsset);
+
             //! Create the index buffer. SetIndexCount must be called first as CreateIndexBuffer depends on that to know the number of indices to create.
             //! @param data The indices to be used for the index buffer. The index buffer is used by the target skinned model, but is not modified during skinning so it is shared between all instances of the same skinned mesh.
             //! @param bufferName Optional debug name for the buffer. A Uuid will automatically be appended to make it unique. If none is specified, a default name will be used.
@@ -116,14 +119,17 @@ namespace AZ
             //! @param vertexNumbers The indices of the vertices that are deformed, since the morph target can deform a sparse set of vertices.
             //! @param deltas The encoded deltas, stored as a raw buffer of 4 byte components.
             //! @param bufferNamePrefix A prefix that can be used to identify this morph target when creating names for the buffers.
-            void AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& vertexNumbers, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix);
+            void AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix);
 
             //! Get the MetaDatas for all the morph targets that can be applied to an instance of this skinned mesh
             const AZStd::vector<MorphTargetMetaData>& GetMorphTargetMetaDatas() const;
 
             //! Get the MorphTargetInputBuffers for all the morph targets that can be applied to an instance of this skinned mesh
             const AZStd::vector<AZStd::intrusive_ptr<MorphTargetInputBuffers>>& GetMorphTargetInputBuffers() const;
-            
+
+            //! Sets the input for an input vertex stream from an existing buffer asset.
+            void SetSkinningInputBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshInputVertexStreams inputStream);
+
             //! Returns the BufferAsset of an input vertex stream.
             const Data::Asset<RPI::BufferAsset>& GetSkinningInputBufferAsset(SkinnedMeshInputVertexStreams stream) const;
 

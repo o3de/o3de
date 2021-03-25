@@ -1,4 +1,5 @@
 {
+    "gem_name": "PhysXSamples",
      "Dependencies": [
         {
             "Uuid": "ed07631f95fb4be1bd10cd37298ec697",

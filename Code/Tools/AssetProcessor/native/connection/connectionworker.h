@@ -58,7 +58,7 @@ Q_SIGNALS:
         void ErrorMessage(QString msg);
 
         // the token identifies the unique connection instance, since multiple may have the same address
-        void IsAddressWhiteListed(QHostAddress hostAddress, void* token); 
+        void IsAddressInAllowedList(QHostAddress hostAddress, void* token); 
 
     public Q_SLOTS:
         void ConnectSocket(qintptr socketDescriptor);
@@ -70,8 +70,8 @@ Q_SIGNALS:
         void RequestTerminate();
         bool NegotiateDirect(bool initiate);
 
-        // the token will be the same token sent in the whitelisting request.
-        void AddressIsWhiteListed(void* token, bool result);
+        // the token will be the same token sent in the allowedlisting request.
+        void AddressIsInAllowedList(void* token, bool result);
 
     private Q_SLOTS:
         void TerminateConnection();

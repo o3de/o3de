@@ -211,6 +211,8 @@ namespace AZ::SettingsRegistryMergeUtils
 
     void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry, AZStd::string_view targetName)
     {
+        registry.Set(BuildTargetNameKey, targetName);
+
         // Add specializations to the target registry based on the name of the Build System Target
         auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%.*s",
             SpecializationsRootKey, aznumeric_cast<int>(targetName.size()), targetName.data());
@@ -305,7 +307,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 // Iterate over the line and escape the '~' and '/' values
                 AZStd::fixed_string<ConfigBufferMaxSize> escapedLine = EncodeLineForJsonPointer<ConfigBufferMaxSize>(line,
                     configParserSettings.m_commandLineSettings.m_delimiterFunc);
-                
+
                 registry.MergeCommandLineArgument(escapedLine, currentJsonPointerPath, configParserSettings.m_commandLineSettings);
 
                 // Skip past the newline character if found
@@ -409,6 +411,13 @@ namespace AZ::SettingsRegistryMergeUtils
             path = appRoot;
 #endif
             registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+
+            // check for a default write storage path, fall back to the cache root if not
+            AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+            registry.Set(FilePathKey_DevWriteStorage,
+                devWriteStorage.has_value() ?
+                    devWriteStorage.value() :
+                    path.LexicallyNormal().Native());
 
             // Cache game folder - corresponds to the @assets@ alias
             AZStd::to_lower(projectPathValue.begin(), projectPathValue.end());
@@ -614,7 +623,7 @@ namespace AZ::SettingsRegistryMergeUtils
             switchKey += '/';
             switchKey += commandOption;
             size_t switchKeyRootSize = switchKey.size();
-            // Associate an empty array with the commandOption by default 
+            // Associate an empty array with the commandOption by default
             rapidjson::Document commandSwitchDocument;
             rapidjson::Pointer pointer(switchKey.c_str(), switchKey.length());
             pointer.Set(commandSwitchDocument, rapidjson::Value(rapidjson::kArrayType));;

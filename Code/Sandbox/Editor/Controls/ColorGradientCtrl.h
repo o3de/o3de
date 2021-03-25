@@ -67,7 +67,7 @@ public:
     void SetZoom(float fZoom);
     void SetOrigin(float fOffset);
 
-    typedef Functor1<CColorGradientCtrl*> UpdateCallback;
+    typedef AZStd::function<void(CColorGradientCtrl*)> UpdateCallback;
     void SetUpdateCallback(const UpdateCallback& cb) { m_updateCallback = cb; };
 
     void SetNoTimeMarker(bool noTimeMarker);

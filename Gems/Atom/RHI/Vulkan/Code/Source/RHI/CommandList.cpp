@@ -27,6 +27,10 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
 #include <RHI/RenderPass.h>
@@ -34,6 +38,7 @@
 #include <RHI/SwapChain.h>
 #include <Atom/RHI/IndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI/DispatchRaysItem.h>
 
 namespace AZ
 {
@@ -395,8 +400,74 @@ namespace AZ
 
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
+            // manually clear the Dispatch bindings
+            ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType::Dispatch);
+            for (size_t i = 0; i < bindings.m_descriptorSets.size(); ++i)
+            {
+                bindings.m_descriptorSets[i] = nullptr;
+            }
+
+            const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
+            vkCmdBindPipeline(m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
+
+            const ShaderResourceGroup* globalSrg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_globalSrg);
+            auto& compiledData = globalSrg->GetCompiledData();
+            VkDescriptorSet descriptorSet = compiledData.GetNativeDescriptorSet();
+
+            vkCmdBindDescriptorSets(
+                m_nativeCommandBuffer,
+                VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+                rayTracingPipelineState->GetNativePipelineLayout(),
+                0,
+                1,
+                &descriptorSet,
+                0,
+                nullptr);
+
+            const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
+            const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
+
+            // ray generation table
+            VkBufferDeviceAddressInfo addressInfo = {};
+            addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            addressInfo.pNext = nullptr;
+            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_rayGenerationTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+            VkDeviceAddress rayGenerationTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+
+            VkStridedDeviceAddressRegionKHR rayGenerationTable = {};
+            rayGenerationTable.deviceAddress = rayGenerationTableAddress;
+            rayGenerationTable.stride = shaderTableBuffers.m_rayGenerationTableStride;
+            rayGenerationTable.size = shaderTableBuffers.m_rayGenerationTableSize;
+
+            // miss table
+            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+            VkDeviceAddress missTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+
+            VkStridedDeviceAddressRegionKHR missTable = {};
+            missTable.deviceAddress = missTableAddress;
+            missTable.stride = shaderTableBuffers.m_missTableStride;
+            missTable.size = shaderTableBuffers.m_missTableSize;
+
+            // hit group table
+            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_hitGroupTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+            VkDeviceAddress hitGroupTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+
+            VkStridedDeviceAddressRegionKHR hitGroupTable = {};
+            hitGroupTable.deviceAddress = hitGroupTableAddress;
+            hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
+            hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
+
+            VkStridedDeviceAddressRegionKHR callableTable = {};
+
+            vkCmdTraceRaysKHR(
+                m_nativeCommandBuffer,
+                &rayGenerationTable,
+                &missTable,
+                &hitGroupTable,
+                &callableTable,
+                dispatchRaysItem.m_width,
+                dispatchRaysItem.m_height,
+                dispatchRaysItem.m_depth);
         }
 
         void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
@@ -862,14 +933,43 @@ namespace AZ
 
         void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
+            const RayTracingBlas& vulkanRayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
+            const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
+
+            // submit the command to build the BLAS
+            const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
+            vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
+
+            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
+            // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            vkCmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
         }
         
         void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
+            const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
+            const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
+
+            // submit the command to build the TLAS
+            const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
+            const VkAccelerationStructureBuildRangeInfoKHR* pOffsetInfo = &offsetInfo;
+            vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
         }
 
         void CommandList::ClearImage(const ResourceClearRequest& request)

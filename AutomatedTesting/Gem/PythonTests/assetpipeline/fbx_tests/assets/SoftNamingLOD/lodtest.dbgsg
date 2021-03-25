@@ -1,0 +1,138 @@
+ProductName: lodtest.dbgsg
+debugSceneGraphVersion: 1
+lodtest
+Node Path: RootNode.lodtest
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 17730128541777770264
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Path: RootNode.lodtest_lod3
+Node Type: MeshData
+	Positions: Count 1984. Hash: 6600975913707260286
+	Normals: Count 1984. Hash: 2708036977889843831
+	FaceList: Count 960. Hash: 18299150252135919020
+	FaceMaterialIds: Count 960. Hash: 12510609185544665964
+
+Node Path: RootNode.lodtest_lod2
+Node Type: MeshData
+	Positions: Count 240. Hash: 219362421205407416
+	Normals: Count 240. Hash: 11195242321181199939
+	FaceList: Count 80. Hash: 11130917988116538993
+	FaceMaterialIds: Count 80. Hash: 4190892684086530065
+
+Node Path: RootNode.lodtest_lod1
+Node Type: MeshData
+	Positions: Count 192. Hash: 1283526254311745349
+	Normals: Count 192. Hash: 1873340970602844856
+	FaceList: Count 124. Hash: 4139150512255795252
+	FaceMaterialIds: Count 124. Hash: 2372486708814455910
+
+Node Path: RootNode.lodtest.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Path: RootNode.lodtest.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UVMap
+
+Node Path: RootNode.lodtest.Material
+Node Type: MaterialData
+	MaterialName: Material
+	UniqueId: 41
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.200000,  0.200000,  0.200000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 36.000000
+
+Node Path: RootNode.lodtest.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.lodtest.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	TangentSpace: 1
+
+Node Path: RootNode.lodtest_lod3.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  2.298166,  0.000000>
+
+Node Path: RootNode.lodtest_lod3.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 1984. Hash: 14119273880200542497
+	UVCustomName: UVMap
+
+Node Path: RootNode.lodtest_lod3.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 1984. Hash: 18230617734432580484
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.lodtest_lod3.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 1984. Hash: 1758062968819667297
+	TangentSpace: 1
+
+Node Path: RootNode.lodtest_lod2.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000, -0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000, -2.211498,  0.000000>
+
+Node Path: RootNode.lodtest_lod2.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 240. Hash: 13702273589593616598
+	UVCustomName: UVMap
+
+Node Path: RootNode.lodtest_lod2.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 240. Hash: 12143450499217075227
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.lodtest_lod2.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 240. Hash: 2933938440535428567
+	TangentSpace: 1
+
+Node Path: RootNode.lodtest_lod1.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 2.410331,  0.000000,  0.000000>
+
+Node Path: RootNode.lodtest_lod1.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 192. Hash: 27253578623892681
+	UVCustomName: UVMap
+
+Node Path: RootNode.lodtest_lod1.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 192. Hash: 5663634855689915515
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.lodtest_lod1.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 192. Hash: 10115392016288328891
+	TangentSpace: 1
+

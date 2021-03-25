@@ -16,6 +16,7 @@
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -23,7 +24,6 @@
 #include <SceneAPIExt/Groups/MotionGroup.h>
 #include <SceneAPIExt/Rules/MotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionCompressionSettingsRule.h>
-#include <SceneAPIExt/Rules/CoordinateSystemRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
 #include <SceneAPIExt/Rules/MotionAdditiveRule.h>
@@ -90,9 +90,9 @@ namespace EMotionFX
                     {
                         modifiers.push_back(Rule::MotionScaleRule::TYPEINFO_Uuid());
                     }
-                    if (existingRules.find(Rule::CoordinateSystemRule::TYPEINFO_Uuid()) == existingRules.end())
+                    if (existingRules.find(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>()) == existingRules.end())
                     {
-                        modifiers.push_back(Rule::CoordinateSystemRule::TYPEINFO_Uuid());
+                        modifiers.push_back(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>());
                     }
                     if (existingRules.find(Rule::MotionRangeRule::TYPEINFO_Uuid()) == existingRules.end())
                     {
@@ -120,10 +120,7 @@ namespace EMotionFX
                 group->SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<Group::IMotionGroup>(scene.GetName(), scene.GetManifest()));
 
                 AZ::SceneAPI::Containers::RuleContainer& rules = group->GetRuleContainer();
-                if (!rules.ContainsRuleOfType<Rule::CoordinateSystemRule>())
-                {
-                    rules.AddRule(AZStd::make_shared<Rule::CoordinateSystemRule>());
-                }
+
                 if (!rules.ContainsRuleOfType<Rule::MotionSamplingRule>())
                 {
                     rules.AddRule(AZStd::make_shared<Rule::MotionSamplingRule>());
@@ -210,7 +207,8 @@ namespace EMotionFX
                         updated = true;
                     }
 
-                    AZStd::shared_ptr<Rule::MotionSamplingRule> motionSamplingRule = group.GetRuleContainer().FindFirstByType<Rule::MotionSamplingRule>();
+                    AZ::SceneAPI::Containers::RuleContainer& rules = group.GetRuleContainer();
+                    AZStd::shared_ptr<Rule::MotionSamplingRule> motionSamplingRule = rules.FindFirstByType<Rule::MotionSamplingRule>();
                     if (!motionSamplingRule)
                     {
                         group.GetRuleContainer().AddRule(AZStd::make_shared<Rule::MotionSamplingRule>());
@@ -218,7 +216,7 @@ namespace EMotionFX
 
                     if (morphAnimationCount)
                     {
-                        AZStd::shared_ptr<Rule::MorphTargetRuleReadOnly> rule = group.GetRuleContainer().FindFirstByType<Rule::MorphTargetRuleReadOnly>();
+                        AZStd::shared_ptr<Rule::MorphTargetRuleReadOnly> rule = rules.FindFirstByType<Rule::MorphTargetRuleReadOnly>();
                         if (rule)
                         { 
                             if (rule->GetMorphAnimationCount() != morphAnimationCount)
@@ -228,15 +226,15 @@ namespace EMotionFX
                         }
                         else
                         {
-                            group.GetRuleContainer().AddRule(AZStd::make_shared<Rule::MorphTargetRuleReadOnly>(morphAnimationCount));
+                            rules.AddRule(AZStd::make_shared<Rule::MorphTargetRuleReadOnly>(morphAnimationCount));
                         }
                     }
                     else
                     {
-                        AZStd::shared_ptr<Rule::MorphTargetRuleReadOnly> rule = group.GetRuleContainer().FindFirstByType<Rule::MorphTargetRuleReadOnly>();
+                        AZStd::shared_ptr<Rule::MorphTargetRuleReadOnly> rule = rules.FindFirstByType<Rule::MorphTargetRuleReadOnly>();
                         if (rule)
                         {
-                            group.GetRuleContainer().RemoveRule(rule);
+                            rules.RemoveRule(rule);
                         }
                     }
                 }

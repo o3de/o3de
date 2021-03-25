@@ -1,0 +1,83 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
+ly_add_target(
+    NAME AWSClientAuth.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        awsclientauth_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include/Public
+        PRIVATE
+            Include/Private
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::AWSCore
+            Gem::HttpRequestor
+            3rdParty::AWSNativeSDK::AWSClientAuth
+            3rdParty::AWSNativeSDK::Core
+)
+
+ly_add_target( 
+    NAME AWSClientAuth ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    OUTPUT_NAME Gem.AWSClientAuth.c74f2756f5874c0d8d29646dfc9cb0ad.v0.1.0
+    FILES_CMAKE
+        awsclientauth_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Include/Private
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::AWSCore
+            Gem::HttpRequestor
+            3rdParty::AWSNativeSDK::AWSClientAuth
+            3rdParty::AWSNativeSDK::Core
+        PUBLIC
+            Gem::AWSClientAuth.Static
+)
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME AWSClientAuth.Tests MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            awsclientauth_test_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                "Include/Private"
+                "Include/Public"
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                3rdParty::AWSNativeSDK::AWSClientAuth
+                AZ::AzCore
+                AZ::AzFramework
+                Gem::AWSCore
+                Gem::AWSClientAuth.Static
+                AZ::AWSNativeSDKInit
+                Gem::HttpRequestor
+   )
+   ly_add_googletest(
+        NAME Gem::AWSClientAuth.Tests
+    )
+endif()

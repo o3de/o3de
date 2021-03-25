@@ -104,7 +104,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Blast.Editor.Static
                 Gem::PythonAssetBuilder.Editor
         RUNTIME_DEPENDENCIES
-                3rdParty::assimp
+                3rdParty::assimplib
     )
 
 endif()

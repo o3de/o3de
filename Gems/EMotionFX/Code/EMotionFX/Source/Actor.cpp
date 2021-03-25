@@ -10,9 +10,12 @@
 *
 */
 
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorBus.h>
@@ -31,18 +34,18 @@
 #include <EMotionFX/Source/NodeGroup.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MorphSetup.h>
+#include <EMotionFX/Source/MorphTargetStandard.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Skeleton.h>
 #include <EMotionFX/Source/SoftSkinDeformer.h>
 #include <EMotionFX/Source/DualQuatSkinDeformer.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SoftSkinManager.h>
 
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/Compare.h>
 #include <MCore/Source/OBB.h>
-
-#include <AzCore/std/containers/unordered_set.h>
 
 namespace EMotionFX
 {
@@ -53,18 +56,21 @@ namespace EMotionFX
         mOBB.Init();
     }
 
-
     Actor::LODLevel::LODLevel()
     {
     }
 
+    Actor::MeshLODData::MeshLODData()
+    {
+        // Create the default LOD level
+        m_lodLevels.push_back({});
+    }
 
     Actor::NodeLODInfo::NodeLODInfo()
     {
         mMesh   = nullptr;
         mStack  = nullptr;
     }
-
 
     Actor::NodeLODInfo::~NodeLODInfo()
     {
@@ -74,7 +80,6 @@ namespace EMotionFX
 
     //----------------------------------------------------
 
-    // constructor
     Actor::Actor(const char* name)
     {
         SetName(name);
@@ -83,13 +88,8 @@ namespace EMotionFX
         mMaterials.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
         mDependencies.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
         mMorphSetups.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
-        mLODs.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
 
         mSkeleton = Skeleton::Create();
-
-        // init some members
-        mLODs.AddEmpty();
-        mLODs[0].mNodeInfos.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
 
         mMotionExtractionNode       = MCORE_INVALIDINDEX32;
         mRetargetRootNode           = MCORE_INVALIDINDEX32;
@@ -121,28 +121,20 @@ namespace EMotionFX
         ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnActorCreated, this);
     }
 
-
-    // destructor
     Actor::~Actor()
     {
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnActorDestroyed, this);
         GetEventManager().OnDeleteActor(this);
 
-        // clear the node mirror data
         mNodeMirrorInfos.Clear(true);
 
-        // delete all the materials
         RemoveAllMaterials();
-
-        // remove all morph setups
         RemoveAllMorphSetups();
-
-        // remove all node groups
         RemoveAllNodeGroups();
 
         mInvBindPoseTransforms.clear();
 
-        // destroy the skeleton
         MCore::Destroy(mSkeleton);
     }
 
@@ -196,18 +188,25 @@ namespace EMotionFX
         result->mSkeleton = mSkeleton->Clone();
 
         // clone lod data
-        result->SetNumLODLevels(mLODs.GetLength());
         result->mNodeInfos = mNodeInfos;
-        for (uint32 i = 0; i < mLODs.GetLength(); ++i)
+        const uint32 numNodes = mSkeleton->GetNumNodes();
+
+        const size_t numLodLevels = m_meshLodData.m_lodLevels.size();
+        MeshLODData& resultMeshLodData = result->m_meshLodData;
+
+        result->SetNumLODLevels(numLodLevels);
+        for (size_t lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
         {
-            const uint32 numNodes = mSkeleton->GetNumNodes();
-            result->mLODs[i].mNodeInfos.Resize(numNodes);
+            const MCore::Array<NodeLODInfo>& nodeInfos = m_meshLodData.m_lodLevels[lodLevel].mNodeInfos;
+            MCore::Array<NodeLODInfo>& resultNodeInfos = resultMeshLodData.m_lodLevels[lodLevel].mNodeInfos;
+
+            resultNodeInfos.Resize(numNodes);
             for (uint32 n = 0; n < numNodes; ++n)
             {
-                NodeLODInfo& resultNodeInfo = result->mLODs[i].mNodeInfos[n];
-                const NodeLODInfo& sourceNodeInfo = mLODs[i].mNodeInfos[n];
-                resultNodeInfo.mMesh        = (sourceNodeInfo.mMesh) ? sourceNodeInfo.mMesh->Clone()     : nullptr;
-                resultNodeInfo.mStack       = (sourceNodeInfo.mStack) ? sourceNodeInfo.mStack->Clone(resultNodeInfo.mMesh)        : nullptr;
+                NodeLODInfo& resultNodeInfo = resultNodeInfos[n];
+                const NodeLODInfo& sourceNodeInfo = nodeInfos[n];
+                resultNodeInfo.mMesh = (sourceNodeInfo.mMesh) ? sourceNodeInfo.mMesh->Clone() : nullptr;
+                resultNodeInfo.mStack = (sourceNodeInfo.mStack) ? sourceNodeInfo.mStack->Clone(resultNodeInfo.mMesh) : nullptr;
             }
         }
 
@@ -308,22 +307,24 @@ namespace EMotionFX
     // add a LOD level and copy the data from the last LOD level to the new one
     void Actor::AddLODLevel(bool copyFromLastLODLevel)
     {
-        mLODs.AddEmpty();
-        LODLevel& newLOD = mLODs.GetLast();
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+
+        lodLevels.emplace_back();
+        LODLevel& newLOD = lodLevels.back();
         const uint32 numNodes = mSkeleton->GetNumNodes();
         newLOD.mNodeInfos.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
         newLOD.mNodeInfos.Resize(numNodes);
 
-        const uint32 numLODs    = mLODs.GetLength();
-        const uint32 lodIndex   = numLODs - 1;
+        const size_t numLODs    = lodLevels.size();
+        const size_t lodIndex   = numLODs - 1;
 
         // get the number of nodes, iterate through them, create a new LOD level and copy over the meshes from the last LOD level
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            NodeLODInfo& newLODInfo = mLODs[lodIndex].mNodeInfos[i];
+            NodeLODInfo& newLODInfo = lodLevels[lodIndex].mNodeInfos[i];
             if (copyFromLastLODLevel && lodIndex > 0)
             {
-                const NodeLODInfo& prevLODInfo = mLODs[lodIndex - 1].mNodeInfos[i];
+                const NodeLODInfo& prevLODInfo = lodLevels[lodIndex - 1].mNodeInfos[i];
                 newLODInfo.mMesh        = (prevLODInfo.mMesh)        ? prevLODInfo.mMesh->Clone()                    : nullptr;
                 newLODInfo.mStack       = (prevLODInfo.mStack)       ? prevLODInfo.mStack->Clone(newLODInfo.mMesh)   : nullptr;
             }
@@ -335,7 +336,7 @@ namespace EMotionFX
         }
 
         // create a new material array for the new LOD level
-        mMaterials.Resize(mLODs.GetLength());
+        mMaterials.Resize(lodLevels.size());
         mMaterials[lodIndex].SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
 
         // create an empty morph setup for the new LOD level
@@ -348,12 +349,13 @@ namespace EMotionFX
         }
     }
 
-
     // insert a LOD level at a given position
     void Actor::InsertLODLevel(uint32 insertAt)
     {
-        mLODs.Insert(insertAt);
-        LODLevel& newLOD = mLODs[insertAt];
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+
+        lodLevels.insert(lodLevels.begin()+insertAt, {});
+        LODLevel& newLOD = lodLevels[insertAt];
         const uint32 lodIndex   = insertAt;
         const uint32 numNodes   = mSkeleton->GetNumNodes();
         newLOD.mNodeInfos.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
@@ -362,7 +364,7 @@ namespace EMotionFX
         // get the number of nodes, iterate through them, create a new LOD level and copy over the meshes from the last LOD level
         for (uint32 i = 0; i < numNodes; ++i)
         {
-            NodeLODInfo& lodInfo    = mLODs[lodIndex].mNodeInfos[i];
+            NodeLODInfo& lodInfo    = lodLevels[lodIndex].mNodeInfos[i];
             lodInfo.mMesh           = nullptr;
             lodInfo.mStack          = nullptr;
         }
@@ -375,12 +377,14 @@ namespace EMotionFX
         mMorphSetups.Insert(insertAt, nullptr);
     }
 
-
     // replace existing LOD level with the current actor
     void Actor::CopyLODLevel(Actor* copyActor, uint32 copyLODLevel, uint32 replaceLODLevel, bool copySkeletalLODFlags)
     {
-        const LODLevel& sourceLOD = copyActor->mLODs[copyLODLevel];
-        LODLevel& targetLOD = mLODs[replaceLODLevel];
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        AZStd::vector<LODLevel>& copyLodLevels = copyActor->m_meshLodData.m_lodLevels;
+
+        const LODLevel& sourceLOD = copyLodLevels[copyLODLevel];
+        LODLevel& targetLOD = lodLevels[replaceLODLevel];
 
         const uint32 numNodes = mSkeleton->GetNumNodes();
         for (uint32 i = 0; i < numNodes; ++i)
@@ -454,15 +458,10 @@ namespace EMotionFX
         }
     }
 
-
     // preallocate memory for all LOD levels
-    void Actor::SetNumLODLevels(uint32 numLODs)
+    void Actor::SetNumLODLevels(uint32 numLODs, bool adjustMorphSetup)
     {
-        mLODs.Resize(numLODs);
-        for (uint32 i = 0; i < numLODs; ++i)
-        {
-            mLODs[i].mNodeInfos.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
-        }
+        m_meshLodData.m_lodLevels.resize(numLODs);
 
         // reserve space for the materials
         mMaterials.Resize(numLODs);
@@ -471,75 +470,31 @@ namespace EMotionFX
             mMaterials[i].SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
         }
 
-        // reserve space for the morph setups
-        mMorphSetups.Resize(numLODs);
-        for (uint32 i = 0; i < numLODs; ++i)
+        if (adjustMorphSetup)
         {
-            mMorphSetups[i] = nullptr;
+            mMorphSetups.Resize(numLODs);
+            for (uint32 i = 0; i < numLODs; ++i)
+            {
+                mMorphSetups[i] = nullptr;
+            }
         }
     }
-
-
-    // remove a given LOD level
-    void Actor::RemoveLODLevel(uint32 lodLevel)
-    {
-        LODLevel& lodLevelToRemove = mLODs[lodLevel];
-
-        // iterate through all nodes and remove the meshes and mesh deformers for the given LOD level
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            NodeLODInfo& nodeInfo = lodLevelToRemove.mNodeInfos[i];
-            MCore::Destroy(nodeInfo.mMesh);
-            nodeInfo.mMesh      = nullptr;
-            MCore::Destroy(nodeInfo.mStack);
-            nodeInfo.mStack     = nullptr;
-        }
-        mLODs.Remove(lodLevel);
-
-        // iterate through the materials, reset them and remove the material LOD level
-        const uint32 numMaterials = GetNumMaterials(lodLevel);
-        for (uint32 i = 0; i < numMaterials; ++i)
-        {
-            mMaterials[lodLevel][i]->Destroy();
-        }
-        mMaterials.Remove(lodLevel);
-
-        // remove the morph target LOD level
-        if (mMorphSetups[lodLevel])
-        {
-            mMorphSetups[lodLevel]->Destroy();
-        }
-        mMorphSetups.Remove(lodLevel);
-    }
-
-
-    // remove all LOD levels except for the highest LOD level
-    void Actor::RemoveAllLODLevels()
-    {
-        while (mLODs.GetLength() > 1)
-        {
-            RemoveLODLevel(mLODs.GetLength() - 1);
-        }
-    }
-
 
     // removes all node meshes and stacks
     void Actor::RemoveAllNodeMeshes()
     {
         const uint32 numNodes = mSkeleton->GetNumNodes();
 
-        const uint32 numLODs = mLODs.GetLength();
-        for (uint32 lod = 0; lod < numLODs; ++lod)
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        for (LODLevel& lodLevel : lodLevels)
         {
-            LODLevel& lodLevel = mLODs[lod];
             for (uint32 i = 0; i < numNodes; ++i)
             {
                 NodeLODInfo& info = lodLevel.mNodeInfos[i];
                 MCore::Destroy(info.mMesh);
-                info.mMesh      = nullptr;
+                info.mMesh = nullptr;
                 MCore::Destroy(info.mStack);
-                info.mStack     = nullptr;
+                info.mStack = nullptr;
             }
         }
     }
@@ -732,11 +687,11 @@ namespace EMotionFX
             for (uint32 v = 0; v < numOrgVerts; ++v)
             {
                 // for all influences for this vertex
-                const uint32 numInfluences = skinningLayer->GetNumInfluences(v);
-                for (uint32 i = 0; i < numInfluences; ++i)
+                const size_t numInfluences = skinningLayer->GetNumInfluences(v);
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     // get the node number of the bone
-                    uint32 nodeNr = skinningLayer->GetInfluence(v, i)->GetNodeNr();
+                    uint16 nodeNr = skinningLayer->GetInfluence(v, i)->GetNodeNr();
 
                     // if the current skinning influence is linked to a node which is disabled in the given
                     // skeletal LOD we will end up with a badly skinned character, set its flag to conflict true
@@ -783,27 +738,6 @@ namespace EMotionFX
 
         return maxInfluences;
     }
-
-
-    // check if the mesh at the given LOD is deformable
-    bool Actor::CheckIfHasDeformableMesh(uint32 lodLevel) const
-    {
-        MCORE_ASSERT(lodLevel < mLODs.GetLength());
-
-        // check if any of the nodes has a deformable mesh
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            if (CheckIfHasDeformableMesh(lodLevel, i))
-            {
-                return true;
-            }
-        }
-
-        // aaaah, no deformable meshes found
-        return false;
-    }
-
 
     // check if there is any mesh available
     bool Actor::CheckIfHasMeshes(uint32 lodLevel) const
@@ -1032,7 +966,7 @@ namespace EMotionFX
             for (uint32 v = 0; v < numOrgVerts; ++v)
             {
                 // for all influences for this vertex
-                const uint32 numInfluences = skinningLayer->GetNumInfluences(v);
+                const uint32 numInfluences = aznumeric_cast<uint32>(skinningLayer->GetNumInfluences(v));
                 for (uint32 i = 0; i < numInfluences; ++i)
                 {
                     // get the node number of the bone
@@ -1063,32 +997,6 @@ namespace EMotionFX
             RecursiveAddDependencies(actor->GetDependency(i)->mActor);
         }
     }
-
-
-    // remove all meshes and stacks that have no morphing on them
-    uint32 Actor::RemoveAllMeshesWithoutMorphing(uint32 geomLODLevel)
-    {
-        uint32 numRemoved = 0;
-
-        // for all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            // check if the node has a morph deformer
-            if (CheckIfHasMorphDeformer(geomLODLevel, i) == false) // if it hasn't got a morph deformer
-            {
-                // remove all meshes, and remove the mesh deformer stack for this node at the given LOD
-                RemoveNodeMeshForLOD(geomLODLevel, i);
-
-                // increase the counter
-                numRemoved++;
-            }
-        }
-
-        // return the number of removed meshes
-        return numRemoved;
-    }
-
 
     // update the bounding volumes
     void Actor::UpdateNodeBindPoseOBBs(uint32 lodLevel)
@@ -1286,14 +1194,15 @@ namespace EMotionFX
         return MCORE_INVALIDINDEX32;
     }
 
-
     // make the geometry LOD levels compatible with the skeletal LOD levels
     // it remaps skinning influences of vertices that are linked to disabled bones, to other enabled bones
     void Actor::MakeGeomLODsCompatibleWithSkeletalLODs()
     {
+        const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+
         // for all geometry lod levels
-        const uint32 numGeomLODs = mLODs.GetLength();
-        for (uint32 geomLod = 0; geomLod < numGeomLODs; ++geomLod)
+        const size_t numGeomLODs = lodLevels.size();
+        for (size_t geomLod = 0; geomLod < numGeomLODs; ++geomLod)
         {
             // for all nodes
             const uint32 numNodes = mSkeleton->GetNumNodes();
@@ -1333,8 +1242,8 @@ namespace EMotionFX
                         const uint32 orgVertex      = orgVertices[vertexIndex];
 
                         // for all skinning influences of the vertex
-                        const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
-                        for (uint32 i = 0; i < numInfluences; ++i)
+                        const size_t numInfluences = layer->GetNumInfluences(orgVertex);
+                        for (size_t i = 0; i < numInfluences; ++i)
                         {
                             // if the bone is disabled
                             SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
@@ -1511,6 +1420,148 @@ namespace EMotionFX
         EMotionFX::GetEventManager().OnPostCreateActor(this);
     }
 
+    AZ::Data::AssetId Actor::ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId)
+    {
+        AZStd::string meshAssetPath;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(meshAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, meshAssetId);
+        AZStd::string meshAssetFileName;
+        AzFramework::StringFunc::Path::GetFileName(meshAssetPath.c_str(), meshAssetFileName);
+
+        return AZ::RPI::SkinMetaAsset::ConstructAssetId(meshAssetId, meshAssetFileName);
+    }
+
+    bool Actor::DoesSkinMetaAssetExist(const AZ::Data::AssetId& meshAssetId)
+    {
+        const AZ::Data::AssetId skinMetaAssetId = ConstructSkinMetaAssetId(meshAssetId);
+
+        AZ::Data::AssetInfo skinMetaAssetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(skinMetaAssetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, skinMetaAssetId);
+
+        return skinMetaAssetInfo.m_assetId.IsValid();
+    }
+
+    AZ::Data::AssetId Actor::ConstructMorphTargetMetaAssetId(const AZ::Data::AssetId& meshAssetId)
+    {
+        AZStd::string meshAssetPath;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(meshAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, meshAssetId);
+        AZStd::string meshAssetFileName;
+        AzFramework::StringFunc::Path::GetFileName(meshAssetPath.c_str(), meshAssetFileName);
+
+        return AZ::RPI::MorphTargetMetaAsset::ConstructAssetId(meshAssetId, meshAssetFileName);
+    }
+
+    bool Actor::DoesMorphTargetMetaAssetExist(const AZ::Data::AssetId& meshAssetId)
+    {
+        const AZ::Data::AssetId morphTargetMetaAssetId = ConstructMorphTargetMetaAssetId(meshAssetId);
+
+        AZ::Data::AssetInfo morphTargetMetaAssetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(morphTargetMetaAssetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, morphTargetMetaAssetId);
+
+        return morphTargetMetaAssetInfo.m_assetId.IsValid();
+    }
+
+    void Actor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_meshAsset)
+        {
+            m_meshAsset = asset;
+        }
+        if (asset == m_skinMetaAsset)
+        {
+            m_skinMetaAsset = asset;
+        }
+        if (asset == m_morphTargetMetaAsset)
+        {
+            m_morphTargetMetaAsset = asset;
+        }
+
+        CheckFinalizeActor();
+    }
+
+    void Actor::CheckFinalizeActor()
+    {
+        AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
+
+        if (m_meshAsset.IsReady())
+        {
+            const AZ::Data::AssetId meshAssetId = m_meshAsset.GetId();
+            const bool skinMetaAssetExists = DoesSkinMetaAssetExist(meshAssetId);
+            const bool morphTargetMetaAssetExists = DoesMorphTargetMetaAssetExist(m_meshAsset.GetId());
+
+            // Skin and morph target meta assets are ready, fill the runtime mesh data.
+            if ((!skinMetaAssetExists || m_skinMetaAsset.IsReady()) &&
+                (!morphTargetMetaAssetExists || m_morphTargetMetaAsset.IsReady()))
+            {
+                // Optional, not all actors have a skinned meshes.
+                AZStd::unordered_map<AZ::u16, AZ::u16> skinToSkeletonIndexMap;
+                if (skinMetaAssetExists)
+                {
+                    skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
+                }
+
+                ConstructMeshes(skinToSkeletonIndexMap);
+
+                // Optional, not all actors have morph targets.
+                if (morphTargetMetaAssetExists)
+                {
+                    ConstructMorphTargets();
+                }
+                else
+                {
+                    // Optional, not all actors have morph targets.
+                    const size_t numLODLevels = m_meshAsset->GetLodAssets().size();
+                    mMorphSetups.Resize(numLODLevels);
+                    for (AZ::u32 i = 0; i < numLODLevels; ++i)
+                    {
+                        mMorphSetups[i] = nullptr;
+                    }
+                }
+
+                SetActorReady();
+
+                // Do not release the mesh assets. We need the mesh data to initialize future instances of the render actor instances.
+                //m_meshAsset.Release();
+                //m_skinMetaAsset.Release();
+                //m_morphTargetMetaAsset.Release();
+            }
+        }
+    }
+
+    void Actor::LoadRemainingAssets()
+    {
+        // Everything is ready already or no (skeleton-only) or an invalid mesh asset assigned. Emit ready signal directly.
+        if (m_isReady || !m_meshAssetId.IsValid())
+        {
+            SetActorReady();
+            return;
+        }
+
+        LoadMeshAssetsQueued();
+    }
+
+    void Actor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_meshAsset)
+        {
+            m_meshAsset = asset;
+        }
+        if (asset == m_skinMetaAsset)
+        {
+            m_skinMetaAsset = asset;
+        }
+        if (asset == m_morphTargetMetaAsset)
+        {
+            m_morphTargetMetaAsset = asset;
+        }
+
+        CheckFinalizeActor();
+    }
+
+    void Actor::SetActorReady()
+    {
+        m_isReady = true;
+        ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnActorReady, this);
+    }
 
     // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
     void Actor::UpdateStaticAABB()
@@ -1522,6 +1573,72 @@ namespace EMotionFX
             //actorInstance->UpdateStaticBasedAABBDimensions();
             actorInstance->GetStaticBasedAABB(&mStaticAABB);
             actorInstance->Destroy();
+        }
+    }
+
+
+    // find the mesh points most influenced by a particular node (pretty expensive function only intended for use in the editor)
+    void Actor::FindMostInfluencedMeshPoints(const Node* node, AZStd::vector<AZ::Vector3>& outPoints) const
+    {
+        outPoints.clear();
+
+        const uint32 geomLODLevel = 0;
+        const uint32 numNodes = mSkeleton->GetNumNodes();
+
+        for (int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        {
+            // check if this node has a mesh, if not we can skip it
+            Mesh* mesh = GetMesh(geomLODLevel, nodeIndex);
+            if (mesh == nullptr)
+            {
+                continue;
+            }
+
+            // check if the mesh is skinned, if not, we don't need to do anything
+            SkinningInfoVertexAttributeLayer* layer = (SkinningInfoVertexAttributeLayer*)mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
+            if (layer == nullptr)
+            {
+                continue;
+            }
+
+            // get shortcuts to the original vertex numbers
+            const uint32* orgVertices = (uint32*)mesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+            AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
+
+            // for all submeshes
+            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+            for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+            {
+                SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+
+                // for all vertices in the submesh
+                const uint32 startVertex = subMesh->GetStartVertex();
+                const uint32 numVertices = subMesh->GetNumVertices();
+                for (uint32 vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+                {
+                    const uint32 orgVertex = orgVertices[startVertex + vertexIndex];
+
+                    // for all skinning influences of the vertex
+                    const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
+                    float maxWeight = 0.0f;
+                    uint32 maxWeightNodeIndex = 0;
+                    for (uint32 i = 0; i < numInfluences; ++i)
+                    {
+                        SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
+                        float weight = influence->GetWeight();
+                        if (weight > maxWeight)
+                        {
+                            maxWeight = weight;
+                            maxWeightNodeIndex = influence->GetNodeNr();
+                        }
+                    } // for all influences
+
+                    if (maxWeightNodeIndex == node->GetNodeIndex())
+                    {
+                        outPoints.push_back(positions[vertexIndex + startVertex]);
+                    }
+                } // for all verts
+            } // for all submeshes
         }
     }
 
@@ -1795,21 +1912,20 @@ namespace EMotionFX
         *mSkeleton->GetBindPose() = *other->GetSkeleton()->GetBindPose();
     }
 
-
     void Actor::SetNumNodes(uint32 numNodes)
     {
         mSkeleton->SetNumNodes(numNodes);
         mNodeInfos.resize(numNodes);
-        for (uint32 i = 0; i < mLODs.GetLength(); ++i)
+
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        for (LODLevel& lodLevel : lodLevels)
         {
-            LODLevel& lod = mLODs[i];
-            lod.mNodeInfos.Resize(numNodes);
+            lodLevel.mNodeInfos.Resize(numNodes);
         }
 
         Pose* bindPose = mSkeleton->GetBindPose();
         bindPose->LinkToActor(this, Pose::FLAG_LOCALTRANSFORMREADY, false);
     }
-
 
     void Actor::AddNode(Node* node)
     {
@@ -1818,10 +1934,10 @@ namespace EMotionFX
 
         // initialize the LOD data
         mNodeInfos.emplace_back();
-        for (uint32 i = 0; i < mLODs.GetLength(); ++i)
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        for (LODLevel& lodLevel : lodLevels)
         {
-            LODLevel& lod = mLODs[i];
-            lod.mNodeInfos.AddEmpty();
+            lodLevel.mNodeInfos.AddEmpty();
         }
 
         mSkeleton->GetBindPose()->LinkToActor(this, Pose::FLAG_LOCALTRANSFORMREADY, false);
@@ -1845,35 +1961,34 @@ namespace EMotionFX
         return node;
     }
 
-
     void Actor::RemoveNode(uint32 nr, bool delMem)
     {
         mSkeleton->RemoveNode(nr, delMem);
-        for (uint32 i = 0; i < mLODs.GetLength(); ++i)
-        {
-            mLODs[i].mNodeInfos.Remove(nr);
-        }
         mNodeInfos.erase(mNodeInfos.begin() + nr);
+
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        for (LODLevel& lodLevel : lodLevels)
+        {
+            lodLevel.mNodeInfos.Remove(nr);
+        }
     }
 
-
-    // delete all nodes
     void Actor::DeleteAllNodes()
     {
         mSkeleton->RemoveAllNodes();
-        for (uint32 i = 0; i < mLODs.GetLength(); ++i)
-        {
-            mLODs[i].mNodeInfos.Clear();
-        }
         mNodeInfos.clear();
-    }
 
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        for (LODLevel& lodLevel : lodLevels)
+        {
+            lodLevel.mNodeInfos.Clear();
+        }
+    }
 
     void Actor::ReserveMaterials(uint32 lodLevel, uint32 numMaterials)
     {
         mMaterials[lodLevel].Reserve(numMaterials);
     }
-
 
     // get a material
     Material* Actor::GetMaterial(uint32 lodLevel, uint32 nr) const
@@ -1903,7 +2018,6 @@ namespace EMotionFX
         return MCORE_INVALIDINDEX32;
     }
 
-
     // set a material
     void Actor::SetMaterial(uint32 lodLevel, uint32 nr, Material* mat)
     {
@@ -1912,26 +2026,22 @@ namespace EMotionFX
         mMaterials[lodLevel][nr] = mat;
     }
 
-
-    // add a material
     void Actor::AddMaterial(uint32 lodLevel, Material* mat)
     {
         MCORE_ASSERT(lodLevel < mMaterials.GetLength());
         mMaterials[lodLevel].Add(mat);
     }
 
-
-    // get the number of materials
     uint32 Actor::GetNumMaterials(uint32 lodLevel) const
     {
         MCORE_ASSERT(lodLevel < mMaterials.GetLength());
         return mMaterials[lodLevel].GetLength();
     }
 
-
     uint32 Actor::GetNumLODLevels() const
     {
-        return mLODs.GetLength();
+        const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        return static_cast<uint32>(lodLevels.size());
     }
 
 
@@ -2126,12 +2236,10 @@ namespace EMotionFX
 #endif
     }
 
-
     const MCore::AABB& Actor::GetStaticAABB() const
     {
         return mStaticAABB;
     }
-
 
     void Actor::SetStaticAABB(const MCore::AABB& box)
     {
@@ -2140,54 +2248,32 @@ namespace EMotionFX
 
     //---------------------------------
 
+    Mesh* Actor::GetMesh(uint32 lodLevel, uint32 nodeIndex) const
+    {
+        const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        return lodLevels[lodLevel].mNodeInfos[nodeIndex].mMesh;
+    }
+
+    MeshDeformerStack* Actor::GetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex) const
+    {
+        const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        return lodLevels[lodLevel].mNodeInfos[nodeIndex].mStack;
+    }
+
     // set the mesh for a given node in a given LOD
     void Actor::SetMesh(uint32 lodLevel, uint32 nodeIndex, Mesh* mesh)
     {
-        mLODs[lodLevel].mNodeInfos[nodeIndex].mMesh = mesh;
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        lodLevels[lodLevel].mNodeInfos[nodeIndex].mMesh = mesh;
     }
 
 
     // set the mesh deformer stack for a given node in a given LOD
     void Actor::SetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex, MeshDeformerStack* stack)
     {
-        mLODs[lodLevel].mNodeInfos[nodeIndex].mStack = stack;
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        lodLevels[lodLevel].mNodeInfos[nodeIndex].mStack = stack;
     }
-
-
-    // check if the mesh is deformable
-    bool Actor::CheckIfHasDeformableMesh(uint32 lodLevel, uint32 nodeIndex) const
-    {
-        const NodeLODInfo& nodeInfo = mLODs[lodLevel].mNodeInfos[nodeIndex];
-        if (nodeInfo.mMesh == nullptr)
-        {
-            return false;
-        }
-
-        return (nodeInfo.mStack && nodeInfo.mStack->GetNumDeformers() > 0);
-    }
-
-
-    // check if the mesh at the given LOD has a morph deformer
-    bool Actor::CheckIfHasMorphDeformer(uint32 lodLevel, uint32 nodeIndex) const
-    {
-        // check if there is a mesh
-        Mesh* mesh = GetMesh(lodLevel, nodeIndex);
-        if (mesh == nullptr)
-        {
-            return false;
-        }
-
-        // check if there is a mesh deformer stack
-        MeshDeformerStack* stack = GetMeshDeformerStack(lodLevel, nodeIndex);
-        if (stack == nullptr)
-        {
-            return false;
-        }
-
-        // check if there is a morph deformer on the stack
-        return stack->CheckIfHasDeformerOfType(MorphMeshDeformer::TYPE_ID);
-    }
-
 
     // check if the mesh has a skinning deformer (either linear or dual quat)
     bool Actor::CheckIfHasSkinningDeformer(uint32 lodLevel, uint32 nodeIndex) const
@@ -2256,8 +2342,8 @@ namespace EMotionFX
                         const uint32 orgVtx = orgVertices[v];
 
                         // for all skinning influences for this vertex
-                        const uint32 numInfluences = skinLayer->GetNumInfluences(orgVtx);
-                        for (uint32 i = 0; i < numInfluences; ++i)
+                        const size_t numInfluences = skinLayer->GetNumInfluences(orgVtx);
+                        for (size_t i = 0; i < numInfluences; ++i)
                         {
                             // get the node used by this influence
                             const uint32 nodeNr = skinLayer->GetInfluence(orgVtx, i)->GetNodeNr();
@@ -2285,11 +2371,12 @@ namespace EMotionFX
         }
     }
 
-
     // remove the mesh for a given node in a given LOD
     void Actor::RemoveNodeMeshForLOD(uint32 lodLevel, uint32 nodeIndex, bool destroyMesh)
     {
-        LODLevel&       lod         = mLODs[lodLevel];
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+
+        LODLevel&       lod         = lodLevels[lodLevel];
         NodeLODInfo&    nodeInfo    = lod.mNodeInfos[nodeIndex];
 
         if (destroyMesh && nodeInfo.mMesh)
@@ -2305,13 +2392,6 @@ namespace EMotionFX
         nodeInfo.mMesh  = nullptr;
         nodeInfo.mStack = nullptr;
     }
-
-
-    bool Actor::GetHasMesh(uint32 lodLevel, uint32 nodeIndex) const
-    {
-        return (mLODs[lodLevel].mNodeInfos[nodeIndex].mMesh != nullptr);
-    }
-
 
     void Actor::SetUnitType(MCore::Distance::EUnitType unitType)
     {
@@ -2654,13 +2734,13 @@ namespace EMotionFX
             {
                 if (flags[node->GetNodeIndex()])
                 {
-                    break;
+                   break;
                 }
                 flags[node->GetNodeIndex()] = true;
                 Node* parent = node->GetParentNode();
                 if (parent)
                 {
-                    childParentMap[node->GetNameString()] = parent->GetNameString();
+                   childParentMap[node->GetNameString()] = parent->GetNameString();
                 }
                 node = parent;
             } while (node);
@@ -2701,5 +2781,289 @@ namespace EMotionFX
         //reset the motion extraction node index
         SetMotionExtractionNode(motionExtractionNode);
         FindBestMatchingMotionExtractionAxis();
+    }
+
+    void Actor::SetMeshAssetId(const AZ::Data::AssetId& assetId)
+    {
+        m_meshAssetId = assetId;
+    }
+
+    void Actor::LoadMeshAssetsQueued()
+    {
+        AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
+
+        // Mesh asset will be queue loaded on post init.
+        if (m_meshAssetId.IsValid())
+        {
+            m_isReady = false;
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+
+            AZ::Data::AssetBus::MultiHandler::BusConnect(m_meshAssetId);
+            m_meshAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(m_meshAssetId, AZ::Data::AssetLoadBehavior::Default);
+
+            // Skin meta asset
+            if (DoesSkinMetaAssetExist(m_meshAssetId))
+            {
+                const AZ::Data::AssetId skinMetaAssetId = ConstructSkinMetaAssetId(m_meshAssetId);
+                AZ::Data::AssetBus::MultiHandler::BusConnect(skinMetaAssetId);
+                m_skinMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::SkinMetaAsset>(skinMetaAssetId, AZ::Data::AssetLoadBehavior::Default);
+            }
+
+            // Morph target meta asset
+            if (DoesMorphTargetMetaAssetExist(m_meshAssetId))
+            {
+                const AZ::Data::AssetId morphTargetMetaAssetId = ConstructMorphTargetMetaAssetId(m_meshAssetId);
+                AZ::Data::AssetBus::MultiHandler::BusConnect(morphTargetMetaAssetId);
+                m_morphTargetMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MorphTargetMetaAsset>(morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::Default);
+            }
+        }
+    }
+
+    Node* Actor::FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const
+    {
+        const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
+
+        // Use the first joint that we can find for any of the Atom sub meshes and use it as owner of our mesh.
+        for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
+        {
+            const AZ::Name& meshName = sourceMesh.GetName();
+            Node* joint = FindJointByMeshName(meshName.GetStringView());
+            if (joint)
+            {
+                return joint;
+            }
+        }
+
+        // In case neither of the mesh joints are present in the actor, just use the root node as fallback.
+        AZ_Assert(mSkeleton->GetNode(0), "Actor needs to have at least a single joint.");
+        return mSkeleton->GetNode(0);
+    }
+
+    void Actor::ConstructMeshes(const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap)
+    {
+        AZ_Assert(m_meshAsset.IsReady(), "Mesh asset should be fully loaded and ready.");
+
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const size_t numLODLevels = lodAssets.size();
+
+        lodLevels.clear();
+        SetNumLODLevels(numLODLevels, /*adjustMorphSetup=*/false);
+        const uint32 numNodes = mSkeleton->GetNumNodes();
+
+        // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and GLActor.
+        RemoveAllMaterials();
+        mMaterials.Resize(numLODLevels);
+
+        for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
+        {
+            const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
+            const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
+
+            lodLevels[lodLevel].mNodeInfos.Resize(numNodes);
+
+            // Create a single mesh for the actor.
+            Mesh* mesh = Mesh::CreateFromModelLod(lodAsset, skinToSkeletonIndexMap);
+
+            // Find an owning joint for the mesh.
+            Node* meshJoint = FindMeshJoint(lodAsset);
+            if (!meshJoint)
+            {
+                AZ_Error("EMotionFX", false, "Cannot find mesh joint. Skipping to add meshes to the actor.");
+                continue;
+            }
+
+            const AZ::u32 jointIndex = meshJoint->GetNodeIndex();
+            NodeLODInfo& jointInfo = lodLevels[lodLevel].mNodeInfos[jointIndex];
+
+            jointInfo.mMesh = mesh;
+
+            if (!jointInfo.mStack)
+            {
+                jointInfo.mStack = MeshDeformerStack::Create(mesh);
+            }
+
+            // Add the skinning deformers
+            const AZ::u32 numLayers = mesh->GetNumSharedVertexAttributeLayers();
+            for (AZ::u32 layerNr = 0; layerNr < numLayers; ++layerNr)
+            {
+                EMotionFX::VertexAttributeLayer* vertexAttributeLayer = mesh->GetSharedVertexAttributeLayer(layerNr);
+                if (vertexAttributeLayer->GetType() != EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID)
+                {
+                    continue;
+                }
+
+                EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer = static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
+                const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
+                AZStd::set<AZ::u32> localJointIndices = skinLayer->CalcLocalJointIndices(numOrgVerts);
+                const AZ::u32 numLocalJoints = static_cast<AZ::u32>(localJointIndices.size());
+
+                // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that anymore.
+                // Default to dual quat skinning.
+                const bool dualQuatSkinning = true;
+                if (dualQuatSkinning)
+                {
+                    DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create(mesh);
+                    jointInfo.mStack->AddDeformer(skinDeformer);
+                    skinDeformer->ReserveLocalBones(numLocalJoints);
+                    skinDeformer->Reinitialize(this, meshJoint, lodLevel);
+                }
+                else
+                {
+                    SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer(mesh);
+                    jointInfo.mStack->AddDeformer(skinDeformer);
+                    skinDeformer->ReserveLocalBones(numLocalJoints); // pre-alloc data to prevent reallocs
+                    skinDeformer->Reinitialize(this, meshJoint, lodLevel);
+                }
+            }
+
+            // Add material for this mesh
+            AddMaterial(lodLevel, Material::Create(GetName()));
+        }
+    }
+
+    Node* Actor::FindJointByMeshName(const AZStd::string_view meshName) const
+    {
+        Node* joint = mSkeleton->FindNodeByName(meshName.data());
+        if (!joint)
+        {
+            // When mesh merging in the model builder is enabled, the name of the mesh is the concatenated version
+            // of all the merged meshes with a plus symbol used as delimiter. Try to find any of the merged mesh joint
+            // and use the first one to add the mesh to it.
+            AZStd::vector<AZStd::string> tokens;
+            AZ::StringFunc::Tokenize(meshName, tokens, '+');
+            for (const AZStd::string& token : tokens)
+            {
+                joint = mSkeleton->FindNodeByName(token);
+                if (joint)
+                {
+                    break;
+                }
+            }
+        }
+
+        return joint;
+    }
+
+    AZStd::unordered_map<AZ::u16, AZ::u16> Actor::ConstructSkinToSkeletonIndexMap(const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& skinMetaAsset)
+    {
+        AZ_Assert(skinMetaAsset && skinMetaAsset.IsReady(), "Cannot construct skin to skeleton index mapping. Skin meta asset needs to be loaded and ready.");
+
+        // Build an atom index to emfx index map
+        AZStd::unordered_map<AZ::u16, AZ::u16> result;
+        for (const auto& pair : skinMetaAsset->GetJointNameToIndexMap())
+        {
+            const Node* node = mSkeleton->FindNodeByName(pair.first.c_str());
+            if (!node)
+            {
+                AZ_Assert(node, "Cannot find joint named %s in the skeleton while it is used by the skin.", pair.first.c_str());
+                continue;
+            }
+            result.emplace(pair.second, node->GetNodeIndex());
+        }
+
+        return result;
+    }
+
+    void Actor::ConstructMorphTargets()
+    {
+        AZ_Assert(m_meshAsset.IsReady() && m_morphTargetMetaAsset.IsReady(), "Mesh as well as morph target meta asset asset should be fully loaded and ready.");
+        AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
+        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const size_t numLODLevels = lodAssets.size();
+
+        AZ_Assert(mMorphSetups.GetLength() == numLODLevels, "There needs to be a morph setup for every single LOD level.");
+
+        for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
+        {
+            const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
+            const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
+
+            MorphSetup* morphSetup = mMorphSetups[lodLevel];
+            if (!morphSetup)
+            {
+                continue;
+            }
+
+            // Find the owning joint for the mesh.
+            Node* meshJoint = FindMeshJoint(lodAsset);
+            if (!meshJoint)
+            {
+                AZ_Error("EMotionFX", false, "Cannot find mesh joint. Skipping to add meshes to the actor.");
+                continue;
+            }
+
+            const AZ::u32 jointIndex = meshJoint->GetNodeIndex();
+            NodeLODInfo& jointInfo = lodLevels[lodLevel].mNodeInfos[jointIndex];
+            Mesh* mesh = jointInfo.mMesh;
+
+            if (!jointInfo.mStack)
+            {
+                jointInfo.mStack = MeshDeformerStack::Create(mesh);
+            }
+
+            // Add the morph deformer to the mesh deformer stack (in case there is none yet).
+            MorphMeshDeformer* morphTargetDeformer = (MorphMeshDeformer*)jointInfo.mStack->FindDeformerByType(MorphMeshDeformer::TYPE_ID);
+            if (!morphTargetDeformer)
+            {
+                morphTargetDeformer = MorphMeshDeformer::Create(mesh);
+                // Add insert the deformer at the first position to make sure we apply morph targets before skinning.
+                jointInfo.mStack->InsertDeformer(/*deformerPosition=*/0, morphTargetDeformer);
+            }
+
+            // The lod has shared buffers that combine the data from each submesh. These buffers can be accessed through the first submesh in their entirety
+            const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceMeshes[0];
+            const AZStd::array_view<uint8_t> vertexIndicesView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_VERTEXINDICES"));
+            const AZStd::array_view<uint8_t> positionDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_POSITIONDELTAS"));
+            const AZStd::array_view<uint8_t> normalDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_NORMALDELTAS"));
+            const AZ::u32* vertexIndices = reinterpret_cast<const AZ::u32*>(vertexIndicesView.data());
+            const AZ::u16* positionDeltas = reinterpret_cast<const AZ::u16*>(positionDeltaView.data());
+            const AZ::u8* normalDeltas = normalDeltaView.data();
+
+            const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
+            for (AZ::u32 mtIndex = 0; mtIndex < numMorphTargets; ++mtIndex)
+            {
+                MorphTargetStandard* morphTarget = static_cast<MorphTargetStandard*>(morphSetup->GetMorphTarget(mtIndex));
+
+                const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = m_morphTargetMetaAsset->GetMorphTargets();
+                for (const auto& metaData : metaDatas)
+                {
+                    if (metaData.m_morphTargetName == morphTarget->GetNameString())
+                    {
+                        const AZ::u32 numDeformedVertices = metaData.m_numVertices;
+                        MorphTargetStandard::DeformData* deformData = aznew MorphTargetStandard::DeformData(jointIndex, numDeformedVertices);
+
+                        // Set the compression/quantization range for the positions.
+                        deformData->mMinValue = metaData.m_minPositionDelta;
+                        deformData->mMaxValue = metaData.m_maxPositionDelta;
+
+                        for (AZ::u32 deformVtx = 0; deformVtx < numDeformedVertices; ++deformVtx)
+                        {
+                            const AZ::u32 vertexIndex = metaData.m_startIndex + deformVtx;
+                            deformData->mDeltas[deformVtx].mVertexNr = vertexIndices[vertexIndex];
+
+                            const AZ::u32 componentIndex = vertexIndex * 3;
+                            deformData->mDeltas[deformVtx].mPosition = MCore::Compressed16BitVector3(
+                                positionDeltas[componentIndex + 0],
+                                positionDeltas[componentIndex + 1],
+                                positionDeltas[componentIndex + 2]);
+                            deformData->mDeltas[deformVtx].mNormal = MCore::Compressed8BitVector3(
+                                normalDeltas[componentIndex + 0],
+                                normalDeltas[componentIndex + 1],
+                                normalDeltas[componentIndex + 2]);
+
+                            // The exporting pipeline currently does not support delta bi-/tangents. Initialize with a zero delta.
+                            deformData->mDeltas[deformVtx].mTangent.FromVector3(AZ::Vector3::CreateZero(), -2.0f, 2.0f);
+                            deformData->mDeltas[deformVtx].mBitangent.FromVector3(AZ::Vector3::CreateZero(), -2.0f, 2.0f);
+                        }
+
+                        morphTarget->AddDeformData(deformData);
+                    }
+                }
+            }
+
+            // Sync the deformer passes with the morph target deform datas.
+            morphTargetDeformer->Reinitialize(this, meshJoint, lodLevel);
+        }
     }
 } // namespace EMotionFX

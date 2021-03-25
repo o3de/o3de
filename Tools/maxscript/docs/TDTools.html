@@ -1,0 +1,680 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+  
+  <title>cryTools: TD Tools</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: TD Tools </h1>
+
+<span style="font-family: Arial;"></span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">External Apps</span></h2>
+
+<span style="font-family: Arial;">There are some exe's in the root directory (/maxscript)</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">scmd.exe </span>-
+this is an app that will silently execute a dos command, this is no
+longer used, as the the latest exporter plugin now has this
+functionality. In the example below I sync a directory via perforce: </span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">scmd ("p4 sync \"" + BuildPathFull_crytools + "Tools\\...\"") true</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">md5.exe</span> - this is a freeware md5 hash generator, it is called from the crytools md5 function. </span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Global Struct</span></h2>
+
+<span style="font-family: Arial;">These globally available variables
+can be accessed through the crytools struct. Because they are members
+of the struct, you must access them through it, for instance: <span style="font-weight: bold;">crytools.BuildPathFull</span></span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">_fnStore, _fnStoreIndex, _varStore, _varStoreIndex, </span>-
+These are global storage arrays that allow variables and functions to
+be stored and passed via the storeFn, retrieveFn, storeVar, retrieveVar
+functions. These are never directly accessed.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">localBuildNumber </span>- returns the number of the local build. (The build that the current crytools /maxscript dir is loaded from)</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.localBuildNumber</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"5571"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">BuildPathFull </span>- returns string of the artists build path to the bin32 directory</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.BuildPathFull</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"J:\Game02\bin32\"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">maxDirTxt </span>- returns string of the max root dir.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.MaxDirTxt</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"C:\3dsmax7\"</span><br style="font-family: Courier;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">editorPath </span>- path string to the Editor</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">crytools.editorPath</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"J:\Game02\bin32\Editor.exe"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">cryINI </span>- path string to the CryTools INI file</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">crytools.cryINI</span><br style="font-family: Courier;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier;">"C:\Program Files\Autodesk\3ds Max 2008\plugins\CryExport.ini"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">maxVersionNum </span>- returns the version number of 3D Studio Max that the script is being run on</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.maxVersionNum</span><br style="font-family: Courier;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier;">"8"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">project_name </span>- returns the name of the project the artist resides on, taken from the build path.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.project_name</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"Game02"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">latest_build </span>-
+returns the name of the latest build on S:\, this global variable is
+set from within UpdateTools.ms, which refreshes the 'latest_builds.txt'
+stored in cry_temp. This is set to "NET_ERROR" if the location cannot
+be found on the network.</span><br style="font-family: Arial;">
+
+<br style="font-family: Courier;">
+
+<span style="font-family: Courier;">print crytools.latest_build</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"Game02(2670)_03_27_FastBuild"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">latestBuildNumber </span>-
+returns the number of the latest build available on S:\, this global
+variable is set from within 'UpdateTools.ms', which refreshes the
+'latest_builds.txt' stored in cry_temp.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.latestBuildNumber</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"2670"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">cryExportPresent </span>- set to true or false based on whether or not the exporter plugin is loaded.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.cryExportPresent</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">true</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">cbaPath </span>- returns string of the CBA path.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.cbaPath</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"J:\Game02\Game\Animations\Animations.cba"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial; font-weight: bold;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">rollback_status </span>-
+returns whether or not the exporter is currently rolled back to a
+previous version. This is currently stored in rollback_status.ini in
+the cryTemp folder.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.rollback_status</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"false"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial; font-weight: bold;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">DOMAIN</span>
+- returns the network domain of the network the computer is plugged
+into. This is set via GetDNS() once and written to the first line of
+cryTools.ini and then read in from there every time at load after. This
+var is set by AddCryTools.ms</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">print crytools.DOMAIN</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"INTERN.CRYTEK.DE"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Functions</span></h2>
+
+<span style="font-family: Arial;">These functions are added on load within AddCryTools.ms, and made available through the crytools struct.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">scmd &lt;command&gt; wait </span>- Silently
+runs a dos command using the cryengine export plugin
+(csexport.export.execute_command_line).</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">crytools.scmd ("mkdir \"" + crytools.maxDirTxt + "cry_temp\\bad\\\"") true</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">OK</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial; font-weight: bold;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">md5 &lt;filename_string&gt; </span>- Returns
+string MD5 hash for file queried, you must feed it a valid file. This
+function uses an open source, public domain MD5 executable stored in
+the /maxscript folder.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier;">crytools.md5 "C:\\WINDOWS\\explorer.exe"</span><br style="font-family: Courier;">
+
+<span style="font-family: Courier; color: rgb(51, 51, 255);">"A0732187050030AE399B241436565E64"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial; font-weight: bold;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">storeFn &lt;function&gt;
+&lt;overwrite&gt; </span>- This stores a function in the global crytools
+struct where it can be used by any other script. Overwrite will
+overwrite any existing fn with the same name. You use retrieveFn to
+retrieve the var you have stored. Here is an example below from the
+MorphTools script: </span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">cryTools.storeFn collapseVerts true <span style="color: rgb(0, 153, 0);">--collapseVerts fn now stored in crytools._fnStore</span></span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools._fnstore</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">#(collapseVerts())</span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.retrieveFn "collapseVerts()")()<span style="color: rgb(51, 204, 0);"> <span style="color: rgb(0, 153, 0);">--now we grab the fn and use it</span></span></span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">OK</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">storeVar &lt;var&gt; &lt;alias&gt;
+&lt;overwrite&gt; </span>- This stores a variable in the global crytools
+struct where it can be used by any other script. The 'var' is the item
+you are storing, and the 'alias' is the associated name. Overwrite will
+overwrite a stored var with the same alias. You use retrieveVar to
+retrieve the var you have stored. Here is an example below from the
+MorphTools script:</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">cryTools.storeVar $ "obj1" true <span style="color: rgb(0, 153, 0);">--selected object now stored in crytools._varStore</span></span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools._varstore</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">#($Box:Box01 @ [-101.424500,-0.000001,25.641026])</span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.retrieveVar "obj1" <span style="color: rgb(0, 153, 0);">--now we grab the var</span></span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">$Box:Box01 @ [-101.424500,-0.000001,25.641026]</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">alienBrain
+&lt;command_argument_string&gt; - </span>This executes AlienBrain command
+arugments from within Studio Max. It is set to execute the command via
+a JDK bridge/DOS command. This does not load ALienBrain.exe (or the
+long load screen associated with it) and executes the commands
+instantly and transparently in the background.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.alienBrain "getlatest"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;">or something more complex like:</span><br style="font-family: Arial;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.alienBrain ("ab getlatest
+Bin32\Tools\maxscript -s Server3 -d " + project_name + " -u login -p
+passwd -forcefileupdate -overwritewritable skip")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">existFile &lt;filename_string&gt; </span>- Returns true/false whether file exists or not</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;">crytools.existFile "C:\\WINDOWS\\explorer.exe"</span><br style="font-family: Arial;">
+
+<span style="font-family: Arial;">true</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">existDir &lt;filename_string&gt;</span> - Returns true/false whether directory exists or not</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.existDir "C:\\WINDOWS"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">true</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;">or something more complex like:</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">if (crytools.existDir (maxDirTxt + "cry_temp")) == true then (print "cry_temp exists")</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">"cry_temp exists"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">getDNS()</span> - Returns the Domain Name
+Server of the local network. This uses a dos command to dump and read
+ipconfig info from a temp file that is then deleted; so it pops up a
+black cmd window for a milisecond when called. CryTools calls this
+once, and saves that info in cryTools.ini located in the cryTemp
+directory in the max root dir.</span><br style="font-family: Arial;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.getDNS()</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"INTERN.CRYTEK.DE"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">MirrorObjs &lt;Obj1&gt; &lt;Obj2&gt;
+&lt;MObj&gt; &lt;MAxis&gt; &lt;OAxis&gt;</span> - Function for mirroring joint
+orientations over an arbitrary axis. The below example is from
+CryAnimationTools.ms, you can look there to see it in use.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.MirrorObjs right_arm[i] left_arm[i] $root #x #x</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">matchPivot &lt;Obj1&gt; &lt;Obj2&gt; </span>- Aligns the pivot of an object to that of another</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;">crytools.matchPivot $obj1 $obj2</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">findRoot &lt;Obj&gt; </span>- Returns the root of the hierarchy the object is a member of</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.findroot $'Bip01 L Forearm'</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">$Editable_Mesh:Bip01 @ [0.000000,0.000038,90.368042]</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">getChildren &lt;Obj&gt;</span> - Returns the root of the hierarchy the object is a member of</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;">print (crytools.getchildren $'Bip01 L Thigh')</span><br style="font-family: Arial;">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$PolyMesh:Bip01 L Calf @ [12.594235,-1.113732,49.932632]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$PolyMesh:Bip01 L Foot @ [16.074495,4.691678,9.804122]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Editable_Mesh:Bip01 L Toe0 @ [17.749069,-7.237181,0.444188]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Dummy:_Bip01LToeHelper @ [19.030598,-16.366177,0.444188]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Bone:Bip01 L Toe0Nub @ [19.145245,-17.182899,0.149435]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Bone:Bip01 L Heel @ [16.074499,4.691682,-0.687943]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Editable_Mesh:Bip01 L knee @ [12.464909,-0.477371,47.556950]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Dummy:Bip01 L knee_end @ [13.773256,-8.799936,43.612862]</span><br style="font-family: Arial; color: rgb(51, 51, 255);">
+
+<span style="font-family: Arial; color: rgb(51, 51, 255);">$Editable_Mesh:weaponPos_pistol_L_leg @ [23.779840,-4.798794,68.739929]</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">getBips </span>- Returns the Bipeds in the current scene</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">for obj in crytools.getBips() do print obj.name</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">"Bip01"</span><br style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">"Bip02"</span><br style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">"Bip03"</span><br style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">
+
+<span style="color: rgb(51, 51, 255); font-family: Courier New,Courier,monospace;">"Bip04"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial; font-weight: bold;">getBindPoseVertexTarget &lt;targetNode&gt; &lt;sourceNode&gt; &lt;vertexID&gt;</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial; font-weight: bold;">CreateBindPoseMorph
+&lt;targetNode&gt; &lt;sourceNode&gt; &lt;deleteYN&gt;
+&lt;addMorphYN&gt; &lt;channelNum&gt; &lt;extractedNode&gt;</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">inFromUDP &lt;targetNode&gt; </span>- This function reads the User Defined Properties for an object into an array</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.inFromUDP $</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">#("mass = 110", "capsule")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">outToUDP &lt;targetNode&gt;
+&lt;string_array&gt; &lt;echo&gt;</span> - This function reads/writes to the
+User Defined Properties buffer for an object</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.outToUDP #("I have needed this","for quite some time") $ true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"I have needed this</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">for quite some time</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">getUserPropBuffer $</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"I have needed this</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">for quite some time</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.inFromUDP $</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">#("I have needed this", "for quite some time")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">local2unc &lt;string&gt; </span>- This will convert a local drive letter to a UNC path</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.local2unc "p"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"\\192.168.0.9\public"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.local2unc "k"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"\\server2\Artists"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">forceLowerCase &lt;string&gt; </span>- This will convert a string to lowercase</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.forceLowerCase "MaSs = 19.9"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"mass = 19.9"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">inFromINI &lt;path&gt; echo </span>- This
+will read in a text file line by line and return an array where array
+element number corresponds to the line number.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.infromINI (crytools.maxDirTxt + "\\plugins\\CryExport.ini") true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"[Sandbox]"</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"path = J:\Game02\Bin32\Editor.exe"</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"animlistpath = J:\Game02\Game\Animations\Animations.cba"</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">#("[Sandbox]", "path = J:\Game02\Bin32\Editor.exe", "animlistpath = J:\Game02\Game\Animations\Animations.cba")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">outToINI &lt;data&gt; &lt;path&gt;
+echo </span>- This will export an array to a text file line by line where
+array element number corresponds to the line number.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.outtoini test (crytools.maxDirTxt + "\\plugins\\CryExport.ini") true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"[Sandbox]"</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"path = J:\Game02\Bin32\Editor.exe"</span><br style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"animlistpath = J:\Game02\Game\Animations\Animations.cba"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">plusR &lt;path&gt; </span>- this will check if the file exists and make it read-only</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.plusR (crytools.maxDirTxt + "\\plugins\\CryExport.ini")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">minusR &lt;path&gt; </span>- this will check if the file exists and make it writable</span><br style="font-family: Arial;">
+
+<br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.minusR (crytools.maxDirTxt + "\\plugins\\CryExport.ini")</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial; font-weight: bold;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">objTrajectoryToSpline &lt;obj&gt;</span> - this will create a spline showing the trajectory of all selected objects</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">cutString &lt;string input&gt; &lt;string to cut&gt; </span>- this removes the 'string to cut' from the 'string input'.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.cutString "Crysis is a beautiful, meticulously designed game" ", meticulously designed"</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">"Crysis is a beautiful game"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">vertDistance &lt;pos&gt; &lt;pos&gt; </span>- this will output the distance between two positions in space</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.vertDistance $Box01.pos $Box02.pos</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace; color: rgb(51, 51, 255);">169.997</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">copyPasteController &lt;parentObj&gt;
+&lt;selOrChild&gt; &lt;copyWhat&gt;</span> - this will copy and paste a
+controller, here is an example from CryRiggingTools:</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">crytools.copyPasteController mObj "children" "rp"</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">sliderMan</span> -<span style="font-weight: bold;"> </span>this is a fn that works
+on a selection callback, when you select a slider manipulator, it
+always goes into manipulate mode so that it can be used.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Items Stored In cry_temp\</span></h2>
+
+<span style="font-family: Arial;">A folder named '<span style="font-weight: bold;">cry_temp</span>' is created by <span style="font-weight: bold;">AddCryTools.ms</span>, CryTools store many things in this folder, like the following examples:</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">crytools.ini </span>- This stores
+suer-specific options, such as window layout and control panel
+settings. I will work to fold some of the other droppings below into
+this single INI file. Here are some of the things stored within:</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">DOMAIN:INTERN.CRYTEK.DE</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">WARNMATS:true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">REPARENT:true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">SUPPRESS:false</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">NO_UNPARENT_WEAPON:false</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">RIGGING_POS:1396:78</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">ANIMATION_POS:1192:78</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">MORPH_POS:2072:70</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">ARTIST_POS:698:457</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">SPLASH:true</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">UPDATE_COLLECTIONS:false</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">SYNC_COLLECTIONS:false</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">LOADOLDANIMTOOLS:false</span><br style="font-family: Courier New,Courier,monospace;">
+
+<span style="font-family: Courier New,Courier,monospace;">GENERATEMENU:true</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">latest_builds.txt </span>- When UpdateTools.ms is run, it dumps the latest builds from S:\_Builds\ into this txt file.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">paths.txt </span>- When CryTools were
+installed, the InstallCryTools.vbs created this txt file, it stores the
+install path of StudioMax and Photoshop. The first line is always
+StudioMax and the second Photoshop.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Courier New,Courier,monospace;">C:\3dsmax7C:\graphics\Adobe Photoshop CS2\Plug-Ins\</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">rollback_status.ini </span>- A value of
+true/false is stored in this file. When an artist has rolled back their
+exporter, the file is set to 'true', when 'Get Latest Tools From
+AlienBrain/Latest Build' is pressed in UpdateTools, rollback status is
+set to 'false' because the latest exporter is installed.</span><br style="font-family: Arial;">
+
+<br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">CryExport7.dlu, Morpher.dlm,
+MorpherMXS.dlx</span> - When new copies of these are installed, the prior
+versions are saved here, where they can be rolled back to on demand.
+Currently, the rollback function only exists for CryExport7.dlu.&nbsp;</span><br style="font-family: Arial;">
+
+<span style="font-family: Arial;"><br>
+
+</span>
+</body>
+</html>

@@ -15,17 +15,22 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 
+#include "TranslationResult.h"
+
 namespace ScriptCanvas
 {
     class Graph;
 
     namespace Translation
     {
-        AZ::Outcome<void, AZStd::string> ToCPlusPlusAndLua(const Graph& graph, const AZStd::string& name, const AZStd::string& path);
-        
-        AZ::Outcome<void, AZStd::string> ToCPlusPlus(const Graph& graph, const AZStd::string& name, const AZStd::string& path);
-        
-        AZ::Outcome<void, AZStd::string> ToLua(const Graph& graph, const AZStd::string& name, const AZStd::string& path);
-    } // namespace Translation
+        Result ParseGraph(const Grammar::Request& request);
 
-} // namespace ScriptCanvas
+        Result ToCPlusPlus(const Grammar::Request& request);
+
+        Result ToCPlusPlusAndLua(const Grammar::Request& request);
+        
+        Result ToLua(const Grammar::Request& request);
+    
+    } 
+
+} 

@@ -28,7 +28,6 @@ namespace AzFramework
     constexpr char PlatformES3[] = "es3";
     constexpr char PlatformIOS[] = "ios";
     constexpr char PlatformOSX[] = "osx_gl";
-    constexpr char PlatformXenia[] = "xenia";
     constexpr char PlatformProvo[] = "provo";
     constexpr char PlatformSalem[] = "salem";
     constexpr char PlatformJasper[] = "jasper";
@@ -39,7 +38,6 @@ namespace AzFramework
     constexpr char PlatformCodeNameAndroid[] = "Android";
     constexpr char PlatformCodeNameiOS[] = "iOS";
     constexpr char PlatformCodeNameMac[] = "Mac";
-    constexpr char PlatformCodeNameXenia[] = "Xenia";
     constexpr char PlatformCodeNameProvo[] = "Provo";
     constexpr char PlatformCodeNameSalem[] = "Salem";
     constexpr char PlatformCodeNameJasper[] = "Jasper";
@@ -57,7 +55,6 @@ namespace AzFramework
         ES3,
         IOS,
         OSX,
-        XENIA,
         PROVO,
         SALEM,
         JASPER,
@@ -68,7 +65,7 @@ namespace AzFramework
         // Add new platforms above this
         NumPlatformIds
     );
-    constexpr int NumClientPlatforms = 8;
+    constexpr int NumClientPlatforms = 7;
     constexpr int NumPlatforms = NumClientPlatforms + 1; // 1 "Server" platform currently
     enum class PlatformFlags : AZ::u32
     {
@@ -77,7 +74,6 @@ namespace AzFramework
         Platform_ES3 = 1 << PlatformId::ES3,
         Platform_IOS = 1 << PlatformId::IOS,
         Platform_OSX = 1 << PlatformId::OSX,
-        Platform_XENIA = 1 << PlatformId::XENIA,
         Platform_PROVO = 1 << PlatformId::PROVO,
         Platform_SALEM = 1 << PlatformId::SALEM,
         Platform_JASPER = 1 << PlatformId::JASPER,
@@ -89,7 +85,7 @@ namespace AzFramework
         // A special platform that will always correspond to all non-server platforms, even if new ones are added
         Platform_ALL_CLIENT = 1ULL << 31,
 
-        AllNamedPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_XENIA | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
+        AllNamedPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(PlatformFlags);

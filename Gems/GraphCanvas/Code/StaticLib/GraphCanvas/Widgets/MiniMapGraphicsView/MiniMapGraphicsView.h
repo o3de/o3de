@@ -61,7 +61,7 @@ namespace GraphCanvas
         ////
 
         // SceneNotificationBus
-        void OnNodeAdded(const AZ::EntityId& nodeId) override;
+        void OnNodeAdded(const AZ::EntityId& nodeId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeId) override;
         void OnSceneMemberDragBegin() override;
         void OnSceneMemberDragComplete() override;

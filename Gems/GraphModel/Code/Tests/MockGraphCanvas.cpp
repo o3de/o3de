@@ -433,6 +433,10 @@ namespace MockGraphCanvasServices
     void MockNodeComponent::SignalConnectionMoveBegin([[maybe_unused]] const GraphCanvas::ConnectionId& connectionId)
     {
     }
+    
+    void MockNodeComponent::SignalNodeAboutToBeDeleted()
+    {
+    }
 
     // MockGraphCanvasSystemComponent
     void MockGraphCanvasSystemComponent::Reflect(AZ::ReflectContext* context)

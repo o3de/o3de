@@ -32,7 +32,6 @@ PaletteCardBase::PaletteCardBase(QSharedPointer<Palette> palette, Internal::Colo
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     m_header->setExpandable(true);
-    m_header->setHasContextMenu(true);
     mainLayout->addWidget(m_header);
 
     connect(m_paletteView, &PaletteView::selectedColorsChanged, this, [controller](const QVector<AZ::Color>& selectedColors) {

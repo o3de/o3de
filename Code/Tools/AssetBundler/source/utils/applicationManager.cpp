@@ -31,6 +31,7 @@
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzToolsFramework/Asset/AssetDebugInfo.h>
@@ -192,6 +193,7 @@ namespace AssetBundler
         for (auto iter = components.begin(); iter != components.end();)
         {
             if (*iter == azrtti_typeid<AzFramework::GameEntityContextComponent>() ||
+                *iter == azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>() ||
                 *iter == azrtti_typeid<AzFramework::InputSystemComponent>() ||
                 *iter == azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>() ||
                 *iter == azrtti_typeid<AZ::SliceSystemComponent>())

@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -14,7 +14,9 @@
 
 #include "UnitTestingLibrary.h"
 
+#include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.h>
 
 
 namespace ScriptCanvas
@@ -23,6 +25,8 @@ namespace ScriptCanvas
     {
         void UnitTesting::Reflect(AZ::ReflectContext* reflection)
         {
+            ScriptCanvas::UnitTesting::EventSender::Reflect(reflection);
+            
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
                 serializeContext->Class<UnitTesting, LibraryDefinition>()
@@ -44,7 +48,6 @@ namespace ScriptCanvas
             ScriptCanvas::UnitTesting::Auxiliary::StringConversion::Reflect(reflection);
             ScriptCanvas::UnitTesting::Auxiliary::EBusTraits::Reflect(reflection);
             ScriptCanvas::UnitTesting::Auxiliary::TypeExposition::Reflect(reflection);
-            ScriptCanvas::UnitTesting::Auxiliary::ProduceOutcome::Reflect(reflection);
         }
 
         void UnitTesting::InitNodeRegistry(NodeRegistry& nodeRegistry)
@@ -62,9 +65,6 @@ namespace ScriptCanvas
             AddNodeToRegistry<UnitTesting, ExpectLessThanEqual>(nodeRegistry);
             AddNodeToRegistry<UnitTesting, ExpectNotEqual>(nodeRegistry);
             AddNodeToRegistry<UnitTesting, ExpectTrue>(nodeRegistry);
-
-            // Removing the auxiliary node since they seem to be very specific nodes that shouldn't be released to the public.
-            //ScriptCanvas::UnitTesting::Auxiliary::Registrar::AddToRegistry<UnitTesting>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> UnitTesting::GetComponentDescriptors()
@@ -84,13 +84,10 @@ namespace ScriptCanvas
                 ExpectNotEqual::CreateDescriptor(),
                 ExpectTrue::CreateDescriptor(),
             });
-
-            ScriptCanvas::UnitTesting::Auxiliary::Registrar::AddDescriptors(descriptors);
             return descriptors;
         }
-
-    } // namespace Library
-} // namespace ScriptCanvas
+    }
+} 
 
 
 #endif

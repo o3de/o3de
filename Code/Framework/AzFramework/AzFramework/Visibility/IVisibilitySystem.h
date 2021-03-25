@@ -34,8 +34,9 @@ namespace AzFramework
         enum TypeFlags
         {
             TYPE_None = 0,
-            TYPE_Entity = 1 << 0,
-            TYPE_RPI_Cullable = 1 << 1
+            TYPE_Entity = 1 << 0,      // All entities
+            TYPE_NetEntity = 1 << 1,   // NetBound entities
+            TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
         };
 
         AZ::Aabb m_boundingVolume = AZ::Aabb::CreateNull();

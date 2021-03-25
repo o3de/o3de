@@ -34,7 +34,7 @@ namespace GraphCanvas
         AZ_COMPONENT(CommentLayerControllerComponent, "{E6E6A329-40DA-4F95-B42E-6843DF2B6E2E}", LayerControllerComponent);
 
         CommentLayerControllerComponent()
-            : LayerControllerComponent("CommentLayer")
+            : LayerControllerComponent("CommentLayer", CommentOffset)
         {
 
         }

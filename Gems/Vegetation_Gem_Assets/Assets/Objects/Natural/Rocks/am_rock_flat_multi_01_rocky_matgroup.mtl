@@ -1,0 +1,15 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="AM_Rock_Flat_Multi_01_mat" MtlFlags="524416" Shader="Illum" GenMask="10000020000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_rock" Diffuse="0.35153264,0.35153264,0.35153264,1" Specular="0.03954624,0.03954624,0.03954624,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/natural/rocks/am_rock_flat_multi_01_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/natural/rocks/am_rock_flat_multi_01_rocky_ddna.dds"/>
+    <Texture Map="Smoothness" File="objects/natural/rocks/am_rock_flat_multi_01_rocky_ddna.dds"/>
+   </Textures>
+   <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.24620135,0.24620135,0.24620135"/>
+  </Material>
+  <Material Name="AM_Rock_Flat_01_proxy_mat" MtlFlags="558208" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="mat_rock" Diffuse="0.5,0.5,0.5,1" Specular="0.5,0.5,0.5,0.039215688" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures />
+  </Material>
+ </SubMaterials>
+</Material>

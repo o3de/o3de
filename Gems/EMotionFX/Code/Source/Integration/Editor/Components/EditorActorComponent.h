@@ -28,6 +28,8 @@
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
+#include <EMotionFX/Source/ActorBus.h>
+
 namespace EMotionFX
 {
     namespace Integration
@@ -43,6 +45,7 @@ namespace EMotionFX
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
+            , private EMotionFX::ActorNotificationBus::Handler
         {
         public:
             AZ_EDITOR_COMPONENT(EditorActorComponent, "{A863EE1B-8CFD-4EDD-BA0D-1CEC2879AD44}");
@@ -79,6 +82,8 @@ namespace EMotionFX
             // AZ::Data::AssetBus::Handler overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset);
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -137,9 +142,13 @@ namespace EMotionFX
             void OnAttached(AZ::EntityId targetId) override;
             void OnDetached(AZ::EntityId targetId) override;
 
+            // ActorNotificationBus::Handler
+            void OnActorReady(Actor* actor) override;
+
+            void CheckActorCreation();
             void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-            void CreateActorInstance();
+            void LoadActorAsset();
             void DestroyActorInstance();
 
             bool IsValidAttachment(const AZ::EntityId& attachment, const AZ::EntityId& attachTo) const;

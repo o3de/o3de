@@ -142,9 +142,6 @@ public:
             SEnviropment::Instance().m_RunAsRoot = (runAsRoot == 1);
         }
 
-#if defined(TOOLS_SUPPORT_XENIA)
-#include AZ_RESTRICTED_FILE_EXPLICIT(CrySCompileServer_cpp, xenia)
-#endif
 #if defined(TOOLS_SUPPORT_JASPER)
 #include AZ_RESTRICTED_FILE_EXPLICIT(CrySCompileServer_cpp, jasper)
 #endif

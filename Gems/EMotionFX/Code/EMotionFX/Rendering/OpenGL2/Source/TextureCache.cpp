@@ -10,7 +10,6 @@
 *
 */
 
-#include "GLInclude.h"
 #include "TextureCache.h"
 #include "GraphicsManager.h"
 #include <MCore/Source/LogManager.h>
@@ -22,6 +21,7 @@ namespace RenderGL
     // constructor
     Texture::Texture()
     {
+        initializeOpenGLFunctions();
         mTexture    = 0;
         mWidth      = 0;
         mHeight     = 0;
@@ -31,6 +31,7 @@ namespace RenderGL
     // constructor
     Texture::Texture(GLuint texID, uint32 width, uint32 height)
     {
+        initializeOpenGLFunctions();
         mTexture    = texID;
         mWidth      = width;
         mHeight     = height;
@@ -66,6 +67,7 @@ namespace RenderGL
     bool TextureCache::Init()
     {
         // create the white dummy texture
+        initializeOpenGLFunctions();
         const bool whiteTexture  = CreateWhiteTexture();
         const bool normalTexture = CreateDefaultNormalTexture();
         return (whiteTexture && normalTexture);

@@ -64,6 +64,8 @@ namespace GraphCanvas
         GraphCanvasTreeItem* GetParent() const;
 
         void RegisterModel(GraphCanvasTreeModel* itemModel);
+
+        QModelIndex GetIndexFromModel();
         
         // Fields that can be customized to manipulate how the tree view behaves.
         virtual int GetColumnCount() const = 0;

@@ -27,7 +27,6 @@
 
 namespace ScriptEvents
 {
-    class ScriptEventsAsset;
 
     /**
     * Provides script bindings to expose Script Event assets as script property.

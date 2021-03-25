@@ -17,9 +17,11 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
 #include <SceneAPIExt/Behaviors/ActorGroupBehavior.h>
-
 
 namespace EMotionFX
 {
@@ -68,28 +70,6 @@ namespace EMotionFX
             {
                 return m_rules;
             }
-            
-            // The scene node selection list are supposed to store all the nodes that we want to export for this group.
-            // If you left any mesh, the sub mtl file that belongs to this mesh won't be generated in the mtl and dccmtl file.
-            AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& ActorGroup::GetSceneNodeSelectionList()
-            {
-                return m_allNodeSelectionList;
-            }
-
-            const AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& ActorGroup::GetSceneNodeSelectionList() const
-            {
-                return m_allNodeSelectionList;
-            }
-
-            AZ::SceneAPI::DataTypes::ISceneNodeSelectionList & ActorGroup::GetBaseNodeSelectionList()
-            {
-                return m_baseNodeSelectionList;
-            }
-
-            const AZ::SceneAPI::DataTypes::ISceneNodeSelectionList & ActorGroup::GetBaseNodeSelectionList() const
-            {
-                return m_baseNodeSelectionList;
-            }
 
             const AZStd::string & ActorGroup::GetSelectedRootBone() const
             {
@@ -110,14 +90,11 @@ namespace EMotionFX
                     return;
                 }
 
-                serializeContext->Class<IActorGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(2, SceneNodeVersionConverter);
+                serializeContext->Class<IActorGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(3, IActorGroupVersionConverter);
 
-                serializeContext->Class<ActorGroup, IActorGroup>()->Version(4, ActorVersionConverter)
+                serializeContext->Class<ActorGroup, IActorGroup>()->Version(6, ActorVersionConverter)
                     ->Field("name", &ActorGroup::m_name)
                     ->Field("selectedRootBone", &ActorGroup::m_selectedRootBone)
-                    // In version 4, we stores the reflected node list on the base mesh list. 
-                    // The all mesh list is populated in the actor group behavior, so we don't reflect it in the serialization context.
-                    ->Field("nodeSelectionList", &ActorGroup::m_baseNodeSelectionList)
                     ->Field("id", &ActorGroup::m_id)
                     ->Field("rules", &ActorGroup::m_rules);
 
@@ -133,32 +110,30 @@ namespace EMotionFX
                             ->Attribute("FilterType", IActorGroup::TYPEINFO_Uuid())
                         ->DataElement("NodeListSelection", &ActorGroup::m_selectedRootBone, "Select root bone", "The root bone of the animation that will be exported.")
                             ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorGroup::m_baseNodeSelectionList, "Select base meshes", "Select the base meshes to be included in the actor. These meshes belong to LOD 0.")
-                            ->Attribute("FilterName", "meshes")
-                            ->Attribute("NarrowSelection", true)
-                            ->Attribute("FilterType", AZ::SceneAPI::DataTypes::IMeshData::TYPEINFO_Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
                 }
             }
 
-            bool ActorGroup::SceneNodeVersionConverter(AZ::SerializeContext & context, AZ::SerializeContext::DataElementNode & classElement)
+             bool ActorGroup::IActorGroupVersionConverter(
+                [[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
             {
                 const unsigned int version = classElement.GetVersion();
                 bool result = true;
 
-                if (version < 2)
+                // In version 1 IActorGroup is directly inherit from IGroup, so there is nothing to do.
+                // In version 2 IActroGroup is inherit from ISceneNodeGroup, which inherit from IGroup. We need to remove ISceneNodeGroup in-between.
+                if (version == 2)
                 {
-                    // In version 1 IActorGroup is directly inherit from IGroup, we need to add ISceneNodeGroup inheritance in between. 
-                    AZ::SerializeContext::DataElementNode iGroupNode = classElement.GetSubElement(0);
+                    AZ::SerializeContext::DataElementNode iSceneNodeGroupNode = classElement.GetSubElement(0);
+                    AZ::SerializeContext::DataElementNode iGroupNode = iSceneNodeGroupNode.GetSubElement(0);
                     classElement.RemoveElement(0);
-                    result = result && classElement.AddElement<AZ::SceneAPI::DataTypes::ISceneNodeGroup>(context, "BaseClass1");
-                    AZ::SerializeContext::DataElementNode& iSceneNodeGroupNode = classElement.GetSubElement(0);
-                    result = result && iSceneNodeGroupNode.AddElement(iGroupNode);
+                    result = result && classElement.AddElement(iGroupNode);
                 }
 
                 return result;
             }
+
 
             bool ActorGroup::ActorVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
             {
@@ -176,6 +151,21 @@ namespace EMotionFX
                 if (version < 3)
                 {
                     classElement.RemoveElementByName(AZ_CRC("loadMorphTargets", 0xfd19aef8));
+                }
+
+                // Coordinate system rule moved to the SceneAPI
+                if (version < 5)
+                {
+                    if (!AZ::SceneAPI::SceneData::CoordinateSystemRule::ConvertLegacyCoordinateSystemRule(context, classElement))
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cannot convert legacy coordinate system rule.\n");
+                        return false;
+                    }
+                }
+
+                if (version < 6)
+                {
+                    classElement.RemoveElementByName(AZ_CRC("nodeSelectionList"));
                 }
 
                 return result;

@@ -1,0 +1,13 @@
+{
+    "Amazon": {
+        "Gems": {
+            "PhysX": {
+                "DefaultSceneConfiguration": {
+                    "LegacyConfig": {
+                        "FixedTimeStep": 0.05000000074505806
+                    }
+                }
+            }
+        }
+    }
+}

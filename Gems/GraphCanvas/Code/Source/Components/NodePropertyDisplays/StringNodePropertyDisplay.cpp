@@ -64,7 +64,16 @@ namespace GraphCanvas
         if (m_lineEdit)
         {
             m_lineEdit->setMinimumSize(aznumeric_cast<int>(minimumSize.width()), aznumeric_cast<int>(minimumSize.height()));
-            m_lineEdit->setFixedWidth(aznumeric_cast<int>(m_displayLabel->size().width()));
+
+            if (m_dataInterface->ResizeToContents())
+            {
+                ResizeToContents();
+            }
+            else
+            {
+                int minWidth = aznumeric_cast<int>(m_displayLabel->size().width());
+                m_lineEdit->setFixedWidth(AZStd::max(minWidth, 10));
+            }
         }
     }
     
@@ -113,6 +122,12 @@ namespace GraphCanvas
         m_displayLabel->update();
     }
 
+    void StringNodePropertyDisplay::OnSystemTick()
+    {
+        EditFinished();
+        AZ::SystemTickBus::Handler::BusDisconnect();
+    }
+
     void StringNodePropertyDisplay::EditStart()
     {
         NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
@@ -158,6 +173,14 @@ namespace GraphCanvas
         }
     }
 
+    void StringNodePropertyDisplay::OnFocusOut()
+    {
+        // String property changes can sometimes change the visual layouts of nodes.
+        // Need to delay this to the start of the next tick to avoid running into
+        // issues with Qt processing.
+        AZ::SystemTickBus::Handler::BusConnect();
+    }
+
     void StringNodePropertyDisplay::SetupProxyWidget()
     {
         if (!m_lineEdit)
@@ -178,12 +201,12 @@ namespace GraphCanvas
             });
 
             QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusOut, [this]()
-            { 
-                this->EditFinished();
+            {
+                this->OnFocusOut();
             });
 
-            QObject::connect(m_lineEdit, &QLineEdit::editingFinished, [this]() 
-            { 
+            QObject::connect(m_lineEdit, &QLineEdit::returnPressed, [this]()
+            {
                 this->SubmitValue();
             });            
 

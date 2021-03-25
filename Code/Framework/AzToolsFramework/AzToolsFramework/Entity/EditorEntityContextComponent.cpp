@@ -12,6 +12,8 @@
 
 #include "AzToolsFramework_precompiled.h"
 
+#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -51,8 +53,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
-#include "EditorEntityContextComponent.h"
 
 namespace AzToolsFramework
 {
@@ -160,7 +163,19 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::Activate()
     {
-        m_entityOwnershipService = AZStd::make_unique<SliceEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
+        m_isLegacySliceService = true;
+
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(m_isLegacySliceService,
+            &AzToolsFramework::ToolsApplicationRequests::IsLegacySliceSystemEnabled);
+
+        if (m_isLegacySliceService)
+        {
+            m_entityOwnershipService = AZStd::make_unique<SliceEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
+        }
+        else
+        {
+            m_entityOwnershipService = AZStd::make_unique<PrefabEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
+        }
 
         InitContext();
 
@@ -359,9 +374,18 @@ namespace AzToolsFramework
         AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
-        return editorEntityOwnershipService->SaveToStreamForEditor(stream, entitiesInLayers, instancesInLayers);
+
+        if (m_isLegacySliceService)
+        {
+            SliceEditorEntityOwnershipService* editorEntityOwnershipService =
+                static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+            return editorEntityOwnershipService->SaveToStreamForEditor(stream, entitiesInLayers, instancesInLayers);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+            return true;
+        }
     }
 
     void EditorEntityContextComponent::GetLooseEditorEntities(EntityList& entityList)
@@ -375,9 +399,17 @@ namespace AzToolsFramework
     bool EditorEntityContextComponent::SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
-        return editorEntityOwnershipService->SaveToStreamForGame(stream, streamType);
+        if (m_isLegacySliceService)
+        {
+            SliceEditorEntityOwnershipService* editorEntityOwnershipService =
+                static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+            return editorEntityOwnershipService->SaveToStreamForGame(stream, streamType);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+            return true;
+        }
     }
 
     //=========================================================================
@@ -410,11 +442,16 @@ namespace AzToolsFramework
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntityStreamLoadBegin);
 
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
-
-        const bool loadedSuccessfully = editorEntityOwnershipService->LoadFromStreamWithLayers(stream, levelPakFile);
-
+        bool loadedSuccessfully = true;
+        if (m_isLegacySliceService)
+        {
+            loadedSuccessfully = static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStreamWithLayers(stream, levelPakFile);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+        }
+        
         LoadFromStreamComplete(loadedSuccessfully);
         
         return loadedSuccessfully;
@@ -450,10 +487,16 @@ namespace AzToolsFramework
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditorBegin);
 
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
-
-        editorEntityOwnershipService->StartPlayInEditor(m_editorToRuntimeIdMap, m_runtimeToEditorIdMap);
+        if (m_isLegacySliceService)
+        {
+            SliceEditorEntityOwnershipService* editorEntityOwnershipService =
+                static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+            editorEntityOwnershipService->StartPlayInEditor(m_editorToRuntimeIdMap, m_runtimeToEditorIdMap);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+        }
 
         m_isRunningGame = true;
 
@@ -471,10 +514,17 @@ namespace AzToolsFramework
 
         m_isRunningGame = false;
 
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+        if (m_isLegacySliceService)
+        {
+            SliceEditorEntityOwnershipService* editorEntityOwnershipService =
+                static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
 
-        editorEntityOwnershipService->StopPlayInEditor(m_editorToRuntimeIdMap, m_runtimeToEditorIdMap);
+            editorEntityOwnershipService->StopPlayInEditor(m_editorToRuntimeIdMap, m_runtimeToEditorIdMap);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+        }
 
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, m_selectedBeforeStartingGame);
         m_selectedBeforeStartingGame.clear();
@@ -603,13 +653,20 @@ namespace AzToolsFramework
     void EditorEntityContextComponent::OnContextEntitiesAdded(const EntityList& entities)
     {
         EntityContext::OnContextEntitiesAdded(entities);
-        
-        SliceEditorEntityOwnershipService* editorEntityOwnershipService =
-            static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
 
-        // Any entities being added to the context that don't belong to another slice
-        // need to be associated with the root metadata info component.
-        editorEntityOwnershipService->AssociateToRootMetadataEntity(entities);
+        if (m_isLegacySliceService)
+        {
+            SliceEditorEntityOwnershipService* editorEntityOwnershipService =
+                static_cast<SliceEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+
+            // Any entities being added to the context that don't belong to another slice
+            // need to be associated with the root metadata info component.
+            editorEntityOwnershipService->AssociateToRootMetadataEntity(entities);
+        }
+        else
+        {
+            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+        }
 
         SetupEditorEntities(entities);
     }

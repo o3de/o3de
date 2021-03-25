@@ -27,7 +27,7 @@
 
 #include "DatumBus.h"
 
-namespace
+namespace DatumHelpers
 {
     using namespace ScriptCanvas;
     
@@ -1180,7 +1180,7 @@ namespace
         }
         return AZ::Failure(AZStd::string("Cannot convert BehaviorContext String type to Script Canvas String"));
     }
-} // namespace anonymous
+}
 
 namespace ScriptCanvas
 {
@@ -1293,10 +1293,15 @@ namespace ScriptCanvas
         }
     }
 
-    ComparisonOutcome Datum::CallComparisonOperator(AZ::Script::Attributes::OperatorType operatorType, const AZ::BehaviorClass& behaviorClass, const Datum& lhs, const Datum& rhs)
+    ComparisonOutcome Datum::CallComparisonOperator(AZ::Script::Attributes::OperatorType operatorType, const AZ::BehaviorClass* behaviorClass, const Datum& lhs, const Datum& rhs)
     {
+        if (!behaviorClass)
+        {
+            return AZ::Failure(AZStd::string("Failed to perform Comparison operation"));
+        }
+
         // depending on when this gets called, check for null operands, they could be possible
-        for (auto& methodIt : behaviorClass.m_methods)
+        for (auto& methodIt : behaviorClass->m_methods)
         {
             auto* method = methodIt.second;
 
@@ -1353,18 +1358,18 @@ namespace ScriptCanvas
             {
                 if (m_pointer)
                 {
-                    ::FromBehaviorContextNumber(resultType.m_typeId, m_pointer, m_storage);
+                    DatumHelpers::FromBehaviorContextNumber(resultType.m_typeId, m_pointer, m_storage);
                 }
             }
             else
             {
-                ::FromBehaviorContextNumber(resultType.m_typeId, reinterpret_cast<const void*>(&m_conversionStorage), m_storage);
+                DatumHelpers::FromBehaviorContextNumber(resultType.m_typeId, reinterpret_cast<const void*>(&m_conversionStorage), m_storage);
             }
         }
         else if (IS_A(Data::Type::String()) && !Data::IsString(resultType.m_typeId) && AZ::BehaviorContextHelper::IsStringParameter(resultType))
         {
             void* storageAddress = (resultType.m_traits & AZ::BehaviorParameter::TR_POINTER) ? reinterpret_cast<void*>(&m_pointer) : AZStd::any_cast<void>(&m_conversionStorage);
-            if (auto stringOutcome = ConvertBehaviorContextString(resultType, storageAddress))
+            if (auto stringOutcome = DatumHelpers::ConvertBehaviorContextString(resultType, storageAddress))
             {
                 m_storage = stringOutcome.GetValue();
             }
@@ -1381,7 +1386,6 @@ namespace ScriptCanvas
     
     bool Datum::FromBehaviorContext(const void* source, const AZ::Uuid& typeID)
     {
-        // \todo support polymorphism
         const auto& type = Data::FromAZType(typeID);
         InitializeOverloadedStorage(type, eOriginality::Copy);
         
@@ -1390,58 +1394,58 @@ namespace ScriptCanvas
             switch (m_type.GetType())
             {
             case ScriptCanvas::Data::eType::AABB:
-                return FromBehaviorContextAABB(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextAABB(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::BehaviorContextObject:
                 return FromBehaviorContextObject(m_class, source);
             
             case ScriptCanvas::Data::eType::Boolean:
-                return FromBehaviorContextBool(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextBool(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Color:
-                return FromBehaviorContextColor(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextColor(typeID, source, m_storage);
             
             case ScriptCanvas::Data::eType::CRC:
-                return FromBehaviorContextCRC(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextCRC(typeID, source, m_storage);
                 
             case ScriptCanvas::Data::eType::EntityID:
-                return FromBehaviorContextEntityID(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextEntityID(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Matrix3x3:
-                return FromBehaviorContextMatrix3x3(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextMatrix3x3(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Matrix4x4:
-                return FromBehaviorContextMatrix4x4(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextMatrix4x4(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Number:
-                return ::FromBehaviorContextNumber(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextNumber(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::OBB:
-                return FromBehaviorContextOBB(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextOBB(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Plane:
-                return FromBehaviorContextPlane(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextPlane(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Quaternion:
-                return FromBehaviorContextQuaternion(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextQuaternion(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::String:
-                return FromBehaviorContextString(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextString(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Transform:
-                return FromBehaviorContextTransform(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextTransform(typeID, source, m_storage);
 
             case ScriptCanvas::Data::eType::Vector2:
-                return ::FromBehaviorContextVector2(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextVector2(typeID, source, m_storage);
             
             case ScriptCanvas::Data::eType::Vector3:
-                return ::FromBehaviorContextVector3(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextVector3(typeID, source, m_storage);
             
             case ScriptCanvas::Data::eType::Vector4:
-                return ::FromBehaviorContextVector4(typeID, source, m_storage);
+                return DatumHelpers::FromBehaviorContextVector4(typeID, source, m_storage);
             }
         }
-        else if (ConvertImplicitlyChecked(type, source, m_type, m_storage, m_class))
+        else if (DatumHelpers::ConvertImplicitlyChecked(type, source, m_type, m_storage, m_class))
         {
             return true;
         }
@@ -1457,7 +1461,7 @@ namespace ScriptCanvas
 
     bool Datum::FromBehaviorContextNumber(const void* source, const AZ::Uuid& typeID)
     {
-        return ::FromBehaviorContextNumber(typeID, source, m_storage);
+        return DatumHelpers::FromBehaviorContextNumber(typeID, source, m_storage);
     }
 
     bool Datum::FromBehaviorContextObject(const AZ::BehaviorClass* behaviorClass, const void* source)
@@ -1547,9 +1551,6 @@ namespace ScriptCanvas
 
         case ScriptCanvas::Data::eType::Vector4:
             return InitializeVector4(source, sourceTypeID);
-
-        default:
-            AZ_Error("Script Canvas", false, "Invalid datum type found datum initialization");
         }
 
         return false;
@@ -1571,7 +1572,7 @@ namespace ScriptCanvas
     {
         if (AZ::BehaviorContextHelper::IsStringParameter(parameterDesc))
         {
-            auto convertOutcome = ConvertBehaviorContextString(parameterDesc, source);
+            auto convertOutcome = DatumHelpers::ConvertBehaviorContextString(parameterDesc, source);
             if (convertOutcome)
             {
                 m_type = Data::Type::String();
@@ -1588,7 +1589,7 @@ namespace ScriptCanvas
     {
         if (AZ::BehaviorContextHelper::IsStringParameter(description))
         {
-            auto convertOutcome = ConvertBehaviorContextString(description, nullptr);
+            auto convertOutcome = DatumHelpers::ConvertBehaviorContextString(description, nullptr);
             if (convertOutcome)
             {
                 m_type = Data::Type::String();
@@ -1682,7 +1683,7 @@ namespace ScriptCanvas
     bool Datum::InitializeNumber(const void* source, const AZ::Uuid& sourceTypeID)
     {
         m_storage = Data::Traits<Data::NumberType>::GetDefault();
-        return (source && ::FromBehaviorContextNumber(sourceTypeID, source, m_storage)) || true;
+        return (source && DatumHelpers::FromBehaviorContextNumber(sourceTypeID, source, m_storage)) || true;
     }
 
     bool Datum::InitializeOBB(const void* source)
@@ -1738,21 +1739,21 @@ namespace ScriptCanvas
     {
         m_storage = Data::Traits<Data::Vector2Type>::GetDefault();
         // return a success regardless, but do the initialization first if source is not null
-        return (source && FromBehaviorContextVector2(sourceTypeID, source, m_storage)) || true;
+        return (source && DatumHelpers::FromBehaviorContextVector2(sourceTypeID, source, m_storage)) || true;
     }
 
     bool Datum::InitializeVector3(const void* source, const AZ::Uuid& sourceTypeID)
     {
         m_storage = Data::Traits<Data::Vector3Type>::GetDefault();
         // return a success regardless, but do the initialization first if source is not null
-        return (source && FromBehaviorContextVector3(sourceTypeID, source, m_storage)) || true;
+        return (source && DatumHelpers::FromBehaviorContextVector3(sourceTypeID, source, m_storage)) || true;
     }
 
     bool Datum::InitializeVector4(const void* source, const AZ::Uuid& sourceTypeID)
     {
         m_storage = Data::Traits<Data::Vector4Type>::GetDefault();
         // return a success regardless, but do the initialization first if source is not null
-        return (source && FromBehaviorContextVector4(sourceTypeID, source, m_storage)) || true;
+        return (source && DatumHelpers::FromBehaviorContextVector4(sourceTypeID, source, m_storage)) || true;
     }
 
     void Datum::SetType(const Data::Type& dataType)
@@ -1824,9 +1825,12 @@ namespace ScriptCanvas
                 InitializeOverloadedStorage(source.m_type, m_originality);
                 m_class = AZStd::move(source.m_class);
                 m_type = AZStd::move(source.m_type);
-                m_storage = AZStd::move(source.m_storage);
+                if (!source.m_storage.empty())
+                {
+                    m_storage = AZStd::move(source.m_storage);
+                }
             }
-            else if (!ConvertImplicitlyChecked(source.GetType(), source.GetValueAddress(), m_type, m_storage, m_class))
+            else if (!DatumHelpers::ConvertImplicitlyChecked(source.GetType(), source.GetValueAddress(), m_type, m_storage, m_class))
             {
                 AZ_Error("Script Canvas", false, "Failed to convert from %s to %s", GetName(source.GetType()).c_str(), GetName(m_type).c_str());
             }
@@ -1854,7 +1858,7 @@ namespace ScriptCanvas
                 m_type = source.m_type;
                 m_storage = source.m_storage;                
             }
-            else if (!ConvertImplicitlyChecked(source.GetType(), source.GetValueAddress(), m_type, m_storage, m_class))
+            else if (!DatumHelpers::ConvertImplicitlyChecked(source.GetType(), source.GetValueAddress(), m_type, m_storage, m_class))
             {
                 AZ_Error("Script Canvas", false, "Failed to convert from %s to %s", GetName(source.GetType()).c_str(), GetName(m_type).c_str());
             }
@@ -1880,16 +1884,16 @@ namespace ScriptCanvas
         {
             if (m_type.GetType() == Data::eType::BehaviorContextObject)
             {
-                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::Equal, *m_class, *this, other);
+                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::Equal, m_class, *this, other);
             }
             else
             {
-                return AZ::Success(IsDataEqual(m_type, GetValueAddress(), other.GetValueAddress()));
+                return AZ::Success(DatumHelpers::IsDataEqual(m_type, GetValueAddress(), other.GetValueAddress()));
             }
         }
         else if (m_type.IsConvertibleTo(other.GetType()))
         {
-            return AZ::Success(IsDataEqual(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
+            return AZ::Success(DatumHelpers::IsDataEqual(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
         }
         return AZ::Failure(AZStd::string("Invalid call of Datum::operator=="));
     }
@@ -1922,16 +1926,16 @@ namespace ScriptCanvas
         {
             if (m_type.GetType() == Data::eType::BehaviorContextObject)
             {
-                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::LessThan, *m_class, *this, other);
+                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::LessThan, m_class, *this, other);
             }
             else 
             {
-                return AZ::Success(IsDataLess(m_type, GetValueAddress(), other.GetValueAddress()));
+                return AZ::Success(DatumHelpers::IsDataLess(m_type, GetValueAddress(), other.GetValueAddress()));
             }
         }
         else if (m_type.IsConvertibleTo(other.GetType()))
         {
-            return AZ::Success(IsDataLess(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
+            return AZ::Success(DatumHelpers::IsDataLess(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
         }
 
         return AZ::Failure(AZStd::string("Invalid call of Datum::operator<"));
@@ -1947,16 +1951,16 @@ namespace ScriptCanvas
         {
             if (m_type.GetType() == Data::eType::BehaviorContextObject)
             {
-                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::LessEqualThan, *m_class, *this, other);
+                return CallComparisonOperator(AZ::Script::Attributes::OperatorType::LessEqualThan, m_class, *this, other);
             }
             else
             {
-                return AZ::Success(IsDataLessEqual(m_type, GetValueAddress(), other.GetValueAddress()));
+                return AZ::Success(DatumHelpers::IsDataLessEqual(m_type, GetValueAddress(), other.GetValueAddress()));
             }
         }
         else if (m_type.IsConvertibleTo(other.GetType()))
         {
-            return AZ::Success(IsDataLessEqual(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
+            return AZ::Success(DatumHelpers::IsDataLessEqual(m_type.GetType() == Data::eType::BehaviorContextObject ? other.GetType() : m_type, GetValueAddress(), other.GetValueAddress()));
         }
 
         return AZ::Failure(AZStd::string("Invalid call of Datum::operator<="));
@@ -2125,10 +2129,22 @@ namespace ScriptCanvas
         m_notificationId = notificationId;
     }
 
+    const AZStd::any& Datum::ToAny() const
+    {
+        if (m_type.GetType() == Data::eType::BehaviorContextObject)
+        {
+            BehaviorContextObjectPtr ptr = (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage));
+            return ptr->ToAny();
+        }
+        else
+        {
+            return m_storage;
+        }
+    }
+
     // pushes this datum to the void* address in destination
     bool Datum::ToBehaviorContext(AZ::BehaviorValueParameter& destination) const
     {
-        /// \todo support polymorphism
         AZ::BehaviorContext* behaviorContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
         AZ_Assert(behaviorContext, "Script Canvas can't do anything without a behavior context!");
@@ -2137,16 +2153,28 @@ namespace ScriptCanvas
         
         const bool success = 
             ( (IS_A(targetType) || IsConvertibleTo(targetType)) || (IS_A(Data::Type::String()) && AZ::BehaviorContextHelper::IsStringParameter(destination)) )
-            && ::ToBehaviorContext(m_type, GetValueAddress(), destination, destinationBehaviorClass);
+            && DatumHelpers::ToBehaviorContext(m_type, GetValueAddress(), destination, destinationBehaviorClass);
 
         AZ_Error("Script Canvas", success, "Cannot push Datum with type %s into BehaviorValueParameter expecting type %s", GetName(m_type).c_str(), GetName(targetType).c_str());
 
         return success;
     }
 
+    AZ::BehaviorValueParameter Datum::ToBehaviorContext(AZ::BehaviorClass*& behaviorClass)
+    {
+        AZ::BehaviorContext* behaviorContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+        AZ_Assert(behaviorContext, "Script Canvas can't do anything without a behavior context!");
+        behaviorClass = AZ::BehaviorContextHelper::GetClass(behaviorContext, GetType().GetAZType());
+        AZ::BehaviorValueParameter bvp;
+        bvp.m_value = ModResultAddress();
+        bvp.m_typeId = GetType().GetAZType();
+        return bvp;
+    }
+
     bool Datum::ToBehaviorContextNumber(void* target, const AZ::Uuid& typeID) const
     {
-        return ::ToBehaviorContextNumber(target, typeID, GetValueAddress());
+        return DatumHelpers::ToBehaviorContextNumber(target, typeID, GetValueAddress());
     }
 
     AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameter(const AZ::BehaviorParameter& description) const
@@ -2195,9 +2223,9 @@ namespace ScriptCanvas
         }
     }
     
-    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameterResult(const AZ::BehaviorParameter& description)
+    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameterResult([[maybe_unused]] const AZ::BehaviorParameter& description, [[maybe_unused]] const AZStd::string_view className, [[maybe_unused]] const AZStd::string_view methodName)
     {
-        AZ_Assert(m_isOverloadedStorage || IS_A(Data::FromAZType(description.m_typeId)) || IsConvertibleTo(description), "Mismatched type going to behavior value parameter: %s", description.m_name);
+        AZ_Assert(m_isOverloadedStorage || IS_A(Data::FromAZType(description.m_typeId)) || IsConvertibleTo(description), "Mismatched type going to behavior value parameter: %s (Context: %s :: %s)", description.m_name, className.data(), methodName.data());
 
         InitializeOverloadedStorage(Data::FromAZType(description.m_typeId), eOriginality::Copy);
 
@@ -2272,8 +2300,8 @@ namespace ScriptCanvas
         AZ_Assert(IS_A(Data::Type::Number()), "ToBehaviorValueParameterNumber is only for numbers");
         // m_conversion isn't a number yet
         // make it a number by initializing it to the proper type
-        ::ToBehaviorContextNumber(m_conversionStorage, description.m_typeId, GetValueAddress());
-        return ConvertibleToBehaviorValueParameter(description, description.m_typeId, "number", reinterpret_cast<void*>(&m_conversionStorage), m_pointer);
+        DatumHelpers::ToBehaviorContextNumber(m_conversionStorage, description.m_typeId, GetValueAddress());
+        return DatumHelpers::ConvertibleToBehaviorValueParameter(description, description.m_typeId, "number", reinterpret_cast<void*>(&m_conversionStorage), m_pointer);
     }
 
     AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameterString(const AZ::BehaviorParameter& description)
@@ -2291,19 +2319,19 @@ namespace ScriptCanvas
 
         if (Data::IsString(description.m_typeId))
         {
-            return AZ::Success(ConvertibleToBehaviorValueParameter(description, description.m_typeId, "AZStd::string", ModValueAddress(), m_pointer));
+            return AZ::Success(DatumHelpers::ConvertibleToBehaviorValueParameter(description, description.m_typeId, "AZStd::string", ModValueAddress(), m_pointer));
         }
         else
         {
             auto stringValue = GetAs<Data::StringType>();
             if (description.m_typeId == azrtti_typeid<char>() && (description.m_traits & (AZ::BehaviorParameter::TR_POINTER | AZ::BehaviorParameter::TR_CONST)))
             {
-                return AZ::Success(ConvertibleToBehaviorValueParameter(description, description.m_typeId, "const char*", const_cast<char*>(stringValue->data()), m_pointer));
+                return AZ::Success(DatumHelpers::ConvertibleToBehaviorValueParameter(description, description.m_typeId, "const char*", const_cast<char*>(stringValue->data()), m_pointer));
             }
             else if (description.m_typeId == azrtti_typeid<AZStd::string_view>())
             {
                 m_conversionStorage = AZStd::make_any<AZStd::string_view>(*stringValue);
-                return AZ::Success(ConvertibleToBehaviorValueParameter(description, description.m_typeId, "AZStd::string_view", AZStd::any_cast<void>(&m_conversionStorage), m_pointer));
+                return AZ::Success(DatumHelpers::ConvertibleToBehaviorValueParameter(description, description.m_typeId, "AZStd::string_view", AZStd::any_cast<void>(&m_conversionStorage), m_pointer));
             }
         }
 
@@ -2551,14 +2579,14 @@ namespace ScriptCanvas
         }
     }
 
-    AZ::Outcome<Datum, AZStd::string> Datum::CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs)
+    AZ::Outcome<Datum, AZStd::string> Datum::CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs, const AZStd::string_view context)
     {
         AZ_Assert(resultType, "const AZ::BehaviorParameter* resultType == nullptr in Datum");
         AZ_Assert(method, "AZ::BehaviorMethod* method == nullptr in Datum");
         // create storage for the destination of the results in the function call...
         Datum resultDatum(s_behaviorContextResultTag, *resultType);
         //...and initialize a AZ::BehaviorValueParameter to wrap the storage...
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> parameter = resultDatum.ToBehaviorValueParameterResult(*resultType);
+        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> parameter = resultDatum.ToBehaviorValueParameterResult(*resultType, context, method->m_name);
         if (parameter.IsSuccess())
         {
             // ...the result of Call here will write back to it...
@@ -2585,4 +2613,4 @@ namespace ScriptCanvas
         return datum != nullptr && !datum->Empty();
     }
 
-} // namespace ScriptCanvas
+}

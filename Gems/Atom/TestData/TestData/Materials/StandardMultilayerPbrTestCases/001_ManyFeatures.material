@@ -1,0 +1,143 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "layer1_ambientOcclusion": {
+            "enable": true,
+            "factor": 1.6399999856948853,
+            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+        },
+        "layer1_baseColor": {
+            "color": [
+                0.3495536744594574,
+                0.2659952640533447,
+                0.12039368599653244,
+                1.0
+            ],
+            "textureMap": "TestData/Textures/cc0/bark1col.jpg"
+        },
+        "layer1_emissive": {
+            "color": [
+                0.8521705865859985,
+                0.029510948807001115,
+                0.029510948807001115,
+                1.0
+            ],
+            "intensity": 0.8199999928474426
+        },
+        "layer1_normal": {
+            "factor": 0.4444443881511688,
+            "flipY": true,
+            "textureMap": "TestData/Textures/cc0/bark1norm.jpg"
+        },
+        "layer1_parallax": {
+            "enable": true,
+            "factor": 0.02500000037252903,
+            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+        },
+        "layer1_roughness": {
+            "lowerBound": 0.010100999847054482,
+            "textureMap": "TestData/Textures/cc0/bark1roughness.jpg"
+        },
+        "layer1_specularF0": {
+            "factor": 0.5099999904632568,
+            "textureMap": "TestData/Textures/checker8x8_512.png"
+        },
+        "layer1_uv": {
+            "center": [
+                0.75,
+                0.75
+            ],
+            "offsetU": 0.5,
+            "offsetV": 0.25
+        },
+        "layer2_ambientOcclusion": {
+            "factor": 1.2200000286102296,
+            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+        },
+        "layer2_baseColor": {
+            "textureMap": "TestData/Textures/cc0/Lava004_1K_Color.jpg"
+        },
+        "layer2_clearCoat": {
+            "enable": true,
+            "influenceMap": "TestData/Textures/checker8x8_512.png",
+            "normalMap": "TestData/Objects/cube/cube_norm.tif",
+            "normalStrength": 0.5400000214576721,
+            "roughness": 0.10000000149011612
+        },
+        "layer2_emissive": {
+            "enable": true,
+            "intensity": 2.140000104904175,
+            "textureMap": "TestData/Textures/cc0/Lava004_1K_Emission.jpg"
+        },
+        "layer2_normal": {
+            "flipY": true,
+            "textureMap": "TestData/Textures/cc0/Lava004_1K_Normal.jpg"
+        },
+        "layer2_parallax": {
+            "enable": true,
+            "factor": 0.01600000075995922,
+            "textureMap": "TestData/Textures/cc0/Lava004_1K_Displacement.jpg"
+        },
+        "layer2_roughness": {
+            "textureMap": "TestData/Textures/cc0/Lava004_1K_Roughness.jpg"
+        },
+        "layer2_uv": {
+            "offsetU": 0.5,
+            "offsetV": 0.25
+        },
+        "layer3_ambientOcclusion": {
+            "enable": true,
+            "factor": 1.0399999618530274,
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg"
+        },
+        "layer3_baseColor": {
+            "color": [
+                0.6315556764602661,
+                1.0,
+                0.9451438188552856,
+                1.0
+            ],
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Color.jpg"
+        },
+        "layer3_clearCoat": {
+            "influenceMap": "TestData/Textures/checker8x8_512.png"
+        },
+        "layer3_emissive": {
+            "intensity": -0.9399999976158142
+        },
+        "layer3_metallic": {
+            "factor": 1.0,
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Metalness.jpg"
+        },
+        "layer3_normal": {
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Normal.jpg"
+        },
+        "layer3_parallax": {
+            "enable": true,
+            "factor": 0.004999999888241291,
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg"
+        },
+        "layer3_roughness": {
+            "lowerBound": 0.07999999821186066,
+            "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Roughness.jpg",
+            "upperBound": 0.75
+        },
+        "layer3_specularF0": {
+            "factor": 0.47474750876426699
+        },
+        "layer3_uv": {
+            "offsetU": 0.11999999731779099,
+            "rotateDegrees": -57.599998474121097
+        },
+        "parallax": {
+            "enable": true
+        },
+        "uv": {
+            "offsetU": -0.2800000011920929,
+            "rotateDegrees": 39.599998474121097
+        }
+    }
+}

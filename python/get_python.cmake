@@ -18,9 +18,16 @@
 
 cmake_minimum_required(VERSION 3.17)
 
-string(TOLOWER ${PAL_PLATFORM_NAME} PAL_PLATFORM_NAME_LOWERCASE)
+if(LY_3RDPARTY_PATH)
+    file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)
+endif()
 
-include(cmake/3rdPartyPackages.cmake)
+function(o3de_current_file_path path)
+    set(${path} ${CMAKE_CURRENT_FUNCTION_LIST_DIR} PARENT_SCOPE)
+endfunction()
+
+o3de_current_file_path(current_path)
+file(REAL_PATH ${current_path}/.. LY_ROOT_FOLDER)
 
 set(LY_PACKAGE_KEEP_AFTER_DOWNLOADING FALSE)
 include(cmake/LYPython.cmake)

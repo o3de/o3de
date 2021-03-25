@@ -21,10 +21,8 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/FbxImporter.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/FbxImportContexts.h>
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpMaterialImporter.h>
-#endif
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/FbxSDKWrapper/FbxSceneWrapper.h>
@@ -32,10 +30,8 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
-#endif
 
 namespace AZ
 {
@@ -59,7 +55,7 @@ namespace AZ
             FbxImporter::FbxImporter()
                 : m_sceneSystem(new FbxSceneSystem())
             {
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
                 if (m_useAssetImporterSDK)
                 {
                     m_sceneWrapper = AZStd::make_unique<AssImpSDKWrapper::AssImpSceneWrapper>();
@@ -68,9 +64,7 @@ namespace AZ
                 {
                     m_sceneWrapper = AZStd::make_unique<FbxSDKWrapper::FbxSceneWrapper>();
                 }
-#else
-                m_sceneWrapper = AZStd::make_unique<FbxSDKWrapper::FbxSceneWrapper>();
-#endif
+
                 BindToCall(&FbxImporter::ImportProcessing);
             }
 
@@ -99,12 +93,10 @@ namespace AZ
                 {
                     convertFunc = AZStd::bind(&FbxImporter::ConvertFbxSceneContext, this, AZStd::placeholders::_1);
                 }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
                 else
                 {
                     convertFunc = AZStd::bind(&FbxImporter::ConvertFbxScene, this, AZStd::placeholders::_1);
                 }
-#endif
 
                 if (convertFunc(context.GetScene()))
                 {
@@ -284,7 +276,7 @@ namespace AZ
 
                 return true;
             }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
             bool FbxImporter::ConvertFbxScene(Containers::Scene& scene) const
             {
                 std::shared_ptr<SDKNode::NodeWrapper> fbxRoot = m_sceneWrapper->GetRootNode();
@@ -333,6 +325,8 @@ namespace AZ
                         continue;
                     }
                     AZStd::string nodeName = nodeNameMap.GetNodeName(node.m_node);
+                    SanitizeNodeName(nodeName);
+
                     AZ_TraceContext("SceneAPI Node Name", nodeName);
                     Containers::SceneGraph::NodeIndex newNode = scene.GetGraph().AddChild(node.m_parent, nodeName.c_str());
 
@@ -431,7 +425,13 @@ namespace AZ
 
                 return true;
             }
-#endif
+
+            void FbxImporter::SanitizeNodeName(AZStd::string& nodeName) const
+            {
+                // Replace % with something else so it is safe for use in printfs.
+                AZStd::replace(nodeName.begin(), nodeName.end(), '%', '_');
+            }
+
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

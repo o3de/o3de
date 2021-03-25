@@ -17,14 +17,17 @@
 #include "Shader.h"
 
 // include OpenGL
-#include "GLInclude.h"
 #include <MCore/Source/Array.h>
+
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 
 namespace RenderGL
 {
     class RENDERGL_API GLSLShader
         : public Shader
+        , protected QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(GLSLShader, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
@@ -34,6 +37,7 @@ namespace RenderGL
 
         void Activate() override;
         void Deactivate() override;
+        bool Validate() override;
 
         uint32 FindAttributeLocation(const char* name);
         uint32 GetType() const override;
@@ -78,7 +82,8 @@ namespace RenderGL
         ShaderParameter* FindUniform(const char* name);
 
         bool CompileShader(const GLenum type, unsigned int* outShader, const char* filename);
-        void InfoLog(unsigned int object);
+        template<class T>
+        void InfoLog(GLuint object, T func);
 
         AZStd::string                   mFileName;
 

@@ -187,7 +187,7 @@ namespace GraphCanvas
 
         NodeId                           m_nodeId;
 
-        ListingType                      m_listingType = ListingType::BlockedList;
+        ListingType                      m_listingType = ListingType::ExclusiveList;
         AZStd::unordered_set< SlotType > m_typeListing;
     };
 
@@ -240,6 +240,7 @@ namespace GraphCanvas
         static bool IsSlotConnectionType(const SlotId& slotId, ConnectionType connectionType);
         static bool IsSlotType(const SlotId& slotId, SlotType slotType);
         static bool IsSlot(const SlotId& slotId, SlotType slotType, ConnectionType connectionType);
+        static bool IsGroupableElement(const AZ::EntityId& graphMemberId);
 
         static bool IsNodeGroup(const AZ::EntityId& graphMemberId);
         static bool IsCollapsedNodeGroup(const AZ::EntityId& graphMemberId);
@@ -280,7 +281,7 @@ namespace GraphCanvas
         static AZStd::unordered_set< GraphCanvas::ConnectionId > CreateOpportunisticConnectionsBetween(const Endpoint& initializingEndpoint, const Endpoint& opportunisticEndpoint);
         static OpportunisticSpliceResult CreateOpportunisticsConnectionsForSplice(const GraphId& graphId, const AZStd::vector< ConnectionEndpoints >& connectedEndpoints , const NodeId& splicedNode);
 
-        static void AlignNodes(const AZStd::vector< AZ::EntityId >& memberIds, const AlignConfig& alignConfig, QRectF overallBoundingRect = QRectF());
+        static QRectF AlignNodes(const AZStd::vector< AZ::EntityId >& memberIds, const AlignConfig& alignConfig, QRectF overallBoundingRect = QRectF());
         static void OrganizeNodes(const AZStd::vector< AZ::EntityId >& memberIds, const AlignConfig& alignConfig);
 
         static void FocusOnElements(const AZStd::vector< AZ::EntityId >& memberIds, const FocusConfig& focusConfig);
@@ -289,6 +290,7 @@ namespace GraphCanvas
 
         static AZStd::unordered_set<NodeId> FindTerminalForNodeChain(const AZStd::vector<AZ::EntityId>& nodeIds, ConnectionType searchDirection);
 
+        static void SanityCheckEnabledState(AZ::EntityId nodeId);
         static void SetNodesEnabledState(const AZStd::unordered_set<NodeId>& nodeIds, RootGraphicsItemEnabledState enabledState);
 
         static bool CanHideEndpoint(const Endpoint& endpoint, const HideSlotConfig& slotConfig);
@@ -298,6 +300,12 @@ namespace GraphCanvas
         static QPointF CalculateAnchorPoint(const QPointF& position, const AZ::Vector2& anchorPoint, const QRectF& boundingBox);
         static QPointF CalculateGridSnapPosition(const QPointF& position, const AZ::Vector2& anchorPoint, const QRectF& boundingBox, const AZ::Vector2& gridStep, CalculationType calculationType = CalculationType::Round);
 
+        static void AddElementToGroup(const AZ::EntityId& memberId, const AZ::EntityId& groupTarget);
+
+        static AZ::EntityId FindVisibleElement(const AZ::EntityId& memberId);
+
+        static bool UngroupGroup(const GraphId& graphId, AZ::EntityId groupElement);
+
     private:
         static ConnectionId CreateUnknownConnection(const GraphId& graphId, const Endpoint& firstEndpoint, const Endpoint& secondEndpoint);
         static void ParseConnectionsForSerialization(GraphSerialization& graphData, const AZStd::unordered_set< ConnectionId >& connectionIds);
@@ -305,6 +313,8 @@ namespace GraphCanvas
         static QRectF CalculateAlignedPosition(const AlignConfig& alignConfig, QRectF boundingBox, QPointF movementDirection, const AZStd::vector< QRectF >& collidableObjects, const AZ::Vector2& spacing, const AZ::Vector2& overlapSpacing);
 
         static QRectF AlignBoundingBoxToGrid(const QRectF& boundingBox, const AZ::Vector2& stepSize);
+
+        static void PropagateNewEnabledState(AZStd::unordered_set<AZ::EntityId> unexploredNodes);
     };
 
     struct AlignConfig

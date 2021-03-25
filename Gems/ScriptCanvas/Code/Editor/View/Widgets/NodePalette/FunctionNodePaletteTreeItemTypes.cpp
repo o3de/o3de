@@ -16,7 +16,7 @@
 
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
@@ -87,6 +87,11 @@ namespace ScriptCanvasEditor
         SetTitlePalette("FunctionNodeTitlePalette");
     }
 
+    void FunctionPaletteTreeItem::SetRuntimeAssetId(const AZ::Data::AssetId& assetId)
+    {
+        m_runtimeAssetId = assetId;
+    }
+
     GraphCanvas::GraphCanvasMimeEvent* FunctionPaletteTreeItem::CreateMimeEvent() const
     {
         return aznew CreateFunctionMimeEvent(m_runtimeAssetId);
@@ -115,6 +120,11 @@ namespace ScriptCanvasEditor
     const AZ::Data::AssetId& FunctionPaletteTreeItem::GetSourceAssetId() const
     {
         return m_sourceAssetId;
+    }
+
+    const AZ::Data::AssetId& FunctionPaletteTreeItem::GetRuntimeAssetId() const
+    {
+        return m_runtimeAssetId;
     }
 
     void FunctionPaletteTreeItem::OnHoverStateChanged()

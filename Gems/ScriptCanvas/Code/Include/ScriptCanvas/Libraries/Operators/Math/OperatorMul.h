@@ -21,17 +21,12 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Node that provides multiplication
             class OperatorMul : public OperatorArithmetic
             {
             public:
 
-                ScriptCanvas_Node(OperatorMul,
-                    ScriptCanvas_Node::Name("Multiply (*)")
-                    ScriptCanvas_Node::Uuid("{E9BB45A1-AE96-47B0-B2BF-2927D420A28C}")
-                    ScriptCanvas_Node::Description("Multiplies two of more values")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Math")
-                );
+                SCRIPTCANVAS_NODE(OperatorMul);
 
                 OperatorMul() = default;
 

@@ -95,7 +95,7 @@ namespace GraphCanvas
         return aznumeric_cast<int>(zValue());
     }
 
-    void NodeFrameGraphicsWidget::OnPositionChanged([[maybe_unused]] const AZ::EntityId& entityId, const AZ::Vector2& position)
+    void NodeFrameGraphicsWidget::OnPositionChanged(const AZ::EntityId& /*entityId*/, const AZ::Vector2& position)
     {
         setPos(QPointF(position.GetX(), position.GetY()));
     }
@@ -116,14 +116,16 @@ namespace GraphCanvas
 
         if (IsResizedToGrid())
         {
-            int width = static_cast<int>(retVal.width());
-            int height = static_cast<int>(retVal.height());
+            qreal borderWidth = 2 * GetBorderWidth();
+
+            int width = static_cast<int>(retVal.width() - borderWidth);
+            int height = static_cast<int>(retVal.height() - borderWidth);
 
             width = GrowToNextStep(width, GetGridXStep(), StepAxis::Width);
             height = GrowToNextStep(height, GetGridYStep(), StepAxis::Height);
 
             retVal = QSizeF(width, height);
-        }        
+        }
 
         return retVal;
     }
@@ -132,7 +134,13 @@ namespace GraphCanvas
     {
         QGraphicsWidget::resizeEvent(resizeEvent);
 
-        GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SignalBoundsChanged);
+        // For some reason when you first begin to drag a node widget, it resizes itself from old size to 0. Causing it to resize the group it's in.
+        //
+        // Kind of a quick patch to avoid that happening since there's nothing obvious in a callstack where the faulty resize is coming from.
+        if (!resizeEvent->newSize().isEmpty())
+        {
+            GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SignalBoundsChanged);
+        }
     }
     
     void NodeFrameGraphicsWidget::OnDeleteItem()
@@ -177,7 +185,7 @@ namespace GraphCanvas
 
         AZ::Vector2 position;
         GeometryRequestBus::EventResult(position, GetEntityId(), &GeometryRequests::GetPosition);
-        setPos(ConversionUtils::AZToQPoint(position));
+        OnPositionChanged(GetEntityId(), position);
 
         SceneRequestBus::EventResult(m_editorId, sceneId, &SceneRequests::GetEditorId);
     }
@@ -238,6 +246,11 @@ namespace GraphCanvas
     qreal NodeFrameGraphicsWidget::GetCornerRadius() const
     {
         return m_style.GetAttribute(Styling::Attribute::BorderRadius, 5.0);
+    }
+
+    qreal NodeFrameGraphicsWidget::GetBorderWidth() const
+    {
+        return m_style.GetAttribute(Styling::Attribute::BorderWidth, 1.0);
     }
 
     void NodeFrameGraphicsWidget::SetSteppedSizingEnabled(bool enabled)

@@ -30,13 +30,20 @@ exit /B 1
 :PYTHONHOME_EXISTS
 
 SET PYTHON=%PYTHONHOME%\python.exe
+SET PYTHON_ARGS=%*
+
+IF [%1] EQU [debug] (
+    SET PYTHON=%PYTHONHOME%\python_d.exe
+    SET PYTHON_ARGS=%PYTHON_ARGS:~6%
+)
+
 IF EXIST "%PYTHON%" GOTO PYTHON_EXISTS
 
-ECHO Could not find python.exe in %PYTHONHOME%
+ECHO Could not find python executable at %PYTHON%
 exit /B 1
 
 :PYTHON_EXISTS
 
 SET PYTHONNOUSERSITE=1
-"%PYTHON%" %*
+"%PYTHON%" %PYTHON_ARGS%
 exit /B %ERRORLEVEL%

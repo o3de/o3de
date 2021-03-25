@@ -10,7 +10,7 @@
 *
 */
 
-#include "ResourceCompilerScene_precompiled.h"
+#include <ISystem.h>
 #include <platform.h>
 #include <IResCompiler.h>
 #include <IRCLog.h>

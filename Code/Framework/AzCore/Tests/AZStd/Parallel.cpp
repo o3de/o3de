@@ -646,7 +646,11 @@ namespace UnitTest
         }
     };
 
+#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
+    TEST_F(Parallel_Thread, DISABLED_Test)
+#else 
     TEST_F(Parallel_Thread, Test)
+#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         run();
     }

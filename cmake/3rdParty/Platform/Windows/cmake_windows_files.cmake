@@ -10,11 +10,9 @@
 #
 
 set(FILES
-    AMD_windows.cmake
     AWSNativeSDK_windows.cmake
     AWSGameLiftServerSDK_windows.cmake
     BuiltInPackages_windows.cmake
-    cityhash_windows.cmake
     Clang_windows.cmake
     Crashpad_windows.cmake
     DirectXShaderCompiler_windows.cmake
@@ -23,23 +21,9 @@ set(FILES
     expat_windows.cmake
     FbxSdk_windows.cmake
     FreeType2_windows.cmake
-    GoogleBenchmark_windows.cmake
-    googletest_windows.cmake
     libav_windows.cmake
-    LibTomCrypt_windows.cmake
-    lz4_windows.cmake
-    Lzma_windows.cmake
-    LZSS_windows.cmake
-    md5_windows.cmake
-    nvapi_windows.cmake
-    nvcloth_windows.cmake
     OpenSSL_windows.cmake
-    PhysX_windows.cmake
-    poly2tri_windows.cmake
-    PVRTexTool_windows.cmake
     Qt_windows.cmake
-    SQLite_windows.cmake
     tiff_windows.cmake
     Wwise_windows.cmake
-    zstd_windows.cmake
 )

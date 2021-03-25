@@ -33,8 +33,10 @@ namespace MaterialEditor
         m_skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
     }
 
-    void RotateEnvironmentBehavior::TickInternal(float x, [[maybe_unused]] float y)
+    void RotateEnvironmentBehavior::TickInternal(float x, float y, float z)
     {
+        Behavior::TickInternal(x, y, z);
+
         m_rotation += x;
         AZ::Quaternion rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), m_rotation);
         AZ::TransformBus::Event(m_iblEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);

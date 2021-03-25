@@ -52,7 +52,7 @@ namespace AZ
             void Init() override;
 
             // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             RHI::ShaderInputConstantIndex m_shaderInputColorMatIndex;
             RHI::ShaderInputConstantIndex m_shaderInputCinemaLimitsIndex;

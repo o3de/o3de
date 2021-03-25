@@ -19,9 +19,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-    #if defined(TOOLS_SUPPORT_XENIA)
-        #include <Platform/Xenia/RHI.Builders/ShaderPlatformInterface_Xenia.h>
-    #endif
     #if defined(TOOLS_SUPPORT_JASPER)
         #include <Platform/Jasper/RHI.Builders/ShaderPlatformInterface_Jasper.h>
     #endif

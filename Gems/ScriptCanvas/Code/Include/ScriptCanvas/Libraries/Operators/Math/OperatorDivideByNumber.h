@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include "OperatorArithmetic.h"
 #include <Include/ScriptCanvas/Libraries/Operators/Math/OperatorDivideByNumber.generated.h>
 
@@ -23,17 +22,16 @@ namespace ScriptCanvas
         namespace Operators
         {
 #define DIVIDABLE_TYPES { Data::Type::Number(), Data::Type::Vector2(), Data::Type::Vector3(), Data::Type::Vector4() }
+
+            //! Deprecated: see MethodOverloaded for "Divide by Number (/)"
             class OperatorDivideByNumber 
                 : public Node
             {                
             public:
-                ScriptCanvas_Node(OperatorDivideByNumber,
-                    ScriptCanvas_Node::Name("Divide by Number (/)")
-                    ScriptCanvas_Node::Uuid("{8305B5C9-1B9F-4D5B-B3E7-66925F491E9D}")
-                    ScriptCanvas_Node::Description("Divides certain types by a given number")
-                    ScriptCanvas_Node::Version(1, OperatorDivideByNumberVersionConverter)
-                    ScriptCanvas_Node::Category("Math")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorDivideByNumber);
+
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 enum Version
                 {
@@ -47,35 +45,14 @@ namespace ScriptCanvas
 
                 OperatorDivideByNumber() = default;
 
-                // Nodes
+                // Nodes...
                 void OnInit() override;
                 void OnInputSignal(const SlotId& slotId) override;
                 ////
 
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
             protected:
 
                 AZ::Crc32 GetDynamicGroupId() const { return AZ_CRC("DivideGroup", 0x66473fe4); }
-
-                ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                    ScriptCanvas::ConnectionType::Input,
-                    ScriptCanvas_DynamicDataSlot::Name("Source", "The value to be divided by a number")
-                    ScriptCanvas_DynamicDataSlot::DynamicGroup("DivideGroup")
-                    ScriptCanvas_DynamicDataSlot::RestrictedTypeContractTag(DIVIDABLE_TYPES)
-                );
-
-                ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                    ScriptCanvas::ConnectionType::Output,
-                    ScriptCanvas_DynamicDataSlot::Name("Result", "The result of the operation")
-                    ScriptCanvas_DynamicDataSlot::DynamicGroup("DivideGroup")
-                    ScriptCanvas_DynamicDataSlot::RestrictedTypeContractTag(DIVIDABLE_TYPES)
-                );
-
-                ScriptCanvas_PropertyWithDefaults(ScriptCanvas::Data::NumberType, 1.f,
-                    ScriptCanvas_Property::Name("Divisor", "The number to divide by.")
-                    ScriptCanvas_Property::Input);
 
                 SlotId m_operandId;
             };

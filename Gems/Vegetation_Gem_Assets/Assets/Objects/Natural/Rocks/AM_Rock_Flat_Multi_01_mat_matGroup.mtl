@@ -1,0 +1,18 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="AM_Rock_Flat_Multi_01_mat" MtlFlags="524416" Shader="Illum" GenMask="4000010000045" StringGenMask="%ALLOW_SILHOUETTE_POM%ALPHAMASK_DETAILMAP%DETAIL_MAPPING%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_rock" Diffuse="0.83879912,0.79910284,0.76052463,1" Specular="0.03954624,0.03954624,0.03954624,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/natural/rocks/am_rock_flat_multi_01_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/natural/rocks/am_rock_flat_multi_01_ddna.dds"/>
+    <Texture Map="Detail" File="objects/natural/rocks/rock03_detail.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="12" TileV="12"/>
+    </Texture>
+   </Textures>
+   <PublicParams EmittanceMapGamma="1" DetailDiffuseScale="0.5" SSSIndex="0" DetailBumpScale="0" DetailGlossScale="0" IndirectColor="0.24620135,0.24620135,0.24620135"/>
+  </Material>
+  <Material Name="AM_Rock_Flat_01_proxy_mat" MtlFlags="525440" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="mat_rock" Diffuse="0.5,0.5,0.5,1" Specular="0.5,0.5,0.5,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures />
+  </Material>
+ </SubMaterials>
+ <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

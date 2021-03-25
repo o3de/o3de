@@ -56,7 +56,7 @@ namespace GraphCanvas
         setEnabled(enableAction);
     }
 
-    ContextMenuAction::SceneReaction RemoveSlotMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction RemoveSlotMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();
@@ -123,7 +123,7 @@ namespace GraphCanvas
         setEnabled(enableAction);
     }
 
-    ContextMenuAction::SceneReaction ClearConnectionsMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction ClearConnectionsMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();
@@ -194,7 +194,7 @@ namespace GraphCanvas
         setEnabled(enableAction);
     }
 
-    ContextMenuAction::SceneReaction ResetToDefaultValueMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction ResetToDefaultValueMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();
@@ -282,7 +282,7 @@ namespace GraphCanvas
         }
     }
 
-    ContextMenuAction::SceneReaction ToggleReferenceStateAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction ToggleReferenceStateAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {        
         bool toggledState = false;
 
@@ -362,7 +362,7 @@ namespace GraphCanvas
         setEnabled(enableAction);
     }
 
-    GraphCanvas::ContextMenuAction::SceneReaction PromoteToVariableAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    GraphCanvas::ContextMenuAction::SceneReaction PromoteToVariableAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();

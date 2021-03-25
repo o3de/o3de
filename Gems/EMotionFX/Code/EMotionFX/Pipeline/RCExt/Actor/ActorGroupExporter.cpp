@@ -28,6 +28,8 @@
 #include <RCExt/Actor/ActorGroupExporter.h>
 #include <RCExt/ExportContexts.h>
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+
 namespace EMotionFX
 {
     namespace Pipeline
@@ -113,7 +115,7 @@ namespace EMotionFX
                 return SceneEvents::ProcessingResult::Failure;
             }
 
-            ExporterLib::SaveActor(filename, m_actor.get(), MCore::Endian::ENDIAN_LITTLE);
+            ExporterLib::SaveActor(filename, m_actor.get(), MCore::Endian::ENDIAN_LITTLE, GetMeshAssetId(context));
 
 #ifdef EMOTIONFX_ACTOR_DEBUG
             // Use there line to create a log file and inspect detail debug info
@@ -140,6 +142,34 @@ namespace EMotionFX
             }
 
             return SceneEvents::ProcessingResult::Success;
+        }
+
+        AZStd::optional<AZ::Data::AssetId> ActorGroupExporter::GetMeshAssetId(const ActorGroupExportContext& context) const
+        {
+            AZ::Data::AssetType atomModelAssetType = azrtti_typeid<AZ::RPI::ModelAsset>();
+            const AZStd::vector<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
+
+            // Gather the asset ids from the exported mesh groups (Atom model assets).
+            AZStd::vector<AZ::SceneAPI::Events::ExportProduct> atomModelAssets;
+            for (const AZ::SceneAPI::Events::ExportProduct& product : products)
+            {
+                if (product.m_assetType == atomModelAssetType)
+                {
+                    AZ_Assert(product.m_id == context.m_scene.GetSourceGuid(), "Source asset uuid differs from the Atom model product uuid.");
+                    atomModelAssets.push_back(product);
+                }
+            }
+
+            // Default to the first mesh group until we get a way to choose it via the FBX settings (ATOM-13590).
+            AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt;
+            AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
+            if (!atomModelAssets.empty())
+            {
+                const AZ::SceneAPI::Events::ExportProduct& meshProduct = atomModelAssets[0];
+                return AZ::Data::AssetId(meshProduct.m_id, meshProduct.m_subId.value());
+            }
+
+            return AZStd::nullopt;
         }
     } // namespace Pipeline
 } // namespace EMotionFX

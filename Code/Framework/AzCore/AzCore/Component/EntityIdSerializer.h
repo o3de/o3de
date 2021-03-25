@@ -31,6 +31,11 @@ namespace AZ
 
             virtual JsonSerializationResult::Result MapJsonToId(EntityId& outputValue, const rapidjson::Value& inputValue, JsonDeserializerContext& context) = 0;
             virtual JsonSerializationResult::Result MapIdToJson(rapidjson::Value& outputValue, const EntityId& inputValue, JsonSerializerContext& context) = 0;
+
+            inline void SetIsEntityReference(bool isEntityReference) { m_isEntityReference = isEntityReference; };
+
+        protected:
+            bool m_isEntityReference = true;
         };
 
         JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/AzEventHandler.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="AzEventHandler"
+        QualifiedName="ScriptCanvas::Nodes::Core::AzEventHandler"
+        PreferredClassName="AZ Event Handler"
+        Uuid="{38B808C5-152C-4643-A08C-463EBED55E19}"
+        Base="ScriptCanvas::Node"
+        Icon="Editor/Icons/ScriptCanvas/AzEvent.png"
+        Version="0"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        GraphEntryPoint="True"
+        Description="Handler for an AZ::Event returned from a BehaviorContent method.">
+
+        <In Name="Connect" Description="Connect the AZ Event to this AZ Event Handler." Contracts="ConnectionLimitContract{ 1 };RestrictedNodeContract{}"/>
+        <In Name="Disconnect" Description="Disconnect current AZ Event from this AZ Event Handler."/>
+        <OutLatent Name="OnEvent" Description="Triggered when the AZ Event invokes Signal() function."/>
+        <Out Name="On Connected" Description="Signaled when a connection has taken place."/>
+        <Out Name="On Disconnected" Description="Signaled when this event handler is disconnected."/>
+        <SerializedProperty Name="m_azEventEntry" />
+    </Class>
+</ScriptCanvas>

@@ -42,6 +42,12 @@ namespace EMotionFX
             }
         }
 
+        uint8_t ActorExporter::GetPriority() const
+        {
+            // Set the priority within the SceneAPI exporter processes and process actors after other exporters using the SceneAPI.
+            return CallProcessor::LatestProcessing;
+        }
+
         SceneEvents::ProcessingResult ActorExporter::ProcessContext(SceneEvents::ExportEventContext& context) const
         {
             const SceneContainers::SceneManifest& manifest = context.GetScene().GetManifest();

@@ -320,7 +320,7 @@ namespace ScriptCanvasEditor
 
         AZStd::vector<ScriptCanvas::VariableFlags::Scope> scopes = { ScriptCanvas::VariableFlags::Scope::Local, ScriptCanvas::VariableFlags::Scope::Input };
 
-        if (assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset >())
+        if (assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset >())
         {
             scopes.emplace_back(ScriptCanvas::VariableFlags::Scope::Output);
             scopes.emplace_back(ScriptCanvas::VariableFlags::Scope::InOut);
@@ -519,6 +519,41 @@ namespace ScriptCanvasEditor
         return variableDataTypes;
     }
 
+    bool VariableDockWidget::IsShowingVariablePalette() const
+    {
+        return ui->stackedWidget->currentIndex() == ui->stackedWidget->indexOf(ui->variablePalettePage);
+    }
+
+    bool VariableDockWidget::IsShowingGraphVariables() const
+    {
+        return ui->stackedWidget->currentIndex() == ui->stackedWidget->indexOf(ui->graphVariablesPage);
+    }
+
+    QPushButton* VariableDockWidget::GetCreateVariableButton() const
+    {
+        return ui->addButton;
+    }
+
+    QTableView* VariableDockWidget::GetGraphPaletteTableView() const
+    {
+        return ui->graphVariables;
+    }
+
+    QTableView* VariableDockWidget::GetVariablePaletteTableView() const
+    {
+        return ui->variablePalette;
+    }
+
+    QLineEdit* VariableDockWidget::GetVariablePaletteFilter() const
+    {
+        return ui->searchFilter;
+    }
+
+    QLineEdit* VariableDockWidget::GetGraphVariablesFilter() const
+    {
+        return ui->searchFilter;
+    }
+
     void VariableDockWidget::OnEscape()
     {
         ShowGraphVariables();
@@ -539,9 +574,38 @@ namespace ScriptCanvasEditor
         return m_scriptCanvasId;
     }
 
-    bool VariableDockWidget::IsShowingVariablePalette() const
+    bool VariableDockWidget::IsValidVariableType(const ScriptCanvas::Data::Type& dataType) const
     {
-        return ui->stackedWidget->currentIndex() == ui->stackedWidget->indexOf(ui->variablePalettePage);
+        bool isValid = false;
+
+        AZ::Uuid azType = ScriptCanvas::Data::ToAZType(dataType);
+
+        if (ScriptCanvas::Data::IsMapContainerType(dataType))
+        {
+            auto mapTypes = ui->variablePalette->GetMapTypes();
+
+            auto findIter = AZStd::find(mapTypes.begin(), mapTypes.end(), azType);
+
+            isValid = findIter != mapTypes.end();
+        }
+        else if (ScriptCanvas::Data::IsVectorContainerType(dataType))
+        {
+            auto arrayTypes = ui->variablePalette->GetArrayTypes();
+
+            auto findIter = AZStd::find(arrayTypes.begin(), arrayTypes.end(), azType);
+
+            isValid = findIter != arrayTypes.end();
+        }
+        else
+        {
+            const auto& variableTypes = ui->variablePalette->GetVariableTypePaletteModel()->GetVariableTypes();
+
+            auto findIter = AZStd::find(variableTypes.begin(), variableTypes.end(), azType);
+
+            isValid = findIter != variableTypes.end();
+        }
+
+        return isValid;
     }
 
     void VariableDockWidget::ShowVariablePalette()
@@ -555,11 +619,6 @@ namespace ScriptCanvasEditor
         ui->searchFilter->setCompleter(ui->variablePalette->GetVariableCompleter());
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-    }
-
-    bool VariableDockWidget::IsShowingGraphVariables() const
-    {
-        return ui->stackedWidget->currentIndex() == ui->stackedWidget->indexOf(ui->graphVariablesPage);
     }
 
     void VariableDockWidget::ShowGraphVariables()
@@ -785,6 +844,7 @@ namespace ScriptCanvasEditor
         }
 
         ScriptCanvas::GraphVariableManagerRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::CloneVariable, (*graphVariable));
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
     }
 
     void VariableDockWidget::OnCreateVariable(ScriptCanvas::Data::Type varType)

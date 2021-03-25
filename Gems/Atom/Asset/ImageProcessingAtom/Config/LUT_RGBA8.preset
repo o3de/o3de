@@ -33,12 +33,6 @@
                 "Name": "LUT_RGBA8",
                 "SourceColor": "Linear",
                 "DestColor": "Linear"
-            },
-            "xenia": {
-                "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
-                "Name": "LUT_RGBA8",
-                "SourceColor": "Linear",
-                "DestColor": "Linear"
             }
         }
     }

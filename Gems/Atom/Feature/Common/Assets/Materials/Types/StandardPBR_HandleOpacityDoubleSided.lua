@@ -21,12 +21,15 @@ ForwardPassEdsIndex = 1
 
 function Process(context)
     local doubleSided = context:GetMaterialPropertyValue_bool("opacity.doubleSided")
+    local lastShader = context:GetShaderCount() - 1;
 
     if(doubleSided) then
-        context:GetShader(ForwardPassIndex):GetRenderStatesOverride():SetCullMode(CullMode_None)
-        context:GetShader(ForwardPassEdsIndex):GetRenderStatesOverride():SetCullMode(CullMode_None)
+        for i=0,lastShader do
+            context:GetShader(i):GetRenderStatesOverride():SetCullMode(CullMode_None)
+        end
     else
-        context:GetShader(ForwardPassIndex):GetRenderStatesOverride():ClearCullMode()
-        context:GetShader(ForwardPassEdsIndex):GetRenderStatesOverride():ClearCullMode()
+        for i=0,lastShader do
+            context:GetShader(i):GetRenderStatesOverride():ClearCullMode()
+        end
     end
 end

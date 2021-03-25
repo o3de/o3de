@@ -60,7 +60,6 @@ namespace ScriptCanvas
 
         void RandomEngineInit();
         void RandomEngineReset();
-    } // namespace MathNodeUtilities
-
-} // namespace ScriptCanvas
+    }
+} 
 

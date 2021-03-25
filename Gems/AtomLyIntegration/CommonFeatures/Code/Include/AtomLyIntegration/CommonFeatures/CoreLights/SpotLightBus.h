@@ -131,6 +131,13 @@ namespace AZ
             //! This sets the sample count for filtering of the shadow boundary.
             //! @param count Sample Count for filtering (up to 64)
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
+
+            //! This gets the type of Pcf (percentage-closer filtering) to use.
+            virtual PcfMethod GetPcfMethod() const = 0;
+
+            //! This sets the type of Pcf (percentage-closer filtering) to use.
+            //! @param method The Pcf method to use.
+            virtual void SetPcfMethod(PcfMethod method) = 0;
         };
 
         /// The EBus for requests to for setting and getting spot light component properties.

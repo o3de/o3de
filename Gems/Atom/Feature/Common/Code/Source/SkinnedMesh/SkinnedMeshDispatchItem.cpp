@@ -35,20 +35,20 @@ namespace AZ
             Data::Instance<RPI::Buffer> boneTransforms,
             const SkinnedMeshShaderOptions& shaderOptions,
             RPI::Ptr<SkinnedMeshComputePass> skinnedMeshComputePass,
-            uint32_t morphTargetDeltaOffsetInBytes,
+            MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
             , m_outputBufferOffsetsInBytes(outputBufferOffsetsInBytes)
             , m_lodIndex(lodIndex)
             , m_boneTransforms(AZStd::move(boneTransforms))
             , m_shaderOptions(shaderOptions)
-            , m_morphTargetDeltaOffsetInBytes(morphTargetDeltaOffsetInBytes)
+            , m_morphTargetInstanceMetaData(morphTargetInstanceMetaData)
             , m_morphTargetDeltaIntegerEncoding(morphTargetDeltaIntegerEncoding)
         {
             m_skinningShader = skinnedMeshComputePass->GetShader();
 
             // Shader options are generally set per-skinned mesh instance, but morph targets may only exist on some lods. Override the option for applying morph targets here
-            if (m_morphTargetDeltaOffsetInBytes != MorphTargetConstants::s_invalidDeltaOffset)
+            if (m_morphTargetInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes != MorphTargetConstants::s_invalidDeltaOffset)
             {
                 m_shaderOptions.m_applyMorphTargets = true;
             }
@@ -72,8 +72,7 @@ namespace AZ
 
             // Get the shader variant and instance SRG
             m_shaderOptionGroup.SetUnspecifiedToDefaultValues();
-            RPI::ShaderVariantSearchResult shaderVariantSearchResult = m_skinningShader->FindVariantStableId(m_shaderOptionGroup.GetShaderVariantId());
-            const RPI::ShaderVariant& shaderVariant = m_skinningShader->GetVariant(shaderVariantSearchResult.GetStableId());
+            const RPI::ShaderVariant& shaderVariant = m_skinningShader->GetVariant(m_shaderOptionGroup.GetShaderVariantId());
 
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -98,7 +97,7 @@ namespace AZ
             }
 
             // If the shader variation is not fully baked, set the fallback key to use a runtime branch for the shader options
-            if (!shaderVariantSearchResult.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(m_shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
@@ -152,11 +151,21 @@ namespace AZ
             m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
 
             // Set the morph target related srg constants
-            RHI::ShaderInputConstantIndex morphOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaOffset" });
+            RHI::ShaderInputConstantIndex morphPositionOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetPositionDeltaOffset" });
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
-            m_instanceSrg->SetConstant(morphOffsetIndex, m_morphTargetDeltaOffsetInBytes / 4);
-            RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaIntegerEncoding" });
-            m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, m_morphTargetDeltaIntegerEncoding);
+            m_instanceSrg->SetConstant(morphPositionOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes / 4);
+            RHI::ShaderInputConstantIndex morphNormalOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetNormalDeltaOffset" });
+            // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
+            m_instanceSrg->SetConstant(morphNormalOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedNormalDeltaOffsetInBytes / 4);
+            RHI::ShaderInputConstantIndex morphTangentOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetTangentDeltaOffset" });
+            // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
+            m_instanceSrg->SetConstant(morphTangentOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
+            RHI::ShaderInputConstantIndex morphBitangentOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetBitangentDeltaOffset" });
+            // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
+            m_instanceSrg->SetConstant(morphBitangentOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
+
+            RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaInverseIntegerEncoding" });
+            m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);
             
             // Set the vertex count
             const uint32_t vertexCount = m_inputBuffers->GetVertexCount(m_lodIndex);

@@ -420,7 +420,6 @@ private: // ----------------------------------------------------------
     IFFont*                                                m_pFont;
     IRenderer*                                         m_pRenderer;
     ITimer*                                                m_pTimer;
-    INetwork*                                          m_pNetwork;                              // EvenBalance - M. Quinn
 
     ICVar*                                                 m_pSysDeactivateConsole;
 

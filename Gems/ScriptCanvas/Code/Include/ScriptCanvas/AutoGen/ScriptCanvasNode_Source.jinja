@@ -24,6 +24,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #include <ScriptCanvas/Core/Contracts.h>
 #include <ScriptCanvas/Core/DatumBus.h>
 
+#include <ScriptCanvas/Utils/VersionConverters.h>
+
 {% for xml in dataFiles %}
 #include "{{ xml.attrib['Include'] }}"
 
@@ -34,30 +36,34 @@ void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
     {{ Class.attrib['Base'] }}::ConfigureSlots();
 
 {% endif %}
-{%         for Property in Class.iter('Property') %}
-{%                if Property.attrib['IsInput'] | booleanTrue %}
+{% for Property in Class.iter('Property') %}
+    {% if Property.attrib['IsInput'] | booleanTrue %}
     // {{ Property.attrib['Name'] }}
     {
-{% if Property.attrib['Overloaded'] is defined %}
+        {% if Property.attrib['Overloaded'] is defined %}
         ScriptCanvas::DynamicDataSlotConfiguration slotConfiguration;
         slotConfiguration.m_dynamicDataType = ScriptCanvas::DynamicDataType::Any;
-{% else %}
+        {% else %}
         ScriptCanvas::DataSlotConfiguration slotConfiguration;
         slotConfiguration.SetAZType<{{ Property.attrib['Type'] }}>();
-{%     if Property.attrib['DefaultValue'] is defined %}
+            {% if Property.attrib['DefaultValue'] is defined %}
         slotConfiguration.SetDefaultValue({{ Property.attrib['Type'] }}({{ Property.attrib['DefaultValue'] }}));
-{%     endif %}
-{% endif %}        
+            {% endif %}
+        {% endif %}
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
-{% if Property.attrib['DisplayGroup'] is defined %}
+        {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
+        {% endif %}
+        {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+        {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+        {% endfor %}
         slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Input);
         AddSlot(slotConfiguration);
     }
-{%                endif %}
-{%                if Property.attrib['IsOutput'] | booleanTrue %}
+    {% endif %}
+    {% if Property.attrib['IsOutput'] | booleanTrue %}
     // {{ Property.attrib['Name'] }}
     {
         ScriptCanvas::DataSlotConfiguration slotConfiguration;
@@ -65,78 +71,95 @@ void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
         slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
-{% if Property.attrib['DisplayGroup'] is defined %}
+        {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
+        {% endif %}
+        {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+        {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+        {% endfor %}
         AddSlot(slotConfiguration);
     }
-{%             endif %}
-{%         endfor %}
-{%         for Property in Class.iter('In') %}
+    {% endif %}
+{% endfor %}
+{% for Property in Class.iter('In') %}
     // {{ Property.attrib['Name'] }}
     {
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration;
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
-{% if Property.attrib['DisplayGroup'] is defined %}
+    {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
-{% if Property.attrib['Contract'] is defined %}   
-        slotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>{ { []() { return aznew {{ Property.attrib['Contract'] }}; } } };
-{% endif %}
+    {% endif %}
+    {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+    {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+    {% endfor %}
         slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Input);
         AddSlot(slotConfiguration);
     }
-{%         endfor %}
-{%         for Property in Class.iter('Out') %}
+{% endfor %}
+{% for Property in Class.iter('Out') %}
     // {{ Property.attrib['Name'] }}
     {
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration;
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
-{% if Property.attrib['DisplayGroup'] is defined %}
+    {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
+    {% endif %}
+    {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+    {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+    {% endfor %}
         slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
         AddSlot(slotConfiguration);
     }
-{%         endfor %}
-{%         for Property in Class.iter('OutLatent') %}
+{% endfor %}
+{% for Property in Class.iter('OutLatent') %}
     // {{ Property.attrib['Name'] }}
     {
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration;
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
-{% if Property.attrib['DisplayGroup'] is defined %}
+    {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
+    {% endif %}
+    {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+    {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+    {% endfor %}
         slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
         slotConfiguration.m_isLatent = true;
         AddSlot(slotConfiguration);
     }
-{%         endfor %}
-{%         for Property in Class.iter('DynamicDataSlot') %}
+{% endfor %}
+{% for Property in Class.iter('DynamicDataSlot') %}
     // {{ Property.attrib['Name'] }}
     {
         ScriptCanvas::DynamicDataSlotConfiguration slotConfiguration;       
         slotConfiguration.m_name = "{{ Property.attrib['Name'] }}";
         slotConfiguration.m_toolTip = "{{ Property.attrib['Description'] }}";
-{% if Property.attrib['DisplayGroup'] is defined %}
+    {% if Property.attrib['DisplayGroup'] is defined %}
         slotConfiguration.m_displayGroup = "{{ Property.attrib['DisplayGroup'] }}";
-{% endif %}
+    {% endif %}
         slotConfiguration.SetConnectionType({{ Property.attrib['ConnectionType'] }});
         slotConfiguration.m_dynamicDataType = {{ Property.attrib['DynamicType'] }};
-{% if Property.attrib['DynamicGroup'] is defined %}
+    {% if Property.attrib['DynamicGroup'] is defined %}
         slotConfiguration.m_dynamicGroup = AZ::Crc32("{{ Property.attrib['DynamicGroup'] }}");
-{% endif %}
-{% if Property.attrib['RestrictedTypes'] is defined %}
-{% set typeContractList = Property.attrib['RestrictedTypes'].split(';') | join("(), ") %}
+    {% endif %}
+    {% if Property.attrib['RestrictedTypes'] is defined %}
+        {% set typeContractList = Property.attrib['RestrictedTypes'].split(';') | join("(), ") %}
         // Restricted Type Contract
         slotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>{ { []() { return aznew ScriptCanvas::RestrictedTypeContract({ {{ typeContractList }}() }); } } };
-{% endif %}
+    {% endif %}
+    {% set slotContracts = Property.attrib['Contracts'].split(';') if Property.attrib['Contracts'] is string else Property.attrib['Contracts']|default([]) %}
+    {% for slotContract in slotContracts %}
+        slotConfiguration.m_contractDescs.emplace_back([]() { return aznew {{ slotContract|e }}; });
+    {% endfor %}
         AddSlot(slotConfiguration);
     }
-{%         endfor %}
+{% endfor %}
 }
 
 
@@ -181,41 +204,41 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
             editContext->Class<{{ Class.attrib['QualifiedName'] }}>("{{ Class.attrib['PreferredClassName'] }}", "{{ Class.attrib['Description'] }}")
-                       ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 {% if Class.attrib['Category'] is defined %}
-                            ->Attribute(AZ::Edit::Attributes::Category, "{{ Class.attrib['Category'] }}")
+                    ->Attribute(AZ::Edit::Attributes::Category, "{{ Class.attrib['Category'] }}")
 {% endif %}
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 {% if Class.attrib['Icon'] is defined %}
-                            ->Attribute(AZ::Edit::Attributes::Icon, "{{ Class.attrib['Icon'] }}")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "{{ Class.attrib['Icon'] }}")
 {% endif %}
 {% if Class.attrib['Deprecated'] is defined %}
-                            ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "DeprecatedNodeTitlePalette")
-                            ->Attribute(AZ::Script::Attributes::Deprecated, true)
+                    ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "DeprecatedNodeTitlePalette")
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
 {% else %}
 {% if Class.attrib['EditAttributes'] is defined %}
 {% for editAttributePair in Class.attrib['EditAttributes'].split(';') %}
 {% set editAttributeKey, editAttributeValue = editAttributePair.split('@') %}
 {% if editAttributeKey == "AZ::Script::Attributes::ExcludeFrom" %}
-                            ->Attribute({{ editAttributeKey }}, {{ editAttributeValue }})
+                    ->Attribute({{ editAttributeKey }}, {{ editAttributeValue }})
 {% else %}
-                            ->Attribute({{ editAttributeKey }}, "{{ editAttributeValue }}")
+                    ->Attribute({{ editAttributeKey }}, "{{ editAttributeValue }}")
 {% endif %}
 {% endfor %}
 {% endif %}
 {%         for Property in Class.iter('EditProperty') %}
 {% if Property.attrib['SerializeProperty'] is defined %}
-                                ->DataElement({{ Property.attrib['UiHandler'] }}, &{{ Class.attrib['Name'] }}::{{ Property.attrib['SerializeProperty'] }}, "{{ Property.attrib['SerializeProperty'] }}", "")
+                ->DataElement({{ Property.attrib['UiHandler'] }}, &{{ Class.attrib['Name'] }}::{{ Property.attrib['SerializeProperty'] }}, "{{ Property.attrib['SerializeProperty'] }}", "")
 {% else %}
-                                ->DataElement({{ Property.attrib['UiHandler'] }}, &{{ Class.attrib['Name'] }}::{{ Property.attrib['FieldName'] }}, "{{ Property.attrib['Name'] | replace(' ','') }}", {% if Property.attrib['Description'] is defined %}"{{ Property.attrib['Description'] }}" {% else %}""{% endif %})
+                ->DataElement({{ Property.attrib['UiHandler'] }}, &{{ Class.attrib['Name'] }}::{{ Property.attrib['FieldName'] }}, "{{ Property.attrib['Name'] | replace(' ','') }}", {% if Property.attrib['Description'] is defined %}"{{ Property.attrib['Description'] }}" {% else %}""{% endif %})
 {% endif %}
 {% for EditAttribute in Property.iter('EditAttribute') %}
-                                    ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
+                    ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
 {% endfor %}
 {% endfor %}
 {% endif %}
-                        ;
+            ;
         }
     }
 }

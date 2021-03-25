@@ -48,7 +48,7 @@ namespace AZ
         {
         }
 
-        void LuminanceHistogramGeneratorPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer&)
+        void LuminanceHistogramGeneratorPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

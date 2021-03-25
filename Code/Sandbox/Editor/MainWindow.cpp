@@ -613,6 +613,8 @@ void MainWindow::Initialize()
     AzToolsFramework::Ticker* ticker = new AzToolsFramework::Ticker(this);
     ticker->Start();
     connect(ticker, &AzToolsFramework::Ticker::Tick, this, &MainWindow::SystemTick);
+
+    AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
 
 void MainWindow::InitStatusBar()
@@ -636,6 +638,8 @@ MainWindow* MainWindow::instance()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     auto cryEdit = CCryEditApp::instance();
+
+    gSettings.Save();
 
     AzFramework::SystemCursorState currentCursorState;
     bool isInGameMode = false;
@@ -849,9 +853,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_GAME_IOS_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_XENIA)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, xenia)
-#endif
 #if defined(TOOLS_SUPPORT_JASPER)
 #include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, jasper)
 #endif
@@ -891,14 +892,12 @@ void MainWindow::InitActions()
         .SetReserved()
         .SetStatusTip(tr("Undo last operation"))
         //.SetMenu(new QMenu("FIXME"))
-        .SetIcon(Style::icon("undo"))
         .SetApplyHoverEffect()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo);
     am->AddAction(ID_REDO, tr("&Redo"))
         .SetShortcut(AzQtComponents::RedoKeySequence)
         .SetReserved()
         //.SetMenu(new QMenu("FIXME"))
-        .SetIcon(Style::icon("Redo"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
@@ -1242,7 +1241,7 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Ctrl+F12"))
         .SetToolTip(tr("Location 12 (Ctrl+F12)"));
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if (CViewManager::IsMultiViewportEnabled())
     {
         am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."));
     }
@@ -1267,7 +1266,6 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
-        .SetIcon(Style::icon("Play"))
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
@@ -1310,7 +1308,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_VALIDATELEVEL, tr("&Check Level for Errors"))
         .SetStatusTip(tr("Validate Level"));
     am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"));
-    QAction* saveLevelStatsAction = 
+    QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));
     if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
@@ -1337,7 +1335,7 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"));
 
     // Disable layouts menu
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if (CViewManager::IsMultiViewportEnabled())
     {
         am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
 
@@ -1967,7 +1965,8 @@ void MainWindow::RegisterStdViewClasses()
     //CLightmapCompilerDialog::RegisterViewClass();
 
     // Notify that views can now be registered
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus, NotifyRegisterViews);
+    AzToolsFramework::EditorEvents::Bus::Broadcast(
+        &AzToolsFramework::EditorEvents::Bus::Events::NotifyRegisterViews);
 }
 
 void MainWindow::OnCustomizeToolbar()
@@ -2356,7 +2355,7 @@ void MainWindow::RegisterOpenWndCommands()
         cmdUI.tooltip = (QString("Open ") + className).toUtf8().data();
         cmdUI.iconFilename = className.toUtf8().data();
         GetIEditor()->GetCommandManager()->RegisterUICommand("editor", openCommandName.toUtf8().data(),
-            "", "", functor(*pCmd, &CEditorOpenViewCommand::Execute), cmdUI);
+            "", "", AZStd::bind(&CEditorOpenViewCommand::Execute, pCmd), cmdUI);
         GetIEditor()->GetCommandManager()->GetUIInfo("editor", openCommandName.toUtf8().data(), cmdUI);
     }
 }

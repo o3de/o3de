@@ -12,21 +12,9 @@
 set(FILES
     AWSNativeSDK_ios.cmake
     BuiltInPackages_ios.cmake
-    cityhash_ios.cmake
     expat_ios.cmake
     FreeType2_ios.cmake
-    GoogleBenchmark_ios.cmake
-    googletest_ios.cmake
-    LibTomCrypt_ios.cmake
-    LibTomMath_ios.cmake
-    lz4_ios.cmake
-    Lzma_ios.cmake
-    LZSS_ios.cmake
-    md5_ios.cmake
-    nvcloth_ios.cmake
     OpenSSL_ios.cmake
-    PhysX_ios.cmake
     RadTelemetry_ios.cmake
     Wwise_ios.cmake
-    zstd_ios.cmake
 )

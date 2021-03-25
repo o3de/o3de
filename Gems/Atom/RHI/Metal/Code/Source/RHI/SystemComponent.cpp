@@ -208,6 +208,13 @@ namespace AZ
             return RHI::Ptr<RHI::IndirectBufferWriter>();
         }
 
+        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
         RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing

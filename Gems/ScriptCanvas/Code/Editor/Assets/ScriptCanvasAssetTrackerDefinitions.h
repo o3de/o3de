@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
     namespace Callbacks
     {
         //! Callback used to know when a save operation failed or succeeded
-        using OnSave = AZStd::function<void(bool saveSuccess, AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>, AZ::Data::AssetId previousFileAssetId)>;
+        using OnSave = AZStd::function<void(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId)>;
 
         using OnAssetReadyCallback = AZStd::function<void(ScriptCanvasMemoryAsset&)>;
         using OnAssetCreatedCallback = OnAssetReadyCallback;
@@ -35,6 +35,7 @@ namespace ScriptCanvasEditor
             NEW,
             MODIFIED,
             UNMODIFIED,
+            SOURCE_REMOVED,
             INVALID = -1
         };
     }

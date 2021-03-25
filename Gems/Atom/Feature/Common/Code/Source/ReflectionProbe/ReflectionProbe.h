@@ -72,8 +72,7 @@ namespace AZ
             ~ReflectionProbe();
 
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
-            void Simulate(RPI::Scene* scene, ReflectionProbeFeatureProcessor* featureProcessor, uint32_t probeIndex);
-            void RenderReflections(RPI::ViewPtr view);
+            void Simulate(uint32_t probeIndex);
 
             const Vector3& GetPosition() const { return m_position; }
             void SetTransform(const AZ::Transform& transform);
@@ -94,7 +93,7 @@ namespace AZ
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
 
             // initiates the cubemap bake and invokes the callback when all faces of the cubemap are rendered
-            void BuildCubeMap(RPI::Scene* scene, BuildCubeMapCallback callback);
+            void BuildCubeMap(BuildCubeMapCallback callback);
             bool IsBuildingCubeMap() { return m_buildingCubeMap; }
 
             // called by the feature processor so the probe can set the default view for the pipeline
@@ -112,6 +111,11 @@ namespace AZ
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 const RHI::DrawListTag& drawListTag,
                 uint32_t stencilRef);
+
+            void UpdateCulling();
+
+            // scene
+            RPI::Scene* m_scene = nullptr;
 
             // probe capture position
             AZ::Vector3 m_position = AZ::Vector3(0.0f, 0.0f, 0.0f);
@@ -148,6 +152,9 @@ namespace AZ
 
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
             RHI::DrawItemSortKey m_sortKey = InvalidSortKey;
+
+            // culling
+            RPI::Cullable m_cullable;
 
             // probe baking
             RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;

@@ -21,6 +21,7 @@
 #include "ToolBox.h"
 #include "Include/IObjectManager.h"
 #include "Objects/SelectionGroup.h"
+#include "ViewManager.h"
 
 #include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
@@ -765,7 +766,7 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     viewMenu.AddAction(ID_OPEN_QUICK_ACCESS_BAR);
 
     // Layouts
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get()) // Only supports 1 viewport for now.
+    if (CViewManager::IsMultiViewportEnabled()) // Only supports 1 viewport for now.
     {
         // Disable Layouts menu
         m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
@@ -804,7 +805,7 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     viewportViewsMenuWrapper.AddAction(ID_VIEW_GRIDSETTINGS);
     viewportViewsMenuWrapper.AddSeparator();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get()) // Only supports 1 viewport for now.
+    if (CViewManager::IsMultiViewportEnabled())
     {
         viewportViewsMenuWrapper.AddAction(ID_VIEW_CONFIGURELAYOUT);
     }

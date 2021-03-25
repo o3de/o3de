@@ -1466,16 +1466,6 @@ void CShaderMan::AddRTCombinations(FXShaderCacheCombinations& CmbsMap, CHWShader
         nBitsPlatform |= SHGD_HW_ORBIS;
     }
     else
-    if (CParserBin::m_nPlatform == SF_DURANGO)
-    {
-        nBitsPlatform |= SHGD_HW_DURANGO;
-    }
-    else
-    if (CParserBin::m_nPlatform == SF_JASPER) 
-    {
-        nBitsPlatform |= SHGD_HW_DURANGO;
-    }
-    else
     if (CParserBin::m_nPlatform == SF_D3D11)
     {
         nBitsPlatform |= SHGD_HW_DX11;
@@ -1835,7 +1825,7 @@ void CShaderMan::_PrecacheShaderList(bool bStatsOnly)
                             }
                         }
 
-                        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4)
+                        if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4)
                         {
                             CHWShader* d3d11Shaders[] = { pPass->m_GShader, pPass->m_HShader, pPass->m_CShader, pPass->m_DShader };
                             for (int i2 = 0; i2 < 4; i2++)
@@ -2014,23 +2004,6 @@ void CShaderMan::mfPrecacheShaders(bool bStatsOnly)
         _PrecacheShaderList(bStatsOnly);
     }
     else
-    if (CRenderer::CV_r_shadersdurango)
-    {
-        gRenDev->m_bDeviceSupportsFP16Filter = true;
-        gRenDev->m_bDeviceSupportsFP16Separate = false;
-        gRenDev->m_bDeviceSupportsGeometryShaders = true;
-        gRenDev->m_Features |= RFT_HW_SM30;
-
-        CParserBin::m_bShaderCacheGen = true;
-
-        gRenDev->m_Features |= RFT_HW_SM50;
-        CParserBin::SetupForDurango();
-        CryLogAlways("\nStarting shader compilation for Durango...");
-        mfInitShadersList(NULL);
-        mfPreloadShaderExts();
-        _PrecacheShaderList(bStatsOnly);
-    }
-    else
     if (CRenderer::CV_r_shadersdx11)
     {
         gRenDev->m_bDeviceSupportsFP16Filter = true;
@@ -2121,12 +2094,6 @@ void CShaderMan::mfGetShaderList()
     {
         CParserBin::m_bShaderCacheGen = true;
         CParserBin::SetupForOrbis();
-    }
-    else
-    if (CRenderer::CV_r_shadersdurango)
-    {
-        CParserBin::m_bShaderCacheGen = true;
-        CParserBin::SetupForDurango();
     }
     else
     if (CRenderer::CV_r_shadersdx11)

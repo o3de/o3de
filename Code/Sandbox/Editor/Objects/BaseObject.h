@@ -236,7 +236,7 @@ class SANDBOX_API CBaseObject
 {
     Q_OBJECT
 public:
-    //! Events sent by object to listeners in EventCallback.
+    //! Events sent by object to EventListeners
     enum EObjectListenerEvent
     {
         ON_DELETE = 0,// Sent after object was deleted from object manager.
@@ -260,7 +260,10 @@ public:
     };
 
     //! This callback will be called if object is deleted.
-    typedef Functor2<CBaseObject*, int> EventCallback;
+    struct EventListener
+    {
+        virtual void OnObjectEvent(CBaseObject*, int) = 0;
+    };
 
     //! Childs structure.
     typedef std::vector<_smart_ptr<CBaseObject> > Childs;
@@ -547,9 +550,9 @@ public:
     void StoreUndo(const char* undoDescription, bool minimal = false, int flags = 0);
 
     //! Add event listener callback.
-    void AddEventListener(const EventCallback& cb);
+    void AddEventListener(EventListener* listener);
     //! Remove event listener callback.
-    void RemoveEventListener(const EventCallback& cb);
+    void RemoveEventListener(EventListener* listener);
 
     //////////////////////////////////////////////////////////////////////////
     //! Material handling for this base object.
@@ -868,7 +871,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////
     // Listeners.
-    std::vector<EventCallback> m_eventListeners;
+    std::vector<EventListener*> m_eventListeners;
 
     //////////////////////////////////////////////////////////////////////////
     // Flags and bit masks.

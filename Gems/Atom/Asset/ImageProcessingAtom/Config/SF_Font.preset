@@ -43,14 +43,6 @@
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "IsPowerOf2": true
-            },
-            "xenia": {
-                "UUID": "{F34E3711-5F34-4DBC-8F5D-6340D3989F4B}",
-                "Name": "SF_Font",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "SuppressEngineReduce": true,
-                "IsPowerOf2": true
             }
         }
     }

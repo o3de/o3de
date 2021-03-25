@@ -8,7 +8,7 @@
            Base="ScriptCanvas::Node"
            Category="Internal"
            Version="6"
-           VersionConverter="ScriptEventBaseVersionConverter"
+           VersionConverter="VersionConverters::ScriptEventBaseVersionConverter"
            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
            GeneratePropertyFriend="True"
            Description="Base class for Script Events.">

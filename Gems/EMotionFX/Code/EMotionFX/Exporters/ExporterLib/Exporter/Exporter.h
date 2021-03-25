@@ -12,9 +12,9 @@
 
 #pragma once
 
-// include the required headers
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/optional.h>
 #include <MCore/Source/Array.h>
 #include <MCore/Source/MemoryFile.h>
 #include <MCore/Source/Endian.h>
@@ -24,22 +24,17 @@
 #include <EMotionFX/Source/Importer/SharedFileFormatStructs.h>
 #include <EMotionFX/Source/Importer/MotionFileFormat.h>
 
-
-// forward declaration
 namespace MCore
 {
     class CommandManager;
 }
 
-
-// forward declaration
 namespace EMotionFX
 {
     class Actor;
     class Node;
     class NodeGroup;
     class Material;
-    class Mesh;
     class MorphTarget;
     class AnimGraph;
     class MotionEventTable;
@@ -115,32 +110,17 @@ namespace ExporterLib
     void SaveAttachmentNodes(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
     void SaveAttachmentNodes(MCore::Stream* file, EMotionFX::Actor* actor, const AZStd::vector<uint16>& attachmentNodes, MCore::Endian::EEndianType targetEndianType);
 
-    // materials
-    void SaveMaterials(MCore::Stream* file, MCore::Array<EMotionFX::Material*>& materials, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveMaterials(MCore::Stream* file, EMotionFX::Actor* actor, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveMaterials(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-
-    // meshes & skins
-    void SaveMesh(MCore::Stream* file, EMotionFX::Mesh* mesh, uint32 nodeIndex, bool isCollisionMesh, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveSkin(MCore::Stream* file, EMotionFX::Mesh* mesh, uint32 nodeIndex, bool isCollisionMesh, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveSkins(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-    void SaveMeshes(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-
     // morph targets
     void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
     void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
     void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-    bool AddMorphTarget(EMotionFX::Actor* actor, MCore::MemoryFile* file, const AZStd::string& morphTargetName, uint32 captureMode, uint32 phonemeSets, float rangeMin, float rangeMax, uint32 geomLODLevel);
 
     // actors
     const char* GetActorExtension(bool includingDot = true);
     void SaveActorHeader(MCore::Stream* file, MCore::Endian::EEndianType targetEndianType);
     void SaveActorFileInfo(MCore::Stream* file, uint32 numLODLevels, uint32 motionExtractionNodeIndex, uint32 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
-    void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-    bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-
-    // skin attachments
-    void SaveDeformableAttachments(const char* fileNameWithoutExtension, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, MCore::CommandManager* commandManager = nullptr);
+    void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
+    bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Motions

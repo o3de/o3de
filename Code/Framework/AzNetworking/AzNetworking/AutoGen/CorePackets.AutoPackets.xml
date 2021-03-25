@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PacketGroup Name="CorePackets" PacketStart="0">
-    <Packet Name="InitiateConnectionPacket" Desc="This packet is used to initiate a new connection" />
+    <Packet Name="InitiateConnectionPacket" Desc="This packet is used to initiate a new connection">
+        <Member Type="AzNetworking::UdpPacketEncodingBuffer" Name="handshakeBuffer" />
+    </Packet>
+    
+    <Packet Name="ConnectionHandshakePacket" Desc="This packet is used to negotiate the handshake of a new connection">
+        <Member Type="AzNetworking::UdpPacketEncodingBuffer" Name="handshakeBuffer" />
+    </Packet>
 
     <Packet Name="TerminateConnectionPacket" Desc="This packet is used to gracefully terminate an existing connection">
         <Member Type="AzNetworking::DisconnectReason" Name="disconnectReason" Init="AzNetworking::DisconnectReason::None" />

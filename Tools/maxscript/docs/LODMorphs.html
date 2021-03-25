@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+
+  
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+
+
+  
+  
+  
+  
+  
+  <title>cryTools: MorphTools: Generating Head LODs with Morph Targets</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: MorphTools: Generating Head LODs with Morph Targets</h1>
+
+
+<p style="font-family: Arial;" class="MsoNormal">In this tutorial I will show you how to transfer your morphs
+from LOD0 to LOD1, LOD2 etc.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Here is my max scene the red head is LOD1 and the black one
+LOD0. The orange heads are the morphtargets for LOD0.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shapetype id="_x0000_t75" coordsize="21600,21600"
+ o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f"
+ stroked="f">
+ <v:stroke joinstyle="miter"/>
+ <v:formulas>
+  <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+  <v:f eqn="sum @0 1 0"/>
+  <v:f eqn="sum 0 0 @1"/>
+  <v:f eqn="prod @2 1 2"/>
+  <v:f eqn="prod @3 21600 pixelWidth"/>
+  <v:f eqn="prod @3 21600 pixelHeight"/>
+  <v:f eqn="sum @0 0 1"/>
+  <v:f eqn="prod @6 1 2"/>
+  <v:f eqn="prod @7 21600 pixelWidth"/>
+  <v:f eqn="sum @8 21600 0"/>
+  <v:f eqn="prod @7 21600 pixelHeight"/>
+  <v:f eqn="sum @10 21600 0"/>
+ </v:formulas>
+ <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+ <o:lock v:ext="edit" aspectratio="t"/>
+</v:shapetype><v:shape id="_x0000_i1025" type="#_x0000_t75" style='width:596.25pt;
+ height:369.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image001.jpg"
+  o:title="2"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 795px; height: 493px;" alt="1" src="images/lod_morph/image001.jpg" v:shapes="_x0000_i1025"><!--[endif]--></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">First step, create your LODs</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1026" type="#_x0000_t75"
+ style='width:466.5pt;height:324pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image002.jpg"
+  o:title="3"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 622px; height: 432px;" alt="2" src="images/lod_morph/image002.jpg" v:shapes="_x0000_i1026"><!--[endif]--></p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">For LOD creation you must do all your changes with an
+editable poly modifier.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">It is also good, if you are put a morpher under your
+editable poly modifier to test your LOD directly with your morphtargets. </p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">You are also able to fix UVs by adding a unwrap modifier to
+your LOD.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Your setup for LOD 1 should look like this:</p>
+
+
+<table class="MsoNormalTable" style="border: medium none ; margin-left: 12.8pt; border-collapse: collapse; font-family: Arial;" border="1" cellpadding="0" cellspacing="0">
+
+ <tbody>
+    <tr style="height: 12pt;">
+
+  <td style="border: 1pt solid windowtext; padding: 0in 5.4pt; width: 139.8pt; height: 12pt;" valign="top" width="186">
+  
+      <p class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_s1026" type="#_x0000_t75"
+   style='position:absolute;margin-left:-4.2pt;margin-top:-.8pt;width:129pt;
+   height:53.25pt;z-index:1;mso-position-vertical-relative:line'>
+   <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image003.jpg"
+    o:title="2"/>
+  </v:shape><![endif]--><!--[if !vml]--><span style="position: relative; z-index: 1;"><span style="position: absolute; left: -6px; top: -1px; width: 172px; height: 71px;"><img style="width: 172px; height: 71px;" alt="3" src="images/lod_morph/image003.jpg" v:shapes="_x0000_s1026"></span></span><!--[endif]--><span style=""><o:p></o:p></span></p>
+
+  </td>
+
+  <td style="border-style: solid solid solid none; border-color: windowtext windowtext windowtext -moz-use-text-color; border-width: 1pt 1pt 1pt medium; padding: 0in 5.4pt; width: 564pt; height: 12pt;" valign="top" width="752">
+  
+      <p class="MsoNormal"><span style="">Unwrap UVw: for fixing UVs
+  on LOD1<o:p></o:p></span></p>
+
+  </td>
+
+ </tr>
+
+ <tr style="height: 12pt;">
+
+  <td style="border-style: none solid solid; border-color: -moz-use-text-color windowtext windowtext; border-width: medium 1pt 1pt; padding: 0in 5.4pt; width: 139.8pt; height: 12pt;" valign="top" width="186">
+  
+      <p class="MsoNormal"><span style=""><o:p>&nbsp;</o:p></span></p>
+
+  </td>
+
+  <td style="border-style: none solid solid none; border-color: -moz-use-text-color windowtext windowtext -moz-use-text-color; border-width: medium 1pt 1pt medium; padding: 0in 5.4pt; width: 564pt; height: 12pt;" valign="top" width="752">
+  
+      <p class="MsoNormal"><span style="">Edit Poly: LOD1<o:p></o:p></span></p>
+
+  </td>
+
+ </tr>
+
+ <tr style="height: 12pt;">
+
+  <td style="border-style: none solid solid; border-color: -moz-use-text-color windowtext windowtext; border-width: medium 1pt 1pt; padding: 0in 5.4pt; width: 139.8pt; height: 12pt;" valign="top" width="186">
+  
+      <p class="MsoNormal"><span style=""><o:p>&nbsp;</o:p></span></p>
+
+  </td>
+
+  <td style="border-style: none solid solid none; border-color: -moz-use-text-color windowtext windowtext -moz-use-text-color; border-width: medium 1pt 1pt medium; padding: 0in 5.4pt; width: 564pt; height: 12pt;" valign="top" width="752">
+  
+      <p class="MsoNormal"><span style="">Morpher: Morph modifier to
+  test how your morphs are working with your LOD1- contains all the LOD0 morphs<o:p></o:p></span></p>
+
+  </td>
+
+ </tr>
+
+ <tr style="height: 12pt;">
+
+  <td style="border-style: none solid solid; border-color: -moz-use-text-color windowtext windowtext; border-width: medium 1pt 1pt; padding: 0in 5.4pt; width: 139.8pt; height: 12pt;" valign="top" width="186">
+  
+      <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+
+  </td>
+
+  <td style="border-style: none solid solid none; border-color: -moz-use-text-color windowtext windowtext -moz-use-text-color; border-width: medium 1pt 1pt medium; padding: 0in 5.4pt; width: 564pt; height: 12pt;" valign="top" width="752">
+  
+      <p class="MsoNormal">Editable Poly: LOD0</p>
+
+  </td>
+
+ </tr>
+
+  </tbody>
+</table>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Note: When you are working on the edit poly modifier check
+your mesh for unwanted gaps.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">If your LOD1 is done open the cryMorphTools and go to the
+&ldquo;Facial Tools&rdquo;.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Select your LOD1 and click &ldquo;Load Morphs From Selected&rdquo;. </p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">The tool will load all morphs which are added to the morph
+modifier and display you how many morphs are stored.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">When you type in a layer name, all generated morphs will be
+moved into this layer. In my example I use Morphs_LOD1. </p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Normally your generated meshes are moved next to your source
+object. To keep your maxscene tidy you can add dummies to your scene. Name the
+dummies, Dummy_+the name of the morph. At example: &ldquo;Dummy_Lip_funneler&rdquo;.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Now activate &ldquo;Organize&rdquo; and generated Morphs will be
+automatically aligned to the dummies.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">After this press Bake Morphs.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1027" type="#_x0000_t75"
+ style='width:153pt;height:236.25pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image004.jpg"
+  o:title="6"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 204px; height: 315px;" alt="4" src="images/lod_morph/image004.jpg" v:shapes="_x0000_i1027"><!--[endif]--></p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Here you can see the result. On the left the original LOD0
+morph and on the right the baked LOD1.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1028" type="#_x0000_t75"
+ style='width:508.5pt;height:393pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image005.jpg"
+  o:title="5"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 875px; height: 675px;" alt="5" src="images/lod_morph/image005.jpg" v:shapes="_x0000_i1028"><!--[endif]--></p>
+
+<span style="font-family: Arial;"></span>
+</body>
+</html>

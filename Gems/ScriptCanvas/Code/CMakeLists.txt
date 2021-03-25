@@ -50,7 +50,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvas STATIC
+    NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvasgem_common_files.cmake
@@ -79,10 +79,12 @@ ly_add_target(
     AUTOGEN_RULES
         *.ScriptCanvasNode.xml,ScriptCanvasNode_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNode.xml,ScriptCanvasNode_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 ly_add_target(
-    NAME ScriptCanvasGem ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ScriptCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     OUTPUT_NAME Gem.ScriptCanvasGem.869a0d0ec11a45c299917d45c81555e6.v0.1.0
     FILES_CMAKE
@@ -98,7 +100,7 @@ ly_add_target(
             ${SCRIPT_CANVAS_COMMON_DEFINES}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.Static
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
@@ -133,10 +135,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ScriptCanvasGem.Editor.Static STATIC
+        NAME ScriptCanvas.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTOUIC
+        AUTORCC
         FILES_CMAKE
             scriptcanvasgem_editor_files.cmake
             scriptcanvasgem_editor_asset_files.cmake
@@ -169,7 +172,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ScriptCanvasGem.Editor MODULE
+        NAME ScriptCanvas.Editor MODULE
         NAMESPACE Gem
         OUTPUT_NAME Gem.ScriptCanvasGem.Editor.869a0d0ec11a45c299917d45c81555e6.v0.1.0
         FILES_CMAKE
@@ -189,7 +192,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzToolsFramework
             PUBLIC
-                Gem::ScriptCanvasGem.Editor.Static
+                Gem::ScriptCanvas.Editor.Static
         RUNTIME_DEPENDENCIES
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
@@ -204,7 +207,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ScriptCanvasGem.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ScriptCanvas.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvasgem_tests_files.cmake
@@ -221,15 +224,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
-                Gem::ScriptCanvasGem
+                Gem::ScriptCanvas
     )
     ly_add_googletest(
-        NAME Gem::ScriptCanvasGem.Tests
+        NAME Gem::ScriptCanvas.Tests
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME ScriptCanvasGem.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ScriptCanvas.Editor.Tests MODULE
             NAMESPACE Gem
             FILES_CMAKE
                 scriptcanvasgem_tests_files.cmake
@@ -249,10 +252,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     Gem::ScriptCanvasEditor
-                    Gem::ScriptCanvasGem.Editor.Static
+                    Gem::ScriptCanvas.Editor.Static
         )
         ly_add_googletest(
-            NAME Gem::ScriptCanvasGem.Editor.Tests
+            NAME Gem::ScriptCanvas.Editor.Tests
         )
     endif()
 endif()

@@ -40,7 +40,7 @@ namespace ScriptCanvasEditor
     ScriptCanvasFunctionAssetHandler::ScriptCanvasFunctionAssetHandler(AZ::SerializeContext* context)
         : ScriptCanvasAssetHandler(context)
     {
-        AZ::AssetTypeInfoBus::MultiHandler::BusConnect(azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>());
+        AZ::AssetTypeInfoBus::MultiHandler::BusConnect(azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
     }
 
     ScriptCanvasFunctionAssetHandler::~ScriptCanvasFunctionAssetHandler()
@@ -52,11 +52,11 @@ namespace ScriptCanvasEditor
     {
         AZ_UNUSED(type);
 
-        ScriptCanvas::ScriptCanvasFunctionAsset* assetData = aznew ScriptCanvas::ScriptCanvasFunctionAsset(id);
+        ScriptCanvasEditor::ScriptCanvasFunctionAsset* assetData = aznew ScriptCanvasEditor::ScriptCanvasFunctionAsset(id);
 
-        AZ::Entity* scriptCanvasEntity = aznew AZ::Entity(ScriptCanvas::AssetDescription::GetEntityName<ScriptCanvas::ScriptCanvasFunctionAsset>());
-        SystemRequestBus::Broadcast(&SystemRequests::CreateEditorComponentsOnEntity, scriptCanvasEntity, azrtti_typeid<ScriptCanvas::RuntimeFunctionAsset>());
-        assetData->m_cachedComponent = scriptCanvasEntity->CreateComponent<ScriptCanvas::ScriptCanvasFunctionDataComponent>();
+        AZ::Entity* scriptCanvasEntity = aznew AZ::Entity(ScriptCanvas::AssetDescription::GetEntityName<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
+        SystemRequestBus::Broadcast(&SystemRequests::CreateEditorComponentsOnEntity, scriptCanvasEntity, azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>());
+        assetData->m_cachedComponent = scriptCanvasEntity->CreateComponent<ScriptCanvasEditor::ScriptCanvasFunctionDataComponent>();
 
         assetData->SetScriptCanvasEntity(scriptCanvasEntity);
 
@@ -68,7 +68,7 @@ namespace ScriptCanvasEditor
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        ScriptCanvas::ScriptCanvasFunctionAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvas::ScriptCanvasFunctionAsset>();
+        ScriptCanvasEditor::ScriptCanvasFunctionAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
         AZ_Assert(m_serializeContext, "ScriptCanvasFunctionAssetHandler needs to be initialized with a SerializeContext");
 
         if (scriptCanvasAsset)
@@ -78,7 +78,7 @@ namespace ScriptCanvasEditor
             bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, scriptCanvasAsset->GetScriptCanvasData(), m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
             if (loadSuccess)
             {
-                scriptCanvasAsset->m_cachedComponent = scriptCanvasAsset->GetScriptCanvasData().GetScriptCanvasEntity()->FindComponent<ScriptCanvas::ScriptCanvasFunctionDataComponent>();
+                scriptCanvasAsset->m_cachedComponent = scriptCanvasAsset->GetScriptCanvasData().GetScriptCanvasEntity()->FindComponent<ScriptCanvasEditor::ScriptCanvasFunctionDataComponent>();
             }
 
             return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
@@ -88,15 +88,15 @@ namespace ScriptCanvasEditor
 
     bool ScriptCanvasFunctionAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
     {
-        return SaveAssetData(asset.GetAs<ScriptCanvas::ScriptCanvasFunctionAsset>(), stream);
+        return SaveAssetData(asset.GetAs<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(), stream);
     }
 
-    bool ScriptCanvasFunctionAssetHandler::SaveAssetData(const ScriptCanvas::ScriptCanvasFunctionAsset* assetData, AZ::IO::GenericStream* stream)
+    bool ScriptCanvasFunctionAssetHandler::SaveAssetData(const ScriptCanvasEditor::ScriptCanvasFunctionAsset* assetData, AZ::IO::GenericStream* stream)
     {
         return SaveAssetData(assetData, stream, AZ::DataStream::ST_XML);
     }
 
-    bool ScriptCanvasFunctionAssetHandler::SaveAssetData(const ScriptCanvas::ScriptCanvasFunctionAsset* assetData, AZ::IO::GenericStream* stream, AZ::DataStream::StreamType streamType)
+    bool ScriptCanvasFunctionAssetHandler::SaveAssetData(const ScriptCanvasEditor::ScriptCanvasFunctionAsset* assetData, AZ::IO::GenericStream* stream, AZ::DataStream::StreamType streamType)
     {
         if (assetData && m_serializeContext)
         {
@@ -121,7 +121,7 @@ namespace ScriptCanvasEditor
 
     const char* ScriptCanvasFunctionAssetHandler::GetAssetTypeDisplayName() const
     {
-        return ScriptCanvas::AssetDescription::GetAssetTypeDisplayName<ScriptCanvas::ScriptCanvasFunctionAsset>();
+        return ScriptCanvas::AssetDescription::GetAssetTypeDisplayName<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
     }
 
     bool ScriptCanvasFunctionAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
@@ -132,31 +132,31 @@ namespace ScriptCanvasEditor
     void ScriptCanvasFunctionAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         const AZ::Uuid& assetType = *AZ::AssetTypeInfoBus::GetCurrentBusId();
-        if (assetType == AZ::AzTypeInfo<ScriptCanvas::ScriptCanvasFunctionAsset>::Uuid())
+        if (assetType == AZ::AzTypeInfo<ScriptCanvasEditor::ScriptCanvasFunctionAsset>::Uuid())
         {
-            extensions.push_back(ScriptCanvas::AssetDescription::GetExtension<ScriptCanvas::ScriptCanvasFunctionAsset>());
+            extensions.push_back(ScriptCanvas::AssetDescription::GetExtension<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
     }
 
     void ScriptCanvasFunctionAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
-        assetTypes.push_back(AZ::AzTypeInfo<ScriptCanvas::ScriptCanvasFunctionAsset>::Uuid());
+        assetTypes.push_back(AZ::AzTypeInfo<ScriptCanvasEditor::ScriptCanvasFunctionAsset>::Uuid());
     }
 
 
     AZ::Data::AssetType ScriptCanvasFunctionAssetHandler::GetAssetTypeStatic()
     {
-        return azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>();
+        return azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
     }
 
     const char* ScriptCanvasFunctionAssetHandler::GetGroup() const
     {
-        return ScriptCanvas::AssetDescription::GetGroup<ScriptCanvas::ScriptCanvasFunctionAsset>();
+        return ScriptCanvas::AssetDescription::GetGroup<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
     }
 
     const char* ScriptCanvasFunctionAssetHandler::GetBrowserIcon() const
     {
-        return ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvas::ScriptCanvasFunctionAsset>();
+        return ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
     }
 
-} // namespace ScriptCanvasEditor
+}

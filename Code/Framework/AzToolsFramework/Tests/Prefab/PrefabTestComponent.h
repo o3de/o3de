@@ -28,5 +28,6 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflection);
 
         bool m_boolProperty = false;
+        AZ::EntityId m_entityIdProperty;
     };
 }

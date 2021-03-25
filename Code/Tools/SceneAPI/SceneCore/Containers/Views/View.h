@@ -44,6 +44,8 @@ namespace AZ
                     Iterator cbegin() const;
                     Iterator cend() const;
 
+                    [[nodiscard]] bool empty() const;
+
                 private:
                     Iterator m_begin;
                     Iterator m_end;

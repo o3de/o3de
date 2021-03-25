@@ -104,7 +104,7 @@ namespace AZ
                     RootIterator& operator++();
                     RootIterator operator++(int);
 
-                    const Iterator& GetBaseIterator();
+                    const Iterator& GetBaseIterator() const;
                 protected:
                     Iterator m_iterator;
                     Function m_converter;

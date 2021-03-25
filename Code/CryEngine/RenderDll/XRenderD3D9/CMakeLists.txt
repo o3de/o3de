@@ -34,10 +34,6 @@ ly_add_target(
             ..
             .
             ${pal_dir}
-    BUILD_DEPENDENCIES
-        INTERFACE
-            3rdParty::LZSS
-            3rdParty::Lzma
 )
 
 ################################################################################
@@ -72,8 +68,6 @@ if(CRYRENDER_TRAIT_BUILD_DX11_SUPPORTED AND NOT LY_MONOLITHIC_GAME)  # only Atom
                 ${pal_tool_dirs}
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::LZSS
-                3rdParty::Lzma
                 Legacy::CryCommon
                 Legacy::CryCommon.EngineSettings.Static
     )
@@ -156,8 +150,6 @@ if(CRYRENDER_TRAIT_BUILD_DX12_SUPPORTED AND NOT LY_MONOLITHIC_GAME) # only Atom 
                 #EXCLUDE_CINEMIZER_SDK
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::LZSS
-                3rdParty::Lzma
                 Legacy::CryCommon
     )
     ly_add_source_properties(

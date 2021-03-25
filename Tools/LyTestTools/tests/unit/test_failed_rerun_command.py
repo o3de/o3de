@@ -49,7 +49,7 @@ class TestRerunCommand(object):
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.WINDOWS', True)
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_GetLauncherCommand_WindowsPythonInterpreter_WindowsPythonEntrypointReturned(self):
-        python_script = 'python3.cmd'
+        python_script = 'python.cmd'
         expected = f"{os.path.join(TestRerunCommand.MOCK_FOO_EXE, python_script)} -m pytest "
 
         under_test = failed_test_rerun_command._get_test_launcher_cmd()
@@ -59,7 +59,7 @@ class TestRerunCommand(object):
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.WINDOWS', False)
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_GetLauncherCommand_NonWindowsPythonInterpreter_NonWindowsPythonEntrypointReturned(self):
-        python_script = 'python3.sh'
+        python_script = 'python.sh'
         expected = f"{os.path.join(TestRerunCommand.MOCK_FOO_EXE, python_script)} -m pytest "
 
         under_test = failed_test_rerun_command._get_test_launcher_cmd()

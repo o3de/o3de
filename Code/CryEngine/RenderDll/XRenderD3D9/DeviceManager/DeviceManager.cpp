@@ -50,11 +50,6 @@
     #include "DeviceManager_D3D12.inl"
 #else
     #include "DeviceManager_D3D11.inl"
-
-    #if defined(USE_NV_API)
-        #include "DeviceManager_D3D11_NVAPI.h"
-        #include "DeviceManager_D3D11_NVAPI.inl"
-    #endif
 #endif
 
 CDeviceManager::CDeviceManager()
@@ -1091,10 +1086,6 @@ int CDeviceTexture::Cleanup()
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_CPP_SECTION_16
     #include AZ_RESTRICTED_FILE(DeviceManager_cpp)
-#endif
-
-#if defined(USE_NV_API)
-    m_handleMGPU = NULL;
 #endif
 
     return nRef;

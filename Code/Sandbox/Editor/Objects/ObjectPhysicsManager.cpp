@@ -30,13 +30,13 @@ CObjectPhysicsManager::CObjectPhysicsManager()
 {
     CommandManagerHelper::RegisterCommand(GetIEditor()->GetCommandManager(),
         "physics", "simulate_objects", "", "",
-        functor(*this, &CObjectPhysicsManager::Command_SimulateObjects));
+        AZStd::bind(&CObjectPhysicsManager::Command_SimulateObjects, this));
     CommandManagerHelper::RegisterCommand(GetIEditor()->GetCommandManager(),
         "physics", "reset_objects_state", "", "",
-        functor(*this, &CObjectPhysicsManager::Command_ResetPhysicsState));
+        AZStd::bind(&CObjectPhysicsManager::Command_ResetPhysicsState, this));
     CommandManagerHelper::RegisterCommand(GetIEditor()->GetCommandManager(),
         "physics", "get_objects_state", "", "",
-        functor(*this, &CObjectPhysicsManager::Command_GetPhysicsState));
+        AZStd::bind(&CObjectPhysicsManager::Command_GetPhysicsState, this));
 
     m_fStartObjectSimulationTime = 0;
     m_bSimulatingObjects = false;

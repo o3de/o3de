@@ -42,13 +42,13 @@ namespace AZ
         {
         }
 
-        void LightCullingTilePreparePass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void LightCullingTilePreparePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             SetConstantData();
-            ComputePass::CompileResources(context, producer);
+            ComputePass::CompileResources(context);
         }
 
-        void LightCullingTilePreparePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void LightCullingTilePreparePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             // Dispatch one compute shader thread per depth buffer pixel. These threads are divided into thread-groups that analyze one tile. (Typically 16x16 pixel tiles)
             RHI::CommandList* commandList = context.GetCommandList();
@@ -134,13 +134,13 @@ namespace AZ
             AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
             m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            AZ_Error("LightCulling", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
         }
 
         const AZ::RPI::ShaderVariant& LightCullingTilePreparePass::CreateShaderVariant()
         {
             RPI::ShaderOptionGroup shaderOptionGroup = CreateShaderOptionGroup();
-            RPI::ShaderVariantSearchResult findVariantResult = m_shader->FindVariantStableId(shaderOptionGroup.GetShaderVariantId());
-            const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(findVariantResult.GetStableId());
+            const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
 
             //Set the fallbackkey
             if (m_drawSrg)
@@ -168,11 +168,30 @@ namespace AZ
             AZ_Assert(setOk, "LightCullingTilePreparePass::SetConstantData() - could not set constant data");
         }
 
-        void LightCullingTilePreparePass::BuildAttachmentsInternal() 
+        void LightCullingTilePreparePass::BuildAttachmentsInternal()
         {
             ChooseShaderVariant();
             m_constantDataIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(m_constantDataName);
             AZ_Assert(m_constantDataIndex.IsValid(), "m_constantData not found in shader");
+        }
+
+        void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
+        {
+            LoadShader();
+            ChooseShaderVariant();
+        }
+        void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
+        {
+            LoadShader();
+            ChooseShaderVariant();
+        }
+
+        void LightCullingTilePreparePass::OnShaderVariantReinitialized(
+             const AZ::RPI::Shader&,  const AZ::RPI::ShaderVariantId&,
+             AZ::RPI::ShaderVariantStableId)
+        {
+            LoadShader();
+            ChooseShaderVariant();
         }
 
     }   // namespace Render

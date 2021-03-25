@@ -33,6 +33,6 @@ namespace ScriptCanvas
         // function delcarations, etc
         // scope resolution
 
-    } // namespace Translation
+    } 
 
-} // namespace ScriptCanvas
+} 

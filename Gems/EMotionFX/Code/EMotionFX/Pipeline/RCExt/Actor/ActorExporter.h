@@ -40,6 +40,8 @@ namespace EMotionFX
 
             static void Reflect(AZ::ReflectContext* context);
 
+            uint8_t GetPriority() const override;
+
             AZ::SceneAPI::Events::ProcessingResult ProcessContext(AZ::SceneAPI::Events::ExportEventContext& context) const;
         };
     } // namespace Pipeline

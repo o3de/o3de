@@ -10,273 +10,215 @@
 *
 */
 
-#include <stdarg.h>
-#include <AzCore/Debug/Profiler.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/IdUtils.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/Utils.h>
-
+#include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Core/Nodeable.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
-#include <ScriptCanvas/Core/Core.h>
-#include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Execution/ExecutionContext.h>
+#include "ExecutionContext.h"
+#include "AzCore/Slice/SliceComponent.h"
+#include "AzFramework/Entity/SliceEntityOwnershipServiceBus.h"
+
+namespace ExecutionContextCpp
+{
+    void TypeCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    {
+        lhs.m_typeId = rhs.m_typeId;
+        lhs.m_azRtti = rhs.m_azRtti;
+    }
+
+    void ValueCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    {
+        lhs.m_typeId = rhs.m_typeId;
+        lhs.m_azRtti = rhs.m_azRtti;
+        lhs.m_value = rhs.m_value;
+    }
+}
 
 namespace ScriptCanvas
 {
-    ExecutionContext::ExecutionContext()
+    namespace Execution
     {
-    }
+        ActivationData::ActivationData(const RuntimeComponent& component, ActivationInputArray& storage)
+            : entityId(component.GetEntityId())
+            , variableOverrides(component.GetVariableOverrides())
+            , runtimeData(component.GetAsset()->GetData())
+            , storage(storage)
+        {}
 
-    AZ::Outcome<void, AZStd::string> ExecutionContext::ActivateContext(const ScriptCanvasId& scriptCanvasId)
-    {
-        SystemRequestBus::BroadcastResult(m_systemComponentConfiguration, &SystemRequests::GetSystemComponentConfiguration);
+        ActivationData::ActivationData(const AZ::EntityId entityId, const VariableData& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage)
+            : entityId(entityId)
+            , variableOverrides(variableOverrides)
+            , runtimeData(runtimeData)
+            , storage(storage)
+        {}
 
-        m_scriptCanvasId = scriptCanvasId;
-        if (IsInIrrecoverableErrorState())
+        ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
-            return AZ::Failure(AZStd::string::format("ExecutionContext with id %s is in an irrecoverable error state. It cannot be activated", m_scriptCanvasId.ToString().data()));
-        }
+            const RuntimeData& runtimeData = activationData.runtimeData;
 
-        ErrorReporterBus::Handler::BusConnect(m_scriptCanvasId);
-        ExecutionRequestBus::Handler::BusConnect(m_scriptCanvasId);
+            ActivationInputRange rangeOut;
+            rangeOut.inputs = activationData.storage.begin();
+            rangeOut.nodeableCount = runtimeData.m_activationInputRange.nodeableCount;
+            rangeOut.variableCount = runtimeData.m_activationInputRange.variableCount;
+            rangeOut.entityIdCount = runtimeData.m_activationInputRange.entityIdCount;
+            rangeOut.totalCount = rangeOut.nodeableCount + rangeOut.variableCount + rangeOut.entityIdCount;
 
-        ExecutionStack().swap(m_executionStack);
-        m_isActive = true;        
-
-        return AZ::Success();
-    }
-
-    void ExecutionContext::DeactivateContext()
-    {
-        ExecutionRequestBus::Handler::BusDisconnect();
-        ErrorReporterBus::Handler::BusDisconnect();
-
-        m_isActive = false;
-
-        m_executedNodes.clear();
-        m_sourceToErrorHandlerNodes.clear();
-    }
-
-    void ExecutionContext::AddToExecutionStack(Node& node, const SlotId& slotId)
-    {
-        m_executionStack.push(AZStd::make_pair(&node, slotId));
-    }
-
-    void ExecutionContext::ErrorIrrecoverably()
-    {
-        if (!m_isFinalErrorReported)
-        {
-            m_isInErrorState = true;
-            m_isRecoverable = false;
-            m_isFinalErrorReported = true;
-            AZ_Warning("ScriptCanvas", false, "ERROR! Node: %s, Description: %s\n\n", m_errorReporter ? m_errorReporter->GetNodeName().c_str() : "unknown", m_errorDescription.c_str());
-            ExecutionStack().swap(m_executionStack);
-            // dump error report(callStackTop, m_errorReporter, m_error, graph name, entity ID)
-            DeactivateContext();
-        }
-    }
-
-    void ExecutionContext::AddErrorHandler(AZ::EntityId errorScopeId, AZ::EntityId errorHandlerNodeId)
-    {
-        if (errorScopeId == m_scriptCanvasId)
-        {
-            auto foundGraphScopeHandler = m_sourceToErrorHandlerNodes.find(errorScopeId);
-            AZ_Warning("ScriptCanvas", foundGraphScopeHandler == m_sourceToErrorHandlerNodes.end(), "Multiple Graph Scope Error handlers specified");
-        }
-
-        m_sourceToErrorHandlerNodes.emplace(errorScopeId, errorHandlerNodeId);
-    }
-
-    AZ::EntityId ExecutionContext::GetErrorHandler() const
-    {
-        if (m_errorReporter)
-        {
-            auto iter = m_sourceToErrorHandlerNodes.find(m_errorReporter->GetEntityId());
-            if (iter != m_sourceToErrorHandlerNodes.end())
+            // nodeables
             {
-                return iter->second;
-            }
-        }
-
-        auto graphScopeHandlerNodeIter = m_sourceToErrorHandlerNodes.find(m_scriptCanvasId);
-        return (graphScopeHandlerNodeIter != m_sourceToErrorHandlerNodes.end()) ? graphScopeHandlerNodeIter->second : AZ::EntityId();
-    }
-
-    void ExecutionContext::HandleError(const Node& callStackTop)
-    {
-        if (!m_isInErrorHandler)
-        {
-            ErrorIrrecoverably();
-        }
-        else
-        {
-            m_errorDescription += "\nMultiple error handling attempted without resolving previous error handling. Last node: ";
-            m_errorDescription += callStackTop.GetDebugName();
-            ErrorIrrecoverably();
-        }
-    }
-
-    void ExecutionContext::ReportError(const Node& reporter, const char* format, ...)
-    {
-        const size_t k_maxErrorMessageLength = 4096;
-        char message[k_maxErrorMessageLength]{ {} };
-        va_list args;
-        va_start(args, format);
-        azvsnprintf(message, k_maxErrorMessageLength, format, args);
-        va_end(args);
-
-        if (m_isInErrorState)
-        {
-            m_errorDescription += "\nMultiple errors reported without allowing for handling. Last node: ";
-            m_errorDescription += reporter.GetDebugName();
-            m_errorDescription += "\nDescription: ";
-            m_errorDescription += message;
-            ErrorIrrecoverably();
-        }
-        else if (m_isInErrorHandler)
-        {
-            m_errorDescription += "\nFurther error encountered during error handling. Last node: ";
-            m_errorDescription += reporter.GetDebugName();
-            m_errorDescription += "\nDescription: ";
-            m_errorDescription += message;
-            ErrorIrrecoverably();
-        }
-        else
-        {
-            m_errorReporter = &reporter;
-            m_errorDescription = message;
-            m_isInErrorState = true;
-        }
-
-        m_errorDescription += " Graph: ";
-        m_errorDescription += reporter.GetGraphAssetName().c_str();
-
-    }
-
-    bool ExecutionContext::IsExecuting() const
-    {
-        return m_isExecuting;
-    }
-
-    bool ExecutionContext::HasQueuedExecution() const
-    {
-        return !m_executionStack.empty();
-    }
-
-    void ExecutionContext::Execute()
-    {
-        if (m_isActive && !m_isExecuting && !IsInErrorState())
-        {
-            m_isExecuting = true;
-            AZ::u32 executionCount(0);
-            
-            while (!m_executionStack.empty() && m_isActive)
-            {
-                auto nodeAndSlot = m_executionStack.back();
-                m_executionStack.pop();
-                m_preExecutedStackSize = m_executionStack.size();
-                nodeAndSlot.first->SignalInput(nodeAndSlot.second);
-
-                m_executedNodes.insert(nodeAndSlot.first);
-
-                ++executionCount;
-
-                if (executionCount == m_systemComponentConfiguration.m_maxIterationsForInfiniteLoopDetection)
+                auto sourceVariableIter = runtimeData.m_activationInputRange.inputs;
+                const auto sourceVariableSentinel = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
+                auto destVariableIter = rangeOut.inputs;
+                for (; sourceVariableIter != sourceVariableSentinel; ++sourceVariableIter, ++destVariableIter)
                 {
-                    ReportError(*nodeAndSlot.first, "Infinite loop detected");
-                    ErrorIrrecoverably();
+                    ExecutionContextCpp::ValueCopy(*destVariableIter, *sourceVariableIter);
+                }
+            }
 
-                    executionCount = -1;
-                    break;
+            // (possibly overridden) variables
+            {
+                auto sourceVariableIter = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
+                auto destVariableIter = rangeOut.inputs + runtimeData.m_activationInputRange.nodeableCount;
+
+                for (auto& idDatumPair : runtimeData.m_input.m_variables)
+                {
+                    ExecutionContextCpp::TypeCopy(*destVariableIter, *sourceVariableIter);
+
+                    auto variableOverride = activationData.variableOverrides.FindVariable(idDatumPair.first);
+                    const Datum* datum = variableOverride ? variableOverride->GetDatum() : &idDatumPair.second;
+                    destVariableIter->m_value = const_cast<void*>(datum->GetAsDanger());
+
+                    ++destVariableIter;
+                    ++sourceVariableIter;
+                }
+            }
+
+            // (must always be re-mapped) EntityId
+            {
+                AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
+                AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
+                AzFramework::EntityIdContextQueryBus::EventResult(owningContextId, activationData.entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+                if (!owningContextId.IsNull())
+                {
+                    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, owningContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
                 }
 
-                if (IsInErrorState())
-                {
-                    HandleError((*nodeAndSlot.first));
+                AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
+                    + runtimeData.m_activationInputRange.nodeableCount
+                    + runtimeData.m_activationInputRange.variableCount;
 
-                    if (!m_isRecoverable)
+                const auto entityIdTypeId = azrtti_typeid< Data::EntityIDType>();
+                for (auto& idEntityPair : runtimeData.m_input.m_entityIds)
+                {
+                    destVariableIter->m_typeId = entityIdTypeId;
+                    destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
+                    auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
+
+                    if (auto variableOverride = activationData.variableOverrides.FindVariable(idEntityPair.first))
                     {
-                        break;
+                        *entityIdValuePtr = *variableOverride->GetDatum()->GetAs<Data::EntityIDType>();
                     }
-                }
-            }
-            
-            m_isExecuting = false;
-            RefreshInputs();
-
-            SC_EXECUTION_TRACE_THREAD_ENDED(CreateGraphInfo(m_runtimeId));
-        }
-    }
-
-    void ExecutionContext::ExecuteUntilNodeIsTopOfStack(Node& node)
-    {
-        if (m_isActive && !IsInErrorState())
-        {
-            m_isExecuting = true;
-            AZ::u32 executionCount(0);
-
-            while (m_isActive && !m_executionStack.empty())
-            {
-                auto nodeAndSlot = m_executionStack.back();
-                m_executionStack.pop();
-                
-                if (nodeAndSlot.first == &node && !nodeAndSlot.second.IsValid())
-                {
-                    m_isExecuting = !m_executionStack.empty();
-                    //SC_EXECUTION_TRACE_THREAD_ENDED();
-                    return;
-                }
-
-                m_preExecutedStackSize = m_executionStack.size();
-                nodeAndSlot.first->SignalInput(nodeAndSlot.second);
-
-                ++executionCount;
-
-                if (executionCount == SCRIPT_CANVAS_INFINITE_LOOP_DETECTION_COUNT)
-                {
-                    ReportError(*nodeAndSlot.first, "Infinite loop detected");
-                    ErrorIrrecoverably();
-                }
-
-                if (IsInErrorState())
-                {
-                    HandleError((*nodeAndSlot.first));
-
-                    if (!m_isRecoverable)
+                    else
                     {
-                        break;
+                        auto iter = loadedEntityIdMap.find(idEntityPair.second);
+                        if (iter != loadedEntityIdMap.end())
+                        {
+                            *entityIdValuePtr = iter->second;
+                        }
+                        else
+                        {
+                            *entityIdValuePtr = Data::EntityIDType();
+                        }
                     }
+
+                    ++destVariableIter;
                 }
             }
-            //SC_EXECUTION_TRACE_THREAD_ENDED();
-        }
-    }
 
-    void ExecutionContext::UnwindStack([[maybe_unused]] const Node& callStackTop)
-    {
-        while (m_executionStack.size() > m_preExecutedStackSize)
-        {
-            m_executionStack.pop();
+            return rangeOut;
         }
-    }
 
-    void ExecutionContext::RefreshInputs()
-    {
-        if (!IsExecuting() && !IsInIrrecoverableErrorState())
+        void Context::IntializeActivationInputs(RuntimeData& runtimeData)
         {
-            for (auto node : m_executedNodes)
+            AZ::BehaviorContext* behaviorContext(nullptr);
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            AZ_Assert(behaviorContext, "missing behavior context");
+
+            AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
+            parameters.reserve(runtimeData.m_input.GetParameterSize());
+
+            for (const Nodeable* nodeable : runtimeData.m_input.m_nodeables)
             {
-                node->RefreshInput();
+                AZ::BehaviorValueParameter bvp;
+                bvp.m_typeId = azrtti_typeid(nodeable);
+
+                const auto classIter(behaviorContext->m_typeToClassMap.find(bvp.m_typeId));
+                AZ_Assert(classIter != behaviorContext->m_typeToClassMap.end(), "No class by typeID of %s in the behavior context!", bvp.m_typeId.ToString<AZStd::string>().c_str());
+                bvp.m_azRtti = classIter->second->m_azRtti;
+                bvp.m_value = const_cast<Nodeable*>(nodeable);
+                parameters.push_back(bvp);
             }
 
-            m_executedNodes.clear();
-        }
-    }
+            for (auto& idDatumPair : runtimeData.m_input.m_variables)
+            {
+                const Datum* datum = &idDatumPair.second; 
+                AZ::BehaviorValueParameter bvp;
+                bvp.m_typeId = datum->GetType().GetAZType();
+                const auto classIter(behaviorContext->m_typeToClassMap.find(bvp.m_typeId));
+                bvp.m_azRtti = classIter != behaviorContext->m_typeToClassMap.end() ? classIter->second->m_azRtti : nullptr;
+                bvp.m_value = const_cast<void*>(datum->GetAsDanger());
+                parameters.push_back(bvp);
+            }
 
-    AZStd::string_view ExecutionContext::GetLastErrorDescription() const
-    {
-        return m_errorDescription;
-    }
-}
+            for (const auto& entityId : runtimeData.m_input.m_entityIds)
+            {
+                AZ::BehaviorValueParameter bvp;
+                bvp.m_typeId = azrtti_typeid<Data::EntityIDType>();
+                parameters.push_back(bvp);
+            }
+
+            runtimeData.m_activationInputRange.inputs = parameters.begin();
+            runtimeData.m_activationInputRange.nodeableCount = runtimeData.m_input.m_nodeables.size();
+            runtimeData.m_activationInputRange.variableCount = runtimeData.m_input.m_variables.size();
+            runtimeData.m_activationInputRange.entityIdCount = runtimeData.m_input.m_entityIds.size();
+        }
+
+        void Context::IntializeAssetData(RuntimeData& runtimeData)
+        {
+            // \todo, the stack push functions could be retrieved here
+            IntializeActivationInputs(runtimeData);
+            IntializeStaticCloners(runtimeData);
+        }
+
+        void Context::IntializeStaticCloners(RuntimeData& runtimeData)
+        {
+            AZ::BehaviorContext* behaviorContext(nullptr);
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            if (!behaviorContext)
+            {
+                AZ_Error("Behavior Context", false, "A behavior context is required!");
+                return;
+            }
+
+            runtimeData.m_cloneSources.reserve(runtimeData.m_input.m_staticVariables.size());
+
+            for (AZStd::pair<VariableId, AZStd::any>& staticSource : runtimeData.m_input.m_staticVariables)
+            {
+                AZStd::any& anySource = staticSource.second;
+                auto bcClass = AZ::BehaviorContextHelper::GetClass(behaviorContext, anySource.type());
+                AZ_Assert(bcClass, "BehaviorContext class for type %s was deleted", anySource.type().ToString<AZStd::string>().c_str());
+                runtimeData.m_cloneSources.emplace_back(*bcClass, AZStd::any_cast<void>(&anySource));
+            }
+        }
+
+        void Context::UnloadData(RuntimeData& runtimeData)
+        {
+            Execution::InterpretedUnloadData(runtimeData);
+        }
+
+    } 
+
+} 

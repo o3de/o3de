@@ -47,11 +47,11 @@ namespace AZ
             ComputePass::FrameBeginInternal(params);
         }
 
-        void DepthOfFieldWriteFocusDepthFromGpuPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void DepthOfFieldWriteFocusDepthFromGpuPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             AZ_Assert(m_bufferRef != nullptr, "%s has a null buffer when calling Prepare.", GetPathName().GetCStr());
 
-            ComputePass::SetupFrameGraphDependencies(frameGraph, producer);
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
 
             RHI::BufferScopeAttachmentDescriptor desc;
             desc.m_attachmentId = m_bufferRef->GetAttachmentId();
@@ -60,7 +60,7 @@ namespace AZ
             frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Write);
         }
 
-        void DepthOfFieldWriteFocusDepthFromGpuPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DepthOfFieldWriteFocusDepthFromGpuPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "%s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 

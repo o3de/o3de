@@ -12,6 +12,7 @@
 #include "FileWatcherUnitTests.h"
 #include "native/FileWatcher/FileWatcher.h"
 #include "native/AssetManager/assetProcessorManager.h"
+#include <AzTest/AzTest.h>
 #include <QCoreApplication>
 
 using namespace AssetProcessor;
@@ -305,4 +306,6 @@ void FileWatcherUnitTestRunner::StartTest()
     Q_EMIT UnitTestPassed();
 }
 
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 REGISTER_UNIT_TEST(FileWatcherUnitTestRunner)
+#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS

@@ -166,14 +166,13 @@ def create_packages(package_env):
         lyengine = os.path.dirname(package_env.get('ENGINE_ROOT'))
         print('Calculating filelists...')
         files = {}
-        # We have to include 3rdParty in Mac/Xenia/Provo/Salem/Consoles package until LAD is available for those platforms
+        # We have to include 3rdParty in Mac/Console packages until LAD is available for those platforms
         # Remove this when LAD is available for those platforms.
         if package_target['TYPE'] in ['cmake_consoles', 'consoles']:
             files.update(get_3rdparty_filelist(package_env, 'common'))
             files.update(get_3rdparty_filelist(package_env, 'vc141'))
             files.update(get_3rdparty_filelist(package_env, 'vc142'))
             files.update(get_3rdparty_filelist(package_env, 'provo'))
-            files.update(get_3rdparty_filelist(package_env, 'xenia'))
         elif package_target['TYPE'] in ['cmake_atom_pc']:
             files.update(get_3rdparty_filelist(package_env, 'common'))
             files.update(get_3rdparty_filelist(package_env, 'vc141'))
@@ -187,7 +186,6 @@ def create_packages(package_env):
                 files.update(get_3rdparty_filelist(package_env, 'vc141'))
                 files.update(get_3rdparty_filelist(package_env, 'vc142'))
                 files.update(get_3rdparty_filelist(package_env, 'provo'))
-                files.update(get_3rdparty_filelist(package_env, 'xenia'))
 
         if '@lyengine' in data:
             if '@engine_root' in data['@lyengine']:

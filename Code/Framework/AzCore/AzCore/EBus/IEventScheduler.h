@@ -20,6 +20,7 @@
 
 namespace AZ
 {
+    class Name;
     class ScheduledEvent;
     class ScheduledEventHandle;
 
@@ -36,12 +37,19 @@ namespace AZ
         IEventScheduler() = default;
         virtual ~IEventScheduler() = default;
 
-        //! Adds a scheduled event and intervalMs to run it.
+        //! Adds a scheduled event to run in durationMs.
         //! Actual duration is not guaranteed but will not be less than the value provided.
         //! @param scheduledEvent a scheduled event to add
-        //! @param durationMs an interval Ms to run the scheduled event
+        //! @param durationMs a millisecond interval to run the scheduled event
         //! @return pointer to the handle for this scheduled event, IEventScheduler maintains ownership
-        virtual ScheduledEventHandle* Add(ScheduledEvent* scheduledEvent, TimeMs durationMs) = 0;
+        virtual ScheduledEventHandle* AddEvent(ScheduledEvent* scheduledEvent, TimeMs durationMs) = 0;
+
+        //! Schedules a callback to run in durationMs.
+        //! Actual duration is not guaranteed but will not be less than the value provided.
+        //! @param callback a callback to invoke after durationMs
+        //! @param eventName a text descriptor of the callback
+        //! @param durationMs a millisecond interval to run the scheduled callback
+        virtual void AddCallback(const AZStd::function<void()>& callback, const Name& eventName, TimeMs durationMs) = 0;
 
         AZ_DISABLE_COPY_MOVE(IEventScheduler);
     };

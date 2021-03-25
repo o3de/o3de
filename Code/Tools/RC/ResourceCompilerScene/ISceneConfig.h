@@ -12,6 +12,8 @@
 *
 */
 
+#include <cstddef>
+
 class IConfig;
 
 namespace AZ

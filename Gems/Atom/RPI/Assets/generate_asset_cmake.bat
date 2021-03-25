@@ -41,6 +41,7 @@ echo set(FILES>> %OUTPUT_FILE%
         set relativeFilePath=!relativeFilePath:\=/!
         
         :: Filter only relevant file types
+        if !relativeFilePath:~-4!  == .lua          echo %TAB%!relativeFilePath!
         if !relativeFilePath:~-5!  == .pass         echo %TAB%!relativeFilePath!
         if !relativeFilePath:~-5!  == .azsl         echo %TAB%!relativeFilePath!
         if !relativeFilePath:~-6!  == .azsli        echo %TAB%!relativeFilePath!

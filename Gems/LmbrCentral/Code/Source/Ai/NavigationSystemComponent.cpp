@@ -21,7 +21,6 @@
 
 // for INavigationSystem access
 #include <ISystem.h>
-#include <functor.h> // needed in <INavigationSystem.h>
 #include <INavigationSystem.h>
 
 

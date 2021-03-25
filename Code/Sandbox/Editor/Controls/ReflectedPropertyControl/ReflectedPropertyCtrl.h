@@ -46,7 +46,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         Q_OBJECT
 public:
     //! For alternative undo.
-    typedef Functor1<IVariable*> UndoCallback;
+    typedef AZStd::function<void(IVariable*)> UndoCallback;
 
     explicit ReflectedPropertyControl(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
 
@@ -55,7 +55,7 @@ public:
     ReflectedPropertyItem* AddVarBlock(CVarBlock* varBlock, const char* szCategory = nullptr);
 
     void CreateItems(XmlNodeRef node);
-    void CreateItems(XmlNodeRef node, CVarBlockPtr& varBlock, IVariable::OnSetCallback func, bool splitCamelCaseIntoWords = false);
+    void CreateItems(XmlNodeRef node, CVarBlockPtr& varBlock, IVariable::OnSetCallback* func, bool splitCamelCaseIntoWords = false);
 
     // Replace category item contents with the specified var block.
     virtual void ReplaceVarBlock(IVariable* categoryItem, CVarBlock* varBlock);
@@ -68,11 +68,11 @@ public:
     bool FindVariable(IVariable* categoryItem) const;
 
     //! When item change, this callback fired variable that changed.
-    typedef Functor1<IVariable*> UpdateVarCallback;
+    typedef AZStd::function<void(IVariable*)> UpdateVarCallback;
     //! When item change, update object.
-    typedef Functor1<IVariable*> UpdateObjectCallback;
+    typedef AZStd::function<void(IVariable*)> UpdateObjectCallback;
     //! When selection changes, this callback fired variable that changed.
-    typedef Functor1<IVariable*> SelChangeCallback;
+    typedef AZStd::function<void(IVariable*)> SelChangeCallback;
 
     /** Set update callback to be used for this property window.
     */
@@ -166,19 +166,19 @@ public:
 
     struct SCustomPopupItem
     {
-        typedef Functor0 Callback;
+        typedef AZStd::function<void()> Callback;
 
         QString m_text;
         Callback m_callback;
 
-        SCustomPopupItem(const QString& text, const Functor0& callback)
+        SCustomPopupItem(const QString& text, const Callback& callback)
             : m_text(text)
             , m_callback(callback) {}
     };
 
     struct SCustomPopupMenu
     {
-        typedef Functor1<int> Callback;
+        typedef AZStd::function<void(int)> Callback;
 
         QString m_text;
         Callback m_callback;
@@ -190,7 +190,7 @@ public:
             , m_subMenuText(subMenuText) {}
     };
 
-    void AddCustomPopupMenuPopup(const QString& text, const Functor1<int>& handler, const QStringList& items);
+    void AddCustomPopupMenuPopup(const QString& text, const AZStd::function<void(int)>& handler, const QStringList& items);
     void RemoveCustomPopupMenuPopup(const QString& text);
 
     void AddCustomPopupMenuItem(const QString& text, const SCustomPopupItem::Callback handler);

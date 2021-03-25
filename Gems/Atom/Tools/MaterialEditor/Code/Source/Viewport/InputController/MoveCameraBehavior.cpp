@@ -17,16 +17,6 @@
 
 namespace MaterialEditor
 {
-    void MoveCameraBehavior::Start()
-    {
-        Behavior::Start();
-
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_cameraEntityId,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetCameraEntityId);
-        AZ_Assert(m_cameraEntityId.IsValid(), "Failed to find m_cameraEntityId");
-    }
-
     void MoveCameraBehavior::End()
     {
         float distanceToTarget;
@@ -43,17 +33,19 @@ namespace MaterialEditor
             targetPosition);
     }
 
-    void MoveCameraBehavior::TickInternal(float x, float y)
+    void MoveCameraBehavior::TickInternal(float x, float y, float z)
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
         AZ::Vector3 up = transform.GetBasisZ();
         AZ::Vector3 right = transform.GetBasisX();
         AZ::Vector3 position = transform.GetTranslation();
-        position +=
-            up * y +
-            right * -x;
+        AZ::Vector3 deltaPosition = up * y + right * -x;
+        position += deltaPosition;
+        m_targetPosition += deltaPosition;
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
+
+        Behavior::TickInternal(x, y, z);
     }
 
     float MoveCameraBehavior::GetSensitivityX()

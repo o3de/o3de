@@ -23,6 +23,29 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            void OperatorLength::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                auto newDataInSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                auto oldDataInSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                if (newDataInSlots.size() == oldDataInSlots.size())
+                {
+                    for (size_t index = 0; index < newDataInSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataInSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataInSlots[index]->GetId() });
+                    }
+                }
+
+                auto newDataOutSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                auto oldDataOutSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                if (newDataOutSlots.size() == oldDataOutSlots.size())
+                {
+                    for (size_t index = 0; index < newDataOutSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataOutSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataOutSlots[index]->GetId() });
+                    }
+                }
+            }
+
             bool OperatorLength::OperatorLengthConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 if (rootElement.GetVersion() < Version::RemoveOperatorBase)

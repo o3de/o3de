@@ -19,11 +19,14 @@
 #include "GLSLShader.h"
 #include "TextureCache.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 namespace RenderGL
 {
     class RENDERGL_API StandardMaterial
         : public Material
+        , protected QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(StandardMaterial, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 

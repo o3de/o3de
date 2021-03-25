@@ -130,8 +130,8 @@ def gather_build_metrics(current_dir, build_config_filename, platform):
     for build_type in build_config_json:
         
         build_config = build_config_json[build_type]
-        if not 'metric' in build_config['TAGS']:
-            # skip build configs that are not tagged with 'metric'
+        if not 'weekly-build-metrics' in build_config['TAGS']:
+            # skip build configs that are not tagged with 'weekly-build-metrics'
             continue
 
         print(f'[ci_build_metrics] Starting {build_type}', flush=True)

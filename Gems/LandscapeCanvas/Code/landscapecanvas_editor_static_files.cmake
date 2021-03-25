@@ -38,8 +38,6 @@ set(FILES
     Source/Editor/Nodes/Areas/MeshBlockerAreaNode.h
     Source/Editor/Nodes/Areas/SpawnerAreaNode.cpp
     Source/Editor/Nodes/Areas/SpawnerAreaNode.h
-    Source/Editor/Nodes/Areas/StaticVegetationBlockerAreaNode.cpp
-    Source/Editor/Nodes/Areas/StaticVegetationBlockerAreaNode.h
     Source/Editor/Nodes/AreaFilters/AltitudeFilterNode.cpp
     Source/Editor/Nodes/AreaFilters/AltitudeFilterNode.h
     Source/Editor/Nodes/AreaFilters/BaseAreaFilterNode.cpp

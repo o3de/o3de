@@ -32,7 +32,8 @@ namespace UnitTest
     using namespace PrefabTestUtils;
 
     class PrefabTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture,
+          public UnitTest::TraceBusRedirector
     {
     protected:
 

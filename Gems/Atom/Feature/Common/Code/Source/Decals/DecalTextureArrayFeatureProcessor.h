@@ -120,9 +120,6 @@ namespace AZ
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
 
-            const bool SetStreamingImageHandlerToLoadAllMips();
-            void RestoreStreamingImageHandlerSettings(const bool oldValue);
-
             IndexedDataVector<DecalData> m_decalData;
 
             // Texture arrays are organized one per texture size permutation.
@@ -142,7 +139,6 @@ namespace AZ
             AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_materialAssets;
 
             bool m_deviceBufferNeedsUpdate = false;
-            bool m_streamingImageHandlerPreviousSetting = false;
         };
     } // namespace Render
 } // namespace AZ

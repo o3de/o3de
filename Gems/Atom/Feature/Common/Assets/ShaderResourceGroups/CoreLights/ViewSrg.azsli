@@ -85,13 +85,14 @@ partial ShaderResourceGroup ViewSrg
         uint m_filteringSampleCount;
         float2 m_unprojectConstants;
         float m_bias;
-        float m_padding;
+        uint m_pcfFilterMethod; // Matches with PcfFilterMethod in ShadowConstants.h
     };
 
     StructuredBuffer<SpotLightShadow> m_spotLightShadows;
     StructuredBuffer<FilterParameter> m_esmsSpot;
 
-    uint m_shadowmapAtlasSize; // image size of shadowmap atlas. width and height has the same value.
+    float m_shadowmapAtlasSize; // image size of shadowmap atlas. width and height has the same value.
+    float m_invShadowmapAtlasSize; // reciprocal of the atlas size
 
     // Directional Light shadows
 

@@ -279,6 +279,18 @@ namespace AZ
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
+
+                if (shaderAssetSource.IsRhiBackendDisabled(platformInterface->GetAPIName()))
+                {
+                    // Gracefully do nothing and return success.
+                    AZ_TracePrintf(
+                        BuilderName, "Skipping shader compilation [%s] for API [%s]\n", fullSourcePath.c_str(),
+                        platformInterface->GetAPIName().GetCStr());
+                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+                    return;
+                }
+
+
                 // Save .shader file name
                 AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.data(), inputFiles->m_shaderFileName);
 

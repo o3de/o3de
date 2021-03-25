@@ -15,6 +15,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/Utils.h>
 
+#include <ScriptCanvas/Core/Graph.h>
+
 namespace ScriptCanvas
 {
     namespace Nodes
@@ -135,7 +137,11 @@ namespace ScriptCanvas
                     m_format.append(name);
                     m_format.append("}");
 
-                    m_stringInterface.SignalDataChanged();
+                    {
+                        m_isHandlingExtension = true;
+                        m_stringInterface.SignalDataChanged();
+                        m_isHandlingExtension = false;
+                    }
 
                     auto formatMapIter = m_formatSlotMap.find(name);
 
@@ -178,7 +184,7 @@ namespace ScriptCanvas
                             return;
                         }
 
-                        m_format.erase(firstInstance, name.size());                        
+                        m_format.erase(firstInstance, name.size());
                         m_formatSlotMap.erase(slotPair.first);
                         break;
                     }
@@ -357,6 +363,32 @@ namespace ScriptCanvas
                     {
                         auto slotIdIter = m_formatSlotMap.find(name);
 
+                        if (GetSlotByName(name.c_str()) != nullptr)
+                        {
+                            const auto& slotList = GetSlots();
+
+                            AZStd::string reservedSlotNames;
+
+                            for (const auto& slot : slotList)
+                            {
+                                if (newMapping.find(slot.GetName()) == newMapping.end())
+                                {
+                                    if (!reservedSlotNames.empty())
+                                    {
+                                        reservedSlotNames.append(", ");
+                                    }
+
+                                    reservedSlotNames.append(slot.GetName());
+                                }
+                            }
+
+                            format = match.suffix();
+
+                            AZStd::string errorReport = AZStd::string::format("Attempting to use one of the reserved names '%s' in string display. Skipping input name", reservedSlotNames.c_str());
+                            GetGraph()->ReportError((*this), GetNodeName(),errorReport);
+                            continue;
+                        }
+
                         // If the slot has never existed, create it
                         DynamicDataSlotConfiguration dataSlotConfiguration;
 
@@ -432,12 +464,7 @@ namespace ScriptCanvas
 
             void StringFormatted::OnFormatChanged()
             {
-                // Adding and removing slots within the ChangeNotify handler causes problems due to the property grid's
-                // rows changing. To get around that problem we queue the parsing of the string format to happen
-                // on the next system tick.
-                AZ::SystemTickBus::QueueFunction([this]() {
-                    m_stringInterface.SignalDataChanged();
-                });
+                m_stringInterface.SignalDataChanged();
             }
         }
     }

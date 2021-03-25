@@ -32,7 +32,7 @@ namespace ScriptEvents
 
         for (const auto& eventPair : m_ebus->m_events)
         {
-            const auto* event = (eventPair.second.m_event != nullptr) ? eventPair.second.m_event : eventPair.second.m_broadcast;
+            auto* event = (eventPair.second.m_event != nullptr) ? eventPair.second.m_event : eventPair.second.m_broadcast;
 
             if (event)
             {

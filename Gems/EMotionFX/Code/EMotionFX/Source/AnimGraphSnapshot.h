@@ -68,7 +68,7 @@ namespace EMotionFX
 
     private:
 
-        enum LODFlag
+        enum LODFlag : AZ::u8
         {
             Parameter           = 1 << 0,
             ActiveNodes         = 1 << 1,

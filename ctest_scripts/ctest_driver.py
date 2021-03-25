@@ -13,6 +13,7 @@ A wrapper to simplify invoking CTest with common parameters and sub-filter to sp
 import argparse
 import multiprocessing
 import os
+import result_processing.result_processing as rp
 import subprocess
 import sys
 import shutil
@@ -31,6 +32,7 @@ BUILD_CONFIGURATIONS = [
     "release",
 ]
 
+
 def _regex_matching_any(words):
     """
     :param words: iterable of strings to match
@@ -39,17 +41,18 @@ def _regex_matching_any(words):
     return "^(" + "|".join(words) + ")$"
 
 
-def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, disable_gpu, only_gpu, generate_xml, extra_args):
+def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, disable_gpu, only_gpu, generate_xml, repeat, extra_args):
     """
     Starts CTest to filter down to a specific suite
     :param suite: subset of tests to run, see SUITES_AND_DESCRIPTIONS
     :param ctest_path: path to ctest.exe
     :param cmake_build_path: path to build output
     :param build_config: cmake build variant to select
-    :param disable_gpu: run only non-gpu tests
-    :param only_gpu: run only gpu-required tests
-    :param generate_xml: enable to produce the CTest xml file
-    :param extrargs: forward args to ctest
+    :param disable_gpu: optional, run only non-gpu tests
+    :param only_gpu: optional, run only gpu-required tests
+    :param generate_xml: optional, enable to produce the CTest xml file
+    :param repeat: optional, number of times to run the tests in the suite
+    :param extrargs: optional, forward args to ctest
     :return: CTest exit code
     """
     ctest_command = [
@@ -98,14 +101,50 @@ def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, dis
         ctest_command.append(extra_arg)
 
     ctest_command_string = ' '.join(ctest_command) # ONLY used for display
-    print("Executing CTest with command:\n"
+    print(f"Executing CTest {repeat} time(s) with command:\n"
           f"  {ctest_command_string}\n"
           "in working directory:\n"
           f"  {cmake_build_path}\n")
 
-    result = subprocess.run(ctest_command, shell=False, cwd=cmake_build_path, stdout=sys.stdout, stderr=sys.stderr)
+    error_code = 0
+
+    if repeat:
+        # Run the tests multiple times. Previous test results are deleted, new test results are combined in a file per
+        # test runner.
+
+        test_result_prefix = 'Repeat'
+        repeat = int(repeat)
+        if generate_xml:
+            rp.clean_test_results(cmake_build_path)
+
+        for iteration in range(repeat):
+            print(f"Executing CTest iteration {iteration + 1}/{repeat}")
+            result = subprocess.run(ctest_command, shell=False, cwd=cmake_build_path, stdout=sys.stdout, stderr=sys.stderr)
+
+            if generate_xml:
+                rp.rename_test_results(cmake_build_path, test_result_prefix, iteration + 1, repeat)
+            if result.returncode:
+                error_code = result.returncode
+
+        if generate_xml:
+            rp.collect_test_results(cmake_build_path, test_result_prefix)
+            summary = rp.summarize_test_results(cmake_build_path, repeat)
+            
+            print()  # empty line
+            print('Test stability summary:')
+            if summary:
+                print('The following test(s) failed:')
+                for line in summary: print(line)
+            else:
+                print(f'All tests were executed {repeat} times and passed 100% of the time.')
+
+    else:
+        # Run the tests one time. Previous test results are not deleted but
+        # might be overwritten.
+        result = subprocess.run(ctest_command, shell=False, cwd=cmake_build_path, stdout=sys.stdout, stderr=sys.stderr)
+        error_code = result.returncode
     
-    return result.returncode
+    return error_code
 
 
 def main():
@@ -153,6 +192,10 @@ def main():
                         help="Which subset of tests to execute")
     parser.add_argument('--generate-xml', action='store_true', 
                         help='Enable this option to produce the CTest xml file.')
+    parser.add_argument('-r', '--repeat', help="Run the tests the specified number times to identify intermittent "
+                                               "failures (e.g. --repeat 3 for running the test three times). When used"
+                                               "with --generate-xml, the resulting test reports will be combined, "
+                                               "aggregated and summarized.", type=int)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--no-gpu', action='store_true',
                         help="Disable tests that require a GPU")
@@ -203,6 +246,7 @@ def main():
         disable_gpu=args.no_gpu,
         only_gpu=args.only_gpu,
         generate_xml=args.generate_xml,
+        repeat=args.repeat,
         extra_args=unknown_args)
 
 

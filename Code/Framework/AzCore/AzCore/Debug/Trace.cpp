@@ -17,6 +17,8 @@
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/Debug/IEventLogger.h>
+#include <AzCore/Interface/Interface.h>
 
 #include <stdarg.h>
 
@@ -73,6 +75,11 @@ namespace AZ
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;
     static AZ::EnvironmentVariable<int> g_logVerbosityLevel;
+
+    static constexpr auto PrintfEventId = EventNameHash("Printf");
+    static constexpr auto WarningEventId = EventNameHash("Warning");
+    static constexpr auto ErrorEventId = EventNameHash("Error");
+    static constexpr auto AssertEventId = EventNameHash("Assert");
 
     constexpr LogLevel DefaultLogLevel = LogLevel::Info;
 
@@ -230,6 +237,12 @@ namespace AZ
         azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below 
         va_end(mark);
 
+        if (auto logger = Interface<IEventLogger>::Get(); logger)
+        {
+            logger->RecordStringEvent(AssertEventId, message);
+            logger->Flush(); // Flush as an assert may indicate a crash is imminent.
+        }
+
         EBUS_EVENT(TraceMessageDrillerBus, OnPreAssert, fileName, line, funcName, message);
 
         TraceMessageResult result;
@@ -338,6 +351,11 @@ namespace AZ
         azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below 
         va_end(mark);
 
+        if (auto logger = Interface<IEventLogger>::Get(); logger)
+        {
+            logger->RecordStringEvent(ErrorEventId, message);
+        }
+
         EBUS_EVENT(TraceMessageDrillerBus, OnPreError, window, fileName, line, funcName, message);
 
         TraceMessageResult result;
@@ -385,6 +403,11 @@ namespace AZ
         azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below 
         va_end(mark);
 
+        if (auto logger = Interface<IEventLogger>::Get(); logger)
+        {
+            logger->RecordStringEvent(WarningEventId, message);
+        }
+
         EBUS_EVENT(TraceMessageDrillerBus, OnPreWarning, window, fileName, line, funcName, message);
 
         TraceMessageResult result;
@@ -423,6 +446,11 @@ namespace AZ
         va_start(mark, format);
         azvsnprintf(message, g_maxMessageLength, format, mark);
         va_end(mark);
+
+        if (auto logger = Interface<IEventLogger>::Get(); logger)
+        {
+            logger->RecordStringEvent(PrintfEventId, message);
+        }
 
         EBUS_EVENT(TraceMessageDrillerBus, OnPrintf, window, message);
 

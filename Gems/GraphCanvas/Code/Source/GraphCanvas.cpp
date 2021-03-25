@@ -197,7 +197,10 @@ namespace GraphCanvas
         AZ::Entity* entity = aznew AZ::Entity("BookmarkAnchor");
         entity->CreateComponent<BookmarkAnchorComponent>();
         entity->CreateComponent<BookmarkAnchorVisualComponent>();
-        entity->CreateComponent<SceneMemberComponent>();
+
+        const bool isGroupable = false;
+        entity->CreateComponent<SceneMemberComponent>(isGroupable);
+
         entity->CreateComponent<GeometryComponent>();
         entity->CreateComponent<StylingComponent>(Styling::Elements::BookmarkAnchor, AZ::EntityId());
         entity->CreateComponent<PersistentIdComponent>();

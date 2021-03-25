@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.generated.h>
 
@@ -22,30 +21,17 @@ namespace ScriptCanvas
     {
         namespace UnitTesting
         {
+            //! Used to represent that a unit test graph's operation has succeeded
             class AddSuccess
                 : public Node
             {
             public:
-                ScriptCanvas_Node(AddSuccess,
-                    ScriptCanvas_Node::Name("Add Success", "adds a success directly to the unit testing framework")
-                    ScriptCanvas_Node::Uuid("{0D5B9544-C36B-490F-899A-E260D8351620}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/AddSuccess.png")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(AddSuccess);
 
                 void OnInputSignal(const SlotId& slotId) override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report")
-                    ScriptCanvas_Property::Input);
-            }; // class AddSuccess
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            };
+        }
+    }
+}

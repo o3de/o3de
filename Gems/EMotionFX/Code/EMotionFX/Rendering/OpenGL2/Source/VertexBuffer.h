@@ -17,6 +17,9 @@
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/LogManager.h>
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
+#include <EMotionFX/Rendering/OpenGL2/Source/GLExtensions.h>
 
 namespace RenderGL
 {
@@ -38,6 +41,8 @@ namespace RenderGL
 
 
     class RENDERGL_API VertexBuffer
+        : private QOpenGLExtraFunctions
+        , private RenderGL::GLExtensionFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(VertexBuffer, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
@@ -61,8 +66,8 @@ namespace RenderGL
         uint32      mBufferID;      // the buffer ID
         uint32      mNumVertices;   // the number of vertices
 
-        bool GetIsSuccess() const;
-        bool GetHasError() const;
+        bool GetIsSuccess();
+        bool GetHasError();
     };
 } // namespace RenderGL
 

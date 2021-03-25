@@ -19,9 +19,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidget.hxx>
 
 #include <QVBoxLayout>
 
@@ -48,6 +46,36 @@ void QComponentEntityEditorOutlinerWindow::Init()
     QVBoxLayout* layout = new QVBoxLayout();
 
     m_outlinerWidget = new OutlinerWidget(nullptr);
+    layout->addWidget(m_outlinerWidget);
+
+    QWidget* window = new QWidget();
+    window->setLayout(layout);
+    setCentralWidget(window);
+}
+
+QEntityOutlinerWindow::QEntityOutlinerWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , m_outlinerWidget(nullptr)
+{
+    gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+
+    Init();
+}
+
+QEntityOutlinerWindow::~QEntityOutlinerWindow()
+{
+    gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+}
+
+void QEntityOutlinerWindow::OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+{
+}
+
+void QEntityOutlinerWindow::Init()
+{
+    QVBoxLayout* layout = new QVBoxLayout();
+
+    m_outlinerWidget = new AzToolsFramework::EntityOutlinerWidget(nullptr);
     layout->addWidget(m_outlinerWidget);
 
     QWidget* window = new QWidget();

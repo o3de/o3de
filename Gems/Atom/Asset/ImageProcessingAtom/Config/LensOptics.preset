@@ -28,11 +28,6 @@
                 "UUID": "{3000A993-0A04-4E08-A813-DFB1A47A0980}",
                 "Name": "LensOptics",
                 "PixelFormat": "BC1"
-            },
-            "xenia": {
-                "UUID": "{3000A993-0A04-4E08-A813-DFB1A47A0980}",
-                "Name": "LensOptics",
-                "PixelFormat": "BC1"
             }
         }
     }

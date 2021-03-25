@@ -137,6 +137,11 @@ namespace GraphCanvas
         }
     }
 
+    QModelIndex GraphCanvasTreeItem::GetIndexFromModel()
+    {
+        return m_abstractItemModel->CreateIndex(this);
+    }
+
     int GraphCanvasTreeItem::FindRowForChild(const GraphCanvasTreeItem* item) const
     {
         int row = -1;
@@ -204,7 +209,7 @@ namespace GraphCanvas
 
         if (m_abstractItemModel && signalAdd)
         {
-            m_abstractItemModel->OnChildAdded();
+            m_abstractItemModel->OnChildAdded(item);
         }
     }
 
@@ -283,19 +288,16 @@ namespace GraphCanvas
         return true;
     }
 
-    void GraphCanvasTreeItem::PreOnChildAdded(GraphCanvasTreeItem* item)
+    void GraphCanvasTreeItem::PreOnChildAdded([[maybe_unused]] GraphCanvasTreeItem* item)
     {
-        AZ_UNUSED(item);
     }
 
-    void GraphCanvasTreeItem::OnChildAdded(GraphCanvasTreeItem* treeItem)
+    void GraphCanvasTreeItem::OnChildAdded([[maybe_unused]] GraphCanvasTreeItem* treeItem)
     {
-        AZ_UNUSED(treeItem);
     }
 
-    void GraphCanvasTreeItem::OnChildDataChanged(GraphCanvasTreeItem* item)
+    void GraphCanvasTreeItem::OnChildDataChanged([[maybe_unused]] GraphCanvasTreeItem* item)
     {
-        AZ_UNUSED(item);
     }
 
     void GraphCanvasTreeItem::ClearModel()

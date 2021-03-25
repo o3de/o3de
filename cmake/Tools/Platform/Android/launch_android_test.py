@@ -186,7 +186,7 @@ def launch_android_test(build_dir, configuration, target_dev_serial, test_target
     build_path, build_configuration_path, android_sdk_path = validate_android_test_build_dir(build_dir=build_dir,
                                                                                              configuration=configuration)
 
-    test_targets = common.get_validated_test_modules(test_modules=test_target, build_dir_path=build_dir)
+    test_targets = common.get_validated_test_modules(test_modules=test_target, build_dir_path=build_configuration_path)
 
     # Track the long text length for formatting/alignment for the final report
     max_module_text_len = max([len(module) for module in test_targets])

@@ -63,6 +63,16 @@ namespace AZ
             //! Returns the name of the shader.
             const Name& GetName() const;
 
+            //! This function should be your one stop shop to get a ShaderVariantAsset.
+            //! Finds and returns the best matching ShaderVariantAsset given a ShaderVariantId.
+            //! If the ShaderVariantAsset is not fully loaded and ready at the moment, this function
+            //! will QueueLoad the ShaderVariantTreeAsset and subsequently will QueueLoad the ShaderVariantAsset.
+            //! The called will be notified via the ShaderVariantFinderNotificationBus when the
+            //! ShaderVariantAsset is loaded and ready.
+            //! In the mean time, if the required variant is not available this function
+            //! returns the Root Variant.
+            Data::Asset<ShaderVariantAsset> GetVariant(const ShaderVariantId& shaderVariantId);
+
             //! Finds the best matching shader variant and returns its StableId.
             //! This function first loads and caches the ShaderVariantTreeAsset (if not done before).
             //! If the ShaderVariantTreeAsset is not found (either the AssetProcessor has not generated it yet, or it simply doesn't exist), then
@@ -71,7 +81,8 @@ namespace AZ
             ShaderVariantSearchResult FindVariantStableId(const ShaderVariantId& shaderVariantId);
 
             //! Returns the variant asset associated with the provided StableId.
-            //! The user should call FindVariantStableId() first to get a ShaderVariantStableId from a ShaderVariantId.
+            //! The user should call FindVariantStableId() first to get a ShaderVariantStableId from a ShaderVariantId,
+            //! Or better yet, call GetVariant(ShaderVariantId) for maximum convenience.
             //! If the requested variant is not found, the root variant will be returned AND the requested variant will be queued for loading.
             //! Next time around if the variant has been loaded this function will return it. Alternatively
             //! the caller can register with the ShaderVariantFinderNotificationBus to get the asset as soon as is available.

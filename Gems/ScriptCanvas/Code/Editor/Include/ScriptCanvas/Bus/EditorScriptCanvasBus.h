@@ -28,6 +28,7 @@
 #include <Editor/Include/ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace GraphCanvas
 {
@@ -149,10 +150,11 @@ namespace ScriptCanvasEditor
         virtual void HighlightNodes(const AZStd::vector<NodeIdPair>& nodes) = 0;
 
         virtual AZStd::vector<NodeIdPair> GetNodesOfType(const ScriptCanvas::NodeTypeIdentifier&) = 0;
-        virtual AZStd::vector<NodeIdPair> GetVariableNodes(const ScriptCanvas::VariableId&) = 0;        
+        virtual AZStd::vector<NodeIdPair> GetVariableNodes(const ScriptCanvas::VariableId&) = 0;
 
         virtual void RemoveUnusedVariables() = 0;
 
+        virtual bool CanConvertVariableNodeToReference(const GraphCanvas::NodeId& nodeId) = 0;
         virtual bool ConvertVariableNodeToReference(const GraphCanvas::NodeId& nodeId) = 0;
         virtual bool ConvertReferenceToVariableNode(const GraphCanvas::Endpoint& endpoint) = 0;
 
@@ -160,6 +162,8 @@ namespace ScriptCanvasEditor
 
         virtual bool IsRuntimeGraph() const = 0;
         virtual bool IsFunctionGraph() const = 0;
+
+        virtual bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) = 0;
 
         virtual ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoinnt) const = 0;
         virtual GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const = 0;
@@ -218,4 +222,38 @@ namespace ScriptCanvasEditor
     };
 
     using EditorLoggingComponentNotificationBus = AZ::EBus<EditorLoggingComponentNotifications>;
+
+    class IUpgradeRequests
+    {
+    public:
+        AZ_TYPE_INFO(IUpgradeRequests, "{D25318F2-4DDA-4E76-98CB-6D561BB6234D}");
+
+        using AssetList = AZStd::list<AZ::Data::AssetInfo>;
+        virtual AssetList& GetAssetsToUpgrade() = 0;
+
+        virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
+        virtual AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() = 0;
+
+        virtual bool IsUpgrading() = 0;
+        virtual void SetIsUpgrading(bool isUpgrading) = 0;
+    };
+
+    class UpgradeNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+
+        using Bus = AZ::EBus<UpgradeNotifications>;
+
+        virtual void OnUpgradeStart() {}
+        virtual void OnUpgradeComplete() {}
+        virtual void OnUpgradeCancelled() {}
+
+        virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
+    };
+
+
+
 }

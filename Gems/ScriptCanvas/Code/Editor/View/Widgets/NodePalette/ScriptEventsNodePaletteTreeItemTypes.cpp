@@ -16,7 +16,8 @@
 
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
+#include <Editor/Nodes/NodeDisplayUtils.h>
 
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
@@ -74,7 +75,7 @@ namespace ScriptCanvasEditor
 
         if (m_nodeIdPair.m_graphCanvasId.IsValid() && m_nodeIdPair.m_scriptCanvasId.IsValid())
         {
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, m_nodeIdPair.m_graphCanvasId, sceneDropPosition);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, m_nodeIdPair.m_graphCanvasId, sceneDropPosition, false);
             GraphCanvas::SceneMemberUIRequestBus::Event(m_nodeIdPair.m_graphCanvasId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
 
             ScriptCanvasEditor::NodeCreationNotificationBus::Event(scriptCanvasId, &ScriptCanvasEditor::NodeCreationNotifications::OnGraphCanvasNodeCreated, m_nodeIdPair.m_graphCanvasId);
@@ -330,7 +331,7 @@ namespace ScriptCanvasEditor
 
         if (nodeIdPair.m_graphCanvasId.IsValid())
         {
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition, false);
         }
 
         return nodeIdPair;
@@ -497,7 +498,7 @@ namespace ScriptCanvasEditor
 
                 if (nodeIdPair.m_graphCanvasId.IsValid())
                 {
-                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition);                    
+                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition, false);                    
                 }
             }
             else if (result == createReceiver)

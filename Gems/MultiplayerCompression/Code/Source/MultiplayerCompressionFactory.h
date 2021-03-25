@@ -22,9 +22,15 @@ namespace MultiplayerCompression
         : public AzNetworking::ICompressorFactory
     {
     public:
-        /*
-        * Instantiate a new compressor
-        */
+        //! Instantiate a new compressor
+        //! @return A unique_ptr to a new Compressor
         AZStd::unique_ptr<AzNetworking::ICompressor> Create() override;
+
+        //! Gets the AZ Name of this compressor factory
+        //! @return the AZ Name of this compressor factory
+        AZ::Name GetFactoryName() const override;
+
+    private:
+        const AZ::Name m_name = AZ::Name("MultiplayerCompressor");
     };
 }

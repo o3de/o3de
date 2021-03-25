@@ -92,12 +92,11 @@ VSOutput ForwardPassVS(VSInput IN)
     VSOutput OUT;
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
- 
+
+    // By design, only UV0 is allowed to apply transforms.
     // Note there are additional UV transforms that happen for each layer, but we defer that step to the pixel shader to avoid bloating the vertex output buffer.
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
-
-    // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
-    OUT.m_uv[1] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv1, 1.0)).xy;
+    OUT.m_uv[1] = IN.m_uv1;
 
     if(o_blendMask_isBound)
     {
@@ -114,30 +113,6 @@ VSOutput ForwardPassVS(VSInput IN)
     PbrVsHelper(IN, OUT, worldPosition, skipShadowCoords);
 
     return OUT;
-}
-
-PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor, float3 normalWS)
-{
-    const float3 baseColor = debugColor;
-    const float metallic = 0;
-    const float roughness = 1;
-    const float specularF0Factor = 0.5;
-    const float3 normal = normalWS;
-    const float3 emissive = {0,0,0};
-    const float occlusion = 1;
-    const float clearCoatFactor = 0.0f;
-    const float clearCoatRoughness = 0.0f;
-    const float3 clearCoatNormal = {0,0,0};
-    const float4 transmissionTintThickness = {0,0,0,0};
-    const float4 transmissionParams = {0,0,0,0};
-    const float2 anisotropy = 0.0;	// Does not affect calculations unless 'o_enableAnisotropy' is enabled
-    const float alpha = 1.0;
-
-    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
-        normal, IN.m_tangent, IN.m_bitangent, anisotropy,
-        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
-
-    return lightingOutput;
 }
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
@@ -169,14 +144,14 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     if(o_debugDrawMode == DebugDrawMode::BlendMaskValues)
     {
         float3 blendMaskValues = GetBlendMaskValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
-        return MakeDebugOutput(IN, blendMaskValues, normalize(IN.m_normal));
+        return MakeDebugOutput(IN, blendMaskValues);
     }
     
     if(o_debugDrawMode == DebugDrawMode::DepthMaps)
     {
         GetDepth_Setup(IN.m_blendMask);
         float depth = GetDepth(IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
-        return MakeDebugOutput(IN, float3(depth,depth,depth), normalize(IN.m_normal));
+        return MakeDebugOutput(IN, float3(depth,depth,depth));
     }
 
     // ------- Parallax -------
@@ -186,8 +161,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         GetDepth_Setup(IN.m_blendMask);
 
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
-                         ObjectSrg::GetWorldMatrix(), MaterialSrg::m_uvMatrix, MaterialSrg::m_uvMatrixInverse,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
 
         // Adjust directional light shadow coorinates for parallax correction
@@ -202,21 +180,18 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     }
     
     // ------- Setup the per-layer UV transforms -------
-    
+
     float2 uvLayer1[UvSetCount];
     float2 uvLayer2[UvSetCount];
     float2 uvLayer3[UvSetCount];
 
-    //[GFX TODO]: We need to 
-
+    // Only UV0 will be applied transforms from each layer.
     uvLayer1[0] = mul(MaterialSrg::m_layer1_m_uvMatrix, float3(IN.m_uv[0], 1.0)).xy;
     uvLayer2[0] = mul(MaterialSrg::m_layer2_m_uvMatrix, float3(IN.m_uv[0], 1.0)).xy;
     uvLayer3[0] = mul(MaterialSrg::m_layer3_m_uvMatrix, float3(IN.m_uv[0], 1.0)).xy;
-    
-    // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
-    uvLayer1[1] = mul(MaterialSrg::m_layer1_m_uvMatrix, float3(IN.m_uv[1], 1.0)).xy;
-    uvLayer2[1] = mul(MaterialSrg::m_layer2_m_uvMatrix, float3(IN.m_uv[1], 1.0)).xy;
-    uvLayer3[1] = mul(MaterialSrg::m_layer3_m_uvMatrix, float3(IN.m_uv[1], 1.0)).xy;
+    uvLayer1[1] = IN.m_uv[1];
+    uvLayer2[1] = IN.m_uv[1];
+    uvLayer3[1] = IN.m_uv[1];
 
     // ------- Calculate Layer Blend Mask Values -------
     
@@ -225,38 +200,41 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Alpha & Clip -------
 
-    float2 layer1_baseColorUV = uvLayer1[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
-    float2 layer2_baseColorUV = uvLayer2[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
-    float2 layer3_baseColorUV = uvLayer3[MaterialSrg::m_layer3_m_baseColorMapUvIndex];
-    float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
+    float2 layer1_baseColorUv = uvLayer1[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
+    float2 layer2_baseColorUv = uvLayer2[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
+    float2 layer3_baseColorUv = uvLayer3[MaterialSrg::m_layer3_m_baseColorMapUvIndex];
+    float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
     // [GFX TODO][ATOM-14589] Figure out how to deal with opacity, instead of just hard-coding to layer1
-    float alpha = GetAlphaInputAndClip(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_opacityMap, layer1_baseColorUV, opacityUV, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
+    float alpha = GetAlphaInputAndClip(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_opacityMap, layer1_baseColorUv, opacityUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
 
     // ------- Normal -------
     
     float3 layer1_normalFactor = MaterialSrg::m_layer1_m_normalFactor * blendMaskValues.r;
     float3 layer2_normalFactor = MaterialSrg::m_layer2_m_normalFactor * blendMaskValues.g;
     float3 layer3_normalFactor = MaterialSrg::m_layer3_m_normalFactor * blendMaskValues.b;
-    float3 layer1_normalTS = GetNormalInputTS(MaterialSrg::m_layer1_m_normalMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_normalMapUvIndex], MaterialSrg::m_layer1_m_flipNormalX, MaterialSrg::m_layer1_m_flipNormalY, MaterialSrg::m_layer1_m_uvMatrix, o_layer1_o_normal_useTexture, layer1_normalFactor);
-    float3 layer2_normalTS = GetNormalInputTS(MaterialSrg::m_layer2_m_normalMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_normalMapUvIndex], MaterialSrg::m_layer2_m_flipNormalX, MaterialSrg::m_layer2_m_flipNormalY, MaterialSrg::m_layer2_m_uvMatrix, o_layer2_o_normal_useTexture, layer2_normalFactor);
-    float3 layer3_normalTS = GetNormalInputTS(MaterialSrg::m_layer3_m_normalMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_normalMapUvIndex], MaterialSrg::m_layer3_m_flipNormalX, MaterialSrg::m_layer3_m_flipNormalY, MaterialSrg::m_layer3_m_uvMatrix, o_layer3_o_normal_useTexture, layer3_normalFactor);
+    float3x3 layer1_uvMatrix = MaterialSrg::m_layer1_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer1_m_uvMatrix : CreateIdentity3x3();
+    float3x3 layer2_uvMatrix = MaterialSrg::m_layer2_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer2_m_uvMatrix : CreateIdentity3x3();
+    float3x3 layer3_uvMatrix = MaterialSrg::m_layer3_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer3_m_uvMatrix : CreateIdentity3x3();
+    float3 layer1_normalTS = GetNormalInputTS(MaterialSrg::m_layer1_m_normalMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_normalMapUvIndex], MaterialSrg::m_layer1_m_flipNormalX, MaterialSrg::m_layer1_m_flipNormalY, layer1_uvMatrix, o_layer1_o_normal_useTexture, layer1_normalFactor);
+    float3 layer2_normalTS = GetNormalInputTS(MaterialSrg::m_layer2_m_normalMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_normalMapUvIndex], MaterialSrg::m_layer2_m_flipNormalX, MaterialSrg::m_layer2_m_flipNormalY, layer2_uvMatrix, o_layer2_o_normal_useTexture, layer2_normalFactor);
+    float3 layer3_normalTS = GetNormalInputTS(MaterialSrg::m_layer3_m_normalMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_normalMapUvIndex], MaterialSrg::m_layer3_m_flipNormalX, MaterialSrg::m_layer3_m_flipNormalY, layer3_uvMatrix, o_layer3_o_normal_useTexture, layer3_normalFactor);
     
-    float3 normalTS = ReorientTangentSpaceDetailNormal(layer1_normalTS, layer2_normalTS);
-    normalTS = ReorientTangentSpaceDetailNormal(normalTS, layer3_normalTS);
+    float3 normalTS = ReorientTangentSpaceNormal(layer1_normalTS, layer2_normalTS);
+    normalTS = ReorientTangentSpaceNormal(normalTS, layer3_normalTS);
     // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
     float3 normalWS = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
     
     // ------- Base Color -------
 
-    float3 layer1_sampledColor = GetBaseColorInput(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_sampler, layer1_baseColorUV, MaterialSrg::m_layer1_m_baseColor.rgb, o_layer1_o_baseColor_useTexture);
-    float3 layer2_sampledColor = GetBaseColorInput(MaterialSrg::m_layer2_m_baseColorMap, MaterialSrg::m_sampler, layer2_baseColorUV, MaterialSrg::m_layer2_m_baseColor.rgb, o_layer2_o_baseColor_useTexture);
-    float3 layer3_sampledColor = GetBaseColorInput(MaterialSrg::m_layer3_m_baseColorMap, MaterialSrg::m_sampler, layer3_baseColorUV, MaterialSrg::m_layer3_m_baseColor.rgb, o_layer3_o_baseColor_useTexture);
+    float3 layer1_sampledColor = GetBaseColorInput(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_sampler, layer1_baseColorUv, MaterialSrg::m_layer1_m_baseColor.rgb, o_layer1_o_baseColor_useTexture);
+    float3 layer2_sampledColor = GetBaseColorInput(MaterialSrg::m_layer2_m_baseColorMap, MaterialSrg::m_sampler, layer2_baseColorUv, MaterialSrg::m_layer2_m_baseColor.rgb, o_layer2_o_baseColor_useTexture);
+    float3 layer3_sampledColor = GetBaseColorInput(MaterialSrg::m_layer3_m_baseColorMap, MaterialSrg::m_sampler, layer3_baseColorUv, MaterialSrg::m_layer3_m_baseColor.rgb, o_layer3_o_baseColor_useTexture);
     float3 layer1_baseColor = BlendBaseColor(layer1_sampledColor, MaterialSrg::m_layer1_m_baseColor.rgb, MaterialSrg::m_layer1_m_baseColorFactor, o_layer1_o_baseColorTextureBlendMode, o_layer1_o_baseColor_useTexture);
     float3 layer2_baseColor = BlendBaseColor(layer2_sampledColor, MaterialSrg::m_layer2_m_baseColor.rgb, MaterialSrg::m_layer2_m_baseColorFactor, o_layer2_o_baseColorTextureBlendMode, o_layer2_o_baseColor_useTexture);
     float3 layer3_baseColor = BlendBaseColor(layer3_sampledColor, MaterialSrg::m_layer3_m_baseColor.rgb, MaterialSrg::m_layer3_m_baseColorFactor, o_layer3_o_baseColorTextureBlendMode, o_layer3_o_baseColor_useTexture);
     float3 baseColor = BlendLayers(layer1_baseColor, layer2_baseColor, layer3_baseColor, blendMaskValues);
 
-    // ------- Metalic -------
+    // ------- Metallic -------
 
     float metallic = 0;
     if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
@@ -297,13 +275,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Subsurface -------
 
-    float2 subsurfaceUV = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUV, MaterialSrg::m_subsurfaceScatteringFactor);
+    float2 subsurfaceUv = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
 
     // ------- Transmission -------
 
-    float2 transmissionUV = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUV, MaterialSrg::m_transmissionTintThickness);
+    float2 transmissionUv = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
 
     // ------- Clearcoat -------
     
@@ -317,10 +295,12 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3 layer1_clearCoatNormal = float3(0.0, 0.0, 0.0);
         if(o_layer1_o_clearCoat_enabled)
         {
+            float3x3 layer1_uvMatrix = MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer1_m_uvMatrix : CreateIdentity3x3();
+
             GetClearCoatInputs(MaterialSrg::m_layer1_m_clearCoatInfluenceMap, uvLayer1[MaterialSrg::m_layer1_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer1_m_clearCoatFactor, o_layer1_o_clearCoat_factor_useTexture,
                                MaterialSrg::m_layer1_m_clearCoatRoughnessMap, uvLayer1[MaterialSrg::m_layer1_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer1_m_clearCoatRoughness, o_layer1_o_clearCoat_roughness_useTexture,
                                MaterialSrg::m_layer1_m_clearCoatNormalMap,    uvLayer1[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer1_o_clearCoat_normal_useTexture, MaterialSrg::m_layer1_m_clearCoatNormalStrength,
-                               MaterialSrg::m_layer1_m_uvMatrix, tangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex],
+                               layer1_uvMatrix, tangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                layer1_clearCoatFactor, layer1_clearCoatRoughness, layer1_clearCoatNormal);
         }
@@ -330,10 +310,12 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3 layer2_clearCoatNormal = float3(0.0, 0.0, 0.0);
         if(o_layer2_o_clearCoat_enabled)
         {
+            float3x3 layer2_uvMatrix = MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer2_m_uvMatrix : CreateIdentity3x3();
+
             GetClearCoatInputs(MaterialSrg::m_layer2_m_clearCoatInfluenceMap, uvLayer2[MaterialSrg::m_layer2_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer2_m_clearCoatFactor, o_layer2_o_clearCoat_factor_useTexture,
                                MaterialSrg::m_layer2_m_clearCoatRoughnessMap, uvLayer2[MaterialSrg::m_layer2_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer2_m_clearCoatRoughness, o_layer2_o_clearCoat_roughness_useTexture,
                                MaterialSrg::m_layer2_m_clearCoatNormalMap,    uvLayer2[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer2_o_clearCoat_normal_useTexture, MaterialSrg::m_layer2_m_clearCoatNormalStrength,
-                               MaterialSrg::m_layer2_m_uvMatrix, tangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex],
+                               layer2_uvMatrix, tangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                layer2_clearCoatFactor, layer2_clearCoatRoughness, layer2_clearCoatNormal);
         }
@@ -343,10 +325,12 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3 layer3_clearCoatNormal = float3(0.0, 0.0, 0.0);
         if(o_layer3_o_clearCoat_enabled)
         {
+            float3x3 layer3_uvMatrix = MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer3_m_uvMatrix : CreateIdentity3x3();
+
             GetClearCoatInputs(MaterialSrg::m_layer3_m_clearCoatInfluenceMap, uvLayer3[MaterialSrg::m_layer3_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer3_m_clearCoatFactor, o_layer3_o_clearCoat_factor_useTexture,
                                MaterialSrg::m_layer3_m_clearCoatRoughnessMap, uvLayer3[MaterialSrg::m_layer3_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer3_m_clearCoatRoughness, o_layer3_o_clearCoat_roughness_useTexture,
                                MaterialSrg::m_layer3_m_clearCoatNormalMap,    uvLayer3[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer3_o_clearCoat_normal_useTexture, MaterialSrg::m_layer3_m_clearCoatNormalStrength,
-                               MaterialSrg::m_layer3_m_uvMatrix, tangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex],
+                               layer3_uvMatrix, tangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                layer3_clearCoatFactor, layer3_clearCoatRoughness, layer3_clearCoatNormal);
         }
@@ -354,7 +338,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         clearCoatFactor = BlendLayers(layer1_clearCoatFactor, layer2_clearCoatFactor, layer3_clearCoatFactor, blendMaskValues);
         clearCoatRoughness = BlendLayers(layer1_clearCoatRoughness, layer2_clearCoatRoughness, layer3_clearCoatRoughness, blendMaskValues);
 
-        // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceDetailNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
+        // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
         clearCoatNormal = BlendLayers(layer1_clearCoatNormal, layer2_clearCoatNormal, layer3_clearCoatNormal, blendMaskValues);
         clearCoatNormal = normalize(clearCoatNormal);
     }

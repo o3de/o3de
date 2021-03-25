@@ -2129,7 +2129,6 @@ struct SInputShaderResources
 #define SHGD_TEX_SUBSURFACE         0x80
 #define SHGD_HW_BILINEARFP16        0x100
 #define SHGD_HW_SEPARATEFP16        0x200
-#define SHGD_HW_DURANGO             0x400
 #define SHGD_HW_ORBIS               0x800
 #define SHGD_TEX_CUSTOM             0x1000
 #define SHGD_TEX_CUSTOM_SECONDARY   0x2000

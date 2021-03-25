@@ -139,17 +139,13 @@ namespace AzToolsFramework
 
         BaseLogPanel::~BaseLogPanel()
         {
-            while (m_impl->pTabWidget->widget(0))
-            {
-                onTabClosed(0);
-            }
         }
 
         void BaseLogPanel::onAddClicked(bool /*checked*/)
         {
             // user clicked the "Add..." button
 
-            NewLogTabDialog newDialog(this);
+            NewLogTabDialog newDialog(this); 
             if (newDialog.exec() == QDialog::Accepted)
             {
                 // add a new tab with those settings.
@@ -198,11 +194,7 @@ namespace AzToolsFramework
                 int newTabIndex = m_impl->pTabWidget->addTab(newTab, QString::fromUtf8(settings.m_tabName.c_str()));
                 m_impl->pTabWidget->setCurrentIndex(newTabIndex);
                 m_impl->settingsForTabs.insert(AZStd::make_pair(qobject_cast<QObject*>(newTab), settings));
-                auto destroyFunction = [this](QObject* destroyedObject)
-                    {
-                    m_impl->settingsForTabs.erase(destroyedObject);
-                    };
-                connect(newTab, &QObject::destroyed, this, destroyFunction);
+                
                 connect(newTab, SIGNAL(onLinkActivated(const QString&)), this, SIGNAL(onLinkActivated(const QString&)));
             }
         }

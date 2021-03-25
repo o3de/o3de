@@ -16,6 +16,7 @@ ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Sourc
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
+    set(physx_dependency 3rdParty::PhysX)
     set(physx_files physx_files.cmake)
     set(physx_shared_files physx_shared_files.cmake)
     set(physx_editor_files physx_editor_files.cmake)
@@ -41,7 +42,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            3rdParty::PhysX
+            ${physx_dependency}
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
@@ -69,6 +70,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
+    ly_associate_package(PACKAGE_NAME poly2tri-0.3.3-rev2-multiplatform TARGETS poly2tri PACKAGE_HASH 04092d06716f59b936b61906eaf3647db23b685d81d8b66131eb53e0aeaa1a38)
+    ly_associate_package(PACKAGE_NAME v-hacd-2.0-rev1-multiplatform     TARGETS v-hacd   PACKAGE_HASH 5c71aef19cc9787d018d64eec076e9f51ea5a3e0dc6b6e22e57c898f6cc4afe3)
+
     ly_add_target(
         NAME PhysX.Editor.Static STATIC
         NAMESPACE Gem
@@ -89,9 +93,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::PhysX
+                ${physx_dependency}
                 3rdParty::poly2tri
-                3rdParty::vhacd
+                3rdParty::v-hacd
                 Legacy::Editor.Headers
                 AZ::AzCore
                 AZ::AzFramework

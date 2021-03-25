@@ -84,6 +84,8 @@ namespace EMStudio
             return;
         }
 
+        mParentRenderPlugin->GetRenderUtil()->Validate();
+
         mWidth  = width;
         mHeight = height;
         mGBuffer.Resize(width, height);

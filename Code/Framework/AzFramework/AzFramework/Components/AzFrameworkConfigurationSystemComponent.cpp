@@ -57,7 +57,7 @@ namespace AzFramework
         {
             Scene* scene = createSceneOutcome.GetValue();
             bool success = false;
-            EntityContextId gameEntityContextId;
+            EntityContextId gameEntityContextId = EntityContextId::CreateNull();
             GameEntityContextRequestBus::BroadcastResult(gameEntityContextId, &GameEntityContextRequests::GetGameEntityContextId);
 
             if (!gameEntityContextId.IsNull())

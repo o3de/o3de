@@ -145,6 +145,7 @@ namespace AZ
 
             AsyncUploadQueue& GetAsyncUploadQueue();
 
+            bool IsAftermathInitialized() const;
         private:
             Device() = default;
 
@@ -194,6 +195,8 @@ namespace AZ
             static const uint32_t SamplerCacheCapacity = 500;
             RHI::ObjectCache<Sampler> m_samplerCache;
             AZStd::mutex m_samplerCacheMutex;
+
+            bool m_isAftermathInitialized = false;
         };
     }
 }

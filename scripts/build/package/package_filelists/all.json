@@ -1,6 +1,13 @@
 {
     "@lyengine": {
         "**": "#include",
+        ".git/**": "#exclude",
+        ".gitattributes": "#exclude",
+        ".gitignore": "#exclude",
+        ".gitmodules": "#exclude",
+        ".lfsconfig": "#exclude",
+        ".p4ignore": "#exclude",
+        ".submodules": "#exclude",
         "**/*.pyc": "#exclude",
         "**/*.pdb": "#exclude"
     }

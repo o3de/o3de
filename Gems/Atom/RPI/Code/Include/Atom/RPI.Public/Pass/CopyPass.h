@@ -43,18 +43,18 @@ namespace AZ
             explicit CopyPass(const PassDescriptor& descriptor);
 
             // Sets up the copy item to perform an image to image copy
-            void CopyBuffer(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer);
-            void CopyImage(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer);
-            void CopyBufferToImage(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer);
-            void CopyImageToBuffer(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer);
+            void CopyBuffer(const RHI::FrameGraphCompileContext& context);
+            void CopyImage(const RHI::FrameGraphCompileContext& context);
+            void CopyBufferToImage(const RHI::FrameGraphCompileContext& context);
+            void CopyImageToBuffer(const RHI::FrameGraphCompileContext& context);
 
             // Pass behavior overrides
             void BuildAttachmentsInternal() override;
 
-            // Scope producer functions
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const PassScopeProducer& producer) override;
+            // Scope producer functions...
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // Retrieves the copy item type based on the input and output attachment type
             RHI::CopyItemType GetCopyItemType();

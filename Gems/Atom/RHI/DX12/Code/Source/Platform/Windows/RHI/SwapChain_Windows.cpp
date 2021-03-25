@@ -13,6 +13,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/Device.h>
 #include <RHI/Conversions.h>
+#include <RHI/NsightAftermath.h>
 
 namespace AZ
 {
@@ -101,7 +102,68 @@ namespace AZ
                 // To use this flag in full screen Win32 apps the application should present to a fullscreen borderless window and disable automatic
                 // ALT+ENTER fullscreen switching using IDXGIFactory::MakeWindowAssociation (please see implementation of SwapChain::InitInternal).
                 UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-                m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, presentFlags);
+                HRESULT hresult = m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, 0);
+
+                if (hresult == DXGI_ERROR_DEVICE_REMOVED)
+                {
+                    HRESULT deviceRemovedResult = GetDevice().GetDevice()->GetDeviceRemovedReason();
+                    switch (deviceRemovedResult)
+                    {
+                    case DXGI_ERROR_DEVICE_HUNG:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_DEVICE_HUNG - The application's device failed due to badly formed commands sent by the "
+                            "application. This is an design-time issue that should be investigated and fixed.");
+                        break;
+                    case DXGI_ERROR_DEVICE_REMOVED:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_DEVICE_REMOVED - The video card has been physically removed from the system, or a driver upgrade "
+                            "for the video card has occurred. The application should destroy and recreate the device. For help debugging "
+                            "the problem, call ID3D10Device::GetDeviceRemovedReason.");
+                        break;
+                    case DXGI_ERROR_DEVICE_RESET:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_DEVICE_RESET - The device failed due to a badly formed command. This is a run-time issue; The "
+                            "application should destroy and recreate the device.");
+                        break;
+                    case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_DRIVER_INTERNAL_ERROR - The driver encountered a problem and was put into the device removed "
+                            "state.");
+                        break;
+                    case DXGI_ERROR_INVALID_CALL:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_INVALID_CALL - The application provided invalid parameter data; this must be debugged and fixed "
+                            "before the application is released.");
+                        break;
+                    case DXGI_ERROR_ACCESS_DENIED:
+                        AZ_TracePrintf(
+                            "DX12",
+                            "DXGI_ERROR_ACCESS_DENIED - You tried to use a resource to which you did not have the required access "
+                            "privileges. This error is most typically caused when you write to a shared resource with read-only access.");
+                        break;
+                    case S_OK:
+                        AZ_TracePrintf("DX12", "S_OK - The method succeeded without an error.");
+                        break;
+                    }
+
+                    if (GetDevice().IsAftermathInitialized())
+                    {
+                        // DXGI_ERROR error notification is asynchronous to the NVIDIA display
+                        // driver's GPU crash handling. Give the Nsight Aftermath GPU crash dump
+                        // thread some time to do its work before terminating the process.
+                        Sleep(3000);
+
+                        // Try outputting the name of the last scope that was executing on the GPU
+                        // There is a good chance that is the cause of the GPU crash and should be investigated first
+                        Aftermath::OutputLastScopeExecutingOnGPU(GetDevice().GetAftermathGPUCrashTracker());
+                    }
+                }
+
                 return (GetCurrentImageIndex() + 1) % GetImageCount();
             }
 

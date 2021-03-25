@@ -172,8 +172,6 @@ set(FILES
     DeviceManager/TempDynBuffer.h
     DeviceManager/DeviceManager.h
     DeviceManager/DeviceManager_D3D11.inl
-    DeviceManager/DeviceManager_D3D11_NVAPI.h
-    DeviceManager/DeviceManager_D3D11_NVAPI.inl
     DeviceManager/DeviceManager_D3D12.inl
     DeviceManager/DeviceWrapper12.h
     DeviceManager/DeviceWrapper12.cpp

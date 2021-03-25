@@ -30,9 +30,6 @@ namespace EMotionFX
             mData.SetNumPreCachedElements(2); // assume 2 weights per vertex
             mData.Resize(numAttributes);
         }
-
-        // setup the memory category
-        mData.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
     }
 
 
@@ -70,14 +67,14 @@ namespace EMotionFX
 
 
     // add a given influence (using a bone and a weight)
-    void SkinningInfoVertexAttributeLayer::AddInfluence(uint32 attributeNr, uint32 nodeNr, float weight, uint32 boneNr)
+    void SkinningInfoVertexAttributeLayer::AddInfluence(size_t attributeNr, size_t nodeNr, float weight, size_t boneNr)
     {
         mData.Add(attributeNr, SkinInfluence(static_cast<uint16>(nodeNr), weight, static_cast<uint16>(boneNr)));
     }
 
 
     // remove the given skin influence
-    void SkinningInfoVertexAttributeLayer::RemoveInfluence(uint32 attributeNr, uint32 influenceNr)
+    void SkinningInfoVertexAttributeLayer::RemoveInfluence(size_t attributeNr, size_t influenceNr)
     {
         mData.Remove(attributeNr, influenceNr);
     }
@@ -112,15 +109,15 @@ namespace EMotionFX
 
 
     // remap all influences for bone (oldNodeNr) to bone (newNodeNr)
-    void SkinningInfoVertexAttributeLayer::RemapInfluences(uint32 oldNodeNr, uint32 newNodeNr)
+    void SkinningInfoVertexAttributeLayer::RemapInfluences(size_t oldNodeNr, size_t newNodeNr)
     {
         // get the number of vertices/attributes
-        const uint32 numAttributes = mData.GetNumRows();
-        for (uint32 a = 0; a < numAttributes; ++a)
+        const size_t numAttributes = mData.GetNumRows();
+        for (size_t a = 0; a < numAttributes; ++a)
         {
             // iterate through all influences and compare them with the old node
-            const uint32 numInfluences = GetNumInfluences(a);
-            for (uint32 i = 0; i < numInfluences; ++i)
+            const size_t numInfluences = GetNumInfluences(a);
+            for (size_t i = 0; i < numInfluences; ++i)
             {
                 // remap the influence to the new node when it is linked to the old node
                 if (GetInfluence(a, i)->GetNodeNr() == oldNodeNr)
@@ -133,14 +130,14 @@ namespace EMotionFX
 
 
     // remove all influences which refer to the given node from our skinning info
-    void SkinningInfoVertexAttributeLayer::RemoveAllInfluencesForNode(uint32 nodeNr)
+    void SkinningInfoVertexAttributeLayer::RemoveAllInfluencesForNode(size_t nodeNr)
     {
         // get the number of vertices/attributes
-        const uint32 numAttributes = mData.GetNumRows();
-        for (uint32 a = 0; a < numAttributes; ++a)
+        const size_t numAttributes = mData.GetNumRows();
+        for (size_t a = 0; a < numAttributes; ++a)
         {
             // iterate through all influences and compare them with the given node
-            uint32 i = 0;
+            size_t i = 0;
             while (i < GetNumInfluences(a))
             {
                 // remove the influence when it is linked to the given node
@@ -158,29 +155,29 @@ namespace EMotionFX
 
 
     // collect all nodes to which the skinning info refers to
-    void SkinningInfoVertexAttributeLayer::CollectInfluencedNodes(MCore::Array<uint32>& influencedNodes, bool clearInfluencedNodesArray)
+    void SkinningInfoVertexAttributeLayer::CollectInfluencedNodes(AZStd::vector<uint32>& influencedNodes, bool clearInfluencedNodesArray)
     {
         if (clearInfluencedNodesArray)
         {
-            influencedNodes.Clear();
+            influencedNodes.clear();
         }
 
         // get the number of vertices/attributes
-        const uint32 numAttributes = mData.GetNumRows();
-        for (uint32 a = 0; a < numAttributes; ++a)
+        const size_t numAttributes = mData.GetNumRows();
+        for (size_t a = 0; a < numAttributes; ++a)
         {
             // get the number of influences for the current vertex
-            const uint32 numInfluences = GetNumInfluences(a);
+            const size_t numInfluences = GetNumInfluences(a);
 
             // iterate through all influences and compare them with the old node
-            for (uint32 i = 0; i < numInfluences; ++i)
+            for (size_t i = 0; i < numInfluences; ++i)
             {
-                const uint32 influencedNodeNr = GetInfluence(a, i)->GetNodeNr();
+                const size_t influencedNodeNr = GetInfluence(a, i)->GetNodeNr();
 
                 // check if the influenced node is already in our array, if not add it so that we only store each node once
-                if (influencedNodes.Find(influencedNodeNr) == MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(influencedNodes), end(influencedNodes), influencedNodeNr) == end(influencedNodes))
                 {
-                    influencedNodes.Add(influencedNodeNr);
+                    influencedNodes.emplace_back(aznumeric_cast<uint32>(influencedNodeNr));
                 }
             }
         }
@@ -195,11 +192,11 @@ namespace EMotionFX
 
 
     // optimize weights
-    void SkinningInfoVertexAttributeLayer::OptimizeInfluences(float tolerance, uint32 maxWeights)
+    void SkinningInfoVertexAttributeLayer::OptimizeInfluences(float tolerance, size_t maxWeights)
     {
         // get the number of vertices/attributes
-        const uint32 numAttributes = mData.GetNumRows();
-        for (uint32 a = 0; a < numAttributes; ++a)
+        const size_t numAttributes = mData.GetNumRows();
+        for (size_t a = 0; a < numAttributes; ++a)
         {
             if (GetNumInfluences(a) == 0)
             {
@@ -207,7 +204,7 @@ namespace EMotionFX
             }
             // remove all weights below the tolerance
             // at least keep one weight left after this optimization
-            uint32 w;
+            size_t w;
             for (w = 0; w < GetNumInfluences(a); )
             {
                 if (GetNumInfluences(a) == 1)
@@ -231,11 +228,11 @@ namespace EMotionFX
             while (GetNumInfluences(a) > maxWeights)
             {
                 float minWeight = 999999.9f;
-                uint32 minInfluence = 0;
+                size_t minInfluence = 0;
 
                 // find the smallest weight
-                const uint32 numInfluences = GetNumInfluences(a);
-                for (uint32 i = 0; i < numInfluences; ++i)
+                const size_t numInfluences = GetNumInfluences(a);
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     const float curWeight = GetInfluence(a, i)->GetWeight();
                     if (curWeight < minWeight)
@@ -252,7 +249,7 @@ namespace EMotionFX
 
             // calculate the total weight
             float totalWeight = 0;
-            const uint32 numInfluences = GetNumInfluences(a);
+            const size_t numInfluences = GetNumInfluences(a);
             for (w = 0; w < numInfluences; ++w)
             {
                 totalWeight += GetInfluence(a, w)->GetWeight();
@@ -262,7 +259,7 @@ namespace EMotionFX
             if (totalWeight < 1.0f)
             {
                 const float remaining = 1.0f - totalWeight;
-                for (uint32 i = 0; i < numInfluences; ++i)
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     const float percentage = mData.GetElement(a, i).GetWeight() / totalWeight;
                     GetInfluence(a, i)->SetWeight(GetInfluence(a, i)->GetWeight() + percentage * remaining);
@@ -276,9 +273,9 @@ namespace EMotionFX
 
 
     // collapse the influences when possible
-    void SkinningInfoVertexAttributeLayer::CollapseInfluences(uint32 attributeNr)
+    void SkinningInfoVertexAttributeLayer::CollapseInfluences(size_t attributeNr)
     {
-        const uint32 numInfluences = GetNumInfluences(attributeNr);
+        const size_t numInfluences = GetNumInfluences(attributeNr);
         if (numInfluences <= 1) // nothing to optimize if it is just one influence, or none at all
         {
             return;
@@ -286,7 +283,7 @@ namespace EMotionFX
 
         // check if all influences use the same bone
         bool allTheSame = true;
-        for (uint32 i = 0; i < numInfluences; ++i)
+        for (size_t i = 0; i < numInfluences; ++i)
         {
             const SkinInfluence* influence = GetInfluence(attributeNr, i);
             if (influence->GetNodeNr() != GetInfluence(attributeNr, 0)->GetNodeNr())
@@ -313,5 +310,27 @@ namespace EMotionFX
 
         // make the remaining influence have a weight of 1.0, to have full influence
         GetInfluence(attributeNr, 0)->SetWeight(1.0f);
+    }
+
+    AZStd::set<AZ::u32> SkinningInfoVertexAttributeLayer::CalcLocalJointIndices(AZ::u32 numOrgVertices)
+    {
+        AZStd::set<AZ::u32> result;
+
+        for (AZ::u32 i = 0; i < numOrgVertices; i++)
+        {
+            // now we have located the skinning information for this vertex, we can see if our bones array
+            // already contains the bone it uses by traversing all influences for this vertex, and checking
+            // if the bone of that influence already is in the array with used bones
+            const uint32 numInfluences = GetNumInfluences(i);
+            for (uint32 a = 0; a < numInfluences; ++a)
+            {
+                EMotionFX::SkinInfluence* influence = GetInfluence(i, a);
+                const AZ::u32 jointNr = influence->GetNodeNr();
+
+                result.emplace(jointNr);
+            }
+        }
+
+        return result;
     }
 } // namespace EMotionFX

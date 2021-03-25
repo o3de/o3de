@@ -10,6 +10,8 @@
 
 include_guard()
 
+include(cmake/LySet.cmake)
+
 # OVERVIEW:
 # this is the Lumberyard Package system.
 # It allows you to host a package on a server and download it as needed when a target
@@ -53,22 +55,23 @@ if (NOT LY_PACKAGE_UNPACK_LOCATION)
 endif()
 
 # while developing you can set one or both to true to force auto downloads from your local cache
-set(LY_PACKAGE_VALIDATE_CONTENTS FALSE CACHE BOOL "If enabled, will fully validate every file in every package")
-set(LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER FALSE CACHE BOOL "If enabled, will fetch the manifest from the server every time instead of using local cache when found")
+set(LY_PACKAGE_VALIDATE_CONTENTS FALSE CACHE BOOL "If enabled, will fully validate every file in every package based on the SHA256SUMS file from the package")
+set(LY_PACKAGE_VALIDATE_PACKAGE FALSE CACHE BOOL "If enabled, will validate that the downloaded package files hash matches the expected hash even if already downloaded and verified before.")
 
 # you can also enable verbose/debug logging from the package system.
 set(LY_PACKAGE_DEBUG FALSE CACHE BOOL "If enabled, will output detailed information during package operations" )
 
 # ---- below this line, no cache variables or tweakables ---------
 
-set(LY_PACKAGE_EXT              ".tar.xz")
-set(LY_PACKAGE_HASH_EXT         ".tar.xz.SHA256SUMS")
-set(LY_PACKAGE_CONTENT_HASH_EXT ".tar.xz.content.SHA256SUMS")
+ly_set(LY_PACKAGE_EXT              ".tar.xz")
+ly_set(LY_PACKAGE_HASH_EXT         ".tar.xz.SHA256SUMS")
+ly_set(LY_PACKAGE_CONTENT_HASH_EXT ".tar.xz.content.SHA256SUMS")
+
+set(LY_PACKAGE_DOWNLOAD_RETRY_COUNT 3 CACHE STRING "3")
 
 # accounts for it being undefined or blank
 if ("${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}" STREQUAL "")
     message(FATAL_ERROR "ly_package: LY_PACKAGE_DOWNLOAD_CACHE_LOCATION must be defined.")
-    return()
 endif()
 
 # used to send messages and hide them unless the LY_PACKAGE_DEBUG var is true
@@ -82,27 +85,86 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
 
 include(cmake/LYPackage_S3Downloader.cmake)
 
-# Downloads a file.
-# currently works on file://, s3://, ftp://, http://, https:// ... and whatever
-# else the file(DOWNLOAD ..) function supports.
-# if you add another downloader, see that it returns a list, where the first element
-# in the list is the error code, and then the rest of the list is the error(s), just like
-# the file(DOWNLOAD ... ) function does.
-function(download_file full_file_url download_target_file results_array)
-    set(${results_array} "-1;unknown_error" PARENT_SCOPE)
-    ly_is_s3_url(${server_url} result_is_s3_bucket)
+
+# Attempts one time to download a file.
+# sets should_retry to true if the caller should retry due to an intermittent problem
+# Do not call this function, call download_file instead.
+function(download_file_internal)
+    set(_oneValueArgs URL TARGET_FILE EXPECTED_HASH RESULTS SHOULD_RETRY)
+
+    cmake_parse_arguments(download_file_internal "" "${_oneValueArgs}" "" ${ARGN})
+
+    if(NOT download_file_internal_URL)
+        message(FATAL_ERROR "no URL arg passed into download_file_internal, it is required.")
+    endif()
+    
+    if(NOT download_file_internal_TARGET_FILE)
+        message(FATAL_ERROR "no TARGET_FILE arg passed into download_file_internal, it is required.")
+    endif()
+
+    if(NOT download_file_internal_EXPECTED_HASH)
+        message(FATAL_ERROR "no EXPECTED_HASH arg passed into download_file_internal, it is required.")
+    endif()
+
+    if(NOT download_file_internal_RESULTS)
+        message(FATAL_ERROR "no RESULTS arg passed into download_file_internal, it is required.")
+    endif()
+
+    if(NOT download_file_internal_SHOULD_RETRY)
+        message(FATAL_ERROR "no SHOULD_RETRY arg passed into download_file_internal, it is required.")
+    endif()
+
+    set(${download_file_internal_RESULTS} "-1;unknown_error" PARENT_SCOPE)
+    unset(${download_file_internal_SHOULD_RETRY} PARENT_SCOPE)
+    
+    # note that below "results" is a local variable and download_file_internal_RESULTS will be set to it before exit.
+    ly_is_s3_url(${download_file_internal_URL} result_is_s3_bucket)
+
     if (result_is_s3_bucket)
-        ly_s3_download("${download_url}" ${download_target_file} results)
+        ly_s3_download("${download_file_internal_URL}" ${download_file_internal_TARGET_FILE} results)
     else()
-        file(DOWNLOAD "${download_url}" ${download_target_file} STATUS results TLS_VERIFY ON LOG log)
+        file(DOWNLOAD "${download_file_internal_URL}" ${download_file_internal_TARGET_FILE} STATUS results TLS_VERIFY ON LOG logic)
         list(APPEND results ${log})
     endif()
 
     list(GET results 0 code_returned)
+
+    # sometimes, the server returns a non-error code but still the file is zero bytes.
+    # in this case, we need to return a failure.  We won't ever use a 0 byte file.
+    if (EXISTS ${download_file_internal_TARGET_FILE})
+        file(SIZE ${download_file_internal_TARGET_FILE} target_size)
+        if(target_size EQUAL 0)
+            if(code_returned EQUAL 0)
+                # the server said "OK" but gave us a bad file.  Change this to not OK!
+                ly_package_message("Server gave us a zero byte file but still said ${results}, retrying...")
+                set(code_returned 22)
+                set(results "22;\nThe requested URL returned error: 500 Internal Error - Zero byte file returned despite good exit code\n")
+                set(${download_file_internal_SHOULD_RETRY} TRUE PARENT_SCOPE)
+            endif()
+        endif()
+    else()
+        # the file was not created.  If the server still returned OK then we need to change this to not OK
+        if (code_returned EQUAL 0)
+            ly_package_message("Server gave us no file, but said ${results}, retrying...") 
+            set(code_returned 22)
+            set(results "22;\nThe requested URL returned error: 500 Internal Error - Zero byte file returned despite good exit code\n")
+            set(${download_file_internal_SHOULD_RETRY} TRUE PARENT_SCOPE)
+        endif()
+    endif()
+
+    if(code_returned EQUAL 0)
+        # code 0 means success, but we still need to hash the file.
+        file(SHA256 ${download_file_internal_TARGET_FILE} hash_of_downloaded_file)
+        if (NOT "${hash_of_downloaded_file}" STREQUAL "${download_file_internal_EXPECTED_HASH}" )
+            set(results "1;Downloaded successfully, but the file hash did not match expected hash!")
+            set(code_returned 1)
+        endif()
+    endif()
+        
     if(code_returned) 
         # non zero means it failed to download
         # however, cmake will leave the file open, and zero bytes.
-        file(REMOVE ${download_target_file})
+        file(REMOVE ${download_file_internal_TARGET_FILE})
 
         # parse the error.  If its 22, it means it was an HTTP error from curl.
         # we'll go to the bother of parsing the error and replacing it with the actual error code.
@@ -117,48 +179,95 @@ function(download_file full_file_url download_target_file results_array)
                 ly_package_message("${results}")
                 # replace it.
                 set(results ${code_returned} ${found_string})
+                # if we get here, 'found_string' contains the one line response code from the server
+                # which takes the form of ' response code - desciption of response code'
+                # for example, ' 404 - Not Found'.  It will only contain this one line.
+                # See if its a 500 or 503 code specifically, if so, we need to retry.
+                if (found_string MATCHES "500" OR found_string MATCHES "503")
+                    ly_package_message("500 or 503 code returned from server, will retry...")
+                    set(${download_file_internal_SHOULD_RETRY} TRUE PARENT_SCOPE)
+                endif()
             endif()
         endif()
     endif()
 
+    set(${download_file_internal_RESULTS} ${results} PARENT_SCOPE)
+endfunction()
 
-    set(${results_array} ${results} PARENT_SCOPE)
+# Downloads a file with the ability to retry.
+# uses download_file_internal to actually download the file.
+# currently works on file://, s3://, ftp://, http://, https:// ... and whatever
+# else the file(DOWNLOAD ..) function supports.
+# if you add another downloader, see that it returns a list, where the first element
+# in the list is the error code, and then the rest of the list is the error(s), just like
+# the file(DOWNLOAD ... ) function does.
+# sets should_retry to a non null value if you should retry this download.
+function(download_file)
+    set(_oneValueArgs URL TARGET_FILE EXPECTED_HASH RESULTS)
+    cmake_parse_arguments(download_file "" "${_oneValueArgs}" "" ${ARGN})
+
+    if(NOT download_file_URL)
+        message(FATAL_ERROR "no URL arg passed into download_file, it is required.")
+    endif()
+    
+    if(NOT download_file_TARGET_FILE)
+        message(FATAL_ERROR "no TARGET_FILE arg passed into download_file, it is required.")
+    endif()
+
+    if(NOT download_file_EXPECTED_HASH)
+        message(FATAL_ERROR "no EXPECTED_HASH arg passed into download_file, it is required.")
+    endif()
+
+    if(NOT download_file_RESULTS)
+        message(FATAL_ERROR "no RESULTS arg passed into download_file, it is required.")
+    endif()
+
+    set(${download_file_RESULTS} "-1;unknown_error" PARENT_SCOPE)
+
+    foreach(retry_count RANGE 0 ${LY_PACKAGE_DOWNLOAD_RETRY_COUNT})
+        download_file_internal( URL ${download_file_URL} TARGET_FILE ${download_file_TARGET_FILE} RESULTS results EXPECTED_HASH ${download_file_EXPECTED_HASH} SHOULD_RETRY should_retry)
+        if (NOT should_retry)
+            break()
+        endif()
+        ly_package_message("${retry_count} / ${LY_PACKAGE_DOWNLOAD_RETRY_COUNT} download retry attempts.")
+    endforeach()
+
+    set(${download_file_RESULTS} ${results} PARENT_SCOPE)
 endfunction()
 
 
-#! ly_package_find_package_server - note, the list of 3rd party urls is a list!
-# given a package name, finds the first server in the list that has the hash file
-# for that package, downloads it to ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}.tgz.SHA256SUMS
-#  - sets the url_variable to be the server URL that it found it at
-function(ly_package_find_package_server package_name url_variable)
+#! ly_package_internal_download_package - note, the list of 3rd party urls is a list!
+# given a package name it will loop over the servers in the list and try each one
+# until one has the file AND has the correct hash for that file.
+function(ly_package_internal_download_package package_name url_variable)
     unset(${url_variable} PARENT_SCOPE)
 
     unset(error_messages)
     
     # to avoid spamming with useless repeated warnings, we save
     # a global that indicates we already failed to find it
-    get_property(already_failed_this_package GLOBAL PROPERTY LY_${package_name}_NO_SERVERS SET)
-    if (already_failed_this_package)
-        return() # no point in checking again
-    endif()
     if (NOT LY_PACKAGE_SERVER_URLS)
         message(SEND_ERROR "ly_package:     - LY_PACKAGE_SERVER_URLS is empty, cannot download packages.  enable LY_PACKAGE_DEBUG for details")
         return()
     endif()
+
+    ly_get_package_expected_hash(${package_name} package_expected_hash)
+
     foreach(server_url ${LY_PACKAGE_SERVER_URLS})
-        set(download_url ${server_url}/${package_name}${LY_PACKAGE_HASH_EXT})
-        set(download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_HASH_EXT})
-        if (EXISTS ${download_target})
-            file(REMOVE ${download_target})
-        endif()
-        ly_package_message(STATUS "ly_package: trying to download ${download_url} to ${download_target}")
+        set(download_url ${server_url}/${package_name}${LY_PACKAGE_EXT})
+        set(download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
         
-        download_file(${download_url} ${download_target} results)
+        file(REMOVE ${download_target})
+
+        ly_package_message(STATUS "ly_package: trying to download ${download_url} to ${download_target}")
+        ly_get_package_expected_hash(${package_name} expected_package_hash)
+
+        download_file(URL ${download_url} TARGET_FILE ${download_target} EXPECTED_HASH ${expected_package_hash} RESULTS results)
         list(GET results 0 status_code)
         
         if (${status_code} EQUAL 0 AND EXISTS ${download_target})
             set(${url_variable} ${server_url} PARENT_SCOPE)
-            ly_package_message(STATUS "ly_package:     - Selecting server ${server_url} for package ${package_name}")
+            ly_package_message(STATUS "ly_package:     - downloaded ${server_url} for package ${package_name}")
             return()
         else()
             # remove the status code and treat the rest of the list as the error.
@@ -166,10 +275,8 @@ function(ly_package_find_package_server package_name url_variable)
             set(current_error_message "Error from server ${server_url} - ${status_code} - ${results}")
             list(APPEND error_messages "${current_error_message}")
 
-            if (EXISTS ${download_target})
-                # we can't keep the file, sometimes it makes a zero-byte file!
-                file(REMOVE ${download_target})
-            endif()
+            # we can't keep the file, sometimes it makes a zero-byte file!
+            file(REMOVE ${download_target})
             ly_package_message(${current_error_message})
         endif()
     endforeach()
@@ -178,8 +285,6 @@ function(ly_package_find_package_server package_name url_variable)
     foreach(error_message ${error_messages})
         message(STATUS "${error_message}")
     endforeach()
-
-    set_property(GLOBAL PROPERTY LY_${package_name}_NO_SERVERS TRUE)
 endfunction()
 
 # parse_sha256sums_line  
@@ -234,6 +339,8 @@ function(ly_validate_sha256sums_file working_directory path_to_sha256sums_file)
 
     # we only try to do any kind of hashing if the VALIDATE_CONTENTS flag is on
     # otherwise we just check for the presence of required files.
+    # note that VALIDATE_CONTENTS is forced to true for any package when we download
+    # it the first time.  Its only set to true after that if the user forces it to be enabled.
 
     file(STRINGS ${path_to_sha256sums_file} hash_data ENCODING UTF-8)
     foreach(hash_line IN ITEMS ${hash_data})
@@ -278,7 +385,7 @@ function(ly_package_get_target_folder package_name output_variable_name)
         message(WARNING "ly_package: Could not locate the LY_PACKAGE_UNPACK_LOCATION variable"
                     "'${LY_PACKAGE_UNPACK_LOCATION}' please fill it in!"
                     " To compensate, this script will unpack into the build folder")
-        set(${output_variable_name} ${CMAKE_BINARY_DIR})
+        set(${output_variable_name} ${CMAKE_BINARY_DIR} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -293,32 +400,11 @@ function(ly_validate_package package_name)
         ly_package_message(STATUS "ly_package:     - ${package_name} is missing from ${DOWNLOAD_LOCATION}")
         return()
     endif()
-
-    if (${LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER})
-        # replace the existing SHASUMS file with the one from the server before validating.
-        # note that there's no real point in validating the SHASUMS of the SHASUMS file
-        # as this would then need a SHASUMS file to validate that, ad infinitum.  Instead,
-        # we ensure that we dont' download something bogus by verifying the hash of the actual
-        # package itself, as dicated in the actual download command.
-        ly_package_message(STATUS "ly_package:     - re-downloading manifest from server because LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER is ${LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER}") 
-        ly_package_find_package_server(${package_name} server_url)
-        if (NOT server_url)
-            return() # an error would have already been emitted by the find package function
-        endif()
-
-        set(download_url ${server_url}/${package_name}${LY_PACKAGE_CONTENT_HASH_EXT})
-        set(temp_download_target ${DOWNLOAD_LOCATION}/${package_name}/SHA256SUMS)
-        download_file(${download_url} ${temp_download_target} results)
-        list(GET results 0 status_code)
-        if (NOT ${status_code} EQUAL 0)
-            return() # an error message would have been emitted from the download_file function
-        endif() 
-    endif()
-
+    
     set(hash_file_name ${DOWNLOAD_LOCATION}/${package_name}/SHA256SUMS)
     set(json_file_name ${DOWNLOAD_LOCATION}/${package_name}/PackageInfo.json)
     if (NOT EXISTS ${hash_file_name})
-        ly_package_message(STATUS "Hash file missing from package: ${hash_file_name}")
+        ly_package_message(STATUS "Hash file missing from package ${package_name} (or package does not exist at all)")
         return()
     endif()
     if (NOT EXISTS ${json_file_name})
@@ -334,6 +420,24 @@ function(ly_validate_package package_name)
         # safer than the alternative of not running things that do need to run when packages are downloaded.
         ly_package_message(STATUS "ly_package: Stamp file was missing, restoring: ${package_stamp_file_name}")
         file(TOUCH ${package_stamp_file_name})
+    endif()
+
+    if (LY_PACKAGE_VALIDATE_PACKAGE)
+        # this message is unconditional because its not the default to do this and also its much slower.
+        # The package hash is always checked automatically on first downloard regardless of the value of this
+        # variable, so if this variable is true, a user explicitly asked to do this.
+        message(STATUS "Checking downloaded package ${package_name} because LY_PACKAGE_VALIDATE_PACKAGE is TRUE")
+        set(temp_download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
+        ly_get_package_expected_hash(${package_name} expected_package_hash)
+        if (EXISTS ${temp_download_target})
+            file(SHA256 ${temp_download_target} existing_hash)
+        endif()
+
+        if (NOT "${existing_hash}" STREQUAL "${expected_package_hash}" )
+            # either the hash doesn't match or the file doesn't exist.  Either way, we need to force download it again
+            ly_package_message(STATUS "LY_PACKAGE_VALIDATE_PACKAGE : $[package_name}${LY_PACKAGE_EXT} is either missing or has the wrong hash, re-downloading")
+            return()
+        endif()
     endif()
 
     if (NOT LY_PACKAGE_VALIDATE_CONTENTS)
@@ -370,91 +474,29 @@ function(ly_force_download_package package_name)
     # its not good enough for the variable to just exist but be empty, so we build strings
     if ("${package_name}" STREQUAL "" OR "${DOWNLOAD_LOCATION}" STREQUAL "")
         message(FATAL_ERROR "ly_package: ly_force_download_package called with invalid params!  Enable LY_PACKAGE_DEBUG to debug.")
-        return()
     endif()
 
-    set(temp_download_target           ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
-    set(hashfile_temp_download_target  ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_HASH_EXT})
     set(final_folder ${DOWNLOAD_LOCATION}/${package_name})
-        
-    # we print this message unconditionally because downloading a package
-    # can take time and we only get here if its missing in the first place, so 
-    # this should happen once on the very first configure
-    message(STATUS "Downloading package to ${final_folder}")
-    
-    # if you have a package download cache, we will prefer to use that
-    # unless you have set LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER to be TRUE
-    # if you have that set to FALSE and the package AND its hash file are already present
-    # we will not re-download.
 
-    # download it into the third party folder from the established source server
-    # if we didn't find it, we will download and overwrite.
+    # is the package already present in the download cache, with the correct hash?
+    set(temp_download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
+    ly_get_package_expected_hash(${package_name} expected_package_hash)
 
-    if (NOT LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER AND EXISTS ${hashfile_temp_download_target})
-        # the hash file already exists at that location.  We won't try to download it.
-        ly_package_message(STATUS "ly_package:     - Found cached package hash at ${hashfile_temp_download_target} and LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER is not set, so reusing it")
-        set(used_local_hash_file TRUE)
-    else()
-        # this both finds a server and downloads the hash.
-        unset(used_local_hash_file)
-        
-        if (LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER)
-            ly_package_message(STATUS "ly_package:     - Downloading package hash for ${package_name} from server (LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER is set)")
-        endif()
-
-        ly_package_find_package_server(${package_name} server_url)
-        if(NOT server_url)
-            return()
-        endif()
-    endif()
-
-    file(STRINGS ${hashfile_temp_download_target} hash_data ENCODING UTF-8 LIMIT_COUNT 1)
-    parse_sha256sums_line("${hash_data}" expected_package_hash expected_package_name)
-    
-    # we also verify that the package that the hash file refers to is the right one by checking
-    # the name.
-    if (NOT expected_package_hash OR NOT expected_package_hash OR NOT "${package_name}${LY_PACKAGE_EXT}" STREQUAL "${expected_package_name}")
-        message(SEND_ERROR "ly_package: The server had invalid file hash data for package ${package_name} - hash data is '${hash_data}' - cannot trust the download.  Use LY_PACKAGE_DEBUG to debug")
-        return()
-    endif() 
-
-    # can we reuse a file that we downloaded last time?
+    # can we reuse the download we already have in our download cache?
     if (EXISTS ${temp_download_target})
+        ly_package_message(STATUS "The target ${temp_download_target} exists")
         file(SHA256 ${temp_download_target} existing_hash)
     endif()
 
     if (NOT "${existing_hash}" STREQUAL "${expected_package_hash}" )
         file(REMOVE ${temp_download_target})
+        # we print this message unconditionally because downloading a package
+        # can take time and we only get here if its missing in the first place, so 
+        # this should happen once on the very first configure
+        message(STATUS "Downloading package into ${final_folder}")
+        ly_package_message(STATUS "ly_package:     - downloading package '${package_name}' to '${final_folder}'")
 
-        # if we're going to download the package from the server
-        # we may have used a cached file above.  If thats the case, we need to
-        # set the server url and recalculate the hash
-        if (NOT server_url)
-            ly_package_find_package_server(${package_name} server_url)
-            if(NOT server_url)
-                return()
-            endif()
-
-            file(STRINGS ${hashfile_temp_download_target} hash_data ENCODING UTF-8 LIMIT_COUNT 1)
-            parse_sha256sums_line(${hash_data} expected_package_hash expected_package_name)
-        endif()
-
-        set(download_url ${server_url}/${package_name}${LY_PACKAGE_EXT})
-        set(hashfile_download_url ${download_url}${LY_PACKAGE_HASH_EXT})
-        ly_package_message(STATUS "ly_package:     - downloading package '${download_url}' to '${final_folder}'")
-
-        download_file(${download_url} ${temp_download_target} results)
-
-        list(GET results 0 status_code)
-        # ensure the downloaded file actually has the correct hash:
-        if (${status_code} EQUAL 0 AND EXISTS ${temp_download_target})
-            file(SHA256 ${temp_download_target} existing_hash)
-            if (NOT "${existing_hash}" STREQUAL "${expected_package_hash}" )
-                message(SEND_ERROR "ly_package:    - package downloaded from server had the wrong hash!  Cannot trust it.  Enable LY_PACKAGE_DEBUG to debug.")
-                return()
-            endif()
-        endif()
-
+        ly_package_internal_download_package(${package_name} ${temp_download_target})
         # the above call actually aborts this function if it fails, so its not necessary to check here.
     else()
         ly_package_message(STATUS "ly_package:     - package already correct hash ${temp_download_target}, re-using")
@@ -483,7 +525,6 @@ function(ly_force_download_package package_name)
         if (NOT LY_PACKAGE_KEEP_AFTER_DOWNLOADING)
             ly_package_message(STATUS "ly_package: Removing package after unpacking (LY_PACKAGE_KEEP_AFTER_DOWNLOADING is ${LY_PACKAGE_KEEP_AFTER_DOWNLOADING})")
             file(REMOVE ${temp_download_target})
-            file(REMOVE "${temp_download_target}.SHA256SUMS")
         endif()
     endif()
     
@@ -494,13 +535,17 @@ function(ly_force_download_package package_name)
     ly_validate_package(${package_name})
     set(LY_PACKAGE_VALIDATE_CONTENTS ${LY_PACKAGE_VALIDATE_CONTENTS_old})
     set(${package_name}_VALIDATED ${package_name}_VALIDATED PARENT_SCOPE)
+
+    set(package_stamp_file_name ${DOWNLOAD_LOCATION}/${package_name}.stamp)
     if (${package_name}_VALIDATED)
         # This we intentionally print out for each package that was actually downloaded from the internet, one time only:
         message(STATUS "Installed And Validated package at ${final_folder} - OK")
         # we also record a stamp file of when we did this, for use in other computations
-        set(package_stamp_file_name ${DOWNLOAD_LOCATION}/${package_name}.stamp)
         file(TOUCH ${package_stamp_file_name})
+    else()
+        file(REMOVE ${package_stamp_file_name})
     endif()
+
 endfunction()
 
 #! ly_enable_package:  low-level function - adds a package to the auto package download system
@@ -516,7 +561,7 @@ function(ly_enable_package package_name)
 
     # add it to the prefixes so that we search here first
     # we add it in front so it can override any later paths, so "last one to declare" wins
-    if (NOT ${DOWNLOAD_LOCATION}/${package_name} IN_LIST CMAKE_MODULE_PATH)
+    if (NOT "${DOWNLOAD_LOCATION}/${package_name}" IN_LIST "${CMAKE_MODULE_PATH}")
         set(CMAKE_MODULE_PATH ${DOWNLOAD_LOCATION}/${package_name} ${CMAKE_MODULE_PATH} PARENT_SCOPE)
     endif()
 
@@ -526,7 +571,7 @@ function(ly_enable_package package_name)
         # if we get here, its not SET, so set it to FALSE pre-emptively so that
         # we don't try to download over and over, if the attempt to download fails.
         set_property(GLOBAL PROPERTY LY_${package_name}_VALIDATED FALSE)
-
+        
         ly_validate_package(${package_name}) # sets VALIDATED in this scope.
         if (NOT ${package_name}_VALIDATED)
             # this will also validate it and set VALIDATED in this scope
@@ -554,27 +599,64 @@ endfunction()
 
 
 #! ly_associate_package - Main public function
-# - allows you to bind a package name like with any
-# number of find-package names that will be used to find them later.
-# this allows you to for example assocate 'zlib-1.2.8-multiplatform' with 'zlib'
-# and will cause the 3rd party system to go fetch that library and ensure its present
-# before trying to call find_package(zlib)
-macro(ly_associate_package package_name)
-    foreach(find_package_name ${ARGN})
-        set_property(GLOBAL PROPERTY LY_PACKAGE_ASSOCIATION_${find_package_name} ${package_name})
+# - allows you to associate an actual package name ('zlib-1.2.8-multiplatform')
+# with any number of targets that are expected to be inside the package.
+# Associating packages with targets will cause cmake to download the package (if necessary),
+# and ensure the path to the package root is added to the find_package search paths.
+# For example
+# ly_associate_package(TARGETS zlib PACKAGE_NAME zlib-1.2.8-multiplatform PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
+# - this waill cause it to automatically download and activate this package if it finds a target that
+# depends on '3rdParty::zlib' in its runtime or its build time dependency list.
+# - note that '3rdParty' is implied, do not specify it in the TARGETS list.
+
+function(ly_associate_package)
+    set(_oneValueArgs PACKAGE_NAME PACKAGE_HASH)
+    set(_multiValueArgs TARGETS)
+    cmake_parse_arguments(ly_associate_package "" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+    
+    if(NOT ly_associate_package_TARGETS)
+        message(FATAL_ERROR "ly_associate_package was called without the TARGETS argument, at least one target is required")
+    endif()
+    
+    if(NOT ly_associate_package_PACKAGE_NAME)
+        message(FATAL_ERROR "ly_associate_package was called without the PACKAGE_NAME argument, this is required")
+    endif()
+    
+    if(NOT ly_associate_package_PACKAGE_HASH)
+        message(FATAL_ERROR "ly_associate_package was called without the PACKAGE_HASH argument, this is required")
+    endif()
+    
+    foreach(find_package_name ${ly_associate_package_TARGETS})
+        set_property(GLOBAL PROPERTY LY_PACKAGE_ASSOCIATION_${find_package_name} ${ly_associate_package_PACKAGE_NAME})
+        set_property(GLOBAL PROPERTY LY_PACKAGE_HASH_${ly_associate_package_PACKAGE_NAME} ${ly_associate_package_PACKAGE_HASH})
     endforeach()
-endmacro()
+endfunction()
 
 #!  Given a package find_package name (eg, 'zlib' not the actual package name)
 # will set output_variable to the package id iff the package has a package
 # association declared, otherwise will unset it.
-macro(ly_get_package_association find_package_name output_variable)
+function(ly_get_package_association find_package_name output_variable)
     unset(${output_variable})
     get_property(is_associated GLOBAL PROPERTY LY_PACKAGE_ASSOCIATION_${find_package_name})
     if (is_associated)
-        set(${output_variable} ${is_associated})
+        set(${output_variable} ${is_associated} PARENT_SCOPE)
+    endif()
+endfunction()
+
+# given a package name (as in, the actual name of the package, not its associated find libraries)
+# return the expected download package hash.
+macro(ly_get_package_expected_hash actual_package_name output_variable)
+    unset(${output_variable})
+    get_property(package_hash_found GLOBAL PROPERTY LY_PACKAGE_HASH_${actual_package_name})
+    if (package_hash_found)
+        set(${output_variable} ${package_hash_found})
+    else()
+        # This is a fatal error because it is a programmer error and ignoring hashes
+        # could be a security problem.
+        message(FATAL_ERROR "ly_get_package_expected_hash could not find a hash for package ${actual_package_name}")
     endif()
 endmacro()
+
 
 # ly_set_package_download_location - OPTIONAL.
 # by default, packages are downloaded to the package root

@@ -23,13 +23,9 @@ namespace ScriptCanvas
             void MarkComplete::OnInputSignal([[maybe_unused]] const SlotId& slotId)
             {
                 const auto report = FindDatum(GetSlotId("Report"))->GetAs<Data::StringType>();
-                ScriptCanvas::UnitTesting::Bus::Event
-                    ( GetOwningScriptCanvasId()
-                    , &ScriptCanvas::UnitTesting::BusTraits::MarkComplete
-                    , *report);
-
+                ScriptCanvas::UnitTesting::Bus::Event(GetOwningScriptCanvasId(), &ScriptCanvas::UnitTesting::BusTraits::MarkComplete, *report);
                 SignalOutput(GetSlotId("Out"));
             }
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        }
+    }
+}

@@ -227,8 +227,9 @@ ILINE vec4 Splat(vec4 V)
     switch (INDEX)
     {
     case 0:
+        return vdupq_lane_f32(vget_low_f32(V), 0);
     case 1:
-        return vdupq_lane_f32(vget_low_f32(V), INDEX);
+        return vdupq_lane_f32(vget_low_f32(V), 1);
     case 2:
         // expanded to fix a clang compiler error with the preprocessor
         return vdupq_lane_f32(vget_high_f32(V), 0);

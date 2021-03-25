@@ -34,8 +34,10 @@ namespace MaterialEditor
         m_cameraRight = transform.GetBasisX();
     }
 
-    void RotateModelBehavior::TickInternal(float x, float y)
+    void RotateModelBehavior::TickInternal(float x, float y, float z)
     {
+        Behavior::TickInternal(x, y, z);
+
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_targetEntityId, &AZ::TransformBus::Events::GetLocalTM);
 

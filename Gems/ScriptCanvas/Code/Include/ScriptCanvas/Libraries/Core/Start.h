@@ -14,7 +14,7 @@
 
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/CodeGen/CodeGen.h>
+
 #include <Include/ScriptCanvas/Libraries/Core/Start.generated.h>
 
 namespace ScriptCanvas
@@ -23,25 +23,17 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! Starts executing the graph when the entity that owns the graph is fully activated.
             class Start 
                 : public Node
             {
             public:
 
-            public:
-                ScriptCanvas_Node(Start,
-                    ScriptCanvas_Node::Name("On Graph Start", "Starts executing the graph when the entity that owns the graph is fully activated.")
-                    ScriptCanvas_Node::Uuid("{F200B22A-5903-483A-BF63-5241BC03632B}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Start.png")
-                    ScriptCanvas_Node::Version(2)
-                    ScriptCanvas_Node::Category("Timing")
-                    ScriptCanvas_Node::GraphEntryPoint(true)
-                );
+                SCRIPTCANVAS_NODE(Start);
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
                 void OnInputSignal(const SlotId&) override;
-                
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled when the entity that owns this graph is fully activated."));
 
             };
         }

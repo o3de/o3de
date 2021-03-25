@@ -17,6 +17,8 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
+#include <AzCore/Component/NonUniformScaleBus.h>
+
 namespace LmbrCentral
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator, 0)
@@ -39,10 +41,17 @@ namespace LmbrCentral
     EditorPolygonPrismShapeComponentMode::EditorPolygonPrismShapeComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
+        , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale){OnNonUniformScaleChanged(scale);})
     {
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
             m_currentTransform, entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+        m_currentNonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+        AZ::NonUniformScaleRequestBus::Event(entityComponentIdPair.GetEntityId(),
+            &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
         PolygonPrismShapeComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
@@ -109,6 +118,8 @@ namespace LmbrCentral
         // initialize height manipulator
         m_heightManipulator = LinearManipulator::MakeShared(m_currentTransform);
         m_heightManipulator->AddEntityComponentIdPair(GetEntityComponentIdPair());
+        m_heightManipulator->SetSpace(AzToolsFramework::TransformUniformScale(m_currentTransform));
+        m_heightManipulator->SetNonUniformScale(m_currentNonUniformScale);
         m_heightManipulator->SetLocalTransform(
             AZ::Transform::CreateTranslation(CalculateHeightManipulatorPosition(*polygonPrism)));
         m_heightManipulator->SetAxis(AZ::Vector3::CreateAxisZ());
@@ -180,11 +191,21 @@ namespace LmbrCentral
         m_currentTransform = world;
 
         // update the space manipulators are in after the entity has moved
-        m_vertexSelection.RefreshSpace(world);
+        m_vertexSelection.RefreshSpace(world, m_currentNonUniformScale);
 
         if (m_heightManipulator)
         {
             m_heightManipulator->SetSpace(world);
+        }
+    }
+
+    void EditorPolygonPrismShapeComponentMode::OnNonUniformScaleChanged(const AZ::Vector3& scale)
+    {
+        m_currentNonUniformScale = scale;
+        m_vertexSelection.RefreshSpace(m_currentTransform, scale);
+        if (m_heightManipulator)
+        {
+            m_heightManipulator->SetNonUniformScale(scale);
         }
     }
 

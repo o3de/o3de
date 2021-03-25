@@ -181,6 +181,7 @@ namespace RenderGL
     // initialize the standard material
     bool StandardMaterial::Init(EMotionFX::Material* material)
     {
+        initializeOpenGLFunctions();
         mMaterial = material;
 
         if (material->GetType() == EMotionFX::StandardMaterial::TYPE_ID)
@@ -294,7 +295,7 @@ namespace RenderGL
         mActiveShader->SetUniform("matWorldViewProj", worldViewProj);
 
         // render the primitive
-        glDrawElements(GL_TRIANGLES, primitive->mNumTriangles * 3, GL_UNSIGNED_INT, (GLvoid*)(primitive->mIndexOffset * sizeof(uint32)));
+        glDrawElementsBaseVertex(GL_TRIANGLES, primitive->mNumTriangles * 3, GL_UNSIGNED_INT, (GLvoid*)(primitive->mIndexOffset * sizeof(uint32)), primitive->mVertexOffset);
     }
 
 

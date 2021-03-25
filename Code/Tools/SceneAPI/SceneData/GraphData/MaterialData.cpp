@@ -144,6 +144,96 @@ namespace AZ
                 return m_shininess;
             }
 
+            void MaterialData::SetUseColorMap(bool useColorMap)
+            {
+                m_useColorMap = useColorMap;
+            }
+
+            bool MaterialData::GetUseColorMap() const
+            {
+                return m_useColorMap;
+            }
+
+            void MaterialData::SetBaseColor(const AZ::Vector3& baseColor)
+            {
+                m_baseColor = baseColor;
+            }
+
+            const AZ::Vector3& MaterialData::GetBaseColor() const
+            {
+                return m_baseColor;
+            }
+
+            void MaterialData::SetUseMetallicMap(bool useMetallicMap)
+            {
+                m_useMetallicMap = useMetallicMap;
+            }
+
+            bool MaterialData::GetUseMetallicMap() const
+            {
+                return m_useMetallicMap;
+            }
+
+            void MaterialData::SetMetallicFactor(float metallicFactor)
+            {
+                m_metallicFactor = metallicFactor;
+            }
+
+            float MaterialData::GetMetallicFactor() const
+            {
+                return m_metallicFactor;
+            }
+
+            void MaterialData::SetUseRoughnessMap(bool useRoughnessMap)
+            {
+                m_useRoughnessMap = useRoughnessMap;
+            }
+
+            bool MaterialData::GetUseRoughnessMap() const
+            {
+                return m_useRoughnessMap;
+            }
+
+            void MaterialData::SetRoughnessFactor(float roughnessFactor)
+            {
+                m_roughnessFactor = roughnessFactor;
+            }
+
+            float MaterialData::GetRoughnessFactor() const
+            {
+                return m_roughnessFactor;
+            }
+
+            void MaterialData::SetUseEmissiveMap(bool useEmissiveMap)
+            {
+                m_useEmissiveMap = useEmissiveMap;
+            }
+
+            bool MaterialData::GetUseEmissiveMap() const
+            {
+                return m_useEmissiveMap;
+            }
+
+            void MaterialData::SetEmissiveIntensity(float emissiveIntensity)
+            {
+                m_emissiveIntensity = emissiveIntensity;
+            }
+
+            float MaterialData::GetEmissiveIntensity() const
+            {
+                return m_emissiveIntensity;
+            }
+
+            void MaterialData::SetUseAOMap(bool useAOMap)
+            {
+                m_useAOMap = useAOMap;
+            }
+
+            bool MaterialData::GetUseAOMap() const
+            {
+                return m_useAOMap;
+            }
+
             uint64_t MaterialData::GetUniqueId() const
             {
                 return m_uniqueId;
@@ -154,7 +244,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<MaterialData>()->Version(2)
+                    serializeContext->Class<MaterialData>()->Version(4)
                         ->Field("textureMap", &MaterialData::m_textureMap)
                         ->Field("diffuseColor", &MaterialData::m_diffuseColor)
                         ->Field("specularColor", &MaterialData::m_specularColor)
@@ -162,7 +252,16 @@ namespace AZ
                         ->Field("opacity", &MaterialData::m_opacity)
                         ->Field("shininess", &MaterialData::m_shininess)
                         ->Field("noDraw", &MaterialData::m_isNoDraw)
-                        ->Field("uniqueId", &MaterialData::m_uniqueId);
+                        ->Field("uniqueId", &MaterialData::m_uniqueId)
+                        ->Field("useColorMap", &MaterialData::m_useColorMap)
+                        ->Field("baseColor", &MaterialData::m_baseColor)
+                        ->Field("useMetallicMap", &MaterialData::m_useMetallicMap)
+                        ->Field("metallicFactor", &MaterialData::m_metallicFactor)
+                        ->Field("useRoughnessMap", &MaterialData::m_useRoughnessMap)
+                        ->Field("roughnessFactor", &MaterialData::m_roughnessFactor)
+                        ->Field("useEmissiveMap", &MaterialData::m_useEmissiveMap)
+                        ->Field("emissiveIntensity", &MaterialData::m_emissiveIntensity)
+                        ->Field("useAOMap", &MaterialData::m_useAOMap);
 
                     EditContext* editContext = serializeContext->GetEditContext();
                     if (editContext)
@@ -183,7 +282,16 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_opacity, "Opacity", "Opacity strength of the material, with 0 fully transparent and 1 fully opaque.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_shininess, "Shininess", "The shininess strength of the material.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_isNoDraw, "No draw", "If enabled the mesh with material will not be drawn.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_textureMap, "Texture map", "List of assigned texture slots.");
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_textureMap, "Texture map", "List of assigned texture slots.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useColorMap, "Use Color Map", "True to use a color map, false to ignore it.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_baseColor, "Base Color", "The base color of the material.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useMetallicMap, "Use Metallic Map", "True to use a metallic map, false to ignore it.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_metallicFactor, "Metallic Factor", "How metallic the material is.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useRoughnessMap, "Use Roughness Map", "True to use a roughness map, false to ignore it.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_roughnessFactor, "Roughness Factor", "How rough the material is.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useEmissiveMap, "Use Emissive Map", "True to use an emissive map, false to ignore it.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_emissiveIntensity, "Emissive Intensity", "The intensity of the emissiveness of the material.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useAOMap, "Use Ambient Occlusion Map", "True to use an ambient occlusion map, false to ignore it.");
                     }
                 }
             }

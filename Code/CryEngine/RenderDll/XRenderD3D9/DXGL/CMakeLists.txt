@@ -47,10 +47,8 @@ if(DXGL_TRAIT_BUILD_OPENGL_SUPPORTED AND (NOT LY_MONOLITHIC_GAME OR LY_TRAIT_USE
             PUBLIC
                 AZ::AzFramework
                 AZ::HLSLcc.Headers
-                3rdParty::Lzma
-                3rdParty::LZSS
                 3rdParty::lz4
-                3rdParty::GLAD
+                3rdParty::glad
                 Legacy::CryCommon
     )
     ly_add_source_properties(

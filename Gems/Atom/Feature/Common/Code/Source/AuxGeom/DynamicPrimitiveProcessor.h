@@ -123,7 +123,7 @@ namespace AZ
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
             const RHI::DrawPacket* BuildDrawPacketForDynamicPrimitive(
                 DynamicBufferGroup& group,
-                const PipelineStateOptions& pipelineStateOptions,
+                const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
                 uint32_t indexCount,
                 uint32_t indexOffset,

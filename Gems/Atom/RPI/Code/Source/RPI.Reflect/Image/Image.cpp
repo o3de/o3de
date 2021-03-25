@@ -57,6 +57,21 @@ namespace AZ
         {
             return m_imageView.get();
         }
-     
+
+        const RHI::ImageDescriptor& Image::GetDescriptor() const
+        {
+            return m_image->GetDescriptor();
+        }
+
+        uint16_t Image::GetMipLevelCount()
+        {
+            return m_image->GetDescriptor().m_mipLevels;
+        }
+
+        RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
+        {
+            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*> (m_image->GetPool());
+            return imagePool->UpdateImageContents(request);
+        }     
     }
 }

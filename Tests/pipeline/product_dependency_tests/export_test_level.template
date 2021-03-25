@@ -1,0 +1,38 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+import os
+
+game_folder = general.get_game_folder()
+levelName = ${LevelName}
+meshGuid = ${MeshGuid}
+
+# Don't use terrain because creating a level with terrain causes a popup message that requires user input.
+general.create_level(levelName, 128, 1, False)
+levelPath = os.path.join(game_folder, "Levels", levelName, str.format("{}.ly", levelName))
+
+if not isinstance(input, str):
+    # general.open_level_no_prompt expects the file path in utf8 format
+    levelPath = levelName.encode("utf-8")
+
+general.open_level_no_prompt(levelPath)
+
+newEntityIdStr = str(general.create_entity("TestEntityName"))
+
+componentResult = general.add_mesh_component_with_mesh(newEntityIdStr, meshGuid)
+
+if not componentResult:
+    raise Exception('Export Test Level', str.format('Failed to add mesh ID {} to entity ID {}', str(meshGuid), str(newEntityIdStr)))
+
+general.save_level()
+general.export_to_engine()
+
+general.exit()

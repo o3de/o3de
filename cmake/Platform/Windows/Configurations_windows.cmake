@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(CMAKE_RC_FLAGS /nologo)
+ly_set(CMAKE_RC_FLAGS /nologo)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     
@@ -43,7 +43,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -mf16c
             -Wno-deprecated-declarations
     )
-    set(CMAKE_CXX_EXTENSIONS OFF)
+    ly_set(CMAKE_CXX_EXTENSIONS OFF)
 
 else()
 
@@ -52,67 +52,65 @@ else()
 endif()
 
 if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-    function(find_windows10_sdk)
-        if(DEFINED ENV{CMAKE_WINDOWS_KITS_10_DIR})
-            set(win10_root $ENV{CMAKE_WINDOWS_KITS_10_DIR})
-            file(TO_CMAKE_PATH "${win10_root}" win10_root)
-            list(APPEND win10_roots "${win10_root}")
-        endif()
 
-        # This logic is taken from cmGlobalVisualStudio14Generator.cxx, which
-        # itself is taken from the vcvarsqueryregistry.bat file from VS2015.
-        # Try HKLM and then HKCU.
-        list(APPEND win10_roots "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]")
-        list(APPEND win10_roots "[HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]")
+    if(DEFINED ENV{CMAKE_WINDOWS_KITS_10_DIR})
+        set(win10_root $ENV{CMAKE_WINDOWS_KITS_10_DIR})
+        file(TO_CMAKE_PATH "${win10_root}" win10_root)
+        list(APPEND win10_roots "${win10_root}")
+    endif()
 
-        foreach(win10_root IN LISTS win10_roots)
-            get_filename_component(_win10_root "${win10_root}" ABSOLUTE CACHE)
+    # This logic is taken from cmGlobalVisualStudio14Generator.cxx, which
+    # itself is taken from the vcvarsqueryregistry.bat file from VS2015.
+    # Try HKLM and then HKCU.
+    list(APPEND win10_roots "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]")
+    list(APPEND win10_roots "[HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]")
 
-            # Grab the paths of the different SDKs that are installed
-            file(GLOB candidates "${_win10_root}/Include/*")
-            foreach(sdk_dir IN LISTS candidates)
+    foreach(win10_root IN LISTS win10_roots)
+        get_filename_component(_win10_root "${win10_root}" ABSOLUTE CACHE)
 
-                # Skip SDKs that do not contain <um/windows.h> because that
-                # indicates that only the UCRT MSIs were installed for them.
-                if(EXISTS "${sdk_dir}/um/Windows.h")
-                    list(APPEND sdks "${sdk_dir}")
-                endif()
-            endforeach()
-            if(sdks)
-                break()
+        # Grab the paths of the different SDKs that are installed
+        file(GLOB candidates "${_win10_root}/Include/*")
+        foreach(sdk_dir IN LISTS candidates)
+
+            # Skip SDKs that do not contain <um/windows.h> because that
+            # indicates that only the UCRT MSIs were installed for them.
+            if(EXISTS "${sdk_dir}/um/Windows.h")
+                list(APPEND sdks "${sdk_dir}")
             endif()
         endforeach()
-
-        if(NOT sdks)
-            return()
+        if(sdks)
+            break()
         endif()
+    endforeach()
 
-        list(GET sdks 0 max_sdk)
-        foreach(sdk IN LISTS sdks)
-            # Only use the filename, which will be the SDK version.
-            get_filename_component(version "${sdk}" NAME)
+    if(NOT sdks)
+        return()
+    endif()
 
-            # Look for a SDK exactly matching the requested target version
-            if(version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
-                set(max_sdk "${version}")
-                set(sdk_root "${sdk}")
-                break()
-            elseif(version VERSION_GREATER max_sdk)
-                # Use the latest Windows 10 SDK since the exact version is not
-                # available
-                set(max_sdk "${version}")
-                set(sdk_root "${sdk}")
-            endif()
-        endforeach()
+    list(GET sdks 0 max_sdk)
+    foreach(sdk IN LISTS sdks)
+        # Only use the filename, which will be the SDK version.
+        get_filename_component(version "${sdk}" NAME)
 
-        if(NOT version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
-            message(STATUS "Selecting Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}.")
+        # Look for a SDK exactly matching the requested target version
+        if(version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
+            set(max_sdk "${version}")
+            set(sdk_root "${sdk}")
+            break()
+        elseif(version VERSION_GREATER max_sdk)
+            # Use the latest Windows 10 SDK since the exact version is not
+            # available
+            set(max_sdk "${version}")
+            set(sdk_root "${sdk}")
         endif()
+    endforeach()
 
-        set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION "${version}" PARENT_SCOPE)
-    endfunction()
+    if(NOT version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
+        message(STATUS "Selecting Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}.")
+    endif()
 
-    find_windows10_sdk()
+    ly_set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION "${version}")
+
 endif()
 
 if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")

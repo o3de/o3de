@@ -54,10 +54,10 @@ namespace AZ
             void Validate(PassValidationResults& validationResults) override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            // Scope producer functions
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const PassScopeProducer& producer) override;
+            // Scope producer functions...
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // The draw list tag used to fetch the draw list from the views
             RHI::DrawListTag m_drawListTag;

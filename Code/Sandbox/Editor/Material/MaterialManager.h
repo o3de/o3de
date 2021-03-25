@@ -73,7 +73,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
 
     //! Notification callback.
-    typedef Functor0 NotifyCallback;
+    typedef AZStd::function<void()> NotifyCallback;
 
     CMaterialManager(CRegistrationContext& regCtx);
     ~CMaterialManager();

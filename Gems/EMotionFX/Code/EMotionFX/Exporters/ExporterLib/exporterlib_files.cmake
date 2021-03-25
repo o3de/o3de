@@ -10,19 +10,15 @@
 #
 
 set(FILES
-    Exporter/DeformableAttachmentExport.cpp
     Exporter/EndianConversion.cpp
     Exporter/Exporter.h
     Exporter/ExporterActor.cpp
     Exporter/ExporterFileProcessor.cpp
     Exporter/ExporterFileProcessor.h
     Exporter/FileHeaderExport.cpp
-    Exporter/MaterialExport.cpp
-    Exporter/MeshExport.cpp
     Exporter/MorphTargetExport.cpp
     Exporter/MotionEventExport.cpp
     Exporter/NodeExport.cpp
     Exporter/SkeletalMotionExport.cpp
-    Exporter/SkinExport.cpp
     Exporter/StringExport.cpp
 )

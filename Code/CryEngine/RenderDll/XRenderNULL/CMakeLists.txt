@@ -36,8 +36,6 @@ if(CRYRENDER_TRAIT_BUILD_NULL_RENDERER_SUPPORTED)
                 ${pal_dir}
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::LZSS
-                3rdParty::Lzma
                 Legacy::CryCommon
                 Legacy::CryCommon.EngineSettings.Static
     )

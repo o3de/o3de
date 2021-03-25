@@ -17,6 +17,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align
 AZ_POP_DISABLE_WARNING
 
 #include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
+#include <GraphCanvas/Editor/Automation/AutomationIds.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
 #include <GraphCanvas/Utils/ConversionUtils.h>
@@ -32,9 +33,10 @@ namespace GraphCanvas
         , m_ui(new Ui::AssetEditorToolbar())
         , m_commentPresetActionGroup(nullptr)
         , m_nodeGroupPresetActionGroup(nullptr)
+        , m_viewDisabled(false)
     {
         m_ui->setupUi(this);
-
+        
         AssetEditorNotificationBus::Handler::BusConnect(editorId);
 
         QObject::connect(m_ui->addComment, &QToolButton::clicked, this, &AssetEditorToolbar::AddComment);
@@ -83,6 +85,15 @@ namespace GraphCanvas
         QObject::connect(m_ui->organizeBottomRight, &QToolButton::clicked, this, &AssetEditorToolbar::OrganizeBottomRight);
 
         UpdateButtonStates();
+
+        AssetEditorAutomationRequests* editorAutomationRequests = AssetEditorAutomationRequestBus::FindFirstHandler(m_editorId);
+
+        if (editorAutomationRequests)
+        {
+            editorAutomationRequests->RegisterObject(AutomationIds::CreateCommentButton, m_ui->addComment);
+            editorAutomationRequests->RegisterObject(AutomationIds::GroupButton, m_ui->groupNodes);
+            editorAutomationRequests->RegisterObject(AutomationIds::UngroupButton, m_ui->ungroupNodes);
+        }
     }
 
     void AssetEditorToolbar::AddCustomAction(QToolButton* action)
@@ -169,16 +180,14 @@ namespace GraphCanvas
         if (m_editorId != EditorId() && m_activeGraphId.IsValid())
         {
             AZStd::vector< AZ::EntityId >  selectedElements;
+
             SceneRequestBus::EventResult(selectedElements, m_activeGraphId, &SceneRequests::GetSelectedNodes);
 
             if (selectedElements.size() == 1)
             {
                 AZ::EntityId selectedElement = selectedElements.front();
 
-                if (GraphUtils::IsNodeGroup(selectedElement))
-                {
-                    NodeGroupRequestBus::Event(selectedElement, &NodeGroupRequests::UngroupGroup);
-                }
+                GraphCanvas::GraphUtils::UngroupGroup(m_activeGraphId, selectedElement);
             }
         }
     }
@@ -326,7 +335,7 @@ namespace GraphCanvas
     {
         if (m_commentPresetActionGroup == nullptr)
         {
-            m_commentPresetActionGroup = aznew CommentPresetsMenuActionGroup();
+            m_commentPresetActionGroup = aznew CreateCommentPresetMenuActionGroup();
             m_commentPresetActionGroup->PopulateMenu(m_commentPresetsMenu);
         }
 
@@ -337,7 +346,7 @@ namespace GraphCanvas
     {
         if (m_nodeGroupPresetActionGroup == nullptr)
         {
-            m_nodeGroupPresetActionGroup = aznew NodeGroupPresetsMenuActionGroup();
+            m_nodeGroupPresetActionGroup = aznew CreateNodeGroupPresetMenuActionGroup();
             m_nodeGroupPresetActionGroup->PopulateMenu(m_nodeGroupPresetsMenu);
         }
 
@@ -364,7 +373,7 @@ namespace GraphCanvas
             }
 
             if (reaction == ContextMenuAction::SceneReaction::PostUndo)
-            {                
+            {
                 GraphModelRequestBus::Event(m_activeGraphId, &GraphModelRequests::RequestUndoPoint);
             }
 

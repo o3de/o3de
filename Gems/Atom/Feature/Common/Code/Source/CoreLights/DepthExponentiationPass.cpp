@@ -70,7 +70,7 @@ namespace AZ
             Base::FrameBeginInternal(params);
         }
 
-        void DepthExponentiationPass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void DepthExponentiationPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_shaderVariantNeedsUpdate)
             {
@@ -78,15 +78,15 @@ namespace AZ
                 m_shaderVariantNeedsUpdate = false;
             }
 
-            Base::CompileResources(context, producer);
+            Base::CompileResources(context);
         }
 
-        void DepthExponentiationPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer)
+        void DepthExponentiationPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             const uint32_t typeIndex = aznumeric_cast<uint32_t>(m_shadowmapType);
             m_dispatchItem.m_pipelineState = m_shaderVariant[typeIndex].m_pipelineState;
 
-            Base::BuildCommandList(context, producer);
+            Base::BuildCommandListInternal(context);
         }
 
         void DepthExponentiationPass::InitializeShaderOption()
@@ -100,14 +100,12 @@ namespace AZ
                 RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
                 shaderOption.SetValue(m_optionName, valueName);
 
-                RPI::ShaderVariantSearchResult searchResult = m_shader->FindVariantStableId(shaderOption.GetShaderVariantId());
-                RPI::ShaderVariant shaderVariant = m_shader->GetVariant(searchResult.GetStableId());
+                RPI::ShaderVariant shaderVariant = m_shader->GetVariant(shaderOption.GetShaderVariantId());
 
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-                ShaderVariantInfo variationInfo{
-                    searchResult.IsFullyBaked(),
+                ShaderVariantInfo variationInfo{shaderVariant.IsFullyBaked(),
                     m_shader->AcquirePipelineState(pipelineStateDescriptor)
                 };
                 m_shaderVariant.push_back(AZStd::move(variationInfo));

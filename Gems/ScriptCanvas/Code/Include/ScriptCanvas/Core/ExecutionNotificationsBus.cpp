@@ -99,13 +99,6 @@ namespace ScriptCanvas
                 ->Field("AssetNodeId", &AnnotateNodeSignal::m_assetNodeId)
                 ;
 
-            serializeContext->Class<OutputDataSignal, GraphInfoEventBase>()
-                ->Version(1)
-                ->Field("Endpoint", &OutputDataSignal::m_endpoint)
-                ->Field("DatumValue", &OutputDataSignal::m_outputValue)
-                ->Field("NodeType", &OutputDataSignal::m_nodeType)
-            ;
-
             OutputSignal::Reflect(context);
             VariableChange::Reflect(context);
         }
@@ -129,16 +122,21 @@ namespace ScriptCanvas
     // DatumValue
     ///////////////
 
-    DatumValue DatumValue::Create(const GraphVariable& value)
+    DatumValue DatumValue::Create(const Datum& value)
     {
-        if (value.GetDatum()->GetType().GetType() == Data::eType::BehaviorContextObject)
+        if (value.GetType().GetType() == Data::eType::BehaviorContextObject)
         {
-            return DatumValue(value.GetDatum()->GetType().GetAZType(), AZStd::string::format("(%p) %s", value.GetDatum()->GetAsDanger(), value.GetDatum()->ToString().data()));
+            return DatumValue(value.GetType().GetAZType(), AZStd::string::format("(%p) %s", value.GetAsDanger(), value.ToString().data()));
         }
         else
         {
-            return DatumValue((*value.GetDatum()));
+            return DatumValue(value);
         }
+    }
+
+    DatumValue DatumValue::Create(const GraphVariable& value)
+    {
+        return Create(*value.GetDatum());
     }
 
     AZStd::string DatumValue::ToString() const
@@ -286,29 +284,6 @@ namespace ScriptCanvas
     void AnnotateNodeSignal::Visit(LoggableEventVisitor& visitor)
     {
         visitor.Visit(*this);
-    }
-
-    OutputDataSignal::OutputDataSignal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& namedEndpoint, const DatumValue& value)
-        : GraphInfoEventBase(graphInfo)
-        , m_nodeType(nodeType)
-        , m_endpoint(namedEndpoint)
-        , m_outputValue(value)
-    {
-    }
-
-    LoggableEvent* OutputDataSignal::Duplicate() const
-    {
-        return aznew OutputDataSignal((*this));
-    }
-
-    AZStd::string OutputDataSignal::ToString() const
-    {
-        return AZStd::string::format("Data (%s) pushed from (%s::%s)", m_outputValue.ToString().c_str(), m_endpoint.GetNodeName().c_str(), m_endpoint.GetSlotName().c_str());
-    }
-
-    void OutputDataSignal::Visit(LoggableEventVisitor& visitor)
-    {
-        visitor.Visit((*this));
     }
 
     bool Signal::operator==(const Signal& other) const

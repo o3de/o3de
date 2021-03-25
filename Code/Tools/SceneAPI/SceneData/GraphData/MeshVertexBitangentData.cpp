@@ -11,6 +11,8 @@
 */
 
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -18,6 +20,29 @@ namespace AZ
     {
         namespace GraphData
         {
+            void MeshVertexBitangentData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<MeshVertexBitangentData>()->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<MeshVertexBitangentData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetCount", &MeshVertexBitangentData::GetCount)
+                        ->Method("GetBitangent", &MeshVertexBitangentData::GetBitangent)
+                        ->Method("GetBitangentSetIndex", &MeshVertexBitangentData::GetBitangentSetIndex)
+                        ->Method("GetTangentSpace", &MeshVertexBitangentData::GetTangentSpace)
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::EMotionFX>("EMotionFX")
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromFbx>("FromFbx")
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::MikkT>("MikkT");
+                }
+            }
 
             size_t MeshVertexBitangentData::GetCount() const
             {

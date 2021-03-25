@@ -23,6 +23,19 @@ namespace ScriptCanvas
             const char* Split::k_defaultDelimiter = " ";
             const char* Join::k_defaultSeparator = " ";
 
+            void ReplaceStringUtilityNodeOutputSlot(const Node* oldNode, const Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap)
+            {
+                auto newDataOutSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                auto oldDataOutSlots = oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                if (newDataOutSlots.size() == oldDataOutSlots.size())
+                {
+                    for (size_t index = 0; index < newDataOutSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataOutSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataOutSlots[index]->GetId() });
+                    }
+                }
+            }
+
             void StartsWith::OnInputSignal(const SlotId&)
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::StartsWith::OnInputSignal");
@@ -61,7 +74,12 @@ namespace ScriptCanvas
                 }
             }
 
-            void Split::OnInputSignal([[maybe_unused]] const SlotId& slotId)
+            void Split::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                ReplaceStringUtilityNodeOutputSlot(this, replacementNode, outSlotIdMap);
+            }
+
+            void Split::OnInputSignal(const SlotId&)
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Split::OnInputSignal");
 
@@ -82,7 +100,12 @@ namespace ScriptCanvas
                 SignalOutput(GetSlotId("Out"));
             }
 
-            void Join::OnInputSignal([[maybe_unused]] const SlotId& slotId)
+            void Join::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                ReplaceStringUtilityNodeOutputSlot(this, replacementNode, outSlotIdMap);
+            }
+
+            void Join::OnInputSignal(const SlotId&)
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Join::OnInputSignal");
 

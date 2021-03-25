@@ -32,12 +32,18 @@ namespace GraphCanvas
         {
         }
 
-        ~SceneMemberComponentSaveData() = default;
+        ~SceneMemberComponentSaveData()
+        {
+            SceneMemberNotificationBus::Handler::BusDisconnect();
+            EntitySaveDataRequestBus::Handler::BusDisconnect();
+        }
 
         void Activate(const AZ::EntityId& memberId)
         {
-            SceneMemberNotificationBus::Handler::BusConnect(memberId);
-            EntitySaveDataRequestBus::Handler::BusConnect(memberId);
+            m_entityId = memberId;
+
+            SceneMemberNotificationBus::Handler::BusConnect(m_entityId);
+            EntitySaveDataRequestBus::Handler::BusConnect(m_entityId);
         }
 
         // SceneMemberNotificationBus::Handler
@@ -82,12 +88,23 @@ namespace GraphCanvas
 
             if (saveData)
             {
+                // The copy is going to destroy the bus state. So we want to ensure we are re-registering for this.
+                // For some reason this only affects the graph constructs, and not normal nodes[Appears by dropping the persistent id after every over save/re-open]
+                AZ::EntityId originalId = m_entityId;
+
                 (*azrtti_cast<DataType*>(this)) = (*saveData);
+
+                if (originalId.IsValid())
+                {
+                    Activate(originalId);
+                }
             }
         }
         ////
 
     protected:
         virtual bool RequiresSave() const = 0;
+
+        AZ::EntityId m_entityId;
     };    
 }

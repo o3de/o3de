@@ -56,7 +56,7 @@ namespace GraphCanvas
         }
     }
     
-    NodeContextMenuAction::SceneReaction ManageUnusedSlotsMenuAction::TriggerAction(const GraphId& graphId, [[maybe_unused]] const AZ::Vector2& scenePos)
+    NodeContextMenuAction::SceneReaction ManageUnusedSlotsMenuAction::TriggerAction(const GraphId& graphId, const AZ::Vector2& /*scenePos*/)
     {
         AZStd::vector<AZ::EntityId> selectedNodes;
         SceneRequestBus::EventResult(selectedNodes, graphId, &SceneRequests::GetSelectedNodes);

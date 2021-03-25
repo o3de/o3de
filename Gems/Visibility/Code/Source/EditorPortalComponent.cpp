@@ -687,7 +687,7 @@ namespace Visibility
         {
             AzToolsFramework::VertexContainerDisplay::DisplayVertexContainerIndices(
                 debugDisplay, AzToolsFramework::FixedVerticesArray<AZ::Vector3, 4>(m_config.m_vertices),
-                GetWorldTM(), IsSelected());
+                GetWorldTM(), AZ::Vector3::CreateOne(), IsSelected());
         }
 
         debugDisplay.PopMatrix();

@@ -15,14 +15,14 @@
 namespace AZ
 {
     template <typename... Params>
-    Event<Params...>::Handler::Handler(std::nullptr_t)
+    EventHandler<Params...>::EventHandler(std::nullptr_t)
     {
         ;
     }
 
 
     template <typename... Params>
-    Event<Params...>::Handler::Handler(Event<Params...>::Callback callback)
+    EventHandler<Params...>::EventHandler(Callback callback)
         : m_callback(AZStd::move(callback))
     {
         ;
@@ -30,7 +30,7 @@ namespace AZ
 
 
     template <typename... Params>
-    Event<Params...>::Handler::Handler(const Handler& rhs)
+    EventHandler<Params...>::EventHandler(const EventHandler& rhs)
         : m_callback(rhs.m_callback)
     {
         // Copy the callback function, then perform a Connect with the new event
@@ -42,7 +42,7 @@ namespace AZ
 
 
     template <typename... Params>
-    Event<Params...>::Handler::Handler(Handler&& rhs)
+    EventHandler<Params...>::EventHandler(EventHandler&& rhs)
         : m_event(rhs.m_event)
         , m_index(rhs.m_index)
         , m_callback(AZStd::move(rhs.m_callback))
@@ -56,14 +56,14 @@ namespace AZ
 
 
     template <typename... Params>
-    Event<Params...>::Handler::~Handler()
+    EventHandler<Params...>::~EventHandler()
     {
         Disconnect();
     }
 
 
     template <typename... Params>
-    typename Event<Params...>::Handler& Event<Params...>::Handler::operator=(const Handler& rhs)
+    EventHandler<Params...>& EventHandler<Params...>::operator=(const EventHandler& rhs)
     {
         // Copy the callback function, then perform a Connect with the new event
         if (this != &rhs)
@@ -81,7 +81,7 @@ namespace AZ
 
 
     template <typename... Params>
-    typename Event<Params...>::Handler& Event<Params...>::Handler::operator=(Handler&& rhs)
+    EventHandler<Params...>& EventHandler<Params...>::operator=(EventHandler&& rhs)
     {
         if (this != &rhs)
         {
@@ -96,12 +96,13 @@ namespace AZ
 
             SwapEventHandlerPointers(rhs);
         }
+
         return *this;
     }
 
 
     template <typename... Params>
-    void Event<Params...>::Handler::Connect(Event<Params...>& event)
+    void EventHandler<Params...>::Connect(Event<Params...>& event)
     {
         // Cannot add an unbound event handle (no function callback) to an event, this is a programmer error
         // We explicitly do not support binding the callback after the handler has been constructed so we can just reject the event handle here
@@ -119,7 +120,7 @@ namespace AZ
 
 
     template <typename... Params>
-    void Event<Params...>::Handler::Disconnect()
+    void EventHandler<Params...>::Disconnect()
     {
         if (m_event)
         {
@@ -127,16 +128,14 @@ namespace AZ
         }
     }
 
-
     template <typename... Params>
-    bool Event<Params...>::Handler::IsConnected() const
+    bool EventHandler<Params...>::IsConnected() const
     {
         return m_event != nullptr;
     }
 
-
     template <typename... Params>
-    void Event<Params...>::Handler::SwapEventHandlerPointers([[maybe_unused]] const Handler& from)
+    void EventHandler<Params...>::SwapEventHandlerPointers([[maybe_unused]]const EventHandler& from)
     {
         // Find the pointer to the 'from' handler and point it to this handler
         if (m_event)

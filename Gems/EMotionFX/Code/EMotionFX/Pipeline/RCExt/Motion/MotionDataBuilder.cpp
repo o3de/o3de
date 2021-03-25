@@ -18,16 +18,15 @@
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Groups/IMotionGroup.h>
 #include <SceneAPIExt/Rules/IMotionScaleRule.h>
-#include <SceneAPIExt/Rules/CoordinateSystemRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MotionAdditiveRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
 #include <RCExt/Motion/MotionDataBuilder.h>
 #include <RCExt/ExportContexts.h>
-#include <RCExt/CoordinateSystemConverter.h>
 
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionManager.h>
@@ -193,25 +192,12 @@ namespace EMotionFX
             }
 
             // Get the coordinate system conversion rule.
-            CoordinateSystemConverter ruleCoordSysConverter;
-            AZStd::shared_ptr<Rule::CoordinateSystemRule> coordinateSystemRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::CoordinateSystemRule>();
+            AZ::SceneAPI::CoordinateSystemConverter coordSysConverter;
+            AZStd::shared_ptr<AZ::SceneAPI::SceneData::CoordinateSystemRule> coordinateSystemRule = motionGroup.GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
             if (coordinateSystemRule)
             {
                 coordinateSystemRule->UpdateCoordinateSystemConverter();
-                ruleCoordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
-            }
-
-            CoordinateSystemConverter coordSysConverter = ruleCoordSysConverter;
-            if (context.m_scene.GetOriginalSceneOrientation() != SceneContainers::Scene::SceneOrientation::ZUp)
-            {
-                AZ::Transform orientedTarget = ruleCoordSysConverter.GetTargetTransform();
-                AZ::Transform rotationZ = AZ::Transform::CreateRotationZ(-AZ::Constants::Pi);
-                orientedTarget = orientedTarget * rotationZ;
-
-                //same as rule
-                // X, Y and Z are all at the same indices inside the target coordinate system, compared to the source coordinate system.
-                const AZ::u32 targetBasisIndices[3] = { 0, 1, 2 };
-                coordSysConverter = CoordinateSystemConverter::CreateFromTransforms(ruleCoordSysConverter.GetSourceTransform(), orientedTarget, targetBasisIndices);
+                coordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
             }
 
             // Set new motion data.

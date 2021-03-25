@@ -50,6 +50,7 @@
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Editor/GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
 #include <Editor/GraphCanvas/Components/DynamicSlotComponent.h>
+#include <Editor/GraphCanvas/Components/NodeDescriptors/AzEventHandlerNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/ClassMethodNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerEventNodeDescriptorComponent.h>
@@ -103,6 +104,7 @@ namespace ScriptCanvas
             ScriptCanvasEditor::NodeDescriptorComponent::CreateDescriptor(),
 
             // Node Type Descriptor
+            ScriptCanvasEditor::AzEventHandlerNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::ClassMethodNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::EBusHandlerNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::EBusHandlerEventNodeDescriptorComponent::CreateDescriptor(),
@@ -138,6 +140,20 @@ namespace ScriptCanvas
     }
 }
 
+#include <QDir>
+
+// Qt resources are defined in the ScriptCanvas static library, so we must
+// initialize them manually
+extern int qInitResources_ScriptCanvasEditorResources();
+extern int qCleanupResources_ScriptCanvasEditorResources();
+namespace {
+    struct initializer {
+        initializer() { qInitResources_ScriptCanvasEditorResources(); }
+        ~initializer() { qCleanupResources_ScriptCanvasEditorResources(); }
+    } dummy;
+}
+
 AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasGem, ScriptCanvas::ScriptCanvasModule)
+
 
 #endif // SCRIPTCANVAS_EDITOR

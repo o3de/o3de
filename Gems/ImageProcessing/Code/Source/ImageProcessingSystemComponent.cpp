@@ -25,7 +25,11 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <Editor/TexturePropertyEditor.h>
+
+#include <ImageLoader/ImageLoaders.h>
+#include <Processing/ImageConvert.h>
 #include <Processing/ImagePreview.h>
+#include <Processing/ImageToProcess.h>
 
 #include "ImageProcessingSystemComponent.h"
 #include <QMenu>
@@ -76,10 +80,12 @@ namespace ImageProcessing
         ImageProcessingEditor::ImageProcessingEditorRequestBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserTexturePreviewRequestsBus::Handler::BusConnect();
+        ImageProcessingRequestBus::Handler::BusConnect();
     }
 
     void ImageProcessingSystemComponent::Deactivate()
     {
+        ImageProcessingRequestBus::Handler::BusDisconnect();
         ImageProcessingEditor::ImageProcessingEditorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserTexturePreviewRequestsBus::Handler::BusDisconnect();
@@ -107,6 +113,23 @@ namespace ImageProcessing
             }
             editor.exec();
         }
+    }
+
+    IImageObjectPtr ImageProcessingSystemComponent::LoadImage(const AZStd::string& filePath)
+    {
+        return IImageObjectPtr(LoadImageFromFile(filePath));
+    }
+
+    IImageObjectPtr ImageProcessingSystemComponent::LoadImagePreview(const AZStd::string& filePath)
+    {
+        IImageObjectPtr image(LoadImageFromFile(filePath));
+        if (image)
+        {
+            ImageToProcess imageToProcess(image);
+            imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
+            return imageToProcess.Get();
+        }
+        return image;
     }
 
     void ImageProcessingSystemComponent::AddSourceFileOpeners(const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)

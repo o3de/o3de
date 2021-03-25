@@ -100,8 +100,9 @@ namespace GraphCanvas
         return outcomeResult;
     }
 
-    void NodePropertyDisplay::OnDragLeaveEvent([[maybe_unused]] QGraphicsSceneDragDropEvent* dragDropEvent)
+    void NodePropertyDisplay::OnDragLeaveEvent(QGraphicsSceneDragDropEvent* dragDropEvent)
     {
+        AZ_UNUSED(dragDropEvent);
     }
 
     void NodePropertyDisplay::OnDropEvent(QGraphicsSceneDragDropEvent* dropEvent)
@@ -112,6 +113,10 @@ namespace GraphCanvas
         {
             UpdateDisplay();
         }
+    }
+
+    void NodePropertyDisplay::OnDropCancelled()
+    {
     }
 
     void NodePropertyDisplay::RegisterShortcutDispatcher(QWidget* widget)

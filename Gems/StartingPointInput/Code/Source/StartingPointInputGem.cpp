@@ -16,13 +16,14 @@
 #include "InputEventBindings.h"
 #include "InputEventMap.h"
 #include "InputLibrary.h"
-#include "InputNode.h"
 
 #include <AzCore/Module/Module.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/Component.h>
+
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace StartingPointInput
 {

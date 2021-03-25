@@ -76,6 +76,23 @@ namespace AZ
             return m_name;
         }
 
+        Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(const ShaderVariantId& shaderVariantId)
+        {
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+
+            auto variantFinder = AZ::Interface<IShaderVariantFinder>::Get();
+            AZ_Assert(variantFinder, "The IShaderVariantFinder doesn't exist");
+
+            Data::Asset<ShaderVariantAsset> shaderVariantAsset = variantFinder->GetShaderVariantAssetByVariantId(
+                Data::Asset<ShaderAsset>(this, Data::AssetLoadBehavior::Default), shaderVariantId);
+            if (!shaderVariantAsset)
+            {
+                variantFinder->QueueLoadShaderVariantAssetByVariantId(
+                    Data::Asset<ShaderAsset>(this, Data::AssetLoadBehavior::Default), shaderVariantId);
+            }
+            return shaderVariantAsset;
+        }
+
         ShaderVariantSearchResult ShaderAsset::FindVariantStableId(const ShaderVariantId& shaderVariantId)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
@@ -108,7 +125,7 @@ namespace AZ
                 {
                     if (!m_shaderVariantTreeLoadWasRequested)
                     {
-                        variantFinder->LoadShaderVariantTreeAsset(GetId());
+                        variantFinder->QueueLoadShaderVariantTreeAsset(GetId());
                         m_shaderVariantTreeLoadWasRequested = true;
                     }
 
@@ -142,7 +159,7 @@ namespace AZ
                 }
                 if (variantTreeAssetId.IsValid())
                 {
-                    variantFinder->LoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId);
+                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId);
                 }
                 return GetRootVariant();
             }
@@ -375,7 +392,7 @@ namespace AZ
             {
                 m_shaderVariantTree = shaderVariantTreeAsset;
             }
-
+            lock.unlock();
             ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad });
         }
 

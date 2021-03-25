@@ -10,14 +10,10 @@
 #
 
 set(FILES
-    FindAssImp.cmake
     BuiltInPackages.cmake
-    FindAMD.cmake
     FindAWSNativeSDK.cmake
     FindAWSGameLiftServerSDK.cmake
-    FindBlast.cmake
     Findcivetweb.cmake
-    Findcityhash.cmake
     FindClang.cmake
     FindDirectXShaderCompiler.cmake
     Finddyad.cmake
@@ -25,34 +21,11 @@ set(FILES
     Findexpat.cmake
     FindFbxSdk.cmake
     FindFreeType2.cmake
-    FindGLAD.cmake
-    FindGoogleBenchmark.cmake
-    Findgoogletest.cmake
-    Findjsmn.cmake
     Findlibav.cmake
-    FindLibTomCrypt.cmake
-    FindLibTomMath.cmake
-    Findlz4.cmake
-    FindLzma.cmake
-    FindLZSS.cmake
-    Findmd5.cmake
-    Findnvapi.cmake
-    Findnvcloth.cmake
     FindOpenSSL.cmake
-    FindPhysX.cmake
-    Findpoly2tri.cmake
-    FindPVRTexTool.cmake
     FindQt.cmake
     FindRadTelemetry.cmake
-    FindRapidJSON.cmake
-    FindRapidXML.cmake
-    FindSQLite.cmake
     Findtiff.cmake
-    Findunwind.cmake
+    FindVkValidation.cmake
     FindWwise.cmake
-    FindXXHash.cmake
-    Findzstd.cmake
-    Findmcpp.cmake
-    FindSPIRVCross.cmake
-    Findazslc.cmake
 )

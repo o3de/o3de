@@ -44,7 +44,7 @@ namespace GraphCanvas
         }
     }
     
-    ContextMenuAction::SceneReaction SetEnabledStateMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction SetEnabledStateMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 

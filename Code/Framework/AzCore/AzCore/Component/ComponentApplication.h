@@ -17,6 +17,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/ProfileModuleInit.h>
+#include <AzCore/Debug/LocalFileEventLogger.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -269,7 +270,7 @@ namespace AZ
         void ResolveModulePath(AZ::OSString& modulePath) override;
 
         void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
-        
+
         /**
          * Returns Parsed CommandLine structure which supports query command line options and positional parameters
         */
@@ -282,12 +283,12 @@ namespace AZ
         * and on some operating systems (MacOS) its fairly difficult to reliably retrieve them without resorting to NS libraries
         * and making some assumptions. Instead, we allow you to pass your args in from the main(...) function.
         * Another thing to notice here is that these are non-const pointers to the argc and argv values
-        * instead of int, char**, these are int*, char***.  
-        * This is because some application layers (such as Qt) actually require that the ArgC and ArgV are modifiable, 
+        * instead of int, char**, these are int*, char***.
+        * This is because some application layers (such as Qt) actually require that the ArgC and ArgV are modifiable,
         * as they actually patch them to add/remove command line parameters during initialization.
         * but also to highlight the fact that they are pointers to static memory that must remain relevant throughout the existence
         * of the Application object.
-        * For best results, simply pass in &argc and &argv from your void main(argc, argv) in here - that memory is 
+        * For best results, simply pass in &argc and &argv from your void main(argc, argv) in here - that memory is
         * permanently tied to your process and is going to be available at all times during run.
         */
         int* GetArgC();
@@ -368,7 +369,7 @@ namespace AZ
         /**
          * Check/verify a given path for the engine marker (file) so that we can identify that
          * a given path is the engine root. This is only valid for target platforms that are built
-         * for the host platform and not deployable (ie windows, mac). 
+         * for the host platform and not deployable (ie windows, mac).
          * @param fullPath The full path to look for the engine marker
          * @return true if the input path contains the engine marker file, false if not
          */
@@ -422,6 +423,11 @@ namespace AZ
         AZ::CommandLine                             m_commandLine; // < Stores parsed command line supplied to the constructor
 
         AZStd::unique_ptr<AZ::Entity>               m_systemEntity; ///< Track the system entity to ensure we free it on shutdown.
+
+        // Created early to allow events to be logged before anything else. These will be kept in memory until
+        // a file is associated with the logger. The internal buffer is limited to 64kb and once full unexpected
+        // behavior may happen. The LocalFileEventLogger will register itself automatically with AZ::Interface<IEventLogger>.
+        AZ::Debug::LocalFileEventLogger             m_eventLogger;
     };
 }
 

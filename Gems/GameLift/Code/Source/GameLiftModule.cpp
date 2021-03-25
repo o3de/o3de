@@ -10,7 +10,6 @@
 *
 */
 #include "GameLiftModule.h"
-#include <GridMate/NetworkGridMate.h>
 #include <GameLift/Session/GameLiftClientSession.h>
 #include <GameLift/Session/GameLiftClientService.h>
 #include <GameLift/Session/GameLiftServerSession.h>

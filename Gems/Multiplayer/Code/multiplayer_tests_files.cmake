@@ -10,7 +10,8 @@
 #
 
 set(FILES
-    Tests/MultiplayerTest.cpp
-    Tests/MultiplayerLobbyComponentTest.cpp
-    Tests/MultiplayerMocks.h
+    Tests/Main.cpp
+    Tests/IMultiplayerConnectionMock.h
+    Tests/MultiplayerSystemTests.cpp
+    Tests/RewindableObjectTests.cpp
 )

@@ -12,32 +12,50 @@
 
 #pragma once
 
+#include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
 
-void EvalPrecomputedIbl(Surface surface, float3 dirToCamera, float2 brdf, out float3 outDiffuse, out float3 outSpecular)
-{   
-    float NdotV = dot(surface.normal, dirToCamera);
-    NdotV =  max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
-
-    // Using a roughness-based fresnel to get proper diffuse response from environment map lookup.
-    // Note we may need to iterate on the use of roughnessA vs roughnessLinear here, and even alternate ways to calculate the fresnel response.
-    float3 specularResponse = FresnelSchlickWithRoughness(NdotV, surface.specularF0, surface.roughnessLinear);
-    float3 diffuseResponse = 1.0 - specularResponse;
-    
-    if(o_clearCoat_feature_enabled)
-    {
-        // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
-        diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(NdotV, float3(0.04, 0.04, 0.04), surface.clearCoatRoughness) * surface.clearCoatFactor);
-    }
-
-    // Irradiance from the global IBL
+void ApplyIblDiffuse(Surface surface, float3 diffuseResponse, out float3 outDiffuse)
+{
     float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
     outDiffuse = diffuseResponse * surface.albedo * diffuseSample;
+}
 
-    // Specular from the global IBL.
+void ApplyIblSpecular(Surface surface, float3 specularResponse, float3 dirToCamera, float2 brdf, out float3 outSpecular)
+{
     float3 reflectDir = reflect(-dirToCamera, surface.normal);
+    
+    // global
     outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(surface.roughnessLinear)).rgb;
-    outSpecular *= (surface.specularF0 * brdf.x + brdf.y); // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
+    outSpecular *= (surface.specularF0 * brdf.x + brdf.y);
+    
+    // reflection probe
+    if (ObjectSrg::m_reflectionProbeData.m_useReflectionProbe)
+    {
+        if (ObjectSrg::m_reflectionProbeData.m_useParallaxCorrection)
+        {
+            reflectDir = ApplyParallaxCorrection(
+                ObjectSrg::m_reflectionProbeData.m_outerAabbMin, 
+                ObjectSrg::m_reflectionProbeData.m_outerAabbMax, 
+                ObjectSrg::m_reflectionProbeData.m_aabbPos, 
+                surface.position, 
+                reflectDir);
+        }
+    
+        float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(surface.roughnessLinear)).rgb;
+        probeSpecular *= (surface.specularF0 * brdf.x + brdf.y);
+    
+        // compute blend amount based on world position in the reflection probe volume
+        float blendAmount = ComputeLerpBetweenInnerOuterAABBs(
+            ObjectSrg::m_reflectionProbeData.m_innerAabbMin, 
+            ObjectSrg::m_reflectionProbeData.m_innerAabbMax, 
+            ObjectSrg::m_reflectionProbeData.m_outerAabbMax, 
+            ObjectSrg::m_reflectionProbeData.m_aabbPos, 
+            surface.position);
+    
+        outSpecular = lerp(outSpecular, probeSpecular, blendAmount);
+    }
 }

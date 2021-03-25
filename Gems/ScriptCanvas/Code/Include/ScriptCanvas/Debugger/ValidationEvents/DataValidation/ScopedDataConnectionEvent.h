@@ -13,10 +13,10 @@
 
 #include <AzCore/Component/EntityId.h>
 
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
-
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
-
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/FocusOnEffect.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/HighlightEffect.h>
 
@@ -40,6 +40,27 @@ namespace ScriptCanvas
             , m_connectionId(connectionId)
         {
             SetDescription("Data Connection crosses across execution boundaries, and will not provide data.");
+        }
+
+        ScopedDataConnectionEvent
+            ( const AZ::EntityId& connectionId
+            , const Node& targetNode
+            , const Slot& targetSlot
+            , const Node& sourceNode
+            , const Slot& sourceSlot)
+            : ValidationEvent(ValidationSeverity::Warning)
+            , m_connectionId(connectionId)
+        {
+            SetDescription(AZStd::string::format
+                ( "There is an invalid data connection %s.%s --> %s.%s, the data is not"
+                " in the execution path between nodes. Either route execution %s --> %s,"
+                " or store the data in a variable if it is needed."
+                , sourceNode.GetNodeName().data()
+                , sourceSlot.GetName().data()
+                , targetNode.GetNodeName().data()
+                , targetSlot.GetName().data()
+                , sourceNode.GetNodeName().data()
+                , targetNode.GetNodeName().data()));
         }
 
         bool CanAutoFix() const

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <Include/ScriptCanvas/Libraries/Operators/Containers/OperatorSize.generated.h>
@@ -23,42 +22,25 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Get Size"
             class OperatorSize : public Node
             {
             public:
-                ScriptCanvas_Node(OperatorSize,
-                    ScriptCanvas_Node::Name("Get Size")
-                    ScriptCanvas_Node::Uuid("{981EA18E-F421-4B39-9FF7-27322F3E8B14}")
-                    ScriptCanvas_Node::Description("Get the number of elements in the specified container")
-                    ScriptCanvas_Node::Version(1, OperatorSizeVersionConverter)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorSize);
+
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 static bool OperatorSizeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
                 OperatorSize() = default;
 
-                // Node
+                // Node...
                 void OnInit() override;
                 ////
 
                 void OnInputSignal(const SlotId& slotId) override;
 
-            protected:
-
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-                ScriptCanvas_DynamicDataSlot(  ScriptCanvas::DynamicDataType::Container
-                                             , ScriptCanvas::ConnectionType::Input
-                                             , ScriptCanvas_DynamicDataSlot::Name("Source", "The container to get the size of.")
-                                             , ScriptCanvas_DynamicDataSlot::SupportsMethodContractTag("Size")
-                                        );
-
-                ScriptCanvas_Property(int,
-                                      ScriptCanvas_Property::Name("Size", "The size of the specified container")
-                                      ScriptCanvas_Property::Output
-                                    );
             }; 
         }
     }

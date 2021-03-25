@@ -83,6 +83,7 @@ namespace AZ
             else
             {
                 data.m_bufferViewsInfo.resize(bufViews.size());
+                data.m_accelerationStructures.resize(bufViews.size());
                 for (size_t i = 0; i < bufViews.size(); ++i)
                 {
                     VkDescriptorBufferInfo bufferInfo = {};
@@ -111,6 +112,12 @@ namespace AZ
                     }
 
                     data.m_bufferViewsInfo[i] = bufferInfo;
+                    
+                    // if this is a buffer view of a RayTracingTLAS we need to store the vkAccelerationStructureKHR with it
+                    if (type == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+                    {
+                        data.m_accelerationStructures[i] = static_cast<const BufferView&>(*bufferView.get()).GetNativeAccelerationStructure();
+                    }
                 }
             }
 
@@ -289,6 +296,8 @@ namespace AZ
         void DescriptorSet::UpdateNativeDescriptorSet()
         {
             AZStd::vector<VkWriteDescriptorSet> writeDescSetDescs;
+            AZStd::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeAccelerationStructureDescs;
+
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             for (const WriteDescriptorData& updateData : m_updateData)
             {
@@ -336,6 +345,25 @@ namespace AZ
                         writeDescSet.pTexelBufferView = updateData.m_texelBufferViews.data() + interval.m_min;
                         writeDescSet.dstArrayElement = interval.m_min;
                         writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                        writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                    }
+                    break;
+                case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
+                    AZ_Assert(!updateData.m_bufferViewsInfo.empty(), "BufferInfo is empty.");
+                    AZ_Assert(!updateData.m_accelerationStructures.empty(), "AccelerationStructures is empty.");
+                    for (const RHI::Interval& interval : GetValidDescriptorsIntervals(updateData.m_bufferViewsInfo))
+                    {
+                        // acceleration structure descriptor is added as the pNext in the VkWriteDescriptorSet
+                        VkWriteDescriptorSetAccelerationStructureKHR writeAccelerationStructure = {};
+                        writeAccelerationStructure.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+                        writeAccelerationStructure.accelerationStructureCount = 1;
+                        writeAccelerationStructure.pAccelerationStructures = updateData.m_accelerationStructures.data() + interval.m_min;
+                        writeAccelerationStructureDescs.push_back(AZStd::move(writeAccelerationStructure));
+
+                        // writeDescSet.pBufferInfo = updateData.m_bufferViewsInfo.data() + interval.m_min;
+                        writeDescSet.dstArrayElement = interval.m_min;
+                        writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                        writeDescSet.pNext = &writeAccelerationStructureDescs.back();
                         writeDescSetDescs.push_back(AZStd::move(writeDescSet));
                     }
                     break;

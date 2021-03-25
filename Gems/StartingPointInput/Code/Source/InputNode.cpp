@@ -19,19 +19,17 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <ScriptCanvas/Libraries/Libraries.h>
-
 namespace StartingPointInput
 {
     void InputNode::OnPostActivate()
     {
-        if (GetExecutionType() == ScriptCanvas::ExecutionType::Runtime)
-        {
-            const ScriptCanvas::SlotId eventNameSlotId = InputNodeProperty::GetEventNameSlotId(this);
+        //if (GetExecutionType() == ScriptCanvas::ExecutionType::Runtime)
+        //{
+        //    const ScriptCanvas::SlotId eventNameSlotId = InputNodeProperty::GetEventNameSlotId(this);
 
-            m_eventName = (*(FindDatum(eventNameSlotId)->GetAs<ScriptCanvas::Data::StringType>()));
-            InputEventNotificationBus::Handler::BusConnect(InputEventNotificationId(m_eventName.c_str()));
-        }
+        //    m_eventName = (*(FindDatum(eventNameSlotId)->GetAs<ScriptCanvas::Data::StringType>()));
+        //    InputEventNotificationBus::Handler::BusConnect(InputEventNotificationId(m_eventName.c_str()));
+        //}
     }
 
     void InputNode::OnDeactivate()
@@ -94,4 +92,4 @@ namespace StartingPointInput
         }
         SignalOutput(releasedSlotId);
     }
-} // namespace StartingPointInput
+}

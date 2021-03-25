@@ -1,0 +1,10 @@
+{
+    "AutomatedTesting":
+    {
+        "Spectra": 
+        {
+            "IsFolder": true,
+            "Basename": "example"
+        }
+    }
+}

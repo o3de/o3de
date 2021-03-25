@@ -33,6 +33,7 @@ namespace AZ
             static SceneAPI::DataTypes::MatrixType ToTransform(const aiMatrix4x4& matrix);
             static SceneAPI::DataTypes::MatrixType ToTransform(const AZ::Matrix4x4& matrix);
             static SceneAPI::DataTypes::Color ToColor(const aiColor4D& color);
+            static AZ::Vector3 ToVector3(const aiVector3D& vector3);
         };
     } // namespace AssImpSDKWrapper
 } // namespace AZ

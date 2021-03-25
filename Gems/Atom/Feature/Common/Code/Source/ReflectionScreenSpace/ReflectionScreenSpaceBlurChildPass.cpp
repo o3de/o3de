@@ -50,7 +50,7 @@ namespace AZ
             FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        void ReflectionScreenSpaceBlurChildPass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void ReflectionScreenSpaceBlurChildPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_updateSrg)
             {
@@ -68,7 +68,7 @@ namespace AZ
                 m_updateSrg = false;
             }
 
-            FullscreenTrianglePass::CompileResources(context, producer);
+            FullscreenTrianglePass::CompileResources(context);
         }
 
     }   // namespace RPI

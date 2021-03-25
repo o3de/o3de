@@ -15,6 +15,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_Android.h
     AzFramework/Application/Application_Android.cpp
+    AzFramework/ProjectManager/ProjectManager_Android.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     AzFramework/IO/LocalFileIO_Android.cpp
     ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp

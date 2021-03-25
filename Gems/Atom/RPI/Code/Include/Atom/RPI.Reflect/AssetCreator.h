@@ -60,7 +60,7 @@ namespace AZ
             //! Subclasses should call this at the beginning of their Begin() function.
             void BeginCommon(const Data::AssetId& assetId);
 
-            //! Utility funciton that finalizes and transfers ownership of m_asset to result, if successful. 
+            //! Utility function that finalizes and transfers ownership of m_asset to result, if successful. 
             //! Otherwise returns false and result is left untouched.
             //! Subclasses should call this at the end of their End() function, after making
             //! any final changes to m_asset.
@@ -73,7 +73,7 @@ namespace AZ
             //! just need to call ReportError() for any breaking issue.
             //!
             //! @return false if any errors have been previously reported. Note, it does not return false due to previously 
-            //!         reported warnings, because warnings should not invalidate sunsequent manipulations of the m_asset.
+            //!         reported warnings, because warnings should not invalidate subsequent manipulations of the m_asset.
             bool ValidateIsReady();
 
             //! Reports errors when a pointer is null

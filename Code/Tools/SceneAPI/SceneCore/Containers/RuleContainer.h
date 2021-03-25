@@ -27,7 +27,6 @@ namespace AZ
     {
         namespace Containers
         {
-
             class RuleContainer
             {
             public:
@@ -53,6 +52,8 @@ namespace AZ
 
                 SCENE_CORE_API void AddRule(const AZStd::shared_ptr<DataTypes::IRule>& rule);
                 SCENE_CORE_API void AddRule(AZStd::shared_ptr<DataTypes::IRule>&& rule);
+
+                SCENE_CORE_API void InsertRule(const AZStd::shared_ptr<DataTypes::IRule>& rule, size_t position);
 
                 SCENE_CORE_API void RemoveRule(size_t index);
                 SCENE_CORE_API void RemoveRule(const AZStd::shared_ptr<DataTypes::IRule>& rule);

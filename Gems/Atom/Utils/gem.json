@@ -1,4 +1,5 @@
 {
+    "gem_name": "Atom_Utils",
     "Dependencies": [
         {
             "Uuid": "fb7f322c8bdb42228d9e155c954f98bd",

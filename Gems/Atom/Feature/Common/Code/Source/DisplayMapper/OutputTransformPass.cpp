@@ -53,7 +53,7 @@ namespace AZ
             InitializeShaderVariant();
         }
 
-        void OutputTransformPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void OutputTransformPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph);
             DeclarePassDependenciesToFrameGraph(frameGraph);
@@ -61,7 +61,7 @@ namespace AZ
             frameGraph.SetEstimatedItemCount(1);
         }
 
-        void OutputTransformPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void OutputTransformPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "OutputTransformPass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 
@@ -76,7 +76,7 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void OutputTransformPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void OutputTransformPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "LookModificationPass %s has a null shader resource group when calling Execute.", GetPathName().GetCStr());
 

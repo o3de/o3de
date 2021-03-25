@@ -53,11 +53,14 @@ namespace GraphCanvas
         , public CommentNotificationBus::Handler
         , public SceneNotificationBus::Handler
         , public SceneMemberNotificationBus::MultiHandler
-        , public GeometryNotificationBus::Handler
+        , public GeometryNotificationBus::MultiHandler
         , public NodeGroupRequestBus::Handler
         , public NodeGroupNotificationBus::MultiHandler
         , public PersistentIdNotificationBus::Handler
-        , public VisualNotificationBus::Handler
+        , public VisualNotificationBus::MultiHandler
+        , public AZ::SystemTickBus::Handler
+        , public RootGraphicsItemNotificationBus::Handler
+        , public CollapsedNodeGroupNotificationBus::Handler
     {
         friend class NodeGroupFrameGraphicsWidget;
 
@@ -87,6 +90,9 @@ namespace GraphCanvas
 
             bool      m_enableAsBookmark;
             int       m_shortcut;
+
+            // Signals wether or not this group was created before or after the group refactor so we can update the initial state.
+            bool      m_isNewGroup = true;
 
             bool                                     m_isCollapsed;
             AZStd::vector< PersistentGraphMemberId > m_persistentGroupedIds;
@@ -132,26 +138,37 @@ namespace GraphCanvas
         ////
 
         // NodeGroupRequestBus
-        StateController<bool>* GetExternallyControlledStateController() override;
-
         void SetGroupSize(QRectF blockDimension) override;
         QRectF GetGroupBoundingBox() const override;
         AZ::Color GetGroupColor() const override;
         
         void CollapseGroup() override;
         void ExpandGroup() override;
-        void UngroupGroup() override;
+        void UngroupGroup() override;        
 
         bool IsCollapsed() const override;
         AZ::EntityId GetCollapsedNodeId() const override;
+
+        void AddElementToGroup(const AZ::EntityId& groupableElement) override;
+        void AddElementsToGroup(const AZStd::unordered_set<AZ::EntityId>& groupableElements) override;
+        void AddElementsVectorToGroup(const AZStd::vector<AZ::EntityId>& groupableElements) override;
+
+        void RemoveElementFromGroup(const AZ::EntityId& groupableElement) override;
+        void RemoveElementsFromGroup(const AZStd::unordered_set<AZ::EntityId>& groupableElements) override;
+        void RemoveElementsVectorFromGroup(const AZStd::vector<AZ::EntityId>& groupableElements) override;
         
         void FindGroupedElements(AZStd::vector< NodeId >& groupedElements) override;
 
+        void ResizeGroupToElements(bool growGroupOnly) override;
+
         bool IsInTitle(const QPointF& scenePos) const override;
+
+        void AdjustTitleSize() override;
         ////
 
         // NodeGroupNotifications
         void OnCollapsed(const NodeId& collapsedNodeId) override;
+        void OnExpanded() override;
         ////
 
         // NodeNotificationBus
@@ -173,6 +190,7 @@ namespace GraphCanvas
 
         // GeometryNotificationBus
         void OnPositionChanged(const AZ::EntityId& entityId, const AZ::Vector2& position) override;
+        void OnBoundsChanged() override;
         ////
 
         // EntitySaveDataRequestBus
@@ -211,23 +229,48 @@ namespace GraphCanvas
         void OnDragSelectStart() override;
         void OnDragSelectEnd() override;
 
+        void OnNodeRemoved(const AZ::EntityId& sceneMemberId) override;
+        void OnSceneMemberRemoved(const AZ::EntityId& sceneMemberId) override;
+
         void OnEntitiesDeserializationComplete(const GraphSerialization&) override;
 
         void OnGraphLoadComplete() override;
-
-        void OnSceneMemberAdded(const AZ::EntityId& sceneMemberId) override;
-        void OnSceneMemberRemoved(const AZ::EntityId& sceneMemberId) override;
+        void PostOnGraphLoadComplete() override;
         ////
 
         // PersistentIdNotifications
         void OnPersistentIdsRemapped(const AZStd::unordered_map<PersistentGraphMemberId, PersistentGraphMemberId>& persistentIdRemapping) override;
         ////
 
+        // SystemTickBus
+        void OnSystemTick();
+        ////
+
+        // VisualNotificationBus
+        void OnPositionAnimateBegin() override;
+        void OnPositionAnimateEnd() override;
+        ////
+
+        // RootGraphicsNotificationBus
+        void OnDisplayStateChanged(RootGraphicsItemDisplayState oldState, RootGraphicsItemDisplayState newState) override;
+        ////
+
+        // CollapsedNodeGroupNotificationBus
+        void OnExpansionComplete() override;
+        ////
+
+        void OnFrameResizeStart();
+        void OnFrameResized();
+        void OnFrameResizeEnd();
+
+        EditorId GetEditorId() const;
+
     protected:
 
         void RestoreCollapsedState();
-
-        void FindInteriorElements(AZStd::vector< NodeId >& interiorElements);
+        void TryAndRestoreCollapsedState();
+        
+        void FindInteriorElements(AZStd::unordered_set< AZ::EntityId >& interiorElements, Qt::ItemSelectionMode = Qt::ItemSelectionMode::ContainsItemShape);
 
         float SetDisplayHeight(float height);
         float SetDisplayWidth(float width);
@@ -237,21 +280,31 @@ namespace GraphCanvas
 
         void OnBookmarkStatusChanged();
 
-        void CacheGroupedElements();
-        void DirtyGroupedElements();
+        void UpdateSavedElements();
+
+        void RemapGroupedPersistentIds();
 
     private:
 
+        bool AddToGroupInternal(const AZ::EntityId& groupableElement);
+
+        void UpdateHighlightState();
         void SetupHighlightElementsStateSetters();
 
         void SetupGroupedElementsStateSetters();
         void SetupSubGraphGroupedElementsStateSetters(const GraphSubGraph& subGraph);
 
+        void OnElementGrouped(const AZ::EntityId& groupedElement);
+        void OnElementUngrouped(const AZ::EntityId& ungroupedElement);
+
         NodeGroupFrameComponent(const NodeGroupFrameComponent&) = delete;
         const NodeGroupFrameComponent& operator=(const NodeGroupFrameComponent&) = delete;
-        void OnExpanded();
+        void SignalExpanded();
 
-        void FindElementsForDrag();
+        void SetupElementsForMove();
+        void SignalDirty();
+
+        QRectF GetGroupBoundary() const;
 
         QGraphicsLinearLayout*               m_displayLayout;
         
@@ -264,23 +317,36 @@ namespace GraphCanvas
 
         AZ::Vector2                             m_previousPosition;
 
+        EditorId                                m_editorId;
+
         AZ::EntityId                            m_collapsedNodeId;
 
+        bool                                    m_needsDisplayStateHighlight;
+        bool                                    m_needsManualHighlight;
+
         bool                                    m_enableSelectionManipulation;
+        bool                                    m_ignoreDisplayStateChanges;
+        bool                                    m_ignoreSubSlementPostionChanged;
+        bool                                    m_isGroupAnimating;
 
-        bool                                    m_needsElements;
-        AZStd::vector< AZ::EntityId >           m_movingElements;
-        
-        bool                                    m_groupedElementsDirty;
-        AZStd::vector< AZ::EntityId >           m_groupedElements;
+        AZStd::unordered_set< AZ::EntityId >    m_initializingGroups;
+        AZStd::unordered_set< AZ::EntityId >    m_groupedGrouped;
+        AZStd::unordered_map< AZ::EntityId, AZ::EntityId > m_collapsedGroupMapping;
 
-        StackStateController<bool>                  m_isExternallyControlled;
+        AZStd::unordered_set< AZ::EntityId >    m_movingElements;
+
+        AZStd::unordered_set< AZ::EntityId >        m_ignoreElementsOnResize;
+        AZStd::unordered_set< AZ::EntityId >        m_groupedElements;
+
+        AZStd::unordered_set< AZ::EntityId >        m_animatingElements;
+
+        // List of redirections available on the collapsed group. Used to persist these
+        // slots on a collapsed node post duplicate/copy and paste. Will not persist between saves.
+        AZStd::vector< Endpoint >   m_collapsedRedirectionEndpoints;
 
         StateSetter< RootGraphicsItemDisplayState > m_highlightDisplayStateStateSetter;
-        StateSetter< bool >                         m_externallyControlledStateSetter;
 
         // Grouped Element StateControllers
-        StateSetter< AZStd::string >                m_forcedGroupLayerStateSetter;
         StateSetter< RootGraphicsItemDisplayState > m_forcedGroupDisplayStateStateSetter;
     };
 
@@ -406,6 +472,8 @@ namespace GraphCanvas
         void OnMemberSetupComplete() override;
         ////
 
+        void ResizeToGroup(int adjustHorizontal, int adjustVertical, bool growOnly = false);
+
     protected:
 
         void UpdateHighlightState();
@@ -423,6 +491,8 @@ namespace GraphCanvas
 
         void ResetCursor();
         void UpdateCursor(QPointF cursorPoint);
+
+        Styling::StyleHelper m_borderStyle;
 
         NodeGroupFrameComponent& m_nodeFrameComponent;
 

@@ -93,6 +93,11 @@ namespace ScriptCanvas
         SetConnectionType(connectionType);
     }
 
+    void DataSlotConfiguration::DeepCopyFrom(const Datum& source)
+    {
+        m_datum.DeepCopyDatum(source);
+    }
+
     void DataSlotConfiguration::SetType(Data::Type dataType)
     {
         m_datum.SetType(dataType);

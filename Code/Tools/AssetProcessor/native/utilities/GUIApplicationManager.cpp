@@ -674,7 +674,7 @@ void GUIApplicationManager::FileChanged(QString path)
 
         if (m_connectionManager)
         {
-            m_connectionManager->UpdateWhiteListFromBootStrap();
+            m_connectionManager->UpdateAllowedListFromBootStrap();
         }
 
         // Re-merge the Bootstrap.cfg into the SettingsRegistry

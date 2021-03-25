@@ -202,9 +202,9 @@ Q_SIGNALS:
     void Error(unsigned int connId, QString errorString);
 
     // the token is just any identifier to identify a particular connection, potentially from the same host.
-    // the response (AddressIsWhiteListed) will have the same token as was sent.
-    void IsAddressWhiteListed(QHostAddress hostAddress, void* token);
-    void AddressIsWhiteListed(void* token, bool result);
+    // the response (AddressIsInAllowedList) will have the same token as was sent.
+    void IsAddressInAllowedList(QHostAddress hostAddress, void* token);
+    void AddressIsInAllowedList(void* token, bool result);
 
     //metrics
     void NumOpenRequestsChanged();

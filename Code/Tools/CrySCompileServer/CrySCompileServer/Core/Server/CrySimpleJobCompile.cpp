@@ -251,8 +251,6 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
             },{
                 "ORBIS", SEnviropment::m_Orbis_DXC
             },{
-                "DURANGO", SEnviropment::m_Durango_FXC
-            },{
                 "JASPER", SEnviropment::m_Jasper_FXC
             }
         };
@@ -457,10 +455,6 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
     AZStd::string hardwareTarget;
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-    #if defined(TOOLS_SUPPORT_XENIA)
-        #define AZ_RESTRICTED_SECTION CRYSIMPLEJOBCOMPILE_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleJobCompile_cpp, xenia)
-    #endif
     #if defined(TOOLS_SUPPORT_JASPER)
         #define AZ_RESTRICTED_SECTION CRYSIMPLEJOBCOMPILE_CPP_SECTION_1
 #include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleJobCompile_cpp, jasper)

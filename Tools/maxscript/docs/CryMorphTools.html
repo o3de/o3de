@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>cryTools: CryMorphTools</title>
+
+
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools:
+CryMorphTools </h1>
+
+<span style="font-family: Arial;"></span>
+<p style="font-family: Arial;"><br>
+
+</p>
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Tutorials</h2>
+
+<span style="font-family: Arial;">Here are some tutorials
+on using the MorphTools:<br>
+
+<br>
+
+<a href="MirrorMorphs.html">Mirroring Morphs and
+Deformation</a> (without altering point index)<br>
+
+<br>
+
+<a href="TransferMorphs.html">Transferring Morphs Between
+Characters</a><br>
+
+<br>
+
+<a href="LODMorphs.html">Generating Head LODs with Morph
+Targets</a><br>
+
+<br>
+
+</span>
+<p style="font-family: Arial;"><img alt="morphtools rollout" src="images/morphTools.png" style="border: 0px solid ; margin-right: 1em; width: 204px; height: 1795px; float: left;">
+</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);">
+Facial Tools </h2>
+
+<span style="font-family: Arial;">Please refer to the
+tutorials above about how to use these tools.
+</span>
+<p style="font-family: Arial;"><span style="font-weight: bold;">Auto Generation/Extraction</span>
+</p>
+
+<span style="font-family: Arial;">
+When you press '</span><b style="font-family: Arial;">Load
+Morphs from Selected</b><span style="font-family: Arial;">,
+the text at the top changes to echo the number of morphs loaded fromt
+he selected head/mesh. When using the number of morph targets rigidly
+setup for the Crysis pipeline, you can ignore 'dirty output', when you
+bake out morphs, they will be arranged by morph set and colored in the
+fashion that you are used to. The baked out head meshes will also be
+named with their respective morpher name.
+</span>
+<p style="font-family: Arial;"><b>Enable Dirty Output</b>
+- This means that you are exporting a head
+or object that does not use the rigid preset structure of the Crysis
+facial pipeline. <b>Dirty Output</b> is used when baking
+or adding an
+arbitrary number of morphs to a selected head or object with a morph
+modifier (useful for baking out vertex animation, an example in Crysis
+would be the parachute). The morphs created are named using the names
+fromt he morph target in the morpher modifier, and they are randomly
+colored.</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Organize (Align to helpers)</span>
+-
+will move the heads created to artist specified locations, these
+locations are marked by helper dummies with the morph name prefixed by
+&lsquo;<span style="font-weight: bold;">Dummy_</span>&rsquo;.
+The overflow (targets baked out that have no corresponding helper) will
+default to a row up top, like the &lsquo;dirty&rsquo; output
+mode.
+</p>
+
+<p style="font-family: Arial;">
+<b>New Layer:</b> - Enter text defining the name of the
+layer you would like the morphs baked to.
+</p>
+
+<p style="font-family: Arial;">
+<b>Add Selected Morphs to Picked</b> - This will ass all
+selected morph targets to your picked head. The morphs will be named
+after the meshes that created them.</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Add organized morphs to head</span>
+- will dump all the morphs you created (even overflow) to a new head</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Delete Faces from Targets</span>
+- You
+can load a selection of faces and then delete those same faces from any
+number of selected objects. All objects must share the same point
+index. Useful for deleting faces on multiple heads. (Used in Crysis to
+remove the NK heads, but allow eye animation to be played inside the
+Asian Nanosuit helmet.)
+</p>
+
+<span style="font-family: Arial;"></span>
+<p style="font-family: Arial;"><span style="font-weight: bold;">Mirror Eye Animation </span>-
+This
+will mirror the procedural eye calibration animation from Left to Right
+or Right to Left. This animation is used to bake out eye deformation
+targets that are later procedurally driven by look IK. The bone eye rig
+must be present in the scene to use this tool.
+</p>
+
+<span style="font-family: Arial;"></span>
+<p style="font-family: Arial;"><font color="#ff0000"><span style="font-weight: bold;">Tech Note:</span> </font>Using
+this and many other
+facial tools (like non-dirty output above) requires strict adherence to
+the CryEngine2 Facial Pipeline, these eye bones have specific names and
+those names are used to locate and mirror their animation.
+</p>
+
+<p style="font-family: Arial;">
+<span style="font-weight: bold;">Morph Transfer</span>
+- This is used to transfer morphs between heads with unlike topologies/
+point indices.</p>
+
+<span style="font-family: Arial;"></span><font style="font-family: Arial;" color="#808000">
+</font>
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);">Sync-Collapse
+by Location</h2>
+
+<p style="font-family: Arial;">
+This tool collapses points by location instead of point index, useful
+for creating head LODs and loading those collapsed point sets onto
+other heads. Unfortunately, it is no longer supported. Though the code
+is there if you have the need and want to check it out. <a href="images/syncLoc.jpg" target="blank">Here</a> is an image
+explaining the basic concept, and <a href="images/syncLoc2.jpg" target="blank">here</a>
+is what the marking looks like.<big><font size="2"><big><span style="font-size: 10pt;"></span></big></font></big><br>
+
+<span style="font-weight: bold;"></span><br>
+
+<span style="font-weight: bold;">Hide Collapsed</span>
+- will hide the points you collapse as you go</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Collapse Variations as I Work </span>-
+will apply your collapse to all head variations as you work</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Mark Collapased Verts</span>
+- will mark the verts you have collapsed on all the head variations<br>
+
+</p>
+
+<p style="font-family: Arial;"><span style="font-weight: bold;">Here is the basic workflow:</span><br>
+
+1)&nbsp;&nbsp; Select the main head you will model on and click
+&lsquo;<span style="font-weight: bold;">Select Main</span>&rsquo;<br>
+
+2)&nbsp;&nbsp; You &lsquo;<span style="font-weight: bold;">collapse</span>&rsquo;
+verts on the main head (two at a time) to make an LOD, then click
+&lsquo;<span style="font-weight: bold;">Save Collapse
+Data</span>&rsquo;<br>
+
+3)&nbsp;&nbsp; This then saves an &lsquo;<span style="font-weight: bold;">.i2l</span>&rsquo; file
+with your changes.<br>
+
+4)&nbsp;&nbsp; Open a file with other heads (different
+character head)<br>
+
+5)&nbsp;&nbsp; Select all the heads and click &lsquo;<span style="font-weight: bold;">Select variations</span>&rsquo;<br>
+
+6)&nbsp;&nbsp; Then click &lsquo;<span style="font-weight: bold;">Load Collapse Data</span>&rsquo;
+and select your &lsquo;<span style="font-weight: bold;">.i2l</span>&rsquo;
+file<br>
+
+7)&nbsp;&nbsp; Then click &lsquo;<span style="font-weight: bold;">Apply</span>&rsquo;.<br>
+
+<br>
+
+</p>
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Pose-Driven
+Morphs</h2>
+
+<h3 style="background-color: rgb(204, 204, 204);"><span style="font-family: Arial;"></span><span style="font-weight: bold; font-family: Arial;"></span><span style="font-family: Arial;"><span style="font-weight: bold;">Head/Neck</span></span></h3>
+<p><span style="font-family: Arial;">Pose-driven morphs allow you to
+set different &lsquo;pose vectors&rsquo; like &lsquo;look_up&rsquo;,
+&lsquo;look_down&rsquo;, &lsquo;look_left&rsquo;,
+&lsquo;look_right&rsquo;, and so on. Each of these directions, can be
+associated with a morph target, so when a characters head rotates left,
+the geometry is cleaned up with a nice morph shape that an artist
+sculpted just for that position.<br style="font-family: Arial;">
+<span style="font-weight: bold; font-family: Arial;"></span></span></p>
+<p style="font-family: Arial;"><font color="#ff0000"><span style="font-weight: bold;">Tech Note:</span>&nbsp;</font>As of right now this only works with Skin. But we have a few heads using the Skin modifier, and we can convert Physique to Skin.<br>
+<span style="font-weight: bold;"></span></p>
+<p style="font-family: Arial;"><span style="font-weight: bold;">Usage:</span> First you click &lsquo;<span style="font-weight: bold;">Select Character Head</span>&rsquo; which will then change to HeadName + &lsquo;Head Loaded<br>
+When you select a pose vector, the &lsquo;<span style="font-weight: bold;">Create Pose Shape</span>&rsquo;
+button now becomes enabled if a pose shape associated with this vector
+is not already present. When you click this button it will make a head
+snapshot in the position of the vector. Note that we are defining the
+vectors, and that this system does not allow for an arbitrary number of
+vectors and associated morphs (in engine). Here is what it looks like
+if you click &lsquo;<span style="font-weight: bold;">Create Pose Shape</span>&rsquo; for each vector:</p>
+<p><span style="font-family: Arial;"></span><img style="width: 500px; height: 487px;" alt="poseShape" src="images/poseShape.jpg"><span style="font-family: Arial;"><br>
+<br>
+You can now edit any of these objects. The objects are named: <span style="font-weight: bold;">Look_Up_sculpt</span>,<span style="font-weight: bold;"> Look_Down_sculpt</span>, <span style="font-weight: bold;">Look_Right_sculpt</span>, <span style="font-weight: bold;">Look_Left_sculpt</span>, <span style="font-weight: bold;">Tilt_Left_sculpt</span>, <span style="font-weight: bold;">Tilt_Right_sculpt</span><br>
+<br>
+If you click &lsquo;<span style="font-weight: bold;">Add Pose Shape To Morpher</span>&rsquo;, the tool will generate a relative shape with all of the skinning data culled from it, and apply it to the loaded head.</span></p>
+<p><span style="font-family: Arial;"></span><span style="font-family: Arial;"><span style="font-weight: normal;">The morphs are added to the Morpher in the following channels:</span><br>
+<span style="font-weight: bold;">1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Look_Up</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Look_Down</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Look_Right</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Look_Left</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">5)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tilt_Left</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">6)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tilt_Right</span><br>
+<br>
+You can work on a corrective shape, then click &lsquo;<span style="font-weight: bold;">Add Pose Shape To Morpher</span>&rsquo; and it will apply your work over the associated channel so that you can test as you go. If you click &lsquo;<span style="font-weight: bold;">Extract Relative Pose Shape</span>&rsquo;,
+the tool will spit out a relative morph shape in the position of the
+original character head with your sculpt changes (minus all
+skinning-related transformations). That looks like so:</span></p>
+<p><span style="font-family: Arial;"></span><img style="width: 498px; height: 265px;" alt="relativePoseShape" src="images/relativePoseShape.png"><span style="font-family: Arial;"><br>
+<br>
+Above, some points on Look_Left_sculpt have been tweaked to give the
+neck the volume lost in the skinned rotation. The relative shape was
+extracted and we now see it on top of the Morrison head (pink, and
+looks like he has a goiter).</span></p>
+<p style="font-weight: bold;"><span style="font-family: Arial;">Facial Editor Setup:</span></p>
+<p><span style="font-family: Arial;"></span><img style="width: 646px; height: 387px;" alt="facialEditor" src="images/facialEditor_pose.png"><span style="font-family: Arial;"><br>
+<br>
+So you just set the targets up like so, ignore the naming here.</span></p>
+<h3 style="background-color: rgb(204, 204, 204);"><span style="font-family: Arial;"><span style="font-weight: bold;">Fleshy Eyes (Auto-Created)</span></span></h3>
+<p><span style="font-family: Arial;">This works much the same way as
+the tool above, but the eye directions drive a special eye rig. The
+look directions are already setup, the character just needs to be
+imported into this file, you can then refit the bones to his eyes and
+weight them.</span></p>
+<p><span style="font-family: Arial;">This rig is located in the following path:<br>
+<span style="font-weight: bold;">Tools\maxscript\ref\fleshy_eye_rig.max</span></span></p>
+<span style="font-weight: bold; font-family: Arial;"></span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Baking Tools</h2>
+<span style="font-weight: bold; font-family: Arial;">Bake Deformation to Morphs<br>
+</span><span style="font-family: Arial;">This is a simple tool, you
+load an object that has a deformation applied over time. You then set
+the frames in which you want the deformation baked off to morphs, then
+the number of morphs you would like it baked to.</span><span style="font-weight: bold; font-family: Arial;"><br>
+</span><br>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Diagnostic Tools</h2>
+<span style="font-family: Arial;"></span><span style="font-weight: bold; font-family: Arial;">Morph Manager<br>
+</span><span style="font-family: Arial;">This is a better morph rollout that comes from the Max SDK/help docs</span><span style="font-weight: bold; font-family: Arial;"><br>
+<br>
+Generate Morph List<br>
+</span><span style="font-family: Arial;">This spits out a list of the morphs for a current object to a list in the Listener. If '<span style="font-weight: bold;">Include Channel Numbers</span>' is checked, channel numbers will also be printed.</span><span style="font-weight: bold; font-family: Arial;"><br>
+</span><span style="font-family: Arial;"></span><span style="font-family: Arial;"></span>
+</body>
+</html>

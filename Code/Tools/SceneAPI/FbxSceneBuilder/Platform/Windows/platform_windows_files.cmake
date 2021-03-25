@@ -10,16 +10,4 @@
 #
 
 set(FILES
-    ../../ImportContexts/AssImpImportContexts.h
-    ../../ImportContexts/AssImpImportContexts.cpp
-    ../../Importers/AssImpColorStreamImporter.h
-    ../../Importers/AssImpColorStreamImporter.cpp
-    ../../Importers/AssImpMaterialImporter.h
-    ../../Importers/AssImpMaterialImporter.cpp
-    ../../Importers/AssImpMeshImporter.h
-    ../../Importers/AssImpMeshImporter.cpp
-    ../../Importers/AssImpUvMapImporter.h
-    ../../Importers/AssImpUvMapImporter.cpp
-    ../../Importers/AssImpTransformImporter.h
-    ../../Importers/AssImpTransformImporter.cpp
 )

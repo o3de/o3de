@@ -40,16 +40,6 @@ ly_add_target(
         *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
 )
 
-# Add ENABLE_MULTIPLAYER_COMPRESSION define to the following source files when the LY_ENABLE_MULTIPLAYER_COMPRESSION cache variable has been set
-if($CACHE{LY_ENABLE_MULTIPLAYER_COMPRESSION})
-    set_property(SOURCE
-        CompressionCommon.cpp
-        #...
-        APPEND PROPERTY 
-            COMPILE_DEFINITIONS ENABLE_MULTIPLAYER_COMPRESSION
-    )
-endif()
-
 ################################################################################
 # Tests
 ################################################################################

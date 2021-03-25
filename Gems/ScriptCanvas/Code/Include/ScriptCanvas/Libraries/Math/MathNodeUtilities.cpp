@@ -78,7 +78,6 @@ namespace ScriptCanvas
             return dis(randomEngineVar->m_randomEngine);
         }
 
-    } // namespace TransformNodes
-
-} // namespace ScriptCanvas
+    }
+} 
 

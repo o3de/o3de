@@ -165,7 +165,7 @@ namespace UnitTest
     void AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture::MoveManipulatorAlongAxis(State& state)
     {
         // the initial starting position of the manipulator (in front of the camera)
-        const auto initialPositionWorld = state.m_linearManipulator->GetPosition();
+        const auto initialPositionWorld = state.m_linearManipulator->GetLocalPosition();
         // where the manipulator should end up (in front and to the left of the camera)
         const auto finalPositionWorld = AZ::Vector3(-10.0f, 50.0f, 0.0f);
         // perspective scale factor for manipulator distance to camera

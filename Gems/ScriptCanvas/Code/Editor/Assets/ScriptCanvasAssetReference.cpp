@@ -59,4 +59,4 @@ namespace ScriptCanvasEditor
         return m_storeInObjectStream;
     }
 
-} // namespace ScriptCanvasEditor
+}

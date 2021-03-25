@@ -15,8 +15,3 @@
 
 using namespace ScriptCanvasTests;
 
-TEST_F(ScriptCanvasTestFixture, Regression_LY_79396)
-{
-    // Enable when BE2.0 goes to main
-    //RunUnitTestGraph("LY_SC_UnitTest_LY_79396");
-}

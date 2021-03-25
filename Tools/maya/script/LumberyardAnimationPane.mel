@@ -1,0 +1,113 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+//////////////////////////////
+// Creates the Animation Pane UI
+
+LumberyardAnimationPaneLoadDependencies();
+
+//! Load required scripts for the Lumberyard Animation Pane
+global proc LumberyardAnimationPaneLoadDependencies()
+{
+    eval("source cryAnim.mel");
+    eval("source LumberyardAnimationManager.mel");
+    eval("source LumberyardAnimationUtilities.mel");
+}
+
+//! Creates a rowLayout UI item in the Animation Pane corresponding to an animation export
+/*!
+ \param $animationExportNode The animation export node corresponding to the new rowLayout
+*/
+proc LumberyardAnimationPaneCreateUIRow(string $animationExportNode)
+{
+    global int $g_rowItemHeight;
+    
+    if($animationExportNode == "")
+    {
+        return;
+    }
+    
+    setParent LUMBERYARDTOOL_ANIMATION_LISTBOX;
+    string $animationExportName = `LumberyardUtilitiesGetAnimationExportName $animationExportNode`;
+    
+    rowLayout -numberOfColumns 2 -columnWidth2 19 240
+        -height $g_rowItemHeight -columnAttach2 "left" "left" -columnOffset2 4 4;
+    {
+        $newCheckBox = `checkBox -label "" -value 1 -backgroundColor 0.5 0.5 0.5`;
+        connectControl $newCheckBox ($animationExportNode+".shouldExport");
+        text -align "left" -label $animationExportName -width 240;
+    }
+}
+
+//! Create instruction texts for Animation export list and add it
+proc LumberyardAnimationCreateInstsructionTexts()
+{   
+    setParent LUMBERYARDTOOL_ANIMATION_LISTBOX;
+    rowColumnLayout -numberOfRows 1 -rowOffset 1 "top" 45 -columnOffset 1 "both" 80;
+    text -label "To add an animation, click on Animation Manager";
+}
+
+//! Gets all animation export names from the data backend and creates the UI elements for them
+global proc LumberyardAnimationPaneReadExports()
+{
+    if (!`LumberyardUtilitiesUpgradeAnimationData`)
+    {
+        window -edit -visible false LUMBERYARDTOOL_MAIN_WINDOW;
+        return;
+    }
+    setParent LUMBERYARDTOOL_ANIMATION_LISTBOX;
+    string $children[] = `scrollLayout -query -childArray LUMBERYARDTOOL_ANIMATION_LISTBOX`;
+    for ($child in $children)
+    {
+        deleteUI $child;
+    }
+    
+    string $exportNodes[] = `LumberyardUtilitiesGetAnimationExportNodes`;
+    
+    if (size($exportNodes) == 0)
+    {
+        LumberyardAnimationCreateInstsructionTexts;
+        return;
+    }
+    
+    for($exportNode in $exportNodes)
+    {
+        LumberyardAnimationPaneCreateUIRow($exportNode);
+    }
+}
+
+//! Creates the main Animation Pane UI for the Lumberyard Tool
+global proc LumberyardAnimationPaneCreate()
+{
+    global float $g_UIColor[];
+    global int $g_animationHeightDiff;
+    
+    setParent LUMBERYARDTOOL_MAIN_LAYOUT;
+    frameLayout -collapsable true -marginHeight 5 -marginWidth 5 -label "Animation Export" 
+        -collapseCommand ("LumberyardToolResizeWindow " + (-$g_animationHeightDiff)) -expandCommand ("LumberyardToolResizeWindow " + $g_animationHeightDiff)
+        LUMBERYARDTOOL_ANIMATION_FRAME;
+    {
+        columnLayout -adjustableColumn true LUMBERYARDTOOL_ANIMATION_LAYOUT;
+        {
+            scrollLayout -height 120 -backgroundColor 0 0 0 -visible true LUMBERYARDTOOL_ANIMATION_LISTBOX;
+            setParent LUMBERYARDTOOL_ANIMATION_LAYOUT;
+            button -label "Animation Manager" -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -command "LumberyardAnimationManagerCreateWindow" LUMBERYARDTOOL_ANIMATIONMANAGER_BUTTON;
+            button -label "Export Animations" -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -command "LumberyardUtilitiesExportSelectedAnimations 1" LUMBERYARDTOOL_ANIMATIONEXPORT_BUTTON;
+        }
+    }
+    
+    LumberyardAnimationPaneReadExports();
+    scriptJob -event "NewSceneOpened" "LumberyardAnimationPaneReadExports" -parent "LUMBERYARDTOOL_MAIN_WINDOW";
+    scriptJob -event "PostSceneRead" "LumberyardAnimationPaneReadExports" -parent "LUMBERYARDTOOL_MAIN_WINDOW";
+}

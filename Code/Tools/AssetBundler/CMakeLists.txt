@@ -21,9 +21,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             .
-    COMPILE_DEFINITIONS
-        PRIVATE
-            METRICS_ENABLED
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzToolsFramework

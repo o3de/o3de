@@ -21,7 +21,7 @@
                     "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-consoles-symbols-${BUILD_NUMBER}.zip"
                 }
             ],
-            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "BOOTSTRAP_CFG_GAME_FOLDER":"AutomatedTesting",
             "SKIP_BUILD": 1,
             "BUILD_TARGETS":[
                 {
@@ -37,11 +37,6 @@
                 {
                     "BUILD_CONFIG_FILENAME": "build_config.json",
                     "PLATFORM": "Provo",
-                    "TYPE": "profile"
-                },
-                {
-                    "BUILD_CONFIG_FILENAME": "build_config.json",
-                    "PLATFORM": "Xenia",
                     "TYPE": "profile"
                 }
             ]
@@ -75,7 +70,7 @@
                     "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-cmake_mac_all-${BUILD_NUMBER}.zip"
                 }
             ],
-            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "BOOTSTRAP_CFG_GAME_FOLDER":"AutomatedTesting",
             "SKIP_BUILD": 1,
             "BUILD_TARGETS":[
                 {
@@ -97,7 +92,7 @@
                     "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-cmake_linux_all-${BUILD_NUMBER}.zip"
                 }
             ],
-            "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
+            "BOOTSTRAP_CFG_GAME_FOLDER":"AutomatedTesting",
             "SKIP_BUILD": 1,
             "BUILD_TARGETS":[
                 {

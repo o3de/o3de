@@ -32,6 +32,8 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class PreviewerFactory;
+        class ProductAssetBrowserEntry;
+        class SourceAssetBrowserEntry;
     }
 }
 
@@ -69,7 +71,10 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const override;
 
-    bool CanAcceptDragAndDropEvent(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) const;
+    bool CanAcceptDragAndDropEvent(
+        QDropEvent* event, AzQtComponents::DragAndDropContextBase& context,
+        AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>*> outSources = AZStd::nullopt,
+        AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> outProducts = AZStd::nullopt) const;
 
 private:
     AZStd::unique_ptr<const LegacyPreviewerFactory> m_previewerFactory;

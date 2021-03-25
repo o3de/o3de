@@ -1,121 +1,153 @@
 {
+  "profile_pipe": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "steps": [
+      "profile",
+      "asset_profile"
+    ]
+  },
   "metrics": {
-    "TAGS":[
+    "TAGS": [
       "weekly"
     ],
-    "COMMAND":"python_mac.sh",
+    "COMMAND": "python_mac.sh",
     "PARAMETERS": {
-        "SCRIPT_PATH":"Tools/build/JenkinsScripts/build/ci_build_metrics.py",
-        "SCRIPT_PARAMETERS":"--platform Mac --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
+      "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/ci_build_metrics.py",
+      "SCRIPT_PARAMETERS": "--platform Mac --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
     }
   },
   "debug": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_mac.sh",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"debug",
-      "OUTPUT_DIRECTORY":"build/mac",
-      "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"ALL_BUILD"
+      "CONFIGURATION": "debug",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   },
   "profile": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "daily-pipeline-metrics"
     ],
-    "COMMAND":"build_mac.sh",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/mac",
-      "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"ALL_BUILD"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   },
   "profile_nounity": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_mac.sh",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/mac",
-      "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=FALSE",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"ALL_BUILD"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=FALSE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   },
   "asset_profile": {
-    "TAGS":[
+    "TAGS": [],
+    "COMMAND": "build_asset_mac.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "osx_gl"
+    }
+  },
+  "asset_clean_profile": {
+    "TAGS": [
       "nightly"
     ],
-    "COMMAND":"build_asset_mac.sh",
+    "PIPELINE_ENV": {
+      "CLEAN_OUTPUT_DIRECTORY": "1"
+    },
+    "COMMAND": "build_asset_mac.sh",
     "PARAMETERS": {
-        "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build/mac",
-        "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample",
-        "CMAKE_TARGET":"AssetProcessorBatch",
-        "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-        "ASSET_PROCESSOR_PLATFORMS":"osx_gl"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "osx_gl"
     }
   },
   "periodic_test_profile": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_test_mac.sh",
+    "COMMAND": "build_test_mac.sh",
     "PARAMETERS": {
-        "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build/mac",
-        "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-        "CMAKE_TARGET":"TEST_SUITE_periodic",
-        "CTEST_OPTIONS":"-L \"(periodic)\""
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_periodic",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
     }
   },
   "benchmark_test_profile": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_test_mac.sh",
+    "COMMAND": "build_test_mac.sh",
     "PARAMETERS": {
-        "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build/mac",
-        "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-        "CMAKE_TARGET":"TEST_SUITE_benchmark",
-        "CTEST_OPTIONS":"-L \"(benchmark)\""
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_benchmark",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
     }
   },
   "release": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_mac.sh",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"release",
-      "OUTPUT_DIRECTORY":"build/mac",
-      "CMAKE_OPTIONS":"-G Xcode -DLY_UNITY_BUILD=TRUE",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"ALL_BUILD"
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   },
   "monolithic_release": {
-    "TAGS":[
-      "nightly"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_mac.sh",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"release",
-      "OUTPUT_DIRECTORY":"build/mono_mac",
-      "CMAKE_OPTIONS":"-G Xcode -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"ALL_BUILD"
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/mono_mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   }
 }

@@ -24,10 +24,8 @@ namespace MaterialEditor
         OrbitCameraBehavior() = default;
         virtual ~OrbitCameraBehavior() = default;
 
-        void Start() override;
-
     protected:
-        void TickInternal(float x, float y) override;
+        void TickInternal(float x, float y, float z) override;
         float GetSensitivityX() override;
         float GetSensitivityY() override;
 
@@ -36,10 +34,7 @@ namespace MaterialEditor
 
         static constexpr float SensitivityX = 0.005f;
         static constexpr float SensitivityY = 0.005f;
-
-        AZ::EntityId m_cameraEntityId;
-        AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();
-        float m_distanceToTarget = 0;
+        
         bool m_aligned = false;
     };
 } // namespace MaterialEditor

@@ -34,6 +34,11 @@
 #include <ScriptCanvas/Libraries/Math/Math.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
+namespace AZ
+{
+    class ScriptAsset;
+}
+
 namespace ScriptCanvas
 {
     class RuntimeAsset;
@@ -42,29 +47,47 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    
+    class ScriptCanvasAsset;
+
+    struct LoadTestFunctionResult
+    {
+        AZStd::string_view m_graphPath;
+        AZStd::unique_ptr<AZ::Entity> m_entity;
+        ScriptCanvas::RuntimeComponent* m_runtimeComponent = nullptr;
+        bool m_nativeFunctionFound = false;
+        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> m_editorAsset;
+        AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> m_runtimeAsset;
+        AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
+    };
+
     struct LoadTestGraphResult
     {
-        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> m_asset;
-        AZStd::unique_ptr<AZ::Entity> m_graphEntity;
-        ScriptCanvas::RuntimeComponent* m_graph = nullptr;
+        AZStd::string_view m_graphPath;
+        AZStd::unique_ptr<AZ::Entity> m_entity;
+        ScriptCanvas::RuntimeComponent* m_runtimeComponent = nullptr;
+        bool m_nativeFunctionFound = false;
+        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_editorAsset;
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> m_runtimeAsset;
+        AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
     };
 
     // how long a unit test should be allowed to execute
     enum class eDuration
     {
-        Instant = 0, // kill the test as soon as control returns from the graph
-        MaxSecondsOrTicks, // wait for the test for as long as ticks or seconds remain
-        MinSecondsOrTicks, // wait for the test until either ticks or seconds are zero
+        InitialActivation = 0, // kill the test as soon as control returns from the graph
         Seconds, // wait for the specified amount of seconds, regardless of ticks
         Ticks, // wait for the the specified amount of ticks, regardless of seconds
     };
 
     struct DurationSpec
     {
-        eDuration m_spec = eDuration::Instant;
+        eDuration m_spec = eDuration::InitialActivation;
         size_t m_ticks = 0;
         float m_seconds = 0.0f;
+        float m_timeStep = (1.0f / 60.0f);
+
+        static DurationSpec Seconds(float seconds);
+        static DurationSpec Ticks(size_t ticks);
     };
 
     class TraceSuppressionRequests

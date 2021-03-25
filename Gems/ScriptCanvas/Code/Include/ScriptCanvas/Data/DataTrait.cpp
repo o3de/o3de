@@ -27,5 +27,5 @@ namespace ScriptCanvas
             return value->Get() == nullptr;
         }
 
-    } // namespace Data
-} // namespace ScriptCanvas
+    } 
+} 

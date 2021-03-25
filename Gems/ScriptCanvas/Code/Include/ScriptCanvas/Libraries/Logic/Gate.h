@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Libraries/Logic/Boolean.h>
@@ -26,42 +24,40 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Represents an "If" execution condition, continues True if the Condition is True, otherwise False
             class Gate
                 : public Node
             {
             public:
 
-                  ScriptCanvas_Node(Gate,
-                      ScriptCanvas_Node::Name("If", "An execution flow gate that continues True if the Condition is True, otherwise continues False")
-                      ScriptCanvas_Node::Uuid("{F19CC10A-02FD-4E75-ADAA-9CFBD8A4E2F8}")
-                      ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Print.png")
-                      ScriptCanvas_Node::Version(0)
-                  );
- 
-                 Gate();
+                SCRIPTCANVAS_NODE(Gate);
 
-                 // Inputs
-                  ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-  
-                  // Outputs
-                  ScriptCanvas_Out(ScriptCanvas_Out::Name("True", "Signaled if the condition provided evaluates to true."));
-                  ScriptCanvas_Out(ScriptCanvas_Out::Name("False", "Signaled if the condition provided evaluates to false."));
+                Gate();
 
-             private:
-  
-                  // Data
-                 ScriptCanvas_Property(bool,
-                     ScriptCanvas_Property::Name("Condition", "If true the node will signal the Output and proceed execution")
-                     ScriptCanvas_Property::Transient
-                     ScriptCanvas_Property::Input);
-                  
-                 bool m_condition;
- 
-             protected:
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
 
-                 void OnInputSignal(const SlotId&) override;
- 
- 
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                bool IsIfBranch() const override { return true; }
+
+                bool IsSupportedByNewBackend() const override { return true; }
+
+            protected:
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
+
+                //////////////////////////////////////////////////////////////////////////
+
+                void OnInputSignal(const SlotId&) override;
+
+            private:
+
+                bool m_condition;
+
             };
         }
     }

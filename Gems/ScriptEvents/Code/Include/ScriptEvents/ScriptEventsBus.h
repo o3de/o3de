@@ -16,14 +16,18 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/string/string.h>
 
-#include <ScriptEvents/ScriptEvent.h>
 #include <ScriptEvents/ScriptEventFundamentalTypes.h>
+#include "ScriptEventRegistration.h"
 
 namespace ScriptEvents
 {
     class ScriptEvent;
-
     class ScriptEventsHandler;
+
+    namespace Internal
+    {
+        class ScriptEventRegistration;
+    }
 
     //! External facing API for registering and getting ScriptEvents
     class ScriptEventRequests : public AZ::EBusTraits
@@ -31,12 +35,13 @@ namespace ScriptEvents
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        typedef AZStd::recursive_mutex MutexType;
 
-        virtual AZStd::intrusive_ptr<Internal::ScriptEvent> RegisterScriptEvent([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] AZ::u32 version) { return nullptr; }
+        using MutexType = AZStd::recursive_mutex;
+
+        virtual AZStd::intrusive_ptr<Internal::ScriptEventRegistration> RegisterScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) = 0;
         virtual void RegisterScriptEventFromDefinition([[maybe_unused]] const ScriptEvent& definition) {}
         virtual void UnregisterScriptEventFromDefinition([[maybe_unused]] const ScriptEvent& definition) {}
-        virtual AZStd::intrusive_ptr<Internal::ScriptEvent> GetScriptEvent([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] AZ::u32 version) { return {}; }
+        virtual AZStd::intrusive_ptr<Internal::ScriptEventRegistration> GetScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) = 0;
         virtual const FundamentalTypes* GetFundamentalTypes() = 0;
     };
 

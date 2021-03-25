@@ -86,4 +86,12 @@ namespace AzToolsFramework
             m_splineSelectionManipulator->SetSpace(worldFromLocal);
         }
     }
+
+    void SplineHoverSelection::SetNonUniformScale(const AZ::Vector3& nonUniformScale)
+    {
+        if (m_splineSelectionManipulator)
+        {
+            m_splineSelectionManipulator->SetNonUniformScale(nonUniformScale);
+        }
+    }
 } // namespace AzToolsFramework

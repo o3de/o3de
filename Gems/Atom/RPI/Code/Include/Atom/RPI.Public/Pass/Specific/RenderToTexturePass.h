@@ -59,7 +59,7 @@ namespace AZ
             RHI::Scissor m_scissor;
             RHI::Viewport m_viewport;
 
-            // The master child pass used to drive rendering
+            // The child pass used to drive rendering
             Ptr<Pass> m_childPass = nullptr;
 
             // Name of the template used to create the child pass. Needed for Recreate()

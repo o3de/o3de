@@ -58,7 +58,7 @@ namespace AZ
             AZStd::vector<Name> result;
 
             AZ::ScriptDataContext call;
-            if (scriptContext.Call(luaFunctionName, call, false))
+            if (scriptContext.Call(luaFunctionName, call))
             {
                 if (!call.CallExecute())
                 {

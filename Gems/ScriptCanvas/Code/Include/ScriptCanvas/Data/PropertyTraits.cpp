@@ -51,5 +51,5 @@ namespace ScriptCanvas
 
             return {};
         }
-    } // namespace Data
-} // namespace ScriptCanvas
+    } 
+} 

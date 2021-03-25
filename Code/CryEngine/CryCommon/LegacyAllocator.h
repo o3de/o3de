@@ -138,7 +138,7 @@ namespace AZ
     {
     };
 
-#if defined(AZ_PLATFORM_PROVO) || defined(AZ_PLATFORM_XENIA) || defined(AZ_PLATFORM_JASPER)
+#if defined(AZ_PLATFORM_PROVO) || defined(AZ_PLATFORM_JASPER)
     struct GlobalAllocatorDescriptor
         : public AZ::HphaSchema::Descriptor
     {

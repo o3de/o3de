@@ -25,6 +25,8 @@ namespace AZ
     class Entity;
 }
 
+class QToolButton;
+
 namespace GraphCanvas
 {
     class ConstructTypePresetBucket;
@@ -41,6 +43,8 @@ namespace GraphCanvas
 
         //! Get the snapping distance for connections around slots
         virtual double GetSnapDistance() const { return 10.0; }
+
+        virtual bool IsGroupDoubleClickCollapseEnabled() const { return true; };
 
         virtual bool IsBookmarkViewportControlEnabled() const { return false; };
 
@@ -94,7 +98,7 @@ namespace GraphCanvas
 
         // Construct Presets
         virtual EditorConstructPresets* GetConstructPresets() const { return nullptr; }
-        virtual const ConstructTypePresetBucket* GetConstructTypePresetBucket([[maybe_unused]] ConstructType constructType) const { return nullptr; }
+        virtual const ConstructTypePresetBucket* GetConstructTypePresetBucket(ConstructType) const { return nullptr; }
 
         // Styling
         virtual Styling::ConnectionCurveType GetConnectionCurveType() const { return Styling::ConnectionCurveType::Straight; }
@@ -153,7 +157,20 @@ namespace GraphCanvas
             AZ_UNUSED(constructType);
         }
 
-        virtual ContextMenuAction::SceneReaction ShowSceneContextMenu(const QPoint& screenPoint, const QPointF& scenePoint) = 0;
+        virtual ContextMenuAction::SceneReaction ShowSceneContextMenu(const QPoint& screenPoint, const QPointF& scenePoint)
+        {
+            AZ_UNUSED(screenPoint);
+            AZ_UNUSED(scenePoint);
+
+            return ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        virtual ContextMenuAction::SceneReaction ShowSceneContextMenuWithGroup(const QPoint& screenPoint, const QPointF& scenePoint, AZ::EntityId groupTarget)
+        {
+            AZ_UNUSED(groupTarget);
+
+            return ShowSceneContextMenu(screenPoint, scenePoint);
+        }
 
         virtual ContextMenuAction::SceneReaction ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint) = 0;
 
@@ -164,13 +181,42 @@ namespace GraphCanvas
 
         virtual ContextMenuAction::SceneReaction ShowBookmarkContextMenu(const AZ::EntityId& bookmarkId, const QPoint& screenPoint, const QPointF& scenePoint) = 0;
 
-        virtual ContextMenuAction::SceneReaction ShowConnectionContextMenu(const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint) = 0;
+        virtual ContextMenuAction::SceneReaction ShowConnectionContextMenu(const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint)
+        {
+            AZ_UNUSED(connectionId);
+            AZ_UNUSED(screenPoint);
+            AZ_UNUSED(scenePoint);
+
+            return ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        virtual ContextMenuAction::SceneReaction ShowConnectionContextMenuWithGroup(const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint, AZ::EntityId groupTarget)
+        {
+            AZ_UNUSED(groupTarget);
+
+            return ShowConnectionContextMenu(connectionId, screenPoint, scenePoint);
+        }
 
         virtual ContextMenuAction::SceneReaction ShowSlotContextMenu(const AZ::EntityId& slotId, const QPoint& screenPoint, const QPointF& scenePoint) = 0;
 
         //! This is sent when a Connection has no target.
         //! Returns the EntityId of the node create, if any.
-        virtual Endpoint CreateNodeForProposal(const AZ::EntityId& connectionId, const Endpoint& endpoint, const QPointF& scenePosition, const QPoint& screenPosition) = 0;
+        virtual Endpoint CreateNodeForProposal(const AZ::EntityId& connectionId, const Endpoint& endpoint, const QPointF& scenePosition, const QPoint& screenPosition)
+        {
+            AZ_UNUSED(connectionId);
+            AZ_UNUSED(endpoint);
+            AZ_UNUSED(scenePosition);
+            AZ_UNUSED(screenPosition);
+
+            return Endpoint();
+        }
+
+        virtual Endpoint CreateNodeForProposalWithGroup(const AZ::EntityId& connectionId, const Endpoint& endpoint, const QPointF& scenePosition, const QPoint& screenPosition, AZ::EntityId groupTarget)
+        {
+            AZ_UNUSED(groupTarget);
+
+            return CreateNodeForProposal(connectionId, endpoint, scenePosition, screenPosition);
+        }
 
         //! Callback for the Wrapper node action widgets
         virtual void OnWrapperNodeActionWidgetClicked(const AZ::EntityId& wrapperNode, const QRect& actionWidgetBoundingRect, const QPointF& scenePosition, const QPoint& screenPosition) = 0;
@@ -206,9 +252,24 @@ namespace GraphCanvas
         using BusIdType = EditorId;
 
         virtual void OnPresetsChanged() {};
-        virtual void OnConstructPresetsChanged([[maybe_unused]] ConstructType constructType) {};
+        virtual void OnConstructPresetsChanged(ConstructType) {}
     };
 
     using AssetEditorPresetNotificationBus = AZ::EBus<AssetEditorPresetNotifications>;
 
+    class AssetEditorAutomationRequests : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = EditorId;
+
+        virtual bool RegisterObject(AZ::Crc32 elementId, QObject* object) = 0;
+        virtual bool UnregisterObject(AZ::Crc32 elementId) = 0;
+
+        virtual QObject* FindObject(AZ::Crc32 elementId) = 0;
+
+        virtual QObject* FindElementByName(QString elementName) = 0;
+    };
+
+    using AssetEditorAutomationRequestBus = AZ::EBus<AssetEditorAutomationRequests>;
 }

@@ -129,7 +129,6 @@ set(FILES
     Source/StringIdPool.h
     Source/ReflectionSerializer.cpp
     Source/ReflectionSerializer.h
-    Source/TriangleListOptimizer.cpp
     Source/TriangleListOptimizer.h
     Source/Vector.h
 )

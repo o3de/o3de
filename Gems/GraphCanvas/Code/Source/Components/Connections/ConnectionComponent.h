@@ -150,7 +150,7 @@ namespace GraphCanvas
 
         bool ContainsEndpoint(const Endpoint& endpoint) const override;
 
-        void ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos) override;
+        void ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget) override;
         ////
 
         // SceneMemberRequestBus
@@ -160,9 +160,6 @@ namespace GraphCanvas
         void SignalMemberSetupComplete() override;
 
         AZ::EntityId GetScene() const override;
-
-        bool LockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
-        void UnlockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
         ////
 
         // ConnectionRequestBus
@@ -188,12 +185,14 @@ namespace GraphCanvas
     protected:
         ConnectionComponent(const ConnectionComponent&) = delete;
         const ConnectionComponent& operator=(const ConnectionComponent&) = delete;
+
+        void SetGroupTarget(AZ::EntityId groupTarget);
         
         void FinalizeMove();
 
         virtual void OnConnectionMoveStart();
         virtual bool OnConnectionMoveCancelled();
-        virtual ConnectionMoveResult OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos);
+        virtual ConnectionMoveResult OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget);
 
         virtual bool AllowNodeCreation() const;
 
@@ -236,13 +235,16 @@ namespace GraphCanvas
 
         ConnectionEventFilter* m_eventFilter = nullptr;
 
-        AZ::EntityId m_lockingSceneMember;
-
         //! Store custom data for this connection
         AZStd::any m_userData;
 
         StateSetter<RootGraphicsItemDisplayState> m_nodeDisplayStateStateSetter;
-        StateSetter<RootGraphicsItemDisplayState> m_connectionStateStateSetter;        
+        StateSetter<RootGraphicsItemDisplayState> m_connectionStateStateSetter;
+
+        // Group Interactions
+        AZ::EntityId m_groupTarget;
+        StateSetter< RootGraphicsItemDisplayState > m_forcedGroupDisplayStateStateSetter;
+        StateSetter< AZStd::string > m_forcedLayerStateSetter;
     }; 
 
     class ConnectionEventFilter

@@ -69,6 +69,22 @@ namespace ScriptCanvas
         void AddContract(const ContractDescriptor& contractDesc);
 
         template<typename T>
+        T* FindContract()
+        {
+            AZ::Uuid contractType = azrtti_typeid<T>();
+
+            for (const auto& contractPtr : m_contracts)
+            {
+                if (azrtti_typeid(contractPtr.get()) == contractType)
+                {
+                    return azrtti_cast<T*>(contractPtr.get());
+                }
+            }
+
+            return nullptr;
+        }
+
+        template<typename T>
         void RemoveContract()
         {
             AZ::Uuid contractType = azrtti_typeid<T>();
@@ -98,6 +114,8 @@ namespace ScriptCanvas
         void ConvertToLatentExecutionOut();
         ////
 
+        CombinedSlotType GetType() const;
+        
         const SlotDescriptor& GetDescriptor() const { return m_descriptor; }
         const SlotId& GetId() const { return m_id; }
 
@@ -140,6 +158,8 @@ namespace ScriptCanvas
         void ClearVariableReference();
 
         bool IsExecution() const;
+        
+        bool IsVisible() const;
 
         bool IsInput() const;
         bool IsOutput() const;
@@ -153,7 +173,6 @@ namespace ScriptCanvas
 
         // Here to allow conversion of the previously untyped any slots into the dynamic type any.
         void SetDynamicDataType(DynamicDataType dynamicDataType);
-        ////
 
         const DynamicDataType& GetDynamicDataType() const { return m_dynamicDataType; }
         bool IsDynamicSlot() const;
@@ -162,6 +181,7 @@ namespace ScriptCanvas
         void ClearDisplayType();
         Data::Type GetDisplayType() const;
         bool HasDisplayType() const;
+        bool IsSanityCheckRequired() const;
 
         AZ::Crc32 GetDisplayGroup() const;
 
@@ -173,6 +193,10 @@ namespace ScriptCanvas
 
         AZ::Outcome<void, AZStd::string> IsTypeMatchFor(const Slot& slot) const;
         AZ::Outcome<void, AZStd::string> IsTypeMatchFor(const Data::Type& dataType) const;
+
+        // Doesn't actually push the new tooltip out to the UI. So any updates need to be done
+        // before any visuals are created.
+        void SetToolTip(const AZStd::string& toolTip);
 
         void Rename(AZStd::string_view slotName);
 
@@ -190,7 +214,8 @@ namespace ScriptCanvas
         ////
 
     protected:
-
+        bool m_isOverload = false;
+        bool m_isVisible = true;
         void SetDynamicGroup(const AZ::Crc32& dynamicGroup);
 
         AZStd::string m_name;
@@ -215,4 +240,4 @@ namespace ScriptCanvas
 
         AZStd::vector<AZStd::unique_ptr<Contract>> m_contracts;
     };
-} // namespace ScriptCanvas
+} 

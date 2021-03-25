@@ -32,10 +32,8 @@
 #   include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
 #   include <Integration/Editor/Components/EditorSimpleLODComponent.h>
 #   include <SceneAPIExt/Behaviors/ActorGroupBehavior.h>
-#   include <SceneAPIExt/Behaviors/MeshRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/MotionGroupBehavior.h>
 #   include <SceneAPIExt/Behaviors/MotionRangeRuleBehavior.h>
-#   include <SceneAPIExt/Behaviors/SkinRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/MorphTargetRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/LodRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/SkeletonOptimizationRuleBehavior.h>
@@ -95,7 +93,6 @@ namespace EMotionFX
 
                     // Actor
                     EMotionFX::Pipeline::Behavior::ActorGroupBehavior::CreateDescriptor(),
-                    EMotionFX::Pipeline::Behavior::MeshRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::Behavior::MorphTargetRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::Behavior::LodRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::Behavior::SkeletonOptimizationRuleBehavior::CreateDescriptor(),
@@ -106,7 +103,6 @@ namespace EMotionFX
 
                     // Motion
                     EMotionFX::Pipeline::Behavior::MotionGroupBehavior::CreateDescriptor(),
-                    EMotionFX::Pipeline::Behavior::SkinRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::Behavior::MotionRangeRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::MotionExporter::CreateDescriptor(),
                     EMotionFX::Pipeline::MotionGroupExporter::CreateDescriptor(),

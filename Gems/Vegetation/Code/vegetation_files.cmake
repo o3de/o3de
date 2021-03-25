@@ -107,8 +107,6 @@ set(FILES
     Source/EmptyInstanceSpawner.cpp
     Source/VegetationSystemComponent.cpp
     Source/VegetationSystemComponent.h
-    Source/AreaSystemComponent.cpp
-    Source/AreaSystemComponent.h
     Source/InstanceData.cpp
     Source/InstanceSystemComponent.cpp
     Source/InstanceSystemComponent.h

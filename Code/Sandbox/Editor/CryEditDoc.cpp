@@ -470,6 +470,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         HEAP_CHECK
 
+        if (GetIEditor()->Get3DEngine())
         {
             CAutoLogTime logtime("Load Terrain");
             bool terrainLoaded = GetIEditor()->Get3DEngine()->LoadCompiledOctreeForEditor();
@@ -2183,7 +2184,7 @@ void CCryEditDoc::OnStartLevelResourceList()
 
 void CCryEditDoc::ForceSkyUpdate()
 {
-    ITimeOfDay* pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
+    ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
     CMission* pCurMission = GetIEditor()->GetDocument()->GetCurrentMission();
 
     if (pTimeOfDay && pCurMission)
@@ -2269,8 +2270,11 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
         XmlNodeRef root = GetISystem()->LoadXmlFromFile("@engroot@/Editor/default_time_of_day.xml");
         if (root)
         {
-            ITimeOfDay* pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
-            pTimeOfDay->Serialize(root, true);
+            ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
+            if (pTimeOfDay)
+            {
+                pTimeOfDay->Serialize(root, true);
+            }
         }
     }
 

@@ -1,0 +1,155 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+// Pcf filtering taken from legacy Cry/Lumberyard ShadowCommon.cfi.
+// 
+// Approximate an expensive but smooth bicubic filter by taking multiple bilinear samples and then weighting the samples appropriately.
+// 
+// References:
+// https://web.archive.org/web/20201222005801/https:/vec3.ca/bicubic-filtering-in-fewer-taps/
+// https://developer.nvidia.com/gpugems/gpugems2/part-iii-high-quality-rendering/chapter-20-fast-third-order-texture-filtering
+
+//--------------------------------------------------------------------------------------------------
+// Computes shadows using a 3x3 kernel, but optimized to 4-taps using bilinear fetches.
+//--------------------------------------------------------------------------------------------------
+
+struct SampleShadowMapBicubicParameters
+{
+    Texture2DArray<float> shadowMap;
+    float3 shadowPos;
+    float shadowMapSize;
+    float invShadowMapSize;
+    SamplerComparisonState samplerState;
+    float comparisonValue;
+};
+
+float SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
+{
+    // Compute the shadow map UV and fractionals.
+    float2 shadowXY = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
+    float2 shadowUV = floor(shadowXY);
+    float2 fractionalUV = shadowXY - shadowUV;
+
+    float2 texelCenter = (shadowUV - float2(0.5, 0.5)) * param.invShadowMapSize;
+
+    // Compute the offsets and weights for the 4 bilinear taps.
+    float2 weights0 = 3.0 - 2.0 * fractionalUV;
+    float2 weights1 = 1.0 + 2.0 * fractionalUV;
+
+    float2 uv0 = ((2.0 - fractionalUV) / weights0) - 1.0;
+    float2 uv1 = (fractionalUV / weights1) + 1.0;
+
+    // Accumulate the shadow results and return the resolve value.
+    float shadow;
+
+    shadow  = weights0.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights0.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    
+    shadow /= 16.0;
+    return shadow * shadow;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Computes shadows using a 5x5 kernel, but optimized to 9-taps using bilinear fetches.
+//--------------------------------------------------------------------------------------------------
+
+float SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
+{
+    // Compute the shadow map UV and fractionals.
+    float2 shadowScaled = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
+    float2 shadowUv = floor(shadowScaled);
+    float2 fractionalUV = shadowScaled - shadowUv;
+
+    float2 texelCenter = (shadowUv - float2(0.5, 0.5)) * param.invShadowMapSize;
+
+    // Compute the offsets and weights for the 9 bilinear taps.
+    float2 weights0 = 4.0 - 3.0 * fractionalUV;
+    float2 weights1 = 7.0;
+    float2 weights2 = 1.0 + 3.0 * fractionalUV;
+
+    float2 uv0 = ((3.0 - 2.0 * fractionalUV) / weights0) - 2.0;
+    float2 uv1 = (3.0 + fractionalUV) / weights1;
+    float2 uv2 = (fractionalUV / weights2) + 2.0;
+
+    // Accumulate the shadow results and return the resolve value.
+    float shadowResult;
+     
+    shadowResult  = weights0.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights1.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights2.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadowResult += weights0.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights1.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights2.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadowResult += weights0.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights1.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadowResult += weights2.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadowResult /= 144.0;
+    return shadowResult * shadowResult;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Computes shadows using a 7x7 kernel, but optimized to 16-taps using bilinear fetches.
+//--------------------------------------------------------------------------------------------------
+
+float SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
+{
+    // Compute the shadow map UV and fractionals.
+    float2 shadowXY = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
+    float2 shadowUV = floor(shadowXY);
+    float2 fractionalUV = shadowXY - shadowUV;
+
+    float2 texelCenter = (shadowUV - float2(0.5, 0.5)) * param.invShadowMapSize;
+
+    // Compute the offsets and weights for the 16 bilinear taps.
+    float2 weights0 = 5.0 * fractionalUV - 6.0;
+    float2 weights1 = 11.0 * fractionalUV - 28.0;
+    float2 weights2 = -(11.0 * fractionalUV + 17.0);
+    float2 weights3 = -(5.0 * fractionalUV + 1.0);
+
+    float2 uv0 = ((4.0 * fractionalUV - 5.0) / weights0) - 3.0;
+    float2 uv1 = ((4.0 * fractionalUV - 16.0) / weights1) - 1.0;
+    float2 uv2 = -((7.0 * fractionalUV + 5.0) / weights2) + 1.0;
+    float2 uv3 = -(fractionalUV / weights3) + 3.0;
+
+    // Accumulate the shadow results and return the resolve value.
+    float shadow;
+
+    shadow  = weights0.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights2.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights3.x * weights0.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv3.x, uv0.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadow += weights0.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights2.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights3.x * weights1.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv3.x, uv1.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadow += weights0.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights2.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights3.x * weights2.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv3.x, uv2.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadow += weights0.x * weights3.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv0.x, uv3.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights1.x * weights3.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv1.x, uv3.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights2.x * weights3.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv2.x, uv3.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+    shadow += weights3.x * weights3.y * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + float2(uv3.x, uv3.y) * param.invShadowMapSize, param.shadowPos.z), param.comparisonValue);
+
+    shadow /= 2704;
+    return shadow * shadow;
+}

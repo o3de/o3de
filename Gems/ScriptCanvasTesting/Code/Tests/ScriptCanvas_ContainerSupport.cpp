@@ -12,62 +12,26 @@
 
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
-#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
-#include <AzCore/RTTI/AttributeReader.h>
 
 using namespace ScriptCanvasTests;
 using namespace ScriptCanvas; 
 
-TEST_F(ScriptCanvasTestFixture, FillWithOrdinals)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_FillWithOrdinals");
-}
-
 TEST_F(ScriptCanvasTestFixture, AZStdArray)
 {
-    // Enable when BE2.0 goes to main
-    //RunUnitTestGraph("LY_SC_UnitTest_AZStdArray");
+    RunUnitTestGraph("LY_SC_UnitTest_AZStdArray", ExecutionMode::Interpreted);
 }
-
-/*
-TEST_F(ScriptCanvasTestFixture, ForEachNested)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_ForEachNested");
-}
-
-TEST_F(ScriptCanvasTestFixture, ForEachNestedBreak)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_ForEachNestedBreak");
-}
-*/
 
 TEST_F(ScriptCanvasTestFixture, ForEachNode)
 {
-    // Enable when BE2.0 goes to main
-   // RunUnitTestGraph("LY_SC_UnitTest_ForEachNode");
+    RunUnitTestGraph("LY_SC_UnitTest_ForEachNode", ExecutionMode::Interpreted);
 }
-
-/*
-TEST_F(ScriptCanvasTestFixture, ForEachBreak)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_ForEachBreak");
-}
-*/
-
-// TODO: needs to be recreated with new operator nodes
-//TEST_F(ScriptCanvasTestFixture, VectorContainerVector3)
-//{
-//    RunUnitTestGraph("LY_SC_UnitTest_VectorContainerVector3");
-//}
 
 TEST_F(ScriptCanvasTestFixture, MapContainerStringVec3)
 {
-    // Enable when BE2.0 goes to main
-    //RunUnitTestGraph("LY_SC_UnitTest_MapContainerStringVec3");
+    RunUnitTestGraph("LY_SC_UnitTest_MapContainerStringVec3", ExecutionMode::Interpreted);
 }
 
-TEST_F(ScriptCanvasTestFixture, SetContainerNum)
+TEST_F(ScriptCanvasTestFixture, VectorContainerVector3)
 {
-    // Enable when BE2.0 goes to main
-    //RunUnitTestGraph("LY_SC_UnitTest_SetContainerNum");
+    RunUnitTestGraph("LY_SC_UnitTest_VectorContainerVector3", ExecutionMode::Interpreted);
 }

@@ -21,13 +21,14 @@
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
 #include "CryLibrary.h"
-#include "ICrypto.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Debug/IEventLogger.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/API/AtomActiveInterface.h>
@@ -120,7 +121,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
 
 
-#include <INetwork.h>
 #include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
@@ -179,8 +179,6 @@ WATERMARKDATA(_m);
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
-
-#include <ICrypto.h>
 
 #ifdef WIN32
 
@@ -396,7 +394,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pILZ4Decompressor = NULL;
     m_pIZStdDecompressor = nullptr;
     m_pLocalizationManager = NULL;
-    m_crypto = nullptr;
     m_sys_physics_CPU = 0;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
@@ -721,7 +718,6 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_env.pServiceNetwork);
     SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
-    SAFE_RELEASE(m_env.pNetwork);
     SAFE_RELEASE(m_env.p3DEngine); // depends on EntitySystem
     if (m_env.pConsole)
     {
@@ -786,8 +782,6 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_pDefaultValidator);
     m_pValidator = nullptr;
 
-
-    SAFE_DELETE(m_crypto);
     SAFE_DELETE(m_env.pOverloadSceneManager);
 
     SAFE_DELETE(m_pLocalizationManager);
@@ -853,9 +847,13 @@ void CSystem::Quit()
         GetIRenderer()->RestoreGamma();
     }
 
-    SAFE_RELEASE(m_env.pNetwork);
-
     gEnv->pLog->FlushAndClose();
+
+    // Latest possible place to flush any pending messages to disk before the forceful termination.
+    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
+    {
+        logger->Flush();
+    }
 
     /*
     * TODO: This call to _exit, _Exit, TerminateProcess etc. needs to
@@ -1340,7 +1338,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         gEnv->pLocalMemoryUsage->OnUpdate();
     }
 
-    if (!gEnv->IsEditor())
+    if (!gEnv->IsEditor() && gEnv->pRenderer)
     {
         // If the dimensions of the render target change,
         // or are different from the camera defaults,
@@ -1550,20 +1548,11 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         m_pServerThrottle->Update();
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // initial network update
-    if (m_env.pNetwork)
-    {
-        FRAME_PROFILER("INetwork::SyncWithGame", gEnv->pSystem, PROFILE_SYSTEM);
-        m_env.pNetwork->SyncWithGame(eNGS_FrameStart);
-    }
-
     //////////////////////////////////////////////////////////////////////////
     if (m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
     {
         EBUS_EVENT(AZ::VR::HMDDeviceRequestBus, UpdateInternalState);
     }
-
 
     //////////////////////////////////////////////////////////////////////
     //update console system
@@ -1722,7 +1711,7 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
 
     //////////////////////////////////////////////////////////////////////
     //update process (3D engine)
-    if (!(updateFlags & ESYSUPDATE_EDITOR) && !m_bNoUpdate)
+    if (!(updateFlags & ESYSUPDATE_EDITOR) && !m_bNoUpdate && m_env.p3DEngine)
     {
         FRAME_PROFILER("SysUpdate:Update3DEngine", this, PROFILE_SYSTEM);
 
@@ -1770,14 +1759,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
         m_bNeedDoWorkDuringOcclusionChecks = true;
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // final network update
-    if (m_env.pNetwork)
-    {
-        FRAME_PROFILER("SysUpdate - Network::SyncWithGame", this, PROFILE_SYSTEM);
-        m_env.pNetwork->SyncWithGame(eNGS_FrameEnd);
-    }
-
     //Now update frame statistics
     CTimeValue cur_time = gEnv->pTimer->GetAsyncTime();
 
@@ -1814,7 +1795,7 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
     }
 
     // If it's in editing mode (in editor) the render is done in RenderViewport so we skip rendering here.
-    if (!gEnv->IsEditing())
+    if (!gEnv->IsEditing() && gEnv->pRenderer && gEnv->p3DEngine)
     {
         if (GetIViewSystem())
         {

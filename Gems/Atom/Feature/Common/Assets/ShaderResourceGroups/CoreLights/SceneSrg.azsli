@@ -30,4 +30,15 @@ partial ShaderResourceGroup SceneSrg
     // Look up textures for linear transform cosine area lights.
     Texture2D<float4> m_ltcMatrix;
     Texture2D<float2> m_ltcAmplification;
+    
+    // Hardware PCF comparison sampler that is used when sampling the shadow maps
+    SamplerComparisonState m_hwPcfSampler
+    {
+        MagFilter = Linear;
+        MinFilter = Linear;
+        MipFilter = Point;
+        ComparisonFunc = Less;
+        MaxAnisotropy = 16;
+        ReductionType = Comparison;
+    };    
 }

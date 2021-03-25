@@ -1,0 +1,144 @@
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+
+ly_get_list_relative_pal_filename(pal_editor_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Private/Editor/Platform/${PAL_PLATFORM_NAME})
+
+ly_add_target(
+    NAME AWSCore.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        awscore_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include/Public
+        PRIVATE
+            Include/Private
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AWSNativeSDKInit
+        PUBLIC
+            3rdParty::AWSNativeSDK::AWSCore
+)
+
+ly_add_target( 
+    NAME AWSCore ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    OUTPUT_NAME Gem.AWSCore.c3710872891c4401b0cbdabfca066cb5.0.1.0
+    FILES_CMAKE
+        awscore_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Include/Private
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+        PUBLIC
+            Gem::AWSCore.Static
+)
+
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME AWSCore.Editor.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            awscore_editor_files.cmake
+            ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include/Private
+                ${pal_editor_include_dir}
+            PUBLIC
+                Include/Public
+        BUILD_DEPENDENCIES
+            PRIVATE
+                3rdParty::Qt::Core
+                3rdParty::Qt::Widgets
+                AZ::AzQtComponents
+            PUBLIC
+                AZ::AzToolsFramework
+    )
+
+    ly_add_target(
+        NAME AWSCore.Editor MODULE
+        NAMESPACE Gem
+        OUTPUT_NAME Gem.AWSCore.Editor.45818501e4b24cb3b09848740ace9fac.0.1.0
+        FILES_CMAKE
+            awscore_editor_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include/Private
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AWSCORE_EDITOR
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                Gem::AWSCore.Static
+                Gem::AWSCore.Editor.Static
+    )
+endif()
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME AWSCore.Tests MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            awscore_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include/Private
+                Include/Public
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzFramework
+                AZ::AWSNativeSDKInit
+                Gem::AWSCore.Static
+    )
+    ly_add_googletest(
+        NAME Gem::AWSCore.Tests
+    )
+
+    if (PAL_TRAIT_BUILD_HOST_TOOLS)
+        ly_add_target(
+            NAME AWSCore.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                awscore_editor_tests_files.cmake
+                ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Include/Private
+                    ${pal_editor_include_dir}
+                    Include/Public
+                    Tests
+            COMPILE_DEFINITIONS
+                PRIVATE
+                    AWSCORE_EDITOR
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    3rdParty::Qt::Gui
+                    3rdParty::Qt::Widgets
+                    AZ::AzTest
+                    Gem::AWSCore.Static
+                    Gem::AWSCore.Editor.Static
+        )
+        ly_add_googletest(
+            NAME Gem::AWSCore.Editor.Tests
+        )
+    endif()
+endif()

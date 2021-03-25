@@ -36,6 +36,8 @@ set(FILES
     Behaviors/LodRuleBehavior.cpp
     Behaviors/BlendShapeRuleBehavior.h
     Behaviors/BlendShapeRuleBehavior.cpp
+    Behaviors/SkinRuleBehavior.h
+    Behaviors/SkinRuleBehavior.cpp
     Behaviors/ScriptProcessorRuleBehavior.h
     Behaviors/ScriptProcessorRuleBehavior.cpp
     Groups/MeshGroup.h
@@ -54,10 +56,10 @@ set(FILES
     Rules/CommentRule.cpp
     Rules/LodRule.h
     Rules/LodRule.cpp
+    Rules/CoordinateSystemRule.h
+    Rules/CoordinateSystemRule.cpp
     Rules/StaticMeshAdvancedRule.h
     Rules/StaticMeshAdvancedRule.cpp
-    Rules/OriginRule.h
-    Rules/OriginRule.cpp
     Rules/MaterialRule.h
     Rules/MaterialRule.cpp
     Rules/ScriptProcessorRule.h
@@ -66,6 +68,8 @@ set(FILES
     Rules/SkeletonProxyRule.cpp
     Rules/SkinMeshAdvancedRule.h
     Rules/SkinMeshAdvancedRule.cpp
+    Rules/SkinRule.h
+    Rules/SkinRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
     GraphData/MeshData.h

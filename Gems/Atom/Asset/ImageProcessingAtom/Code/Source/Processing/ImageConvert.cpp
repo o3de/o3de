@@ -40,9 +40,6 @@
 #define MinSizeToSplit 1 << 5
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_XENIA)
-    #include AZ_RESTRICTED_FILE_EXPLICIT(ImageProcess, Xenia)
-#endif
 #if defined(TOOLS_SUPPORT_JASPER)
     #include AZ_RESTRICTED_FILE_EXPLICIT(ImageProcess, Jasper)
 #endif

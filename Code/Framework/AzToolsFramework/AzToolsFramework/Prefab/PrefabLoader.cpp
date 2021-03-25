@@ -55,7 +55,7 @@ namespace AzToolsFramework
             {
                 AZ_Error("Prefab", false,
                     "PrefabLoader::LoadTemplate - "
-                    "Prefab fie %s has been detected to directly or indirectly depend on itself."
+                    "Prefab file %s has been detected to directly or indirectly depend on itself."
                     "Terminating any further loading of this branch of its prefab hierarchy.",
                     filePath.c_str());
                 return InvalidTemplateId;

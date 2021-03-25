@@ -40,6 +40,11 @@ namespace ScriptCanvasPhysics
                 ;
             }
         }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
+        {
+            SCRIPT_CANVAS_GENERICS_TO_VM(WorldNodes::Registrar, WorldNodes::World, behaviorContext, WorldNodes::k_categoryName);
+        }
     }
 
     void PhysicsNodeLibrary::InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry)

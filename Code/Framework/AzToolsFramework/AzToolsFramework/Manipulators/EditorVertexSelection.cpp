@@ -176,7 +176,7 @@ namespace AzToolsFramework
                 updated, fixedVertices, &AZ::FixedVerticesRequestBus<Vertex>::Handler::UpdateVertex,
                 vertex.m_index, vertexPosition);
 
-            m_selectionManipulators[vertex.m_index]->SetPosition(AZ::AdaptVertexOut(vertexPosition));
+            m_selectionManipulators[vertex.m_index]->SetLocalPosition(AZ::AdaptVertexOut(vertexPosition));
         });
 
         m_translationManipulator->m_manipulator.SetLocalPosition(
@@ -241,7 +241,8 @@ namespace AzToolsFramework
 
         // create a new translation manipulator bound for the selected vertexIndex
         m_translationManipulator = AZStd::make_shared<IndexedTranslationManipulator<Vertex>>(
-            Dimensions(), vertexIndex, vertex, WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId()));
+            Dimensions(), vertexIndex, vertex, WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId()),
+            GetNonUniformScale(entityComponentIdPair.GetEntityId()));
 
         // setup how the manipulator should look
         m_manipulatorConfiguratorFn(&m_translationManipulator->m_manipulator);
@@ -524,12 +525,13 @@ namespace AzToolsFramework
                 vertexIndex, vertex);
 
             m_selectionManipulators.push_back(SelectionManipulator::MakeShared(
-                WorldFromLocalWithUniformScale(GetEntityId())));
+                WorldFromLocalWithUniformScale(GetEntityId()),
+                GetNonUniformScale(GetEntityId())));
             const auto& selectionManipulator = m_selectionManipulators.back();
 
             selectionManipulator->Register(managerId);
             selectionManipulator->AddEntityComponentIdPair(entityComponentIdPair);
-            selectionManipulator->SetPosition(AdaptVertexOut(vertex));
+            selectionManipulator->SetLocalPosition(AdaptVertexOut(vertex));
 
             SetupSelectionManipulator(selectionManipulator, entityComponentIdPair, managerId, vertexIndex);
         }
@@ -975,7 +977,7 @@ namespace AzToolsFramework
 
             if (found)
             {
-                m_selectionManipulators[manipulatorIndex]->SetPosition(AZ::AdaptVertexOut(vertex));
+                m_selectionManipulators[manipulatorIndex]->SetLocalPosition(AZ::AdaptVertexOut(vertex));
             }
         }
 
@@ -990,23 +992,26 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    void EditorVertexSelectionBase<Vertex>::RefreshSpace(const AZ::Transform& worldFromLocal)
+    void EditorVertexSelectionBase<Vertex>::RefreshSpace(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         for (auto& manipulator : m_selectionManipulators)
         {
             manipulator->SetSpace(TransformUniformScale(worldFromLocal));
+            manipulator->SetNonUniformScale(nonUniformScale);
         }
 
         if (m_translationManipulator)
         {
             m_translationManipulator->m_manipulator.SetSpace(TransformUniformScale(worldFromLocal));
+            m_translationManipulator->m_manipulator.SetNonUniformScale(nonUniformScale);
         }
 
         if (m_hoverSelection)
         {
             m_hoverSelection->SetSpace(TransformUniformScale(worldFromLocal));
+            m_hoverSelection->SetNonUniformScale(nonUniformScale);
             m_hoverSelection->Refresh();
         }
 

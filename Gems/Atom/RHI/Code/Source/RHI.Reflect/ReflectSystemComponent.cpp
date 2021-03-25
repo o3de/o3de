@@ -41,6 +41,7 @@
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI.Reflect/PhysicalDeviceDescriptor.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -164,6 +165,8 @@ namespace AZ
             PlatformLimitsDescriptor::Reflect(context);
             RHISystemDescriptor::Reflect(context);
             Origin::Reflect(context);
+            ReflectVendorIdEnums(context);
+            PhysicalDeviceDriverValidator::Reflect(context);
 
             Handle<uint64_t>::Reflect(context);
             Handle<uint32_t>::Reflect(context);

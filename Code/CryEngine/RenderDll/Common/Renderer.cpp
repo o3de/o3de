@@ -495,7 +495,6 @@ AllocateConstIntCVar(CRenderer, CV_r_shaderslazyunload);
 AllocateConstIntCVar(CRenderer, CV_r_shadersdebug);
 #if !defined(CONSOLE)
 int CRenderer::CV_r_shadersorbis;
-int CRenderer::CV_r_shadersdurango;
 int CRenderer::CV_r_shadersdx10;
 int CRenderer::CV_r_shadersdx11;
 int CRenderer::CV_r_shadersGL4;
@@ -921,10 +920,6 @@ static void ShadersOptimise([[maybe_unused]] IConsoleCmdArgs* Cmd)
     if (CRenderer::CV_r_shadersGLES3)
     {
         ShadersOptimizeHelper(CParserBin::SetupForGLES3, " GLSL-ES 3");
-    }
-    if (CRenderer::CV_r_shadersdurango)
-    {
-        ShadersOptimizeHelper(CParserBin::SetupForDurango, "Durango");
     }
     if (CRenderer::CV_r_shadersorbis)
     {
@@ -2846,7 +2841,6 @@ void CRenderer::InitRenderer()
     REGISTER_CVAR3("r_ShadersDX11", CV_r_shadersdx11, 0, VF_NULL, "");
     REGISTER_CVAR3("r_ShadersGL4", CV_r_shadersGL4, 0, VF_NULL, "");
     REGISTER_CVAR3("r_ShadersGLES3", CV_r_shadersGLES3, 0, VF_NULL, "");
-    REGISTER_CVAR3("r_ShadersDurango", CV_r_shadersdurango, 0, VF_NULL, "");
     REGISTER_CVAR3("r_ShadersMETAL", CV_r_shadersMETAL, 0, VF_NULL, "");
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION RENDERER_CPP_SECTION_15

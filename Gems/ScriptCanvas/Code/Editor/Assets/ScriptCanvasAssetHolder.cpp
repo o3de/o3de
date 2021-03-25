@@ -54,6 +54,7 @@ namespace ScriptCanvasEditor
                     ->Attribute("EditButton", "")
                     ->Attribute("EditDescription", "Open in Script Canvas Editor")
                     ->Attribute("EditCallback", &ScriptCanvasAssetHolder::LaunchScriptCanvasEditor)
+                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
                     ;
             }
         }
@@ -90,7 +91,7 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
 
-        if (m_scriptCanvasAsset.GetId().IsValid())
+        if (m_scriptCanvasAsset.IsReady())
         {
             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_scriptCanvasAsset.GetId(), -1);
 
@@ -130,32 +131,38 @@ namespace ScriptCanvasEditor
 
     void ScriptCanvasAssetHolder::Load(AZ::Data::AssetId fileAssetId)
     {
-        if (!m_scriptCanvasAsset.IsReady())
+        m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().FindAsset(fileAssetId, AZ::Data::AssetLoadBehavior::Default);
+
+        if (!m_scriptCanvasAsset || !m_scriptCanvasAsset.IsReady())
         {
-            auto asset = AZ::Data::AssetManager::Instance().FindAsset(fileAssetId, AZ::Data::AssetLoadBehavior::Default);
+            m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().GetAsset(fileAssetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::Default);
+            m_triggeredLoad = true;
 
-            if (!asset)
-            {
-                ScriptCanvasMemoryAsset::pointer memoryAsset;
-                AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, fileAssetId);
-                if (!memoryAsset)
-                {
-                    Callbacks::OnAssetReadyCallback onAssetReady = [this](ScriptCanvasMemoryAsset& asset)
-                    {
-                        m_memoryScriptCanvasAsset = asset.GetAsset();
-                        AssetHelpers::DumpAssetInfo(asset.GetFileAssetId(), "ScriptCanvasAssetHolder::Load onAssetReady");
-                    };
-
-                    AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, fileAssetId, azrtti_typeid<ScriptCanvasAsset>(), onAssetReady);
-                }
-                else
-                {
-                    AssetHelpers::DumpAssetInfo(fileAssetId, "ScriptCanvasAssetHolder::Load isLoaded");
-                    m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().GetAsset(fileAssetId, azrtti_typeid<ScriptCanvasAsset>(), m_scriptCanvasAsset.GetAutoLoadBehavior());
-                }
-            }
-
+            AZ::Data::AssetBus::Handler::BusDisconnect();
+            AZ::Data::AssetBus::Handler::BusConnect(fileAssetId);
         }
+        else if (m_memoryScriptCanvasAsset.Get() == nullptr)
+        {
+            m_triggeredLoad = false;
+            LoadMemoryAsset(fileAssetId);
+        }
+    }
+
+    void ScriptCanvasAssetHolder::LoadMemoryAsset(AZ::Data::AssetId fileAssetId)
+    {
+        Callbacks::OnAssetReadyCallback onAssetReady = [this](ScriptCanvasMemoryAsset& asset)
+        {
+            m_memoryScriptCanvasAsset = asset.GetAsset();
+            AssetHelpers::DumpAssetInfo(asset.GetFileAssetId(), "ScriptCanvasAssetHolder::Load onAssetReady");
+        };
+
+        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, fileAssetId, azrtti_typeid<ScriptCanvasAsset>(), onAssetReady);
+    }
+
+    void ScriptCanvasAssetHolder::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+        LoadMemoryAsset(asset.GetId());
     }
 
     AZ::u32 ScriptCanvasAssetHolder::OnScriptChanged()
@@ -170,6 +177,7 @@ namespace ScriptCanvasEditor
         else
         {
             m_scriptCanvasAsset = {};
+            m_memoryScriptCanvasAsset = {};
         }
 
         if (m_scriptNotifyCallback)
@@ -186,20 +194,23 @@ namespace ScriptCanvasEditor
     {
             AssetTrackerNotificationBus::Handler::BusDisconnect(m_scriptCanvasAsset.GetId());
 
-            m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().FindAsset(asset->GetFileAssetId(), m_scriptCanvasAsset.GetAutoLoadBehavior());
+            m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().FindAsset(asset->GetFileAssetId(), AZ::Data::AssetLoadBehavior::Default);
             m_memoryScriptCanvasAsset = asset->GetAsset();
+
+            if (m_triggeredLoad && m_scriptNotifyCallback)
+            {
+                m_triggeredLoad = false;
+                m_scriptNotifyCallback(m_scriptCanvasAsset.GetId());
+            }
         }
     }
 
     void ScriptCanvasAssetHolder::SetAsset(AZ::Data::AssetId fileAssetId)
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         AssetTrackerNotificationBus::Handler::BusDisconnect();
 
-        m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().FindAsset(fileAssetId, m_scriptCanvasAsset.GetAutoLoadBehavior());
-        if (!m_scriptCanvasAsset)
-        {
-            m_scriptCanvasAsset = AZ::Data::AssetManager::Instance().GetAsset(fileAssetId, azrtti_typeid<ScriptCanvasAsset>(), m_scriptCanvasAsset.GetAutoLoadBehavior());
-        }
+        Load(fileAssetId);
 
         if (m_scriptCanvasAsset)
         {
@@ -215,6 +226,7 @@ namespace ScriptCanvasEditor
     void ScriptCanvasAssetHolder::ClearAsset()
     {
         m_scriptCanvasAsset = {};
+        m_memoryScriptCanvasAsset = {};
     }
 
     AZ::Data::AssetId ScriptCanvasAssetHolder::GetAssetId() const

@@ -76,7 +76,7 @@ public:
 
     virtual void Activate(bool bActivate);
 
-    // ovverided from IAnimNode/CAnimNode
+    // overridden from IAnimNode/CAnimNode
     void OnStart() override;
     void OnReset() override;
     void OnPause() override;
@@ -118,7 +118,7 @@ private:
     virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) override;
 
     // Cached parameters of node at given time.
-    float m_time;
+    float m_time = 0.0f;
 
     IMovieSystem* m_pMovie;
 

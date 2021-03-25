@@ -24,6 +24,7 @@
 #include <ScriptEvents/ScriptEventsBus.h>
 
 #include <ScriptEvents/ScriptEventSystem.h>
+#include <ScriptEvents/ScriptEvent.h>
 
 #if defined(SCRIPTEVENTS_EDITOR)
 
@@ -55,13 +56,24 @@ namespace ScriptEventsEditor
         return assetPtr;
     }
 
+    void ScriptEventAssetHandler::InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)
+    {
+        AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);
+
+        if (loadStageSucceeded && !isReload)
+        {
+            const ScriptEvents::ScriptEvent& definition = asset.GetAs<ScriptEvents::ScriptEventsAsset>()->m_definition;
+            AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration> scriptEvent;
+            ScriptEvents::ScriptEventBus::BroadcastResult(scriptEvent, &ScriptEvents::ScriptEventRequests::RegisterScriptEvent, asset.GetId(), definition.GetVersion());
+        }
+    }
+
     AZ::Data::AssetHandler::LoadResult ScriptEventAssetHandler::LoadAssetData(
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+        const AZ::Data::Asset<AZ::Data::AssetData>& asset, 
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        AZ::Data::AssetHandler::LoadResult loadedData =
-            AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
+        AZ::Data::AssetHandler::LoadResult loadedData = loadedData = AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
 
         if (loadedData == AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {

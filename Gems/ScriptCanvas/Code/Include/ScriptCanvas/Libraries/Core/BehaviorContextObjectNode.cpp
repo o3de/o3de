@@ -29,7 +29,7 @@ namespace ScriptCanvas
                 static const AZ::u32 k_firstFirstPropertyDataSlotIndex(2);
                 static const AZ::u32 k_valueArgumentIndex(1);
                 static const char* k_setThis("Set");
-            } // namespace Internal
+            }
 
             AZStd::string BehaviorContextObjectNode::GetDebugName() const
             {
@@ -202,7 +202,7 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<BehaviorContextObjectNode, Node>()
                         ->Version(1)
-                        ->EventHandler<SerializeContextEventHandlerDefault<BehaviorContextObjectNode>>()
+                        ->EventHandler<SerializeContextOnWriteEndHandler<BehaviorContextObjectNode>>()
                         ->Field("m_className", &BehaviorContextObjectNode::m_className)
                         ;
 
@@ -216,6 +216,6 @@ namespace ScriptCanvas
                 }
             }
 
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        } 
+    } 
+} 

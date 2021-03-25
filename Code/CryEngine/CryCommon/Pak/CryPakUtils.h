@@ -293,15 +293,13 @@ public:
             {
                 return AZStd::string{ path.substr(0, path.size() - 1) } + AZ_CORRECT_DATABASE_SEPARATOR;
             }
-
             return path.empty() ? AZStd::string(path) : AZStd::string(path) + AZ_CORRECT_DATABASE_SEPARATOR;
         };
-
         AZStd::string dir;
         AZ::StringFunc::Path::Join(root.c_str(), pathIn.c_str(), dir);
         dir = AddSlash(dir);
 
-        ScanDirectoryFiles(pIPak, root, pathIn, fileSpec, files);
+        ScanDirectoryFiles(pIPak, "", dir, fileSpec, files);
 
         AZStd::string findFilter;
         AZ::StringFunc::Path::Join(dir.c_str(), "*", findFilter);
@@ -353,9 +351,13 @@ private:
                 {
                     continue;
                 }
-                files.push_back(path + AZStd::string(pakFileIterator.m_filename));
+                AZStd::string fullPath;
+                AZ::StringFunc::Path::Join(path.c_str(), AZStd::string(pakFileIterator.m_filename).c_str(), fullPath);
+                files.push_back(fullPath);
             } while (pakFileIterator = pIPak->FindNext(pakFileIterator));
             pIPak->FindClose(pakFileIterator);
         }
     }
+
+
 };

@@ -34,7 +34,7 @@ namespace AzNetworking
         return true;
     }
 
-    void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
+    void TcpSocketManager::ProcessEvents([[maybe_unused]]AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
         // No edge triggering, just brute force iterate all socketFds and invoke the callbacks
         for (auto socketFd : m_socketFds)

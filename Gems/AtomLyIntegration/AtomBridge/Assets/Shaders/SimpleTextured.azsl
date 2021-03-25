@@ -11,34 +11,15 @@
  */
  
  #include <Atom/Features/SrgSemantics.azsli>
-
-// Indicates whether the sampler should use Wrap or Clamp
-option bool o_clamp;
-
+ 
 // Indicates whether to use color channels from the texture or only the alpha channel
 option bool o_useColorChannels;
 
 ShaderResourceGroup InstanceSrg : SRG_PerDraw
 {
     row_major float4x4 m_worldToProj;
-
-    Texture2D m_texture;
-
-    Sampler m_wrapSampler
-    {
-        MaxAnisotropy = 16;
-        AddressU = Wrap;
-        AddressV = Wrap;
-        AddressW = Wrap;
-    };
-
-    Sampler m_clampSampler
-    {
-        MaxAnisotropy = 16;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
+    Texture2D m_texture;    
+    Sampler m_sampler;
 };
 
 struct VSInput
@@ -77,14 +58,8 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     float4 tex;
-    if (o_clamp)
-    {
-        tex = InstanceSrg::m_texture.Sample(InstanceSrg::m_clampSampler, IN.m_uv);
-    }
-    else
-    {
-        tex = InstanceSrg::m_texture.Sample(InstanceSrg::m_wrapSampler, IN.m_uv);
-    }
+    
+    tex = InstanceSrg::m_texture.Sample(InstanceSrg::m_sampler, IN.m_uv);
 
     if (!o_useColorChannels)
     {
@@ -93,8 +68,8 @@ PSOutput MainPS(VSOutput IN)
         // We do this rather than using an A8 texture because A8 is not supported on Vulkan.
         tex.a = tex.r;
         tex.rgb = 1.0f;
-    }
-    
+    }   
+
     float opacity = IN.m_color.a * tex.a; 
 
     // We use pre-multiplied alpha here since it is more flexible. For example, it enables alpha-blended rendering to

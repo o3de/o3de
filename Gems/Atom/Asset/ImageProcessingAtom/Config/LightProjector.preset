@@ -53,16 +53,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{1DFEF41A-D97F-40FB-99D3-C142A3E5225E}",
-                "Name": "LightProjector",
-                "DestColor": "Linear",
-                "PixelFormat": "BC4",
-                "IsPowerOf2": true,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

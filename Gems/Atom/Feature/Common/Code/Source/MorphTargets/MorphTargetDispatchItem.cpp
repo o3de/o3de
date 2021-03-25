@@ -31,11 +31,11 @@ namespace AZ
             const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
             const MorphTargetMetaData& morphTargetMetaData,
             RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
-            uint32_t accumulatedDeltaOffsetInBytes,
+            MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
             , m_morphTargetMetaData(morphTargetMetaData)
-            , m_accumulatedDeltaOffsetInBytes(accumulatedDeltaOffsetInBytes)
+            , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
         {
             m_morphTargetShader = morphTargetComputePass->GetShader();
@@ -124,6 +124,12 @@ namespace AZ
             AZ_Error("MorphTargetDispatchItem", vertexCountIndex.IsValid(), "Could not find root constant 's_vertexCount' in the shader");
             auto positionOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetPositionOffset" });
             AZ_Error("MorphTargetDispatchItem", positionOffsetIndex.IsValid(), "Could not find root constant 's_targetPositionOffset' in the shader");
+            auto normalOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetNormalOffset" });
+            AZ_Error("MorphTargetDispatchItem", normalOffsetIndex.IsValid(), "Could not find root constant 's_targetNormalOffset' in the shader");
+            auto tangentOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetTangentOffset" });
+            AZ_Error("MorphTargetDispatchItem", tangentOffsetIndex.IsValid(), "Could not find root constant 's_targetTangentOffset' in the shader");
+            auto bitangentOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetBitangentOffset" });
+            AZ_Error("MorphTargetDispatchItem", bitangentOffsetIndex.IsValid(), "Could not find root constant 's_targetBitangentOffset' in the shader");
             auto minIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_min" });
             AZ_Error("MorphTargetDispatchItem", minIndex.IsValid(), "Could not find root constant 's_min' in the shader");
             auto maxIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_max" });
@@ -140,7 +146,10 @@ namespace AZ
             m_rootConstantData.SetConstant(m_weightIndex, 0.0f);
             m_rootConstantData.SetConstant(vertexCountIndex, m_morphTargetMetaData.m_vertexCount);
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
-            m_rootConstantData.SetConstant(positionOffsetIndex, m_accumulatedDeltaOffsetInBytes / 4);
+            m_rootConstantData.SetConstant(positionOffsetIndex, m_morphInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes / 4);
+            m_rootConstantData.SetConstant(normalOffsetIndex, m_morphInstanceMetaData.m_accumulatedNormalDeltaOffsetInBytes / 4);
+            m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
+            m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
 
             m_dispatchItem.m_rootConstantSize = m_rootConstantData.GetConstantData().size();
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
@@ -179,6 +188,8 @@ namespace AZ
             {
                 float maxWeight = AZStd::max(std::abs(metaData.m_minWeight), std::abs(metaData.m_maxWeight));
                 float maxDelta = AZStd::max(std::abs(metaData.m_minDelta), std::abs(metaData.m_maxDelta));
+                // Normal, Tangent, and Bitangent deltas can be as high as 2
+                maxDelta = AZStd::max(maxDelta, 2.0f);
                 // Since multiple morphs can be fully active at once, sum the maximum offset in either positive or negative direction
                 // that can be applied each individual morph to get the maximum offset that could be applied across all morphs
                 range += maxWeight * maxDelta;

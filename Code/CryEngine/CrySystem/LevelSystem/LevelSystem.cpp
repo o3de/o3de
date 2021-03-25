@@ -279,8 +279,11 @@ static void LoadMap(IConsoleCmdArgs* args)
 {
     if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
     {
-        gEnv->pSystem->GetILevelSystem()->UnLoadLevel();
-        gEnv->pSystem->GetILevelSystem()->LoadLevel(args->GetArg(1));
+        if (args->GetArgCount() > 1)
+        {
+            gEnv->pSystem->GetILevelSystem()->UnLoadLevel();
+            gEnv->pSystem->GetILevelSystem()->LoadLevel(args->GetArg(1));
+        }
     }
 }
 
@@ -788,13 +791,16 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             pSpamDelay->Set(0.0f);
         }
 
-        bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name)
-            : gEnv->p3DEngine->LoadLevel(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name);
-        if (!is3DEngineLoaded)
+        if (gEnv->p3DEngine)
         {
-            OnLoadingError(pLevelInfo, "3DEngine failed to handle loading the level");
+            bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name)
+                : gEnv->p3DEngine->LoadLevel(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name);
+            if (!is3DEngineLoaded)
+            {
+                OnLoadingError(pLevelInfo, "3DEngine failed to handle loading the level");
 
-            return 0;
+                return 0;
+            }
         }
 
         // Parse level specific config data.
@@ -867,7 +873,10 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         //////////////////////////////////////////////////////////////////////////
         // Notify 3D engine that loading finished
         //////////////////////////////////////////////////////////////////////////
-        gEnv->p3DEngine->PostLoadLevel();
+        if (gEnv->p3DEngine)
+        {
+            gEnv->p3DEngine->PostLoadLevel();
+        }
 
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////

@@ -192,10 +192,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(meshNodeName);
-            actor->SetMesh(lodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, meshVertices, meshIndices, meshSkinningInfo, meshUVs, meshClothData));
+            actor->SetMesh(lodLevel, meshNodeIndex, CreateEMotionFXMesh(meshVertices, meshIndices, meshSkinningInfo, meshUVs, meshClothData));
             actor->FinishSetup();
 
-            actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         EXPECT_TRUE(clothComponent->GetClothComponentMesh() != nullptr);

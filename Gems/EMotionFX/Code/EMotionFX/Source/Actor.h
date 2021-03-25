@@ -14,6 +14,7 @@
 
 #include "EMotionFXConfig.h"
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -23,7 +24,6 @@
 #include <AzCore/Math/Color.h>
 
 // include MCore related files
-#include <MCore/Source/MemoryObject.h>
 #include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Array.h>
@@ -37,6 +37,9 @@
 #include "Pose.h"
 #include "Skeleton.h"
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
 
 namespace EMotionFX
 {
@@ -53,10 +56,6 @@ namespace EMotionFX
     class Mesh;
     class MeshDeformerStack;
 
-    class Actor;
-    using ActorUniquePtr = MCore::MemoryObjectUniquePtr<Actor>;
-
-
     /**
      * The actor is the representation of a completely animatable object, like a human character or an animal.
      * It represents a (read only) shared data object, from which ActorInstance objects can be created.
@@ -64,6 +63,7 @@ namespace EMotionFX
      * still share the same data from the Actor class. The Actor contains information about the hierarchy/structure of the characters.
      */
     class EMFX_API Actor
+        : private AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -223,24 +223,6 @@ namespace EMotionFX
         //---------------------------------------------------------------------
 
         /**
-         * Check if there is any node inside this actor, which has a deformable mesh for the specified LOD.
-         * A mesh is deformable if the mesh deformer stack has deformers (such as skinning or morphing deformers) in it.
-         * @param lodLevel The level of detail you want to check the result for. Must be in range of [0..GetNumLODLevels()-1].
-         * @result Returns true when there is a node which is deformable. When false is returned, this means that all meshes (if there are any)
-         *         are rigid, non-deformable meshes.
-         */
-        bool CheckIfHasDeformableMesh(uint32 lodLevel) const;
-
-        /**
-         * Check if there is any node inside this actor, which has a deformable collision mesh for the specified LOD.
-         * A mesh is deformable if the mesh deformer stack has deformers (such as skinning or morphing deformers) in it.
-         * @param lodLevel The level of detail you want to check the result for. Must be in range of [0..GetNumLODLevels()-1].
-         * @result Returns true when there is a node which is deformable. When false is returned, this means that all collision meshes (if there are any)
-         *         are rigid, non-deformable meshes.
-         */
-        //bool CheckIfHasDeformableCollisionMesh(uint32 lodLevel) const;
-
-        /**
          * Check if this actor contains any nodes that have meshes.
          * @param lodLevel The LOD level to check for.
          * @result Returns true when this actor contains nodes that have meshes in the given LOD, otherwise false is returned.
@@ -379,18 +361,7 @@ namespace EMotionFX
          * Set the number of LOD levels.
          * This will be called by the importer. Do not use manually.
          */
-        void SetNumLODLevels(uint32 numLODs);
-
-        /**
-         * Remove the given LOD level.
-         * @param[in] lodLevel The LOD level to remove.
-         */
-        void RemoveLODLevel(uint32 lodLevel);
-
-        /**
-         * Remove all LOD levels except for the highest detail level.
-         */
-        void RemoveAllLODLevels();
+        void SetNumLODLevels(uint32 numLODs, bool adjustMorphSetup = true);
 
         /**
          * Get the number of LOD levels inside this actor.
@@ -406,16 +377,6 @@ namespace EMotionFX
          * Also all mesh deformer stacks will be removed.
          */
         void RemoveAllNodeMeshes();
-
-        /**
-         * Remove all meshes and mesh deformer stacks of all meshes that have no morphing applied to them.
-         * So after executing this method, only meshes that have morphing applied to them will remain.
-         * In case there are also other deformers next to morphing deformers, so for example when there is
-         * both skinning and morphing applied to the mesh, the mesh will not be removed either.
-         * @param geomLODLevel The geometry LOD level to work on. This must be in range of [0..GetNumLODLevels()-1].
-         * @result Returns the number of removed meshes.
-         */
-        uint32 RemoveAllMeshesWithoutMorphing(uint32 geomLODLevel);
 
         /**
          * Calculates the total number of vertices and indices of all node meshes for the given LOD.
@@ -826,8 +787,16 @@ namespace EMotionFX
         void SetThreadIndex(uint32 index)                   { mThreadIndex = index; }
         uint32 GetThreadIndex() const                       { return mThreadIndex; }
 
-        MCORE_INLINE Mesh* GetMesh(uint32 lodLevel, uint32 nodeIndex) const                                             { return mLODs[lodLevel].mNodeInfos[nodeIndex].mMesh; }
-        MCORE_INLINE MeshDeformerStack* GetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex) const                   { return mLODs[lodLevel].mNodeInfos[nodeIndex].mStack; }
+        Mesh* GetMesh(uint32 lodLevel, uint32 nodeIndex) const;
+        MeshDeformerStack* GetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex) const;
+
+        /** Finds the mesh points for which the specified node is the node with the highest influence.
+         * This is a pretty expensive function which is only intended for use in the editor.
+         * The resulting points will be given in model space.
+         * @param node The node for which the most heavily influenced mesh points are sought.
+         * @param[out] outPoints Container which will be filled with the points for which the node is the heaviest influence.
+         */
+        void FindMostInfluencedMeshPoints(const Node* node, AZStd::vector<AZ::Vector3>& outPoints) const;
 
         MCORE_INLINE Skeleton* GetSkeleton() const          { return mSkeleton; }
         MCORE_INLINE uint32 GetNumNodes() const             { return mSkeleton->GetNumNodes(); }
@@ -835,8 +804,6 @@ namespace EMotionFX
         void SetMesh(uint32 lodLevel, uint32 nodeIndex, Mesh* mesh);
         void SetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex, MeshDeformerStack* stack);
 
-        bool GetHasMesh(uint32 lodLevel, uint32 nodeIndex) const;
-        bool CheckIfHasDeformableMesh(uint32 lodLevel, uint32 nodeIndex) const;
         bool CheckIfHasMorphDeformer(uint32 lodLevel, uint32 nodeIndex) const;
         bool CheckIfHasSkinningDeformer(uint32 lodLevel, uint32 nodeIndex) const;
 
@@ -917,8 +884,44 @@ namespace EMotionFX
         void SetOptimizeSkeleton(bool optimizeSkeleton) { m_optimizeSkeleton = optimizeSkeleton; }
         bool GetOptimizeSkeleton() const { return m_optimizeSkeleton; }
 
+        void SetMeshAssetId(const AZ::Data::AssetId& assetId);
+        void CheckFinalizeActor();
+        void LoadMeshAssetsQueued();
+        void LoadRemainingAssets();
+
+        const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetMeshAsset() const { return m_meshAsset; }
+        const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& GetSkinMetaAsset() const { return m_skinMetaAsset; }
+        const AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset>& GetMorphTargetMetaAsset() const { return m_morphTargetMetaAsset; }
+
+        void SetMeshAsset(AZ::Data::Asset<AZ::RPI::ModelAsset> asset) { m_meshAsset = asset; }
+        void SetSkinMetaAsset(AZ::Data::Asset<AZ::RPI::SkinMetaAsset> asset) { m_skinMetaAsset = asset; }
+        void SetMorphTargetMetaAsset(AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> asset) { m_morphTargetMetaAsset = asset; }
+
+        /**
+        * Is the actor fully ready?
+        * @result True in case the actor as well as its dependent files (e.g. mesh, skin, morph targets) are fully loaded and initialized.
+        **/
+        bool IsReady() const { return m_isReady; }
+
     private:
         void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
+
+        // AZ::Data::AssetBus::Handler
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        AZStd::unordered_map<AZ::u16, AZ::u16> ConstructSkinToSkeletonIndexMap(const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& skinMetaAsset);
+        void ConstructMeshes(const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap);
+        void ConstructMorphTargets();
+        Node* FindJointByMeshName(const AZStd::string_view meshName) const;
+
+        // per node info (shared between lods)
+        struct EMFX_API NodeInfo
+        {
+            MCore::OBB  mOBB;
+
+            NodeInfo();
+        };
 
         // data per node, per lod
         struct EMFX_API NodeLODInfo
@@ -933,21 +936,37 @@ namespace EMotionFX
         // a lod level
         struct EMFX_API LODLevel
         {
-            MCore::Array<NodeLODInfo>   mNodeInfos;
+            MCore::Array<NodeLODInfo> mNodeInfos;
 
             LODLevel();
         };
 
-        // per node info (shared between lods)
-        struct EMFX_API NodeInfo
+        struct MeshLODData
         {
-            MCore::OBB  mOBB;
+            AZStd::vector<LODLevel> m_lodLevels;
 
-            NodeInfo();
+            MeshLODData();
         };
 
+        MeshLODData m_meshLodData;
+        AZ::Data::AssetId m_meshAssetId;
+        AZ::Data::Asset<AZ::RPI::ModelAsset> m_meshAsset;
+        AZ::Data::Asset<AZ::RPI::SkinMetaAsset> m_skinMetaAsset;
+        AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> m_morphTargetMetaAsset;
+        AZStd::recursive_mutex m_mutex;
+
+        static AZ::Data::AssetId ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId);
+        static bool DoesSkinMetaAssetExist(const AZ::Data::AssetId& meshAssetId);
+
+        static AZ::Data::AssetId ConstructMorphTargetMetaAssetId(const AZ::Data::AssetId& meshAssetId);
+        static bool DoesMorphTargetMetaAssetExist(const AZ::Data::AssetId& meshAssetId);
+
+        Node* FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const;
+
+        void SetActorReady();
+        bool m_isReady = false;
+
         Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
-        MCore::Array<LODLevel>                          mLODs;                      /**< The LOD information. */
         MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
         AZStd::vector<NodeInfo>                         mNodeInfos;                 /**< The per node info, shared between lods. */
         AZStd::string                                   mName;                      /**< The name of the actor. */

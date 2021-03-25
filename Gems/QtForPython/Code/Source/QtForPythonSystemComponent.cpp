@@ -165,7 +165,6 @@ namespace QtForPython
                 ->Property("qtBinaryFolder", BehaviorValueProperty(&QtBootstrapParameters::m_qtBinaryFolder))
                 ->Property("qtPluginsFolder", BehaviorValueProperty(&QtBootstrapParameters::m_qtPluginsFolder))
                 ->Property("mainWindowId", BehaviorValueProperty(&QtBootstrapParameters::m_mainWindowId))
-                ->Property("pySidePackageFolder", BehaviorValueProperty(&QtBootstrapParameters::m_pySidePackageFolder))
                 ;
         }
     }
@@ -211,21 +210,9 @@ namespace QtForPython
         char devroot[AZ_MAX_PATH_LEN];
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devroot@", devroot, AZ_MAX_PATH_LEN);
        
-#if defined(Q_OS_WIN)
-        const char* platform = "windows";
-#else
+#if !defined(Q_OS_WIN)
 #error Unsupported OS platform for this QtForPython gem
 #endif
-
-#if defined(AZ_DEBUG_BUILD)
-        const char* build = "debug";
-#else
-        const char* build = "release";
-#endif
-        // prepare the platform and build specific PySide2 package folder
-        AZ::StringFunc::Path::Join(devroot, "Gems/QtForPython/3rdParty/pyside2", params.m_pySidePackageFolder);
-        AZ::StringFunc::Path::Join(params.m_pySidePackageFolder.c_str(), platform, params.m_pySidePackageFolder);
-        AZ::StringFunc::Path::Join(params.m_pySidePackageFolder.c_str(), build, params.m_pySidePackageFolder);
 
         params.m_mainWindowId = 0;
         using namespace AzToolsFramework;

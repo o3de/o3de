@@ -82,12 +82,13 @@ namespace GraphCanvas
 
         const GraphCanvasTreeItem* GetTreeRoot() const;
 
+        NodePaletteWidget* GetNodePaletteWidget() const;
+
     protected:
 
         GraphCanvasTreeItem* ModTreeRoot();
 
-        NodePaletteTreeView* GetTreeView() const;
-        NodePaletteWidget* GetNodePaletteWidget() const;
+        NodePaletteTreeView* GetTreeView() const;        
 
         // This method here is to help facilitate resetting the model. This will not be called during
         // the initial construction(because yay virtual functions).

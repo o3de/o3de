@@ -60,12 +60,15 @@ namespace EMStudio
         mTranslateManipulator           = nullptr;
         mRotateManipulator              = nullptr;
         mScaleManipulator               = nullptr;
+
+        EMotionFX::ActorNotificationBus::Handler::BusConnect();
     }
 
 
     RenderPlugin::~RenderPlugin()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
+        EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
         SaveRenderOptions();
         CleanEMStudioActors();
@@ -312,6 +315,10 @@ namespace EMStudio
         }
     }
 
+    void RenderPlugin::OnActorReady([[maybe_unused]] EMotionFX::Actor* actor)
+    {
+        ReInit(/*resetViewCloseup=*/true);
+    }
 
     // try to locate the helper actor for a given instance
     RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance)
@@ -411,13 +418,19 @@ namespace EMStudio
 
     void RenderPlugin::ReInit(bool resetViewCloseup)
     {
+        if (!mRenderUtil)
+        {
+            return;
+        }
+
+        // 1. Create new emstudio actors
         uint32 numActors = EMotionFX::GetActorManager().GetNumActors();
         for (uint32 i = 0; i < numActors; ++i)
         {
             // get the current actor and the number of clones
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
 
-            if (actor->GetIsOwnedByRuntime())
+            if (actor->GetIsOwnedByRuntime() || !actor->IsReady())
             {
                 continue;
             }
@@ -432,7 +445,7 @@ namespace EMStudio
             }
         }
 
-        //  uint32 numEMStudioActors = mActors.GetLength();
+        // 2. Remove invalid, not ready or unused emstudio actors
         for (uint32 i = 0; i < mActors.GetLength(); ++i)
         {
             EMStudioRenderActor* emstudioActor = mActors[i];
@@ -450,14 +463,13 @@ namespace EMStudio
 
             // At this point the render actor could point to an already deleted actor.
             // In case the actor got deleted we might get an unexpected flag as result.
-            if (!found || (found && actor->GetIsOwnedByRuntime()))
+            if (!found || (found && actor->GetIsOwnedByRuntime()) || (!actor->IsReady()))
             {
                 DestroyEMStudioActor(actor);
             }
         }
-        //numEMStudioActors = mActors.GetLength();
 
-        // get the number of actor instances and iterate through them
+        // 3. Relink the actor instances with the emstudio actors
         const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
@@ -470,11 +482,8 @@ namespace EMStudio
                 continue;
             }
 
-            // in case the actor instance has not been mapped to an emstudio actor yet, do this here
-            if (emstudioActor == nullptr)
+            if (!emstudioActor)
             {
-                // get the number of emstudio actors and iterate through them
-                //numEMStudioActors = mActors.GetLength();
                 for (uint32 j = 0; j < mActors.GetLength(); ++j)
                 {
                     EMStudioRenderActor* currentEMStudioActor = mActors[j];
@@ -486,20 +495,20 @@ namespace EMStudio
                 }
             }
 
-            MCORE_ASSERT(emstudioActor);
-
-            // set the GL actor
-            actorInstance->SetCustomData(emstudioActor->mRenderActor);
-
-            // add the actor instance to the emstudio actor instances in case it is not in yet
-            if (emstudioActor->mActorInstances.Find(actorInstance) == MCORE_INVALIDINDEX32)
+            if (emstudioActor)
             {
-                emstudioActor->mActorInstances.Add(actorInstance);
+                // set the GL actor
+                actorInstance->SetCustomData(emstudioActor->mRenderActor);
+
+                // add the actor instance to the emstudio actor instances in case it is not in yet
+                if (emstudioActor->mActorInstances.Find(actorInstance) == MCORE_INVALIDINDEX32)
+                {
+                    emstudioActor->mActorInstances.Add(actorInstance);
+                }
             }
         }
 
-        // get the number of emstudio actors and iterate through them
-        //numEMStudioActors = mActors.GetLength();
+        // 4. Unlink invalid actor instances from the emstudio actors
         for (uint32 i = 0; i < mActors.GetLength(); ++i)
         {
             EMStudioRenderActor* emstudioActor = mActors[i];
@@ -910,13 +919,7 @@ namespace EMStudio
 
             // get the mesh based AABB
             MCore::AABB aabb;
-            actorInstance->CalcMeshBasedAABB(actorInstance->GetLODLevel(), &aabb);
-
-            // get the node OBB based AABB
-            if (aabb.CheckIfIsValid() == false)
-            {
-                actorInstance->CalcNodeOBBBasedAABB(&aabb);
-            }
+            actorInstance->CalcMeshBasedAABB(0, &aabb);
 
             // get the node based AABB
             if (aabb.CheckIfIsValid() == false)

@@ -69,9 +69,6 @@ namespace //anonymous
     "executable_name": "DummyProjectLauncher",
     "modules" : [],
     "project_id": "{91FB81A1-072C-4A80-8FCC-7E2C4C767B4D}",
-    
-    "xenia_settings" : {
-    },
 
     "android_settings" : {
         "package_name" : "com.lumberyard.yourgame",

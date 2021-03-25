@@ -126,7 +126,7 @@ protected:
 
     void LoadLibrary();
 
-    QString MakeValidName(const QString& candidateName, Functor2<const QString&, bool&> cb) const;
+    QString MakeValidName(const QString& candidateName, AZStd::function<void(const QString&, bool&)> cb) const;
 
     virtual QTreeView* GetTreeCtrl() = 0;
     virtual const QTreeView* GetTreeCtrl() const = 0;

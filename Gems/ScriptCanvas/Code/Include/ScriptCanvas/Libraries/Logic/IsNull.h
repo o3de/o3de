@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
 
@@ -25,27 +23,30 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Evaluates a reference types for null
             class IsNull
                 : public Node
             {
             public:
-                ScriptCanvas_Node(IsNull,
-                    ScriptCanvas_Node::Name("Is Null", "Evaluates reference types for null.")
-                    ScriptCanvas_Node::Uuid("{760CE936-7059-42A3-A177-530A662E4ECF}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/IsNull.png")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(IsNull);
 
                 IsNull();
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
+                AZ::Outcome<DependencyReport, void> GetDependencies() const;
 
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("True", "Signaled if the reference provided is null."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("False", "Signaled if the reference provided is not null."));
+                bool IsIfBranch() const override;
+
+                bool IsIfBranchPrefacedWithBooleanExpression() const override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
             protected:
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
+
                 void OnInit() override;
 
                 void OnInputSignal(const SlotId&) override;

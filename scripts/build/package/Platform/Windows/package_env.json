@@ -14,16 +14,16 @@
                     "FILE_LIST": "symbols.json",
                     "FILE_LIST_TYPE": "All",
                     "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-windows-all-symbols-${BUILD_NUMBER}.zip"
+                },
+                {
+                    "FILE_LIST": "3rdParty.json",
+                    "FILE_LIST_TYPE": "Windows",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-windows-3rdparty-${BUILD_NUMBER}.zip"
                 }
             ],
             "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",
             "SKIP_BUILD": 0,
             "BUILD_TARGETS":[
-                {
-                    "BUILD_CONFIG_FILENAME": "build_config.json",
-                    "PLATFORM": "Windows",
-                    "TYPE": "profile_vs2017"
-                },
                 {
                     "BUILD_CONFIG_FILENAME": "build_config.json",
                     "PLATFORM": "Windows",
@@ -47,11 +47,6 @@
             "BOOTSTRAP_CFG_GAME_FOLDER":"AtomSampleViewer;AtomTest",
             "SKIP_BUILD": 1,
             "BUILD_TARGETS":[
-                {
-                    "BUILD_CONFIG_FILENAME": "build_config.json",
-                    "PLATFORM": "Windows",
-                    "TYPE": "profile_vs2017_atom"
-                },
                 {
                     "BUILD_CONFIG_FILENAME": "build_config.json",
                     "PLATFORM": "Windows",

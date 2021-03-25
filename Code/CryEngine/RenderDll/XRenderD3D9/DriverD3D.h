@@ -2058,8 +2058,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
 public:
     bool IsDeviceLost() { return(m_bDeviceLost != 0); }
-    void InitNVAPI();
-    void InitAMDAPI();
 
 #if defined(FEATURE_SVO_GI)
     virtual ISvoRenderer* GetISvoRenderer();

@@ -16,6 +16,7 @@
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
+#include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
@@ -27,20 +28,20 @@
 #include <Editor/View/Widgets/ValidationPanel/GraphValidationDockWidgetBus.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/View/Widgets/VariablePanel/VariableDockWidget.h>
+
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/ConnectionBus.h>
+#include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/HighlightEffect.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/GreyOutEffect.h>
-
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Core/ConnectionBus.h>
-#include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -75,6 +76,8 @@ namespace ScriptCanvasEditor
     {
         AZ::EntityId graphCanvasMemberId;
         SceneMemberMappingRequestBus::EventResult(graphCanvasMemberId, scriptCanvasTargetId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+
+        graphCanvasMemberId = GraphCanvas::GraphUtils::FindVisibleElement(graphCanvasMemberId);
 
         m_targets.emplace_back(graphCanvasMemberId);
     }
@@ -154,7 +157,7 @@ namespace ScriptCanvasEditor
         m_inactiveNodes.clear();
     }
 
-    void UnusedNodeValidationEffect::DisplayEffect([[maybe_unused]] const GraphCanvas::GraphId& grpahId)
+    void UnusedNodeValidationEffect::DisplayEffect(const GraphCanvas::GraphId&)
     {
         if (!m_isDirty)
         {
@@ -297,17 +300,26 @@ namespace ScriptCanvasEditor
     {
         m_validationResults.ClearResults();
     }
-    
+
     void GraphValidationModel::RunValidation(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         layoutAboutToBeChanged();
 
-        m_validationResults.ClearResults();
-        
         if (scriptCanvasId.IsValid())
         {
-            bool validated = false;
-            ScriptCanvas::StatusRequestBus::Event(scriptCanvasId, &ScriptCanvas::StatusRequests::ValidateGraph, m_validationResults);
+            AZ::EBusAggregateResults<AZStd::pair<ScriptCanvas::ScriptCanvasId, ScriptCanvas::ValidationResults>> results;
+            ScriptCanvas::ValidationRequestBus::EventResult(results, scriptCanvasId, &ScriptCanvas::ValidationRequests::GetValidationResults);
+            
+            for (auto r : results.values)
+            {
+                if (r.first == scriptCanvasId)
+                {
+                    for (auto e : r.second.GetEvents())
+                    {
+                        m_validationResults.AddValidationEvent(e.get());
+                    }
+                }
+            }
         }
         
         layoutChanged();
@@ -315,7 +327,28 @@ namespace ScriptCanvasEditor
         GraphValidatorDockWidgetNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphValidatorDockWidgetNotifications::OnResultsChanged, m_validationResults.ErrorCount(), m_validationResults.WarningCount());
     }
     
-    QModelIndex GraphValidationModel::index(int row, int column, [[maybe_unused]] const QModelIndex& parent) const
+    void GraphValidationModel::AddEvents(ScriptCanvas::ValidationResults& validationEvents)
+    {
+        if (validationEvents.HasErrors() || validationEvents.HasWarnings())
+        {
+            layoutAboutToBeChanged();
+            for (auto event : validationEvents.GetEvents())
+            {
+                m_validationResults.AddValidationEvent(event.get());
+            }
+            layoutChanged();
+        }
+
+        GraphValidatorDockWidgetNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphValidatorDockWidgetNotifications::OnResultsChanged, m_validationResults.ErrorCount(), m_validationResults.WarningCount());
+
+    }
+
+    void GraphValidationModel::Clear()
+    {
+        m_validationResults.ClearResults();
+    }
+
+    QModelIndex GraphValidationModel::index(int row, int column, const QModelIndex&) const
     {
         if (row < 0 || row >= m_validationResults.GetEvents().size())
         {
@@ -325,17 +358,17 @@ namespace ScriptCanvasEditor
         return createIndex(row, column, const_cast<ScriptCanvas::ValidationEvent*>(FindItemForRow(row)));
     }
     
-    QModelIndex GraphValidationModel::parent([[maybe_unused]] const QModelIndex& index) const
+    QModelIndex GraphValidationModel::parent(const QModelIndex&) const
     {
         return QModelIndex();
     }
     
-    int GraphValidationModel::columnCount([[maybe_unused]] const QModelIndex& parent) const
+    int GraphValidationModel::columnCount(const QModelIndex& ) const
     {
         return ColumnIndex::Count;
     }
     
-    int GraphValidationModel::rowCount([[maybe_unused]] const QModelIndex& parent) const
+    int GraphValidationModel::rowCount(const QModelIndex&) const
     {
         return static_cast<int>(m_validationResults.GetEvents().size());
     }
@@ -463,7 +496,7 @@ namespace ScriptCanvasEditor
             return nullptr;
         }
         
-        return validationEvents[row];
+        return validationEvents[row].get();
     }
 
     const ScriptCanvas::ValidationResults& GraphValidationModel::GetValidationResults() const
@@ -556,13 +589,11 @@ namespace ScriptCanvasEditor
     GraphValidationDockWidget::GraphValidationDockWidget(QWidget* parent /*= nullptr*/)
         : AzQtComponents::StyledDockWidget(parent)
         , ui(new Ui::GraphValidationPanel())
-        , m_model(aznew GraphValidationModel())
         , m_proxyModel(aznew GraphValidationSortFilterProxyModel())
     {
         ui->setupUi(this);
 
-        m_proxyModel->setSourceModel(m_model);
-
+        m_proxyModel->setSourceModel(aznew GraphValidationModel()); 
         ui->statusTableView->setModel(m_proxyModel);
 
         ui->statusTableView->horizontalHeader()->setStretchLastSection(false);
@@ -605,33 +636,87 @@ namespace ScriptCanvasEditor
 
         UpdateText();
         UpdateSelectedText();
+
     }
 
     GraphValidationDockWidget::~GraphValidationDockWidget()
     {
         GraphCanvas::AssetEditorNotificationBus::Handler::BusDisconnect();
-
-        for (const auto& mapPair : m_validationEffects)
-        {
-            delete mapPair.second;
-        }
     }
     
     void GraphValidationDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)
     {
-        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
-        GraphCanvas::SceneNotificationBus::Handler::BusConnect(graphCanvasGraphId);
+        if (graphCanvasGraphId == m_activeGraphIds.graphCanvasId)
+        {
+            // No change
+            return;
+        }
 
+        OnToastDismissed();
+
+        if (graphCanvasGraphId.IsValid())
+        {
+            ScriptCanvas::ScriptCanvasId scriptCanvasId;
+            GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
+
+            if (m_models.find(graphCanvasGraphId) == m_models.end())
+            {
+                // We have not created a model for this graph yet.
+                m_models[graphCanvasGraphId] = AZStd::make_pair(scriptCanvasId, AZStd::unique_ptr<ValidationData>(aznew ValidationData(graphCanvasGraphId, scriptCanvasId)));
+            }
+
+            m_activeGraphIds.graphCanvasId = graphCanvasGraphId;
+            m_activeGraphIds.scriptCanvasId = scriptCanvasId;
+        }
+        else
+        {
+            return;
+        }
+
+        if (ValidationData* valdata = m_models[m_activeGraphIds.graphCanvasId].second.get())
+        {
+            m_proxyModel->setSourceModel(valdata->GetModel());
+
+            Refresh();
+
+            GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
+            GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraphIds.graphCanvasId);
+
+            ui->statusTableView->clearSelection();
+        }
+    }
+
+    void GraphValidationDockWidget::Refresh()
+    {
         ui->statusTableView->clearSelection();
-
-        GeneralRequestBus::BroadcastResult(m_scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
-        m_graphCanvasGraphId = graphCanvasGraphId;
-
-        ui->runValidation->setEnabled(m_scriptCanvasId.IsValid());
-
-        // Lazy way of clearing out the results
-        m_model->RunValidation(ScriptCanvas::ScriptCanvasId());
         UpdateText();
+
+        
+        ui->runValidation->setEnabled(GetActiveData().first.IsValid());
+    }
+
+    const ScriptCanvasEditor::GraphValidationModel* GraphValidationDockWidget::GetActiveModel() const
+    {
+        if (m_models.contains(m_activeGraphIds.graphCanvasId))
+        {
+            const auto it = m_models.find(m_activeGraphIds.graphCanvasId);
+            const GraphModelPair& pair = const_cast<const GraphModelPair&>(it->second);
+            return pair.second->GetModel();
+        }
+
+        return nullptr;
+    }
+
+    ScriptCanvasEditor::GraphValidationDockWidget::GraphModelPair& GraphValidationDockWidget::GetActiveData()
+    {
+        auto iter = m_models.find(m_activeGraphIds.graphCanvasId);
+        if (iter != m_models.end())
+        {
+            return iter->second;
+        }
+
+        static GraphModelPair invalidPair = AZStd::make_pair(AZ::EntityId(), nullptr);
+        return invalidPair;
     }
 
     void GraphValidationDockWidget::OnSelectionChanged()
@@ -644,31 +729,21 @@ namespace ScriptCanvasEditor
         ui->statusTableView->clearSelection();
     }
 
-    void GraphValidationDockWidget::OnToastInteraction()
-    {
-        UIRequestBus::Broadcast(&UIRequests::OpenValidationPanel);
-    }
-
-    void GraphValidationDockWidget::OnToastDismissed()
-    {
-        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
-
-        if (toastId)
-        {
-            GraphCanvas::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
-        }
-    }
-
     bool GraphValidationDockWidget::HasValidationIssues() const
     {
-        return m_model->rowCount() > 0;
+        const auto model = GetActiveModel();
+        return model ? model->rowCount() > 0 : false;
     }
     
     void GraphValidationDockWidget::OnRunValidator(bool displayAsNotification)
     {
         ui->statusTableView->clearSelection();
 
-        m_model->RunValidation(m_scriptCanvasId);
+        if (auto model = GetActiveData().second->GetModel())
+        {
+            model->Clear();
+            model->RunValidation(m_activeGraphIds.scriptCanvasId);
+        }
         ui->allFilter->click();
 
         UpdateText();
@@ -677,36 +752,9 @@ namespace ScriptCanvasEditor
         {
             ui->statusTableView->selectAll();
         }
-        else if (HasValidationIssues() )
+        else if (HasValidationIssues())
         {
-            GraphCanvas::ViewId viewId;
-            GraphCanvas::SceneRequestBus::EventResult(viewId, m_graphCanvasGraphId, &GraphCanvas::SceneRequests::GetViewId);            
-
-            GraphCanvas::ToastType toastType;
-            AZStd::string titleLabel = "Validation Issue";
-            AZStd::string description = "";
-
-            if (m_model->GetValidationResults().HasErrors())
-            {
-                toastType = GraphCanvas::ToastType::Error;
-                description = AZStd::string::format("%i validation error(s) were found.", m_model->GetValidationResults().ErrorCount());
-            }
-            else
-            {
-                toastType = GraphCanvas::ToastType::Warning;
-                description = AZStd::string::format("%i validation warning(s) were found.", m_model->GetValidationResults().WarningCount());
-            }
-
-            GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
-
-            toastConfiguration.SetCloseOnClick(true);
-            toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-            GraphCanvas::ToastId validationToastId;
-
-            GraphCanvas::ViewRequestBus::EventResult(validationToastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);
-
-            GraphCanvas::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
+            GetActiveData().second->DisplayToast();
         }
     }
     
@@ -741,53 +789,60 @@ namespace ScriptCanvasEditor
                 if (modelIndex.column() == 0)
                 {
                     QModelIndex sourceIndex = m_proxyModel->mapToSource(modelIndex);
-                    const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForIndex(sourceIndex);
 
-                    if (validationEvent && validationEvent->CanAutoFix())
+                    if (auto model = GetActiveModel())
                     {
-                        ui->fixSelected->setEnabled(true);
-                    }
+                        const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(sourceIndex);
 
-                    OnRowSelected(sourceIndex.row());
+                        if (validationEvent && validationEvent->CanAutoFix())
+                        {
+                            ui->fixSelected->setEnabled(true);
+                        }
+
+                        OnRowSelected(sourceIndex.row());
+                    }
                 }
             }
 
-            m_unusedNodeValidationEffect.DisplayEffect(m_graphCanvasGraphId);
+            m_unusedNodeValidationEffect.DisplayEffect(m_activeGraphIds.graphCanvasId);
         }
     }
 
     void GraphValidationDockWidget::FocusOnEvent(const QModelIndex& modelIndex)
     {
-        const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
+        if (auto model = GetActiveModel())
+        {
+            const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
         
-        AZ::EntityId graphCanvasMemberId;
-        QRectF focusArea;
+            AZ::EntityId graphCanvasMemberId;
+            QRectF focusArea;
 
-        if (const ScriptCanvas::FocusOnEntityEffect* focusOnEntityEffect = azrtti_cast<const ScriptCanvas::FocusOnEntityEffect*>(validationEvent))
-        {
-            const AZ::EntityId& scriptCanvasId = focusOnEntityEffect->GetFocusTarget();
-
-            SceneMemberMappingRequestBus::EventResult(graphCanvasMemberId, scriptCanvasId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
-        }
-
-        if (graphCanvasMemberId.IsValid())
-        {
-            GraphCanvas::FocusConfig focusConfig;
-
-            if (GraphCanvas::GraphUtils::IsNodeGroup(graphCanvasMemberId))
+            if (const ScriptCanvas::FocusOnEntityEffect* focusOnEntityEffect = azrtti_cast<const ScriptCanvas::FocusOnEntityEffect*>(validationEvent))
             {
-                focusConfig.m_spacingType = GraphCanvas::FocusConfig::SpacingType::GridStep;
-                focusConfig.m_spacingAmount = 1;
-            }
-            else
-            {
-                focusConfig.m_spacingType = GraphCanvas::FocusConfig::SpacingType::Scalar;
-                focusConfig.m_spacingAmount = 2;
+                const AZ::EntityId& scriptCanvasId = focusOnEntityEffect->GetFocusTarget();
+
+                SceneMemberMappingRequestBus::EventResult(graphCanvasMemberId, scriptCanvasId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
             }
 
-            AZStd::vector<AZ::EntityId> memberIds = { graphCanvasMemberId };
+            if (graphCanvasMemberId.IsValid())
+            {
+                GraphCanvas::FocusConfig focusConfig;
 
-            GraphCanvas::GraphUtils::FocusOnElements(memberIds, focusConfig);
+                if (GraphCanvas::GraphUtils::IsNodeGroup(graphCanvasMemberId))
+                {
+                    focusConfig.m_spacingType = GraphCanvas::FocusConfig::SpacingType::GridStep;
+                    focusConfig.m_spacingAmount = 1;
+                }
+                else
+                {
+                    focusConfig.m_spacingType = GraphCanvas::FocusConfig::SpacingType::Scalar;
+                    focusConfig.m_spacingAmount = 2;
+                }
+
+                AZStd::vector<AZ::EntityId> memberIds = { graphCanvasMemberId };
+
+                GraphCanvas::GraphUtils::FocusOnElements(memberIds, focusConfig);
+            }
         }
     }
 
@@ -798,14 +853,18 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
-
-        if (!validationEvent->CanAutoFix())
+        if (auto model = GetActiveModel())
         {
-            return;
-        }
+            const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
 
-        AutoFixEvent(validationEvent);
+            if (!validationEvent->CanAutoFix())
+            {
+                return;
+            }
+
+            AutoFixEvent(validationEvent);
+
+        }
 
         OnRunValidator();
     }
@@ -813,24 +872,27 @@ namespace ScriptCanvasEditor
     void GraphValidationDockWidget::FixSelected()
     {
         {
-            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_graphCanvasGraphId);
+            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_activeGraphIds.graphCanvasId);
 
             for (auto modelIndex : ui->statusTableView->selectionModel()->selectedIndexes())
             {
                 if (modelIndex.column() == 0)
                 {
                     QModelIndex sourceIndex = m_proxyModel->mapToSource(modelIndex);
-                    const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForIndex(sourceIndex);
-
-                    if (validationEvent->CanAutoFix())
+                    if (auto model = GetActiveModel())
                     {
-                        AutoFixEvent(validationEvent);
+                        const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(sourceIndex);
+
+                        if (validationEvent->CanAutoFix())
+                        {
+                            AutoFixEvent(validationEvent);
+                        }
                     }
                 }
             }
         }
 
-        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_activeGraphIds.scriptCanvasId);
 
         OnRunValidator();
     }
@@ -882,7 +944,7 @@ namespace ScriptCanvasEditor
     void GraphValidationDockWidget::AutoFixScriptEventVersionMismatch(const ScriptCanvas::ScriptEventVersionMismatch* scriptEventMismatchEvent)
     {
         {
-            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_graphCanvasGraphId);
+            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_activeGraphIds.graphCanvasId);
 
             AZ::EntityId graphCanvasId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasId, scriptEventMismatchEvent->GetNodeId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -895,27 +957,26 @@ namespace ScriptCanvasEditor
             //EditorGraphRequestBus::Event(m_scriptCanvasGraphId, &EditorGraphRequests::UpdateScriptEventVersion, scriptEventMismatchEvent->GetNodeId());
         }
 
-        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_activeGraphIds.scriptCanvasId);
 
     }
-
 
     void GraphValidationDockWidget::AutoFixDeleteInvalidVariables(const ScriptCanvas::InvalidVariableTypeEvent* invalidVariableEvent)
     {
         {
-            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_graphCanvasGraphId);
+            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_activeGraphIds.graphCanvasId);
 
             AZStd::vector<NodeIdPair> variableNodes;
-            EditorGraphRequestBus::EventResult(variableNodes, m_scriptCanvasId, &EditorGraphRequests::GetVariableNodes, invalidVariableEvent->GetVariableId());
+            EditorGraphRequestBus::EventResult(variableNodes, m_activeGraphIds.scriptCanvasId, &EditorGraphRequests::GetVariableNodes, invalidVariableEvent->GetVariableId());
             for (auto& variableNode : variableNodes)
             {
                 GraphCanvas::GraphUtils::DetachNodeAndStitchConnections(variableNode.m_graphCanvasId);
             }
 
-            ScriptCanvas::GraphVariableManagerRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::RemoveVariable, invalidVariableEvent->GetVariableId());
+            ScriptCanvas::GraphVariableManagerRequestBus::Event(m_activeGraphIds.scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::RemoveVariable, invalidVariableEvent->GetVariableId());
         }
 
-        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_activeGraphIds.scriptCanvasId);
 
     }
 
@@ -924,7 +985,7 @@ namespace ScriptCanvasEditor
         AZStd::unordered_set< AZ::EntityId > createdNodes;
 
         {
-            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_graphCanvasGraphId);
+            GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_activeGraphIds.graphCanvasId);
 
             const AZ::EntityId& scriptCanvasConnectionId = connectionEvent->GetConnectionId();
 
@@ -945,12 +1006,12 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const AZStd::string& varName = VariableDockWidget::FindDefaultVariableName(m_scriptCanvasId);
+            const AZStd::string& varName = VariableDockWidget::FindDefaultVariableName(m_activeGraphIds.scriptCanvasId);
 
             ScriptCanvas::Datum datum(variableType, ScriptCanvas::Datum::eOriginality::Original);
 
             AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> outcome = AZ::Failure(AZStd::string());
-            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, varName, datum);
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_activeGraphIds.scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, varName, datum);
 
             if (outcome.IsSuccess())
             {
@@ -973,7 +1034,7 @@ namespace ScriptCanvasEditor
             GraphCanvas::ConnectionRequestBus::EventResult(targetEndpoint, graphCanvasConnectionId, &GraphCanvas::ConnectionRequests::GetTargetEndpoint);
 
             AZ::EntityId gridId;
-            GraphCanvas::SceneRequestBus::EventResult(gridId, m_graphCanvasGraphId, &GraphCanvas::SceneRequests::GetGrid);
+            GraphCanvas::SceneRequestBus::EventResult(gridId, m_activeGraphIds.graphCanvasId, &GraphCanvas::SceneRequests::GetGrid);
 
             AZ::Vector2 gridStep(0,0);
             GraphCanvas::GridRequestBus::EventResult(gridStep, gridId, &GraphCanvas::GridRequests::GetMinorPitch);
@@ -1035,10 +1096,10 @@ namespace ScriptCanvasEditor
                                 }
                             }
 
-                            NodeIdPair createdNodePair = Nodes::CreateSetVariableNode(targetVariableId, m_scriptCanvasId);
+                            NodeIdPair createdNodePair = Nodes::CreateSetVariableNode(targetVariableId, m_activeGraphIds.scriptCanvasId);
 
                             setVariableGraphCanvasId = createdNodePair.m_graphCanvasId;
-                            GraphCanvas::SceneRequestBus::Event(m_graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, setVariableGraphCanvasId, position);
+                            GraphCanvas::SceneRequestBus::Event(m_activeGraphIds.graphCanvasId, &GraphCanvas::SceneRequests::AddNode, setVariableGraphCanvasId, position, false);
 
                             createdNodes.insert(setVariableGraphCanvasId);
 
@@ -1058,7 +1119,7 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    NodeIdPair setVariableNodeIdPair = Nodes::CreateSetVariableNode(targetVariableId, m_scriptCanvasId);
+                    NodeIdPair setVariableNodeIdPair = Nodes::CreateSetVariableNode(targetVariableId, m_activeGraphIds.scriptCanvasId);
 
                     createdNodes.insert(setVariableNodeIdPair.m_graphCanvasId);
 
@@ -1072,7 +1133,7 @@ namespace ScriptCanvasEditor
                     }
 
                     AZ::Vector2 position = AZ::Vector2(aznumeric_cast<float>(sourceBoundingRect.right() + gridStep.GetX()), aznumeric_cast<float>(sourceBoundingRect.top()));
-                    GraphCanvas::SceneRequestBus::Event(m_graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, setVariableNodeIdPair.m_graphCanvasId, position);
+                    GraphCanvas::SceneRequestBus::Event(m_activeGraphIds.graphCanvasId, &GraphCanvas::SceneRequests::AddNode, setVariableNodeIdPair.m_graphCanvasId, position, false);
 
                     AZStd::vector< GraphCanvas::Endpoint> endpoints;
                     endpoints.reserve(slotIds.size() + 1);
@@ -1092,7 +1153,7 @@ namespace ScriptCanvasEditor
 
             // Inserting the get into the execution flow
             {
-                NodeIdPair getVariableNodeIdPair = Nodes::CreateGetVariableNode(targetVariableId, m_scriptCanvasId);
+                NodeIdPair getVariableNodeIdPair = Nodes::CreateGetVariableNode(targetVariableId, m_activeGraphIds.scriptCanvasId);
 
                 createdNodes.insert(getVariableNodeIdPair.m_graphCanvasId);
 
@@ -1115,7 +1176,7 @@ namespace ScriptCanvasEditor
                     position.SetX(aznumeric_cast<float>(position.GetX() - newGraphicsItem->sceneBoundingRect().width()));
                 }
 
-                GraphCanvas::SceneRequestBus::Event(m_graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, getVariableNodeIdPair.m_graphCanvasId, position);
+                GraphCanvas::SceneRequestBus::Event(m_activeGraphIds.graphCanvasId, &GraphCanvas::SceneRequests::AddNode, getVariableNodeIdPair.m_graphCanvasId, position, false);
 
                 AZStd::vector< GraphCanvas::SlotId > slotIds;
                 GraphCanvas::NodeRequestBus::EventResult(slotIds, targetEndpoint.GetNodeId(), &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, GraphCanvas::ConnectionType::CT_Input, GraphCanvas::SlotTypes::ExecutionSlot);
@@ -1158,13 +1219,13 @@ namespace ScriptCanvasEditor
                 GraphCanvas::GraphUtils::CreateConnectionsBetween(validTargetEndpoints, getVariableNodeIdPair.m_graphCanvasId, config);
             }
 
-            GraphCanvas::SceneRequestBus::Event(m_graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, deletedMemberIds);
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphIds.graphCanvasId, &GraphCanvas::SceneRequests::Delete, deletedMemberIds);
         }
 
-        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_activeGraphIds.scriptCanvasId);
 
         GraphCanvas::NodeNudgingController nudgingController;
-        nudgingController.SetGraphId(m_graphCanvasGraphId);
+        nudgingController.SetGraphId(m_activeGraphIds.graphCanvasId);
 
         nudgingController.StartNudging(createdNodes);
         nudgingController.FinalizeNudging();
@@ -1172,85 +1233,93 @@ namespace ScriptCanvasEditor
 
     void GraphValidationDockWidget::UpdateText()
     {
-        // Clear our the text Filter
-        ui->searchWidget->SetTextFilter("");
-        m_proxyModel->SetFilter("");
+        int errorCount = 0;
+        int warningCount = 0;
 
-        ui->errorOnlyFilter->setText(QString("%1 Errors").arg(m_model->GetValidationResults().ErrorCount()));
-        ui->warningOnlyFilter->setText(QString("%1 Warnings").arg(m_model->GetValidationResults().WarningCount()));
+        auto& tabdata = GetActiveData();
+        if (tabdata.first.IsValid())
+        {
+            if (auto model = GetActiveModel())
+            {
+                // Clear our the text Filter
+                ui->searchWidget->SetTextFilter("");
+                m_proxyModel->SetFilter("");
+
+                errorCount = model->GetValidationResults().ErrorCount();
+                warningCount = model->GetValidationResults().WarningCount();
+            }
+        }
+
+        ui->errorOnlyFilter->setText(QString("%1 Errors").arg(errorCount));
+        ui->warningOnlyFilter->setText(QString("%1 Warnings").arg(warningCount));
+
     }
-
     void GraphValidationDockWidget::OnRowSelected(int row)
     {
-        auto effectIter = m_validationEffects.find(row);
-        if (effectIter != m_validationEffects.end())
+        // If we already have an effect on this row, restart it to maintain visual consistency of the glows.
+        if (auto effect = GetActiveData().second->GetEffect(row))
         {
-            // Restart the effect to maintain visual consistency of the glows.
-            effectIter->second->CancelEffect();
-            effectIter->second->DisplayEffect(m_graphCanvasGraphId);
+            effect->CancelEffect();
+            effect->DisplayEffect(m_activeGraphIds.graphCanvasId);
             return;
         }
 
-        const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForRow(row);
-
-        if (const ScriptCanvas::HighlightEntityEffect* highlightEntity = azrtti_cast<const ScriptCanvas::HighlightEntityEffect*>(validationEvent))
+        if (auto model = GetActiveModel())
         {
-            HighlightElementValidationEffect* highlightEffect = aznew HighlightElementValidationEffect();
+            const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForRow(row);
 
-            highlightEffect->AddTarget(highlightEntity->GetHighlightTarget());
-
-            highlightEffect->DisplayEffect(m_graphCanvasGraphId);
-
-            m_validationEffects[row] = highlightEffect;
-        }
-
-        if (const ScriptCanvas::HighlightVariableEffect* highlightvariable = azrtti_cast<const ScriptCanvas::HighlightVariableEffect*>(validationEvent))
-        {
-            HighlightElementValidationEffect* highlightEffect = aznew HighlightElementValidationEffect();
-
-            AZStd::vector<NodeIdPair> variableNodes;
-            EditorGraphRequestBus::EventResult(variableNodes, m_scriptCanvasId, &EditorGraphRequests::GetVariableNodes, highlightvariable->GetHighlightVariableId());
-
-            for (auto& variable : variableNodes)
+            if (const ScriptCanvas::HighlightEntityEffect* highlightEntity = azrtti_cast<const ScriptCanvas::HighlightEntityEffect*>(validationEvent))
             {
-                highlightEffect->AddTarget(variable.m_scriptCanvasId);
+                HighlightElementValidationEffect* highlightEffect = aznew HighlightElementValidationEffect();
+
+                highlightEffect->AddTarget(highlightEntity->GetHighlightTarget());
+
+                highlightEffect->DisplayEffect(m_activeGraphIds.graphCanvasId);
+
+                GetActiveData().second->SetEffect(row, highlightEffect);
             }
 
-            highlightEffect->DisplayEffect(m_graphCanvasGraphId);
+            if (const ScriptCanvas::HighlightVariableEffect* highlightvariable = azrtti_cast<const ScriptCanvas::HighlightVariableEffect*>(validationEvent))
+            {
+                HighlightElementValidationEffect* highlightEffect = aznew HighlightElementValidationEffect();
 
-            m_validationEffects[row] = highlightEffect;
+                AZStd::vector<NodeIdPair> variableNodes;
+                EditorGraphRequestBus::EventResult(variableNodes, m_activeGraphIds.scriptCanvasId, &EditorGraphRequests::GetVariableNodes, highlightvariable->GetHighlightVariableId());
+
+                for (auto& variable : variableNodes)
+                {
+                    highlightEffect->AddTarget(variable.m_scriptCanvasId);
+                }
+
+                highlightEffect->DisplayEffect(m_activeGraphIds.graphCanvasId);
+
+                GetActiveData().second->SetEffect(row, highlightEffect);
+            }
+
+            if (const ScriptCanvas::GreyOutNodeEffect* greyOutEffect = azrtti_cast<const ScriptCanvas::GreyOutNodeEffect*>(validationEvent))
+            {
+                m_unusedNodeValidationEffect.AddUnusedNode(greyOutEffect->GetGreyOutNodeId());
+            }
+
+            UpdateSelectedText();
         }
-
-        if (const ScriptCanvas::GreyOutNodeEffect* greyOutEffect = azrtti_cast<const ScriptCanvas::GreyOutNodeEffect*>(validationEvent))
-        {
-            m_unusedNodeValidationEffect.AddUnusedNode(greyOutEffect->GetGreyOutNodeId());
-        }
-
-        UpdateSelectedText();
     }
 
     void GraphValidationDockWidget::OnRowDeselected(int row)
     {
-        auto validationIter = m_validationEffects.find(row);
-
-        if (validationIter == m_validationEffects.end())
+        if (auto model = GetActiveModel())
         {
-            return;
+            const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForRow(row);
+
+            if (const ScriptCanvas::GreyOutNodeEffect* greyOutEffect = azrtti_cast<const ScriptCanvas::GreyOutNodeEffect*>(validationEvent))
+            {
+                m_unusedNodeValidationEffect.RemoveUnusedNode(greyOutEffect->GetGreyOutNodeId());
+            }
+
+            GetActiveData().second->ClearEffect(row);
+
+            UpdateSelectedText();
         }
-
-        const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForRow(row);
-
-        if (const ScriptCanvas::GreyOutNodeEffect* greyOutEffect = azrtti_cast<const ScriptCanvas::GreyOutNodeEffect*>(validationEvent))
-        {
-            m_unusedNodeValidationEffect.RemoveUnusedNode(greyOutEffect->GetGreyOutNodeId());
-        }
-
-        validationIter->second->CancelEffect();
-        delete validationIter->second;
-
-        m_validationEffects.erase(validationIter);
-
-        UpdateSelectedText();
     }
 
     void GraphValidationDockWidget::UpdateSelectedText()
@@ -1260,12 +1329,15 @@ namespace ScriptCanvasEditor
         for (const QModelIndex& selectedRow : ui->statusTableView->selectionModel()->selectedRows())
         {
             QModelIndex sourceIndex = m_proxyModel->mapToSource(selectedRow);
-            
-            const ScriptCanvas::ValidationEvent* validationEvent = m_model->FindItemForRow(sourceIndex.row());
 
-            if (validationEvent->CanAutoFix())
+            if (auto model = GetActiveModel())
             {
-                selectedRowsSize++;
+                const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForRow(sourceIndex.row());
+
+                if (validationEvent->CanAutoFix())
+                {
+                    selectedRowsSize++;
+                }
             }
         }
 
@@ -1280,5 +1352,137 @@ namespace ScriptCanvasEditor
         }
     }
 
+    ///////////////////
+    // ValidationData
+    ///////////////////
+
+    ValidationData::ValidationData()
+        : m_model(nullptr)
+    {
+    }
+
+    ValidationData::ValidationData(GraphCanvas::GraphId graphCanvasId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+        : m_graphCanvasId(graphCanvasId)
+    {
+        m_model = AZStd::make_unique<GraphValidationModel>();
+
+        if (scriptCanvasId.IsValid())
+        {
+            ScriptCanvas::StatusRequestBus::Handler::BusConnect(scriptCanvasId);
+        }
+    }
+
+    ValidationData::~ValidationData()
+    {
+        ScriptCanvas::StatusRequestBus::Handler::BusDisconnect();
+
+        ClearEffects();
+    }
+
+    void ValidationData::ValidateGraph(ScriptCanvas::ValidationResults&)
+    {
+        // Do nothing, this is asking us to provide the validationEvents, we're only interested
+        // in receiving them
+    }
+
+    void ValidationData::ReportValidationResults(ScriptCanvas::ValidationResults& validationEvents)
+    {
+        m_model->Clear();
+        m_model->AddEvents(validationEvents);
+    }
+
+
+    ScriptCanvasEditor::ValidationEffect* ValidationData::GetEffect(int row)
+    {
+        if (m_validationEffects.find(row) != m_validationEffects.end())
+        {
+            return m_validationEffects[row];
+        }
+
+        return nullptr;
+    }
+
+    void ValidationData::SetEffect(int row, ValidationEffect* effect)
+    {
+        if (m_validationEffects.find(row) == m_validationEffects.end())
+        {
+            m_validationEffects[row] = effect;
+        }
+    }
+
+    void ValidationData::ClearEffect(int row)
+    {
+        auto it = m_validationEffects.find(row);
+        if (it != m_validationEffects.end())
+        {
+            m_validationEffects[row]->CancelEffect();
+            delete m_validationEffects[row];
+            m_validationEffects.erase(it);
+        }
+    }
+
+    void ValidationData::ClearEffects()
+    {
+        for (auto it : m_validationEffects)
+        {
+            delete it.second;
+        }
+        m_validationEffects.clear();
+    }
+
+    void ValidationData::DisplayToast()
+    {
+        if (m_model->GetValidationResults().GetEvents().empty())
+        {
+            return;
+        }
+
+        GraphCanvas::ViewId viewId;
+        GraphCanvas::SceneRequestBus::EventResult(viewId, m_graphCanvasId, &GraphCanvas::SceneRequests::GetViewId);
+
+        GraphCanvas::ToastType toastType;
+        AZStd::string titleLabel = "Validation Issue";
+        AZStd::string description = "";
+
+        if (m_model->GetValidationResults().HasErrors())
+        {
+            toastType = GraphCanvas::ToastType::Error;
+            description = AZStd::string::format("%i validation error(s) were found.", m_model->GetValidationResults().ErrorCount());
+        }
+        else
+        {
+            toastType = GraphCanvas::ToastType::Warning;
+            description = AZStd::string::format("%i validation warning(s) were found.", m_model->GetValidationResults().WarningCount());
+        }
+
+        GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+
+        toastConfiguration.SetCloseOnClick(true);
+        toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
+
+        GraphCanvas::ToastId validationToastId;
+
+        GraphCanvas::ViewRequestBus::EventResult(validationToastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);
+
+        GraphCanvas::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
+
+    }
+
+    void ValidationData::OnToastInteraction()
+    {
+        UIRequestBus::Broadcast(&UIRequests::OpenValidationPanel);
+    }
+
+    void ValidationData::OnToastDismissed()
+    {
+        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
+
+        if (toastId)
+        {
+            GraphCanvas::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
+        }
+    }
+
 #include <Editor/View/Widgets/ValidationPanel/moc_GraphValidationDockWidget.cpp>
+
 }

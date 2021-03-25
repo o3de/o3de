@@ -308,11 +308,9 @@ namespace AZ
 
         void PassSystem::DebugPrintPassHierarchy()
         {
-#if AZ_RPI_ENABLE_PASS_DEBUGGING
             AZ_Printf("PassSystem", "\n------- PASS HIERARCHY -------\n");
             m_rootPass->DebugPrint();
             AZ_Printf("PassSystem", "\n------------------------------\n");
-#endif
         }
 
         void PassSystem::SetTargetedPassDebuggingName(const AZ::Name& targetPassName)

@@ -42,7 +42,6 @@
 #include "ITimeOfDay.h"
 #include "Environment/OceanEnvironmentBus.h"
 
-#include "INetwork.h"
 #include <ThermalInfo.h>
 
 
@@ -2427,9 +2426,6 @@ void C3DEngine::DisplayInfo([[maybe_unused]] float& fTextPosX, [[maybe_unused]] 
         case eRT_DX12:
             pRenderType = "DX12";
             break;
-        case eRT_Xenia:
-            pRenderType = "Xenia";
-            break;
         case eRT_Jasper: 
             pRenderType = "Jasper";
             break;
@@ -3002,15 +2998,6 @@ void C3DEngine::DisplayInfo([[maybe_unused]] float& fTextPosX, [[maybe_unused]] 
             float fTimeMS = 1000.0f * gEnv->pTimer->TicksToSeconds(stat.nMainStreamingThreadWait);
             DrawTextRightAligned(fTextPosX, fTextPosY += (fTextStepY - STEP_SMALL_DIFF),
                 DISPLAY_INFO_SCALE_SMALL, Col_White, "%3.1f ms     StreamFin", fTimeMS);
-        }
-
-        {
-            SNetworkPerformance stat;
-            gEnv->pNetwork->GetPerformanceStatistics(&stat);
-
-            float fTimeMS = 1000.0f * gEnv->pTimer->TicksToSeconds(stat.m_nNetworkSync);
-            DrawTextRightAligned(fTextPosX, fTextPosY += (fTextStepY - STEP_SMALL_DIFF),
-                DISPLAY_INFO_SCALE_SMALL, Col_White, "%3.1f ms     NetworkSync", fTimeMS);
         }
     }
 

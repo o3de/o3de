@@ -98,3 +98,21 @@ ly_aws_addgroup(NAME GameLiftClient
         3rdParty::AWSNativeSDK::GameLift
         3rdParty::AWSNativeSDK::Dependencies
 )
+
+ly_aws_addgroup(NAME AWSClientAuth
+    BUILD_DEPENDENCIES
+        3rdParty::AWSNativeSDK::Dependencies
+        3rdParty::AWSNativeSDK::CognitoIdentity
+        3rdParty::AWSNativeSDK::CognitoIdp
+        3rdParty::AWSNativeSDK::STS
+        3rdParty::AWSNativeSDK::IdentityManagement
+)
+
+ly_aws_addgroup(NAME AWSCore
+    BUILD_DEPENDENCIES
+        3rdParty::AWSNativeSDK::Dependencies
+        3rdParty::AWSNativeSDK::Core
+        3rdParty::AWSNativeSDK::DynamoDB
+        3rdParty::AWSNativeSDK::Lambda
+        3rdParty::AWSNativeSDK::S3
+)

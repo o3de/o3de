@@ -22,6 +22,9 @@ set(FILES
     Source/InputLibrary.cpp
     Source/InputNode.h
     Source/InputNode.cpp
+    Source/InputHandlerNodeable.h
+    Source/InputHandlerNodeable.cpp
+    Source/InputHandlerNodeable.ScriptCanvasNodeable.xml
     Source/InputNode.ScriptCanvasNode.xml
     Source/StartingPointInput_precompiled.h
     Source/StartingPointInput_precompiled.cpp

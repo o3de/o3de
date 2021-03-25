@@ -170,6 +170,11 @@ namespace GraphCanvas
         return m_ui->nodePaletteWidget->GetTreeRoot();
     }
 
+    NodePaletteWidget* NodePaletteDockWidget::GetNodePaletteWidget() const
+    {
+        return m_ui->nodePaletteWidget;
+    }
+
     GraphCanvasTreeItem* NodePaletteDockWidget::ModTreeRoot()
     {
         return m_ui->nodePaletteWidget->ModTreeRoot();
@@ -178,12 +183,7 @@ namespace GraphCanvas
     NodePaletteTreeView* NodePaletteDockWidget::GetTreeView() const
     {
         return m_ui->nodePaletteWidget->GetTreeView();
-    }
-
-    NodePaletteWidget* NodePaletteDockWidget::GetNodePaletteWidget() const
-    {
-        return m_ui->nodePaletteWidget;
-    }
+    }    
 
     GraphCanvasTreeItem* NodePaletteDockWidget::CreatePaletteRoot() const
     {

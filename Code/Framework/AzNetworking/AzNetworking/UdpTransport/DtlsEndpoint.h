@@ -22,6 +22,7 @@ typedef struct bio_st BIO;
 
 namespace AzNetworking
 {
+    class UdpConnection;
     class UdpSocket;
     class DtlsSocket;
 
@@ -61,30 +62,30 @@ namespace AzNetworking
         ConnectResult Connect(const DtlsSocket& socket, const IpAddress& address, UdpPacketEncodingBuffer& outDtlsData);
 
         //! Accepts a connection from the remote encrypted endpoint.
-        //! @param socket   the dtls socket being used for data transmission
-        //! @param address  the address of the remote endpoint connecting to us
-        //! @param dtlsData data buffer containing the initial dtls handshake packet
+        //! @param socket      the dtls socket being used for data transmission
+        //! @param address     the address of the remote endpoint connecting to us
         //! @return a connect result specifying whether the connection is still pending, failed, or complete
-        ConnectResult Accept(const DtlsSocket& socket, const IpAddress& address, const UdpPacketEncodingBuffer& dtlsData);
+        ConnectResult Accept(const DtlsSocket& socket, const IpAddress& address);
 
         //! Returns whether or not the endpoint is still negotiating the dtls handshake.
         //! @return true if the endpoint is still in a connecting state
         bool IsConnecting() const;
 
         //! Attempts to complete the dtls handshake and establish an encrypted connection.
-        //! @param socket the dtls socket being used for data transmission
+        //! @param connection the UDP connection being used for data transmission
+        //! @param dtlsData    data buffer containing dtls handshake packet
         //! @return a connect result specifying whether the connection is still pending, failed, or complete
-        ConnectResult CompleteHandshake(const UdpSocket& socket);
+        ConnectResult ProcessHandshakeData(UdpConnection& connection, const UdpPacketEncodingBuffer& dtlsData);
 
         //! If the endpoint has encryption enabled, this will decrypt the transmitted data and return the result.
         //! @note sizes have to be signed since OpenSSL often returns negative values to represent error results
-        //! @param socket         the DTLS socket being used for data transmission
+        //! @param connection     the UDP connection being used for data transmission
         //! @param encryptedData  the potentially encrypted data received from the socket
         //! @param encryptedSize  the size of the received raw data
         //! @param outDecodedData an appropriately sized output buffer to store decrypted data
         //! @param outDecodedSize the size of the output buffer
         //! @return pointer to the decoded data
-        const uint8_t* DecodePacket(const UdpSocket& socket, const uint8_t* encryptedData, int32_t encryptedSize, uint8_t* outDecodedData, int32_t& outDecodedSize);
+        const uint8_t* DecodePacket(UdpConnection& connection, const uint8_t* encryptedData, int32_t encryptedSize, uint8_t* outDecodedData, int32_t& outDecodedSize);
 
     private:
 

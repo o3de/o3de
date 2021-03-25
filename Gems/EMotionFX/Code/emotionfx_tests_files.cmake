@@ -86,6 +86,7 @@ set(FILES
     Tests/JackGraphFixture.cpp
     Tests/KeyTrackLinearTests.cpp
     Tests/LeaderFollowerVersionTests.cpp
+    Tests/MCore/Array2DTests.cpp
     Tests/MCoreSystemFixture.h
     Tests/MCoreSystemFixture.cpp
     Tests/MorphTargetRuntimeTests.cpp
@@ -104,11 +105,11 @@ set(FILES
     Tests/RandomMotionSelectionTests.cpp
     Tests/RenderBackendManagerTests.cpp
     Tests/SelectionListTests.cpp
-    Tests/SkeletalLODTests.cpp
-    Tests/SkeletonNodeSearchTests.cpp
     Tests/SimpleMotionComponentBusTests.cpp
     Tests/SimulatedObjectCommandTests.cpp
     Tests/SimulatedObjectSerializeTests.cpp
+    Tests/SkeletalLODTests.cpp
+    Tests/SkeletonNodeSearchTests.cpp
     Tests/SyncingSystemTests.cpp
     Tests/SystemComponentFixture.h
     Tests/SystemComponentTests.cpp

@@ -27,6 +27,8 @@
 #include "Transform.h"
 #include "AnimGraphPosePool.h"
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+
 
 namespace Physics
 {
@@ -58,7 +60,7 @@ namespace EMotionFX
         /**
          * The bounding volume generation types.
          */
-        enum EBoundsType
+        enum EBoundsType : AZ::u8
         {
             BOUNDS_NODE_BASED           = 0,    /**< Calculate the bounding volumes based on the world space node positions. */
             BOUNDS_MESH_BASED           = 1,    /**< Calculate the bounding volumes based on the world space vertex positions. */
@@ -886,7 +888,6 @@ namespace EMotionFX
         void UpdateVisualizeScale();                    // not automatically called on creation for performance reasons (this method relatively is slow as it updates all meshes)
         float GetVisualizeScale() const;
         void SetVisualizeScale(float factor);
-
 
     private:
         TransformData*          mTransformData;         /**< The transformation data for this instance. */

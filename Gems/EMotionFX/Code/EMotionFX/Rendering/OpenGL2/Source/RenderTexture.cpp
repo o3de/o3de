@@ -12,11 +12,11 @@
 
 #include <MCore/Source/Config.h>
 #include <MCore/Source/LogManager.h>
-#include "GLInclude.h"
 
 #include "RenderTexture.h"
 #include "GraphicsManager.h"
 
+#include <QOpenGLFunctions>
 
 namespace RenderGL
 {
@@ -36,8 +36,8 @@ namespace RenderGL
     RenderTexture::~RenderTexture()
     {
         glDeleteTextures(1, &mTexture);
-        glDeleteRenderbuffersEXT(1, &mDepthBuffer);
-        glDeleteFramebuffersEXT(1, &mFrameBuffer);
+        glDeleteRenderbuffers(1, &mDepthBuffer);
+        glDeleteFramebuffers(1, &mFrameBuffer);
     }
 
 
@@ -56,7 +56,7 @@ namespace RenderGL
 
         // bind the render texture and frame buffer
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
 
         // setup the new viewport
         glViewport(0, 0, mWidth, mHeight);
@@ -77,7 +77,7 @@ namespace RenderGL
     void RenderTexture::Deactivate()
     {
         // undbind the frame buffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // reset viewport to original dimensions
         glViewport(0, 0, mPrevWidth, mPrevHeight);
@@ -94,19 +94,19 @@ namespace RenderGL
         mDepthBuffer = depthBuffer;
 
         // check if the graphics hardware is capable of rendering to textures, return false if not
-        if (!GLEW_EXT_framebuffer_object)
+        if (hasOpenGLFeature(Framebuffers))
         {
             return false;
         }
 
         // create surface IDs
-        glGenFramebuffersEXT(1, &mFrameBuffer);
+        glGenFramebuffers(1, &mFrameBuffer);
         glGenTextures(1, &mTexture);
 
         // if the depth buffer was not specified, generate it
         if (mDepthBuffer == 0)
         {
-            glGenRenderbuffersEXT(1, &mDepthBuffer);
+            glGenRenderbuffers(1, &mDepthBuffer);
         }
 
         // check if initalization of the texture, the frame buffer and the depth buffer worked okay
@@ -117,7 +117,7 @@ namespace RenderGL
         }
 
         // create the frame buffer object
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
 
         // setup channels
         GLenum glChannels = GL_RGBA;
@@ -135,24 +135,24 @@ namespace RenderGL
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
 
         // create depth buffer
         if (depthBuffer == 0)
         {
-            glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mDepthBuffer);
-            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, mWidth, mHeight);
+            glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mWidth, mHeight);
         }
 
-        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mDepthBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuffer);
 
-        if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             MCore::LogWarning("[OpenGL] RenderTexture did not init correctly");
             return false;
         }
 
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return true;
     }
 

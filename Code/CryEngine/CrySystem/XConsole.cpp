@@ -25,7 +25,6 @@
 
 #include <ITimer.h>
 #include <IRenderer.h>
-#include <INetwork.h>     // EvenBalance - M.Quinn
 #include <ISystem.h>
 #include <ILog.h>
 #include <IProcess.h>
@@ -332,7 +331,6 @@ CXConsole::CXConsole()
     m_pSysDeactivateConsole = 0;
     m_pFont = NULL;
     m_pRenderer = NULL;
-    m_pNetwork = NULL; // EvenBalance - M. Quinn
     m_pImage = NULL;
     m_nCursorPos = 0;
     m_nScrollPos = 0;
@@ -490,7 +488,6 @@ void CXConsole::Init(ISystem* pSystem)
         m_pFont = pSystem->GetICryFont()->GetFont("default");
     }
     m_pRenderer = pSystem->GetIRenderer();
-    m_pNetwork = gEnv->pNetwork;  // EvenBalance - M. Quinn
     m_pTimer = pSystem->GetITimer();
 
     AzFramework::InputChannelEventListener::Connect();

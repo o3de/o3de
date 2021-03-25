@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>897</width>
-    <height>108</height>
+    <height>112</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,6 +72,9 @@
       </item>
       <item>
        <widget class="QToolButton" name="captureButton">
+        <property name="toolTip">
+         <string>Starts or stops the current logging session.</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
@@ -155,6 +158,9 @@
       </item>
       <item>
        <widget class="QToolButton" name="expandAll">
+        <property name="toolTip">
+         <string>Expands all of the elements in the log</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
@@ -172,6 +178,9 @@
       </item>
       <item>
        <widget class="QToolButton" name="collapseAll">
+        <property name="toolTip">
+         <string>Collapses all of the elements in the log</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>

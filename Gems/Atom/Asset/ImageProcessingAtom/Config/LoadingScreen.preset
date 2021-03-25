@@ -28,11 +28,6 @@
                 "UUID": "{9ED87726-12AB-4BE0-9397-AD62AE56D9E2}",
                 "Name": "LoadingScreen",
                 "PixelFormat": "R8G8B8X8"
-            },
-            "xenia": {
-                "UUID": "{9ED87726-12AB-4BE0-9397-AD62AE56D9E2}",
-                "Name": "LoadingScreen",
-                "PixelFormat": "R8G8B8X8"
             }
         }
     }

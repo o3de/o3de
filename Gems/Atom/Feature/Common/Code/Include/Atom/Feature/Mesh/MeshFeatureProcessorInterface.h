@@ -76,6 +76,8 @@ namespace AZ
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
+            //! Sets the mesh to render IBL specular in the forward pass.
+            virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
         };
     } // namespace Render
 } // namespace AZ

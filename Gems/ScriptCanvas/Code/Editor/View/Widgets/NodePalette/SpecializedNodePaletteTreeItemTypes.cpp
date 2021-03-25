@@ -22,7 +22,7 @@
 
 #include "Editor/Components/IconComponent.h"
 
-#include "Editor/Nodes/NodeUtils.h"
+#include "Editor/Nodes/NodeCreateUtils.h"
 
 #include "ScriptCanvas/Bus/RequestBus.h"
 #include "Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h"
@@ -100,7 +100,7 @@ namespace ScriptCanvasEditor
         if (graphCanvasEntity)
         {
             retVal.m_graphCanvasId = graphCanvasEntity->GetId();
-            GraphCanvas::SceneRequestBus::Event(sceneId, &GraphCanvas::SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePosition);
+            GraphCanvas::SceneRequestBus::Event(sceneId, &GraphCanvas::SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePosition, false);
             GraphCanvas::SceneMemberUIRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
         }
 
@@ -171,7 +171,7 @@ namespace ScriptCanvasEditor
         if (graphCanvasEntity)
         {
             retVal.m_graphCanvasId = graphCanvasEntity->GetId();
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePosition);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePosition, false);
             GraphCanvas::SceneMemberUIRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
         }
 

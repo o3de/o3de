@@ -11,11 +11,15 @@
 */
 
 #pragma once
-#include <Editor/Framework/ScriptCanvasTraceUtilities.h>
-#include <Editor/Framework/ScriptCanvasReporter.h>
-#include <Framework/ScriptCanvasTestNodes.h>
-#include <AzTest/AzTest.h>
 
+#include <AzTest/AzTest.h>
+#include <Editor/Framework/ScriptCanvasReporter.h>
+#include <Editor/Framework/ScriptCanvasTraceUtilities.h>
+#include <Framework/ScriptCanvasTestNodes.h>
+
+#include <ScriptCanvas/Core/Nodeable.h>
+#include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
+#include "AzFramework/Slice/SliceInstantiationTicket.h"
 
 namespace ScriptCanvasTests
 {
@@ -23,104 +27,33 @@ namespace ScriptCanvasTests
     extern const char* k_tempCoreAssetName;
     extern const char* k_tempCoreAssetPath;
 
+    void ExpectParse(AZStd::string_view graphPath);
+
+    void ExpectParse(AZStd::string_view graphPath, AZStd::string_view extension);
+
+    void ExpectParseError(AZStd::string_view graphPath);
+
+    void ExpectParseError(AZStd::string_view graphPath, AZStd::string_view extension);
+
     AZStd::string_view GetGraphNameFromPath(AZStd::string_view graphPath);
 
-    void VerifyReporter(const ScriptCanvasEditor::Reporter& reporter);
-
-    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration);
-
-    void RunUnitTestGraph(AZStd::string_view graphPath, const ScriptCanvasEditor::DurationSpec& duration);
+    void RunUnitTestGraph(AZStd::string_view graphPath);
 
     void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution);
 
-    void RunUnitTestGraph(AZStd::string_view graphPath);
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration);
+
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, AZStd::string_view dependentScriptEvent);
+
+    void RunUnitTestGraph(AZStd::string_view graphPath, const ScriptCanvasEditor::DurationSpec& duration);
+
+    void RunUnitTestGraph(AZStd::string_view graphPath, const ScriptCanvasEditor::RunSpec& runSpec);
 
     void RunUnitTestGraphMixed(AZStd::string_view graphPath, const ScriptCanvasEditor::DurationSpec& duration);
 
     void RunUnitTestGraphMixed(AZStd::string_view graphPath);
 
-    class NodeAccessor
-    {
-    public:
-        template<typename t_Value>
-        static const t_Value* GetInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName)
-        {
-            return GetInput_UNIT_TEST<t_Value>(node, node->GetSlotId(slotName));
-        }
-
-        template<typename t_Value>
-        static t_Value* ModInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName)
-        {
-            return ModInput_UNIT_TEST<t_Value>(node, node->GetSlotId(slotName));
-        }
-
-        template<typename t_Value>
-        static const t_Value* GetInput_UNIT_TEST(ScriptCanvas::Node* node, const ScriptCanvas::SlotId& slotId)
-        {
-            const ScriptCanvas::Datum* input = node->FindDatum(slotId);
-            return input ? input->GetAs<t_Value>() : nullptr;
-        }
-
-        template<typename t_Value>
-        static t_Value* ModInput_UNIT_TEST(ScriptCanvas::Node* node, const ScriptCanvas::SlotId& slotId)
-        {
-            auto slotIter = node->m_slotIdIteratorCache.find(slotId);
-
-            if (slotIter != node->m_slotIdIteratorCache.end())
-            {
-                ScriptCanvas::Slot* slot = &(*slotIter->second.m_slotIterator);
-
-                if (slot->IsVariableReference())
-                {
-                    AZ_Assert(false, "Variable references are not supported in Unit Test methods.");
-                }
-                else
-                {
-                    return slotIter->second.GetDatumIter()->ModAs<t_Value>();
-                }
-            }
-
-            return nullptr;
-        }
-
-        static const ScriptCanvas::Datum* GetInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName)
-        {
-            return GetInput_UNIT_TEST(node, node->GetSlotId(slotName));
-        }
-
-        static const ScriptCanvas::Datum* GetInput_UNIT_TEST(ScriptCanvas::Node* node, const ScriptCanvas::SlotId& slotId)
-        {
-            return node->FindDatum(slotId);
-        }
-
-        // initializes the node input to the value passed in, not a pointer to it
-        template<typename t_Value>
-        static void SetInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName, const t_Value& value)
-        {
-            SetInput_UNIT_TEST<t_Value>(node, node->GetSlotId(slotName), value);
-        }
-
-        template<typename t_Value>
-        static void SetInput_UNIT_TEST(ScriptCanvas::Node* node, const ScriptCanvas::SlotId& slotId, const t_Value& value)
-        {
-            node->SetInput(ScriptCanvas::Datum(value), slotId);
-        }
-
-        static void SetInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName, const ScriptCanvas::Datum& value)
-        {
-            SetInput_UNIT_TEST(node, node->GetSlotId(slotName), value);
-        }
-
-        static void SetInput_UNIT_TEST(ScriptCanvas::Node* node, AZStd::string_view slotName, ScriptCanvas::Datum&& value)
-        {
-            SetInput_UNIT_TEST(node, node->GetSlotId(slotName), AZStd::move(value));
-        }
-
-        static void SetInput_UNIT_TEST(ScriptCanvas::Node* node, const ScriptCanvas::SlotId& slotId, ScriptCanvas::Datum&& value)
-        {
-            node->SetInput(AZStd::move(value), slotId);
-        }
-    };
+    void VerifyReporter(const ScriptCanvasEditor::Reporter& reporter);
 
     template<typename t_NodeType>
     t_NodeType* GetTestNode([[maybe_unused]] const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::EntityId& nodeID)
@@ -129,7 +62,6 @@ namespace ScriptCanvasTests
         t_NodeType* node{};
         SystemRequestBus::BroadcastResult(node, &SystemRequests::GetNode<t_NodeType>, nodeID);
         EXPECT_TRUE(node != nullptr);
-        node->SetExecutionType(ExecutionType::Runtime);
         return node;
     }
 
@@ -158,7 +90,7 @@ namespace ScriptCanvasTests
         EXPECT_NE(node, nullptr);
         if (node)
         {
-            NodeAccessor::SetInput_UNIT_TEST(node, "Set", value);
+            node->SetInput_UNIT_TEST("Set", value);
         }
         return node;
     }
@@ -183,8 +115,6 @@ namespace ScriptCanvasTests
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor type);
     void DumpSlots(const ScriptCanvas::Node& node);
     bool Connect(ScriptCanvas::Graph& graph, const AZ::EntityId& fromNodeID, const char* fromSlotName, const AZ::EntityId& toNodeID, const char* toSlotName, bool dumpSlotsOnFailure = true);
-
-    AZ::Data::Asset<ScriptCanvas::RuntimeAsset> CreateRuntimeAsset(ScriptCanvas::Graph* graph);
 
     class UnitTestEvents
         : public AZ::EBusTraits
@@ -482,6 +412,7 @@ namespace ScriptCanvasTests
     public:
         virtual void Event() = 0;
         virtual int Number(int number) = 0;
+        virtual AZStd::tuple<int, int> Numbers(int number) = 0;
         virtual AZStd::string String(AZStd::string_view string) = 0;
         virtual TestBehaviorContextObject Object(const TestBehaviorContextObject& vector) = 0;
     };
@@ -499,6 +430,7 @@ namespace ScriptCanvasTests
             , AZ::SystemAllocator
             , Event
             , Number
+            , Numbers
             , String
             , Object);
 
@@ -529,6 +461,13 @@ namespace ScriptCanvasTests
             int output;
             CallResult(output, FN_Number, input);
             return output;
+        }
+
+        AZStd::tuple<int, int> Numbers(int number) override
+        {
+            AZStd::tuple<int, int> result;
+            CallResult(result, FN_Numbers, number);
+            return result;
         }
 
         AZStd::string String(AZStd::string_view input) override
@@ -589,34 +528,42 @@ namespace ScriptCanvasTests
     public:
         AZ_CLASS_ALLOCATOR(UnitTestEntityContext, AZ::SystemAllocator, 0);
 
-        UnitTestEntityContext()
-        {
-            AzFramework::EntityContextRequestBus::Handler::BusConnect(GetOwningContextId());
-            AzFramework::SliceEntityOwnershipServiceRequestBus::Handler::BusConnect(GetOwningContextId());
-        }
-
+        UnitTestEntityContext() { AzFramework::EntityContextRequestBus::Handler::BusConnect(GetOwningContextId()); }
         //// EntityIdContextQueryBus::MultiHandler
         // Returns a generate Uuid which represents the UnitTest EntityContext
         AzFramework::EntityContextId GetOwningContextId() override { return AzFramework::EntityContextId("{36591268-5CE9-4BC1-8277-0AB9AD528447}"); }
         ////
 
-        //////////////////////////////////////////////////////////////////////////
-        // SliceEntityOwnershipServiceRequestBus
-        AZ::Data::AssetId CurrentlyInstantiatingSlice() override;
-        bool HandleRootEntityReloadedFromStream(AZ::Entity* rootEntity, bool remapIds,
-            AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable) override;
-        AZ::SliceComponent* GetRootSlice() override;
-        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const;
-        const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& GetLoadedEntityIdMap() override;
-        AzFramework::SliceInstantiationTicket InstantiateSlice(const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customIdMapper, const AZ::Data::AssetFilterCB& assetLoadFilter) override;
-        AZ::SliceComponent::SliceInstanceAddress CloneSliceInstance(AZ::SliceComponent::SliceInstanceAddress sourceInstance,
-            AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
-        void CancelSliceInstantiation(const AzFramework::SliceInstantiationTicket& ticket) override;
-        AzFramework::SliceInstantiationTicket GenerateSliceInstantiationTicket() override;
-        void SetIsDynamic(bool isDynamic) override;
-        const AzFramework::RootSliceAsset& GetRootAsset() const override;
-        //////////////////////////////////////////////////////////////////////////
+        //// AzFramework::SliceEntityOwnershipServiceRequests
+        const AzFramework::RootSliceAsset& GetRootAsset() const override {
+            static AzFramework::RootSliceAsset invalid;
+            return invalid;
+        }
+        AZ::SliceComponent* GetRootSlice() override { return {}; }
+        void SetIsDynamic(bool) override {}
+        void CancelSliceInstantiation(const AzFramework::SliceInstantiationTicket&) override {}
+        AzFramework::SliceInstantiationTicket GenerateSliceInstantiationTicket() override { return AzFramework::SliceInstantiationTicket(); }
+        bool HandleRootEntityReloadedFromStream(AZ::Entity*, bool, [[maybe_unused]] AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable = nullptr) override
+        {
+            return false;
+        }
+        const AZ::SliceComponent::EntityIdToEntityIdMap& GetLoadedEntityIdMap() override { return m_unitTestEntityIdMap; }
+        AZ::SliceComponent::SliceInstanceAddress CloneSliceInstance(AZ::SliceComponent::SliceInstanceAddress,
+            AZ::SliceComponent::EntityIdToEntityIdMap&) override
+        {
+            return{};
+        }
+        AzFramework::SliceInstantiationTicket InstantiateSlice(const AZ::Data::Asset<AZ::Data::AssetData>&,
+            [[maybe_unused]] const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customIdMapper = nullptr,
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilter = nullptr) override
+        {
+            return AzFramework::SliceInstantiationTicket();
+        }
+
+
+        AZ::Data::AssetId CurrentlyInstantiatingSlice() override {
+            return AZ::Data::AssetId();
+        };
 
         AZ::Entity* CreateEntity(const char* name) override;
 
@@ -628,83 +575,15 @@ namespace ScriptCanvasTests
         bool DestroyEntityById(AZ::EntityId entityId) override;
         AZ::Entity* CloneEntity(const AZ::Entity& sourceEntity) override;
         void ResetContext() override;
+        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const;
         ////
 
         void AddEntity(AZ::EntityId entityId);
         void RemoveEntity(AZ::EntityId entityId);
         bool IsOwnedByThisContext(AZ::EntityId entityId) { return m_unitTestEntityIdMap.count(entityId) != 0; }
 
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_unitTestEntityIdMap;
-        AzFramework::RootSliceAsset m_unitTestRootAsset;
+        AZ::SliceComponent::EntityIdToEntityIdMap m_unitTestEntityIdMap;
     };
-
-    template<typename t_Operator, typename t_Operand, typename t_Value>
-    void BinaryOpTest(const t_Operand& lhs, const t_Operand& rhs, const t_Value& expectedResult, bool forceGraphError = false)
-    {
-        using namespace ScriptCanvas;
-        using namespace Nodes;
-        AZ::Entity graphEntity("Graph");
-        graphEntity.Init();
-        SystemRequestBus::Broadcast(&SystemRequests::CreateGraphOnEntity, &graphEntity);
-        auto graph = graphEntity.FindComponent<Graph>();
-        EXPECT_NE(nullptr, graph);
-
-        const AZ::EntityId& graphEntityId = graph->GetEntityId();
-        const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
-
-        AZ::EntityId startID;
-        CreateTestNode<Nodes::Core::Start>(graphUniqueId, startID);
-        AZ::EntityId operatorID;
-        CreateTestNode<t_Operator>(graphUniqueId, operatorID);
-        AZ::EntityId lhsID;
-        CreateDataNode(graphUniqueId, lhs, lhsID);
-        AZ::EntityId rhsID;
-        CreateDataNode(graphUniqueId, rhs, rhsID);
-        AZ::EntityId printID;
-        auto printNode = CreateTestNode<TestNodes::TestResult>(graphUniqueId, printID);
-
-        EXPECT_TRUE(Connect(*graph, lhsID, "Get", operatorID, BinaryOperator::k_lhsName));
-
-        if (!forceGraphError)
-        {
-            EXPECT_TRUE(Connect(*graph, rhsID, "Get", operatorID, BinaryOperator::k_rhsName));
-        }
-
-        EXPECT_TRUE(Connect(*graph, operatorID, BinaryOperator::k_resultName, printID, "Value"));
-        EXPECT_TRUE(Connect(*graph, startID, "Out", operatorID, BinaryOperator::k_evaluateName));
-
-        bool isArithmetic = AZStd::is_base_of<ScriptCanvas::Nodes::ArithmeticExpression, t_Operator>::value;
-        if (isArithmetic)
-        {
-            EXPECT_TRUE(Connect(*graph, operatorID, BinaryOperator::k_outName, printID, "In"));
-        }
-        else
-        {
-            EXPECT_TRUE(Connect(*graph, operatorID, BinaryOperator::k_onTrue, printID, "In"));
-            EXPECT_TRUE(Connect(*graph, operatorID, BinaryOperator::k_onFalse, printID, "In"));
-        }
-
-        {
-            ScriptCanvasEditor::ScopedOutputSuppression suppressOutput;
-            graph->GetEntity()->Activate();
-            EXPECT_EQ(graph->IsInErrorState(), forceGraphError);
-        }
-
-        if (!forceGraphError)
-        {
-            if (auto result = NodeAccessor::GetInput_UNIT_TEST<t_Value>(printNode, "Value"))
-            {
-                EXPECT_EQ(*result, expectedResult);
-            }
-            else
-            {
-                ADD_FAILURE();
-            }
-        }
-
-        graph->GetEntity()->Deactivate();
-        delete graph;
-    }
 
     template<typename TBusIdType>
     class TemplateEventTest
@@ -865,5 +744,54 @@ namespace ScriptCanvasTests
         AZ::u32 m_slotsAdded = 0;
         AZ::u32 m_slotsRemoved = 0;
     };
+    
+    class TestNodeableObject
+        : public ScriptCanvas::Nodeable
+    {
+    public:
+
+        AZ_RTTI(TestNodeableObject, "{5FA6967F-AB4D-4077-91C9-1C2CE36733AF}", Nodeable);
+        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<TestNodeableObject, Nodeable>();
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TestNodeableObject>("TestNodeableObject", "")
+                        ;
+                }
+            }
+
+            // reflect API for the node
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+            {
+                behaviorContext->Class<TestNodeableObject>("TestNodeableObject")
+                    ->Method("Branch", &TestNodeableObject::Branch)
+                    ;
+            }
+        }
+
+        void Branch(bool condition)
+        {
+            if (condition)
+            {
+                ExecutionOut(AZ_CRC("BranchTrue", 0xd49f121c), true, AZStd::string("called the true version!"));
+            }
+            else
+            {
+                ExecutionOut(AZ_CRC("BranchFalse", 0xaceca8bc), false, AZStd::string("called the false version!"), AZ::Vector3(1, 2, 3));
+            }
+        }
+
+        bool IsActive() const override
+        {
+            return false;
+        }
+    };
+
 
 } // ScriptCanvasTests

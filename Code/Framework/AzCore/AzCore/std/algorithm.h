@@ -988,6 +988,8 @@ namespace AZStd
         return ++result;
     }
 
+    using std::binary_search;
+
     // todo search_n
     //////////////////////////////////////////////////////////////////////////
 

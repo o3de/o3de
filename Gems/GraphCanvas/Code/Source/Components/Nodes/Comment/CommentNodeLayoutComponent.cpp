@@ -100,7 +100,7 @@ namespace GraphCanvas
         NodeNotificationBus::Handler::BusDisconnect();
     }
 
-    void CommentNodeLayoutComponent::OnEntityExists([[maybe_unused]] const AZ::EntityId& entityId)
+    void CommentNodeLayoutComponent::OnEntityExists(const AZ::EntityId& /*entityId*/)
     {
         AZ::Entity* entity = GetEntity();
 

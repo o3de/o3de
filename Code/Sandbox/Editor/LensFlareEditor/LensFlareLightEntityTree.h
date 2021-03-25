@@ -20,6 +20,7 @@
 
 #include <QScopedPointer>
 #include <QTreeWidget>
+#include "IObjectManager.h" // for IObjectManager::EventListener
 #include "Objects/EntityObject.h"
 #endif
 
@@ -46,6 +47,7 @@ protected:
 class LensFlareLightEntityModel
     : public QAbstractListModel
     , public ILensFlareChangeItemListener
+    , public IObjectManager::EventListener
 {
     Q_OBJECT
 
@@ -60,7 +62,7 @@ public:
     void OnLensFlareChangeItem(CLensFlareItem* pLensFlareItem);
 
 protected:
-    void OnObjectEvent(CBaseObject* pObject, int nEvent);
+    void OnObjectEvent(CBaseObject* pObject, int nEvent) override;
 
     bool AddLightEntity(CEntityObject* pEntity);
 

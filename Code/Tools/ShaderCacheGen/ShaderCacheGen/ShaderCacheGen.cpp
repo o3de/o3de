@@ -129,7 +129,6 @@ void ClearPlatformCVars(ISystem* pISystem)
     pISystem->GetIConsole()->ExecuteString("r_ShadersGL4 = 0");
     pISystem->GetIConsole()->ExecuteString("r_ShadersGLES3 = 0");
     pISystem->GetIConsole()->ExecuteString("r_ShadersOrbis = 0");
-    pISystem->GetIConsole()->ExecuteString("r_ShadersDurango = 0");
 }
 
 bool IsLumberyardRunning()
@@ -382,10 +381,6 @@ int main_wrapped(int argc, char* argv[])
         pISystem->GetIConsole()->ExecuteString(shaderTypeCommand.c_str());
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_XENIA)
-#define AZ_RESTRICTED_SECTION SHADERCACHEGEN_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE_EXPLICIT(ShaderCacheGen_cpp, xenia)
-#endif
 #if defined(TOOLS_SUPPORT_JASPER)
 #define AZ_RESTRICTED_SECTION SHADERCACHEGEN_CPP_SECTION_1
 #include AZ_RESTRICTED_FILE_EXPLICIT(ShaderCacheGen_cpp, jasper)

@@ -41,12 +41,6 @@ namespace EMotionFX
                 // in the base UI, this is the best intermediate solution.
                 void Build() override;
 
-            protected:
-
-                // Node from other LOD level will also be filtered out.
-                bool IsFilteredType(const AZStd::shared_ptr<const SceneDataTypes::IGraphObject>& object,
-                    SceneContainers::SceneGraph::NodeIndex index) const;
-
             private:
 
                 bool m_hideUncheckableItem;

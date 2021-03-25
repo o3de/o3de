@@ -12,15 +12,65 @@
 
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(AZ::SceneAPI::DataTypes::IMeshData::Face, "{F9F49C1A-014F-46F5-A46F-B56D8CB46C2B}");
+
     namespace SceneData
     {
         namespace GraphData
         {
             namespace DataTypes = AZ::SceneAPI::DataTypes;
 
+            void MeshData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<MeshData>()->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::IMeshData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetUnitSizeInMeters", &MeshData::GetUnitSizeInMeters)
+                        ->Method("GetOriginalUnitSizeInMeters", &MeshData::GetOriginalUnitSizeInMeters);
+
+                    behaviorContext->Class<MeshData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetSdkMeshIndex", &MeshData::GetSdkMeshIndex)
+                        ->Method("GetControlPointIndex", &MeshData::GetControlPointIndex)
+                        ->Method("GetUsedControlPointCount", &MeshData::GetUsedControlPointCount)
+                        ->Method("GetUsedPointIndexForControlPoint", &MeshData::GetUsedPointIndexForControlPoint)
+                        ->Method("GetVertexCount", &MeshData::GetVertexCount)
+                        ->Method("HasNormalData", &MeshData::HasNormalData)
+                        ->Method("GetPosition", &MeshData::GetPosition)
+                        ->Method("GetNormal", &MeshData::GetNormal)
+                        ->Method("GetFaceCount", &MeshData::GetFaceCount)
+                        ->Method("GetFaceInfo", &MeshData::GetFaceInfo)
+                        ->Method("GetFaceMaterialId", &MeshData::GetFaceMaterialId)
+                        ->Method("GetVertexIndex", &MeshData::GetVertexIndex);
+
+                    behaviorContext->Class<SceneAPI::DataTypes::IMeshData::Face>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetVertexIndex", [](const SceneAPI::DataTypes::IMeshData::Face& self, int index)
+                        {
+                            if (index >= 0 && index < 3)
+                            {
+                                return self.vertexIndex[index];
+                            }
+                            return aznumeric_cast<unsigned int>(0);
+                        });
+                }
+            }
 
             MeshData::~MeshData() = default;
 

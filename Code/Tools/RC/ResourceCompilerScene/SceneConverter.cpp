@@ -10,7 +10,6 @@
 *
 */
 
-#include "ResourceCompilerScene_precompiled.h"
 #include <SceneConverter.h>
 #include <SceneCompiler.h>
 #include <ISceneConfig.h>

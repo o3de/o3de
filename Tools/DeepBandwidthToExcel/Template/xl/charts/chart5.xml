@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<c:chartSpace xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+              xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
+              xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <c:lang val="en-GB" />
+  <c:chart>
+    <c:title>
+      <c:tx>
+        <c:rich>
+          <a:bodyPr />
+          <a:lstStyle />
+          <a:p>
+            <a:pPr>
+              <a:defRPr />
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-GB" />
+              <a:t>Overall By Serialisation Impact (Bits</a:t>
+            </a:r>
+            <a:r>
+              <a:rPr baseline="0"
+                     lang="en-GB" />
+              <a:t>Per Serialise)</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-GB" />
+          </a:p>
+        </c:rich>
+      </c:tx>
+      <c:layout />
+    </c:title>
+    <c:plotArea>
+      <c:layout />
+      <c:pieChart>
+        <c:varyColors val="1" />
+        <c:ser>
+          <c:idx val="0" />
+          <c:order val="0" />
+          <c:dLbls>
+            <c:showPercent val="1" />
+          </c:dLbls>
+          <c:cat>
+            <c:strRef>
+              <c:f>&#39;Serialisation Impact&#39;!###---SHEET5_COL0---###</c:f>
+              <c:strCache>
+                <c:ptCount val="2" />
+                <c:pt idx="0">
+                  <c:v>wrld</c:v>
+                </c:pt>
+                <c:pt idx="1">
+                  <c:v>dMov</c:v>
+                </c:pt>
+              </c:strCache>
+            </c:strRef>
+          </c:cat>
+          <c:val>
+            <c:numRef>
+              <c:f>&#39;Serialisation Impact&#39;!###---SHEET5_COL1---###</c:f>
+              <c:numCache>
+                <c:formatCode>General</c:formatCode>
+                <c:ptCount val="2" />
+                <c:pt idx="0">
+                  <c:v>53545829</c:v>
+                </c:pt>
+                <c:pt idx="1">
+                  <c:v>13312905</c:v>
+                </c:pt>
+              </c:numCache>
+            </c:numRef>
+          </c:val>
+        </c:ser>
+        <c:dLbls>
+          <c:showPercent val="1" />
+        </c:dLbls>
+        <c:firstSliceAng val="0" />
+      </c:pieChart>
+    </c:plotArea>
+    <c:legend>
+      <c:legendPos val="r" />
+      <c:layout />
+    </c:legend>
+    <c:plotVisOnly val="1" />
+  </c:chart>
+  <c:printSettings>
+    <c:headerFooter />
+    <c:pageMargins b="0.75"
+                   footer="0.3"
+                   header="0.3"
+                   l="0.7"
+                   r="0.7"
+                   t="0.75" />
+    <c:pageSetup />
+  </c:printSettings>
+</c:chartSpace>

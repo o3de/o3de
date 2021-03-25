@@ -57,7 +57,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Legacy::CryCommon
-                Legacy::EditorLib
+                Legacy::Editor.Headers
+                Legacy::EditorCommon
                 AZ::AzToolsFramework
                 Gem::Camera.Static
     )

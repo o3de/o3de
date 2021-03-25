@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Libraries/Core/BinaryOperator.h>
-#include <Libraries/Math/ArithmeticFunctions.h>
 
 namespace ScriptCanvas
 {
@@ -49,6 +48,13 @@ namespace ScriptCanvas
                         }
                     }
                 }
+
+                ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override
+                {
+                    ScriptCanvas::NodeConfiguration nodeConfig{};
+                    nodeConfig.m_type = AZ::Uuid("E9BB45A1-AE96-47B0-B2BF-2927D420A28C");
+                    return nodeConfig;
+                }
                 
             protected:
                 Datum Evaluate(const Datum& lhs, const Datum& rhs) override
@@ -57,22 +63,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class Multiply
-                : public BinaryOperatorGeneric<Multiply, ArithmeticOperator<OperatorType::Mul>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<Multiply, ArithmeticOperator<OperatorType::Mul>>;
-                AZ_COMPONENT(Multiply, "{39F9C2B4-B5A0-4DE1-921B-313C59FD4596}", BaseType);
-
-                static const char* GetOperatorName() { return "Multiply"; }
-                static const char* GetOperatorDesc() { return "Perform multiplication between two numbers"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Multiply.png"; }
-
-                
-
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

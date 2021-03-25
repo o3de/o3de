@@ -36,7 +36,6 @@ namespace NRemoteCompiler
     {
         eSC_Unknown,
         eSC_Orbis_DXC,
-        eSC_Durango_FXC,
         eSC_D3D11_FXC,
         eSC_GLSL_HLSLcc,
         eSC_METAL_HLSLcc,

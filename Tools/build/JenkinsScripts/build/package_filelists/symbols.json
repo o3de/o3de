@@ -1,7 +1,0 @@
-{
-    "@lyengine": {
-        "dev/**/*.pdb": "#include",
-        "dev/Tools/Crashpad/**": "#exclude",
-        "dev/Code/Tools/GameLabTestLauncher/**": "#exclude"
-    }
-}

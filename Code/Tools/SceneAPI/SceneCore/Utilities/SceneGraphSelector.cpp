@@ -44,7 +44,18 @@ namespace AZ
                 return object && object->RTTI_IsTypeOf(DataTypes::IMeshData::TYPEINFO_Uuid());
             }
 
-            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list, NodeFilterFunction nodeFilter)
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+            {
+                const auto& nodeName = graph.GetNodeName(index);
+                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength()) + "_optimized";
+                if (auto optimizedIndex = graph.Find(optimizedName); optimizedIndex.IsValid())
+                {
+                    return optimizedIndex;
+                }
+                return index;
+            }
+
+            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list, NodeFilterFunction nodeFilter, NodeRemapFunction nodeRemap)
             {
                 AZStd::vector<AZStd::string> targetNodes;
                 AZStd::set<AZStd::string> selectedNodesSet;
@@ -52,8 +63,8 @@ namespace AZ
                 CopySelectionToSet(selectedNodesSet, unselectedNodesSet, list);
                 CorrectRootNode(graph, selectedNodesSet, unselectedNodesSet);
 
-                auto nodeIterator = graph.ConvertToHierarchyIterator(graph.GetRoot());
-                auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(graph, nodeIterator, graph.GetContentStorage().cbegin(), true);
+                const auto nodeIterator = graph.ConvertToHierarchyIterator(graph.GetRoot());
+                const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(graph, nodeIterator, graph.GetContentStorage().cbegin(), true);
                 if (view.begin() == view.end())
                 {
                     return targetNodes;
@@ -62,15 +73,24 @@ namespace AZ
                 {
                     Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
                     AZStd::string currentNodeName = graph.GetNodeName(index).GetPath();
-                    if (unselectedNodesSet.find(currentNodeName) != unselectedNodesSet.end())
+                    if (unselectedNodesSet.contains(currentNodeName))
                     {
                         continue;
                     }
-                    if (selectedNodesSet.find(currentNodeName) != selectedNodesSet.end())
+                    if (selectedNodesSet.contains(currentNodeName))
                     {
                         if (nodeFilter(graph, index))
                         {
-                            targetNodes.push_back(currentNodeName);
+                            Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index);
+                            if (remappedIndex == index)
+                            {
+                                targetNodes.emplace_back(AZStd::move(currentNodeName));
+                            }
+                            else
+                            {
+                                const Containers::SceneGraph::Name& nodeName = graph.GetNodeName(remappedIndex);
+                                targetNodes.emplace_back(nodeName.GetPath(), nodeName.GetPathLength());
+                            }
                         }
                         continue;
                     }
@@ -79,16 +99,25 @@ namespace AZ
                     if (parentIndex.IsValid())
                     {
                         AZStd::string parentNodeName = graph.GetNodeName(parentIndex).GetPath();
-                        if (unselectedNodesSet.find(parentNodeName) != unselectedNodesSet.end())
+                        if (unselectedNodesSet.contains(parentNodeName))
                         {
                             unselectedNodesSet.insert(currentNodeName);
                         }
-                        else if (selectedNodesSet.find(parentNodeName) != selectedNodesSet.end())
+                        else if (selectedNodesSet.contains(parentNodeName))
                         {
                             selectedNodesSet.insert(currentNodeName);
                             if (nodeFilter(graph, index))
                             {
-                                targetNodes.push_back(currentNodeName);
+                                Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index);
+                                if (remappedIndex == index)
+                                {
+                                    targetNodes.emplace_back(AZStd::move(currentNodeName));
+                                }
+                                else
+                                {
+                                    const Containers::SceneGraph::Name& nodeName = graph.GetNodeName(remappedIndex);
+                                    targetNodes.emplace_back(nodeName.GetPath(), nodeName.GetPathLength());
+                                }
                             }
                         }
                         else
@@ -159,12 +188,12 @@ namespace AZ
                     Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
                     AZStd::string currentNodeName = it->first.GetPath();
                     // Check if item is already registered and if so add it to the appropriate list.
-                    if (unselectedNodesSet.find(currentNodeName) != unselectedNodesSet.end())
+                    if (unselectedNodesSet.contains(currentNodeName))
                     {
                         list.RemoveSelectedNode(AZStd::move(currentNodeName));
                         continue;
                     }
-                    if (selectedNodesSet.find(currentNodeName) != selectedNodesSet.end())
+                    if (selectedNodesSet.contains(currentNodeName))
                     {
                         list.AddSelectedNode(AZStd::move(currentNodeName));
                         continue;
@@ -176,7 +205,7 @@ namespace AZ
                     if (parentIndex.IsValid())
                     {
                         AZStd::string parentNodeName = graph.GetNodeName(parentIndex).GetPath();
-                        if (unselectedNodesSet.find(parentNodeName) != unselectedNodesSet.end())
+                        if (unselectedNodesSet.contains(parentNodeName))
                         {
                             unselectedNodesSet.insert(currentNodeName);
                             list.RemoveSelectedNode(AZStd::move(currentNodeName));
@@ -208,7 +237,7 @@ namespace AZ
                     AZStd::string currentNodeName = it->first.GetPath();
                     if (nodeFilter(graph, index))
                     {
-                        if (targetNodes.find(currentNodeName) != targetNodes.end())
+                        if (targetNodes.contains(currentNodeName))
                         {
                             list.AddSelectedNode(currentNodeName);
                         }

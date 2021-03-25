@@ -1871,26 +1871,6 @@ public:
     void Readback(AZ::u32 subresourceIndex, StagingHook callback) override;
 
     const bool IsStreamableNonVirtual() const { return !(m_nFlags & FT_DONT_STREAM) && !(m_eTT == eTT_3D); }
-    ILINE void DisableMgpuSync()
-    {
-        // TODO: CRY_INTEGRATE_DX12 MGPU TEMPORARILY DISABLE
-#if !defined(NULL_RENDERER) && (defined(WIN32) || defined(WIN64)) && !defined(OPENGL) && !defined(CRY_INTEGRATE_DX12)
-        if (m_pDevTexture)
-        {
-            m_pDevTexture->DisableMgpuSync();
-        }
-#endif
-    }
-
-    ILINE void MgpuResourceUpdate([[maybe_unused]] bool bUpdating = true)
-    {
-#if defined(USE_NV_API)
-        if (m_pDevTexture)
-        {
-            m_pDevTexture->MgpuResourceUpdate(bUpdating);
-        }
-#endif
-    }
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION TEXTURE_H_SECTION_5

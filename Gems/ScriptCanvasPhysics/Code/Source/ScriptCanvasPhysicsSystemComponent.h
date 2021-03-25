@@ -31,7 +31,7 @@ namespace ScriptCanvasPhysics
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component...
         void Init() override;
         void Activate() override;
         void Deactivate() override;

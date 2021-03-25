@@ -14,6 +14,8 @@
 #include <GraphCanvas/Components/NodePropertyDisplay/ComboBoxDataInterface.h>
 #include <GraphCanvas/Widgets/ComboBox/ComboBoxItemModels.h>
 
+#include <Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasPropertyDataInterface.h>
+
 #include "ScriptCanvasDataInterface.h"
 
 namespace ScriptCanvasEditor
@@ -77,7 +79,7 @@ namespace ScriptCanvasEditor
             return m_comboBoxModel.GetDefaultIndex();
         }
 
-        const QString& GetDisplayString() const override
+        QString GetDisplayString() const override
         {
             const ScriptCanvas::Datum* object = GetSlotObject();
             
@@ -96,5 +98,5 @@ namespace ScriptCanvasEditor
 
     private:
         GraphCanvas::GraphCanvasListComboBoxModel<int32_t> m_comboBoxModel;
-    };
+    };    
 }

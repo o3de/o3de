@@ -1,0 +1,43 @@
+<ATLConfig atl_name="default_controls">
+ <AudioTriggers>
+  <ATLTrigger atl_name="get_focus"/>
+  <ATLTrigger atl_name="lose_focus"/>
+  <ATLTrigger atl_name="mute_all"/>
+  <ATLTrigger atl_name="unmute_all"/>
+  <ATLTrigger atl_name="do_nothing"/>
+ </AudioTriggers>
+ <AudioRtpcs>
+  <ATLRtpc atl_name="object_speed"/>
+ </AudioRtpcs>
+ <AudioSwitches>
+  <ATLSwitch atl_name="ObstructionOcclusionCalculationType">
+   <ATLSwitchState atl_name="Ignore">
+    <ATLSwitchRequest atl_name="ObstructionOcclusionCalculationType">
+     <ATLValue atl_name="Ignore"/>
+    </ATLSwitchRequest>
+   </ATLSwitchState>
+   <ATLSwitchState atl_name="SingleRay">
+    <ATLSwitchRequest atl_name="ObstructionOcclusionCalculationType">
+     <ATLValue atl_name="SingleRay"/>
+    </ATLSwitchRequest>
+   </ATLSwitchState>
+   <ATLSwitchState atl_name="MultiRay">
+    <ATLSwitchRequest atl_name="ObstructionOcclusionCalculationType">
+     <ATLValue atl_name="MultiRay"/>
+    </ATLSwitchRequest>
+   </ATLSwitchState>
+  </ATLSwitch>
+  <ATLSwitch atl_name="object_velocity_tracking">
+   <ATLSwitchState atl_name="on">
+    <ATLSwitchRequest atl_name="object_velocity_tracking">
+     <ATLValue atl_name="on"/>
+    </ATLSwitchRequest>
+   </ATLSwitchState>
+   <ATLSwitchState atl_name="off">
+    <ATLSwitchRequest atl_name="object_velocity_tracking">
+     <ATLValue atl_name="off"/>
+    </ATLSwitchRequest>
+   </ATLSwitchState>
+  </ATLSwitch>
+ </AudioSwitches>
+</ATLConfig>

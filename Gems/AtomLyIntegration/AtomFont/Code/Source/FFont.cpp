@@ -33,7 +33,6 @@
 
 #include <AzCore/std/parallel/lock.h>
 
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -51,16 +50,16 @@
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 static const int TabCharCount = 4;
-// set buffer sizes to hold max characters that can be drawn in 1 frame
-static const size_t MaxVerts = 32 * 1024; // 8192 quads
+// set buffer sizes to hold max characters that can be drawn in 1 DrawString call
+static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
-static const size_t MaxDrawVBQuads = (MaxVerts / 4) - 1; // maximum number of characters per frame for this font
 static const char DrawList2DPassName[] = "2dpass";
 
 namespace ShaderInputs
 {
     static const char TextureIndexName[] = "m_texture";
     static const char WorldToProjIndexName[] = "m_worldToProj";
+    static const char SamplerIndexName[] = "m_sampler";
 }
 
 AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
@@ -81,79 +80,46 @@ AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
 
 bool AZ::FFont::InitFont()
 {
-    m_preRenderNotificationHandler = AZ::RPI::DynamicDrawPreRenderNotificationHandler([this]([[maybe_unused]] int) {CommitDrawGeometry(); });
-
-    RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw(scene);
-    AZ_Assert(dynamicDraw, "DynamicDrawSystemInterface not initialized for this scene!");
-
-    RHI::Factory& factory = RHI::Factory::Get();
-    RHI::ResultCode result;
-
+    if (m_fontInitialized)
     {
-        m_inputAssemblyPool = dynamicDraw->GetInputAssemblyBufferHostPool();
-
-        for (uint32_t index = 0; index < NumBuffers; ++index)
-        {
-            AZ::RHI::Ptr<AZ::RHI::Buffer> newVertexBuffer = factory.CreateBuffer();
-            m_vertexBuffer[index] = newVertexBuffer;
-            newVertexBuffer->SetName(AZ::Name("Font VB"));
-            RHI::BufferInitRequest vbReq;
-            vbReq.m_buffer = newVertexBuffer.get();
-            vbReq.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::InputAssembly, MaxVerts * sizeof(SVF_P3F_C4B_T2F) };
-            result = m_inputAssemblyPool->InitBuffer(vbReq);
-            if (result != AZ::RHI::ResultCode::Success)
-            {
-                AZ_Error("AtomFont::FFont", false, "Failed to init vertex buffer");
-                return false;
-            }
-
-            AZ::RHI::Ptr<AZ::RHI::Buffer> newIndexBuffer = factory.CreateBuffer();
-            m_indexBuffer[index] = newIndexBuffer;
-            newIndexBuffer->SetName(AZ::Name("Font IB"));
-            RHI::BufferInitRequest ibReq;
-            ibReq.m_buffer = newIndexBuffer.get();
-            ibReq.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::InputAssembly, MaxIndices * sizeof(u16) };
-            result = m_inputAssemblyPool->InitBuffer(ibReq);
-            if (result != AZ::RHI::ResultCode::Success)
-            {
-                AZ_Error("AtomFont::FFont", false, "Failed to init index buffer");
-                return false;
-            }
-
-
-            // Vertex format...
-            m_streamBufferView[index] = AZ::RHI::StreamBufferView(
-                *newVertexBuffer,               // buffer
-                0,                                 // byte offset
-                MaxVerts * sizeof(SVF_P3F_C4B_T2F),  // byte count
-                sizeof(SVF_P3F_C4B_T2F)            // byte stride
-                );
-
-            m_indexBufferView[index] = AZ::RHI::IndexBufferView(
-                *newIndexBuffer,             // buffer
-                0,                              // byte offset
-                MaxIndices * sizeof(uint16_t),  // byte count
-                AZ::RHI::IndexFormat::Uint16    // index format
-                );
-        }
+        return true;
     }
-    MapVertexBuffer();
-    MapIndexBuffer();
-
-
-    LoadShader("Shaders/SimpleTextured.azshader");
-
-    // cache the 2D mode drawlist tag
-    RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-    AZ_Assert(rhiSystem, "RHISystemInterface not initialized");
-
-    m_2DPassDrawListTag = rhiSystem->GetDrawListTagRegistry()->FindTag(AZ::Name(DrawList2DPassName));
-
-    dynamicDraw->RegisterGeometryPreRenderNotificationHandler(m_preRenderNotificationHandler);
 
     InitWindowContext();
     InitViewportContext();
+
+    const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+
+    // Create and initialize DynamicDrawContext for font draw
+    m_dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(m_viewportContext->GetRenderScene().get());
+
+    Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
+    m_dynamicDraw->InitShader(shader);
+    m_dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::R8G8B8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
+    m_dynamicDraw->EndInit();
+
+    // Save draw srg input indices for later use
+    Data::Instance<RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    const RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+
+    m_fontShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
+    AZ_Error("AtomFont::FFont", m_fontShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        ShaderInputs::TextureIndexName);
+
+    m_fontShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
+    AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        ShaderInputs::WorldToProjIndexName);
+    m_fontShaderData.m_samplerInputIndex = layout->FindShaderInputSamplerIndex(AZ::Name(ShaderInputs::SamplerIndexName));
+    AZ_Error(
+        "AtomFont::FFont", m_fontShaderData.m_samplerInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        ShaderInputs::SamplerIndexName);
+
+    // Create cpu memory to cache the font draw data before submit
+    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
+    m_indexBuffer = new u16[MaxIndices];
+
+    m_vertexCount = 0;
+    m_indexCount = 0;
 
     m_fontInitialized = true;
     return true;
@@ -161,42 +127,12 @@ bool AZ::FFont::InitFont()
 
 AZ::FFont::~FFont()
 {
-    m_fontInitialized = false;
+    AZ_Assert(m_atomFont == nullptr, "The font should already be unregistered through a call to AZ::FFont::Release()");
 
     AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
-    RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    if (scene)
-    {
-        RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw(scene);
-        if (dynamicDraw)
-        {
-            dynamicDraw->UnregisterGeometryPreRenderNotificationHandler(m_preRenderNotificationHandler);
-        }
-    }
 
-    // The font should already be unregistered through a call to
-    // AZ::FFont::Release() at this point.
-    CRY_ASSERT(m_atomFont == nullptr);
-
-    // unmap vertex buffer
-    if (m_mappedVertexPtr)
-    {
-        m_mappedVertexPtr = nullptr;
-        RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_vertexBuffer[m_activeIndex]->GetPool());
-        pool->UnmapBuffer(*m_vertexBuffer[m_activeIndex].get());
-    }
-    m_vertexBuffer[0] = nullptr;
-    m_vertexBuffer[1] = nullptr;
-
-    // unmap and orphan index buffer to gpu
-    if (m_mappedIndexPtr)
-    {
-        m_mappedIndexPtr = nullptr;
-        RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_indexBuffer[m_activeIndex]->GetPool());
-        pool->UnmapBuffer(*m_indexBuffer[m_activeIndex].get());
-    }
-    m_indexBuffer[0] = nullptr;
-    m_indexBuffer[1] = nullptr;
+    delete[] m_vertexBuffer;
+    delete[] m_indexBuffer;
 
     Free();
 }
@@ -310,7 +246,6 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
 void AZ::FFont::Free()
 {
     m_fontImage = nullptr;
-    m_fontImageView = nullptr;
     m_fontImageVersion = 0;
 
     delete m_fontTexture;
@@ -323,7 +258,7 @@ void AZ::FFont::Free()
 
 void AZ::FFont::DrawString(float x, float y, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
 {
-    if (!str || !m_mappedVertexPtr)
+    if (!str || !m_vertexBuffer)
     {
         return;
     }
@@ -333,7 +268,7 @@ void AZ::FFont::DrawString(float x, float y, const char* str, const bool asciiMu
 
 void AZ::FFont::DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
 {
-    if (!str || !m_mappedVertexPtr)
+    if (!str || !m_vertexBuffer)
     {
         return;
     }
@@ -361,12 +296,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     }
 
     const bool orthoMode = ctx.m_overrideViewProjMatrices;
-    // ortho mode forces drawing into the the 2d pass, default draws in the pass selected in the shader.
-    RHI::DrawListTag drawListTag = orthoMode ? m_2DPassDrawListTag : m_fontShaderData.m_drawListTag;
-    if (!drawListTag.IsValid())
-    {
-        return;
-    }
 
     int baseState = ctx.m_baseState;
 
@@ -377,21 +306,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     const float viewHeight = viewport.m_maxY - viewport.m_minY;
     const float zf = viewport.m_minZ;
     const float zn = viewport.m_maxZ;
-
-    AZ::RPI::Scene* scene = m_viewportContext->GetRenderScene().get();
-    AZ::RHI::ConstPtr<AZ::RHI::PipelineState> pipelineState = GetPipelineState(scene, drawListTag);
-    if (!pipelineState)
-    {
-        return;
-    }
-
-    RPI::DynamicDrawInterface* dynamicDraw = RPI::GetDynamicDraw(scene);
-    if (!dynamicDraw)
-    {
-        AZ_WarningOnce(LogName, false, "CAtomShimDynamicDraw::AddDraw being used for a scene which has no DynamcDrawFeatureProcessor");
-        return;
-    }
-
 
     Matrix4x4 modelViewProjMat;
     if (!orthoMode)
@@ -428,29 +342,29 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
             m_indexCount += 6;
 
             // define char quad
-            m_mappedVertexPtr[vertexOffset + 0].xyz = v0;
-            m_mappedVertexPtr[vertexOffset + 0].color.dcolor = packedColor;
-            m_mappedVertexPtr[vertexOffset + 0].st = tc0;
+            m_vertexBuffer[vertexOffset + 0].xyz = v0;
+            m_vertexBuffer[vertexOffset + 0].color.dcolor = packedColor;
+            m_vertexBuffer[vertexOffset + 0].st = tc0;
 
-            m_mappedVertexPtr[vertexOffset + 1].xyz = v1;
-            m_mappedVertexPtr[vertexOffset + 1].color.dcolor = packedColor;
-            m_mappedVertexPtr[vertexOffset + 1].st = tc1;
+            m_vertexBuffer[vertexOffset + 1].xyz = v1;
+            m_vertexBuffer[vertexOffset + 1].color.dcolor = packedColor;
+            m_vertexBuffer[vertexOffset + 1].st = tc1;
 
-            m_mappedVertexPtr[vertexOffset + 2].xyz = v2;
-            m_mappedVertexPtr[vertexOffset + 2].color.dcolor = packedColor;
-            m_mappedVertexPtr[vertexOffset + 2].st = tc2;
+            m_vertexBuffer[vertexOffset + 2].xyz = v2;
+            m_vertexBuffer[vertexOffset + 2].color.dcolor = packedColor;
+            m_vertexBuffer[vertexOffset + 2].st = tc2;
 
-            m_mappedVertexPtr[vertexOffset + 3].xyz = v3;
-            m_mappedVertexPtr[vertexOffset + 3].color.dcolor = packedColor;
-            m_mappedVertexPtr[vertexOffset + 3].st = tc3;
+            m_vertexBuffer[vertexOffset + 3].xyz = v3;
+            m_vertexBuffer[vertexOffset + 3].color.dcolor = packedColor;
+            m_vertexBuffer[vertexOffset + 3].st = tc3;
 
             uint16_t startingIndex = vertexOffset - startingVertexCount;
-            m_mappedIndexPtr[indexOffset + 0]  = startingIndex + 0;
-            m_mappedIndexPtr[indexOffset + 1]  = startingIndex + 1;
-            m_mappedIndexPtr[indexOffset + 2]  = startingIndex + 2;
-            m_mappedIndexPtr[indexOffset + 3]  = startingIndex + 2;
-            m_mappedIndexPtr[indexOffset + 4]  = startingIndex + 3;
-            m_mappedIndexPtr[indexOffset + 5]  = startingIndex + 0;
+            m_indexBuffer[indexOffset + 0] = startingIndex + 0;
+            m_indexBuffer[indexOffset + 1] = startingIndex + 1;
+            m_indexBuffer[indexOffset + 2] = startingIndex + 2;
+            m_indexBuffer[indexOffset + 3] = startingIndex + 2;
+            m_indexBuffer[indexOffset + 4] = startingIndex + 3;
+            m_indexBuffer[indexOffset + 5] = startingIndex + 0;
             return true;
         };
 
@@ -462,40 +376,22 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
 
     if (numQuads)
     {
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
-        drawPacketBuilder.Begin(nullptr);
+        //setup per draw srg
+        auto drawSrg = m_dynamicDraw->NewDrawSrg();
+        drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
+        drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
+        AZ::RHI::SamplerState samplerState;
+        samplerState.m_anisotropyEnable = true;
+        samplerState.m_anisotropyMax = 16;
+        samplerState.m_addressU = RHI::AddressMode::Clamp;
+        samplerState.m_addressV = RHI::AddressMode::Clamp;
+        samplerState.m_addressW = RHI::AddressMode::Clamp;
+        drawSrg->SetSampler(m_fontShaderData.m_samplerInputIndex, samplerState);
+        drawSrg->Compile();
 
-        AZ::RHI::DrawIndexed drawIndexed;
-        drawIndexed.m_indexOffset = startingIndexCount;
-        drawIndexed.m_indexCount = numQuads * 6;
-        drawIndexed.m_vertexOffset = startingVertexCount;
-        drawPacketBuilder.SetDrawArguments(drawIndexed);
-
-        drawPacketBuilder.SetIndexBufferView(m_indexBufferView[m_activeIndex]);
-
-        auto srg = AZ::RPI::ShaderResourceGroup::Create(m_fontShaderData.m_perDrawSrgAsset);
-        if (!srg)
-        {
-            AZ_Error("AtomFont::FFont", false, "Failed to create shader resource group");
-            return;
-        }
-
-        srg->SetShaderVariantKeyFallbackValue(m_fontShaderData.m_shaderVariantKeyFallback);
-        srg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-        srg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontImageView.get());
-        srg->Compile();
-        drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
-        m_processSrgs[m_activeIndex].push_back(srg);
-
-        AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
-        drawRequest.m_listTag = drawListTag;
-        drawRequest.m_streamBufferViews = AZStd::array_view(&m_streamBufferView[m_activeIndex], 1);
-        drawRequest.m_pipelineState = pipelineState.get();
-        drawRequest.m_sortKey = 0;
-        drawPacketBuilder.AddDrawItem(drawRequest);
-
-        AZStd::unique_ptr<const RHI::DrawPacket> drawPacket(drawPacketBuilder.End());
-        dynamicDraw->AddDrawPacket(AZStd::move(drawPacket));
+        m_dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+        m_indexCount = 0;
+        m_vertexCount = 0;
     }
 }
 
@@ -1578,7 +1474,6 @@ bool AZ::FFont::InitTexture()
 
     m_fontImage = m_fontStreamingImage->GetRHIImage();
     m_fontImage->SetName(Name(m_name.c_str()));
-    m_fontImageView = m_fontStreamingImage->GetImageView();
 
     m_fontImageVersion = 0;
     return true;
@@ -1613,8 +1508,7 @@ bool AZ::FFont::UpdateTexture()
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();
     imageUpdateReq.m_sourceSubresourceLayout = layout;
 
-    RPI::DynamicDrawInterface* dynamicDraw = RPI::GetDynamicDraw();
-    dynamicDraw->GetImagePool()->UpdateImageContents(imageUpdateReq);
+    m_fontStreamingImage->UpdateImageContents(imageUpdateReq);
 
     return true;
 }
@@ -1682,131 +1576,6 @@ Vec2 AZ::FFont::GetRestoredFontSize(const TextDrawContext& ctx) const
     return Vec2(ctx.m_size.x * restoringScale, ctx.m_size.y * restoringScale);
 }
 
-void AZ::FFont::LoadShader(const char* shaderFilepath)
-{
-    m_fontShaderData.m_fontShaderFilepath = shaderFilepath;
-
-    m_fontShaderData.m_fontShader = AZ::RPI::LoadShader(shaderFilepath);
-
-    m_fontShaderData.m_drawListTag = m_fontShaderData.m_fontShader->GetDrawListTag();
-
-    // SRGs ...
-    m_fontShaderData.m_perDrawSrgAsset = m_fontShaderData.m_fontShader->FindShaderResourceGroupAsset(AZ::Name{ "InstanceSrg" });
-    if (!m_fontShaderData.m_perDrawSrgAsset.GetId().IsValid())
-    {
-        AZ_Error(LogName, false, "Failed to get font srg asset");
-        return;
-    }
-    else if (!m_fontShaderData.m_perDrawSrgAsset.IsReady())
-    {
-        AZ_Error(LogName, false, "Font srg asset is not loaded");
-        return;
-    }
-
-    const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = m_fontShaderData.m_perDrawSrgAsset->GetLayout();
-
-    m_fontShaderData.m_imageInputIndex = shaderResourceGroupLayout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TextureIndexName);
-
-    m_fontShaderData.m_viewProjInputIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::WorldToProjIndexName);
-
-    auto shaderOption = m_fontShaderData.m_fontShader->CreateShaderOptionGroup();
-    shaderOption.SetUnspecifiedToDefaultValues();
-    shaderOption.SetValue(AZ::Name("o_clamp"), AZ::Name("true"));
-    shaderOption.SetValue(AZ::Name("o_useColorChannels"), AZ::Name("false"));
-    const auto findVariantResult = m_fontShaderData.m_fontShader->FindVariantStableId(shaderOption.GetShaderVariantId());
-
-    m_fontShaderData.m_shaderVariantKeyFallback = shaderOption.GetShaderVariantKeyFallbackValue();
-
-    AZ_Warning("AtomFont::FFont", findVariantResult.IsFullyBaked(), "AtomFont Shader Variant not found. Defaulting to root variant");
-    m_fontShaderData.m_fontVariantStableId = findVariantResult.GetStableId();
-}
-
-void AZ::FFont::UpdateVertexBuffer()
-{
-    // unmap and orphan vertex buffer to gpu
-    if (m_mappedVertexPtr)
-    {
-        RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_vertexBuffer[m_activeIndex]->GetPool());
-        pool->UnmapBuffer(*m_vertexBuffer[m_activeIndex].get());
-        m_mappedVertexPtr = nullptr;
-    }
-}
-
-void AZ::FFont::MapVertexBuffer()
-{
-    // map vertex buffer
-    RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_vertexBuffer[m_activeIndex]->GetPool());
-    pool->OrphanBuffer(*m_vertexBuffer[m_activeIndex]);
-    RHI::BufferMapRequest mapRequest;
-    mapRequest.m_buffer = m_vertexBuffer[m_activeIndex].get();
-    mapRequest.m_byteCount = MaxVerts * sizeof(SVF_P3F_C4B_T2F);
-    mapRequest.m_byteOffset = 0;
-    RHI::BufferMapResponse mapResponse;
-    RHI::ResultCode resultCode = pool->MapBuffer(mapRequest, mapResponse);
-    if (resultCode == RHI::ResultCode::Success)
-    {
-        m_mappedVertexPtr = (SVF_P3F_C4B_T2F*)mapResponse.m_data;
-    }
-    else
-    {
-        m_mappedVertexPtr = nullptr;
-    }
-    m_vertexCount = 0;
-}
-
-void AZ::FFont::UpdateIndexBuffer()
-{
-    // unmap and orphan index buffer to gpu
-    if (m_mappedIndexPtr)
-    {
-        RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_indexBuffer[m_activeIndex]->GetPool());
-        pool->UnmapBuffer(*m_indexBuffer[m_activeIndex].get());
-        m_mappedIndexPtr = nullptr;
-    }
-}
-
-void AZ::FFont::MapIndexBuffer()
-{
-    // map index buffer
-    RHI::BufferPool* pool = azrtti_cast<RHI::BufferPool*>(m_indexBuffer[m_activeIndex]->GetPool());
-    pool->OrphanBuffer(*m_indexBuffer[m_activeIndex]);
-    RHI::BufferMapRequest mapRequest;
-    mapRequest.m_buffer = m_indexBuffer[m_activeIndex].get();
-    mapRequest.m_byteCount = MaxIndices * sizeof(u16);
-    mapRequest.m_byteOffset = 0;
-    RHI::BufferMapResponse mapResponse;
-    RHI::ResultCode resultCode = pool->MapBuffer(mapRequest, mapResponse);
-    if (resultCode == RHI::ResultCode::Success)
-    {
-        m_mappedIndexPtr = (u16*)mapResponse.m_data;
-    }
-    else
-    {
-        m_mappedIndexPtr = nullptr;
-    }
-    m_indexCount = 0;
-}
-
-void AZ::FFont::CommitDrawGeometry()
-{
-    AZStd::lock_guard<AZStd::mutex> lock(m_vertexDataMutex);
-    if (m_vertexCount) // don't update if no characters were drawn this frame
-    {
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        UpdateVertexBuffer();
-        UpdateIndexBuffer();
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        m_activeIndex = (m_activeIndex + 1) & 1;
-        m_processSrgs[m_activeIndex].clear();
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        MapVertexBuffer();
-        MapIndexBuffer();
-        ////////////////////////////////////////////////////////////////////////////////////////////
-    }
-}
-
 void AZ::FFont::ScaleCoord(float& x, float& y) const
 {
     if (!m_windowContext)
@@ -1820,67 +1589,6 @@ void AZ::FFont::ScaleCoord(float& x, float& y) const
 
     x *= width / WindowScaleWidth;
     y *= height / WindowScaleHeight;
-}
-
-AZ::RHI::ConstPtr<AZ::RHI::PipelineState> AZ::FFont::GetPipelineState(const AZ::RPI::Scene* scene, AZ::RHI::DrawListTag drawListTag)
-{
-    if (!m_fontInitialized)
-    {
-        return nullptr;
-    }
-    FontPipelineStateMapKey pipelineStatesMapKey = { scene->GetId(), drawListTag };
-
-    // If pipeline state for this scene is already setup then return it
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(m_pipelineStateCacheMutex);
-        auto pipelineStatesIter = m_fontShaderData.m_pipelineStates.find(pipelineStatesMapKey);
-        if (pipelineStatesIter != m_fontShaderData.m_pipelineStates.end())
-        {
-            return pipelineStatesIter->second;
-        }
-    }
-
-    AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-    const AZ::RPI::ShaderVariant& fontShaderVariant = m_fontShaderData.m_fontShader->GetVariant(m_fontShaderData.m_fontVariantStableId);
-    fontShaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-
-    AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-    layoutBuilder.AddBuffer()
-        ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
-        ->Channel("COLOR", AZ::RHI::Format::R8G8B8A8_UNORM)
-        ->Channel("TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT);
-
-    layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
-
-    pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
-
-    AZ::RHI::ValidateStreamBufferViews(pipelineStateDescriptor.m_inputStreamLayout, AZStd::array_view(&m_streamBufferView[0], 1));
-
-    scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
-
-    AZ::RHI::ConstPtr<AZ::RHI::PipelineState> pipelineState = m_fontShaderData.m_fontShader->AcquirePipelineState(pipelineStateDescriptor);
-    if (!pipelineState)
-    {
-        AZ_Error("AtomFont::FFont", false, "Failed to acquire pipeline state for shader %s", m_fontShaderData.m_fontShaderFilepath);
-        return nullptr;
-    }
-
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(m_pipelineStateCacheMutex);
-
-        // double check that no other thread added a pipeline state matching the key while this thread was constructing this one.
-        auto pipelineStatesIter = m_fontShaderData.m_pipelineStates.find(pipelineStatesMapKey);
-        if (pipelineStatesIter != m_fontShaderData.m_pipelineStates.end())
-        {
-            // return the already constructed one and free this one.
-            pipelineState = nullptr;
-            return pipelineStatesIter->second;
-        }
-
-        m_fontShaderData.m_pipelineStates[pipelineStatesMapKey] = pipelineState;
-    }
-
-    return pipelineState;
 }
 
 void AZ::FFont::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)

@@ -132,20 +132,28 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 1.f)
                             ->Attribute(Edit::Attributes::Suffix, " deg")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsShadowFilteringDisabled)
+                            ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &SpotLightComponentConfig::m_predictionSampleCount, "Prediction Sample Count",
                             "Sample Count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsShadowPcfDisabled)
+                            ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &SpotLightComponentConfig::m_filteringSampleCount, "Filtering Sample Count",
                             "It is used only when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsShadowPcfDisabled)
-                        ;
+                        ->DataElement(
+                            Edit::UIHandlers::ComboBox, &SpotLightComponentConfig::m_pcfMethod, "Pcf Method",
+                            "Type of Pcf to use.\n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
+                            "  Bicubic: a smooth, fixed-size kernel \n")
+                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
+                        ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(Edit::Attributes::ReadOnly, &SpotLightComponentConfig::IsShadowPcfDisabled);
                 }
             }
 

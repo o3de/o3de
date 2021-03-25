@@ -11,10 +11,11 @@
 */
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Crc.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/Math/Crc.h>
-#include <AzCore/Component/EntityId.h>
 
 namespace GraphCanvas
 {
@@ -95,8 +96,8 @@ namespace GraphCanvas
     enum class ListingType
     {
         Unknown,
-        AllowedList,
-        BlockedList
+        InclusiveList,
+        ExclusiveList
     };
 
     template<typename T>
@@ -110,10 +111,10 @@ namespace GraphCanvas
         {
             size_t count = m_listing.count(type);
 
-            return (count > 0 && m_listingType == ListingType::BlockedList) || (count == 0 && m_listingType == ListingType::AllowedList);
+            return (count > 0 && m_listingType == ListingType::ExclusiveList) || (count == 0 && m_listingType == ListingType::InclusiveList);
         }
 
-        ListingType             m_listingType  = ListingType::BlockedList;
+        ListingType             m_listingType  = ListingType::ExclusiveList;
         AZStd::unordered_set<T> m_listing;
 
     private:
@@ -215,4 +216,6 @@ namespace GraphCanvas
 
         AZStd::string m_failureReason;
     };
+
+    typedef AZ::Outcome<void, AZStd::string> CanHandleMimeEventOutcome;
 }

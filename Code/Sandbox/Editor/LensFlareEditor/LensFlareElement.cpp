@@ -224,21 +224,51 @@ void CLensFlareElement::UpdateLights()
 
 void CLensFlareElement::UpdateProperty(IOpticsElementBasePtr pOptics)
 {
-    std::vector<IVariable::OnSetCallback> funcs;
+    std::vector<IVariable::OnSetCallback*> funcs;
 
-    if (GetLensFlareTree())
+    if (CLensFlareElementTree* lensFlareTree = GetLensFlareTree(); lensFlareTree)
     {
-        funcs.push_back(functor(*GetLensFlareTree(), &CLensFlareElementTree::OnInternalVariableChange));
+        auto callbackItr = m_callbackCache.find(lensFlareTree);
+        if (callbackItr == m_callbackCache.end())
+        {
+            IVariable::OnSetCallback callback =
+                AZStd::bind(&CLensFlareElementTree::OnInternalVariableChange, lensFlareTree, AZStd::placeholders::_1);
+
+            auto result = m_callbackCache.insert(AZStd::make_pair(lensFlareTree, callback));
+            callbackItr = result.first;
+        }
+
+        funcs.push_back(&(callbackItr->second));
     }
 
-    if (GetLensFlareView())
+    if (CLensFlareView* lensFlareView = GetLensFlareView(); lensFlareView)
     {
-        funcs.push_back(functor(*GetLensFlareView(), &CLensFlareView::OnInternalVariableChange));
+        auto callbackItr = m_callbackCache.find(lensFlareView);
+        if (callbackItr == m_callbackCache.end())
+        {
+            IVariable::OnSetCallback callback =
+                AZStd::bind(&CLensFlareView::OnInternalVariableChange, lensFlareView, AZStd::placeholders::_1);
+
+            auto result = m_callbackCache.insert(AZStd::make_pair(lensFlareView, callback));
+            callbackItr = result.first;
+        }
+
+        funcs.push_back(&(callbackItr->second));
     }
 
-    if (GetLensFlareLibrary())
+    if (CLensFlareLibrary* lensFlareLibrary = GetLensFlareLibrary(); lensFlareLibrary)
     {
-        funcs.push_back(functor(*GetLensFlareLibrary(), &CLensFlareLibrary::OnInternalVariableChange));
+        auto callbackItr = m_callbackCache.find(lensFlareLibrary);
+        if (callbackItr == m_callbackCache.end())
+        {
+            IVariable::OnSetCallback callback =
+                AZStd::bind(&CLensFlareLibrary::OnInternalVariableChange, lensFlareLibrary, AZStd::placeholders::_1);
+
+            auto result = m_callbackCache.insert(AZStd::make_pair(lensFlareLibrary, callback));
+            callbackItr = result.first;
+        }
+
+        funcs.push_back(&(callbackItr->second));
     }
 
     LensFlareUtil::SetVariablesTemplateFromOptics(pOptics, m_vars, funcs);

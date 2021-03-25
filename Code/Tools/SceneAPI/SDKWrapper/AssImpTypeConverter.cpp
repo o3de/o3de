@@ -56,5 +56,10 @@ namespace AZ
         {
             return AZ::SceneAPI::DataTypes::Color(color.r, color.g, color.b, color.a);
         }
+
+        AZ::Vector3 AssImpTypeConverter::ToVector3(const aiVector3D& vector3)
+        {
+            return AZ::Vector3(vector3.x, vector3.y, vector3.z);
+        }
     } //AssImpSDKWrapper
 } // namespace AZ

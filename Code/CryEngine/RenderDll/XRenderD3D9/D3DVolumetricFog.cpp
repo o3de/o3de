@@ -372,7 +372,6 @@ void CVolumetricFog::CreateResources()
                 m_fogInscatteringVolume[i] = CTexture::CreateTextureObject(tname[i], w, h, d, eTT_3D, flags, format);
                 const byte* pData[6] = {NULL};
                 m_fogInscatteringVolume[i]->CreateDeviceTexture(pData);
-                m_fogInscatteringVolume[i]->DisableMgpuSync();
 
                 if (m_fogInscatteringVolume[i]->GetFlags() & FT_FAILED)
                 {
@@ -531,7 +530,6 @@ void CVolumetricFog::CreateResources()
                 uint32 flags = commonFlags | FT_USAGE_UNORDERED_ACCESS;
                 m_fogDensityVolume[i] = CTexture::CreateTextureObject(tname[i], w, h, d, eTT_3D, flags, format);
                 m_fogDensityVolume[i]->CreateRenderTarget(format);
-                m_fogDensityVolume[i]->DisableMgpuSync();
 
                 if (m_fogDensityVolume[i]->GetFlags() & FT_FAILED)
                 {

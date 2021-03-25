@@ -34,6 +34,8 @@ namespace GraphCanvas
             m_createPresetFrom = aznew CreatePresetFromSelection(this);
             AddMenuAction(m_createPresetFrom);
         }
+
+        m_applyCommentPresets.PopulateMenu(this);
     }
     
     void CommentContextMenu::OnRefreshActions(const GraphId& graphId, const AZ::EntityId& targetMemberId)
@@ -44,5 +46,8 @@ namespace GraphCanvas
         m_editActionGroup.SetPasteEnabled(false);
 
         m_nodeGroupActionGroup.RefreshPresets();
+
+        m_applyCommentPresets.RefreshPresets();
+        m_applyCommentPresets.RefreshActionGroup(graphId, targetMemberId);
     }
 }

@@ -19,6 +19,7 @@
 
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
 #include <Source/Window/MaterialInspector/MaterialInspector.h>
 
@@ -81,14 +82,20 @@ namespace MaterialEditor
 
         AtomToolsFramework::DynamicProperty property;
         MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
-        group.m_properties.emplace_back(AZStd::move(property));
+        group.m_properties.push_back(property);
 
         property = {};
         MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
-        group.m_properties.emplace_back(AZStd::move(property));
+        group.m_properties.push_back(property);
 
-        AddGroup(groupNameId, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+        // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+            [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                AZ_UNUSED(source);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+            });
+        AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
     void MaterialInspector::AddUvNamesGroup()
@@ -108,11 +115,19 @@ namespace MaterialEditor
         {
             AtomToolsFramework::DynamicProperty property;
             MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::RPI::MaterialPropertyId(groupNameId, uvNamePair.m_shaderInput.ToString()).GetFullName());
-            group.m_properties.emplace_back(AZStd::move(property));
+            group.m_properties.push_back(property);
+
+            property.SetValue(property.GetConfig().m_parentValue);
         }
 
-        AddGroup(groupNameId, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+        // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+            [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                AZ_UNUSED(source);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+            });
+        AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
     void MaterialInspector::AddPropertiesGroup()
@@ -136,12 +151,18 @@ namespace MaterialEditor
                 {
                     AtomToolsFramework::DynamicProperty property;
                     MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName());
-                    group.m_properties.emplace_back(AZStd::move(property));
+                    group.m_properties.push_back(property);
                 }
             }
 
-            AddGroup(groupNameId, groupDisplayName, groupDescription,
-                new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+            // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+            auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                    AZ_UNUSED(source);
+                    const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                    return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+                });
+            AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
         }
     }
 
@@ -153,7 +174,7 @@ namespace MaterialEditor
             {
                 if (reflectedProperty.GetId() == property.GetId())
                 {
-                    if (!AZ::RPI::MaterialUtils::ArePropertyValuesEqual(reflectedProperty.GetValue(), property.GetValue()))
+                    if (!AtomToolsFramework::ArePropertyValuesEqual(reflectedProperty.GetValue(), property.GetValue()))
                     {
                         reflectedProperty.SetValue(property.GetValue());
                         AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
@@ -194,7 +215,7 @@ namespace MaterialEditor
         // For some reason the reflected property editor notifications are not symmetrical
         // This function is called continuously anytime a property changes until the edit has completed
         // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
-        const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
         if (property)
         {
             if (m_activeProperty != property)
@@ -207,7 +228,7 @@ namespace MaterialEditor
 
     void MaterialInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
     {
-        const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
         if (property)
         {
             if (m_activeProperty == property)
@@ -222,7 +243,7 @@ namespace MaterialEditor
     {
         // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
         // when this function executes the changes to the property are ready to be committed or reverted
-        const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
         if (property)
         {
             if (m_activeProperty == property)
@@ -235,27 +256,6 @@ namespace MaterialEditor
             }
         }
     }
-
-    const AtomToolsFramework::DynamicProperty* MaterialInspector::FindPropertyForNode(AzToolsFramework::InstanceDataNode* pNode) const
-    {
-        // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-        for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
-        {
-            const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-            const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-            if (context && classData)
-            {
-                if (context->CanDowncast(classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
-                {
-                    return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
-                }
-            }
-        }
-
-        return nullptr;
-    }
-
 } // namespace MaterialEditor
 
 #include <Source/Window/MaterialInspector/moc_MaterialInspector.cpp>

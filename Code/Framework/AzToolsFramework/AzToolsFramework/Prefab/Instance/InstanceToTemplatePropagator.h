@@ -32,6 +32,7 @@ namespace AzToolsFramework
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;
             void PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId) override;
+            void PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
 

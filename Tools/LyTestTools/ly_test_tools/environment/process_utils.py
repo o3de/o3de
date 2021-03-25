@@ -126,6 +126,7 @@ def kill_processes_with_name_not_started_from(name, path):
     else:
         logger.warning(f"Path:'{path}' not found")
 
+
 def kill_process_with_pid(pid, raise_on_missing=False):
     """
     Kills the process with the specified pid
@@ -367,7 +368,10 @@ def _safe_kill_process_list(proc_list):
         except Exception:  # purposefully broad
             logger.warning("Unexpected exception while terminating process", exc_info=True)
 
-    psutil.wait_procs(proc_list, timeout=30, callback=on_terminate)
+    try:
+        psutil.wait_procs(proc_list, timeout=30, callback=on_terminate)
+    except Exception:  # purposefully broad
+        logger.warning("Unexpected exception while waiting for process to terminate", exc_info=True)
 
 
 def _terminate_and_confirm_dead(proc):

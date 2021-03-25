@@ -187,8 +187,18 @@ namespace AZ
 
                     break;
                 case RHI::ShaderInputBufferAccess::Read:
-                    vbinding.descriptorType = desc.m_type == RHI::ShaderInputBufferType::Typed ? 
-                        VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    switch (desc.m_type)
+                    {
+                    case RHI::ShaderInputBufferType::Typed:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                        break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+                        break;
+                    default:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        break;
+                    }
                     break;
                 case RHI::ShaderInputBufferAccess::ReadWrite:
                     vbinding.descriptorType = desc.m_type == RHI::ShaderInputBufferType::Typed ? 

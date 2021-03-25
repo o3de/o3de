@@ -92,7 +92,7 @@ namespace AZ
             case BufferType::RwByteAddressBuffer:
                 return RHI::ShaderInputBufferType::Raw;
             case BufferType::RaytracingAccelerationStructure:
-                return RHI::ShaderInputBufferType::Raw;
+                return RHI::ShaderInputBufferType::AccelerationStructure;
             default:
                 AZ_Assert(false, "Unhandled BufferType");
                 return RHI::ShaderInputBufferType::Unknown;
@@ -273,7 +273,7 @@ namespace AZ
                 }
                 SrgDataContainer srgDataContainer;
 
-                auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(SrgLayoutBuilderName, fullSourcePath, shaderPlatformInterface->GetAPIType());
+                auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(SrgLayoutBuilderName, fullSourcePath, shaderPlatformInterface->GetAPIType(), request.m_platformInfo.m_identifier);
                 if (!azslArtifactsOutcome.IsSuccess())
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -352,8 +352,9 @@ namespace AZ
 
                     // The register number only makes sense if the platform uses "spaces",
                     // since the register Id of the resource will not change even if the pipeline layout changes.
-                    const AZStd::string& compilerParameters = shaderPlatformInterface->GetAzslCompilerParameters();
+                    AZStd::string compilerParameters = shaderPlatformInterface->GetAzslCompilerParameters();
                     bool useRegisterId = (AzFramework::StringFunc::Find(compilerParameters, "--use-spaces") != AZStd::string::npos);
+                    AtomShaderConfig::AddParametersFromConfigFile(compilerParameters, request.m_platformInfo);
 
                     // Samplers
                     for (const SamplerSrgData& samplerData : srgData.m_samplers)

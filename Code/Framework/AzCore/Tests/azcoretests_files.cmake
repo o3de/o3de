@@ -73,6 +73,7 @@ set(FILES
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp
+    Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameTests.cpp

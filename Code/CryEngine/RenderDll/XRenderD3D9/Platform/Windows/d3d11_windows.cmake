@@ -12,6 +12,4 @@
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
         d3d11
-        3rdParty::nvapi
-        3rdParty::AMD
 )

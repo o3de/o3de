@@ -30,6 +30,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzToolsFramework
+            AZ::AzQtComponents
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets

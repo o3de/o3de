@@ -184,6 +184,9 @@ void CMission::Export(XmlNodeRef& root, XmlNodeRef& objectsNode)
     //objects->setTag( "Objects" );
     //root->addChild( objects );
 
+    XmlNodeRef envNode = m_environment->clone();
+    root->addChild(envNode);
+
     m_timeOfDay->setAttr("Time", m_time);
     root->addChild(m_timeOfDay);
 
@@ -262,10 +265,10 @@ void CMission::SyncContent(bool bRetrieve, bool bIgnoreObjects, [[maybe_unused]]
         if (GetIEditor()->Get3DEngine())
         {
             m_numCGFObjects = GetIEditor()->Get3DEngine()->GetLoadedObjectCount();
-        }
 
-        // Load time of day.
-        GetIEditor()->Get3DEngine()->GetTimeOfDay()->Serialize(m_timeOfDay, true);
+            // Load time of day.
+            GetIEditor()->Get3DEngine()->GetTimeOfDay()->Serialize(m_timeOfDay, true);
+        }
     }
     else
     {

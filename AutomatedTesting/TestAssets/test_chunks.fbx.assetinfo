@@ -1,0 +1,9 @@
+{
+    "values": 
+    [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "TestAssets/test_chunks_builder.py"
+        }
+    ]
+}

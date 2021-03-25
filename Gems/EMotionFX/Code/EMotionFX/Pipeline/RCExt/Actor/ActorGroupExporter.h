@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <AzCore/std/optional.h>
 #include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <Integration/System/SystemCommon.h>
@@ -40,6 +41,10 @@ namespace EMotionFX
 
         private:
             AZ::SceneAPI::Events::ProcessingResult SaveActor(ActorGroupExportContext& context);
+
+            //! Get the mesh asset id to which the actor is linked to by default.
+            AZStd::optional<AZ::Data::AssetId> GetMeshAssetId(const ActorGroupExportContext& context) const;
+
             AutoRegisteredActor m_actor;
             AZStd::vector<AZStd::string> m_actorMaterialReferences;
         };

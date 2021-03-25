@@ -1,0 +1,20 @@
+{
+    "Amazon":
+    {
+        "Gems":
+        {
+            "AutomatedTesting.Assets":
+            {
+                "SourcePaths":
+                [
+                    "Gems/DevTextures",
+                    "Gems/PBSreferenceMaterials",
+                    "Gems/PhysicsEntities",
+                    "Gems/PhysXSamples",
+                    "Gems/PrimitiveAssets",
+                    "Gems/UiBasics"
+                ]
+            }
+        }
+    }
+}

@@ -13,6 +13,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QMimeData>
+#include <QString>
 AZ_POP_DISABLE_WARNING
 
 #include <GraphCanvas/Components/NodePropertyDisplay/DataInterface.h>
@@ -32,7 +33,7 @@ namespace GraphCanvas
         virtual QModelIndex GetAssignedIndex() const = 0;
 
         // Returns the string used to display the currently selected value[Used in the non-editable format]
-        virtual const QString& GetDisplayString() const
+        virtual QString GetDisplayString() const
         {
             static QString k_emptyString;
             return k_emptyString;

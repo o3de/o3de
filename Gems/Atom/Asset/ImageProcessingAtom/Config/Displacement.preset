@@ -93,22 +93,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
-                "Name": "Displacement",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_displ"
-                ],
-                "PixelFormat": "BC4",
-                "DiscardAlpha": true,
-                "IsPowerOf2": true,
-                "Swizzle": "aaa1",
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

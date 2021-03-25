@@ -20,6 +20,7 @@
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
@@ -97,9 +98,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         private:
 
@@ -116,8 +117,7 @@ namespace AZ
 
             ImGuiContext* m_imguiContext = nullptr;
 
-            RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-            RHI::ConstPtr<RHI::PipelineState> m_pipelineState = nullptr;
+            RHI::Ptr<RPI::PipelineStateForDraw> m_pipelineState;
             Data::Instance<RPI::Shader> m_shader;
 
             Data::Instance<RPI::ShaderResourceGroup> m_resourceGroup;
@@ -125,8 +125,6 @@ namespace AZ
             RHI::ShaderInputConstantIndex m_projectionMatrixIndex;
             RHI::Viewport m_viewportState;
 
-            Data::Instance<RPI::Buffer> m_imguiIndexBuffer;
-            Data::Instance<RPI::Buffer> m_imguiVertexBuffer;
             RHI::IndexBufferView m_indexBufferView;
             AZStd::array<RHI::StreamBufferView, 1> m_vertexBufferView; // Only 1 vertex stream view needed, but most RHI apis expect an array.
             AZStd::vector<DrawInfo> m_draws;

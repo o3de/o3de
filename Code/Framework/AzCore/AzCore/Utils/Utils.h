@@ -14,6 +14,7 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
@@ -44,7 +45,7 @@ namespace AZ
         //! has closed the message box.
         void NativeErrorMessageBox(const char* title, const char* message);
 
-        //! Enum used for the GetExecutablePath return type which indicates 
+        //! Enum used for the GetExecutablePath return type which indicates
         //! whether the function returned with a success value or a specific error
         enum class ExecutablePathResult : int8_t
         {
@@ -66,20 +67,24 @@ namespace AZ
         //! Retrieves the path to the application executable
         //! @param exeStorageBuffer output buffer which is used to store the executable path within
         //! @param exeStorageSize size of the exeStorageBuffer
-        //! @returns a struct that indicates if the executable path was able to be stored within the executableBuffer 
+        //! @returns a struct that indicates if the executable path was able to be stored within the executableBuffer
         //! as well as if the executable path contains the executable filename or the executable directory
         GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize);
 
         //! Retrieves the directory of the application executable
         //! @param exeStorageBuffer output buffer which is used to store the executable path within
         //! @param exeStorageSize size of the exeStorageBuffer
-        //! @returns a result object that indicates if the executable directory was able to be stored within the buffer 
+        //! @returns a result object that indicates if the executable directory was able to be stored within the buffer
         ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
 
         //! Retrieves the App root path to use on the current platform
         //! If the optional is not engaged the AppRootPath should be calculated based
         //! on the location of the bootstrap.cfg file
         AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath();
+
+        //! Retrieves the development write storage path to use on the current platform, may be considered
+        //! temporary or cache storage
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath();
 
         // Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path

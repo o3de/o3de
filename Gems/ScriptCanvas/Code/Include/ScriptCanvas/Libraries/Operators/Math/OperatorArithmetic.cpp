@@ -39,24 +39,24 @@ namespace ScriptCanvas
                 return true;
             }
 
-            void OperatorArithmetic::OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType)
+            void OperatorArithmetic::OnSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType)
+            {
+                if (dataType.IsValid())
+                {
+                    Slot* slot = GetSlot(slotId);
+
+                    if (slot->IsInput() && !slot->IsVariableReference())
+                    {
+                        InitializeSlot(slot->GetId(), dataType);
+                    }
+                }
+            }
+
+            void OperatorArithmetic::OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type&)
             {
                 if (dynamicGroup == GetArithmeticDynamicTypeGroup())
                 {
                     UpdateArithmeticSlotNames();
-
-                    if (dataType.IsValid())
-                    {
-                        AZStd::vector< Slot* > groupedSlots = GetSlotsWithDynamicGroup(GetArithmeticDynamicTypeGroup());
-
-                        for (Slot* slot : groupedSlots)
-                        {
-                            if (slot->IsInput() && !slot->IsVariableReference())
-                            {
-                                InitializeSlot(slot->GetId(), dataType);
-                            }
-                        }
-                    }                    
                 }
             }
 
@@ -359,6 +359,11 @@ namespace ScriptCanvas
             {
                 const Datum* datum = FindDatum(slotId);
                 return (datum != nullptr);
+            }
+
+            AZ::Outcome<DependencyReport, void> OperatorArithmetic::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport{});
             }
         }
     }

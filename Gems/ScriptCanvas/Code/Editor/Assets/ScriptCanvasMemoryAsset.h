@@ -71,6 +71,49 @@ namespace ScriptCanvasEditor
 
     class UndoHelper;
 
+    // Saving an asset is an asynchronous process that requires several steps, this helper
+    // class ensures asset saving takes place correctly and reduces the complexity of
+    // ScriptCanvasMemoryAsset's saving requirements
+    class AssetSaveFinalizer
+        : AZ::SystemTickBus::Handler
+    {
+    public:
+
+        using OnCompleteEvent = AZ::Event<AZ::Data::AssetId>;
+        using OnCompleteHandler = AZ::Event<AZ::Data::AssetId>::Handler;
+
+        AssetSaveFinalizer();
+        ~AssetSaveFinalizer();
+
+        void Start(ScriptCanvasMemoryAsset* sourceAsset, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZ::Data::AssetStreamInfo& saveInfo, Callbacks::OnSave onSaveCallback, OnCompleteHandler onComplete);
+        void Reset();
+
+    private:
+
+        // AZ::SystemTickBus::Handler ...
+        void OnSystemTick() override;
+        ///
+
+        bool ValidateStatus(const AzToolsFramework::SourceControlFileInfo& fileInfo);
+        AZStd::string MakeTemporaryFilePathForSave(AZStd::string_view targetFilename);
+
+        OnCompleteHandler m_onCompleteHandler;
+        OnCompleteEvent m_onComplete;
+        Callbacks::OnSave m_onSave;
+
+        bool m_saving = false;
+        bool m_fileAvailableForSave = false;
+
+        AZ::Data::AssetPtr m_inMemoryAsset;
+        AZ::Data::AssetId m_fileAssetId;
+        AZ::Data::AssetStreamInfo m_saveInfo;
+
+        ScriptCanvasMemoryAsset* m_sourceAsset;
+
+        AZ::Data::AssetType m_assetType;
+
+    };
+
     // Script Canvas primarily works with an in-memory copy of an asset.
     // There are two situations, the first is, when a new asset is created and not yet saved.
     // Once saved, we will create a new asset on file, however, and this is important
@@ -84,7 +127,6 @@ namespace ScriptCanvasEditor
         : public MemoryAsset<ScriptCanvas::ScriptCanvasAssetBase>
         , public AZStd::enable_shared_from_this<ScriptCanvasMemoryAsset>
         , EditorGraphNotificationBus::Handler
-        , public AZ::SystemTickBus::Handler
     {
     public:
 
@@ -116,9 +158,9 @@ namespace ScriptCanvasEditor
         AZ::EntityId GetScriptCanvasId() const { return m_scriptCanvasId; }
 
         AZ::EntityId GetGraphId();
-        Tracker::ScriptCanvasFileState GetFileState() const { return m_fileState; }
+        Tracker::ScriptCanvasFileState GetFileState() const;
 
-        void SetFileState(Tracker::ScriptCanvasFileState fileState) { m_fileState = fileState; }
+        void SetFileState(Tracker::ScriptCanvasFileState fileState);
 
         void CloneTo(ScriptCanvasMemoryAsset& memoryAsset);
 
@@ -135,15 +177,15 @@ namespace ScriptCanvasEditor
 
         bool IsSourceInError() const;
 
-        // SystemTickBus
-        void OnSystemTick() override;
-        ////
+        void OnSourceAssetFinalized(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
+        void SavingComplete(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
 
+        AZ::Data::AssetId GetSourceUuid() const { return m_sourceUuid; }
 
     private:
 
         template <typename T>
-        AZ::Data::Asset<T> Clone()
+        auto Clone()
         {
             AZ::Data::AssetId assetId = AZ::Uuid::CreateRandom();
 
@@ -176,6 +218,7 @@ namespace ScriptCanvasEditor
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         ///
+
 
         void FinalizeAssetSave(bool, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZ::Data::AssetStreamInfo& saveInfo, Callbacks::OnSave onSaveCallback);
 
@@ -217,6 +260,10 @@ namespace ScriptCanvasEditor
 
     private:
 
+        void SetFileAssetId(const AZ::Data::AssetId& fileAssetId);
+
+        void SignalFileStateChanged();
+
         AZStd::string MakeTemporaryFilePathForSave(AZStd::string_view targetFilename);
 
         //! Finds the appropriate asset handler for the type of Script Canvas asset given
@@ -257,6 +304,7 @@ namespace ScriptCanvasEditor
         //! The Save is officially complete after SourceFileChange is handled.
         Callbacks::OnSave m_onSaveCallback;
 
+        bool m_sourceRemoved = false;
         Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
 
         //! We need to track the filename of the file being saved because we need to match it when we handle SourceFileChange (see SourceFileChange for details)
@@ -277,8 +325,12 @@ namespace ScriptCanvasEditor
         //! The undo helper is an object that implements the Undo behaviors
         AZStd::unique_ptr<UndoHelper> m_undoHelper;
 
+        bool m_isSaving;
         bool m_sourceInError;
-        bool m_triggerSaveCallback;
+
+        AZ::Data::AssetId m_sourceUuid;
+
+        AssetSaveFinalizer m_assetSaveFinalizer;
 
     public:
 
@@ -293,45 +345,5 @@ namespace ScriptCanvasEditor
 
     };
 
-    // Helper class that provides the implementation for UndoRequestBus
-    class UndoHelper : UndoRequestBus::Handler
-    {
-    public:
 
-        UndoHelper(ScriptCanvasMemoryAsset& memoryAsset);
-        ~UndoHelper();
-
-        UndoCache* GetSceneUndoCache()  override;
-        UndoData CreateUndoData() override;
-
-        void BeginUndoBatch(AZStd::string_view label) override;
-        void EndUndoBatch() override;
-        void AddUndo(AzToolsFramework::UndoSystem::URSequencePoint* seqPoint) override;
-        void AddGraphItemChangeUndo(AZStd::string_view undoLabel) override;
-        void AddGraphItemAdditionUndo(AZStd::string_view undoLabel) override;
-        void AddGraphItemRemovalUndo(AZStd::string_view undoLabel) override;
-        void Undo() override;
-        void Redo() override;
-        void Reset() override;
-
-        bool IsActive() override;
-        bool IsIdle() override;
-
-        bool CanUndo() const override;
-        bool CanRedo() const override;
-
-    private:
-
-        void UpdateCache();
-
-        enum class Status
-        {
-            Idle,
-            InUndo
-        };
-
-        Status m_status = Status::Idle;
-
-        ScriptCanvasMemoryAsset& m_memoryAsset;
-    };
 }

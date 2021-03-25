@@ -30,7 +30,8 @@
     MACRO(Transform)\
     MACRO(Vector2)\
     MACRO(Vector3)\
-    MACRO(Vector4)
+    MACRO(Vector4)\
+    MACRO(AssetId)
 
 #define SCRIPT_CANVAS_PER_DATA_TYPE_1(MACRO, EXPOSE_TYPE)\
     MACRO(Boolean, EXPOSE_TYPE)\
@@ -48,4 +49,5 @@
     MACRO(Transform, EXPOSE_TYPE)\
     MACRO(Vector2, EXPOSE_TYPE)\
     MACRO(Vector3, EXPOSE_TYPE)\
-    MACRO(Vector4, EXPOSE_TYPE)
+    MACRO(Vector4, EXPOSE_TYPE)\
+    MACRO(AssetId, EXPOSE_TYPE)

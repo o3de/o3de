@@ -86,7 +86,7 @@ namespace GraphCanvas
         //! Show or hide this element.
         virtual void SetVisible(bool) = 0;
         //! Get the visibility of this element.
-        virtual bool IsVisible() const = 0;
+        virtual bool IsVisible() const = 0;        
     };
 
     using VisualRequestBus = AZ::EBus<VisualRequests>;
@@ -119,7 +119,7 @@ namespace GraphCanvas
         //! 3. The value (if any) associated with the change.
         virtual void OnItemChange(const AZ::EntityId&, QGraphicsItem::GraphicsItemChange, const QVariant&) {}
 
-        virtual void OnPositionAnimateBegin([[maybe_unused]] const AZ::Vector2& targetPoint) {}
+        virtual void OnPositionAnimateBegin() {}
         virtual void OnPositionAnimateEnd() {};
     };
 
@@ -140,6 +140,11 @@ namespace GraphCanvas
 
         virtual void AnimatePositionTo(const QPointF& scenePoint, const AZStd::chrono::milliseconds& duration) = 0;
         virtual void CancelAnimation() = 0;
+
+        virtual void OffsetBy(const AZ::Vector2& delta) = 0;
+
+        virtual void SignalGroupAnimationStart(AZ::EntityId groupId) = 0;
+        virtual void SignalGroupAnimationEnd(AZ::EntityId groupId) = 0;
 
         virtual StateController<RootGraphicsItemDisplayState>* GetDisplayStateStateController() = 0;
         virtual RootGraphicsItemDisplayState GetDisplayState() const = 0;
@@ -164,8 +169,8 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void OnEnabledChanged([[maybe_unused]] RootGraphicsItemEnabledState enabledState) {};
-        virtual void OnDisplayStateChanged([[maybe_unused]] RootGraphicsItemDisplayState oldState, [[maybe_unused]] RootGraphicsItemDisplayState newState) {};
+        virtual void OnEnabledChanged([[maybe_unused]] RootGraphicsItemEnabledState enabledState) {}
+        virtual void OnDisplayStateChanged([[maybe_unused]] RootGraphicsItemDisplayState oldState, [[maybe_unused]] RootGraphicsItemDisplayState newState) {}
     };
 
     using RootGraphicsItemNotificationBus = AZ::EBus<RootGraphicsItemNotifications>;

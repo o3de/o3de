@@ -338,11 +338,6 @@ enum EVerifyType
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-// nv API
-#if (defined(WIN32) || defined(WIN64)) && !defined(NULL_RENDERER) && !defined(OPENGL) && !defined(CRY_USE_DX12)
-#define USE_NV_API
-#endif
-
 // windows desktop API available for usage
 #if defined(WIN32) || defined(WIN64)
 #define WINDOWS_DESKTOP_API

@@ -236,4 +236,4 @@ namespace ScriptCanvasEditor
         AZ::SerializeContext::ClassElement m_baseDataElement;
         const size_t m_numClassElements = 3;
     };
-} // namespace GraphCanvas
+}

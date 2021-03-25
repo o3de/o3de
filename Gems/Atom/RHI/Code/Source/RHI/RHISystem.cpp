@@ -19,6 +19,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 namespace AZ
 {
@@ -172,6 +173,19 @@ namespace AZ
             {
                 // Default to first device if no other preferred device is found.
                 physicalDeviceFound = physicalDevices.front().get();
+            }
+
+            // Validate the GPU driver version.
+            // Some GPU drivers have known issues and it is recommended to update or use other versions.
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            PhysicalDeviceDriverValidator physicalDriverValidator;
+            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/Amazon/Atom/RHI/PhysicalDeviceDriverInfo")))
+            {
+                AZ_Printf("RHISystem", "Failed to get settings registry for GPU driver Info.");
+            }
+            else
+            {
+                physicalDriverValidator.ValidateDriverVersion(physicalDeviceFound->GetDescriptor());
             }
 
             AZ_Printf("RHISystem", "\tUsing physical device: %s\n", physicalDeviceFound->GetDescriptor().m_description.c_str());

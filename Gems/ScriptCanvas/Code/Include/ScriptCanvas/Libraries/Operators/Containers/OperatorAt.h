@@ -15,6 +15,7 @@
 #include <ScriptCanvas/Libraries/Operators/Operator.h>
 
 #include <ScriptCanvas/Core/Node.h>
+
 #include <Include/ScriptCanvas/Libraries/Operators/Containers/OperatorAt.generated.h>
 
 namespace ScriptCanvas
@@ -23,23 +24,18 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Get Element"
             class OperatorAt : public OperatorBase
             {
             public:
-                ScriptCanvas_Node(OperatorAt,
-                    ScriptCanvas_Node::Name("Get Element")
-                    ScriptCanvas_Node::Uuid("{6A4FE29F-3BAA-40D6-8BEE-CDE9CCBD7885}")
-                    ScriptCanvas_Node::Description("Returns the element at the specified Index or Key")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorAt);
+
 
                 OperatorAt()
                     : OperatorBase(DefaultContainerInquiryOperatorConfiguration())
                 {
                 }
-
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Key Not Found", "Triggered if the specified key was not found"));
 
             protected:
 

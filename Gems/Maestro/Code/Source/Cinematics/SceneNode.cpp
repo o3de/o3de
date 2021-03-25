@@ -848,7 +848,16 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     const SCameraParams& lastCameraParams = gEnv->pMovieSystem->GetCameraParams();
     if (lastCameraParams.cameraEntityId != cameraParams.cameraEntityId)
     {
-        Maestro::SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentNotificationBus::Events::OnCameraChanged, lastCameraParams.cameraEntityId, cameraParams.cameraEntityId);
+        Maestro::SequenceComponentNotificationBus::Event(
+            m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentNotificationBus::Events::OnCameraChanged,
+            lastCameraParams.cameraEntityId, cameraParams.cameraEntityId);
+
+        // note: only update the active view if we're currently exporting/capturing a sequence
+        if (gEnv->pMovieSystem->IsInBatchRenderMode())
+        {
+            Camera::CameraRequestBus::Event(
+                cameraParams.cameraEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
+        }
     }
     
     gEnv->pMovieSystem->SetCameraParams(cameraParams);

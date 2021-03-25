@@ -678,6 +678,12 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
 
     initContextMenu(configuration);
 
+    // Add a settings menu button on the slider tab widget
+    QAction* settingsMenuAction = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), QObject::tr("Settings"), this);
+    settingsMenuAction->setMenu(m_menu);
+    m_slidersTabWidget->setActionToolBarVisible();
+    m_slidersTabWidget->addAction(settingsMenuAction);
+
     m_undoAction = new QAction(tr("Undo"), this);
     m_undoAction->setShortcut(QKeySequence::Undo);
     m_undoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -1260,15 +1266,7 @@ void ColorPicker::paletteContextMenuRequested(QSharedPointer<PaletteCard> palett
 
 void ColorPicker::quickPaletteContextMenuRequested(const QPoint& point)
 {
-    QMenu menu;
-    menu.addAction(m_toggleQuickPaletteAction);
-    menu.addSeparator();
-    menu.addAction(m_importPaletteAction);
-    menu.addAction(m_newPaletteAction);
-    menu.addSeparator();
-    menu.addActions(m_swatchSizeGroup->actions());
-
-    menu.exec(point);
+    m_menu->exec(point);
 }
 
 QWidget* ColorPicker::makeSeparator(QWidget* parent)

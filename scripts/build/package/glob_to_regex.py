@@ -22,6 +22,9 @@ except ImportError:
 from pathlib import Path
 
 this_file_path = os.path.dirname(os.path.realpath(__file__))
+
+# resolve symlinks and eliminate ".." components
+engine_root_path = Path(__file__).resolve().parents[3]
     
 def convert_glob_pattern_to_regex_pattern(glob_pattern):
     # switch to forward slashes because way easier to pattern match against
@@ -75,12 +78,13 @@ def generate_excludes_for_platform(root, platform):
         with open(platform_exclusions_filename, 'r') as platform_exclusions_file:
             platform_exclusions = json.load(platform_exclusions_file)
     else:
-        # Use real path in case engine root is a symlink path
+        # Use real path in case root is a symlink path
         if os.name == 'posix' and os.path.islink(root):
             root = os.readlink(root)
-        cur_dir = os.path.dirname(os.path.abspath(__file__))
-        relative_folder = os.path.relpath(cur_dir, root)
-        platform_exclusions_filename = os.path.join(root, 'restricted', platform, relative_folder, platform.lower() + '_exclusions.json')
+        # "root" is the root of the folder structure we're validating 
+        # "engine_root_path" is the engine root where the restricted platform folder is linked
+        relative_folder = os.path.relpath(this_file_path, engine_root_path)
+        platform_exclusions_filename = os.path.join(engine_root_path, 'restricted', platform, relative_folder, platform.lower() + '_exclusions.json')
         with open(platform_exclusions_filename, 'r') as platform_exclusions_file:
             platform_exclusions = json.load(platform_exclusions_file)
         
@@ -100,11 +104,13 @@ def generate_include_exclude_regexes(package_platform, package_type, root, prohi
         # Search non-restricted platform first
         package_file_list = os.path.join(this_file_path, 'Platform', package_platform, 'package_filelists', f'{package_type}.json')
         if not os.path.exists(filelist):
-            # Use real path in case engine root is a symlink path
+            # Use real path in case root is a symlink path
             if os.name == 'posix' and os.path.islink(root):
                 root = os.readlink(root)
-            rel_path = os.path.relpath(cur_dir, root)
-            package_file_list = os.path.join(root, 'restricted', package_platform, rel_path, 'package_filelists',
+            # "root" is the root of the folder structure we're validating
+            # "engine_root_path" is the engine root where the restricted platform folder is linked
+            rel_path = os.path.relpath(this_file_path, engine_root_path)
+            package_file_list = os.path.join(engine_root_path, 'restricted', package_platform, rel_path, 'package_filelists',
                                     f'{package_type}.json')
     with open(package_file_list, 'r') as package_file:
         package = json.load(package_file)

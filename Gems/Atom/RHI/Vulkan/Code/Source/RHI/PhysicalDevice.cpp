@@ -118,6 +118,16 @@ namespace AZ
             return m_separateDepthStencilFeatures;
         }
 
+        const VkPhysicalDeviceAccelerationStructurePropertiesKHR& PhysicalDevice::GetPhysicalDeviceAccelerationStructureProperties() const
+        {
+            return m_accelerationStructureProperties;
+        }
+
+        const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineProperties() const
+        {
+            return m_rayTracingPipelineProperties;
+        }
+
         const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& PhysicalDevice::GetPhysicalDeviceFloat16Int8Features() const
         {
             return m_float16Int8Features;
@@ -255,6 +265,7 @@ namespace AZ
 
             if (VK_INSTANCE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2))
             {
+                // features
                 VkPhysicalDeviceDepthClipEnableFeaturesEXT& dephClipEnableFeatures = m_dephClipEnableFeatures;
                 dephClipEnableFeatures = {};
                 dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
@@ -286,10 +297,18 @@ namespace AZ
                 vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
 
+                // properties
                 VkPhysicalDeviceProperties2 deviceProps2 = {};
                 m_conservativeRasterProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
                 deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
                 deviceProps2.pNext = &m_conservativeRasterProperties;
+                
+                m_rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+                m_conservativeRasterProperties.pNext = &m_rayTracingPipelineProperties;
+
+                m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
+                m_rayTracingPipelineProperties.pNext = &m_accelerationStructureProperties;
+
                 vkGetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;
             }
@@ -320,7 +339,7 @@ namespace AZ
                 break;
             }
 
-            m_descriptor.m_vendorId = m_deviceProperties.vendorID;
+            m_descriptor.m_vendorId = static_cast<RHI::VendorId>(m_deviceProperties.vendorID);
             m_descriptor.m_deviceId = m_deviceProperties.deviceID;
             m_descriptor.m_driverVersion = m_deviceProperties.driverVersion;
 

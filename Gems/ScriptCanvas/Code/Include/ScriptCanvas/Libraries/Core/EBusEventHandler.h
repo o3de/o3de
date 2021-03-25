@@ -12,14 +12,13 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Core/EBusEventHandler.generated.h>
 
 #include <AzCore/std/parallel/mutex.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <AzCore/std/containers/map.h>
 
 #include <ScriptCanvas/Core/EBusNodeBus.h>
@@ -38,33 +37,35 @@ namespace ScriptCanvas
         {
             struct EBusEventEntry
             {
+                static bool EBusEventEntryVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
+                static void Reflect(AZ::ReflectContext* context);
+
                 AZ_TYPE_INFO(EBusEventEntry, "{92A20C1B-A54A-4583-97DB-A894377ACE21}");
-
-                bool IsExpectingResult() const 
-                {
-                    return m_resultSlotId.IsValid();
-                }
-
+                
                 AZStd::string m_eventName;
-                EBusEventId   m_eventId;
+                EBusEventId m_eventId;
                 SlotId m_eventSlotId;
                 SlotId m_resultSlotId;
                 AZStd::vector<SlotId> m_parameterSlotIds;
                 int m_numExpectedArguments = {};
                 bool m_resultEvaluated = {};
-
+                
                 bool m_shouldHandleEvent = false;
                 bool m_isHandlingEvent = false;
 
-                static bool EBusEventEntryVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
-                static void Reflect(AZ::ReflectContext* context);
+                bool IsExpectingResult() const;
+
+                bool ContainsSlot(SlotId slotId) const;
             };
 
+            //! Provides a node that represents an EBus handler
             class EBusEventHandler 
                 : public Node
                 , public EBusHandlerNodeRequestBus::Handler
             {
             public:
+
+                SCRIPTCANVAS_NODE(EBusEventHandler);
 
                 static const char* c_busIdName;
                 static const char* c_busIdTooltip;
@@ -72,23 +73,13 @@ namespace ScriptCanvas
                 using Events = AZStd::vector<EBusEventEntry>;
                 using EventMap = AZStd::map<AZ::Crc32, EBusEventEntry>;
 
-                static bool EBusEventHandlerVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
-
-                ScriptCanvas_Node(EBusEventHandler,
-                    ScriptCanvas_Node::Name("Event Handler", "Allows you to handle a event.")
-                    ScriptCanvas_Node::Uuid("{33E12915-EFCA-4AA7-A188-D694DAD58980}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Bus.png")
-                    ScriptCanvas_Node::EventHandler("SerializeContextEventHandlerDefault<EBusEventHandler>")
-                    ScriptCanvas_Node::Version(4, EBusEventHandler::EBusEventHandlerVersionConverter)
-                    ScriptCanvas_Node::GraphEntryPoint(true)
-                    ScriptCanvas_Node::EditAttributes(AZ::Script::Attributes::ExcludeFrom(AZ::Script::Attributes::ExcludeFlags::All))
-                );
-
                 EBusEventHandler() 
                     : m_autoConnectToGraphOwner(true)
                 {}
 
                 ~EBusEventHandler() override;
+
+                AZ::BehaviorEBus* GetBus() const;
 
                 void OnInit() override;
                 void OnActivate() override;
@@ -100,33 +91,63 @@ namespace ScriptCanvas
                 void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
                 bool ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
 
-                // EBusHandlerNodeRequestBus
+                size_t GenerateFingerprint() const override;
+
+                // EBusHandlerNodeRequestBus...
                 void SetAddressId(const Datum& datumValue) override;
                 ////
 
                 void InitializeBus(const AZStd::string& ebusName);
 
                 void InitializeEvent(int eventIndex);
+
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
                 
                 bool CreateHandler(AZStd::string_view ebusName);
 
                 void Connect();
                 
                 void Disconnect();
+                
+                const EBusEventEntry* FindEventWithSlot(const Slot& slot) const;
 
+                AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
+                bool IsEBusAddressed() const override;
                 const EBusEventEntry* FindEvent(const AZStd::string& name) const;
-                AZ_INLINE const char* GetEBusName() const { return m_ebusName.c_str(); }
-                AZ_INLINE ScriptCanvas::EBusBusId GetEBusId() const { return m_busId; }
-                AZ_INLINE const EventMap& GetEvents() const { return m_eventMap; }
-                AZStd::vector<SlotId> GetEventSlotIds() const;
-                AZStd::vector<SlotId> GetNonEventSlotIds() const;
+                AZStd::string GetEBusName() const override;
+                bool HandlerStartsConnected() const override;
+                const Datum* GetHandlerStartAddress() const override;
+                const Slot* GetEBusConnectAddressSlot() const override;
+                AZStd::vector<const Slot*> GetOnVariableHandlingDataSlots() const override;
+                AZStd::vector<const Slot*> GetOnVariableHandlingExecutionSlots() const override;
+
+                inline ScriptCanvas::EBusBusId GetEBusId() const { return m_busId; }
+                inline const EventMap& GetEvents() const { return m_eventMap; }
+                AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const override;
+                const Slot* GetEBusConnectSlot() const override;
+                const Slot* GetEBusDisconnectSlot() const override;
+                AZStd::vector<SlotId> GetEventSlotIds() const override;
+                AZStd::vector<SlotId> GetNonEventSlotIds() const override;
+
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+                               
                 bool IsEventSlotId(const SlotId& slotId) const;
 
                 bool IsEventHandler() const override;
+
                 bool IsEventConnected(const EBusEventEntry& entry) const;
+
+                bool IsVariableWriteHandler() const override;
+
                 bool IsValid() const;
                 
-                AZ_INLINE bool IsIDRequired() const { return m_ebus ? !m_ebus->m_idParam.m_typeId.IsNull() : false; }
+                inline bool IsIDRequired() const
+                {
+                    return m_ebus && BehaviorContextUtils::GetEBusAddressPolicy(*m_ebus) == AZ::EBusAddressPolicy::ById;
+                }
+
                 void SetAutoConnectToGraphOwner(bool enabled);
 
                 void OnWriteEnd();
@@ -138,13 +159,16 @@ namespace ScriptCanvas
 
                 AZStd::string GetDebugName() const override
                 {
-                    return AZStd::string::format("%s Handler", GetEBusName());
+                    return AZStd::string::format("%s Handler", GetEBusName().c_str());
                 }
 
                 NodeTypeIdentifier GetOutputNodeType(const SlotId& slotId) const override;
 
             protected:
-                AZ_INLINE bool IsConfigured() const { return !m_eventMap.empty(); }
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
+
+                inline bool IsConfigured() const { return !m_eventMap.empty(); }
                 
                 void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters);
 
@@ -152,29 +176,21 @@ namespace ScriptCanvas
                 void OnInputChanged(const Datum& input, const SlotId& slotID) override;
 
             private:
+
                 EBusEventHandler(const EBusEventHandler&) = delete;
                 static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters);
 
+                EventMap m_eventMap;
+                AZStd::string m_ebusName;
+                ScriptCanvas::EBusBusId m_busId;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("Connect", "Connect this event handler to the specified entity."));
-                ScriptCanvas_In(ScriptCanvas_In::Name("Disconnect", "Disconnect this event handler."));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnConnected", "Signaled when a connection has taken place."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnDisconnected", "Signaled when this event handler is disconnected."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnFailure", "Signaled when it is not possible to connect this handler."));
-                
-                ScriptCanvas_SerializeProperty(EventMap, m_eventMap);
-                ScriptCanvas_SerializeProperty(AZStd::string, m_ebusName);
-                ScriptCanvas_SerializeProperty(ScriptCanvas::EBusBusId, m_busId);
-
-                ScriptCanvas_SerializeProperty(bool, m_autoConnectToGraphOwner);
+                bool m_autoConnectToGraphOwner;
 
                 AZ::BehaviorEBusHandler* m_handler = nullptr;
                 AZ::BehaviorEBus* m_ebus = nullptr;
-                AZStd::recursive_mutex m_mutex; // post-serialization
+
+                AZStd::recursive_mutex m_mutex;
             };
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        }
+    }
+}

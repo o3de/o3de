@@ -12,7 +12,9 @@
 */
 
 PIPELINE_CONFIG_FILE = 'AutomatedReview/lumberyard.json'
-INCREMENTAL_BUILD_SCRIPT_PATH = "scripts/build/bootstrap/incremental_build_util.py"
+INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
+
+EMPTY_JSON = readJSON text: '{}'
 
 def pipelineProperties = []
 
@@ -21,8 +23,8 @@ def pipelineParameters = [
     // The CLEAN_OUTPUT_DIRECTORY is used by ci_build scripts. Creating the parameter here passes it as an environment variable to jobs and is consumed that way
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directory before building. This will cause a \"clean\" build', name: 'CLEAN_OUTPUT_DIRECTORY'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
-    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),  
-    string(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: "JOB_LIST_OVERRIDE"),
+    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
+    string(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'),
 
     // Pull Request Parameters
     string(defaultValue: '', description: '', name: 'DESTINATION_BRANCH'),
@@ -33,13 +35,16 @@ def pipelineParameters = [
     string(defaultValue: '', description: '', name: 'SOURCE_COMMIT')
 ]
 
-def palSh(cmd, lbl = '') {
+def palSh(cmd, lbl = '', winSlashReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else { 
+    } else if (winSlashReplacement) {
         bat label: lbl,
             script: cmd.replace('/','\\')
+    } else {
+        bat label: lbl,
+            script: cmd
     }
 }
 
@@ -76,12 +81,22 @@ def palRmDir(path) {
     }
 }
 
-def GetJobListOverride() {
-    if(params.PULL_REQUEST_ID) {
-        return ''
+def IsJobEnabled(buildTypeMap, pipelineName, platformName) {
+    def job_list_override = params.JOB_LIST_OVERRIDE.tokenize(',')
+    if(params.PULL_REQUEST_ID) { // dont allow pull requests to filter platforms/jobs
+        if(buildTypeMap.value.TAGS) {
+            return buildTypeMap.value.TAGS.contains(pipelineName)
+        }
+    } else if (!job_list_override.isEmpty()) {
+        return params[platformName] && job_list_override.contains(buildTypeMap.key);
     } else {
-        return params.JOB_LIST_OVERRIDE
+        if (params[platformName]) {
+            if(buildTypeMap.value.TAGS) {
+                return buildTypeMap.value.TAGS.contains(pipelineName)
+            }    
+        }
     }
+    return false
 }
 
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
@@ -90,13 +105,22 @@ def GetRunningPipelineName(JENKINS_JOB_NAME) {
     if (job_parts.size() > 1) {
         return job_parts[job_parts.size()-1]
     }
-    return "default"
+    return 'default'
 }
 
-def LoadPipelineConfig(String pipelineConfigFile, String branchName) {
+@NonCPS
+def RegexMatcher(str, regex) {
+    def matcher = (str =~ regex)
+    return matcher ? matcher.group(1) : null
+}
+
+def LoadPipelineConfig(String pipelineName, String branchName) {
     echo 'Loading pipeline config'
-    PullFilesFromGit(pipelineConfigFile, branchName)
-    def pipelineConfig = readJSON file: "${pipelineConfigFile}"
+    PullFilesFromGit(PIPELINE_CONFIG_FILE, branchName)
+    def pipelineConfig = {}
+    pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
+    pipelineConfig.platforms = EMPTY_JSON
+
     // Load the pipeline configs per platform
     pipelineConfig.PIPELINE_CONFIGS.each { pipeline_config ->
         def platform_regex = pipeline_config.replace('.','\\.').replace('*', '(.*)')
@@ -110,7 +134,26 @@ def LoadPipelineConfig(String pipelineConfigFile, String branchName) {
             echo "\tFound platform pipeline config ${pipeline_config_path}"
             def platform = RegexMatcher(pipeline_config_path, platform_regex)
             if(platform) {
-                pipelineConfig.platforms[platform] = readJSON file: "${pipeline_config_path}"
+                pipelineConfig.platforms[platform] = EMPTY_JSON
+                pipelineConfig.platforms[platform].PIPELINE_ENV = readJSON file: pipeline_config_path.toString()
+            }
+        }
+    }
+
+    // Load the build configs
+    pipelineConfig.BUILD_CONFIGS.each { build_config ->
+        def platform_regex = build_config.replace('.','\\.').replace('*', '(.*)')
+        if (!env.IS_UNIX) {
+            platform_regex = platform_regex.replace('/','\\\\')
+        }
+        echo "Downloading configs ${build_config}"
+        PullFilesFromGit(build_config, branchName)
+        echo "Searching configs in ${build_config} using ${platform_regex}"
+        for (build_config_path in findFiles(glob: build_config)) {
+            echo "\tFound config ${build_config_path}"
+            def platform = RegexMatcher(build_config_path, platform_regex)
+            if(platform) {
+                pipelineConfig.platforms[platform].build_types = readJSON file: build_config_path.toString()
             }
         }
     }
@@ -124,60 +167,30 @@ def GetPipelineRegion() {
     return pipelineRegion
 }
 
-def SetBuildEnvVars(Map platformConfig, String type, String branchName) {
-    // Returns list of build env vars
-    def envVarList = []
-    platformConfig.each { config ->
-        envVarList.add("${config.key}=${config.value}")
+def GetBuildEnvVars(Map platformEnv, Map buildTypeEnv, String pipelineName) {
+    def envVarMap = [:]
+    platformPipelineEnv = platformEnv['ENV'] ?: [:]
+    platformPipelineEnv.each { var ->
+        envVarMap[var.key] = var.value
     }
-    envVarList.add("JOB_NAME=${branchName}_${platformConfig.JOB_NAME}_${type}")
-    if(isUnix()) {
-        envVarList.add("IS_UNIX=1")
+    platformEnvOverride = platformEnv['PIPELINE_ENV_OVERRIDE'] ?: [:]
+    platformPipelineEnvOverride = platformEnvOverride[pipelineName] ?: [:]
+    platformPipelineEnvOverride.each { var ->
+        envVarMap[var.key] = var.value
     }
-    return envVarList
+    buildTypeEnv.each { var ->
+        // This may override the above one if there is an entry defined by the job
+        envVarMap[var.key] = var.value 
+    }
+    return envVarMap
 }
 
-@NonCPS
-def RegexMatcher(str, regex) {
-    def matcher = (str =~ "${regex}")
-    return matcher ? matcher.group(1) : null
-}
-
-def LoadPlatformBuildConfigs(Map options, String pipelineName, String branchName) {
-    echo 'Loading build configs'
-    def buildTypes = [:]
-    options.BUILD_CONFIGS.each { build_config ->
-        def platform_regex = build_config.replace('.','\\.').replace('*', '(.*)')
-        if (!env.IS_UNIX) {
-            platform_regex = platform_regex.replace('/','\\\\')
-        }
-        echo "Downloading configs ${build_config}"
-        PullFilesFromGit(build_config, branchName)
-        echo "Searching configs in ${build_config} using ${platform_regex}"
-        for (build_config_path in findFiles(glob: build_config)) {
-            echo "\tFound config ${build_config_path}"
-            def platform = RegexMatcher(build_config_path, platform_regex)
-            if(platform) {
-                def buildConfig = readJSON file: "${build_config_path}"
-                def types = []
-                buildConfig.each { type ->
-                    if(GetJobListOverride()) {
-                        echo "\t\tAdding build type \"${type.key}\" to \"${pipelineName}\" because JOB_LIST_OVERRIDE was defined"
-                        types.add(type.key)
-                    } else if(type.value.TAGS) {
-                        type.value.TAGS.each { tag ->
-                            if(tag == pipelineName) {
-                                echo "\t\tAdding build type \"${type.key}\" to \"${tag}\""
-                                types.add(type.key)
-                            }
-                        }
-                    }
-                }
-                buildTypes[platform] = types
-            }
-        }
+def GetEnvStringList(Map envVarMap) {
+    def strList = []
+    envVarMap.each { var ->
+        strList.add("${var.key}=${var.value}")
     }
-    return buildTypes
+    return strList
 }
 
 // Pulls/downloads files from the repo through codecommit. Despite Glob matching is NOT supported, '*' is supported
@@ -190,7 +203,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     def folderPath = folderPathParts.join('/')
     if (folderPath.contains('*')) {
         
-        def currentPath = ""
+        def currentPath = ''
         for (int i = 0; i < folderPathParts.size(); i++) {
             if (folderPathParts[i] == '*') {
                 palMkdir(currentPath)
@@ -232,14 +245,14 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
                 if(env.IS_UNIX) {
                     sh label: "Downloading ${filenamePath}",
                        script: "aws codecommit get-file --repository-name ${repositoryName} --commit-specifier ${branchName} --file-path ${filenamePath} --query fileContent --output text 2>${errorFile} > ${filenamePath}_encoded"
-                    sh label: "Decoding",
+                    sh label: 'Decoding',
                        script: "base64 --decode ${filenamePath}_encoded > ${filenamePath}"
                 } else {
                     errorFile = errorFile.replace('/','\\')
                     win_filenamePath = filenamePath.replace('/', '\\')
                     bat label: "Downloading ${win_filenamePath}",
                         script: "aws codecommit get-file --repository-name ${repositoryName} --commit-specifier ${branchName} --file-path ${filenamePath} --query fileContent --output text 2>${errorFile} > ${win_filenamePath}_encoded"
-                    bat label: "Decoding",                            
+                    bat label: 'Decoding',                            
                         script: "certutil -decode ${win_filenamePath}_encoded ${win_filenamePath}"
                 }
                 palRm("${filenamePath}_encoded")
@@ -248,7 +261,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
                 if(fileExists(errorFile)) {
                     error = readFile errorFile
                 }
-                if (!error || !(!failIfNotFound && error.contains("FileDoesNotExistException"))) {
+                if (!error || !(!failIfNotFound && error.contains('FileDoesNotExistException'))) {
                     palRm("${errorFile} ${filenamePath}.encoded ${filenamePath}")
                     throw new Exception("Could not get file: ${filenamePath}, ex: ${ex}, stderr: ${error}")
                 }
@@ -259,6 +272,20 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
+
+    if(fileExists('.git')) {
+        // If the repository after checkout is locked, likely we took a snapshot while git was running,
+        // to leave the repo in a usable state, garbagecollect. This also helps in situations where 
+        def indexLockFile = '.git/index.lock'
+        if(fileExists(indexLockFile)) {
+            palSh('git gc', 'Git GarbageCollect')
+        }
+        if(fileExists(indexLockFile)) { // if it is still there, remove it
+            palRm(indexLockFile, 'Remove index.lock')
+        }
+        palSh('git remote prune origin', 'Git reset')
+    }
+
     def random = new Random()
     def retryAttempt = 0
     retry(5) {
@@ -290,32 +317,23 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             ]
         }
     }
-}
 
-def SendEmailNotification() {
-    // Email notification
-    node('controller') {
-        step([
-            $class: 'Mailer',
-            notifyEveryUnstableBuild: true,
-            sendToIndividuals: true,
-            recipients: emailextrecipients([
-                [$class: 'CulpritsRecipientProvider'],
-                [$class: 'RequesterRecipientProvider']
-            ])
-        ])
-    }
+    // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
+    palSh('git rev-parse HEAD > commitid', 'Getting commit id')
+    env.CHANGE_ID = readFile file: 'commitid'
+    env.CHANGE_ID = env.CHANGE_ID.trim()
+    palRm('commitid')
 }
 
 def PreBuildCommonSteps(String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
 
     if (mount) {
-        PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName)
+        unstash name: 'incremental_build_script'
 
-        def pythonCmd = ""
-        if(env.IS_UNIX) pythonCmd = "sudo -E python -u "
-        else pythonCmd = "python -u "
+        def pythonCmd = ''
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
+        else pythonCmd = 'python -u '
 
         if(params.RECREATE_VOLUME) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume')
@@ -336,30 +354,14 @@ def PreBuildCommonSteps(String pipeline, String branchName, String platform, Str
         }
     }
     if(params.CLEAN_WORKSPACE) {
-        palRmDir("${workspace}")
+        if(fileExists(workspace)) {
+            palRmDir(workspace)
+        }
     }
 
     dir(workspace) {
-    
-        if(fileExists(".git")) {
-            palSh("""
-                git remote prune origin
-                git reset --hard HEAD
-                """, 'Git reset')
-        }
 
         CheckoutRepo(disableSubmodules)
-
-        // If the repository after checkout is locked, likely we took a snapshot while git was running,
-        // to leave the repo in a usable state, garbagecollect
-        if(fileExists(".git/index.lock")) {
-            palSh('git gc', 'Git GarbageCollect')
-        }
-
-        palSh('git rev-parse HEAD > commitid', 'Getting commit id')
-        env.CHANGE_ID = readFile file: 'commitid'
-        env.CHANGE_ID = env.CHANGE_ID.trim()
-        palRm('commitid')
 
         // Get python
         if(env.IS_UNIX) {
@@ -379,7 +381,7 @@ def Build(Map options, String platform, String type, String workspace) {
             sh label: "Running ${platform} ${type}",
                script: "${options.PYTHON_DIR}/python.sh -u ${command}"
         } else {
-            bat label: "Running ${platform} ${type}",
+                bat label: "Running ${platform} ${type}",
                 script: "${options.PYTHON_DIR}/python.cmd -u ${command}".replace('/','\\')
         }
     }
@@ -390,34 +392,55 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
 
     if(params.PULL_REQUEST_ID) {
         dir(workspace) {
-            if(fileExists(".git")) {
+            if(fileExists('.git')) {
                 palSh('git reset --hard HEAD', 'Discard PR merge, git reset')
             }
         }
     }
 
     if (mount) {
-        def pythonCmd = ""
-        if(env.IS_UNIX) pythonCmd = "sudo -E python -u "
-        else pythonCmd = "python -u "
+        def pythonCmd = ''
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
+        else pythonCmd = 'python -u '
 
         try {
             timeout(5) {
                 palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
             }
-        }
-        catch (e) {
-            // Incremental build script will reboot the node if the EBS detach fails
-            echo 'Node disconnected, error: \"${e}\", continuing...'
+        } catch (Exception e) {
+            echo "Unmount script error ${e}"
         }
     }
 }
 
-def pipelineName = ""
-def pipelineRegion = ""
-def branchName = ""
+def CreateSetupStage(String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
+    return {
+        stage("Setup") {
+            PreBuildCommonSteps(pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+        }
+    }
+}
+
+def CreateBuildStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars) {
+    return {
+        stage("${jobName}") {
+            Build(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'])
+        }
+    }
+}
+
+def CreateTeardownStage(Map environmentVars) {
+    return {
+        stage("Teardown") {
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+        }
+    }
+}
+
+def pipelineName = ''
+def pipelineRegion = ''
+def branchName = ''
 def pipelineConfig = {}
-def buildTypes = {}
 
 // Start Pipeline
 try {
@@ -425,11 +448,11 @@ try {
         node('controller') {
             def envVarList = []
             if(isUnix()) {
-                envVarList.add("IS_UNIX=1")
+                envVarList.add('IS_UNIX=1')
             }
             withEnv(envVarList) {
                 timestamps {
-                    pipelineName = GetRunningPipelineName(env.JOB_NAME)
+                    pipelineName = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
                     pipelineRegion = GetPipelineRegion()
 
                     if(env.BRANCH_NAME) {
@@ -443,16 +466,20 @@ try {
                     echo "Running \"${pipelineName}\" for \"${branchName}\", region: \"${pipelineRegion}\"..."
 
                     // Load configs
-                    pipelineConfig = LoadPipelineConfig(PIPELINE_CONFIG_FILE, branchName)
-                    buildTypes = LoadPlatformBuildConfigs(pipelineConfig, pipelineName, branchName)
+                    pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
      
                     // Add each platform as a parameter that the user can disable if needed
-                    buildTypes.each { platform ->
-                        pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: "${platform.key}"))
+                    pipelineConfig.platforms.each { platform ->
+                        pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
                     }
                     pipelineProperties.add(parameters(pipelineParameters))
                     properties(pipelineProperties)
-                }    
+
+                    // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it
+                    PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName)
+                    stash name: 'incremental_build_script',
+                          includes: INCREMENTAL_BUILD_SCRIPT_PATH
+                 }    
             }
         }
     }
@@ -466,65 +493,86 @@ try {
 
     // Build and Post-Build Testing Stage
     def buildConfigs = [:]
-    def job_list_override = GetJobListOverride().tokenize(',')
 
     // Platform Builds run on EC2
-    buildTypes.each { platform ->
-        if (params["${platform.key}"]) {
-            def pipelinePlatformConfig = pipelineConfig.platforms["${platform.key}"]
-            if(pipelinePlatformConfig) {
-                platform.value.each { build_type ->
-                    if (job_list_override.isEmpty() || job_list_override.contains(build_type)) {
-                        buildConfigs["${pipelinePlatformConfig.JOB_NAME} [${build_type}]"] = {
-                            node("${pipelinePlatformConfig.LABEL}-${pipelineRegion}") {
-                                stage("${pipelinePlatformConfig.JOB_NAME} [${build_type}]") {
-                                    def envVars = SetBuildEnvVars(pipelinePlatformConfig, build_type, branchName)
-                                    withEnv(envVars) {
-                                        timeout(time: pipelinePlatformConfig.TIMEOUT, unit: 'MINUTES', activity: true) {
-                                            try {
-                                                PreBuildCommonSteps(pipelineName, branchName, platform.key, build_type,  pipelinePlatformConfig.WORKSPACE, pipelinePlatformConfig.MOUNT_VOLUME)
-                                                Build(pipelineConfig, platform.key, build_type, pipelinePlatformConfig.WORKSPACE)
-                                            }
-                                            catch (e) {
-                                                currentBuild.result = 'FAILURE'
-                                                throw e
-                                            }
-                                            finally {
-                                                PostBuildCommonSteps(pipelinePlatformConfig.WORKSPACE, pipelinePlatformConfig.MOUNT_VOLUME)
-                                            }
+    pipelineConfig.platforms.each { platform ->
+        platform.value.build_types.each { build_job ->
+            if (IsJobEnabled(build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
+                def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
+                def nodeLabel = envVars['NODE_LABEL']
+
+                buildConfigs["${platform.key} [${build_job.key}]"] = { 
+                    node("${nodeLabel}-${pipelineRegion}") {
+                        if(isUnix()) { // Has to happen inside a node
+                            envVars['IS_UNIX'] = 1
+                        }                 
+                        withEnv(GetEnvStringList(envVars)) {
+                            timeout(time: envVars['TIMEOUT'], unit: 'MINUTES', activity: true) {
+                                try {
+                                    CreateSetupStage(pipelineName, branchName, platform.key, build_job.key, envVars).call()
+
+                                    if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
+                                        build_job.value.steps.each { build_step ->
+                                            CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
                                         }
+                                    } else {
+                                        CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
                                     }
+                                }   
+                                catch(Exception e) {
+                                    //  https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/Result.java
+                                    //  {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED}
+                                    def currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
+                                    if (currentResult == 'FAILURE') {
+                                        currentBuild.result = 'FAILURE'
+                                        error "FAILURE: ${e}"
+                                    } else if (currentResult == 'UNSTABLE') {
+                                        currentBuild.result = 'UNSTABLE'
+                                        unstable(message: "UNSTABLE: ${e}")
+                                    }
+                                }
+                                finally {
+                                    CreateTeardownStage(envVars).call()
                                 }
                             }
                         }
                     }
-                }    
-            } else {
-                echo "[WARN] Could not find pipeline config for ${platform.key}, skipping platform"
+                }
             }
         }
     }
 
     timestamps {
+
         stage('Build') {
             parallel buildConfigs // Run parallel builds
         }
 
         echo 'All builds successful'
-        currentBuild.result = 'SUCCESS'
     }
 }
-catch (e) {
-    currentBuild.result = 'FAILURE'
-    throw e
+catch(Exception e) {
+    error "Exception: ${e}"
 }
 finally {
-    if(env.SNS_TOPIC) {
-        snsPublish(
-            topicArn:"${env.SNS_TOPIC}", 
-            subject:'Build Result', 
-            message:"${currentBuild.currentResult}:${params.REPOSITORY_NAME}:${params.SOURCE_BRANCH}:${params.SOURCE_COMMIT}:${params.DESTINATION_COMMIT}:${params.PULL_REQUEST_ID}:${BUILD_URL}:${params.RECREATE_VOLUME}:${params.CLEAN_OUTPUT_DIRECTORY}"
-        )
+    try {
+        if(env.SNS_TOPIC) {
+            snsPublish(
+                topicArn: env.SNS_TOPIC, 
+                subject:'Build Result', 
+                message:"${currentBuild.currentResult}:${params.REPOSITORY_NAME}:${params.SOURCE_BRANCH}:${params.SOURCE_COMMIT}:${params.DESTINATION_COMMIT}:${params.PULL_REQUEST_ID}:${BUILD_URL}:${params.RECREATE_VOLUME}:${params.CLEAN_OUTPUT_DIRECTORY}"
+            )
+        }
+        step([
+            $class: 'Mailer',
+            notifyEveryUnstableBuild: true,
+            sendToIndividuals: true,
+            recipients: emailextrecipients([
+                [$class: 'CulpritsRecipientProvider'],
+                [$class: 'RequesterRecipientProvider']
+            ])
+        ])
+    } catch(Exception e) {
     }
-    SendEmailNotification()
 }

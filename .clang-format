@@ -1,7 +1,4 @@
-BasedOnStyle: Microsoft
-
 Language: Cpp
-Standard: c++17
 
 AccessModifierOffset: -4
 AlignAfterOpenBracket: AlwaysBreak
@@ -10,12 +7,11 @@ AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: Right
 AlignOperands: false
 AlignTrailingComments: false
-AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: None
-AllowShortLambdasOnASingleLine: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: true
+BreakBeforeBraces: Custom
 BraceWrapping:
     AfterClass: true
     AfterEnum: true
@@ -23,10 +19,10 @@ BraceWrapping:
     AfterNamespace: true
     AfterStruct: true
     SplitEmptyFunction: true
-BreakBeforeBraces: Custom
+    AfterControlStatement: true
+    BeforeElse: true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
-BreakInheritanceList: BeforeComma
 ColumnLimit: 140
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
@@ -42,16 +38,27 @@ NamespaceIndentation: All
 PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
 SortIncludes: true
-SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
-SpaceBeforeCtorInitializerColon: true
-SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
-SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 UseTab: Never
+
+# Not available in clang-format version 6.0.0
+#  BasedOnStyle: Microsoft
+#  Standard: c++17
+#  AllowAllArgumentsOnNextLine: true
+#  AllowShortLambdasOnASingleLine: None
+#  BreakInheritanceList: BeforeComma
+#  SpaceAfterLogicalNot: false
+#  SpaceBeforeCpp11BracedList: false
+#  SpaceBeforeCtorInitializerColon: true
+#  SpaceBeforeInheritanceColon: true
+#  SpaceBeforeRangeBasedForLoopColon: true
+
+# Not available in clang-format version 10.0.0
+#  BeforeLambdaBody: true (BraceWrapping)
+#  IndentCaseBlocks: true

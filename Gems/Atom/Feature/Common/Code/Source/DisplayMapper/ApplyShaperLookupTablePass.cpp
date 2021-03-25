@@ -55,7 +55,7 @@ namespace AZ
             UpdateShaperSrg();
         }
 
-        void ApplyShaperLookupTablePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void ApplyShaperLookupTablePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph);
             DeclarePassDependenciesToFrameGraph(frameGraph);
@@ -72,7 +72,7 @@ namespace AZ
             frameGraph.SetEstimatedItemCount(1);
         }
 
-        void ApplyShaperLookupTablePass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void ApplyShaperLookupTablePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 

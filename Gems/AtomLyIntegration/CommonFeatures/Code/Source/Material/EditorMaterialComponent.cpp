@@ -32,11 +32,11 @@ namespace AZ
 {
     namespace Render
     {
-        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate Editable Materials...";
-        const char* EditorMaterialComponent::GenerateMaterialsToolTipText = "Generate editable material source files based on the defaults materials in the model.";
+        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate Source Materials...";
+        const char* EditorMaterialComponent::GenerateMaterialsToolTipText = "Generate editable source material files from materials provided by the model.";
 
         const char* EditorMaterialComponent::ResetMaterialsButtonText = "Reset Materials";
-        const char* EditorMaterialComponent::ResetMaterialsToolTipText = "Reset to use the default materials included in the model.";
+        const char* EditorMaterialComponent::ResetMaterialsToolTipText = "Clear all settings, materials, and properties then rebuild material slots from the associated model.";
 
         // Update serialized data to the new format and data types
         bool EditorMaterialComponent::ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -224,8 +224,10 @@ namespace AZ
             QAction* action = nullptr;
 
             menu->addSeparator();
+
             action = menu->addAction(GenerateMaterialsButtonText, [this]() { OpenMaterialExporter(); });
             action->setToolTip(GenerateMaterialsToolTipText);
+
             action = menu->addAction(ResetMaterialsButtonText, [this]() { ResetMaterialSlots(); });
             action->setToolTip(ResetMaterialsToolTipText);
 
@@ -239,7 +241,7 @@ namespace AZ
                     EditorMaterialComponentSlot* materialSlot = materialSlotPair.second;
                     if (materialSlot->m_id.IsAssetOnly())
                     {
-                        materialSlot->Reset();
+                        materialSlot->Clear();
                     }
                 }
                 });
@@ -252,7 +254,7 @@ namespace AZ
                     EditorMaterialComponentSlot* materialSlot = materialSlotPair.second;
                     if (materialSlot->m_id.IsLodAndAsset())
                     {
-                        materialSlot->Reset();
+                        materialSlot->Clear();
                     }
                 }
                 });
@@ -480,17 +482,9 @@ namespace AZ
             {
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {
-                    if (exportItem.m_exportAction == EditorMaterialComponentExporter::ExportAction::Nothing || exportItem.m_exportPath.empty())
+                    if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
                     {
                         continue;
-                    }
-
-                    if (exportItem.m_exportAction == EditorMaterialComponentExporter::ExportAction::GenerateNew)
-                    {
-                        if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
-                        {
-                            continue;
-                        }
                     }
 
                     const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.m_exportPath, 0);

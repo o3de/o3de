@@ -93,6 +93,8 @@ namespace AzToolsFramework
                     return false;
                 }
 
+                entityIdMapper.FixUpUnresolvedEntityReferences();
+
                 return true;
             }
 

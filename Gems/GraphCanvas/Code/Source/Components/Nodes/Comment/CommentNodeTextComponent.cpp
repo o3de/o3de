@@ -112,11 +112,11 @@ namespace GraphCanvas
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CommentNodeTextSaveData::m_comment, "Title", "The comment to display on this node")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CommentNodeTextSaveData::OnCommentChanged)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CommentNodeTextSaveData::GetCommentLabel)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CommentNodeTextSaveData::m_fontConfiguration, "Font Settings", "The font settings used to render the font in the comment.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CommentNodeTextSaveData::UpdateStyleOverrides)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CommentNodeTextSaveData::m_backgroundColor, "Background Color", "The background color to display the node comment on")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CommentNodeTextSaveData::OnBackgroundColorChanged)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CommentNodeTextSaveData::GetBackgroundLabel)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CommentNodeTextSaveData::m_fontConfiguration, "Font Settings", "The font settings used to render the font in the comment.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CommentNodeTextSaveData::UpdateStyleOverrides)
                 ;
 
                 editContext->Class<CommentNodeTextComponent>("Comment", "The node's customizable properties")
@@ -309,6 +309,24 @@ namespace GraphCanvas
         if (saveData)
         {
             m_saveData = (*saveData);
+        }
+    }
+
+    void CommentNodeTextComponent::ApplyPresetData(const EntitySaveDataContainer& saveDataContainer)
+    {
+        CommentNodeTextSaveData* saveData = saveDataContainer.FindSaveDataAs<CommentNodeTextSaveData>();
+
+        if (saveData)
+        {
+            // Copy over everything but the save comment.
+            AZStd::string previousComment = m_saveData.m_comment;
+
+            m_saveData = (*saveData);
+
+            m_saveData.m_comment = previousComment;
+
+            UpdateStyleOverrides();
+            OnBackgroundColorChanged();
         }
     }
 

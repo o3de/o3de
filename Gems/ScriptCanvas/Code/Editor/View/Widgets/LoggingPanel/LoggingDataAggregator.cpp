@@ -246,41 +246,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LoggingDataAggregator::ProcessOutputDataSignal(const ScriptCanvas::OutputDataSignal& outputDataSignal)
-    {
-        if (!m_hasAnchor)
-        {
-            m_hasAnchor = true;
-            m_anchorTimeStamp = outputDataSignal.GetTimestamp();
-        }
-
-        // For the output we want to correlate it with the appropriate starting node
-        auto lastAggregateIter = m_lastAggregateItemMap.find(outputDataSignal);
-
-        ExecutionLogTreeItem* treeItem = nullptr;
-
-        if (lastAggregateIter != m_lastAggregateItemMap.end())
-        {
-            treeItem = lastAggregateIter->second;
-
-            if (treeItem->GetNodeId() != outputDataSignal.m_endpoint.GetNodeId())
-            {
-                treeItem = nullptr;
-            }
-        }
-
-        if (treeItem == nullptr)
-        {
-            treeItem = m_debugLogRoot->CreateExecutionItem(GetDataId(), outputDataSignal.m_nodeType, outputDataSignal, outputDataSignal.m_endpoint.GetNamedNodeId());
-            m_lastAggregateItemMap[outputDataSignal] = treeItem;
-        }
-
-        ScriptCanvas::Timestamp relativeTimeStamp = outputDataSignal.GetTimestamp() - m_anchorTimeStamp;
-
-        AZStd::string valueString = outputDataSignal.m_outputValue.m_datum.ToString();
-        treeItem->RegisterDataOutput(outputDataSignal.m_endpoint.GetSlotId(), outputDataSignal.m_endpoint.GetSlotName(), valueString, GetTreeRoot()->GetUpdatePolicy() == DebugLogRootItem::UpdatePolicy::RealTime);
-    }
-
     void LoggingDataAggregator::ProcessAnnotateNode(const ScriptCanvas::AnnotateNodeSignal& annotateNodeSignal)
     {
         auto lastAggregateIter = m_lastAggregateItemMap.find(annotateNodeSignal);

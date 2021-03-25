@@ -11,11 +11,17 @@
 */
 #pragma once
 
-
 #include <AzCore/Asset/AssetCommon.h>
-#include <ScriptCanvas/Core/GraphData.h>
-#include <ScriptCanvas/Variable/VariableData.h>
+#include <AzCore/Script/ScriptAsset.h>
+
 #include <ScriptCanvas/Asset/AssetDescription.h>
+#include <ScriptCanvas/Core/SubgraphInterface.h>
+#include <ScriptCanvas/Core/GraphData.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
+#include <ScriptCanvas/Translation/TranslationResult.h>
+#include <ScriptCanvas/Variable/VariableData.h>
+#include <ScriptCanvas/Execution/ExecutionContext.h>
+#include <ScriptCanvas/Execution/ExecutionObjectCloning.h>
 
 namespace ScriptCanvas
 {
@@ -59,8 +65,20 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        GraphData m_graphData;
-        VariableData m_variableData;
+        Translation::RuntimeInputs m_input;
+        Grammar::DebugSymbolMap m_debugMap;
+
+        // populate all and set to all to AssetLoadBehavior::Preload at build time
+        AZ::Data::Asset<AZ::ScriptAsset> m_script;
+        AZStd::vector<AZ::Data::Asset<RuntimeAsset>> m_requiredAssets;
+        AZStd::vector<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>> m_requiredScriptEvents;
+
+        // populate all on initial load at run time
+        AZStd::vector<Execution::CloneSource> m_cloneSources;
+        AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
+        Execution::ActivationInputRange m_activationInputRange;
+
+        bool RequiresStaticInitialization() const;
     };
 
     class RuntimeAssetBase
@@ -90,7 +108,6 @@ namespace ScriptCanvas
         {
 
         }
-        ~RuntimeAssetTyped() override { m_runtimeData.m_graphData.Clear(true); }
 
         static const char* GetFileExtension() { return "scriptcanvas_compiled"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_compiled"; }
@@ -127,7 +144,7 @@ namespace ScriptCanvas
 
     };
 
-    class RuntimeFunctionAsset;
+    class SubgraphInterfaceAsset;
 
     class RuntimeFunctionAssetDescription : public AssetDescription
     {
@@ -137,7 +154,7 @@ namespace ScriptCanvas
 
         RuntimeFunctionAssetDescription()
             : AssetDescription(
-                azrtti_typeid<RuntimeFunctionAsset>(),
+                azrtti_typeid<SubgraphInterfaceAsset>(),
                 "Script Canvas Runtime Function",
                 "Script Canvas Runtime Function Graph",
                 "@devassets@/scriptcanvas",
@@ -154,44 +171,36 @@ namespace ScriptCanvas
         {}
     };
 
-    struct FunctionRuntimeData : public RuntimeData
+    struct SubgraphInterfaceData
     {
-        AZ_TYPE_INFO(FunctionRuntimeData, "{1734C569-7D40-4491-9EEE-A225E333C9BA}");
-        AZ_CLASS_ALLOCATOR(FunctionRuntimeData, AZ::SystemAllocator, 0);
-        FunctionRuntimeData() = default;
-        ~FunctionRuntimeData() = default;
-        FunctionRuntimeData(const FunctionRuntimeData&) = default;
-        FunctionRuntimeData& operator=(const FunctionRuntimeData&) = default;
-        FunctionRuntimeData(FunctionRuntimeData&&);
-        FunctionRuntimeData& operator=(FunctionRuntimeData&&);
+        AZ_TYPE_INFO(SubgraphInterfaceData, "{1734C569-7D40-4491-9EEE-A225E333C9BA}");
+        AZ_CLASS_ALLOCATOR(SubgraphInterfaceData, AZ::SystemAllocator, 0);
+        SubgraphInterfaceData() = default;
+        ~SubgraphInterfaceData() = default;
+        SubgraphInterfaceData(const SubgraphInterfaceData&) = default;
+        SubgraphInterfaceData& operator=(const SubgraphInterfaceData&) = default;
+        SubgraphInterfaceData(SubgraphInterfaceData&&);
+        SubgraphInterfaceData& operator=(SubgraphInterfaceData&&);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         size_t m_version;
         AZStd::string m_name;
-
-        AZStd::vector< AZ::EntityId > m_executionNodeOrder;
-        AZStd::vector< VariableId > m_variableOrder;
+        Grammar::SubgraphInterface m_interface;
     };
 
-
-    class RuntimeFunctionAsset
-        : public RuntimeAssetTyped<FunctionRuntimeData>
+    class SubgraphInterfaceAsset
+        : public RuntimeAssetTyped<SubgraphInterfaceData>
     {
     public:
-        AZ_RTTI(RuntimeFunctionAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", RuntimeAssetTyped<FunctionRuntimeData>);
-        AZ_CLASS_ALLOCATOR(RuntimeFunctionAsset, AZ::SystemAllocator, 0);
+        AZ_RTTI(SubgraphInterfaceAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", RuntimeAssetTyped<SubgraphInterfaceData>);
+        AZ_CLASS_ALLOCATOR(SubgraphInterfaceAsset, AZ::SystemAllocator, 0);
 
-        RuntimeFunctionAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : RuntimeAssetTyped<FunctionRuntimeData>(assetId, status)
+        SubgraphInterfaceAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
+            : RuntimeAssetTyped<SubgraphInterfaceData>(assetId, status)
         {}
 
-        ~RuntimeFunctionAsset() override
-        {
-            m_runtimeData.m_graphData.Clear(true);
-        }
-
-        void SetData(const FunctionRuntimeData& runtimeData)
+        void SetData(const SubgraphInterfaceData& runtimeData)
         {
             m_runtimeData = runtimeData;
         }
@@ -199,6 +208,6 @@ namespace ScriptCanvas
         static const char* GetFileExtension() { return "scriptcanvas_fn_compiled"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_fn_compiled"; }
 
-        friend class RuntimeFunctionAssetHandler;        
+        friend class SubgraphInterfaceAssetHandler;        
     };
 }

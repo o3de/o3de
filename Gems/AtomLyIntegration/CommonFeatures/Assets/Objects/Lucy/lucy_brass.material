@@ -1,0 +1,34 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "ambientOcclusion": {
+            "enable": true,
+            "textureMap": "Objects/Lucy/Lucy_ao.tif"
+        },
+        "baseColor": {
+            "color": [
+                0.6745098233222961,
+                0.48627451062202456,
+                0.19607843458652497,
+                1.0
+            ],
+            "factor": 1.0,
+            "textureBlendMode": "Lerp",
+            "textureMap": "Objects/Lucy/Lucy_brass_baseColor.tif"
+        },
+        "metallic": {
+            "textureMap": "Objects/Lucy/Lucy_brass_metalness.tif"
+        },
+        "normal": {
+            "flipY": true,
+            "textureMap": "Objects/Lucy/Lucy_normal.tif"
+        },
+        "roughness": {
+            "upperBound": 0.6767677068710327,
+            "textureMap": "Objects/Lucy/Lucy_brass_roughness.tif"
+        }
+    }
+}

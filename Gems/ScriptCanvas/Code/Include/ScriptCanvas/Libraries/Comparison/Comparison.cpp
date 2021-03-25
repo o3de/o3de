@@ -66,7 +66,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Comparison::GreaterEqual::CreateDescriptor(),
             });
         }
-    } // namespace Library
-} // namespace ScriptCanvas
+    }
+} 
 
 

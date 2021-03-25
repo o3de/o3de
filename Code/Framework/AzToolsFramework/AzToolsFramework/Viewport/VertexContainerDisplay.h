@@ -35,6 +35,7 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AZ::FixedVertices<Vertex>& vertices,
             const AZ::Transform& transform,
+            const AZ::Vector3& nonUniformScale,
             bool selected, float textSize = DefaultVertexTextSize,
             const AZ::Color& textColor = DefaultVertexTextColor,
             const AZ::Vector3& textOffset = DefaultVertexTextOffset);

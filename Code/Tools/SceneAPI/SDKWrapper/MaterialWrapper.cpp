@@ -18,43 +18,38 @@ namespace AZ
     {
         MaterialWrapper::MaterialWrapper(fbxsdk::FbxSurfaceMaterial* fbxMaterial)
             :m_fbxMaterial(fbxMaterial)
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             , m_assImpMaterial(nullptr)
-#endif
         {
         }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
         MaterialWrapper::MaterialWrapper(aiMaterial* assImpMaterial)
             :m_fbxMaterial(nullptr)
             , m_assImpMaterial(assImpMaterial)
         {
         }
-#endif
 
         MaterialWrapper::~MaterialWrapper()
         {
             m_fbxMaterial = nullptr;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             m_assImpMaterial = nullptr;
-#endif
         }
 
         fbxsdk::FbxSurfaceMaterial* MaterialWrapper::GetFbxMaterial()
         {
             return m_fbxMaterial;
         }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
         aiMaterial* MaterialWrapper::GetAssImpMaterial()
         {
             return m_assImpMaterial;
         }
-#endif
+
         AZStd::string MaterialWrapper::GetName() const
         {
             return AZStd::string();
         }
 
-        uint64_t MaterialWrapper::GetUniqueId() const
+        AZ::u64 MaterialWrapper::GetUniqueId() const
         {
             return uint64_t();
         }

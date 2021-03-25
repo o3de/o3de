@@ -37,7 +37,7 @@ namespace GraphCanvas
         return "Remove Unused";
     }
 
-    ContextMenuAction::SceneReaction RemoveUnusedElementsMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction RemoveUnusedElementsMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 
@@ -65,7 +65,7 @@ namespace GraphCanvas
         return "Remove Unused";
     }
 
-    ContextMenuAction::SceneReaction RemoveUnusedNodesMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction RemoveUnusedNodesMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 

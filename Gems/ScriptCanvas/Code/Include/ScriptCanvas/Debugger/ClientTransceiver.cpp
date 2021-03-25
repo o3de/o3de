@@ -431,12 +431,6 @@ namespace ScriptCanvas
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::SignaledOutput, notification.m_signal);
         }
 
-        void ClientTransceiver::Visit(Message::SignaledDataOutput& notification)
-        {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received output signal notification! %s", notification.m_payload.ToString().data());
-            ServiceNotificationsBus::Broadcast(&ServiceNotifications::SignaledDataOutput, notification.m_payload);
-        }
-
         void ClientTransceiver::Visit(Message::VariableChanged& notification)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received variable change notification! %s", notification.m_variableChange.ToString().data());

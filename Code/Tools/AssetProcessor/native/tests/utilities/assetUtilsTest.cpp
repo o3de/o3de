@@ -13,9 +13,9 @@
 #include <QHash>
 
 #include "native/tests/AssetProcessorTest.h"
-
-
 #include <AzCore/std/parallel/thread.h>
+#include <AzTest/AzTest.h>
+
 
 using namespace AssetUtilities;
 
@@ -119,7 +119,11 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_MissingFile_ReturnsFalse)
     EXPECT_FALSE(AssetUtilities::UpdateToCorrectCase(canonicalTempDirPath, fileName));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(AssetUtilitiesTest, DISABLED_UpdateToCorrectCase_ExistingFile_ReturnsTrue_CorrectsCase)
+#else
 TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_CorrectsCase)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     QTemporaryDir dir;
     QDir tempPath(dir.path());

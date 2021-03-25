@@ -10,6 +10,7 @@
 *
 */
 #include "MorphTargetSRG.azsli"
+#include <Atom/Features/MorphTargets/MorphTargetCompression.azsli>
 
 rootconstant float s_min;
 rootconstant float s_max;
@@ -17,49 +18,76 @@ rootconstant float s_accumulatedDeltaIntegerEncoding;
 rootconstant float s_weight;
 rootconstant uint s_vertexCount;
 rootconstant uint s_targetPositionOffset;
+rootconstant uint s_targetNormalOffset;
+rootconstant uint s_targetTangentOffset;
+rootconstant uint s_targetBitangentOffset;
 
-float3 DecodePositionDelta(uint3 xyz)
+void WriteDeltaToAccumulationBuffer(float3 delta, uint offset, uint morphedVertexIndex)
 {
-    // Positions are encoded using 16 bits per channel, which represent a 0-1 range between the min and max values
-    // They are converted to 32 bit uints after being loaded from memory before calling this function since AZSL does not support 16-bit uint
-    // Divide by 65535 to get from 0-1, multiply by the magnitude of the range between min and max,
-    // and add the value of min to get back the original value
-    float f = (s_max - s_min) / 65535.0f;
-    return float3(xyz) * f + s_min;
+    // offset gives the start location of the final morph values
+    // morphedVertexIndex is the vertex that is being morphed by the current thread
+    int3 encodedInts = EncodeFloatsToInts(delta, s_accumulatedDeltaIntegerEncoding);
+    InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[offset + morphedVertexIndex * 3], encodedInts.x);
+    InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[offset + morphedVertexIndex * 3 + 1], encodedInts.y);
+    InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[offset + morphedVertexIndex * 3 + 2], encodedInts.z);
 }
 
-int EncodeFloatToInt(float f)
-{
-    return int(f * s_accumulatedDeltaIntegerEncoding);
-}
-
-[numthreads(256,1,1)]
+[numthreads(64,1,1)]
 void MainCS(uint3 thread_id: SV_DispatchThreadID)
 {
     // Each thread is responsible for one morph
     const uint i = thread_id.x;
     if(i < s_vertexCount)
     {
-        // The compressed data is packed into a buffer that is aligned for coalesced reads of 4-bytes per thread
-        // Since the positions occupy 6 bytes, the xy positions for each vertex are packed together, and the z positions + padding are packed together
-        uint compressedPositionDeltaXY = MorphTargetInstanceSrg::m_vertexDeltas.Load(i * 4);
-        // x is in the most significant 2 bytes
-        uint3 compressedPositionDelta;
-        compressedPositionDelta.x = compressedPositionDeltaXY >> 16;
-        // y is in the least significant 2 bytes
-        compressedPositionDelta.y = compressedPositionDeltaXY & 0x0000FFFF;
+        // The compressed data is packed into a strctured buffer
+        MorphTargetDelta delta = MorphTargetInstanceSrg::m_vertexDeltas[i];
 
-        uint compressedPositionDeltaZPad = MorphTargetInstanceSrg::m_vertexDeltas.Load(i * 4 + s_vertexCount * 4);
-        compressedPositionDelta.z = compressedPositionDeltaZPad >> 16;
+        uint morphedVertexIndex = delta.m_morphedVertexIndex;
+
+        uint3 compressedPositionDelta;        
+        // X is in the most significant 16 bits
+        compressedPositionDelta.x = delta.m_compressedPositionDeltaXY >> 16;
+        // Y is in the least significant 16 bits
+        compressedPositionDelta.y = delta.m_compressedPositionDeltaXY & 0x0000FFFF;
+
+        // Position z is in the most significant 16 bits
+        compressedPositionDelta.z = delta.m_compressedPositionDeltaZNormalDeltaXY >> 16;
+
+        uint3 compressedNormalDelta;
+        // Normal x and y are in the least significant 16 bits (8 bits per channel)
+        compressedNormalDelta.x = (delta.m_compressedPositionDeltaZNormalDeltaXY >> 8) & 0x000000FF;
+        compressedNormalDelta.y =  delta.m_compressedPositionDeltaZNormalDeltaXY       & 0x000000FF;
+
         
-        // Now that we have the compressed positions, unpack them
-        float3 positionDelta = DecodePositionDelta(compressedPositionDelta) * s_weight;
+        // Now that we have the compressed positions, unpack them and write them to the accumulation buffer
+        float3 positionDelta = DecodePositionDelta(compressedPositionDelta, s_min, s_max) * s_weight;
+        WriteDeltaToAccumulationBuffer(positionDelta, s_targetPositionOffset, morphedVertexIndex);
 
-        // s_targetPositionOffset gives the start location of the final morph values
-        // morphedVertexIndex is the vertex that is being morphed by the current thread
-        uint morphedVertexIndex = MorphTargetInstanceSrg::m_vertexIndices[i];
-        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3], EncodeFloatToInt(positionDelta.x));
-        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3 + 1], EncodeFloatToInt(positionDelta.y));
-        InterlockedAdd(MorphTargetPassSrg::m_accumulatedDeltas[s_targetPositionOffset + morphedVertexIndex * 3 + 2], EncodeFloatToInt(positionDelta.z));
+        // Get the normal delta z from the most significant 8 bits
+        compressedNormalDelta.z = delta.m_compressedNormalDeltaZTangentDelta >> 24;
+        
+        // Get the tangent delta from the least significant 24 bits (8 bits per channel)
+        uint3 compressedTangentDelta;
+        compressedTangentDelta.x = (delta.m_compressedNormalDeltaZTangentDelta >> 16) & 0x000000FF;
+        compressedTangentDelta.y = (delta.m_compressedNormalDeltaZTangentDelta >> 8)  & 0x000000FF;
+        compressedTangentDelta.z =  delta.m_compressedNormalDeltaZTangentDelta        & 0x000000FF;
+
+        
+        // Now that we have the compressed normals and tangents, unpack them and write them to the accumulation buffer
+        float3 normalDelta = DecodeTBNDelta(compressedNormalDelta) * s_weight;
+        WriteDeltaToAccumulationBuffer(normalDelta, s_targetNormalOffset, morphedVertexIndex);
+
+        float3 tangentDelta = DecodeTBNDelta(compressedTangentDelta) * s_weight;
+        WriteDeltaToAccumulationBuffer(tangentDelta, s_targetTangentOffset, morphedVertexIndex);
+
+        uint3 compressedBitangentDelta;
+        // Bitangents are in the least significant 24 bits (8 bits per channel)
+        compressedBitangentDelta.x = (delta.m_compressedPadBitangentDeltaXYZ >> 16) & 0x000000FF;
+        compressedBitangentDelta.y = (delta.m_compressedPadBitangentDeltaXYZ >> 8)  & 0x000000FF;
+        compressedBitangentDelta.z =  delta.m_compressedPadBitangentDeltaXYZ        & 0x000000FF;
+
+        // Now that we have the compressed bitangents, unpack them and write them to the accumulation buffer      
+        float3 bitangentDelta = DecodeTBNDelta(compressedBitangentDelta) * s_weight;
+        WriteDeltaToAccumulationBuffer(bitangentDelta, s_targetBitangentOffset, morphedVertexIndex);
     }
 }

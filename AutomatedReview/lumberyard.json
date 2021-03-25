@@ -8,8 +8,5 @@
         "Tools/build/JenkinsScripts/build/Platform/*/build_config.json",
         "restricted/*/Tools/build/JenkinsScripts/build/build_config.json"
     ],
-    "PYTHON_DIR": "python",
-    "SCRUBBING_PATH": "Tools/build/JenkinsScripts/build/scrubbing_job.py",
-    "VALIDATOR_PATH": "scripts/commit_validation/git_validate_branch.py",
-    "platforms": {}
+    "PYTHON_DIR": "python"
 }

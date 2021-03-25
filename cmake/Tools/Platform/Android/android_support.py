@@ -1563,7 +1563,7 @@ class AdbTool(common.CommandLineExec):
         device_result_lines = [device_result_line.strip() for device_result_line in devices_result.split('\n') if
                                device_result_line]
         for device_result_line in device_result_lines:
-            match_result = re.match(r'(\w+)\s+(device)', device_result_line)
+            match_result = re.match(r'([\w-]+)\s+(device)', device_result_line)
             if match_result:
                 device_id = match_result.group(1)
                 connected_device_serials.append(device_id)

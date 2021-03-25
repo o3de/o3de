@@ -21,35 +21,14 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! A node that repeats an execution signal over the specified time
             class Repeater
                 : public ScriptCanvas::Nodes::Internal::BaseTimerNode
             {
-                ScriptCanvas_Node(Repeater,
-                    ScriptCanvas_Node::Name("Repeater", "Repeats the output signal the given number of times using the specified delay to space the signals out")
-                    ScriptCanvas_Node::Uuid("{0A38EDCA-0571-48F0-9199-F6168C1EAAF0}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Category("Utilities")
-                    ScriptCanvas_Node::Version(2, VersionConverter)
-                );
+                SCRIPTCANVAS_NODE(Repeater);
 
             public:
-
-                static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-                
-                ScriptCanvas_PropertyWithDefaults(double, 0.0,
-                    ScriptCanvas_Property::Name("Repetitions", "How many times to trigger the action pin.")
-                    ScriptCanvas_Property::Input
-                    ScriptCanvas_Property::Default
-                );
-                ////
-                
-                // Outputs
-                ScriptCanvas_OutLatent(ScriptCanvas_OutLatent::Name("Complete", "Signaled upon node exit"));
-                ScriptCanvas_OutLatent(ScriptCanvas_OutLatent::Name("Action", "The signal that will be repeated"));
-                ////
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 void OnInit() override;
 
@@ -57,12 +36,15 @@ namespace ScriptCanvas
                 void OnTimeElapsed();
 
                 const char* GetTimeSlotFormat() const override { return "Delay (%s)"; }
+
+                const char* GetBaseTimeSlotName() const override { return "Interval"; }
+                const char* GetBaseTimeSlotToolTip() const override { return "The Interval between repetitions"; }
                 
             protected:
 
                 bool AllowInstantResponse() const override { return true; }
 
-                int                 m_repetionCount;
+                int m_repetionCount;
             };
         }
     }

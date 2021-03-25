@@ -526,6 +526,42 @@ namespace AZ
         return m_editContext;
     }
 
+    auto SerializeContext::RegisterType(const AZ::TypeId& typeId, AZ::SerializeContext::ClassData&& classData, CreateAnyFunc createAnyFunc) -> ClassBuilder
+    {
+        auto [typeToClassIter, inserted] = m_uuidMap.try_emplace(typeId, AZStd::move(classData));
+        m_classNameToUuid.emplace(AZ::Crc32(typeToClassIter->second.m_name), typeId);
+        m_uuidAnyCreationMap.emplace(typeId, createAnyFunc);
+
+        return ClassBuilder(this, typeToClassIter);
+    }
+
+    bool SerializeContext::UnregisterType(const AZ::TypeId& typeId)
+    {
+        if (auto typeToClassIter = m_uuidMap.find(typeId); typeToClassIter != m_uuidMap.end())
+        {
+            ClassData& classData = typeToClassIter->second;
+            RemoveClassData(&classData);
+
+            auto [classNameRangeFirst, classNameRangeLast] = m_classNameToUuid.equal_range(Crc32(classData.m_name));
+            while (classNameRangeFirst != classNameRangeLast)
+            {
+                if (classNameRangeFirst->second == typeId)
+                {
+                    classNameRangeFirst = m_classNameToUuid.erase(classNameRangeFirst);
+                }
+                else
+                {
+                    ++classNameRangeFirst;
+                }
+            }
+            m_uuidAnyCreationMap.erase(typeId);
+            m_uuidMap.erase(typeToClassIter);
+            return true;
+        }
+
+        return false;
+    }
+
     //=========================================================================
     // ClassDeprecate
     // [11/8/2012]

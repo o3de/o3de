@@ -102,7 +102,7 @@ namespace AZ
             return 10.f;
         }
 
-        uint64_t FbxMaterialWrapper::GetUniqueId() const
+        AZ::u64 FbxMaterialWrapper::GetUniqueId() const
         {
             return m_fbxMaterial->GetUniqueID();
         }

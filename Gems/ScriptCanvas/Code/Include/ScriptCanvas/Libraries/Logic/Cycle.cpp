@@ -27,6 +27,16 @@ namespace ScriptCanvas
             {
             }
 
+            AZ::Outcome<DependencyReport, void> Cycle::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport());
+            }
+
+            SlotsOutcome Cycle::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const
+            {
+                return AZ::Success(GetSlotsByType(targetSlotType));
+            }
+
             void Cycle::OnInit()
             {
                 m_numOutputs = static_cast<int>(GetAllSlotsByDescriptor(SlotDescriptors::ExecutionOut()).size());

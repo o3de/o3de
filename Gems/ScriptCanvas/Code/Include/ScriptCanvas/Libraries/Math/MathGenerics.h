@@ -12,60 +12,40 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector4.h>
-#include <AzCore/Math/Transform.h>
 #include <ScriptCanvas/Core/NodeFunctionGeneric.h>
 
 namespace ScriptCanvas
 {
-    /// \note Don't forget to add your Node to the template argument list for MathRegistrar
-
-    AZ_INLINE Data::QuaternionType ConvertTransformToRotation(const Data::TransformType& transform)
+    namespace MathNodes
     {
-        return AZ::ConvertEulerRadiansToQuaternion(AZ::ConvertTransformToEulerRadians(transform));
-    }
-    
-    AZ_INLINE Data::TransformType CreateLookAt(const AZ::Vector3& from, const AZ::Vector3& to, Data::NumberType axisNumber)
-    {
-        AZ::Transform::Axis axis = static_cast<AZ::Transform::Axis>(static_cast<AZ::u32>(axisNumber));
-        // default to the default "forward" axis if an erroneous axis is passed in
-        axis = axis < AZ::Transform::Axis::XPositive || axis > AZ::Transform::Axis::ZNegative ? AZ::Transform::Axis::YPositive : axis;
-        return AZ::Transform::CreateLookAt(from, to, axis);
-    }
-    
-    AZ_INLINE Data::TransformType CreateLookAtYPosAxis(const AZ::Vector3& from, const AZ::Vector3& to)
-    {
-        return AZ::Transform::CreateLookAt(from, to, AZ::Transform::Axis::YPositive);
-    }
-    
-    SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ConvertTransformToRotation, "Math/Quaternion", "{C878982F-1B6B-4555-8723-7FF3830C8032}", "", "Transform");
-    SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(CreateLookAt, "Math/Transform", "{D5223A1E-F725-4E67-8E70-2975720F91E8}", "", "From", "To", "Axis[0:5]");
-    SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(CreateLookAtYPosAxis, "Math/Transform", "{8BD2AB7A-AF2E-4748-9530-71055E5EA986}", "", "From", "To");
+        static const char* k_categoryName = "Math";
 
-    AZ_INLINE Data::NumberType MultiplyAndAdd(Data::NumberType multiplicand, Data::NumberType multiplier, Data::NumberType addend)
-    {
-        // result = src0 * src1 + src2
-        return multiplicand * multiplier + addend;
-    }
-    SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyAndAdd, "Math/Number", "{827BDBD2-48CE-4DA4-90F3-F1B8E996613B}", "", "Multiplicand", "Multiplier", "Addend");
+        AZ_INLINE Data::NumberType MultiplyAndAdd(Data::NumberType multiplicand, Data::NumberType multiplier, Data::NumberType addend)
+        {
+            // result = src0 * src1 + src2
+            return multiplicand * multiplier + addend;
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyAndAdd, k_categoryName, "{827BDBD2-48CE-4DA4-90F3-F1B8E996613B}", "", "Multiplicand", "Multiplier", "Addend");
 
-    AZ_INLINE Data::NumberType StringToNumber(const Data::StringType& stringValue)
-    {
-        return AZStd::stof(stringValue);
-    }
+        AZ_INLINE Data::NumberType StringToNumber(const Data::StringType& stringValue)
+        {
+            return AZStd::stof(stringValue);
+        }
 
-    SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(StringToNumber, "Math/Number", "{FD2D9758-5EA2-45A3-B293-A748D951C4A3}", "Converts the given string to it's numeric representation if possible.", "", "");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(StringToNumber, k_categoryName, "{FD2D9758-5EA2-45A3-B293-A748D951C4A3}", "Converts the given string to it's numeric representation if possible.", "", "");
 
-    using MathRegistrar = RegistrarGeneric
-        < ConvertTransformToRotationNode
+        AZ_INLINE AZStd::tuple<ScriptCanvas::Data::Vector3Type, ScriptCanvas::Data::StringType, ScriptCanvas::Data::BooleanType>
+            ThreeGeneric(const ScriptCanvas::Data::Vector3Type& v, const ScriptCanvas::Data::StringType& s, const ScriptCanvas::Data::BooleanType& b)
+        {
+            return AZStd::make_tuple(v, s, b);
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(ThreeGeneric, k_categoryName, "{ABD62421-82D4-4EFB-AD99-57A8700D6402}", "returns all columns from matrix", "One", "Two", "Three", "One", "Two", "Three");
 
-#if ENABLE_EXTENDED_MATH_SUPPORT
-        , CreateLookAtNode
-        , CreateLookAtYPosAxisNode
-#endif
-        , MultiplyAndAddNode
-        , StringToNumberNode
+        using Registrar = RegistrarGeneric<
+            ThreeGenericNode,
+            MultiplyAndAddNode,
+            StringToNumberNode
         >;
-} // namespace ScriptCanvas
+    }
+} 
 

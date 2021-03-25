@@ -10,7 +10,6 @@
 *
 */
 
-#include "ResourceCompilerScene_precompiled.h"
 #include <IConfig.h>
 #include <SceneConfig.h>
 #include <AzToolsFramework/Debug/TraceContext.h>

@@ -44,9 +44,15 @@ namespace AZ
 
             AZStd::pair<AxisVector, int32_t> GetUpVectorAndSign() const;
             AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
+
+            AZStd::string GetSceneFileName() const { return m_sceneFileName; }
         protected:
 
             Assimp::Importer m_importer;
+
+            // FBX SDK automatically resolved relative paths to textures based on the current file location.
+            // AssImp does not, so it needs to be specifically handled.
+            AZStd::string m_sceneFileName;
         };
 
     } // namespace AssImpSDKWrapper

@@ -38,7 +38,6 @@ namespace ScriptCanvas
     class Datum final
     {
     public:
-        /// \todo support polymorphism        
         AZ_TYPE_INFO(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}");
         AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator, 0);
 
@@ -49,7 +48,7 @@ namespace ScriptCanvas
         };
 
         // calls a function and converts the result to a ScriptCanvas type, if necessary
-        static AZ::Outcome<Datum, AZStd::string> CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs);
+        static AZ::Outcome<Datum, AZStd::string> CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs, const AZStd::string_view context);
         static AZ::Outcome<void, AZStd::string> CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs);
 
         static bool IsValidDatum(const Datum* datum);
@@ -71,10 +70,7 @@ namespace ScriptCanvas
 
         void DeepCopyDatum(const Datum& object);
 
-        const AZStd::any& ToAny() const
-        {
-            return m_storage;
-        }
+        const AZStd::any& ToAny() const;
 
         /// If t_Value is a ScriptCanvas value type, regardless of pointer/reference, this will create datum with a copy of that
         /// value. That is, Datum<AZ::Vector3>(source), Datum<AZ::Vector3&>(source), Datum<AZ::Vector3*>(&source), will all produce
@@ -117,12 +113,10 @@ namespace ScriptCanvas
 
         bool IsDefaultValue() const;
 
-        // todo support polymorphism
         // returns true if this type IS_A t_Value type
         template<typename t_Value>
         bool IS_A() const;
 
-        // todo support polymorphism
         AZ_INLINE bool IS_A(const Data::Type& type) const;
 
         //! use RARELY, this is dangerous as it circumvents ScriptCanvas execution. Use to initialize values more simply in unit testing, or assist debugging.
@@ -154,6 +148,9 @@ namespace ScriptCanvas
         // pushes this datum to the void* address in destination
         bool ToBehaviorContext(AZ::BehaviorValueParameter& destination) const;
 
+        // returns BVP with void* to the datum address
+        AZ::BehaviorValueParameter ToBehaviorContext(AZ::BehaviorClass*& behaviorClass);
+
         // creates an AZ::BehaviorValueParameter with a void* that points to this datum, depending on what the parameter needs
         // this is called when the AZ::BehaviorValueParameter needs this value as input to another function
         // so it is appropriate for the value output to be nullptr
@@ -177,7 +174,7 @@ namespace ScriptCanvas
         // this is called when the AZ::BehaviorValueParameter needs this value as output from another function
         // so it is NOT appropriate for the value output to be nullptr, if the description is for a pointer to an object
         // there needs to be valid memory to write that pointer
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> ToBehaviorValueParameterResult(const AZ::BehaviorParameter& description);
+        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> ToBehaviorValueParameterResult(const AZ::BehaviorParameter& description, const AZStd::string_view className, const AZStd::string_view methodName);
 
         // This is used as the destination for a Behavior Context function call; after the call the result must be converted.
         void ConvertBehaviorContextMethodResult(const AZ::BehaviorParameter& resultType);
@@ -245,7 +242,7 @@ namespace ScriptCanvas
 
         friend class SerializeContextEventHandler;
 
-        static ComparisonOutcome CallComparisonOperator(AZ::Script::Attributes::OperatorType operatorType, const AZ::BehaviorClass& behaviorClass, const Datum& lhs, const Datum& rhs);
+        static ComparisonOutcome CallComparisonOperator(AZ::Script::Attributes::OperatorType operatorType, const AZ::BehaviorClass* behaviorClass, const Datum& lhs, const Datum& rhs);
 
         // is this storage for nodes that are overloaded, e.g. Log, which takes in any data type
         const bool m_isOverloadedStorage = false;
@@ -376,7 +373,7 @@ namespace ScriptCanvas
         AZStd::string ToStringVector3(const AZ::Vector3& source) const;
 
         AZStd::string ToStringVector4(const AZ::Vector4& source) const;
-    }; // class Datum
+    };
 
     template<typename t_Value, typename>
     Datum::Datum(t_Value&& value)
@@ -551,4 +548,4 @@ namespace ScriptCanvas
         return result;
     }
 
-} // namespace ScriptCanvas
+}

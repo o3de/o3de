@@ -23,8 +23,8 @@
 
 namespace EMotionFX
 {
-    // Control the load for the AnumGraphFuzzTest
-    static constexpr int s_AnumGraphFuzzTestLoad = 100;
+    // Control the load for the AnimGraphFuzzTest
+    static constexpr int s_AnimGraphFuzzTestLoad = 100;
     
     // Make it clear that the AnimGraphFuzzTest fixture is parameterized on a
     // seed value for a Random object
@@ -132,7 +132,7 @@ namespace EMotionFX
         return seeds;
     }
 
-    const std::vector<Seed> randomSeeds = GetSeedsForTest(s_AnumGraphFuzzTestLoad);
+    const std::vector<Seed> randomSeeds = GetSeedsForTest(s_AnimGraphFuzzTestLoad);
 
     INSTANTIATE_TEST_CASE_P(InstantiationName,
         AnimGraphFuzzTest,

@@ -16,7 +16,6 @@
 
 #include <AzCore/std/parallel/mutex.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptEvents/ScriptEventsBus.h>
@@ -34,31 +33,20 @@ namespace ScriptCanvas
     {
         namespace Core
         {
-            using Namespaces = AZStd::vector<AZStd::string>;
-
+            //! Provides a node to send a Script Event
             class SendScriptEvent
                 : public Internal::ScriptEventBase
                 , ScriptEvents::ScriptEventNotificationBus::Handler
             {
             public:
 
-                ScriptCanvas_Node(SendScriptEvent,
-                    ScriptCanvas_Node::Name("Send Script Event", "Allows you to send an event.")
-                    ScriptCanvas_Node::Uuid("{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Bus.png")
-                    ScriptCanvas_Node::Version(4)
-                    ScriptCanvas_Node::DynamicSlotOrdering(true)
-                    ScriptCanvas_Node::EditAttributes(AZ::Script::Attributes::ExcludeFrom(AZ::Script::Attributes::ExcludeFlags::All))
-                );
+                SCRIPTCANVAS_NODE(SendScriptEvent);
 
-                ScriptCanvas_SerializeProperty(Namespaces, m_namespaces);
-                ScriptCanvas_SerializeProperty(ScriptCanvas::EBusBusId, m_busId);
-                ScriptCanvas_SerializeProperty(ScriptCanvas::EBusEventId, m_eventId);
+                NamespacePath m_namespaces;
+                ScriptCanvas::EBusBusId m_busId;
+                ScriptCanvas::EBusEventId m_eventId;
 
                 ~SendScriptEvent() override;
-
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Fires the specified ScriptEvent when signaled"));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Trigged after the ScriptEvent has been signaled and returns"));
 
                 const AZStd::string& GetEventName() const { return m_eventName; }
 
@@ -72,14 +60,19 @@ namespace ScriptCanvas
 
                 void ConfigureNode(const AZ::Data::AssetId& assetId, const ScriptCanvas::EBusEventId& eventId);
 
-                // NodeVersioning
-                bool IsOutOfDate() const override;
+                // NodeVersioning...
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
                 UpdateResult OnUpdateNode() override;
                 AZStd::string GetUpdateString() const override;
                 ////
 
+                AZ::Outcome<Grammar::LexicalScope, void> GetFunctionCallLexicalScope(const Slot* /*slot*/) const override;
+                AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
+                EventType GetFunctionEventType(const Slot* /*slot*/) const override;
+
             protected:
 
+                bool FindEvent(AZ::BehaviorMethod*& outMethod, const NamespacePath& namespaces, AZStd::string_view eventName);
                 void BuildNode(const AZ::Data::AssetId& assetId, const ScriptCanvas::EBusEventId& eventId, SlotIdMapping& populationMapping);
                 void InitializeResultSlotId();
 
@@ -92,7 +85,6 @@ namespace ScriptCanvas
                 void ConfigureMethod(AZ::BehaviorMethod& method);
                 bool RegisterScriptEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
 
-                bool FindEvent(AZ::BehaviorMethod*& outMethod, const Namespaces& namespaces, AZStd::string_view methodName);
                 void OnInputSignal(const SlotId&) override;
 
                 void AddInputSlot(size_t slotIndex, size_t argIndex, const AZStd::string_view argName, const AZStd::string_view tooltip, AZ::BehaviorMethod* method, const AZ::BehaviorParameter* argument, AZ::Uuid slotKey, SlotIdMapping& populationMapping);

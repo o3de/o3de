@@ -26,4 +26,8 @@ set(FILES
     RHI/DX12_Windows.h
     RHI/SystemComponent_Windows.cpp
     RHI/SwapChain_Windows.cpp
+    RHI/NsightAftermathGpuCrashTracker_Windows.cpp
+    RHI/NsightAftermathGpuCrashTracker_Windows.h
+    RHI/NsightAftermath_Windows.cpp
+    RHI/NsightAftermathHelpers.h
 )

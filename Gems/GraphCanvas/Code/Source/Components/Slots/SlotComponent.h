@@ -47,12 +47,11 @@ namespace GraphCanvas
             provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
         }
 
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
         {
-            (void)dependent;
         }
 
-        static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
         }
 
@@ -66,9 +65,6 @@ namespace GraphCanvas
         void SignalMemberSetupComplete() override;
 
         AZ::EntityId GetScene() const override;
-
-        bool LockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
-        void UnlockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
         ////
 
         // SceneMemberNotificationBus
@@ -130,6 +126,7 @@ namespace GraphCanvas
         void ReleaseConnectionDisplayState() override;
         void ClearConnections() override;
 
+        const SlotConfiguration& GetSlotConfiguration() const override;
         SlotConfiguration* CloneSlotConfiguration() const override;
 
         void RemapSlotForModel(const Endpoint& endpoint) override;

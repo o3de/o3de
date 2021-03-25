@@ -68,8 +68,12 @@ namespace GraphCanvas
 
     void NodeNudgingController::FinalizeNudging()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
+        GeometryNotificationBus::MultiHandler::BusDisconnect();
+
         m_originalBoundingBoxes.clear();
         m_rootElements.clear();
+        m_cachedNodeElements.clear();
     }
     
     void NodeNudgingController::CancelNudging(bool animate)

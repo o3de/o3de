@@ -27,10 +27,6 @@
 #define D3DAMBIENTOCCLUSION_CPP_SECTION_2 2
 #endif
 
-#ifdef USE_NV_API
-    #include <nvapi.h>
-#endif
-
 // TODO: Unify with other deferred primitive implementation
 const t_arrDeferredMeshVertBuff& CD3D9Renderer::GetDeferredUnitBoxVertexBuffer() const
 {
@@ -107,9 +103,6 @@ void CD3D9Renderer::SetDepthBoundTest(float fMin, float fMax, bool bEnable)
 #elif defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION D3DAMBIENTOCCLUSION_CPP_SECTION_1
     #include AZ_RESTRICTED_FILE(D3DAmbientOcclusion_cpp)
-#elif defined (USE_NV_API) //transparent execution without NVDB
-        NvAPI_Status status = NvAPI_D3D11_SetDepthBoundsTest(&GetDevice(), bEnable, fMin, fMax);
-        assert(status == NVAPI_OK);
 #endif
     }
     else // disable depth bound test
@@ -121,9 +114,6 @@ void CD3D9Renderer::SetDepthBoundTest(float fMin, float fMax, bool bEnable)
 #elif defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION D3DAMBIENTOCCLUSION_CPP_SECTION_2
     #include AZ_RESTRICTED_FILE(D3DAmbientOcclusion_cpp)
-#elif defined (USE_NV_API)
-        NvAPI_Status status = NvAPI_D3D11_SetDepthBoundsTest(&GetDevice(), bEnable, fMin, fMax);
-        assert(status == NVAPI_OK);
 #endif
     }
 }

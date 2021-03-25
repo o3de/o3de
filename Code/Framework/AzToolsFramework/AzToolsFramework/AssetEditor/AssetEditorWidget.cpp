@@ -282,7 +282,7 @@ namespace AzToolsFramework
         {
             m_dirty = false;
 
-            AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
             // Clone the asset
             AZ::Data::AssetId newAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
@@ -333,9 +333,9 @@ namespace AzToolsFramework
             m_saveAssetAction->setEnabled(false);
             m_propertyEditor->ClearInstances();
 
-            if (AZ::Data::AssetBus::Handler::BusIsConnectedId(asset.GetId()))
+            if (AZ::Data::AssetBus::MultiHandler::BusIsConnectedId(asset.GetId()))
             {
-                AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
             }
             QString errString = tr("Failed to load %1!").arg(asset.GetHint().c_str());
             AZ_Error("Asset Editor", false, errString.toUtf8());
@@ -591,6 +591,8 @@ namespace AzToolsFramework
         {
             auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
+            asset.BlockUntilLoadComplete();
+
             if (asset.IsReady())
             {
                 OnAssetReady(asset);
@@ -599,10 +601,10 @@ namespace AzToolsFramework
             {
                 if (m_inMemoryAsset)
                 {
-                    AZ::Data::AssetBus::Handler::BusDisconnect(m_inMemoryAsset.GetId());
+                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_inMemoryAsset.GetId());
                 }
                
-                AZ::Data::AssetBus::Handler::BusConnect(asset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
 
                 // Need to disable editing until OnAssetReady.
                 m_propertyEditor->setEnabled(false);
@@ -619,7 +621,9 @@ namespace AzToolsFramework
 
             AssetEditorValidationRequestBus::Event(m_sourceAssetId, &AssetEditorValidationRequests::PreAssetSave, m_inMemoryAsset);
 
-            if (AZ::Utils::SaveObjectToStream(dstByteStream, AZ::DataStream::ST_XML, m_inMemoryAsset.Get(), m_inMemoryAsset.Get()->RTTI_GetType(), m_serializeContext))
+            if (AZ::Utils::SaveObjectToStream(
+                    dstByteStream, AZ::DataStream::ST_XML, m_inMemoryAsset.Get(), m_inMemoryAsset.Get()->RTTI_GetType(),
+                    m_serializeContext))
             {
                 AZStd::swap(newSaveData, m_saveData);
             }
@@ -800,7 +804,7 @@ namespace AzToolsFramework
 
             if (m_inMemoryAsset)
             {
-                AZ::Data::AssetBus::Handler::BusDisconnect(m_inMemoryAsset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_inMemoryAsset.GetId());
                 m_inMemoryAsset.Release();
             }
 

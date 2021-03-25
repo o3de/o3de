@@ -68,11 +68,27 @@ namespace AZ
             }
 
             auto shaderVariant = m_rayTracingShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing shaderDescriptor;
-            shaderVariant.ConfigurePipelineState(shaderDescriptor);
+            RHI::PipelineStateDescriptorForRayTracing rayGenerationShaderDescriptor;
+            shaderVariant.ConfigurePipelineState(rayGenerationShaderDescriptor);
+
+            // closest hit shader
+            AZStd::string closestHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingClosestHit.azshader";
+            m_closestHitShader = RPI::LoadShader(closestHitShaderFilePath);
+
+            auto closestHitShaderVariant = m_closestHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
+            closestHitShaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
+
+            // miss shader
+            AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
+            m_missShader = RPI::LoadShader(missShaderFilePath);
+
+            auto missShaderVariant = m_missShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            RHI::PipelineStateDescriptorForRayTracing missShaderDescriptor;
+            missShaderVariant.ConfigurePipelineState(missShaderDescriptor);
 
             // global pipeline state and Srg
-            m_globalPipelineState = m_rayTracingShader->AcquirePipelineState(shaderDescriptor);
+            m_globalPipelineState = m_rayTracingShader->AcquirePipelineState(rayGenerationShaderDescriptor);
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             m_globalSrgAsset = m_rayTracingShader->FindShaderResourceGroupAsset(Name{ "RayTracingGlobalSrg" });
@@ -80,78 +96,20 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", m_globalSrgAsset.IsReady(), "RayTracingGlobalSrg asset is not loaded for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
-            // [GFX TODO][ATOM-5570] Use the shader PipelineLayout to set DXR root signatures
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
-                ->MaxPayloadSize(48)
+                ->PipelineState(m_globalPipelineState.get())
+                ->MaxPayloadSize(64)
                 ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(1)
-                ->ShaderLibrary(shaderDescriptor)
-                ->HitGroup(AZ::Name("HitGroup"))
+                ->MaxRecursionDepth(2)
+                ->ShaderLibrary(rayGenerationShaderDescriptor)
+                    ->RayGenerationShaderName(AZ::Name("RayGen"))
+                ->ShaderLibrary(missShaderDescriptor)
+                    ->MissShaderName(AZ::Name("Miss"))
+                ->ShaderLibrary(closestHitShaderDescriptor)
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                ->GlobalRootSignature()
-                    ->CbvParameter()
-                        ->RootParameterIndex(0)
-                        ->ShaderRegister(0)
-                        ->RegisterSpace(0)
-                    ->DescriptorTableParameter()
-                        ->RootParameterIndex(1)
-                        ->Range()
-                            ->ShaderRegister(0) // m_scene
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(3) // m_directionalLights
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(4) // m_pointLights
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(5) // m_spotLights
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(0) // m_probeRayTrace
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::ReadWrite)
-                        ->Range()
-                            ->ShaderRegister(1) // m_probeOffsets
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::ReadWrite)
-                        ->Range()
-                            ->ShaderRegister(1) // m_probeIrradiance
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(2) // m_probeDistance
-                            ->RegisterSpace(0)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                    ->StaticSampler()
-                        ->ShaderRegister(0)
-                        ->RegisterSpace(0)
-                        ->AddressMode(RHI::AddressMode::Clamp)
-                        ->FilterMode(RHI::FilterMode::Linear)
-                ->LocalRootSignature()
-                    ->ShaderAssociation(AZ::Name("HitGroup"))
-                    ->CbvParameter()
-                        ->ShaderRegister(0)
-                        ->RegisterSpace(1)
-                    ->DescriptorTableParameter()
-                        ->Range()
-                            ->ShaderRegister(0) // m_indices
-                            ->RegisterSpace(1)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(1) // m_vertexPositions
-                            ->RegisterSpace(1)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                        ->Range()
-                            ->ShaderRegister(2) // m_vertexPositions
-                            ->RegisterSpace(1)
-                            ->RangeType(RHI::RayTracingRootSignatureDescriptorTableParam::Range::Type::Read)
-                ;
+                ->HitGroup(AZ::Name("HitGroup"))
+                    ->ClosestHitShaderName(AZ::Name("ClosestHit"));
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
@@ -186,7 +144,6 @@ namespace AZ
             {
                 // scene changed, need to rebuild the shader table
                 m_rayTracingRevision = rayTracingRevision;
-                m_localSrgs.clear();
 
                 // [GFX TODO][ATOM-13575] Move the RHI::RayTracingShaderTable build into the RHI frame and remove this scope
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_rayTracingScopeProducerShaderTable);
@@ -202,59 +159,51 @@ namespace AZ
 
             const auto compileFunction = [this]([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const ScopeData& scopeData)
             {
-                // create a SRG for every ray tracing mesh in the scene
+                // create a SRG array entry for every ray tracing mesh in the scene
                 RPI::Scene* scene = m_pipeline->GetScene();
                 TransformServiceFeatureProcessor* transformFeatureProcessor = scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
-                Data::Asset<RPI::ShaderResourceGroupAsset> localSrgAsset = m_rayTracingShader->FindShaderResourceGroupAsset(Name{ "RayTracingLocalSrg" });
-                AZ_Error("DiffuseProbeRayTracingPass", localSrgAsset.GetId().IsValid(), "Failed to find RayTracingLocalSrg_HitSolid asset");
-                AZ_Error("DiffuseProbeRayTracingPass", localSrgAsset.IsReady(), "RayTracingLocalSrg_HitSolid asset is not loaded");
-
-                m_localSrgs.resize(rayTracingFeatureProcessor->GetSubMeshCount());
+                m_meshVertexPositionBuffer.clear();
+                m_meshVertexNormalBuffer.clear();
+                m_meshIndexBuffer.clear();
 
                 const RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
-                uint32_t localSrgIndex = 0;
+                m_meshCount = 0;
                 for (const auto& mesh : rayTracingMeshes)
                 {
                     const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
                     for (const auto& subMesh : subMeshes)
                     {
-                        m_localSrgs[localSrgIndex] = RPI::ShaderResourceGroup::Create(localSrgAsset);
-                        AZ::Data::Instance<RPI::ShaderResourceGroup>& localSrg = m_localSrgs[localSrgIndex];
-                        AZ_Error("DiffuseProbeRayTracingPass", localSrg.get(), "Failed to create RayTracingLocalSrg shader resource group");
+                        // [GFX TODO][ATOM-14780] SRG support for unbounded arrays
+                        // we are limited to 512 meshes until unbounded array support is implemented
+                        if (m_meshCount == 512)
+                        {
+                            AZ_Warning("DiffuseProbeGridRayTracingPass", false, "Maximum number of meshes reached");
+                            break;
+                        }
 
-                        const RHI::ShaderResourceGroupLayout* srgLayout = localSrg->GetLayout();
+                        // set irradiance color and worldInverseTranspose constants
+                        Vector4 color(subMesh.m_irradianceColor.GetR(), subMesh.m_irradianceColor.GetG(), subMesh.m_irradianceColor.GetB(), 1.0f);
 
-                        // material color
-                        const auto materialColorConstantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_materialColor"));
-                        Vector3 color(subMesh.m_irradianceColor.GetR(), subMesh.m_irradianceColor.GetG(), subMesh.m_irradianceColor.GetB());
-                        localSrg->SetConstant(materialColorConstantIndex, color);
-
-                        // world inverse transpose
                         AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
                         AZ::Transform noScaleTransform = meshTransform;
                         noScaleTransform.ExtractScale();
                         AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
                         rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
 
-                        const auto worldInvTransposeMatrixConstantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_worldInvTranspose"));
-                        localSrg->SetConstant(worldInvTransposeMatrixConstantIndex, rotationMatrix);
+                        m_closestHitData[m_meshCount].m_materialColor = color;
+                        m_closestHitData[m_meshCount].m_worldInvTranspose = rotationMatrix;
+                        m_closestHitData[m_meshCount].m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
+                        m_closestHitData[m_meshCount].m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
+                        m_closestHitData[m_meshCount].m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
 
-                        // vertex position buffer
-                        const auto vbPositionBufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_vertexPositions"));
-                        localSrg->SetBufferView(vbPositionBufferIndex, subMesh.m_positionShaderBufferView.get());
+                        // set vertex and index streams
+                        m_meshVertexPositionBuffer.push_back(subMesh.m_positionShaderBufferView.get());
+                        m_meshVertexNormalBuffer.push_back(subMesh.m_normalShaderBufferView.get());
+                        m_meshIndexBuffer.push_back(subMesh.m_indexShaderBufferView.get());
 
-                        // vertex normal buffer
-                        const auto vbPositionNormalIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_vertexNormals"));
-                        localSrg->SetBufferView(vbPositionNormalIndex, subMesh.m_normalShaderBufferView.get());
-
-                        // index buffer
-                        const auto ibBufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_indices"));
-                        localSrg->SetBufferView(ibBufferIndex, subMesh.m_indexShaderBufferView.get());
-
-                        localSrg->Compile();
-                        localSrgIndex++;
+                        m_meshCount++;
                     }
                 }
             };
@@ -265,7 +214,7 @@ namespace AZ
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_pipeline->GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
                 RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
-                if (m_localSrgs.empty())
+                if (m_meshCount == 0)
                 {
                     m_rayTracingShaderTable = nullptr;
                     return;
@@ -277,11 +226,10 @@ namespace AZ
                     ->RayGenerationRecord(AZ::Name("RayGen"))
                     ->MissRecord(AZ::Name("Miss"));
 
-                for (auto& localSrg : m_localSrgs)
+                // add a hit group for each mesh to the shader table
+                for (uint32_t i = 0; i < m_meshCount; ++i)
                 {
-                    descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"))
-                        ->ShaderResourceGroup(localSrg->GetRHIShaderResourceGroup())
-                        ;
+                    descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
                 }
 
                 m_rayTracingShaderTable->Init(*device.get(), &descriptor, rayTracingBufferPools);
@@ -303,9 +251,9 @@ namespace AZ
                     executeFunction);
         }
 
-        void DiffuseProbeGridRayTracingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridRayTracingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -354,7 +302,15 @@ namespace AZ
                     RHI::ImageScopeAttachmentDescriptor desc;
                     desc.m_attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeIrradianceImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
+                    if (diffuseProbeGrid->GetIrradianceClearRequired())
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
+                        diffuseProbeGrid->ResetIrradianceClearRequired();
+                    }
+                    else
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+                    }
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
@@ -387,24 +343,40 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridRayTracingPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridRayTracingPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
-            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer())
+            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() && m_meshCount > 0)
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
                 {
-                    // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                    // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                    diffuseProbeGrid->UpdateRayTraceSrg(m_globalSrgAsset, scene);
+                    // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
+                    // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
+                    diffuseProbeGrid->UpdateRayTraceSrg(m_globalSrgAsset);
+
+                    const Data::Instance<RPI::ShaderResourceGroup>& globalSrg = diffuseProbeGrid->GetRayTraceSrg();
+
+                    RHI::ShaderInputConstantIndex constantIndex = globalSrg->GetLayout()->FindShaderInputConstantIndex(AZ::Name("m_closestHitData"));
+                    globalSrg->SetConstantArray(constantIndex, m_closestHitData);
+
+                    RHI::ShaderInputBufferIndex bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshVertexPositions"));
+                    globalSrg->SetBufferViewArray(bufferIndex, m_meshVertexPositionBuffer);
+
+                    bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshVertexNormals"));
+                    globalSrg->SetBufferViewArray(bufferIndex, m_meshVertexNormalBuffer);
+
+                    bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshIndices"));
+                    globalSrg->SetBufferViewArray(bufferIndex, m_meshIndexBuffer);
+
+                    globalSrg->Compile();
                 }
             }
         }
     
-        void DiffuseProbeGridRayTracingPass::BuildCommandList([[maybe_unused]] const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridRayTracingPass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -421,7 +393,7 @@ namespace AZ
                 return;
             }
 
-            if (m_localSrgs.empty())
+            if (m_meshCount == 0)
             {
                 return;
             }

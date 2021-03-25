@@ -41,9 +41,9 @@ namespace UnitTest
         }};
         
         const AZStd::vector<VertexSkinInfluences> MeshSkinningInfo = {{
-            VertexSkinInfluences{ SkinInfluence(0, 1.0f) },
-            VertexSkinInfluences{ SkinInfluence(0, 1.0f) },
-            VertexSkinInfluences{ SkinInfluence(0, 1.0f) }
+            { {0, 1.0f} },
+            { {0, 1.0f} },
+            { {0, 1.0f} },
         }};
 
         const AZStd::vector<int> MeshRemappedVertices = {{
@@ -103,7 +103,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
@@ -117,10 +117,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
@@ -134,10 +134,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
@@ -162,10 +162,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, meshNodeTransform);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo));
             actor->FinishSetup();
 
-            actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
@@ -210,9 +210,9 @@ namespace UnitTest
         const AZStd::string meshNodeName = "cloth_mesh_node";
         
         const AZStd::vector<VertexSkinInfluences> meshSkinningInfo = {{
-            VertexSkinInfluences{ SkinInfluence(1, 0.75f), SkinInfluence(0, 0.25f) },
-            VertexSkinInfluences{ SkinInfluence(1, 0.75f), SkinInfluence(0, 0.25f) },
-            VertexSkinInfluences{ SkinInfluence(1, 0.75f), SkinInfluence(0, 0.25f) }
+            { {1, 0.75f}, {0, 0.25f} },
+            { {1, 0.75f}, {0, 0.25f} },
+            { {1, 0.75f}, {0, 0.25f} },
         }};
 
         const AZ::Transform rootNodeTransform = AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, 53.0f, -65.0f));
@@ -222,10 +222,10 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(rootNodeName, rootNodeTransform);
             auto meshNodeIndex = actor->AddJoint(meshNodeName, meshNodeTransform, rootNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, meshSkinningInfo));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, meshSkinningInfo));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
@@ -270,10 +270,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =

@@ -21,7 +21,7 @@ namespace AZ
     {
         class ReflectionProbeFeatureProcessor final
             : public ReflectionProbeFeatureProcessorInterface,
-              private Data::AssetBus::Handler
+              private Data::AssetBus::MultiHandler
         {
         public:
             AZ_RTTI(ReflectionProbeFeatureProcessor, "{A08C591F-D2AB-4550-852A-4436533DB137}", ReflectionProbeFeatureProcessorInterface);
@@ -47,7 +47,6 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
-            void Render(const FeatureProcessor::RenderPacket& packet) override;
 
             // find the reflection probe volumes that contain the position
             using ReflectionProbeVector = AZStd::vector<AZStd::shared_ptr<ReflectionProbe>>;
@@ -70,13 +69,13 @@ namespace AZ
 
             void UpdatePipelineStates();
 
-            // AssetBus::Handler overrides...
+            // AssetBus::MultiHandler overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetError(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             // notifies and removes the notification entry
-            void HandleAssetNotification(Data::Asset<Data::AssetData> asset);
+            void HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationTyp);
 
             // list of reflection probes
             const size_t InitialProbeAllocationSize = 64;
@@ -87,6 +86,7 @@ namespace AZ
             {
                 AZStd::string m_relativePath;
                 AZ::Data::AssetId m_assetId;
+                bool m_existingAsset = false;
                 NotifyCubeMapAssetReadyCallback m_callback;
                 Data::Asset<RPI::StreamingImageAsset> m_asset;
             };

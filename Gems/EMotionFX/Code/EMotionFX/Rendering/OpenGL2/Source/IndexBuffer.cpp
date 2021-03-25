@@ -12,7 +12,6 @@
 
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/Config.h>
-#include "GLInclude.h"
 
 #include "IndexBuffer.h"
 
@@ -45,6 +44,8 @@ namespace RenderGL
     // initialize the index buffer
     bool IndexBuffer::Init(EIndexSize indexSize, uint32 numIndices, EUsageMode usage, void* indexData)
     {
+        initializeOpenGLFunctions();
+        resolve(QOpenGLContext::currentContext());
         if (numIndices == 0)
         {
             return true;
@@ -177,12 +178,12 @@ namespace RenderGL
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
     }
 
-    bool IndexBuffer::GetIsSuccess() const
+    bool IndexBuffer::GetIsSuccess()
     {
         return (glGetError() == GL_NO_ERROR);
     }
 
-    bool IndexBuffer::GetHasError() const
+    bool IndexBuffer::GetHasError()
     {
         return (glGetError() != GL_NO_ERROR);
     }

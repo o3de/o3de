@@ -118,14 +118,9 @@ namespace ScriptEvents
                     if (functionIndex >= 0 && functionIndex < eventHandler->GetEvents().size())
                     {
                         const AZ::BehaviorEBusHandler::BusForwarderEvent& forwarderEvent = eventHandler->GetEvents()[functionIndex];
-                        if (!forwarderEvent.m_function)
+                        if (forwarderEvent.m_function)
                         {
-                            // Note, this may be OK if it happened in Script Canvas, we can't reasonably expect every event to be handled, I just need to be sure that
-                            // if there is a handler node that we don't get this.
-                            AZ_WarningOnce("Script Events", forwarderEvent.m_function, "Function %s not found for event: %s in script: %s - if needed, provide an implementation.", parameter.m_eventName.data(), m_scriptEventName.data(), eventHandler->GetScriptPath().c_str());
-                        }
-                        else
-                        {
+                            // A handler function is installed, we will call it
                             Call(forwarderEvent, functionIndex, parameter);
                         }
                     }
@@ -140,12 +135,9 @@ namespace ScriptEvents
                     if (functionIndex >= 0 && functionIndex < eventHandler->GetEvents().size())
                     {
                         const AZ::BehaviorEBusHandler::BusForwarderEvent& forwarderEvent = eventHandler->GetEvents()[functionIndex];
-                        if (!forwarderEvent.m_function)
+                        if (forwarderEvent.m_function)
                         {
-                            AZ_WarningOnce("Script Events", forwarderEvent.m_function, "Function %s not found for event: %s in script: %s - if needed, provide an implementation.", parameter.m_eventName.data(), m_scriptEventName.data(), eventHandler->GetScriptPath().c_str());
-                        }
-                        else
-                        {
+                            // A handler function is installed, we will call it
                             Call(forwarderEvent, functionIndex, parameter);
                         }
                     }
@@ -217,8 +209,8 @@ namespace ScriptEvents
                         if (functionIndex >= 0 && functionIndex < handler->GetEvents().size())
                         {
                             AZ::BehaviorEBusHandler::BusForwarderEvent forwarderEvent = handler->GetEvents()[functionIndex];
-                            AZ_WarningOnce("Script Events", forwarderEvent.m_function, "Function %s not found for event: %s in script: %s - if needed, provide an implementation.", parameter.m_eventName.data(), m_scriptEventName.data(), handler->GetScriptPath().c_str());
 
+                            // A handler function is installed, we will call it
                             if (forwarderEvent.m_function)
                             {
                                 Call(forwarderEvent, functionIndex, parameter);

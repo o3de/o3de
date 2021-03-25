@@ -38,12 +38,7 @@ namespace EMotionFX
             {
             public:
                 AZ_RTTI(LodNodeSelectionList, "{F19C7DD2-395C-4406-9CA9-DE572F5ADD5A}", SceneData::SceneNodeSelectionList);
-                LodNodeSelectionList();
-                explicit LodNodeSelectionList(AZ::u32 lodLevel);
                 virtual ~LodNodeSelectionList() override = default;
-
-                AZStd::string GetNameLabelOverride() const;
-                AZ::u32 GetLODLevel() const;
                 bool ContainsNode(const AZStd::string& nodeName) const;
 
                 AZStd::unique_ptr<SceneDataTypes::ISceneNodeSelectionList> Copy() const override;

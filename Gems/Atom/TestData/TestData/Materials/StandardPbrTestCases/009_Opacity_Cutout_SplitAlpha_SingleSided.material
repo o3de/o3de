@@ -1,0 +1,13 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "opacity": {
+            "alphaSource": "Split",
+            "mode": "Cutout",
+            "textureMap": "TestData/Textures/checker8x8_512.png"
+        }
+    }
+}

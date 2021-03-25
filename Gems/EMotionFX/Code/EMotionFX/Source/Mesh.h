@@ -18,13 +18,16 @@
 #include "BaseObject.h"
 #include "VertexAttributeLayer.h"
 #include "Transform.h"
-#include <EMotionFX/Source/MeshBuilder.h>
 
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Array.h>
 #include <MCore/Source/Ray.h>
 #include <MCore/Source/Color.h>
 
+namespace AZ::RPI
+{
+    class ModelLodAsset;
+}
 
 namespace EMotionFX
 {
@@ -100,6 +103,8 @@ namespace EMotionFX
          * @param isCollisionMesh Set to true if this mesh is a collision mesh.
          */
         static Mesh* Create(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh);
+
+        static Mesh* CreateFromModelLod(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap);
 
         /**
          * Recalculates the vertex normals.
@@ -649,9 +654,8 @@ namespace EMotionFX
         MCORE_INLINE bool GetIsCollisionMesh() const            { return mIsCollisionMesh; }
         void SetIsCollisionMesh(bool isCollisionMesh)           { mIsCollisionMesh = isCollisionMesh; }
 
-        static Mesh* CreateFromMeshBuilder(MeshBuilder* meshBuilder);
-
     protected:
+
         MCore::Array<SubMesh*>  mSubMeshes;         /**< The collection of sub meshes. */
         uint32*                 mIndices;           /**< The array of indices, which define the faces. */
         uint8*                  mPolyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */

@@ -63,6 +63,8 @@ namespace AZ
                 AzFramework::BoundsRequestBus::Handler::BusDisconnect();
                 Deactivate();
             }
+
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void AtomActorInstance::OnTick([[maybe_unused]] float timeDelta)
@@ -176,7 +178,11 @@ namespace AZ
 
         AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const
         {
-            return m_skinnedMeshInstance->m_model->GetUvNames();
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return m_skinnedMeshInstance->m_model->GetUvNames();
+            }
+            return AZStd::unordered_set<AZ::Name>();
         }
 
         void AtomActorInstance::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -500,7 +506,7 @@ namespace AZ
         {
             SkinnedMeshOutputStreamNotificationBus::Handler::BusDisconnect();
             m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
-            if (m_skinnedMeshInstance)
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
             {
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 RegisterActor();

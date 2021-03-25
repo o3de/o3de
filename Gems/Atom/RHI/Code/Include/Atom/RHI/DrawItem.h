@@ -139,7 +139,7 @@ namespace AZ
             /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
             const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
-            /// Array of inline constants to bind (count must match m_rootConstantSize).
+            /// Array of root constants to bind (count must match m_rootConstantSize).
             const uint8_t* m_rootConstants = nullptr;
 
             /// List of scissors to be applied to this draw item only. Scissor will be restore to the previous state

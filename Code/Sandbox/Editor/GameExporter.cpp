@@ -196,6 +196,8 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     ////////////////////////////////////////////////////////////////////////
     if (exportSuccessful)
     {
+        ExportVisAreas(sLevelPath.toUtf8().data(), eExportEndian);
+
         ////////////////////////////////////////////////////////////////////////
         // Exporting map setttings
         ////////////////////////////////////////////////////////////////////////
@@ -222,9 +224,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
         //  m_texturePakFile.Close();
 
         pEditor->SetStatusText(QObject::tr("Ready"));
-
-        // Disabled, for now. (inside EncryptPakFile)
-        EncryptPakFile(m_levelPak.m_sPath);
 
         // Reopen this pak file.
         if (!OpenLevelPack(m_levelPak, true))
@@ -261,6 +260,48 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     return exportSuccessful;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+void CGameExporter::ExportVisAreas(const char* pszGamePath, EEndian eExportEndian)
+{
+    char szFileOutputPath[_MAX_PATH];
+
+    // export visareas
+    IEditor* pEditor = GetIEditor();
+
+    // remove old files
+    sprintf_s(szFileOutputPath, "%s%s", pszGamePath, COMPILED_VISAREA_MAP_FILE_NAME);
+    m_levelPak.m_pakFile.RemoveFile(szFileOutputPath);
+
+    SHotUpdateInfo* pExportInfo = NULL;
+
+    SHotUpdateInfo exportInfo;
+    I3DEngine* p3DEngine = pEditor->Get3DEngine();
+
+    if (eExportEndian == GetPlatformEndian()) // skip second export, this data is common for PC and consoles
+    {
+        std::vector<struct IStatObj*>* pTempBrushTable = NULL;
+        std::vector<_smart_ptr<IMaterial>>* pTempMatsTable = NULL;
+        std::vector<struct IStatInstGroup*>* pTempVegGroupTable = NULL;
+
+        // export visareas
+        CLogFile::WriteLine("Exporting indoors...");
+        pEditor->SetStatusText("Exporting indoors...");
+        if (IVisAreaManager* pVisAreaManager = p3DEngine->GetIVisAreaManager())
+        {
+            if (int nSize = pVisAreaManager->GetCompiledDataSize())
+            { // get visareas data from 3dengine and save it into file
+                uint8* pData = new uint8[nSize];
+                pVisAreaManager->GetCompiledData(pData, nSize, &pTempBrushTable, &pTempMatsTable, &pTempVegGroupTable, eExportEndian);
+                sprintf_s(szFileOutputPath, "%s%s", pszGamePath, COMPILED_VISAREA_MAP_FILE_NAME);
+                CCryMemFile visareasCompiledFile;
+                visareasCompiledFile.Write(pData, nSize);
+                m_levelPak.m_pakFile.UpdateFile(szFileOutputPath, visareasCompiledFile);
+                delete[] pData;
+            }
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
@@ -462,19 +503,6 @@ void CGameExporter::ExportMapInfo(XmlNodeRef& node)
     xmlAr.root = node;
 
     GetIEditor()->GetObjectManager()->GetPhysicsManager()->SerializeCollisionClasses(xmlAr);
-}
-
-void CGameExporter::EncryptPakFile([[maybe_unused]] QString& rPakFilename)
-{
-    // Disabled, for now. (inside EncryptPakFile)
-#if 0
-    CString args;
-
-    args.Format("/zip_encrypt=1 \"%s\"", rPakFilename.GetBuffer());
-    Log("Encrypting PAK: %s", rPakFilename.GetBuffer());
-    // Will need porting to QProcess when EncryptPakFile is enabled again
-    ::ShellExecute(AfxGetMainWnd()->GetSafeHwnd(), "open", "Bin32\\rc\\rc.exe", args, "", SW_HIDE);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

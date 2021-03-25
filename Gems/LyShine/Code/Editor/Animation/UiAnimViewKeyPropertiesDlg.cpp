@@ -113,14 +113,12 @@ void CUiAnimViewKeyPropertiesDlg::CreateAllVars()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewKeyPropertiesDlg::PopulateVariables()
 {
-    //SetVarBlock( m_pVarBlock,functor(*this,&CUiAnimViewKeyPropertiesDlg::OnVarChange) );
-
     // Must first clear any selection in properties window.
     m_wndProps->ClearSelection();
     m_wndProps->RemoveAllItems();
     m_wndProps->AddVarBlock(m_pVarBlock);
 
-    m_wndProps->SetUpdateCallback(functor(*this, &CUiAnimViewKeyPropertiesDlg::OnVarChange));
+    m_wndProps->SetUpdateCallback(AZStd::bind(&CUiAnimViewKeyPropertiesDlg::OnVarChange, this, AZStd::placeholders::_1));
     //m_wndProps->ExpandAll();
 
 

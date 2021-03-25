@@ -32,7 +32,7 @@ namespace GraphCanvas
 
         EditActionsMenuGroup m_editorActionsGroup;
         GraphCanvasConstructActionsMenuGroup m_graphCanvasConstructGroups;
-        NodeGroupPresetsMenuActionGroup m_nodeGroupPresets;
+        CreateNodeGroupPresetMenuActionGroup m_nodeGroupPresets;
         AlignmentActionsMenuGroup m_alignmentActionsGroups;
     };
 }

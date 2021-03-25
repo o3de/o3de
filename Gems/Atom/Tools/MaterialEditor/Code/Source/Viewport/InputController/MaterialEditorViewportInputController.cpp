@@ -41,14 +41,13 @@ namespace MaterialEditor
         m_behaviorMap[None] = AZStd::make_shared<IdleBehavior>();
         m_behaviorMap[Lmb] = AZStd::make_shared<PanCameraBehavior>();
         m_behaviorMap[Mmb] = AZStd::make_shared<MoveCameraBehavior>();
-        m_behaviorMap[Rmb] = AZStd::make_shared<OrbitCameraBehavior>(); // orbit around model
-        m_behaviorMap[Alt ^ Lmb] = AZStd::make_shared<OrbitCameraBehavior>(); // orbit around arbitrary point
+        m_behaviorMap[Rmb] = AZStd::make_shared<OrbitCameraBehavior>();
+        m_behaviorMap[Alt ^ Lmb] = AZStd::make_shared<OrbitCameraBehavior>();
         m_behaviorMap[Alt ^ Mmb] = AZStd::make_shared<MoveCameraBehavior>();
         m_behaviorMap[Alt ^ Rmb] = AZStd::make_shared<DollyCameraBehavior>();
         m_behaviorMap[Lmb ^ Rmb] = AZStd::make_shared<DollyCameraBehavior>();
         m_behaviorMap[Ctrl ^ Lmb] = AZStd::make_shared<RotateModelBehavior>();
         m_behaviorMap[Shift ^ Lmb] = AZStd::make_shared<RotateEnvironmentBehavior>();
-        m_behavior = m_behaviorMap[None];
     }
 
     MaterialEditorViewportInputController::~MaterialEditorViewportInputController()
@@ -112,13 +111,13 @@ namespace MaterialEditor
         distanceMax = m_distanceMax;
     }
 
-    void MaterialEditorViewportInputController::UpdateViewport(AzFramework::ViewportId, AzFramework::FloatSeconds deltaTime, AZ::ScriptTimePoint)
+    void MaterialEditorViewportInputController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
         if (m_keysChanged)
         {
             if (m_timeToBehaviorSwitchMs > 0)
             {
-                m_timeToBehaviorSwitchMs -= deltaTime.count();
+                m_timeToBehaviorSwitchMs -= event.m_deltaTime.count();
             }
             if (m_timeToBehaviorSwitchMs <= 0)
             {
@@ -128,15 +127,20 @@ namespace MaterialEditor
         }
     }
 
-    bool MaterialEditorViewportInputController::HandleInputChannelEvent([[maybe_unused]] AzFramework::ViewportId viewport, const AzFramework::InputChannel& inputChannel)
+    bool MaterialEditorViewportInputController::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
         using namespace AzFramework;
 
-        const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
-        const InputChannel::State state = inputChannel.GetState();
+        const InputChannelId& inputChannelId = event.m_inputChannel.GetInputChannelId();
+        const InputChannel::State state = event.m_inputChannel.GetState();
         const KeyMask keysOld = m_keys;
 
-        switch (inputChannel.GetState())
+        if (!m_behavior)
+        {
+            EvaluateControlBehavior();
+        }
+
+        switch (state)
         {
         case InputChannel::State::Began:
             if (inputChannelId == InputDeviceMouse::Button::Left)
@@ -165,11 +169,15 @@ namespace MaterialEditor
             }
             if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                m_behavior->MoveX(inputChannel.GetValue());
+                m_behavior->MoveX(event.m_inputChannel.GetValue());
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Y)
             {
-                m_behavior->MoveY(inputChannel.GetValue());
+                m_behavior->MoveY(event.m_inputChannel.GetValue());
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Z)
+            {
+                m_behavior->MoveZ(event.m_inputChannel.GetValue());
             }
             break;
         case InputChannel::State::Ended:
@@ -197,7 +205,7 @@ namespace MaterialEditor
             {
                 m_keys &= ~Shift;
             }
-            else if (inputChannelId == InputDeviceKeyboard::Key::AlphanumericZ)
+            else if (inputChannelId == InputDeviceKeyboard::Key::AlphanumericZ && (m_keys & Ctrl) == None)
             {
                 Reset();
             }
@@ -205,11 +213,15 @@ namespace MaterialEditor
         case InputChannel::State::Updated:
             if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                m_behavior->MoveX(inputChannel.GetValue());
+                m_behavior->MoveX(event.m_inputChannel.GetValue());
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Y)
             {
-                m_behavior->MoveY(inputChannel.GetValue());
+                m_behavior->MoveY(event.m_inputChannel.GetValue());
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Z)
+            {
+                m_behavior->MoveZ(event.m_inputChannel.GetValue());
             }
             break;
         }
@@ -279,26 +291,27 @@ namespace MaterialEditor
 
     void MaterialEditorViewportInputController::EvaluateControlBehavior()
     {
+        AZStd::shared_ptr<Behavior> nextBehavior;
         auto it = m_behaviorMap.find(m_keys);
         if (it == m_behaviorMap.end())
         {
-            m_behavior = m_behaviorMap[None];
-            return;
+            nextBehavior = m_behaviorMap[None];
+        }
+        else
+        {
+            nextBehavior = it->second;
         }
 
-        if (it->second == m_behavior)
+        if (nextBehavior == m_behavior)
         {
             return;
         }
 
-        if (m_keys == Rmb)
+        if (m_behavior)
         {
-            // Rmb+drag orbits the camera around the model, so we need to reset target position to model center
-            m_targetPosition = m_modelCenter;
+            m_behavior->End();
         }
-
-        m_behavior->End();
-        m_behavior = it->second;
+        m_behavior = nextBehavior;
         m_behavior->Start();
     }
 } // namespace MaterialEditor

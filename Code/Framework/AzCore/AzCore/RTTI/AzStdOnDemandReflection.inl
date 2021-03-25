@@ -22,6 +22,7 @@
 #include <AzCore/std/string/tokenize.h>
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+#include <AzCore/EBus/Event.h>
 
 // forward declare specialized types
 namespace AZStd
@@ -359,6 +360,62 @@ namespace AZ
     private:
         typename ContainerType::iterator m_iterator;
         typename ContainerType::iterator m_end;
+    };
+
+    template<typename T>
+    using decay_array = AZStd::conditional_t<AZStd::is_array_v<AZStd::remove_reference_t<T>>, std::remove_extent_t<AZStd::remove_reference_t<T>>*, T&&>;
+
+    template<typename... T>
+    BehaviorObject CreateConnectedAZEventHandler(void* voidPtr, BehaviorFunction&& function)
+    {
+        auto behaviorForwardingFunction = [function](T... args)
+        {
+            AZStd::tuple<decay_array<T>...> lvalueWrapper(AZStd::forward<T>(args)...);
+            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            auto MakeBVPArrayFunction = [](auto&&... element)
+            {
+                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+            };
+            BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
+            function(nullptr, argsBVPs.data(), sizeof...(T));
+        };
+
+        auto result = aznew AZ::EventHandler<T...>(AZStd::move(behaviorForwardingFunction));
+        auto eventPtr = reinterpret_cast<AZ::Event<T...>*>(voidPtr);
+        result->Connect(*eventPtr);
+        return { reinterpret_cast<void*>(result), azrtti_typeid<AZ::EventHandler<T...>>() };
+    }
+
+    template<typename... T>
+    struct OnDemandReflection<AZ::Event<T...>>
+    {
+        template<typename U>
+        static AZ::BehaviorParameter CreateBehaviorEventParameter()
+        {
+            AZ::BehaviorParameter param;
+            AZ::Internal::SetParametersStripped<U>(&param, nullptr);
+            return param;
+        }
+        static void Reflect(ReflectContext* context)
+        {
+            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                AZ::EventHandlerCreationFunctionHolder createHandlerHolder;
+                createHandlerHolder.m_function = &CreateConnectedAZEventHandler<T...>;
+
+                AZStd::vector<AZ::BehaviorParameter> eventParamsTypes{ AZStd::initializer_list<AZ::BehaviorParameter>{
+                    CreateBehaviorEventParameter<decay_array<T>>()... } };
+                behaviorContext->Class<AZ::Event<T...>>()
+                    ->Attribute(AZ::Script::Attributes::EventHandlerCreationFunction, createHandlerHolder)
+                    ->Attribute(AZ::Script::Attributes::EventParameterTypes, eventParamsTypes)
+                    ->Method("HasHandlerConnected", &AZ::Event<T...>::HasHandlerConnected)
+                    ;
+
+                behaviorContext->Class<AZ::EventHandler<T...>>()
+                    ->Method("Disconnect", &AZ::EventHandler<T...>::Disconnect)
+                    ;
+            }
+        }
     };
 
     /// OnDemand reflection for AZStd::vector
@@ -908,6 +965,11 @@ namespace AZ
                 emptyBranchInfo.m_trueToolTip = "The container is empty";
                 emptyBranchInfo.m_falseToolTip = "The container is not empty";
 
+                auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
+                {
+                    return containerType.contains(key);
+                };
+
                 ExplicitOverloadInfo explicitOverloadInfo;
                 behaviorContext->Class<ContainerType>()
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
@@ -917,7 +979,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::ScriptOwn)
                     ->Method(k_accessElementName, &At)
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
-                        ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("Contains", {}, "Out", "Key Not Found"))
+                        ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("contains", {}, "Out", "Key Not Found"))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Element", "Containers"))
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
                     ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
@@ -933,8 +995,9 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Method("GetKeys", &GetKeys)
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                    ->Method("Contains", [](ContainerType& map, Key& key)->bool { return map.contains(key); }, { { { "Key", "The key to check for", nullptr, {} } } })
+                    ->Method("contains", ContainsTransparent, { { { "Key", "The key to check for", nullptr, {} } } })
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Has Key", "Containers"))
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                     ->Method("Insert", &Insert, { { {}, { "Index", "The index at which to insert the value", nullptr, {} }, {} } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Insert", "Containers"))
@@ -1011,6 +1074,11 @@ namespace AZ
         {
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
+                auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
+                {
+                    return containerType.contains(key);
+                };
+
                 behaviorContext->Class<ContainerType>()
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
@@ -1020,7 +1088,8 @@ namespace AZ
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
                     ->Method("Erase", &Erase)
                     ->Method("Empty", [](ContainerType& thisSet)->bool { return thisSet.empty(); })
-                    ->Method("contains", [](ContainerType& thisSet, Key& key)->bool { return thisSet.find(key) != thisSet.end(); })
+                    ->Method("contains", ContainsTransparent)
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                     ->Method("Insert", &Insert)
                     ->Method(k_sizeName, [](ContainerType* thisPtr) { return aznumeric_cast<int>(thisPtr->size()); })
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Length)

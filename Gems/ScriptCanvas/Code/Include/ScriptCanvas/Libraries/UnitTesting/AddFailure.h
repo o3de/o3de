@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.generated.h>
 
@@ -22,30 +21,17 @@ namespace ScriptCanvas
     {
         namespace UnitTesting
         {
+            //! Used to represent that a unit test graph's operation has failed
             class AddFailure
                 : public Node
             {
             public:
-                ScriptCanvas_Node(AddFailure,
-                    ScriptCanvas_Node::Name("Add Failure", "adds a failure directly to the unit testing framework")
-                    ScriptCanvas_Node::Uuid("{1C4971A7-DE76-4E8E-9381-F579A57B2A78}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/AddFailure.png")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(AddFailure);
 
                 void OnInputSignal(const SlotId& slotId) override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report")
-                    ScriptCanvas_Property::Input);
-            }; // class AddFailure
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            };
+        }
+    }
+}

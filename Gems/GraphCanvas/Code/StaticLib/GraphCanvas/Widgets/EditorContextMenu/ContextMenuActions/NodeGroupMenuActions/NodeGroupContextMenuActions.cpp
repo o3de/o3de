@@ -112,25 +112,21 @@ namespace GraphCanvas
         setEnabled((GraphUtils::IsNodeGroup(targetId) || GraphUtils::IsCollapsedNodeGroup(targetId)));
     }
 
-    ContextMenuAction::SceneReaction UngroupNodeGroupMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction UngroupNodeGroupMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
-        const GraphId& graphId = GetGraphId();        
+        const GraphId& graphId = GetGraphId();
         AZ::EntityId groupTarget = GetTargetId();
-
-        if (GraphUtils::IsCollapsedNodeGroup(groupTarget))
-        {
-            CollapsedNodeGroupRequestBus::EventResult(groupTarget, groupTarget, &CollapsedNodeGroupRequests::GetSourceGroup);
-        }
 
         SceneReaction reaction = SceneReaction::Nothing;
 
-        if (groupTarget.IsValid())
+        if (GraphUtils::UngroupGroup(graphId, groupTarget))
         {
-            NodeGroupRequestBus::Event(groupTarget, &NodeGroupRequests::UngroupGroup);
-            reaction = SceneReaction::PostUndo;
+            return SceneReaction::PostUndo;
         }
-
-        return reaction;
+        else
+        {
+            return SceneReaction::Nothing;
+        }
     }
 
     ////////////////////////////////
@@ -150,7 +146,7 @@ namespace GraphCanvas
         setEnabled(GraphUtils::IsNodeGroup(targetId));
     }
 
-    ContextMenuAction::SceneReaction CollapseNodeGroupMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction CollapseNodeGroupMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
 
@@ -175,7 +171,7 @@ namespace GraphCanvas
         setEnabled(GraphUtils::IsCollapsedNodeGroup(targetId));
     }
 
-    ContextMenuAction::SceneReaction ExpandNodeGroupMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction ExpandNodeGroupMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
         CollapsedNodeGroupRequestBus::Event(targetId, &CollapsedNodeGroupRequests::ExpandGroup);
@@ -200,7 +196,7 @@ namespace GraphCanvas
         setEnabled(GraphUtils::IsNodeGroup(targetId));
     }
 
-    ContextMenuAction::SceneReaction EditGroupTitleMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction EditGroupTitleMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
 

@@ -28,6 +28,8 @@ namespace AZ
             public:
                 AZ_RTTI(MeshVertexColorData, "{17477B86-B163-4574-8FB2-4916BC218B3D}", AZ::SceneAPI::DataTypes::IMeshVertexColorData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API ~MeshVertexColorData() override = default;
 
                 SCENE_DATA_API const AZ::Name& GetCustomName() const override;

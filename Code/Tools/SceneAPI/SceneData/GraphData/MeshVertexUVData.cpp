@@ -11,6 +11,8 @@
 */
 
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -18,6 +20,26 @@ namespace AZ
     {
         namespace GraphData
         {
+            void MeshVertexUVData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<MeshVertexUVData>()->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<MeshVertexUVData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetCustomName",[](const MeshVertexUVData& self) { return self.GetCustomName().GetCStr(); })
+                        ->Method("GetCount", &MeshVertexUVData::GetCount)
+                        ->Method("GetUV", &MeshVertexUVData::GetUV);
+                }
+            }
+
             const AZ::Name& MeshVertexUVData::GetCustomName() const
             {
                 return m_customName;
@@ -48,7 +70,6 @@ namespace AZ
             {
                 m_uvs.push_back(uv);
             }
-
 
             void MeshVertexUVData::GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const
             {

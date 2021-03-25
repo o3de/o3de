@@ -36,7 +36,7 @@ namespace ScriptCanvas
                 Data::Type GetSlotDataType(const SlotId& slotId) const override;
                 void OnInit() override;
                 void OnInputSignal(const SlotId&) override;
-                bool SlotAcceptsType(const SlotId&, const Data::Type&) const override;
+                AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
                 
             };
         }

@@ -38,7 +38,7 @@ namespace ScriptCanvasEditor
         ////
         
         // ScriptCanvas::NodeNotificationsBus
-        void OnInputChanged(const ScriptCanvas::SlotId& slotId) override;
+        void OnSlotInputChanged(const ScriptCanvas::SlotId& slotId) override;
         ////
 
     private:

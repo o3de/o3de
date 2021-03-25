@@ -29,6 +29,16 @@ namespace ScriptCanvas
 
     class ModifiableDatumView;
 
+    enum class NodeDisabledFlag : int
+    {
+        None = 0,
+        User = 1 << 0,
+        ErrorInUpdate = 1 << 1,
+
+        // Appending non user flag here
+        NonUser = ErrorInUpdate
+    };
+
     class NodeRequests : public AZ::EBusTraits
     {
     public:
@@ -69,12 +79,12 @@ namespace ScriptCanvas
         {
             AZ_Warning("ScriptCanvas", false, "Using Deprecated GetInput method call. Please switch to FindDatum call instead, this method will be removed in a future update.");
             return FindDatum(slotId);
-        }        
+        }
 
         virtual void FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) = 0;
 
         //! Determines whether the slot on this node with the specified slot id can accept values of the specified type
-        virtual bool SlotAcceptsType(const SlotId&, const Data::Type&) const = 0;
+        virtual AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const = 0;
 
         //! Gets the input for the given SlotId
         virtual Data::Type GetSlotDataType(const SlotId& slotId) const = 0;
@@ -92,13 +102,17 @@ namespace ScriptCanvas
 
         virtual bool IsOnPureDataThread(const SlotId& slotId) const = 0;
 
+        virtual AZ::Outcome<void, AZStd::string> IsValidTypeForSlot(const SlotId& slotId, const Data::Type& dataType) const = 0;
         virtual AZ::Outcome<void, AZStd::string> IsValidTypeForGroup(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) const = 0;
 
         virtual void SignalBatchedConnectionManipulationBegin() = 0;
         virtual void SignalBatchedConnectionManipulationEnd() = 0;
 
-        virtual void SetNodeEnabled(bool enabled) = 0;
+        virtual void AddNodeDisabledFlag(NodeDisabledFlag disabledFlag) = 0;
+        virtual void RemoveNodeDisabledFlag(NodeDisabledFlag disabledFlag) = 0;
+
         virtual bool IsNodeEnabled() const = 0;
+        virtual bool HasNodeDisabledFlag(NodeDisabledFlag disabledFlag) const = 0;
 
         virtual bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) = 0;
     };
@@ -122,7 +136,7 @@ namespace ScriptCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void OnInputChanged(const SlotId& /*slotId*/) {}
+        virtual void OnSlotInputChanged(const SlotId& /*slotId*/) {}
 
         //! Events signaled when a slot is added or removed from a node
         virtual void OnSlotAdded(const SlotId& /*slotId*/) {}

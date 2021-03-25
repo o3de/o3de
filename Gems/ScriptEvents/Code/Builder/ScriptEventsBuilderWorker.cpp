@@ -182,8 +182,7 @@ namespace ScriptEventsBuilder
 
         AZ_TracePrintf(s_scriptEventsBuilder, "Script Events Asset preload\n");
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset;
-        asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-
+        asset.Create(request.m_sourceFileUUID);
         if (editorAssetHandler->LoadAssetData(asset, assetDataStream, nullptr) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
             AZ_Error(s_scriptEventsBuilder, false, R"(Loading of ScriptEvents asset for source file "%s" has failed)", fullPath.data());
@@ -206,7 +205,7 @@ namespace ScriptEventsBuilder
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
 
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> productionAsset;
-        productionAsset.Create(AZ::Uuid::CreateRandom());
+        productionAsset.Create(request.m_sourceFileUUID);
         productionAsset.Get()->m_definition = AZStd::move(definition);
 
         editorAssetHandler->SetSaveAsBinary(true);

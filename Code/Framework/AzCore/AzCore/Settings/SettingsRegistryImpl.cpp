@@ -1059,6 +1059,15 @@ namespace AZ
         }
 
         u64 fileSize = file.Length();
+        if (fileSize == 0)
+        {
+            AZ_Warning("Settings Registry", false, R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path);
+            pointer.Create(m_settings, m_settings.GetAllocator())
+                .SetObject()
+                .AddMember(StringRef("Error"), StringRef("registry file is 0 bytes."), m_settings.GetAllocator())
+                .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
+            return false;
+        }
         scratchBuffer.clear();
         scratchBuffer.resize_no_construct(fileSize + 1);
         if (file.Read(fileSize, scratchBuffer.data()) != fileSize)
@@ -1076,8 +1085,17 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
-            AZ_Error("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
-                path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+            if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
+            {
+                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
+                    path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+            }
+            else
+            {
+                AZ_Error("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)", path,
+                    GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+            }
+            
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to parse registry file due to invalid json."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator())

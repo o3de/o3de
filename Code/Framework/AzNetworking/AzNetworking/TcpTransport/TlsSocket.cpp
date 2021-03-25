@@ -176,7 +176,7 @@ namespace AzNetworking
         TcpSocket::Close();
     }
 
-    int32_t TlsSocket::SendInternal(const uint8_t* data, uint32_t size) const
+    int32_t TlsSocket::SendInternal([[maybe_unused]] const uint8_t* data, [[maybe_unused]] uint32_t size) const
     {
         if (m_sslSocket == nullptr)
         {
@@ -201,7 +201,7 @@ namespace AzNetworking
 #endif
     }
 
-    int32_t TlsSocket::ReceiveInternal(uint8_t* outData, uint32_t size) const
+    int32_t TlsSocket::ReceiveInternal([[maybe_unused]] uint8_t* outData, [[maybe_unused]] uint32_t size) const
     {
         if (m_sslSocket == nullptr)
         {

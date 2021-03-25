@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+#include <QMenu>
 
 namespace ScriptCanvasDeveloperEditor
 {
@@ -34,17 +35,18 @@ namespace ScriptCanvasDeveloperEditor
         void DumpBehaviorContextMethods(AZStd::string& dumpStr);
         void DumpBehaviorContextEbuses(AZStd::string& dumpStr);
 
-        QAction* CreateNodeListDumpAction(QWidget* mainWindow)
+        QAction* CreateNodeListDumpAction(QMenu* mainMenu)
         {
-            QAction* nodeDumpAction{};
-            if (mainWindow)
+            QAction* nodeDumpAction = nullptr;
+
+            if (mainMenu)
             {
-                nodeDumpAction = new QAction(QAction::tr("Dump EBus Nodes"), mainWindow);
+                nodeDumpAction = mainMenu->addAction(QAction::tr("Dump EBus Nodes"));
                 nodeDumpAction->setAutoRepeat(false);
                 nodeDumpAction->setToolTip("Dumps a list of all EBus nodes(their inputs and outputs) to the clipboard");
                 nodeDumpAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Alt+N", "Debug|Dump EBus Nodes")));
-                mainWindow->addAction(nodeDumpAction);
-                mainWindow->connect(nodeDumpAction, &QAction::triggered, &DumpBehaviorContextNodes);
+
+                QObject::connect(nodeDumpAction, &QAction::triggered, &DumpBehaviorContextNodes);
             }
 
             return nodeDumpAction;
@@ -391,5 +393,5 @@ namespace ScriptCanvasDeveloperEditor
                 }
             }
         }
-    } // namespace NodeListDumpAction
+    }
 }

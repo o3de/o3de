@@ -173,6 +173,7 @@ public:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override { return m_viewEntityId; }
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     virtual void OnStartPlayInEditor();
@@ -192,7 +193,6 @@ public:
     QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
     AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint&, float) override { return {}; }
     AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint&) override { return {}; }
-    QPoint ViewportCursorScreenPosition() override { return {}; }
 
     // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;

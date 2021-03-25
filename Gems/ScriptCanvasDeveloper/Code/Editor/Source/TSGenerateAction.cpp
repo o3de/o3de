@@ -27,6 +27,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+#include <QMenu>
 
 namespace ScriptCanvasDeveloperEditor
 {
@@ -40,18 +41,18 @@ namespace ScriptCanvasDeveloperEditor
         void AddMessageNode(const XMLDocPtr& doc, const AZStd::string& classorbusName, const AZStd::string& eventormethodName, const AZStd::string& toolTip, const AZStd::string& categoryName, const AZ::BehaviorEBusHandler::BusForwarderEvent& event);
         void AddMessageNode(const XMLDocPtr& doc, const AZStd::string& classorbusName, const AZStd::string& eventormethodName, const AZStd::string& toolTip, const AZStd::string& categoryName, const AZ::BehaviorMethod* method);
 
-        QAction* SetupTSFileAction(QWidget* mainWindow)
+        QAction* SetupTSFileAction(QMenu* mainMenu)
         {
             QAction* qAction = nullptr;
 
-            if (mainWindow)
+            if (mainMenu)
             {
-                qAction = new QAction(QAction::tr("Create EBus Localization File"), mainWindow);
+                qAction = mainMenu->addAction(QAction::tr("Create EBus Localization File"));
                 qAction->setAutoRepeat(false);
                 qAction->setToolTip("Creates a QT .TS file of all EBus nodes(their inputs and outputs) to a file in the current folder.");
                 qAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Alt+X", "Debug|Build EBus .TS file")));
-                mainWindow->addAction(qAction);
-                mainWindow->connect(qAction, &QAction::triggered, &GenerateTSFile);
+
+                QObject::connect(qAction, &QAction::triggered, &GenerateTSFile);
             }
 
             return qAction;
@@ -437,5 +438,5 @@ namespace ScriptCanvasDeveloperEditor
                 }
             }
         }
-    } // namespace TSGenerateAction
+    }
 }

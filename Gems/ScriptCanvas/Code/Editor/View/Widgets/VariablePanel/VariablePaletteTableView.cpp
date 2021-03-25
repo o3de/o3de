@@ -71,7 +71,7 @@ namespace ScriptCanvasEditor
 
         m_completer = new QCompleter();
 
-        m_completer->setModel(m_model);
+        m_completer->setModel(m_proxyModel);
         m_completer->setCompletionColumn(DataTypePaletteModel::ColumnIndex::Type);
         m_completer->setCompletionMode(QCompleter::CompletionMode::InlineCompletion);
         m_completer->setCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
@@ -120,8 +120,14 @@ namespace ScriptCanvasEditor
 
         AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
 
-        for (const AZ::Uuid& objectId : objectTypes)        
+        for (const AZ::Uuid& objectId : objectTypes)
         {
+            // Verify whether this is an allowed BC variable type
+            if (!ScriptCanvas::Data::IsAllowedBehaviorClassVariableType(objectId))
+            {
+                continue;
+            }
+
             // For now, we need to register all of the objectId's with the container wizard
             // in order to properly populate the list of valid container configurations.
             m_containerWizard->RegisterType(objectId);
@@ -249,7 +255,7 @@ namespace ScriptCanvasEditor
         if (!typeId.IsNull() && typeId != azrtti_typeid<void>())
         {
             if (index.column() == DataTypePaletteModel::ColumnIndex::Pinned)
-            {                
+            {
                 m_model->TogglePendingPinChange(typeId);
                 m_model->dataChanged(sourceIndex, sourceIndex);
             }

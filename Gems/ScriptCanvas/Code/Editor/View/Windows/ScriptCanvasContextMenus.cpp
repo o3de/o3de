@@ -40,14 +40,15 @@
 #include <GraphCanvas/Utils/ConversionUtils.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 
 #include "ScriptCanvasContextMenus.h"
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
-#include <ScriptCanvas/Libraries/Core/ExecutionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
 #include <GraphCanvas/Types/Endpoint.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -101,7 +102,7 @@ namespace ScriptCanvasEditor
         for (const AZ::EntityId& id : selectedEntities)
         {
             NodeIdPair nodePair = Nodes::CreateEntityNode(id, scriptCanvasId);
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, addPosition);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, addPosition, false);
             addPosition += AZ::Vector2(20, 20);
         }
 
@@ -220,12 +221,18 @@ namespace ScriptCanvasEditor
     void ConvertVariableNodeToReferenceAction::RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
     {
         bool hasMultipleSelection = false;
-        GraphCanvas::SceneRequestBus::EventResult(hasMultipleSelection, graphId, &GraphCanvas::SceneRequests::HasMultipleSelection);
-
-        // This item is added only when it's valid.
-        setEnabled(!hasMultipleSelection);
+        GraphCanvas::SceneRequestBus::EventResult(hasMultipleSelection, graphId, &GraphCanvas::SceneRequests::HasMultipleSelection);        
 
         m_targetId = targetId;
+
+        ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+
+        bool canConvertNode = false;
+        EditorGraphRequestBus::EventResult(canConvertNode, scriptCanvasId, &EditorGraphRequests::CanConvertVariableNodeToReference, m_targetId);
+
+        // This item is added only when it's valid
+        setEnabled(canConvertNode && !hasMultipleSelection);
     }
 
     GraphCanvas::ContextMenuAction::SceneReaction ConvertVariableNodeToReferenceAction::TriggerAction(const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2& scenePos)
@@ -341,7 +348,7 @@ namespace ScriptCanvasEditor
             return SceneReaction::Nothing;
         }
 
-        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, createdNodeId, scenePos);
+        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, createdNodeId, scenePos, false);
 
         GraphCanvas::CreateConnectionsBetweenConfig createConnectionBetweenConfig;
 
@@ -446,38 +453,13 @@ namespace ScriptCanvasEditor
         ScriptCanvas::ScriptCanvasId scriptCanvasId;
         GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
 
-        bool isEnabled = false;
-        EditorGraphRequestBus::EventResult(isEnabled, scriptCanvasId, &EditorGraphRequests::IsFunctionGraph);
-
         GraphCanvas::NodeId nodeId;
         GraphCanvas::SlotRequestBus::EventResult(nodeId, targetId, &GraphCanvas::SlotRequests::GetNode);
 
-        GraphCanvas::SlotType slotType;
-        GraphCanvas::SlotRequestBus::EventResult(slotType, targetId, &GraphCanvas::SlotRequests::GetSlotType);
+        bool canExposeSlot = false;
+        EditorGraphRequestBus::EventResult(canExposeSlot, scriptCanvasId, &EditorGraphRequests::CanExposeEndpoint, GraphCanvas::Endpoint(nodeId, targetId ));        
 
-        if (slotType == GraphCanvas::SlotTypes::DataSlot)
-        {
-            GraphCanvas::DataSlotType dataSlotType = GraphCanvas::DataSlotType::Unknown;
-            GraphCanvas::DataSlotRequestBus::EventResult(dataSlotType, targetId, &GraphCanvas::DataSlotRequests::GetDataSlotType);
-
-            if (dataSlotType != GraphCanvas::DataSlotType::Value)
-            {
-                isEnabled = false;
-            }
-
-            bool hasConnections = false;
-            GraphCanvas::SlotRequestBus::EventResult(hasConnections, targetId, &GraphCanvas::SlotRequests::HasConnections);
-
-            if (hasConnections)
-            {
-                isEnabled = false;
-            }
-        }
-
-        bool isNodeling = false;
-        NodeDescriptorRequestBus::EventResult(isNodeling, nodeId, &NodeDescriptorRequests::IsType, NodeDescriptorType::ExecutionNodeling);
-
-        setEnabled(isEnabled && !isNodeling);
+        setEnabled(canExposeSlot);
     }
 
     void ExposeSlotMenuAction::CreateNodeling(const GraphCanvas::GraphId& graphId, AZ::EntityId scriptCanvasGraphId, GraphCanvas::GraphId slotId, const AZ::Vector2& scenePos, GraphCanvas::ConnectionType connectionType)
@@ -487,13 +469,13 @@ namespace ScriptCanvasEditor
 
         NodeIdPair nodePair = ScriptCanvasEditor::Nodes::CreateExecutionNodeling(scriptCanvasGraphId);
 
-        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, scenePos);
+        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, scenePos, false);
 
         GraphCanvas::Endpoint graphCanvasEndpoint;
         GraphCanvas::SlotRequestBus::EventResult(graphCanvasEndpoint, slotId, &GraphCanvas::SlotRequests::GetEndpoint);
 
         // Find the execution "nodeling"
-        ScriptCanvas::Nodes::Core::ExecutionNodeling* nodeling = ScriptCanvasEditor::Nodes::GetNode<ScriptCanvas::Nodes::Core::ExecutionNodeling>(scriptCanvasGraphId, nodePair);
+        ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling = ScriptCanvasEditor::Nodes::GetNode<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(scriptCanvasGraphId, nodePair);
 
         // Configure the Execution node
         AZStd::string nodeTitle;
@@ -624,7 +606,173 @@ namespace ScriptCanvasEditor
 
         return GraphCanvas::ContextMenuAction::SceneReaction::PostUndo;
     }
-    
+
+    CreateAzEventHandlerSlotMenuAction::CreateAzEventHandlerSlotMenuAction(QObject* parent)
+        : SlotContextMenuAction("Create event handler", parent)
+    {
+    }
+
+    void CreateAzEventHandlerSlotMenuAction::RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
+    {
+        m_methodWithAzEventReturn = FindBehaviorMethodWithAzEventReturn(graphId, targetId);
+        if (m_methodWithAzEventReturn)
+        {
+            // Store the GraphCanvas endpoint corresponding to the supplied slot
+            GraphCanvas::SlotRequestBus::Event(targetId, [this](GraphCanvas::SlotRequests* slotRequests)
+            {
+                m_methodNodeAzEventEndpoint = slotRequests->GetEndpoint();
+            });
+            setEnabled(true);
+            return;
+        }
+
+        setEnabled(false);
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction CreateAzEventHandlerSlotMenuAction::TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos)
+    {
+        if (m_methodWithAzEventReturn)
+        {
+            ScriptCanvas::ScriptCanvasId scriptCanvasGraphId;
+            GeneralRequestBus::BroadcastResult(scriptCanvasGraphId, &GeneralRequests::GetScriptCanvasId, graphId);
+
+            // Retrieve the MethodNodeScriptCanvasId and pass that in to the CreateAzEventHandlerNode function to enforce
+            // the restricted node contract
+            AZ::EntityId methodNodeScriptCanvasId;
+            auto GetScriptCanvasNodeId = [&methodNodeScriptCanvasId](GraphCanvas::NodeRequests* nodeRequests)
+            {
+                if (auto scNodeId = AZStd::any_cast<AZ::EntityId>(nodeRequests->GetUserData());
+                    scNodeId != nullptr)
+                {
+                    methodNodeScriptCanvasId = *scNodeId;
+                }
+            };
+            GraphCanvas::NodeRequestBus::Event(m_methodNodeAzEventEndpoint.GetNodeId(), GetScriptCanvasNodeId);
+            NodeIdPair nodePair = Nodes::CreateAzEventHandlerNode(*m_methodWithAzEventReturn, scriptCanvasGraphId,
+                methodNodeScriptCanvasId);
+
+            if (nodePair.m_graphCanvasId.IsValid())
+            {
+                // Add newly created GraphCanvas node to the GraphCanvas scene
+                GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, scenePos, false);
+
+                // Connect the AZ::Event<Params...> data output from the MethodNode to newly created AzEventHandler node data input slot of the same type
+                GraphCanvas::CreateConnectionsBetweenConfig createConnectionBetweenConfig;
+                createConnectionBetweenConfig.m_connectionType = GraphCanvas::CreateConnectionsBetweenConfig::CreationType::SingleConnection;
+                createConnectionBetweenConfig.m_createModelConnections = true;
+                GraphCanvas::GraphUtils::CreateConnectionsBetween({ m_methodNodeAzEventEndpoint }, nodePair.m_graphCanvasId, createConnectionBetweenConfig);
+
+                if (!createConnectionBetweenConfig.m_createdConnections.empty())
+                {
+                    GraphCanvas::Endpoint otherEndpoint;
+                    GraphCanvas::ConnectionRequestBus::EventResult(otherEndpoint, *createConnectionBetweenConfig.m_createdConnections.begin(),
+                        &GraphCanvas::ConnectionRequests::FindOtherEndpoint, m_methodNodeAzEventEndpoint);
+
+                    if (otherEndpoint.IsValid())
+                    {
+                        // This will connect the execution output slot from the MethodNode to the Connect input slot
+                        // on our newly created AzEventHandler node
+                        auto opportunisticConnections = GraphCanvas::GraphUtils::CreateOpportunisticConnectionsBetween(m_methodNodeAzEventEndpoint, otherEndpoint);
+                        createConnectionBetweenConfig.m_createdConnections.insert(opportunisticConnections.begin(), opportunisticConnections.end());
+
+                        // Update the AzEventHandler node position to not overlap over the MethodNode
+                        GraphCanvas::GraphUtils::AlignSlotForConnection(otherEndpoint, m_methodNodeAzEventEndpoint);
+                    }
+
+                    // Disable the flags on the connections we created with the AZ::Event Handler node (e.g. selectable/movable)
+                    // so that the user can't delete them
+                    for (auto connectionId : createConnectionBetweenConfig.m_createdConnections)
+                    {
+                        GraphCanvas::ConnectionUIRequestBus::Event(connectionId, &GraphCanvas::ConnectionUIRequests::SetGraphicsItemFlags, QGraphicsItem::GraphicsItemFlags());
+                    }
+                }
+
+                return GraphCanvas::ContextMenuAction::SceneReaction::PostUndo;
+            }
+        }
+
+        return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+    }
+
+    const AZ::BehaviorMethod* CreateAzEventHandlerSlotMenuAction::FindBehaviorMethodWithAzEventReturn(const GraphCanvas::GraphId& graphId, AZ::EntityId targetId)
+    {
+        const AZ::BehaviorMethod* methodWithAzEventReturn{};
+
+        if (GraphCanvas::GraphUtils::IsSlot(targetId))
+        {
+            // Extract the GraphCanvas Slot Type and complete endpoint from using the targetId
+            bool isDataSlot{};
+            GraphCanvas::SlotType slotType = GraphCanvas::SlotTypes::Invalid;
+            GraphCanvas::Endpoint endpoint;
+            auto GetGraphCanvasEndpoint = [&slotType, &endpoint](GraphCanvas::SlotRequests* slotRequests)
+            {
+                slotType = slotRequests->GetSlotType();
+                endpoint = slotRequests->GetEndpoint();
+            };
+            GraphCanvas::SlotRequestBus::Event(targetId, GetGraphCanvasEndpoint);
+
+            // A slot that exposes the context menu to create an AZ::Event must be a data slot
+            if (slotType != GraphCanvas::SlotTypes::DataSlot)
+            {
+                return nullptr;
+            }
+
+            ScriptCanvas::ScriptCanvasId scriptCanvasId;
+            GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+
+            ScriptCanvas::SlotId scriptCanvasSlotId;
+            auto GetScriptCanvasSlotId = [&scriptCanvasSlotId](GraphCanvas::SlotRequests* slotRequests)
+            {
+                if (auto scSlotId = AZStd::any_cast<ScriptCanvas::SlotId>(slotRequests->GetUserData());
+                    scSlotId != nullptr)
+                {
+                    scriptCanvasSlotId = *scSlotId;
+                }
+            };
+            GraphCanvas::SlotRequestBus::Event(endpoint.GetSlotId(), GetScriptCanvasSlotId);
+
+            AZ::EntityId scriptCanvasNodeId;
+            auto GetScriptCanvasNodeId = [&scriptCanvasNodeId](GraphCanvas::NodeRequests* nodeRequests)
+            {
+                if (auto scNodeId = AZStd::any_cast<AZ::EntityId>(nodeRequests->GetUserData());
+                    scNodeId != nullptr)
+                {
+                    scriptCanvasNodeId = *scNodeId;
+                }
+            };
+            GraphCanvas::NodeRequestBus::Event(endpoint.GetNodeId(), GetScriptCanvasNodeId);
+
+            const AZ::BehaviorMethod* candidateMethod{};
+            auto GetMethodFromNode = [&candidateMethod, &scriptCanvasNodeId, scriptCanvasSlotId](ScriptCanvas::GraphRequests* graphRequests)
+            {
+                ScriptCanvas::Slot* scriptCanvasSlot = graphRequests->FindSlot(ScriptCanvas::Endpoint{ scriptCanvasNodeId, scriptCanvasSlotId });
+                ScriptCanvas::Node* scriptCanvasNode = scriptCanvasSlot ? scriptCanvasSlot->GetNode() : nullptr;
+                if (auto methodNode = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(scriptCanvasNode); methodNode != nullptr)
+                {
+                    candidateMethod = methodNode->GetMethod();
+                }
+            };
+            ScriptCanvas::GraphRequestBus::Event(scriptCanvasId, GetMethodFromNode);
+
+            if (candidateMethod)
+            {
+                auto MethodReturnsValidAzEvent = [&methodWithAzEventReturn, &candidateMethod](AZ::ComponentApplicationRequests* requests)
+                {
+                    if (AZ::BehaviorContext* behaviorContext = requests->GetBehaviorContext(); behaviorContext != nullptr)
+                    {
+                        if (AZ::ValidateAzEventDescription(*behaviorContext, *candidateMethod))
+                        {
+                            methodWithAzEventReturn = candidateMethod;
+                        }
+                    }
+                };
+                AZ::ComponentApplicationBus::Broadcast(MethodReturnsValidAzEvent);
+            }
+        }
+
+        return methodWithAzEventReturn;
+    }
+
     /////////////////////
     // SceneContextMenu
     /////////////////////

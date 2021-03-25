@@ -35,6 +35,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
@@ -66,6 +67,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -92,6 +94,9 @@ namespace AzToolsFramework
         static const char* s_engineConfigEngineVersionKey = "LumberyardVersion";
 
         static const char* s_startupLogWindow = "Startup";
+
+        static const char* s_prefabSystemKey = "/Amazon/Editor/Preferences/EnablePrefabSystem";
+        static const char* s_legacySlicesAssertKey = "/Amazon/Editor/Preferences/ShouldAssertForLegacySlicesUsage";
 
         template<typename IdContainerType>
         void DeleteEntities(const IdContainerType& entityIds)
@@ -203,6 +208,19 @@ namespace AzToolsFramework
                 CallResult(widgetWindowId, FN_CreateViewPaneWidget);
 
                 return widgetWindowId;
+            }
+        };
+
+        struct EditorEventsBusHandler final
+            : public EditorEventsBus::Handler
+            , public AZ::BehaviorEBusHandler
+        {
+            AZ_EBUS_BEHAVIOR_BINDER(EditorEventsBusHandler, "{352F80BB-469A-40B6-B322-FE57AB51E4DA}", AZ::SystemAllocator,
+                NotifyRegisterViews);
+
+            void NotifyRegisterViews() override
+            {
+                Call(FN_NotifyRegisterViews);
             }
         };
 
@@ -346,6 +364,7 @@ namespace AzToolsFramework
 
         components.insert(components.end(), {
                 azrtti_typeid<EditorEntityContextComponent>(),
+                azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
@@ -440,6 +459,7 @@ namespace AzToolsFramework
         QTreeViewWithStateSaving::Reflect(context);
         QWidgetSavedState::Reflect(context);
         SliceUtilities::Reflect(context);
+        Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 
@@ -497,6 +517,14 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
+                ;
+
+            behaviorContext->EBus<EditorEventsBus>("EditorEventBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor")
+                ->Handler<Internal::EditorEventsBusHandler>()
+                ->Event("NotifyRegisterViews", &EditorEvents::NotifyRegisterViews)
                 ;
 
             behaviorContext->EBus<ViewPaneCallbackBus>("ViewPaneCallbackBus")
@@ -1739,6 +1767,26 @@ namespace AzToolsFramework
     const char* ToolsApplication::GetEngineVersion() const
     {
         return m_engineConfigImpl->GetEngineVersion();
+    }
+
+    bool ToolsApplication::IsLegacySliceSystemEnabled() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, Internal::s_prefabSystemKey);
+        }
+        return !value;
+    }
+
+    bool ToolsApplication::ShouldAssertForLegacySlicesUsage() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, Internal::s_legacySlicesAssertKey);
+        }
+        return value;
     }
 
     void ToolsApplication::CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName)

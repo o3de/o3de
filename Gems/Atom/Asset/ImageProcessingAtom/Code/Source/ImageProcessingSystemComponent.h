@@ -26,6 +26,7 @@ namespace ImageProcessingAtom
 {
     class ImageProcessingSystemComponent
         : public AZ::Component
+        , protected ImageProcessingRequestBus::Handler
         , protected ImageProcessingAtomEditor::ImageProcessingEditorRequestBus::Handler
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         , protected AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
@@ -46,6 +47,13 @@ namespace ImageProcessingAtom
         void OpenSourceTextureFile(const AZ::Uuid& textureSourceID) override;
         ////////////////////////////////////////////////////////////////////////
         
+        ////////////////////////////////////////////////////////////////////////
+        // AtomImageProcessingRequestBus interface implementation
+        IImageObjectPtr LoadImage(const AZStd::string& filePath) override;
+        IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) override;
+        ////////////////////////////////////////////////////////////////////////
+
+
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;

@@ -55,7 +55,7 @@ namespace AZ
             m_dispatches.insert(dispatchItem);
         }
 
-        void MorphTargetComputePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

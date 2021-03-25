@@ -41,8 +41,8 @@ namespace AZ
             uint32_t m_predictionSampleCount = 0; // sample count to judge whether it is on the shadow boundary or not.
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
-            float m_bias;
-            float m_padding;
+            float m_bias = 0.0f;    // Consider making this variable or the slope-scale depth bias be tuneable in the Editor
+            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch; 
         };
 
         class SpotLightFeatureProcessor final
@@ -79,6 +79,7 @@ namespace AZ
             void SetShadowBoundaryWidthAngle(LightHandle handle, float boundaryWidthDegree) override;
             void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
+            void SetPcfMethod(LightHandle handle, PcfMethod method);
             void SetSpotLightData(LightHandle handle, const SpotLightData& data) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
@@ -149,6 +150,7 @@ namespace AZ
             uint32_t m_shadowmapIndexTableBufferNameIndex = 0;
 
             RHI::ShaderInputConstantIndex m_shadowmapAtlasSizeIndex;
+            RHI::ShaderInputConstantIndex m_invShadowmapAtlasSize;
 
             const Name m_lightTypeName = Name("spot");
         };

@@ -209,8 +209,8 @@
                     "displayName": "Debug Draw Mode",
                     "description": "Enables various debug view features.",
                     "type": "Enum",
-                    "enumValues":  ["None", "BlendMaskValues", "DepthMaps"],
-                    "defaultValue":  "None",
+                    "enumValues": [ "None", "BlendMaskValues", "DepthMaps" ],
+                    "defaultValue": "None",
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_debugDrawMode"
@@ -290,6 +290,17 @@
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_enableIBL"
+                    }
+                },
+                {
+                    "id": "forwardPassIBLSpecular",
+                    "displayName": "Forward Pass IBL Specular",
+                    "description": "Whether to apply IBL specular in the forward pass.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_materialUseForwardPassIBLSpecular"
                     }
                 }
             ],
@@ -788,7 +799,7 @@
                     "displayName": "Texture Blend Mode",
                     "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
                     "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp" ],
+                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
                     "connection": {
                         "type": "ShaderOption",
@@ -1439,7 +1450,7 @@
                     "displayName": "Texture Blend Mode",
                     "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
                     "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp" ],
+                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
                     "connection": {
                         "type": "ShaderOption",
@@ -2090,7 +2101,7 @@
                     "displayName": "Texture Blend Mode",
                     "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
                     "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp" ],
+                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
                     "connection": {
                         "type": "ShaderOption",

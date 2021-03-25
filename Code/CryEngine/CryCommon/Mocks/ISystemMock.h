@@ -132,8 +132,6 @@ public:
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,
         IRemoteConsole * ());
-    MOCK_METHOD0(GetCrypto,
-        ICrypto * ());
     MOCK_METHOD0(GetIResourceManager,
         IResourceManager * ());
     MOCK_METHOD0(GetIThreadTaskManager,
@@ -154,8 +152,6 @@ public:
         ITimer * ());
     MOCK_METHOD0(GetIThreadManager,
         IThreadManager * ());
-    MOCK_METHOD0(GetINetwork,
-        INetwork * ());
     MOCK_METHOD1(SetLoadingProgressListener,
         void(ILoadingProgressListener * pListener));
     MOCK_CONST_METHOD0(GetLoadingProgressListener,

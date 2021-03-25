@@ -66,9 +66,9 @@ namespace AzNetworking
         }
     }
 
-    DtlsEndpoint::ConnectResult UdpConnection::CompleteHandshake()
+    DtlsEndpoint::ConnectResult UdpConnection::ProcessHandshakeData(const UdpPacketEncodingBuffer& dtlsData)
     {
-        const DtlsEndpoint::ConnectResult result = m_dtlsEndpoint.CompleteHandshake(*(m_networkInterface.m_socket));
+        const DtlsEndpoint::ConnectResult result = m_dtlsEndpoint.ProcessHandshakeData(*this, dtlsData);
         if (result == DtlsEndpoint::ConnectResult::Failed)
         {
             Disconnect(DisconnectReason::NetworkError, TerminationEndpoint::Local);
@@ -245,6 +245,27 @@ namespace AzNetworking
         case CorePackets::PacketType::InitiateConnectionPacket:
         {
             AZLOG(NET_CorePackets, "Received core packet %s", "InitiateConnection");
+            return true;
+        }
+        break;
+
+        case CorePackets::PacketType::ConnectionHandshakePacket:
+        {
+            AZLOG(NET_CorePackets, "Received core packet %s", "ConnectionHandshakePacket");
+            CorePackets::ConnectionHandshakePacket packet;
+            if (!serializer.Serialize(packet, "Packet"))
+            {
+                return false;
+            }
+
+            if (m_state != ConnectionState::Connected)
+            {
+                if (ProcessHandshakeData(packet.GetHandshakeBuffer()) == DtlsEndpoint::ConnectResult::Complete)
+                {
+                    m_state = ConnectionState::Connected;
+                }
+            }
+
             return true;
         }
         break;

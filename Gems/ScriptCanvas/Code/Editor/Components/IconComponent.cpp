@@ -119,4 +119,4 @@ namespace ScriptCanvasEditor
         return m_iconPath;
     }
 
-} // namespace ScriptCanvasEditor
+}

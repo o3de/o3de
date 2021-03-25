@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/EditorVertexSelection.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
@@ -64,8 +65,12 @@ namespace LmbrCentral
         // TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+
         AZ::Transform m_currentTransform;
+        AZ::Vector3 m_currentNonUniformScale;
         AzToolsFramework::EditorVertexSelectionVariable<AZ::Vector2> m_vertexSelection; ///< Handles all manipulator interactions with vertices (inserting and translating).
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator; ///< Manipulator to control the height of the polygon prism.
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
     };
 } // namespace LmbrCentral

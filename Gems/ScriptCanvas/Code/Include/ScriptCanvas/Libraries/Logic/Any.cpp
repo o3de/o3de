@@ -28,6 +28,16 @@ namespace ScriptCanvas
                 return true;
             }
 
+            AZ::Outcome<DependencyReport, void> Any::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport{});
+            }
+
+            bool Any::IsNoOp() const 
+            {
+                return true;
+            }
+
             void Any::OnInit()
             {
                 AZStd::vector< const Slot* > slots = GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn());

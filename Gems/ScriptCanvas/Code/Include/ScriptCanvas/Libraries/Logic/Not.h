@@ -46,6 +46,30 @@ namespace ScriptCanvas
                     }
                 }
 
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override
+                {
+                    return AZ::Success(DependencyReport{});
+                }
+
+                bool IsIfBranch() const override
+                {
+                    return true;
+                }
+
+                bool IsIfBranchPrefacedWithBooleanExpression() const override
+                {
+                    return true;
+                }
+
+                bool IsLogicalNOT() const override
+                {
+                    return true;
+                }
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
+
             protected:
 
                 Datum Evaluate(const Datum& value) override
@@ -53,33 +77,8 @@ namespace ScriptCanvas
                     const bool* boolValue = value.GetAs<bool>();
                     return Datum(boolValue && (!(*boolValue)));
                 }
-
-                
             }; 
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class Not 
-                : public UnaryOperator<Not, AZStd::logical_not<bool>>
-            {
-            public:
-                using BaseType = UnaryOperator<Not, AZStd::logical_not<bool>>;
-                AZ_COMPONENT(Not, "{23029BBB-210E-4610-AC41-DF32F4721C2A}", BaseType);
-
-                static const char* GetOperatorName() { return "Not"; }
-                static const char* GetOperatorDesc() { return "Logical NOT of a boolean value"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Not.png"; }
-                static AZStd::vector<ContractDescriptor> GetFirstArgContractDesc()
-                {
-                    ContractDescriptor typeIdContractDesc;
-                    typeIdContractDesc.m_createFunc = []() -> ScriptCanvas::TypeContract* {return aznewScriptCanvas::TypeContract{ azrtti_typeid<bool>() }; };
-                    AZStd::vector<ContractDescriptor> contractDescs;
-                    contractDescs.push_back(AZStd::move(typeIdContractDesc));
-                    return contractDescs;
-                }
-
-                
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

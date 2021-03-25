@@ -58,17 +58,6 @@
                 ],
                 "PixelFormat": "R8G8B8X8",
                 "IsColorChart": true
-            },
-            "xenia": {
-                "UUID": "{0A17A85F-07EE-48A0-8BF8-D42F0A5E0B3C}",
-                "Name": "ColorChart",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_cch"
-                ],
-                "PixelFormat": "R8G8B8X8",
-                "IsColorChart": true
             }
         }
     }

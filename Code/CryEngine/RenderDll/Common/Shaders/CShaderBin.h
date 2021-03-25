@@ -198,8 +198,6 @@ struct SShaderBin
     uint32 ComputeCRC();
     void SetCRC(uint32 nCRC) { m_CRC32 = nCRC; }
 
-    void CryptData();
-
     int Size()
     {
         int nSize = sizeof(SShaderBin);

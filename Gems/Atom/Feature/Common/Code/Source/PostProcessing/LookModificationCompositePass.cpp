@@ -166,9 +166,8 @@ namespace AZ
             }
         }
 
-        void LookModificationCompositePass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void LookModificationCompositePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
-            AZ_UNUSED(producer);
             AZ_Assert(m_shaderResourceGroup != nullptr, "LookModificationCompositePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 
             if (m_needToUpdateShaderVariant)
@@ -209,9 +208,8 @@ namespace AZ
             m_needToUpdateShaderVariant = false;
         }
 
-        void LookModificationCompositePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer)
+        void LookModificationCompositePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_UNUSED(producer);
             AZ_Assert(m_shaderResourceGroup != nullptr, "LookModificationCompositePass %s has a null shader resource group when calling Execute.", GetPathName().GetCStr());
 
             RHI::CommandList* commandList = context.GetCommandList();

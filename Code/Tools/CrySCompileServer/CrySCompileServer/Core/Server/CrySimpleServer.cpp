@@ -113,7 +113,6 @@ SEnviropment& SEnviropment::Instance()
 // Shader Compilers ID
 // NOTE: Values must be in sync with CShaderSrv::GetShaderCompilerName() function in the engine side.
 const char* SEnviropment::m_Orbis_DXC = "Orbis_DXC";
-const char* SEnviropment::m_Durango_FXC = "Durango_FXC";
 const char* SEnviropment::m_Jasper_FXC = "Jasper_FXC";
 const char* SEnviropment::m_D3D11_FXC = "D3D11_FXC";
 const char* SEnviropment::m_GLSL_HLSLcc = "GLSL_HLSLcc";
@@ -126,7 +125,6 @@ void SEnviropment::InitializePlatformAttributes()
     // Initialize valid Plaforms
     // NOTE: Values must be in sync with CShaderSrv::GetPlatformName() function in the engine side.
     m_Platforms.insert("Orbis");
-    m_Platforms.insert("Durango");
     m_Platforms.insert("Nx");
     m_Platforms.insert("PC");
     m_Platforms.insert("Mac");
@@ -138,7 +136,6 @@ void SEnviropment::InitializePlatformAttributes()
     // Initialize valid Shader Languages
     // NOTE: Values must be in sync with GetShaderLanguageName() function in the engine side.
     m_ShaderLanguages.insert("Orbis");
-    m_ShaderLanguages.insert("Durango");
     m_ShaderLanguages.insert("D3D11");
     m_ShaderLanguages.insert("METAL");
     m_ShaderLanguages.insert("GL4");
@@ -153,10 +150,6 @@ void SEnviropment::InitializePlatformAttributes()
     // Initialize valid Shader Compilers ID and Executables.
     // Intentionally put a space after the executable name so that attackers can't try to change the executable name that we are going to run.
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_XENIA)
-#define AZ_RESTRICTED_SECTION CRYSIMPLESERVER_CPP_SECTION_2
-#include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleServer_cpp, xenia)
-#endif
 #if defined(TOOLS_SUPPORT_JASPER)
 #define AZ_RESTRICTED_SECTION CRYSIMPLESERVER_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleServer_cpp, jasper)
@@ -394,10 +387,6 @@ void CompileJob::Process()
                 }
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-    #if defined(TOOLS_SUPPORT_XENIA)
-        #define AZ_RESTRICTED_SECTION CRYSIMPLESERVER_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleServer_cpp, xenia)
-    #endif
     #if defined(TOOLS_SUPPORT_JASPER)
         #define AZ_RESTRICTED_SECTION CRYSIMPLESERVER_CPP_SECTION_1
 #include AZ_RESTRICTED_FILE_EXPLICIT(CrySimpleServer_cpp, jasper)

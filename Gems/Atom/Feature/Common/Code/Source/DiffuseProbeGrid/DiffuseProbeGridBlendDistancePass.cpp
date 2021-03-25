@@ -105,9 +105,9 @@ namespace AZ
             RenderPass::FrameBeginInternal(params);
         }
 
-        void DiffuseProbeGridBlendDistancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridBlendDistancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -135,7 +135,7 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBlendDistancePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridBlendDistancePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -143,12 +143,14 @@ namespace AZ
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
+                // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateBlendDistanceSrg(m_srgAsset);
+
+                diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
             }
         }
 
-        void DiffuseProbeGridBlendDistancePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridBlendDistancePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
             RPI::Scene* scene = m_pipeline->GetScene();

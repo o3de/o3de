@@ -12,6 +12,9 @@
 
 #pragma once
 #include <SceneAPI/SDKWrapper/NodeWrapper.h>
+
+struct aiScene;
+
 namespace AZ
 {
     namespace AssImpSDKWrapper
@@ -27,6 +30,7 @@ namespace AZ
             int GetChildCount() const override;
             const std::shared_ptr<NodeWrapper> GetChild(int childIndex) const override;
             const bool ContainsMesh();
+            bool ContainsBones(const aiScene& scene) const;
             int GetMaterialCount() const override;
         };
     } // namespace AssImpSDKWrapper

@@ -13,7 +13,6 @@
 		<!--  ============= TARGETS ============== -->
 		<Targets>
 			<Target name="PC" ip="localhost" port="4600"/>
-			<Target name="Xenia" ip="10.11.110.201" port="4600"/>
 			<Target name="Provo" ip="10.11.110.202" port="4600"/>
 		</Targets>
 

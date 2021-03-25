@@ -27,7 +27,14 @@ namespace AZ
 
         using ReflectionProbeHandle = AZStd::shared_ptr<ReflectionProbe>;
         using BuildCubeMapCallback = AZStd::function<void(uint8_t* const* cubeMapTextureData, const RHI::Format cubeMapTextureFormat)>;
-        using NotifyCubeMapAssetReadyCallback = AZStd::function<void(const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset)>;
+
+        enum CubeMapAssetNotificationType
+        {
+            Ready,
+            Error,
+            Reloaded
+        };
+        using NotifyCubeMapAssetReadyCallback = AZStd::function<void(const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset, CubeMapAssetNotificationType notificationType)>;
 
         // ReflectionProbeFeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
         class ReflectionProbeFeatureProcessorInterface

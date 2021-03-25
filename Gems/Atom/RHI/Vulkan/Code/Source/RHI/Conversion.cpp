@@ -687,7 +687,11 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::InputAssembly))
             {
-                usageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                usageFlags |=
+                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::Constant))
@@ -724,6 +728,17 @@ namespace AZ
             {
                 usageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             }
+
+            if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingAccelerationStructure))
+            {
+                usageFlags |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR;
+            }
+
+            if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingShaderTable))
+            {
+                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            }
+
             return usageFlags;
         }
 
@@ -1055,6 +1070,11 @@ namespace AZ
             if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::Indirect))
             {
                 accessFlags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+            }
+            
+            if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
+            {
+                accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             }
 
             return accessFlags;

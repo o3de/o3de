@@ -13,13 +13,13 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
-
 
 namespace AZ
 {
@@ -84,13 +84,14 @@ namespace AZ
                 for (uint32_t i = 0; i < instances.size(); ++i)
                 {
                     const RHI::RayTracingTlasInstance& instance = instances[i];
+                    RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
             
                     mappedData[i].InstanceID = instance.m_instanceID;
                     mappedData[i].InstanceContributionToHitGroupIndex = instance.m_hitGroupIndex;
                     // convert transform to row-major 3x4
                     AZ::Matrix3x4 matrix34 = AZ::Matrix3x4::CreateFromTransform(instance.m_transform);
                     matrix34.StoreToRowMajorFloat12(&mappedData[i].Transform[0][0]);
-                    mappedData[i].AccelerationStructure = static_cast<DX12::Buffer*>(instance.m_blas->GetBlasBuffer().get())->GetMemoryView().GetGpuAddress();
+                    mappedData[i].AccelerationStructure = static_cast<DX12::Buffer*>(blas->GetBuffers().m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
                     // [GFX TODO][ATOM-5270] Add ray tracing TLAS instance mask support
                     mappedData[i].InstanceMask = 0x1;
                 }

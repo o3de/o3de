@@ -15,6 +15,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_iOS.h
     AzFramework/Application/Application_iOS.mm
+    AzFramework/ProjectManager/ProjectManager_iOS.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp

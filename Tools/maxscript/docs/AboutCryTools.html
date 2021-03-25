@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+  
+  
+  <title>cryTools: About</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: About </h1>
+
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">What are cryTools?</span></h2>
+
+
+<span style="font-family: Arial;">CryTools are a suite of maxscripts
+that add functionality to 3D Studio Max that does not currently exist.
+Not just basic functionality that 3DS Max is lacking, but also special
+functionality and tools that help you troubleshoot, create and manage
+assets for cryEngine2 games.<br>
+
+
+<span style="font-weight: bold;"><br>
+
+
+A Note About Requirements</span><br>
+
+
+CryTools currently work with versions 8 and 9 of 3D Studio Max. The
+installer can install the cryTiff libs, dlls and plugins for versions
+6,7, and CS of Photoshop.<br>
+
+
+<span style="font-weight: bold;"><br>
+
+
+License</span><br>
+
+
+CryTools are free. So I want you to feel free to use the code to learn
+or incorporate aspects of the tools into your own freely available
+toolsets. They are therefore provided 'as is' and with limited support.
+The person who wrote these tools is not a programmer, and the code may
+be somewhat obtuse at times, but the tools are pretty solid and
+reliable. They have been in use at Crytek for quite some time, if you
+have any bugs, please send a description of the bug to <a href="mailto:chris@crytek.de">Chris@Crytek.de</a><span style="color: rgb(0, 0, 8);"> (for CryTools ) &nbsp; &nbsp; &nbsp;<a href="mailto:mathias@crytek.de">Mathias@Crytek.de</a> (for CryAnim )</span></span><a href="chris@crytek.de"><span style="font-family: Arial;"></span></a><span style="font-family: Arial;"><br>
+
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Features</h2>
+
+
+<span style="font-family: Arial;">This is a list of functionality that
+has been added to 3DSMax. We have been working on CryTools since Max7,
+so some features we have implemented were later added to 3DSMax
+(loading FBX onto Biped for example)</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Tools/Pipeline Integration</span></h2>
+
+
+<span style="font-family: Arial; font-weight: bold;">Easy Installation</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; One double click installs all tools/files on the users PC setup correctly and working</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; The installer finds Photoshop\3DS Max install dirs and installs cryTools and cryTiff correctly </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Transparency</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; cryTools can automatically check your assets before export to the game, making sure they</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; have the correct shaders applied</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; are free of extra transformations</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; are facing the right world direction</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; and many more requirements that may be overlooked </span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; cryTools run from your local build, so tools are updated automatically and frequently</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; cryTools sync via Perforce, AlienBrain, HTTP, or LAN on demand</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Checks local build for updated exporter or tools and installs them automatically or on demand </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Diagnostics You Care About</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Show all callbacks and important variables (control panel)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Dump all vars in global space currently set/used by cryTools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Visual indicator of local/latest build number in control panel or splash screen</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; 'Rollback' functionality to rollback to a previous exporter</span><span style="font-family: Arial;"></span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><br>
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Animation</span></h2>
+
+<span style="font-family: Arial; font-weight: bold;">General</span><span style="font-family: Arial;"><br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Batch convert controllers (example: TCB for CGA)<br>
+
+</span><span style="font-family: Arial;"></span><span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Bake procedural motion to dense keyframe data </span><br>
+<span style="font-family: Arial; font-weight: bold;"><br>
+Biped Tools</span><span style="font-family: Arial;"><br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Foot / Hand snapshot alignment to custom pivots<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Move Bip01 to [0,0] / [0,0,0]<br>
+</span><span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Ability to set planted, sliding or free keys to any biped part for any number of frames</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Reverse a biped animation (Autodesk added this feature to Max 9)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Import FBX data directly on to a biped character (Autodesk added this feature to Max 9)</span><br>
+<span style="font-family: Arial;">&bull; &nbsp; &nbsp;Reset Rotation<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Create snapshot / + children<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Copy transformation<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Paste transformation / position / rotation<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Everything is available in the quad menu or for shortcuts<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;The dialog can handle these functions in a time range<br>
+
+<br>
+
+</span><span style="font-family: Arial; font-weight: bold;">Dialog<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Align selected object to any other object ( rotation, position, create / use offset )</span><br>
+
+<span style="font-family: Arial;">&bull; &nbsp; &nbsp;Compact structure to apply functions<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Works with time range ( Start / Stop ; &nbsp;Range )<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Load often used models to animate with<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Automatically sets the weapon bone for different kind of weapons (if set)<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Loads Biped from the working directory ( or last used file )<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Save Biped directly to the last used biped name<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Export animation with the Biped name and path structure<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Save / Export at the same time<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Perforce control if perforce is installed<br>
+
+</span><span style="font-family: Arial;"></span><br>
+
+<span style="font-family: Arial; font-weight: bold;">Batch Exporter</span><br>
+
+<span style="font-family: Arial;">&bull; &nbsp; &nbsp;Supported file types: BIP, FBX, MAX<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Sub folder selection (will be saved)<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;File Mask selection (will be saved)<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Export Folder (will be saved)</span><br>
+
+<span style="font-family: Arial;">&bull; &nbsp; &nbsp;Sorted by folders<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Run pre-export script (if set)<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Automatic export bone detection (if set)<br>
+
+</span><span style="font-family: Arial;">&bull; &nbsp; &nbsp;Keep Sub folder structure</span><br>
+
+<span style="font-family: Arial;">&bull; &nbsp; &nbsp;Check the files (without export)<br>
+</span><span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Add or remove bones and rig elements from thousands of animation assets</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Manipulate data for thousands of animations (example: flip all assets 180 deg)<br>
+</span><span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Export logs detailing data about your animation assets/batch export</span><br>
+<span style="font-family: Arial;"><br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Animation (deprecated, unsupported)</span></h2>
+
+
+<span style="font-family: Arial; font-weight: bold;">Biped Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Rig
+Navigator - A synaptic rig element selector (much like Maya, XSI,
+Motion Builder, etc). Click a part to select it</span><span style="font-family: Arial;"></span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Syncing of
+pose collections sets from Perforce or a network drive on demand, at
+Max load or on character load</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; auto-importing animation props and weapons from a build/server</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Select just biped bones, excluding helper joints </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">General Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; RangeView -
+View or cycle through Animator-created 'time-tagged' sequences in one
+timeline. When a sequence is selected, the timeline beginning/end is
+set the the time-tagged range's beginning/ending</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Mirror first person arm animation from left arm to right or vice versa</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; XAF XML animation file support (character limited)</span><span style="font-family: Arial;"></span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Batch Animation Processing</span><span style="font-family: Arial;"></span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Supports biped BIP or XAF (character limited) animation data</span><span style="font-family: Arial;"></span><span style="font-family: Arial;"></span><span style="font-family: Arial;"></span><br>
+<span style="font-family: Arial;">
+<br>
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Character Setup and Rigging</span></h2>
+
+
+<span style="font-family: Arial; font-weight: bold;">General Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Zero out rotations for all selected items</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Snap a pivot to that of another object</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Select just biped bones, excluding helper joints</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Make sweeping adjustments to the width/height/taper of multiple selected bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Create arbitrary vertex channels, e.g. multiple vertex color channels</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Create Phys Skeleton from existing Deforming Skeleton</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Automated ParentFrame creation</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Character/Animation Diagnostics</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Create Smart Object template files and export Smart Object template data to the Editor in XML format</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Select the root of a hierarchy by selecting any member of it</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Select all children of a node</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Export data about a hierarchy to listener or a spreadsheet (excel/google spreadsheet)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Compare multiple hierarchies</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Query how many bones in a hierarchy have weights effecting a mesh</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Output
+arbitrary movement data, e.g. output how far a character moves out from
+behind cover in an animation, or how high the root is when he is in
+prone or behind cover.</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Output XML CDF attachment data based on the location of an attachment in Max</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><br>
+
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Morph Tools</span></h2>
+
+
+<span style="font-family: Arial; font-weight: bold;">Facial Setup</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Transfer morphs between unlike topologies</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Bake morph targets out from a selected head colored, named, and placed in the cryEngine2 standard</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Bake out an arbitrary number of morphs to geometry with the name of the morph slider</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Delete selected faces from many morph targets while keeping identical point indices</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Mirror eye
+bone animation from right to left and vice versa when setting up
+deformation for procedural eye morphs </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Pose-Driven Morphs</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Can extract a relative pose shape from a skinned and posed mesh</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Supports creation of arbitrary corrective shapes for a given pose, as well as the standard sets below</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Head/Neck</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Auto-generated fleshy eye morphs</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Shoulder </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Baking Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Supports baking of any complex geometric deformation to a sequence of morphs (muscles, cloth, etc..)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Set the number of frames to bake, and the number of morphs to generate over those frames</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Can bake out relative morphs with skin data culled to be pose-driven in cryEngine2 </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Diagnostic Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Dump morpher data to the Listener or an excel spreadsheet</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; MorphManager: an improved morpher interface</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Artist Tools</span></h2>
+
+
+
+
+<span style="font-family: Arial; font-weight: bold;">General Tools</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Center pivots to the center of each objects bounding box for all selected objects</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Many commonly used commends, like a button that reset xforms and then collapses a selected object</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Copy/paste modifiers to multiple objects without instancing</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; UV maipulation tools</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">TD ToolKit</span></h2>
+
+
+<span style="font-family: Arial; font-weight: bold;">General</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; The cryTools
+architecture allows you to install update, or query anything (tools
+related) on any users PC</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Useful
+global variables like local build#, latest build#, local build
+location, editor path, user preferences, etc</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; You can restrict what tools certain users see based upon their username, network domain, or other data</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Silently execute dos commands </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Useful Functions</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Perforce and AlienBrain integration</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Network
+tools to do things like get the current domain, or convert a local
+mapped drive letter to its UNC pathname (Autodesk added this feature to
+Max 9)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; General useful fns like converting a string to lowercase, etc.. </span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">CryExport MaxScript Exposure</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Export functions</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">o&nbsp;&nbsp;&nbsp; Get/set node lists for objects and bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Registry functions</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">&bull;&nbsp;&nbsp;&nbsp; Silent CMD execution<br>
+
+
+<br>
+
+
+<br>
+
+
+<br style="font-family: Arial;">
+
+
+</span><span style="font-family: Arial;"></span>
+</body>
+</html>

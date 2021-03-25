@@ -63,6 +63,11 @@ namespace AZ
                 //! Return the ID of the shader variant to be used, based on the configured shader options.
                 const ShaderVariantId& GetShaderVariantId() const;
 
+                //! Returns the asset id associated to this shader item.
+                const AZ::Data::AssetId& GetShaderAssetId() const;
+
+                const AZ::RPI::ShaderOptionGroup& GetShaderOptionGroup() const;
+
                 //! Return the set of shader options used to select a specific shader variant.
                 const ShaderOptionGroup* GetShaderOptions() const;
                 ShaderOptionGroup* GetShaderOptions();

@@ -24,15 +24,10 @@ namespace EMotionFX
             class LODSelector
             {
             public:
-                // Use this function to select LOD meshes in certain LOD level. Note: LOD Rule Index is different than LOD Level because LOD 0 doesn't belongs to LOD Rule.
+                // Use this function to select LOD bones in certain LOD level. Note: LOD Rule Index is different than LOD Level because LOD 0 doesn't belongs to LOD Rule.
                 // LOD Level = LOD Rule Index + 1.
-                static size_t SelectLODMeshes(const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex);
-
-                // Use this function to select LOD bones in certain LOD level.
-                static void SelectLODBones(const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex);
-
-                // Use this function to select LOD meshes and bones in certain LOD level.
-                static size_t SelectLODNodes(const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex);
+                // SelectBaseBones: Select all bones in base LOD if doesn't find any bones in a specific LOD.
+                static size_t SelectLODBones(const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex, bool selectBaseBones = false);
 
                 // Use this function to find the root index of a LOD Level. For now, we are telling the user to follow a certain pattern in there LOD Group authorization. The root index of
                 // LOD Level x should have name "LOD_x".

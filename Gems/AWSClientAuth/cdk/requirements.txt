@@ -1,0 +1,3 @@
+aws-cdk.core
+aws-cdk.aws_cognito
+aws-cdk.aws_iam

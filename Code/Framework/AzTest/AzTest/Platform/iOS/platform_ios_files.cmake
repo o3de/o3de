@@ -11,7 +11,7 @@
 
 set(FILES
     ../Common/UnixLike/AzTest/ColorizedOutput_UnixLike.cpp
-    ${common_dir}/Unimplemented/AzTest/ScopedAutoTempDirectory_Unimplemented.cpp
+    ../Common/Unimplemented/AzTest/ScopedAutoTempDirectory_Unimplemented.cpp
     Platform_iOS.cpp
     AzTest_Traits_Platform.h
     AzTest_Traits_iOS.h

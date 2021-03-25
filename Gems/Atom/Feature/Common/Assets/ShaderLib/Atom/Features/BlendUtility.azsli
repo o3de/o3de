@@ -1,0 +1,76 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+enum class TextureBlendMode { Multiply, LinearLight, Lerp, Overlay };
+
+// See https://en.wikipedia.org/wiki/Blend_modes#Dodge_and_burn
+float3 TextureBlend_LinearLight(float3 base, float3 mask)
+{
+    return saturate(base + 2 * mask - 1);
+}
+
+// See http://www.deepskycolors.com/archive/2010/04/21/formulas-for-Photoshop-blending-modes.html
+float3 TextureBlend_Overlay(float3 target, float3 blend)
+{
+    return (target > 0.5) * (1.0 - (1.0 - 2.0 * (target - 0.5)) * (1.0 - blend)) +
+           (target <= 0.5) * ((2.0 * target) * blend);
+}
+
+//! General purpose utility function for applying a blend between two colors. Note that the order of the colors is not commutative (for most blend modes).
+//! @param color - The main color or target color for the blend
+//! @param blendColor - The secondary color that will be blended into the main color
+//! @param factor - A factor that controls the blend. The specific behavior depends on the blend mode.
+//! @param blendMode - Indicates the type of blend to perform
+//! @return the resulting blended color
+float3 ApplyTextureBlend(float3 color, float3 blendColor, float factor, TextureBlendMode blendMode)
+{
+    // More info to help understand some of these blend modes: https://wiki.agscollab.com/pages/viewpage.action?pageId=15764930
+
+    if(blendMode == TextureBlendMode::Multiply)
+    {
+        return factor * color * blendColor;
+    }
+    else if(blendMode == TextureBlendMode::Lerp)
+    {
+        return lerp(color, blendColor, factor);
+    }
+    else
+    {
+        // [GFX TODO][ATOM-3237] See if we can avoid these extra color space conversions...
+        // To get blend behavior that mimics photoshop, convert to sRGB
+        float3 blendColorSRGB = TransformColor(blendColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
+        float3 colorSRGB = TransformColor(color, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
+                 
+        float3 finalColor = colorSRGB;
+
+        if(blendMode == TextureBlendMode::LinearLight)
+        {
+            finalColor = TextureBlend_LinearLight(colorSRGB, blendColorSRGB);
+        }
+        else if(blendMode == TextureBlendMode::Overlay)
+        {
+            finalColor = TextureBlend_Overlay(colorSRGB, blendColorSRGB);
+        }
+        
+        // Convert back to ACEScg
+        finalColor = TransformColor(finalColor, ColorSpaceId::SRGB, ColorSpaceId::ACEScg);
+        
+        // Apply factor
+        finalColor = lerp(color, finalColor, factor);
+
+        return finalColor;
+    }
+}

@@ -20,23 +20,3 @@ ly_add_external_target(
     PACKAGE DirectXShaderCompiler
     VERSION 1.0.1-az.1
 )
-
-# In this case, dxc, the target uses OUTPUT_SUBDIRECTORY, because all the RUNTIME_DEPENDENCIES will be
-# copied to the same output subfolder
-ly_add_external_target(
-    NAME dxc
-    PACKAGE DirectXShaderCompiler
-    VERSION 2020.08.07
-    OUTPUT_SUBDIRECTORY
-        Builders/DirectXShaderCompiler
-)
-
-# For dxcAz, OUTPUT_SUBDIRECTORY is NOT used, because the RUNTIME_DEPENDENCIES will be copied to
-# two different directories.
-ly_add_external_target(
-    NAME dxcAz
-    PACKAGE DirectXShaderCompiler
-    VERSION 5.0.0-az
-)
-
-

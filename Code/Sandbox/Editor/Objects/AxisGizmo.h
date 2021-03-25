@@ -29,6 +29,7 @@ class CAxisHelperExtended;
 class SANDBOX_API CAxisGizmo
     : public CGizmo
     , public ITransformManipulator
+    , public CBaseObject::EventListener
 {
 public:
     CAxisGizmo();
@@ -68,7 +69,7 @@ public:
     CBaseObjectPtr GetBaseObject() const override { return m_object; }
 
 private:
-    void OnObjectEvent(CBaseObject* object, int event);
+    void OnObjectEvent(CBaseObject* object, int event) override;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     CBaseObjectPtr m_object;

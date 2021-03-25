@@ -21,34 +21,50 @@ namespace AZ
             : m_dirty(false)
             , m_initDataFromShader(false)
             , m_hasOutputData(false)
+            , m_isShaderVariantReady(false)
+            , m_useRenderStatesOverlay(false)
         {
-
+            m_renderStatesOverlay = RHI::GetInvalidRenderStates();
         }
-
 
         PipelineStateForDraw::PipelineStateForDraw(const PipelineStateForDraw& right)
         {
             m_descriptor = right.m_descriptor;
             m_shader = right.m_shader;
             m_pipelineState = right.m_pipelineState;
+
             m_initDataFromShader = right.m_initDataFromShader;
             m_hasOutputData = right.m_hasOutputData;
             m_dirty = right.m_dirty;
+            m_shaderVariantId = right.m_shaderVariantId;
+            m_isShaderVariantReady = right.m_isShaderVariantReady;
+            m_useRenderStatesOverlay = right.m_useRenderStatesOverlay;
+
+            m_renderStatesOverlay = right.m_renderStatesOverlay;
+
+            if (m_shader)
+            {
+                ShaderReloadNotificationBus::MultiHandler::BusConnect(m_shader->GetAsset().GetId());
+            }
         }
 
-        void PipelineStateForDraw::Init(const Data::Instance<RPI::Shader>& shader, const AZStd::vector<AZStd::pair<Name, Name>>* optionAndValues)
+        PipelineStateForDraw::~PipelineStateForDraw()
+        {
+            Shutdown();
+        }
+
+        void PipelineStateForDraw::Init(const Data::Instance<RPI::Shader>& shader, const ShaderOptionList* optionAndValues)
         {
             // Reset some variables
-            m_shader = nullptr;
             m_pipelineState = nullptr;
+            m_shaderVariantId = ShaderVariantId{};
 
             // Reset some flags
-            m_initDataFromShader = false;
-
             m_dirty = true;
-            
+            m_isShaderVariantReady = true;
+                        
             // Get shader variant from the shader
-            ShaderVariantStableId shaderVariantStableId = RPI::ShaderAsset::RootShaderVariantStableId;
+            auto shaderVariant = shader->GetRootVariant();
             if (optionAndValues)
             {
                 RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
@@ -57,24 +73,66 @@ namespace AZ
                 {
                     shaderOptionGroup.SetValue(optionAndValue.first, optionAndValue.second);
                 }
-                RPI::ShaderVariantSearchResult findVariantResult = shader->FindVariantStableId(shaderOptionGroup.GetShaderVariantId());
-                if (!findVariantResult.GetStableId().IsValid())
-                {
-                    AZ_Error("RPI::PipelineStateForDraw", false, "Failed to find specified shader variant");
-                    return;
-                }
-                shaderVariantStableId = findVariantResult.GetStableId();
+                m_shaderVariantId = shaderOptionGroup.GetShaderVariantId();
+                shaderVariant = shader->GetVariant(m_shaderVariantId);
+                m_isShaderVariantReady = shaderVariant.IsFullyBaked();
             }
-
-            auto shaderVariant = shader->GetVariant(shaderVariantStableId);
 
             // Fill the descriptor with data from shader variant
             shaderVariant.ConfigurePipelineState(m_descriptor);
+
+            // Connect to shader reload notification bus to rebuilt pipeline state when shader or shader variant changed. 
+            ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
+            ShaderReloadNotificationBus::MultiHandler::BusConnect(shader->GetAsset().GetId());
 
             m_initDataFromShader = true;
 
             // Cache shader so it can be used for create RHI::PipelineState later
             m_shader = shader;
+        }
+
+        void PipelineStateForDraw::RefreshShaderVariant()
+        {
+            auto shaderVariant = m_shader->GetVariant(m_shaderVariantId);
+            m_isShaderVariantReady = shaderVariant.IsFullyBaked();
+
+            auto multisampleState = m_descriptor.m_renderStates.m_multisampleState;
+
+            shaderVariant.ConfigurePipelineState(m_descriptor);
+
+            // Recover multisampleState if it was set from output data
+            if (m_hasOutputData)
+            {
+                m_descriptor.m_renderStates.m_multisampleState = multisampleState;
+            }
+
+            // re-finalize if the pipeline state wasn't finalized.
+            if (!m_dirty)
+            {
+                m_dirty = true;
+                Finalize();
+            }
+        }
+
+        void PipelineStateForDraw::OnShaderReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader)
+        {
+            RefreshShaderVariant();
+        }
+        
+        void PipelineStateForDraw::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<ShaderAsset>& shaderAsset)
+        {
+            RefreshShaderVariant();
+        }
+
+        void PipelineStateForDraw::OnShaderVariantReinitialized(
+            [[maybe_unused]] const Shader& shader,
+            const ShaderVariantId& shaderVariantId,
+            [[maybe_unused]] ShaderVariantStableId shaderVariantStableId)
+        {
+            if(shaderVariantId == m_shaderVariantId)
+            {
+                RefreshShaderVariant();
+            }
         }
         
         void PipelineStateForDraw::SetOutputFromScene(const Scene* scene, RHI::DrawListTag overrideDrawListTag)
@@ -114,7 +172,13 @@ namespace AZ
 
                 if (m_hasOutputData && m_initDataFromShader)
                 {
-                    m_pipelineState = m_shader->AcquirePipelineState(m_descriptor);
+                    RHI::PipelineStateDescriptorForDraw descriptor = m_descriptor;
+                    if (m_useRenderStatesOverlay)
+                    {
+                        RHI::MergeStateInto(m_renderStatesOverlay, descriptor.m_renderStates);
+                    }
+
+                    m_pipelineState = m_shader->AcquirePipelineState(descriptor);
                 }                
                 m_dirty = false;
             }
@@ -127,17 +191,49 @@ namespace AZ
 
             return m_pipelineState;
         }
-        
-        RHI::PipelineStateDescriptorForDraw& PipelineStateForDraw::Descriptor()
+                        
+        RHI::RenderStates& PipelineStateForDraw::RenderStatesOverlay()
         {
             // Assume the descriptor will be changed if user tries to get reference but not a constant reference
             m_dirty = true;
-            return m_descriptor;
+            m_useRenderStatesOverlay = true;
+            return m_renderStatesOverlay;
+        }
+      
+        RHI::InputStreamLayout& PipelineStateForDraw::InputStreamLayout()
+        {
+            m_dirty = true;
+            return m_descriptor.m_inputStreamLayout;
         }
 
         const RHI::PipelineStateDescriptorForDraw& PipelineStateForDraw::ConstDescriptor() const
         {
             return m_descriptor;
+        }
+
+        bool PipelineStateForDraw::UpdateSrgVariantFallback(Data::Instance<ShaderResourceGroup>& srg) const
+        {
+           if (m_isShaderVariantReady)
+            {
+                return false;
+            }
+
+            srg->SetShaderVariantKeyFallbackValue(m_shaderVariantId.m_key);
+            return true;
+        }
+
+        void PipelineStateForDraw::Shutdown()
+        {
+            m_descriptor = RHI::PipelineStateDescriptorForDraw{};
+            m_shader = nullptr;
+            m_pipelineState = nullptr;
+            m_shaderVariantId = ShaderVariantId{};
+            m_initDataFromShader = false;
+            m_hasOutputData = false;
+            m_dirty = false;
+            m_isShaderVariantReady = false;
+                        
+            ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
     }
 }

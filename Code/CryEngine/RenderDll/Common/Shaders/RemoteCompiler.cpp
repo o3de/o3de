@@ -349,10 +349,6 @@ namespace NRemoteCompiler
             shaderCompiler = eSC_Orbis_DXC;
             break;
 
-        case eSL_Durango:
-            shaderCompiler = eSC_Durango_FXC;
-            break;
-
         case eSL_Jasper:
             shaderCompiler = eSC_Jasper_FXC;
             break;
@@ -383,7 +379,6 @@ namespace NRemoteCompiler
         {
             "Unknown",
             "Orbis_DXC",
-            "Durango_FXC",
             "D3D11_FXC",
             "GLSL_HLSLcc",
             "METAL_HLSLcc",
@@ -463,10 +458,6 @@ namespace NRemoteCompiler
                 #define AZ_RESTRICTED_SECTION REMOTECOMPILER_CPP_SECTION_2
                 #include AZ_RESTRICTED_FILE_EXPLICIT(Shaders/RemoteCompiler_cpp, provo)
             #endif
-            #if defined(TOOLS_SUPPORT_XENIA)
-                #define AZ_RESTRICTED_SECTION REMOTECOMPILER_CPP_SECTION_2
-                #include AZ_RESTRICTED_FILE_EXPLICIT(Shaders/RemoteCompiler_cpp, xenia)
-            #endif
             #if defined(TOOLS_SUPPORT_JASPER)
                 #define AZ_RESTRICTED_SECTION REMOTECOMPILER_CPP_SECTION_2
                 #include AZ_RESTRICTED_FILE_EXPLICIT(Shaders/RemoteCompiler_cpp, jasper)
@@ -479,11 +470,10 @@ namespace NRemoteCompiler
         break;
 
         // ----------------------------------------
-        case eSC_Durango_FXC:
         case eSC_Jasper_FXC:
         case eSC_D3D11_FXC:
         {
-            const char* extraFlags = (shaderCompiler==eSC_Durango_FXC) ? "/Gis" : "";
+            const char* extraFlags = "";
 
             const char* debugFlags = "";
             if IsCVarConstAccess(constexpr) (CRenderer::CV_r_shadersdebug == 3)

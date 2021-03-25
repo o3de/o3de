@@ -117,7 +117,7 @@ namespace ScriptEvents
         }
 
         m_assetHandler = AZStd::make_unique<ScriptEventAssetRuntimeHandler>(ScriptEvents::ScriptEventsAsset::GetDisplayName(),
-            ScriptEvents::ScriptEventsAsset::GetGroup(), ScriptEvents::ScriptEventsAsset::GetFileExtension(),
+            ScriptEvents::ScriptEventsAsset::GetGroup(), ScriptEvents::ScriptEventsAsset::GetFileFilter(),
             AZ::AzTypeInfo<ScriptEvents::ScriptEventsSystemComponent>::Uuid());
 
         AZ::Data::AssetManager::Instance().RegisterHandler(m_assetHandler.get(), assetType);
@@ -126,7 +126,7 @@ namespace ScriptEvents
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, assetType);
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension,
-            ScriptEvents::ScriptEventsAsset::GetFileExtension());
+            ScriptEvents::ScriptEventsAsset::GetFileFilter());
     }
 
     void ScriptEventsSystemComponentRuntimeImpl::UnregisterAssetHandler()

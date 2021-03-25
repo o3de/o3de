@@ -23,16 +23,13 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Get Last Element"
             class OperatorBack : public OperatorBase
             {
             public:
-                ScriptCanvas_Node(OperatorBack,
-                    ScriptCanvas_Node::Name("Get Last Element")
-                    ScriptCanvas_Node::Uuid("{B7E79DC5-21DA-4001-8284-85707C71C29B}")
-                    ScriptCanvas_Node::Description("Retrieves the last element in the container")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorBack);
+
 
                 OperatorBack()
                     : OperatorBase(DefaultContainerInquiryOperatorConfiguration())

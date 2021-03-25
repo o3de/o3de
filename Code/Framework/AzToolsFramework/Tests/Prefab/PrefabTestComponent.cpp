@@ -21,7 +21,8 @@ namespace UnitTest
         if (serializeContext)
         {
             serializeContext->Class<PrefabTestComponent, AzToolsFramework::Components::EditorComponentBase>()->
-                Field("BoolProperty", &PrefabTestComponent::m_boolProperty);
+                Field("BoolProperty", &PrefabTestComponent::m_boolProperty)->
+                Field("EntityReferenceProperty", &PrefabTestComponent::m_entityIdProperty);
         }
     }
 

@@ -14,7 +14,7 @@ import subprocess
 import argparse
 import sys
 
-restricted_platforms = ['Provo', 'Salem', 'Xenia']
+restricted_platforms = ['Provo', 'Salem']
 
 def move_root(current_source_dir, csd_to_platform_parent, platform_dir, ly_dir):
     cwd = os.getcwd()

@@ -20,7 +20,9 @@
 #include <AzCore/Math/MathUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+#include <QApplication>
 #include <QCursor>
 #include <QBoxLayout>
 #include <QWindow>
@@ -49,16 +51,13 @@ namespace AtomToolsFramework
         AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushView(m_viewportContext->GetName(), m_defaultCamera);
 
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetId());
+        AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
 
         setUpdatesEnabled(false);
         setFocusPolicy(Qt::FocusPolicy::WheelFocus);
         setMouseTracking(true);
-
-        // Render at a fixed 60hz for now
-        m_renderTimer.start();
-        startTimer(1000 / 60, Qt::PreciseTimer);
     }
 
     void RenderViewportWidget::LockRenderTargetSize(uint32_t width, uint32_t height)
@@ -128,6 +127,11 @@ namespace AtomToolsFramework
         return inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::SystemCursorPosition;
     }
 
+    static bool IsMouseButtonOrWheelEvent(const AzFramework::InputChannel& inputChannel)
+    {
+        return IsMouseButtonEvent(inputChannel) || inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::Movement::Z;
+    }
+
     bool RenderViewportWidget::CanInputGrantFocus(const AzFramework::InputChannel& inputChannel) const
     {
         // Only take focus from a mouse event if the cursor is currently within the viewport
@@ -157,15 +161,17 @@ namespace AtomToolsFramework
         }
 
         // Don't consume new input events if we don't currently have focus.
-        // We do forward Ended and Updated events, as they may be relevant to our current state
+        // We do forward Ended events, as they may be relevant to our current state
         // (e.g. a key gets released after we lose focus, it shouldn't remain "stuck").
-        if (!hasFocus() && inputChannel.GetState() == AzFramework::InputChannel::State::Began)
+        if (!hasFocus() && inputChannel.GetState() != AzFramework::InputChannel::State::Ended)
         {
             return false;
         }
 
         // If we receive a mouse button event from outside of our viewport, ignore it even if we have focus.
-        if (!m_mouseOver && inputChannel.GetState() == AzFramework::InputChannel::State::Began && IsMouseButtonEvent(inputChannel))
+        if (!m_mouseOver
+            && inputChannel.GetState() == AzFramework::InputChannel::State::Began
+            && IsMouseButtonOrWheelEvent(inputChannel))
         {
             return false;
         }
@@ -177,12 +183,13 @@ namespace AtomToolsFramework
             return false;
         }
 
-        return m_controllerList->HandleInputChannelEvent(GetId(), inputChannel);
+        return m_controllerList->HandleInputChannelEvent({GetId(), inputChannel});
     }
 
     void RenderViewportWidget::OnTick([[maybe_unused]]float deltaTime, AZ::ScriptTimePoint time)
     {
         m_time = time;
+        m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
     }
 
     void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
@@ -221,12 +228,6 @@ namespace AtomToolsFramework
         m_mouseOver = false;
     }
 
-    void RenderViewportWidget::timerEvent(QTimerEvent*)
-    {
-        m_controllerList->UpdateViewport(GetId(), AzFramework::FloatSeconds(m_renderTimer.restart() / 1000.f), m_time);
-        m_viewportContext->RenderTick();
-    }
-
     void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
     {
         m_mousePosition = event->localPos();
@@ -240,7 +241,16 @@ namespace AtomToolsFramework
             mouseInputDevice != nullptr)
         {
             AzFramework::InputChannel syntheticInput(AzFramework::InputDeviceMouse::SystemCursorPosition, *mouseInputDevice);
-            m_controllerList->HandleInputChannelEvent(GetId(), syntheticInput);
+            m_controllerList->HandleInputChannelEvent({GetId(), syntheticInput});
+        }
+
+        if (m_capturingCursor && m_lastCursorPosition.has_value())
+        {
+            AzQtComponents::SetCursorPos(m_lastCursorPosition.value());
+        }
+        else
+        {
+            m_lastCursorPosition = event->globalPos();
         }
     }
 
@@ -400,6 +410,33 @@ namespace AtomToolsFramework
     QPoint RenderViewportWidget::ViewportCursorScreenPosition()
     {
         return m_mousePosition.toPoint();
+    }
+
+    AZStd::optional<QPoint> RenderViewportWidget::PreviousViewportCursorScreenPosition()
+    {
+        return m_lastCursorPosition.has_value() ? mapFromGlobal(m_lastCursorPosition.value()) : m_lastCursorPosition;
+    }
+
+    void RenderViewportWidget::BeginCursorCapture()
+    {
+        if (m_capturingCursor)
+        {
+            return;
+        }
+
+        qApp->setOverrideCursor(Qt::BlankCursor);
+        m_capturingCursor = true;
+    }
+
+    void RenderViewportWidget::EndCursorCapture()
+    {
+        if (!m_capturingCursor)
+        {
+            return;
+        }
+
+        qApp->restoreOverrideCursor();
+        m_capturingCursor = false;
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

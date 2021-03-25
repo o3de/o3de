@@ -22,32 +22,26 @@ namespace ScriptCanvas
     {
         namespace Time
         {
+            //! Deprecated: see HeartBeatNodeableNode
             class HeartBeat
                 : public ScriptCanvas::Nodes::Internal::BaseTimerNode
             {
-                ScriptCanvas_Node(HeartBeat,
-                    ScriptCanvas_Node::Name("HeartBeat", "While active, will signal the output at the given interval.")
-                    ScriptCanvas_Node::Uuid("{BA107060-249D-4818-9CEC-7573718273FC}")
-                    ScriptCanvas_Node::Category("Timing")
-                    ScriptCanvas_Node::Version(0)
-                );
-
             public:
 
+                SCRIPTCANVAS_NODE(HeartBeat);
+
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
+
                 void OnInputSignal(const SlotId&) override;
+
+                const char* GetBaseTimeSlotName() const override { return "Interval"; }
+                const char* GetBaseTimeSlotToolTip() const override { return "The amount of time between pulses."; }
 
             protected:
 
                 void OnTimeElapsed() override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("Start", ""));
-
-                ScriptCanvas_In(ScriptCanvas_In::Name("Stop", ""));
-
-                // Outputs
-                ScriptCanvas_OutLatent(ScriptCanvas_OutLatent::Name("Pulse", ""));
-            };
+             };
         }
     }
 }

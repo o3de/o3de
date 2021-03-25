@@ -19,3 +19,9 @@
 #include "Duration.h"
 #include "Timer.h"
 #include "HeartBeat.h"
+
+#include "DelayNodeable.h"
+#include "DurationNodeable.h"
+#include "TimerNodeable.h"
+#include "TimeDelayNodeable.h"
+#include "HeartBeatNodeable.h"

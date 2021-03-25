@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -17,6 +17,11 @@
 #include <AzCore/EBus/EBus.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace ScriptCanvas
 {
@@ -57,9 +62,9 @@ namespace ScriptCanvas
             
             SCRIPT_CANVAS_UNIT_TEST_COMPARE_OVERLOAD_DECLARATIONS(ExpectLessThanEqual);
             
-        }; // class BusTraits
+        };
 
         using Bus = AZ::EBus<BusTraits>;
 
-    } // namespace UnitTest
-} // namespace ScriptCanvas
+    }
+} 

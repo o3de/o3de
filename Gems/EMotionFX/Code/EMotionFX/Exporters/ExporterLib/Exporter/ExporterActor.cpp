@@ -114,9 +114,37 @@ namespace ExporterLib
         }
     }
 
+    void SaveMeshAssetChunk(MCore::Stream* file, const AZStd::optional<AZ::Data::AssetId> meshAssetId, MCore::Endian::EEndianType targetEndianType)
+    {
+        // Skip writing the mesh asset chunk in case there is no asset assigned.
+        if (!meshAssetId.has_value())
+        {
+            return;
+        }
+
+        const AZStd::string meshAssetIdString = meshAssetId.value().ToString<AZStd::string>();
+
+        // Write the chunk header
+        EMotionFX::FileFormat::FileChunk chunkHeader;
+        chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_MESHASSET;
+        chunkHeader.mSizeInBytes    = sizeof(EMotionFX::FileFormat::Actor_MeshAsset) + GetStringChunkSize(meshAssetIdString.c_str());
+        chunkHeader.mVersion        = 1;
+        ConvertFileChunk(&chunkHeader, targetEndianType);
+        file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
+
+        // Write mesh asset chunk
+        EMotionFX::FileFormat::Actor_MeshAsset meshAssetChunk;
+        file->Write(&meshAssetChunk, sizeof(EMotionFX::FileFormat::Actor_MeshAsset));
+
+        // followed by:
+        SaveString(meshAssetIdString, file, targetEndianType);
+
+        MCore::LogDetailedInfo("- Mesh asset:");
+        MCore::LogDetailedInfo("    + AssetId: '%s'", meshAssetIdString.c_str());
+    }
 
     // save the actor to a memory file
-    void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actorIn, MCore::Endian::EEndianType targetEndianType)
+    void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actorIn, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId)
     {
         if (actorIn == nullptr)
         {
@@ -136,6 +164,9 @@ namespace ExporterLib
         // save actor info
         SaveActorFileInfo(file, actor->GetNumLODLevels(), actor->GetMotionExtractionNodeIndex(), actor->GetRetargetRootNodeIndex(), "", "", actor->GetName(), actor->GetUnitType(), targetEndianType, actor->GetOptimizeSkeleton());
 
+        // Save mesh asset id
+        SaveMeshAssetChunk(file, meshAssetId, targetEndianType);
+
         // save nodes
         EMotionFX::GetEventManager().OnSubProgressText("Saving nodes");
         EMotionFX::GetEventManager().OnSubProgressValue(35.0f);
@@ -148,29 +179,7 @@ namespace ExporterLib
         SaveNodeMotionSources(file, actor.get(), nullptr, targetEndianType);
         SaveAttachmentNodes(file, actor.get(), targetEndianType);
 
-        // save materials
-        EMotionFX::GetEventManager().OnSubProgressText("Saving materials");
-        EMotionFX::GetEventManager().OnSubProgressValue(45.0f);
-
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_START(materialTimer);
-        SaveMaterials(file, actor.get(), targetEndianType);
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_END(materialTimer, "materials");
-
-        // save meshes
-        EMotionFX::GetEventManager().OnSubProgressText("Saving meshes");
-        EMotionFX::GetEventManager().OnSubProgressValue(50.0f);
-
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_START(meshTimer);
-        SaveMeshes(file, actor.get(), targetEndianType);
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_END(meshTimer, "meshes");
-
-        // save skins
-        EMotionFX::GetEventManager().OnSubProgressText("Saving skins");
-        EMotionFX::GetEventManager().OnSubProgressValue(75.0f);
-
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_START(skinTimer);
-        SaveSkins(file, actor.get(), targetEndianType);
-        EMFX_DETAILED_SAVING_PERFORMANCESTATS_END(skinTimer, "skins");
+        // Since Atom: We are no longer saving mesh, skin and material data directly into actor file.
 
         // save morph targets
         EMotionFX::GetEventManager().OnSubProgressText("Saving morph targets");
@@ -194,7 +203,7 @@ namespace ExporterLib
 
 
     // save the actor to disk
-    bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType)
+    bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId)
     {
         if (filename.empty())
         {
@@ -207,7 +216,7 @@ namespace ExporterLib
         memoryFile.SetPreAllocSize(262144); // 256kb
 
         // Save the actor to the memory file.
-        SaveActor(&memoryFile, actor, targetEndianType);
+        SaveActor(&memoryFile, actor, targetEndianType, meshAssetId);
 
         // Make sure the file has the correct extension and write the data from memory to disk.
         AzFramework::StringFunc::Path::ReplaceExtension(filename, GetActorExtension());
@@ -215,5 +224,4 @@ namespace ExporterLib
         memoryFile.Close();
         return true;
     }
-
 } // namespace ExporterLib

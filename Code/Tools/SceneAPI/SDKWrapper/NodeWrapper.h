@@ -15,9 +15,9 @@ namespace fbxsdk
 {
     class FbxNode;
 }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
 struct aiNode;
-#endif
+
 namespace AZ
 {
     namespace SDKNode
@@ -29,9 +29,7 @@ namespace AZ
 
             NodeWrapper() = default;
             NodeWrapper(fbxsdk::FbxNode* fbxNode);
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             NodeWrapper(aiNode* aiNode);
-#endif
             virtual ~NodeWrapper();
 
             enum CurveNodeComponent
@@ -42,9 +40,7 @@ namespace AZ
             };
 
             fbxsdk::FbxNode* GetFbxNode();
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             aiNode* GetAssImpNode();
-#endif
 
             virtual const char* GetName() const;
             virtual AZ::u64 GetUniqueId() const;
@@ -55,9 +51,7 @@ namespace AZ
 
 
             fbxsdk::FbxNode* m_fbxNode = nullptr;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             aiNode* m_assImpNode = nullptr;
-#endif
         };
     } //namespace Node
 } //namespace AZ

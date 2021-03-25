@@ -107,7 +107,7 @@ CLensFlareEditor::CLensFlareEditor(QWidget* pParent)
     m_pLensFlareElementTree->RegisterListener(m_pLensFlareView);
 
     m_pWndProps->ExpandAll();
-    m_pWndProps->SetUpdateCallback(functor(*this, &CLensFlareEditor::OnUpdateProperties));
+    m_pWndProps->SetUpdateCallback(AZStd::bind(&CLensFlareEditor::OnUpdateProperties, this, AZStd::placeholders::_1));
     m_pWndProps->SetCallbackOnNonModified(false);
 
     connect(ui->actionDBAdd, &QAction::triggered, this, &CLensFlareEditor::OnAddItem);
@@ -428,7 +428,8 @@ void CLensFlareEditor::Paste(const QModelIndex& hSelectedTreeItem, XmlNodeRef no
 
     if (bShouldCreateNewGroup)
     {
-        targetGroupName = MakeValidName("NewGroup", functor(*this, &CDatabaseFrameWnd::DoesGroupExist));
+        using namespace AZStd::placeholders;
+        targetGroupName = MakeValidName("NewGroup", AZStd::bind(&CDatabaseFrameWnd::DoesGroupExist, this, _1, _2));
     }
     else
     {
@@ -493,7 +494,8 @@ void CLensFlareEditor::Paste(const QModelIndex& hSelectedTreeItem, XmlNodeRef no
         }
 
         QString candidateName = targetGroupName + QString(".") + sourceName;
-        QString validName = MakeValidName(candidateName, functor(*this, &CDatabaseFrameWnd::DoesItemExist));
+        QString validName = MakeValidName(candidateName,
+                                AZStd::bind(&CDatabaseFrameWnd::DoesItemExist, this, AZStd::placeholders::_1, AZStd::placeholders::_2));
         QString validShortName = LensFlareUtil::GetShortName(validName);
         pNewItem = AddNewLensFlareItem(targetGroupName, validShortName);
         assert(pNewItem);
@@ -1141,7 +1143,8 @@ void CLensFlareEditor::AddNewItemByAtomicOptics(const QModelIndex& hSelectedItem
     }
 
     FlareInfoArray::Props flareProps = FlareInfoArray::Get();
-    QString itemName = MakeValidName(groupName + QString(".") + flareProps.p[flareType].name, functor(*this, &CDatabaseFrameWnd::DoesItemExist));
+    QString itemName = MakeValidName(groupName + QString(".") + flareProps.p[flareType].name,
+                            AZStd::bind(&CDatabaseFrameWnd::DoesItemExist, this, AZStd::placeholders::_1, AZStd::placeholders::_2));
     CLensFlareItem* pNewItem = AddNewLensFlareItem(groupName, LensFlareUtil::GetShortName(itemName));
 
     if (pNewItem)

@@ -17,6 +17,8 @@ namespace AZ
 {
     namespace RPI
     {
+        class SwapChainPass;
+
         using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
 
         //! A parent pass doesn't do any rendering itself, but instead contains child passes that it delegates functionality to.

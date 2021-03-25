@@ -14,7 +14,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Math/Uuid.h>
-#include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER
 #include <filesystem>
@@ -40,7 +40,7 @@ namespace UnitTest
 
     private:
         bool m_directoryExists{ false };
-        AZStd::string m_tempDirectory;
+        AZ::IO::FixedMaxPath m_tempDirectory;
 #if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER     
         std::filesystem::path m_path;
 #endif

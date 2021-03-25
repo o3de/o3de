@@ -21,7 +21,7 @@
 #include <Integration/EMotionFXBus.h>
 #include <Integration/Rendering/RenderBackendManager.h>
 
-#include <CrySystemBus.h> // Immediate-mode CryRendering only
+#include <CrySystemBus.h>
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
 #   include <AzCore/Debug/Timer.h>
@@ -43,7 +43,6 @@ namespace EMotionFX
     namespace Integration
     {
         class EMotionFXEventHandler;
-        class CryRenderBackend;
 
         class SystemComponent
             : public AZ::Component

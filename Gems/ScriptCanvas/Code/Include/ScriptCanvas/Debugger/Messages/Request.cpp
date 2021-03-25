@@ -74,5 +74,5 @@ namespace ScriptCanvas
                     ;
             }
         }
-    } // namespace Debugger
-} // namespace ScriptCanvas
+    }
+} 

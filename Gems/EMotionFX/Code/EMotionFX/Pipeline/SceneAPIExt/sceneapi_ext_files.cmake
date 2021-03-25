@@ -20,10 +20,6 @@ set(FILES
     Behaviors/ActorGroupBehavior.cpp
     Behaviors/MotionGroupBehavior.h
     Behaviors/MotionGroupBehavior.cpp
-    Behaviors/MeshRuleBehavior.h
-    Behaviors/MeshRuleBehavior.cpp
-    Behaviors/SkinRuleBehavior.h
-    Behaviors/SkinRuleBehavior.cpp
     Behaviors/MotionRangeRuleBehavior.h
     Behaviors/MotionRangeRuleBehavior.cpp
     Behaviors/MorphTargetRuleBehavior.h
@@ -39,9 +35,6 @@ set(FILES
     Rules/ActorScaleRule.cpp
     Rules/ExternalToolRule.h
     Rules/ExternalToolRule.inl
-    Rules/IMeshRule.h
-    Rules/MeshRule.h
-    Rules/MeshRule.cpp
     Rules/MetaDataRule.h
     Rules/MetaDataRule.cpp
     Rules/MetaDataRule.inl
@@ -53,13 +46,8 @@ set(FILES
     Rules/MotionScaleRule.cpp
     Rules/MotionSamplingRule.cpp
     Rules/MotionSamplingRule.h
-    Rules/ISkinRule.h
-    Rules/SkinRule.h
-    Rules/SkinRule.cpp
     Rules/SimulatedObjectSetupRule.h
     Rules/SimulatedObjectSetupRule.cpp
-    Rules/CoordinateSystemRule.h
-    Rules/CoordinateSystemRule.cpp
     Rules/MotionRangeRule.h
     Rules/MotionRangeRule.cpp
     Rules/MorphTargetRule.h

@@ -61,6 +61,7 @@
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
 #include <AzFramework/Script/ScriptComponent.h>
+#include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -407,6 +408,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::InputSystemComponent>(),
             azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
+            azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
         });
 

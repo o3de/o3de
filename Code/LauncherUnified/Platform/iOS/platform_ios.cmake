@@ -12,7 +12,5 @@
 
 set(LY_BUILD_DEPENDENCIES
     PUBLIC
-        3rdParty::LibTomCrypt
-        3rdParty::LibTomMath
         3rdParty::FreeType2
 )

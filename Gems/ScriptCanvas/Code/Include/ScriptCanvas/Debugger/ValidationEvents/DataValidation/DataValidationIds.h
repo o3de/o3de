@@ -47,5 +47,8 @@ namespace ScriptCanvas
         
         constexpr const char* InvalidRandomSignalId = "DV-0009";
         static const AZ::Crc32 InvalidRandomSignalCrc = AZ_CRC(InvalidRandomSignalId);
+
+        constexpr const char* InvalidPropertyId = "DV-0010";
+        static const AZ::Crc32 InvalidPropertyCrc = AZ_CRC(InvalidPropertyId);
     }
 }

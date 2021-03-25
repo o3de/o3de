@@ -116,10 +116,6 @@ namespace ImageProcessingEditor
         {
             readableString = "macOS";
         }
-        else if (platformStrLowerCase == "xenia")
-        {
-            readableString = "Xenia";
-        }
         else if (platformStrLowerCase == "provo")
         {
             readableString = "Provo";

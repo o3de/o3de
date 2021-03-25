@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <AzFramework/Viewport/Viewport.h>
+#include <AzFramework/Viewport/ViewportControllerInterface.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -23,7 +23,12 @@ namespace AzFramework
     //! Subclasses of MultiViewportController will be provided with one instance of TViewportControllerInstance
     //! per registered viewport, where TViewportControllerInstance must implement the interface of
     //! MultiViewportControllerInstance and provide a TViewportControllerInstance(ViewportId) constructor.
-    template <class TViewportControllerInstance>
+    //! @param TViewportControllerInstance is the instance type of the controller,
+    //! one shall be instantiated per registered viewport. This child should conform to the MultiViewportControllerInstanceInterface
+    //! @param Priority is the priority at which this controller should be dispatched events.
+    //! Input events may not be received if a higher prioririty controller consumes the event.
+    //! To receive events at all priorities, DispatchToAllPriorities may be specified.
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority = ViewportControllerPriority::Normal>
     class MultiViewportController
         : public ViewportControllerInterface
     {
@@ -31,10 +36,11 @@ namespace AzFramework
         ~MultiViewportController() override;
 
         // ViewportControllerInterface ...
-        bool HandleInputChannelEvent(ViewportId viewport, const AzFramework::InputChannel& inputChannel) override;
-        void UpdateViewport(ViewportId viewport, FloatSeconds deltaTime, AZ::ScriptTimePoint time) override;
+        bool HandleInputChannelEvent(const ViewportControllerInputEvent& event) override;
+        void UpdateViewport(const ViewportControllerUpdateEvent& event) override;
         void RegisterViewportContext(ViewportId viewport) override;
         void UnregisterViewportContext(ViewportId viewport) override;
+        ViewportControllerPriority GetPriority() const override;
 
     private:
         AZStd::unordered_map<ViewportId, AZStd::unique_ptr<TViewportControllerInstance>> m_instances;
@@ -45,14 +51,14 @@ namespace AzFramework
     {
     public:
         explicit MultiViewportControllerInstanceInterface(ViewportId viewport)
-            : m_viewport(viewport)
+            : m_viewportId(viewport)
         {
         }
 
         ViewportId GetViewportId() const { return m_viewportId; }
 
-        virtual bool HandleInputChannelEvent([[maybe_unused]]const AzFramework::InputChannel& inputChannel) { return false; }
-        virtual void UpdateViewport([[maybe_unused]]FloatSeconds deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time) {}
+        virtual bool HandleInputChannelEvent([[maybe_unused]]const ViewportControllerInputEvent& event) { return false; }
+        virtual void UpdateViewport([[maybe_unused]]const ViewportControllerUpdateEvent& event) {}
 
     private:
         ViewportId m_viewportId;

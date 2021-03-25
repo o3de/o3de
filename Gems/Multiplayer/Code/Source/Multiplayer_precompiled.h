@@ -9,10 +9,8 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #pragma once
 
-#include <platform.h>
-#include <CryName.h>
-#include <I3DEngine.h>
-#include <ISerialize.h>
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
+#include <AzNetworking/Framework/INetworking.h>

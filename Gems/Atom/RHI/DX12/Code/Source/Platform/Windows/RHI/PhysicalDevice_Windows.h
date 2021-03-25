@@ -33,6 +33,7 @@ namespace AZ
 
         private:
             PhysicalDevice() = default;
+            uint32_t GetGpuDriverVersion(const DXGI_ADAPTER_DESC& adapterDesc);
 
             void Init(IDXGIFactoryX* factory, IDXGIAdapterX* adapter);
             void Shutdown() override;

@@ -16,6 +16,8 @@
 #include "RenderGLConfig.h"
 #include "../../Common/RenderUtil.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 namespace RenderGL
 {
@@ -28,12 +30,16 @@ namespace RenderGL
 
     class RENDERGL_API GLRenderUtil
         : public MCommon::RenderUtil
+        , private QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(GLRenderUtil, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
     public:
         GLRenderUtil(GraphicsManager* graphicsManager);
         ~GLRenderUtil();
+
+        void Init();
+        void Validate() override;
 
         // render 2D rects
         void RenderBorderedRect(int32 left, int32 right, int32 top, int32 bottom, const MCore::RGBAColor& fillColor, const MCore::RGBAColor& borderColor) override;

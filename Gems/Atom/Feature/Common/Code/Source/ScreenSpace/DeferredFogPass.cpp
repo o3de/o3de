@@ -206,9 +206,9 @@ namespace AZ
             m_ShaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
         }
 
-        void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph, producer);
+            FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph);
 
             // If any change was made, make sure to bind it.
             DeferredFogSettings* fogSettings = GetPassFogSettings();
@@ -225,14 +225,14 @@ namespace AZ
             SetSrgConstants();
         }
   
-        void DeferredFogPass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void DeferredFogPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
             {
                 m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_ShaderOptions);
             }
 
-            FullscreenTrianglePass::CompileResources(context, producer);
+            FullscreenTrianglePass::CompileResources(context);
         }
     }   // namespace Render
 }   // namespace AZ

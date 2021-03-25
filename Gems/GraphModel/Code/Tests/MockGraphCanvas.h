@@ -199,6 +199,7 @@ namespace MockGraphCanvasServices
         void HideUnusedSlots() override;
         bool HasHideableSlots() const override;
         void SignalConnectionMoveBegin(const GraphCanvas::ConnectionId& connectionId) override;
+        void SignalNodeAboutToBeDeleted() override;
 
     protected:
         /// This node's slots

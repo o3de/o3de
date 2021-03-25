@@ -17,10 +17,12 @@
 namespace AtomToolsFramework
 {
     InspectorPropertyGroupWidget::InspectorPropertyGroupWidget(
-        void* object,
-        const AZ::Uuid& objectClassId,
-        AzToolsFramework::IPropertyEditorNotify* objectNotificationHandler,
-        QWidget* parent)
+        void* instance,
+        void* instanceToCompare,
+        const AZ::Uuid& instanceClassId,
+        AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler,
+        QWidget* parent,
+        const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction)
         : InspectorGroupWidget(parent)
     {
         AZ::SerializeContext* context = nullptr;
@@ -34,8 +36,9 @@ namespace AtomToolsFramework
         m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
         m_propertyEditor->SetHideRootProperties(true);
         m_propertyEditor->SetAutoResizeLabels(true);
-        m_propertyEditor->Setup(context, objectNotificationHandler, false);
-        m_propertyEditor->AddInstance(object, objectClassId);
+        m_propertyEditor->SetValueComparisonFunction(valueComparisonFunction);
+        m_propertyEditor->Setup(context, instanceNotificationHandler, false);
+        m_propertyEditor->AddInstance(instance, instanceClassId, nullptr, instanceToCompare);
         m_propertyEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         m_propertyEditor->QueueInvalidation(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
 
@@ -51,6 +54,11 @@ namespace AtomToolsFramework
     void InspectorPropertyGroupWidget::Rebuild()
     {
         m_propertyEditor->QueueInvalidation(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+    }
+
+    AzToolsFramework::ReflectedPropertyEditor* InspectorPropertyGroupWidget::GetPropertyEditor()
+    {
+        return m_propertyEditor;
     }
 } // namespace AtomToolsFramework
 

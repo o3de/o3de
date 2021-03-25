@@ -32,31 +32,6 @@ namespace AZ
 {
     namespace RPI
     {
-        // --- PassScopeProducer ---
-
-        void PassScopeProducer::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-        {
-            m_parentPass->SetupFrameGraphDependencies(frameGraph, *this);
-
-            m_parentPass->AddScopeQueryToFrameGraph(m_childIndex, frameGraph);
-        }
-
-        void PassScopeProducer::CompileResources(const RHI::FrameGraphCompileContext& context)
-        {
-            m_parentPass->CompileResources(context, *this);
-        }
-
-        void PassScopeProducer::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
-        {
-            m_parentPass->BeginScopeQuery(m_childIndex, context);
-
-            m_parentPass->BuildCommandList(context, *this);
-
-            m_parentPass->EndScopeQuery(m_childIndex, context);
-        }
-
-        // --- RenderPass ---
-
         RenderPass::RenderPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
@@ -70,10 +45,6 @@ namespace AZ
 
         RenderPass::~RenderPass()
         {
-            m_timestampResults.clear();
-            m_statisticsResults.clear();
-            m_scopeQueries.clear();
-            m_scopeProducers.clear();
         }
 
         const PipelineViewTag& RenderPass::GetPipelineViewTag() const
@@ -156,61 +127,6 @@ namespace AZ
             return outputMultiSampleState;
         }
 
-        void RenderPass::AddScopeProducer()
-        {
-            // Scope's index is the position it will be in when we add it to the array
-            size_t index = m_scopeProducers.size();
-
-            // The scope's ID = PathNameOfPass.index
-            AZStd::string producerName = AZStd::string::format("%s.%zu", GetPathName().GetCStr(), index);
-
-            // Create new scope producer
-            PassScopeProducer* producer = aznew PassScopeProducer(RHI::ScopeId(producerName), this, uint16_t(index));
-
-            // And add it to the list
-            m_scopeProducers.emplace_back(producer);
-
-            // Add a ScopeQuery instance for the ScopeProducer
-            AddScopeQuery();
-        }
-
-        void RenderPass::AddScopeQuery()
-        {
-            // Cache the Timestamp and PipelineStatistics' results for each ScopeProducer
-            m_timestampResults.emplace_back();
-            m_statisticsResults.emplace_back();
-
-            // Add a ScopeQuery instance for each scope
-            const RHI::Ptr<Query> timestampQuery = GpuQuerySystemInterface::Get()->CreateQuery(RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
-            const RHI::Ptr<Query> statisticsQuery = GpuQuerySystemInterface::Get()->CreateQuery(RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
-            m_scopeQueries.emplace_back(ScopeQuery{ { timestampQuery, statisticsQuery } });
-        }
-
-        void RenderPass::ImportScopeProducers(RHI::FrameGraphBuilder* frameGraphBuilder)
-        {
-            // Update scope producer count
-            if (m_scopeProducers.size() != m_numberOfScopes)
-            {
-                // Clear the Timestamp and PipelineStatistics' result caches
-                m_timestampResults.clear();
-                m_statisticsResults.clear();
-                // Clear the ScopeQueries
-                m_scopeQueries.clear();
-
-                // Clear old scope producers and build new ones to match the desired count
-                m_scopeProducers.clear();
-                for (uint32_t i = 0; i < m_numberOfScopes; ++i)
-                {
-                    AddScopeProducer();
-                }
-            }
-
-            // Import scope producers in list
-            for (const auto& producer : m_scopeProducers)
-            {
-                frameGraphBuilder->ImportScopeProducer(*producer.get());
-            }
-        }
 
         void RenderPass::OnBuildAttachmentsFinishedInternal()
         {
@@ -259,7 +175,11 @@ namespace AZ
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
-            ImportScopeProducers(params.m_frameGraphBuilder);
+            if (GetScopeId().IsEmpty())
+            {
+                SetScopeId(RHI::ScopeId(GetPathName()));
+            }
+            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
             // Read the attachment for one frame. The reference can be released afterwards
             if (m_attachmentReadback)
@@ -284,10 +204,18 @@ namespace AZ
             ResetSrgs();
         }
 
-        void RenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const PassScopeProducer& producer)
+        void RenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph);
             DeclarePassDependenciesToFrameGraph(frameGraph);
+            AddScopeQueryToFrameGraph(frameGraph);
+        }
+
+        void RenderPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
+        {
+            BeginScopeQuery(context);
+            BuildCommandListInternal(context);
+            EndScopeQuery(context);
         }
 
         void RenderPass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const
@@ -324,10 +252,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    for (const auto& scopeProducer : renderPass->m_scopeProducers)
-                    {
-                        frameGraph.ExecuteAfter(scopeProducer->GetScopeId());
-                    }
+                    frameGraph.ExecuteAfter(GetScopeId());
                 }
             }
             for (Pass* pass : m_executeBeforePasses)
@@ -335,10 +260,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    for (const auto& scopeProducer : renderPass->m_scopeProducers)
-                    {
-                        frameGraph.ExecuteBefore(scopeProducer->GetScopeId());
-                    }
+                    frameGraph.ExecuteBefore(GetScopeId());
                 }
             }
         }
@@ -510,14 +432,12 @@ namespace AZ
 
         TimestampResult RenderPass::GetTimestampResultInternal() const
         {
-            // Get the Timestamp result of the current pass by iterating through all scopes, and summing all the results
-            return TimestampResult(m_timestampResults);
+            return m_timestampResult;
         }
 
         PipelineStatisticsResult RenderPass::GetPipelineStatisticsResultInternal() const
         {
-            // Get the PipelineStatistics of the current pass by iterating through all scopes, and summing all the results
-            return PipelineStatisticsResult(m_statisticsResults);
+            return m_statisticsResult;
         }
 
         Data::Instance<RPI::ShaderResourceGroup> RenderPass::GetShaderResourceGroup()
@@ -525,17 +445,36 @@ namespace AZ
             return m_shaderResourceGroup;
         }
 
-        RHI::Ptr<Query> RenderPass::GetQuery(uint16_t scopeIdx, ScopeQueryType queryType) const
+        RHI::Ptr<Query> RenderPass::GetQuery(ScopeQueryType queryType)
         {
-            return m_scopeQueries[scopeIdx][static_cast<uint32_t>(queryType)];
+            uint32_t typeIndex = static_cast<uint32_t>(queryType);
+            if (!m_scopeQueries[typeIndex])
+            {
+                RHI::Ptr<Query> query;
+                switch (queryType)
+                {
+                case ScopeQueryType::Timestamp:
+                    query = GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+                    break;
+                case ScopeQueryType::PipelineStatistics:
+                    query = GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+                    break;
+                }
+
+                m_scopeQueries[typeIndex] = query;
+            }
+
+            return m_scopeQueries[typeIndex];
         }
 
         template<typename Func>
-        inline void RenderPass::ExecuteOnTimestampQuery(uint16_t scopeIdx, Func&& func)
+        inline void RenderPass::ExecuteOnTimestampQuery(Func&& func)
         {
             if (IsTimestampQueryEnabled())
             {
-                auto query = GetQuery(scopeIdx, ScopeQueryType::Timestamp);
+                auto query = GetQuery(ScopeQueryType::Timestamp);
                 if (query)
                 {
                     func(query);
@@ -544,11 +483,11 @@ namespace AZ
         }
 
         template<typename Func>
-        inline void RenderPass::ExecuteOnPipelineStatisticsQuery(uint16_t scopeIdx, Func&& func)
+        inline void RenderPass::ExecuteOnPipelineStatisticsQuery(Func&& func)
         {
             if (IsPipelineStatisticsQueryEnabled())
             {
-                auto query = GetQuery(scopeIdx, ScopeQueryType::PipelineStatistics);
+                auto query = GetQuery(ScopeQueryType::PipelineStatistics);
                 if (query)
                 {
                     func(query);
@@ -556,56 +495,57 @@ namespace AZ
             }
         }
 
-        void RenderPass::AddScopeQueryToFrameGraph(uint16_t scopeIdx, RHI::FrameGraphInterface frameGraph)
+        void RenderPass::AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph)
         {
             const auto addToFrameGraph = [&frameGraph](RHI::Ptr<Query> query)
             {
                 query->AddToFrameGraph(frameGraph);
             };
 
-            ExecuteOnTimestampQuery(scopeIdx, addToFrameGraph);
-            ExecuteOnPipelineStatisticsQuery(scopeIdx, addToFrameGraph);
+            ExecuteOnTimestampQuery(addToFrameGraph);
+            ExecuteOnPipelineStatisticsQuery(addToFrameGraph);
         }
 
-        void RenderPass::BeginScopeQuery(uint16_t scopeIdx, const RHI::FrameGraphExecuteContext& context)
+        void RenderPass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context)
         {
-            const auto beginQuery = [&context](RHI::Ptr<Query> query)
+            const auto beginQuery = [&context, this](RHI::Ptr<Query> query)
             {
-                query->BeginQuery(context);
+                if (query->BeginQuery(context) == QueryResultCode::Fail)
+                {
+                    AZ_WarningOnce("RenderPass", false, "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
+                        " for this pass: %s", this->RTTI_GetTypeName());
+                }
             };
 
-            ExecuteOnTimestampQuery(scopeIdx, beginQuery);
-            ExecuteOnPipelineStatisticsQuery(scopeIdx, beginQuery);
+            ExecuteOnTimestampQuery(beginQuery);
+            ExecuteOnPipelineStatisticsQuery(beginQuery);
         }
 
-        void RenderPass::EndScopeQuery(uint16_t scopeIdx, const RHI::FrameGraphExecuteContext& context)
+        void RenderPass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context)
         {
             const auto endQuery = [&context](RHI::Ptr<Query> query)
             {
                 query->EndQuery(context);
             };
 
-            ExecuteOnTimestampQuery(scopeIdx, endQuery);
-            ExecuteOnPipelineStatisticsQuery(scopeIdx, endQuery);
+            ExecuteOnTimestampQuery(endQuery);
+            ExecuteOnPipelineStatisticsQuery(endQuery);
         }
 
         void RenderPass::ReadbackScopeQueryResults()
         {
-            for (uint32_t scopeQueryIdx = 0u; scopeQueryIdx < m_scopeQueries.size(); scopeQueryIdx++)
+            ExecuteOnTimestampQuery([this](RHI::Ptr<Query> query)
             {
-                ExecuteOnTimestampQuery(scopeQueryIdx, [this, scopeQueryIdx](RHI::Ptr<Query> query)
-                {
-                    const uint32_t TimestampResultQueryCount = 2u;
-                    uint64_t timestampResult[TimestampResultQueryCount];
-                    query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
-                    m_timestampResults[scopeQueryIdx] = TimestampResult(timestampResult[0], timestampResult[1]);
-                });
+                const uint32_t TimestampResultQueryCount = 2u;
+                uint64_t timestampResult[TimestampResultQueryCount] = {0};
+                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1]);
+            });
 
-                ExecuteOnPipelineStatisticsQuery(scopeQueryIdx, [this, scopeQueryIdx](RHI::Ptr<Query> query)
-                {
-                    query->GetLatestResult(&m_statisticsResults[scopeQueryIdx], sizeof(PipelineStatisticsResult));
-                });
-            }
+            ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)
+            {
+                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult));
+            });
         }
     }   // namespace RPI
 }   // namespace AZ

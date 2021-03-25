@@ -29,26 +29,20 @@ namespace AzToolsFramework
 
 namespace AzFramework
 {
-    class TransformReplicaChunk;
     class GameEntityContextComponent;
 
     /// @deprecated Use AZ::TransformConfig
     using TransformComponentConfiguration = AZ::TransformConfig;
 
     //! Fundamental component that describes the entity in 3D space.
-    //! It is net-bindable. Only local transform is synchronized, so when 
-    //! parented, the parent must properly synchronize its transform as well.
     class TransformComponent
         : public AZ::Component
+        , public AZ::EntityBus::Handler
         , public AZ::TransformBus::Handler
         , public AZ::TransformNotificationBus::Handler
-        , public AZ::EntityBus::Handler
-        , public AZ::TickBus::Handler
         , private AZ::TransformHierarchyInformationBus::Handler
         , public NetBindable
     {
-        friend class TransformReplicaChunk;
-
     public:
         AZ_COMPONENT(TransformComponent, AZ::TransformComponentTypeId, NetBindable, AZ::TransformInterface);
 
@@ -56,11 +50,15 @@ namespace AzFramework
 
         using ParentActivationTransformMode = AZ::TransformConfig::ParentActivationTransformMode;
 
-        TransformComponent();
+        TransformComponent() = default;
         TransformComponent(const TransformComponent& copy);
-        virtual ~TransformComponent();
+        ~TransformComponent() override = default;
 
         // TransformBus events (publicly accessible)
+        void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler) override;
+        void BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler& handler) override;
+        void BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler& handler) override;
+        void NotifyChildChangedEvent(AZ::ChildChangeType changeType, AZ::EntityId entityId) override;
         //! Returns true if the tm was set to the local transform.
         const AZ::Transform& GetLocalTM() override { return m_localTM; }
         //! Returns true if the tm was set to the world transform.
@@ -115,8 +113,6 @@ namespace AzFramework
         float GetLocalY() override;
         float GetLocalZ() override;
 
-        bool IsPositionInterpolated() override;
-
         // Rotation modifiers
         void SetRotation(const AZ::Vector3& eulerAnglesRadian) override;
         void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
@@ -147,8 +143,6 @@ namespace AzFramework
 
         AZ::Vector3 GetLocalRotation() override;
         AZ::Quaternion GetLocalRotationQuaternion() override;
-
-        bool IsRotationInterpolated() override;
 
         // Scale Modifiers
         void SetScale(const AZ::Vector3& scale) override;
@@ -187,28 +181,6 @@ namespace AzFramework
         void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
         //! @}
 
-        //! Methods implementing NetBindable.
-        //! @{
-        GridMate::ReplicaChunkPtr GetNetworkBinding() override;
-        void SetNetworkBinding(GridMate::ReplicaChunkPtr chunk) override;
-        void UnbindFromNetwork() override;
-
-        //! Called by the net chunk when new transform data arrives from the network.
-        void OnNewNetTransformData(const AZ::Transform& transform, const GridMate::TimeContext& tc);
-
-        //! Called by the net chunk when new parent id arrives from the network.
-        void OnNewNetParentData(const AZ::u64& parentId, const GridMate::TimeContext& tc);
-
-        //! Returns true if this instance is non-authoritative.
-        bool IsNetworkControlled() const;
-
-        //! Triggers an update of the chunk data. Should only be called on the authoritative instance.
-        void UpdateReplicaChunk();
-        //! @}
-
-        // AZ::TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
         //////////////////////////////////////////////////////////////////////////
         // Actual Implementation Functions
         // They are protected so we can gate them when network-controlled
@@ -216,8 +188,6 @@ namespace AzFramework
         void SetLocalTMImpl(const AZ::Transform& tm);
         void SetWorldTMImpl(const AZ::Transform& tm);
         void OnTransformChangedImpl(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM);
-        void OnEntityActivatedImpl(const AZ::EntityId& parentEntityId);
-        void OnEntityDeactivateImpl(const AZ::EntityId& parentEntityId);
         void ComputeLocalTM();
         void ComputeWorldTM();
         //////////////////////////////////////////////////////////////////////////
@@ -228,44 +198,31 @@ namespace AzFramework
         // TransformHierarchyInformationBus
         void GatherChildren(AZStd::vector<AZ::EntityId>& children) override;
 
-        //! Feedback from corresponding replica chunk.
-        //! @{
-        void OnNewPositionData(const AZ::Vector3&, const GridMate::TimeContext&);
-        void OnNewRotationData(const AZ::Quaternion&, const GridMate::TimeContext&);
-        void OnNewScaleData(const AZ::Vector3&, const GridMate::TimeContext&);
-        //! @}
-
         /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
         /// \ref ComponentDescriptor::Reflect
         static void Reflect(AZ::ReflectContext* reflection);
 
-        AZ::Transform                        m_localTM;                ///< Local transform relative to parent transform (same as worldTM if no parent).
-        AZ::Transform                        m_worldTM;                ///< World transform including parent transform (same as localTM if no parent).
-        AZ::EntityId                         m_parentId;               ///< If valid, this transform is parented to m_parentId.
-        AZ::TransformInterface*              m_parentTM;               ///< Cached - pointer to parent transform, to avoid extra calls. Valid only when if it's present.
-        bool                                 m_parentActive;           ///< Keeps track of the state of the parent entity.
-        AZ::TransformNotificationBus::BusPtr m_notificationBus;        ///< Cached bus pointer to the notification bus.
-        bool                                 m_onNewParentKeepWorldTM; ///< If set, recompute localTM instead of worldTM when parent becomes active.
-        ParentActivationTransformMode        m_parentActivationTransformMode;
-        GridMate::ReplicaChunkPtr            m_replicaChunk;
-        bool                                 m_isStatic;               ///< If true, the transform is static and doesn't move while entity is active.
-        AZ::InterpolationMode                m_interpolatePosition;    ///< Interpolation mode for net-synced position updates.
-        AZ::InterpolationMode                m_interpolateRotation;    ///< Interpolation mode for net-synced rotation updates.
+        AZ::TransformChangedEvent m_transformChangedEvent; ///< Event used to signal when a transform changes.
+        AZ::ParentChangedEvent    m_parentChangedEvent;    ///< Event used to signal when a transforms parent changes.
+        AZ::ChildChangedEvent     m_childChangedEvent;     ///< Event used to signal when a transform has a child entity added or removed.
 
-    private:
+        AZ::Transform m_localTM = AZ::Transform::CreateIdentity(); ///< Local transform relative to parent transform (same as worldTM if no parent).
+        AZ::Transform m_worldTM = AZ::Transform::CreateIdentity(); ///< World transform including parent transform (same as localTM if no parent).
 
-        bool HasAnyInterpolation();
+        AZ::EntityId m_parentId; ///< If valid, this transform is parented to m_parentId.
+        AZ::TransformInterface* m_parentTM = nullptr; ///< Cached - pointer to parent transform, to avoid extra calls. Valid only when if it's present.
+        AZ::TransformNotificationBus::BusPtr m_notificationBus; ///< Cached bus pointer to the notification bus.
+        ParentActivationTransformMode m_parentActivationTransformMode = ParentActivationTransformMode::MaintainOriginalRelativeTransform;
+        bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
+        bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
+        bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
 
-        void CreateSamples();
-        void CreateTranslationSample();
-        void CreateRotationSample();
-
-        AZ::Transform GetInterpolatedTransform(unsigned int localTime);
-
-        AZStd::unique_ptr<AZ::Sample<AZ::Vector3>>    m_netTargetTranslation;
-        AZStd::unique_ptr<AZ::Sample<AZ::Quaternion>> m_netTargetRotation;
-        AZ::Vector3 m_netTargetScale;
+        //! @deprecated
+        //! @{
+        AZ::InterpolationMode m_interpolatePosition = AZ::InterpolationMode::NoInterpolation;
+        AZ::InterpolationMode m_interpolateRotation = AZ::InterpolationMode::NoInterpolation;
+        //! @}
     };
 }   // namespace AZ

@@ -260,16 +260,14 @@ namespace GradientSignal
 
     static AZStd::unique_ptr<ImageAsset> LegacyLoadImageFromPath(const AZStd::string& fullPath)
     {
-        ImageProcessing::IImageObject* rawImage = nullptr;
-        ImageProcessing::ImageProcessingRequestBus::BroadcastResult(rawImage, &ImageProcessing::ImageProcessingRequests::LoadImage,
+        ImageProcessing::IImageObjectPtr imageObject;
+        ImageProcessing::ImageProcessingRequestBus::BroadcastResult(imageObject, &ImageProcessing::ImageProcessingRequests::LoadImage,
             fullPath);
 
-        if (!rawImage)
+        if (!imageObject)
         {
             return {};
         }
-
-        AZStd::unique_ptr<ImageProcessing::IImageObject> imageObject{ rawImage };
 
         //create a new image asset
         auto imageAsset = AZStd::make_unique<ImageAsset>();
@@ -303,16 +301,14 @@ namespace GradientSignal
 
     static AZStd::unique_ptr<ImageAsset> AtomLoadImageFromPath(const AZStd::string& fullPath)
     {
-        ImageProcessingAtom::IImageObject* rawImage = nullptr;
-        ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(rawImage, &ImageProcessingAtom::ImageProcessingRequests::LoadImage,
+        ImageProcessingAtom::IImageObjectPtr imageObject;
+        ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(imageObject, &ImageProcessingAtom::ImageProcessingRequests::LoadImage,
             fullPath);
 
-        if (!rawImage)
+        if (!imageObject)
         {
             return {};
         }
-
-        AZStd::unique_ptr<ImageProcessingAtom::IImageObject> imageObject{ rawImage };
 
         //create a new image asset
         auto imageAsset = AZStd::make_unique<ImageAsset>();

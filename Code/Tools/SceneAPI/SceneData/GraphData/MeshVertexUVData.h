@@ -30,6 +30,8 @@ namespace AZ
             public:
                 AZ_RTTI(MeshVertexUVData, "{B435C091-482C-4EB9-B1F4-FA5B480796DA}", AZ::SceneAPI::DataTypes::IMeshVertexUVData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API ~MeshVertexUVData() override = default;
 
                 SCENE_DATA_API const AZ::Name& GetCustomName() const override;

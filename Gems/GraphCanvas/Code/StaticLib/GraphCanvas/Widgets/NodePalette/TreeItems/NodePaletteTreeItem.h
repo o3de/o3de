@@ -11,6 +11,12 @@
 */
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
+
+AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
+#include <QIcon>
+AZ_POP_DISABLE_WARNING
+
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
@@ -78,7 +84,12 @@ namespace GraphCanvas
         void SignalClicked(int row);
         bool SignalDoubleClicked(int row);
 
+        void SetError(const AZStd::string& errorString);
+        void ClearError();
+
     protected:
+
+        bool HasError() const;
 
         void PreOnChildAdded(GraphCanvasTreeItem* item) override;
         
@@ -103,6 +114,10 @@ namespace GraphCanvas
         ////
 
     private:
+
+        // Error Display
+        QIcon m_errorIcon;
+        QString m_errorString;
 
         AZStd::string m_styleOverride;
         AZStd::string m_palette;

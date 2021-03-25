@@ -22,6 +22,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include "ManipulatorSpace.h"
 
 namespace AzFramework
 {
@@ -248,24 +249,33 @@ namespace AzToolsFramework
         bool PerformingAction();
         bool Registered();
 
-        const AZ::Transform& GetLocalTransform() const { return m_localTransform; }
-        const AZ::Transform& GetSpace() const { return m_space; }
-
-        virtual void SetSpace(const AZ::Transform& worldFromLocal) = 0;
-        virtual void SetLocalTransform(const AZ::Transform& localTransform) = 0;
-        virtual void SetLocalPosition(const AZ::Vector3& localPosition) = 0;
-        virtual void SetLocalOrientation(const AZ::Quaternion& localOrientation) = 0;
-
         /// Refresh the Manipulator and/or View based on the current view position.
         virtual void RefreshView(const AZ::Vector3& /*worldViewPosition*/) {}
+
+        const AZ::Transform& GetLocalTransform() const;
+        const AZ::Transform& GetSpace() const;
+        const AZ::Vector3& GetNonUniformScale() const;
+        void SetSpace(const AZ::Transform& worldFromLocal);
+        void SetLocalTransform(const AZ::Transform& localTransform);
+        void SetLocalPosition(const AZ::Vector3& localPosition);
+        void SetLocalOrientation(const AZ::Quaternion& localOrientation);
+        void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
 
     protected:
         /// Common processing for base manipulator type - Implement for all
         /// individual manipulators used in an aggregate manipulator.
         virtual void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) = 0;
 
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); ///< Local space transform of Manipulators.
-        AZ::Transform m_space = AZ::Transform::CreateIdentity(); ///< Space the Manipulators are in.
+        ///@{
+        /// Allows implementers to perform additional logic when updating the location of the manipulator group.
+        virtual void SetSpaceImpl([[maybe_unused]] const AZ::Transform& worldFromLocal) {}
+        virtual void SetLocalTransformImpl([[maybe_unused]] const AZ::Transform& localTransform) {}
+        virtual void SetLocalPositionImpl([[maybe_unused]] const AZ::Vector3& localPosition) {}
+        virtual void SetLocalOrientationImpl([[maybe_unused]] const AZ::Quaternion& localOrientation) {}
+        virtual void SetNonUniformScaleImpl([[maybe_unused]] const AZ::Vector3& nonUniformScale) {}
+        ///@}
+
+        ManipulatorSpaceWithLocalTransform m_manipulatorSpaceWithLocalTransform; ///< The space and local transform for the manipulators.
     };
 
     namespace Internal

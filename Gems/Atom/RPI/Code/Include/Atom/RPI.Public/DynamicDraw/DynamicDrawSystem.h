@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface2.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
 
@@ -21,11 +21,10 @@ namespace AZ
 {
     namespace RPI
     {
-        //! DynamicDrawSystem is the dynamic draw system in RPI system which implements DynamicDrawSystemInterface2
+        //! DynamicDrawSystem is the dynamic draw system in RPI system which implements DynamicDrawInterface
         //! It contains the dynamic buffer allocator which is used to allocate dynamic buffers.
         //! It also responses to submit all the dynamic draw data to the rendering passes.
-        class DynamicDrawSystem final
-            : public DynamicDrawSystemInterface2
+        class DynamicDrawSystem final : public DynamicDrawInterface
         {
             friend class RPISystem;
         public:
@@ -35,11 +34,12 @@ namespace AZ
             void Init(const DynamicDrawSystemDescriptor& descriptor);
             void Shutdown();
 
-            // DynamicDrawSystemInterface2 overrides...
+            // DynamicDrawInterface overrides...
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) override;
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Pass* pass) override;
             RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
+            void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) override;
 
             // Submit draw data for selected scene and pipeline
             void SubmitDrawData(Scene* scene, AZStd::vector<ViewPtr> views);
@@ -48,8 +48,14 @@ namespace AZ
             void FrameEnd();
 
         private:
+            AZStd::mutex m_mutexBufferAlloc;
             AZStd::unique_ptr<DynamicBufferAllocator> m_bufferAlloc;
+
+            AZStd::mutex m_mutexDrawContext;
             AZStd::list<RHI::Ptr<DynamicDrawContext>> m_dynamicDrawContexts;
+
+            AZStd::mutex m_mutexDrawPackets;
+            AZStd::map<Scene*, AZStd::vector<AZStd::unique_ptr<const RHI::DrawPacket>>> m_drawPackets;
         };
     }
 }

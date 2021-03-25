@@ -19,18 +19,16 @@ namespace AZ
 
       SceneWrapperBase::SceneWrapperBase(fbxsdk::FbxScene* fbxScene)
           :m_fbxScene(fbxScene)
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
           , m_assImpScene(nullptr)
-#endif
       {
       }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
       SceneWrapperBase::SceneWrapperBase(aiScene* aiScene)
           :m_fbxScene(nullptr)
           , m_assImpScene(aiScene)
       {
       }
-#endif
+
 
       bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName)
       {
@@ -59,12 +57,10 @@ namespace AZ
           return m_fbxScene;
       }
 
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
       const aiScene* SceneWrapperBase::GetAssImpScene() const
       {
           return m_assImpScene;
       }
-#endif
 
 
    } //namespace Scene

@@ -79,6 +79,7 @@ namespace AZ
      */
     struct BehaviorParameter
     {
+        AZ_TYPE_INFO(BehaviorParameter, "{BD7B664E-5B8C-4B51-84F3-DE89B271E075}")
         /// Temporary POD buffer when we convert parameters on the stack.
         typedef AZStd::static_buffer_allocator<32, 32> TempValueParameterAllocator;
 
@@ -244,6 +245,27 @@ namespace AZ
     };
 
     /**
+     * Stores the name of an AZ::Event<Params...> and names for each of it's parameters
+     * For use in scripting to annotate functions and nodes with user-friendly names
+     */
+    struct BehaviorAzEventDescription
+    {
+        AZ_TYPE_INFO(BehaviorAzEventDescription, "{B5D95E87-FA17-41C7-AC90-7258A520FE82}");
+        AZStd::string m_eventName;
+        AZStd::vector<AZStd::string> m_parameterNames;
+    };
+
+    //! Checks if the supplied BehaviorMethod returns AZ::Event by either pointer or reference
+    bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method);
+
+    //! Validates that a method that returns an AZ::Event fulfills the following conditions.
+    //! 1. It has an AzEventDescription that stores a BehaviorAzEventDescription instance
+    //! 2. The number of parameters that the method accepts, matches the number of elements
+    //!    in the parameter names array
+    //! 3. Neither the AZ::Event name nor any of it's parameters are an empty string
+    bool ValidateAzEventDescription(const AZ::BehaviorContext& context, const AZ::BehaviorMethod& method);
+
+    /**
      * Use behavior method to get type information and invoke reflected methods.
      */
     class BehaviorMethod
@@ -393,7 +415,10 @@ namespace AZStd
     template<>
     struct hash<AZ::ExplicitOverloadInfo>
     {
-        AZ_INLINE size_t operator() (const AZ::ExplicitOverloadInfo& info) const
+        using argument_type = AZ::ExplicitOverloadInfo;
+        using result_type = size_t;
+
+        AZ_INLINE result_type operator() (const argument_type& info) const
         {
             size_t h = 0;
             hash_combine(h, info.m_name);
@@ -404,7 +429,10 @@ namespace AZStd
     template<>
     struct hash<AZ::CheckedOperationInfo>
     {
-        AZ_INLINE size_t operator() (const AZ::CheckedOperationInfo& info) const
+        using argument_type = AZ::CheckedOperationInfo;
+        using result_type = size_t;
+
+        AZ_INLINE result_type operator() (const argument_type& info) const
         {
             size_t h = 0;
             hash_combine(h, info.m_safetyCheckName);
@@ -415,6 +443,18 @@ namespace AZStd
 
 namespace AZ
 {
+    // AZ::Event support
+    using BehaviorFunction = AZStd::function<void(BehaviorValueParameter* result, BehaviorValueParameter* arguments, int numArguments)>;
+    using EventHandlerCreationFunction = AZStd::function<BehaviorObject(void* , BehaviorFunction&&)>;
+
+    struct EventHandlerCreationFunctionHolder
+    {
+        AZ_TYPE_INFO(EventHandlerCreationFunctionHolder, "{40F7C5D8-8DA0-4979-BC8C-0A52EDA80633}");
+        AZ_CLASS_ALLOCATOR(EventHandlerCreationFunctionHolder, AZ::SystemAllocator, 0);
+
+        EventHandlerCreationFunction m_function;
+    };
+
     namespace Internal
     {
         const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
@@ -1695,17 +1735,6 @@ namespace AZ
             BehaviorEBus* m_ebus;
         };
 
-        /// @cond EXCLUDE_DOCS
-        using GlobalMethodInfo = GlobalMethodBuilder; ///< @deprecated Use BehaviorContext::GlobalMethodBuilder
-        using GlobalPropertyInfo = GlobalPropertyBuilder; ///< @deprecated Use BehaviorContext::GlobalPropertyBuilder
-
-        template<class C>
-        using ClassReflection = ClassBuilder<C>; ///< @deprecated Use BehaviorContext::ClassBuilder
-
-        template<typename Bus>
-        using EBusReflection = EBusBuilder<Bus>; ///< @deprecated Use BehaviorContext::EBusBuilder
-        /// @endcond
-
          BehaviorContext();
         ~BehaviorContext();
      
@@ -1779,9 +1808,6 @@ namespace AZ
             return uuid == GetVoidTypeId();
         }
 
-        // TODO: This is only for searching by string, do we even need that?
-        //ClassBuilder< OpenNamespace(const char* name);
-        //ClassBuilder<T> CloneNamespace();
 
         AZStd::unordered_map<AZStd::string, BehaviorMethod*> m_methods; // TODO: make it a set and use the name inside method
         AZStd::unordered_map<AZStd::string, BehaviorProperty*> m_properties; // TODO: make it a set and use the name inside property
@@ -2313,95 +2339,68 @@ namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
 
-    template<class T>
     struct SetResult
     {
-        static bool Set(BehaviorValueParameter& param, T& result, bool IsValueCopy)
+        // MSVC does not allow an incomplete type to be used in a compiler intrinsic which is the reason why
+        // std::is_assignable_v is not being used here
+        // For some reason the Script.cpp test validates that an incomplete type can be used with the SetResult struct
+        template<typename T, typename U, typename = void>
+        static constexpr bool IsCopyAssignable = false;
+        template<typename T, typename U>
+        static constexpr bool IsCopyAssignable<T, U, AZStd::void_t<decltype(AZStd::declval<T>() = AZStd::declval<U>())>> = true;
+
+        template<class T>
+        static bool Set(BehaviorValueParameter& param, T&& result, bool IsValueCopy)
         {
             using Type = AZStd::decay_t<T>;
             if (param.m_traits & BehaviorParameter::TR_POINTER)
             {
-                *reinterpret_cast<void**>(param.m_value) = (Type*)&result;
+                if constexpr (AZStd::is_pointer_v<Type>)
+                {
+                    using ValueType = AZStd::remove_cvref_t<AZStd::remove_pointer_t<Type>>;
+                    *reinterpret_cast<void**>(param.m_value) = const_cast<ValueType*>(result);
+                }
+                else
+                {
+                    *reinterpret_cast<void**>(param.m_value) = &const_cast<Type&>(result);
+                }
                 return true;
             }
             else if (param.m_traits & BehaviorParameter::TR_REFERENCE)
             {
-                param.m_value = (Type*)&result;
+                if constexpr (AZStd::is_pointer_v<Type>)
+                {
+                    using ValueType = AZStd::remove_cvref_t<AZStd::remove_pointer_t<Type>>;
+                    param.m_value = const_cast<ValueType*>(result);
+                }
+                else
+                {
+                    param.m_value = &const_cast<Type&>(result);
+                }
                 return true;
             }
             else if (IsValueCopy)
             {
-                // value copy
-                *reinterpret_cast<Type*>(param.m_value) = result;
-                return true;
-            }
-            return false;
-        }
-    };
-
-    template<class T>
-    struct SetResult<T*>
-    {
-        using Type = AZStd::decay_t<T>;
-
-        static bool ValueCopy(BehaviorValueParameter& param, T* result, const AZStd::true_type& /*AZStd::is_copy_constructible */)
-        {
-            new(param.m_value) Type(*result);
-            return true;
-        }
-
-        static bool ValueCopy(BehaviorValueParameter&,  T* , const AZStd::false_type& /*AZStd::is_copy_constructible */)
-        {
-            return false;
-        }
-
-        static bool Set(BehaviorValueParameter& param, T* result, bool IsValueCopy)
-        {
-            if (param.m_traits & BehaviorParameter::TR_POINTER)
-            {
-                *reinterpret_cast<void**>(param.m_value) = (Type*)result;
-                return true;
-            }
-            else if (param.m_traits & BehaviorParameter::TR_REFERENCE)
-            {
-                param.m_value = (Type*)result;
-                return true;
-            }
-            else if (IsValueCopy)
-            {
-                // we need AZStd::is_complete so we can work with incomplete types, then we can enable the code below
-                return false;
-
-                //return ValueCopy(param, result, typename AZStd::conditional<AZStd::is_copy_constructible<Type>::value && !AZStd::is_abstract<Type>::value, AZStd::true_type, AZStd::false_type>::type());
-            }
-            return false;
-        }
-    };
-
-    template<class T>
-    struct SetResult<T*&> : public SetResult<T*>
-    {
-    };
-
-    template<class T>
-    struct SetResult<T&>
-    {
-        static bool Set(BehaviorValueParameter& param, T& result, bool IsValueCopy)
-        {
-            using Type = AZStd::decay_t<T>;
-            if (param.m_traits & BehaviorParameter::TR_POINTER)
-            {
-                *reinterpret_cast<void**>(param.m_value) = (Type*)&result;
-                return true;
-            }
-            else if (param.m_traits & BehaviorParameter::TR_REFERENCE)
-            {
-                param.m_value = (Type*)&result;
-                return true;
-            }
-            else if (IsValueCopy)
-            {
-                *reinterpret_cast<Type*>(param.m_value) = result;
+                if constexpr (AZStd::is_pointer_v<Type>)
+                {
+                    using ValueType = AZStd::remove_cvref_t<AZStd::remove_pointer_t<Type>>;
+                    if constexpr (IsCopyAssignable<ValueType&, AZStd::add_lvalue_reference_t<AZStd::remove_pointer_t<T>>>)
+                    {
+                        // copy if result is non-nullptr
+                        if (result != nullptr)
+                        {
+                            *reinterpret_cast<ValueType*>(param.m_value) = *result;
+                        }
+                    }
+                }
+                else
+                {
+                    // value copy
+                    if constexpr (IsCopyAssignable<Type&, T>)
+                    {
+                        *reinterpret_cast<Type*>(param.m_value) = AZStd::forward<T>(result);
+                    }
+                }
                 return true;
             }
             return false;
@@ -2435,7 +2434,7 @@ namespace AZ
 
         if (m_typeId == typeId)
         {
-            isResult = SetResult<T>::Set(*this, result, true);
+            isResult = SetResult::Set(*this, AZStd::forward<T>(result), true);
         }
         else if (GetRttiHelper<Type>())
         {
@@ -2450,7 +2449,7 @@ namespace AZ
         else if (m_typeId.IsNull()) // if nullptr we can accept any type, by pointer or reference
         {
             m_typeId = typeId;
-            isResult = SetResult<T>::Set(*this, result, false);
+            isResult = SetResult::Set(*this, AZStd::forward<T>(result), false);
         }
 
         if (isResult && m_onAssignedResult)
@@ -2519,8 +2518,15 @@ namespace AZ
     template<class Getter>
     bool BehaviorProperty::SetGetter(Getter getter, BehaviorClass* currentClass, BehaviorContext* context, const AZStd::false_type&)
     {
-        typedef AZ::Internal::BehaviorMethodImpl<typename AZStd::RemoveFunctionConst<typename AZStd::remove_pointer<Getter>::type>::type> GetterType;
-        m_getter = aznew GetterType(getter, context, AZStd::string::format("%s::%s::Getter", currentClass ? currentClass->m_name.c_str() : "", m_name.c_str()));
+        using GetterType = AZ::Internal::BehaviorMethodImpl<typename AZStd::RemoveFunctionConst<AZStd::remove_pointer_t<Getter>>::type>;
+        AZStd::string getterPropertyName = currentClass ? currentClass->m_name : AZStd::string{};
+        if (!getterPropertyName.empty())
+        {
+            getterPropertyName += "::";
+        }
+        getterPropertyName += m_name;
+        getterPropertyName += "::Getter";
+        m_getter = aznew GetterType(getter, context, getterPropertyName);
 
         if (AZStd::is_class<typename GetterType::ClassType>::value)
         {
@@ -2590,8 +2596,15 @@ namespace AZ
     template<class Setter>
     bool BehaviorProperty::SetSetter(Setter setter, BehaviorClass* currentClass, BehaviorContext* context, const AZStd::false_type&)
     {
-        typedef AZ::Internal::BehaviorMethodImpl<typename AZStd::RemoveFunctionConst<typename AZStd::remove_pointer<Setter>::type>::type> SetterType;
-        m_setter = aznew SetterType(setter, context, AZStd::string::format("%s::%s::Setter", currentClass ? currentClass->m_name.c_str() : "", m_name.c_str()));
+        using SetterType = AZ::Internal::BehaviorMethodImpl<typename AZStd::RemoveFunctionConst<AZStd::remove_pointer_t<Setter>>::type>;
+        AZStd::string setterPropertyName = currentClass ? currentClass->m_name : AZStd::string{};
+        if (!setterPropertyName.empty())
+        {
+            setterPropertyName += "::";
+        }
+        setterPropertyName += m_name;
+        setterPropertyName += "::Setter";
+        m_setter = aznew SetterType(setter, context, setterPropertyName);
         if (AZStd::is_class<typename SetterType::ClassType>::value)
         {
             AZ_Assert(currentClass, "We should declare class property with in the class!");
@@ -2998,6 +3011,19 @@ namespace AZ
             for (auto method : m_class->m_methods)
             {
                 m_class->PostProcessMethod(Base::m_context, *method.second);
+                if (MethodReturnsAzEventByReferenceOrPointer(*method.second))
+                {
+                    ValidateAzEventDescription(*Base::m_context, *method.second);
+                }
+            }
+
+            // Validate the AzEvent description of the class property getter's
+            for (auto&& [propertyName, propertyInst]: m_class->m_properties)
+            {
+                if (propertyInst->m_getter && MethodReturnsAzEventByReferenceOrPointer(*propertyInst->m_getter))
+                {
+                    ValidateAzEventDescription(*Base::m_context, *propertyInst->m_getter);
+                }
             }
 
             BehaviorContextBus::Event(Base::m_context, &BehaviorContextBus::Events::OnAddClass, m_class->m_name.c_str(), m_class);
@@ -3307,8 +3333,7 @@ namespace AZ
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Enum(const char* name)
     {
         Property(name, []() { return Value; }, nullptr);
-        BehaviorContext::ClassBuilder<C>::Attribute(AZ::Script::Attributes::ClassConstantValue, true);
-
+        ClassBuilder::Attribute(AZ::Script::Attributes::ClassConstantValue, true);
         return this;
     }
 
@@ -3448,6 +3473,13 @@ namespace AZ
 
         if (!Base::m_context->IsRemovingReflection())
         {
+            for (auto&& [eventName, eventSender] : m_ebus->m_events)
+            {
+                if (MethodReturnsAzEventByReferenceOrPointer(*eventSender.m_broadcast))
+                {
+                    ValidateAzEventDescription(*Base::m_context, *eventSender.m_broadcast);
+                }
+            }
             BehaviorContextBus::Event(Base::m_context, &BehaviorContextBus::Events::OnAddEBus, m_ebus->m_name.c_str(), m_ebus);
         }
     }

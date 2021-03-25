@@ -23,6 +23,7 @@ namespace GraphCanvas
 
     NodePaletteTreeItem::NodePaletteTreeItem(AZStd::string_view name, EditorId editorId)
         : GraphCanvas::GraphCanvasTreeItem()
+        , m_errorIcon(":/GraphCanvasEditorResources/toast_error_icon.png")
         , m_editorId(editorId)
         , m_name(QString::fromUtf8(name.data(), static_cast<int>(name.size())))
         , m_selected(false)
@@ -50,12 +51,20 @@ namespace GraphCanvas
             switch (role)
             {
             case Qt::ToolTipRole:
-                // If we have a tooltip. Use it
-                // Otherwise fall through to use our name.
-                if (!m_toolTip.isEmpty())
+                if (HasError())
                 {
-                    return m_toolTip;
+                    return m_errorString;
                 }
+                else
+                {
+                    // If we have a tooltip. Use it
+                    // Otherwise fall through to use our name.
+                    if (!m_toolTip.isEmpty())
+                    {
+                        return m_toolTip;
+                    }
+                }
+                break;
             case Qt::DisplayRole:
                 return GetName();
             case Qt::EditRole:
@@ -80,6 +89,12 @@ namespace GraphCanvas
                     return variant;
                 }
                 break;
+            case Qt::DecorationRole:
+                if (HasError())
+                {
+                    return m_errorIcon;
+                }
+                break;
             default:
                 break;
             }
@@ -88,7 +103,7 @@ namespace GraphCanvas
         return OnData(index, role);
     }
 
-    Qt::ItemFlags NodePaletteTreeItem::Flags([[maybe_unused]] const QModelIndex& index) const
+    Qt::ItemFlags NodePaletteTreeItem::Flags(const QModelIndex& /*index*/) const
     {
         Qt::ItemFlags baseFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
@@ -236,6 +251,22 @@ namespace GraphCanvas
         return OnDoubleClicked(row);
     }
 
+    void NodePaletteTreeItem::SetError(const AZStd::string& errorString)
+    {
+        m_errorString = errorString.c_str();
+        SignalDataChanged();
+    }
+
+    void NodePaletteTreeItem::ClearError()
+    {
+        SetError("");
+    }
+
+    bool NodePaletteTreeItem::HasError() const
+    {
+        return !m_errorString.isEmpty();
+    }
+
     void NodePaletteTreeItem::PreOnChildAdded(GraphCanvasTreeItem* item)
     {
         if (!m_styleOverride.empty())
@@ -273,7 +304,7 @@ namespace GraphCanvas
         }
     }
 
-    QVariant NodePaletteTreeItem::OnData([[maybe_unused]] const QModelIndex& index, [[maybe_unused]] int role) const
+    QVariant NodePaletteTreeItem::OnData(const QModelIndex& /*index*/, int /*role*/) const
     {
         return QVariant();
     }

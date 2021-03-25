@@ -46,7 +46,7 @@ namespace AZ
 
             // ComputePass Overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             bool m_updateSrg = false;
             PassType m_passType;

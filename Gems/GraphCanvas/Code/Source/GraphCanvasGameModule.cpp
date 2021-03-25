@@ -25,4 +25,4 @@ namespace GraphCanvas
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_GraphCanvas, GraphCanvas::GraphCanvasModule)
+AZ_DECLARE_MODULE_CLASS(GraphCanvas_875b6fcbdeea44deaae7984ad9bb6cdc, GraphCanvas::GraphCanvasModule)

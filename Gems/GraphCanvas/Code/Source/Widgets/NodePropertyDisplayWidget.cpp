@@ -73,7 +73,7 @@ namespace GraphCanvas
         }
     }
 
-    void NodePropertyDisplayWidget::OnDisplayStateChanged([[maybe_unused]] RootGraphicsItemDisplayState oldState, RootGraphicsItemDisplayState newState)
+    void NodePropertyDisplayWidget::OnDisplayStateChanged(RootGraphicsItemDisplayState /*oldState*/, RootGraphicsItemDisplayState newState)
     {
         if (newState == RootGraphicsItemDisplayState::Inspection)
         {
@@ -137,8 +137,9 @@ namespace GraphCanvas
         RootGraphicsItemRequestBus::EventResult(displayState, m_nodePropertyDisplay->GetNodeId(), &RootGraphicsItemRequests::GetDisplayState);
 
         OnDisplayStateChanged(RootGraphicsItemDisplayState::Neutral, displayState);
-        
-        UpdateLayout();
+
+        const bool updateLayout = true;
+        UpdateLayout(updateLayout);
     }
     
     NodePropertyDisplay* NodePropertyDisplayWidget::GetNodePropertyDisplay() const
@@ -183,9 +184,11 @@ namespace GraphCanvas
         }
     }
     
-    void NodePropertyDisplayWidget::UpdateLayout()
+    void NodePropertyDisplayWidget::UpdateLayout(bool forceUpdate)
     {
-        if (!m_forceEditSet.empty())
+        bool isForcedEdit = !m_forceEditSet.empty();
+
+        if (!forceUpdate && isForcedEdit)
         {
             return;
         }
@@ -196,71 +199,84 @@ namespace GraphCanvas
         {
             return;
         }
-        
-        // Element here needs to be removed from the scene since removing it from the layout
-        // doesn't actually remove it from the scene. The end result of this is you get an elements
-        // which is still being rendered, and acts like it's apart of the layout despite not being
-        // in the layout.
-        if (m_layoutItem)
-        {
-            QGraphicsScene* graphicsScene = nullptr;
-            AZ::EntityId sceneId = m_nodePropertyDisplay->GetSceneId();
 
-            SceneRequestBus::EventResult(graphicsScene, sceneId, &SceneRequests::AsQGraphicsScene);
+        // Removing the m_layoutItem from the scene needs to be delayed to the next event loop,
+        // because this method gets called during QGraphicsScene::mouseMoveEvent, which in turn
+        // generates additional events based on a cached list of items in the scene, so if we
+        // remove an item from the scene while that is in progress, it can crash since it is
+        // still internally using a cached list of the scene items.
+        QTimer::singleShot(0, this, [this, isForcedEdit]() {
+            // Element here needs to be removed from the scene since removing it from the layout
+            // doesn't actually remove it from the scene. The end result of this is you get an elements
+            // which is still being rendered, and acts like it's apart of the layout despite not being
+            // in the layout.
+            if (m_layoutItem)
+            {
+                QGraphicsScene* graphicsScene = nullptr;
+                AZ::EntityId sceneId = m_nodePropertyDisplay->GetSceneId();
 
-            if (graphicsScene && m_layoutItem->graphicsItem()->scene() != nullptr)
-            {
-                graphicsScene->removeItem(m_layoutItem->graphicsItem());
+                SceneRequestBus::EventResult(graphicsScene, sceneId, &SceneRequests::AsQGraphicsScene);
+
+                if (graphicsScene && m_layoutItem->graphicsItem()->scene() != nullptr)
+                {
+                    graphicsScene->removeItem(m_layoutItem->graphicsItem());
+                }
+
+                m_layoutItem = nullptr;
             }
 
-            m_layoutItem = nullptr;
-        }
-        
-        NodePropertyLayoutState layoutState = m_forcedLayout;
-        
-        if (layoutState == NodePropertyLayoutState::None)
-        {
-            if (m_disabled)
+            NodePropertyLayoutState layoutState = m_forcedLayout;
+
+            if (layoutState == NodePropertyLayoutState::None)
             {
-                layoutState = NodePropertyLayoutState::Disabled;
+                if (m_disabled)
+                {
+                    layoutState = NodePropertyLayoutState::Disabled;
+                }
+                else if (m_editing || isForcedEdit)
+                {
+                    layoutState = NodePropertyLayoutState::Editing;
+                }
+                else
+                {
+                    layoutState = NodePropertyLayoutState::Display;
+                }
             }
-            else if (m_editing)
+
+            if (m_nodePropertyDisplay)
             {
-                layoutState = NodePropertyLayoutState::Editing;
+                switch (layoutState)
+                {
+                case NodePropertyLayoutState::Disabled:
+                    m_layoutItem = m_nodePropertyDisplay->GetDisabledGraphicsLayoutItem();
+                    break;
+                case NodePropertyLayoutState::Editing:
+                    m_layoutItem = m_nodePropertyDisplay->GetEditableGraphicsLayoutItem();
+                    break;
+                case NodePropertyLayoutState::Display:
+                    m_layoutItem = m_nodePropertyDisplay->GetDisplayGraphicsLayoutItem();
+                    break;
+                default:
+                    AZ_Warning("DataSlotLayoutComponent", false, "Unhandled layout case.");
+                    m_layoutItem = m_nodePropertyDisplay->GetDisabledGraphicsLayoutItem();
+                    break;
+                }
+
+                m_layout->addItem(m_layoutItem);
+                m_layout->setAlignment(m_layoutItem, Qt::AlignCenter);
             }
-            else
-            {
-                layoutState = NodePropertyLayoutState::Display;
-            }
-        }
-        
-        switch (layoutState)
-        {
-            case NodePropertyLayoutState::Disabled:
-                m_layoutItem = m_nodePropertyDisplay->GetDisabledGraphicsLayoutItem();
-                break;
-            case NodePropertyLayoutState::Editing:
-                m_layoutItem = m_nodePropertyDisplay->GetEditableGraphicsLayoutItem();
-                break;
-            case NodePropertyLayoutState::Display:
-                m_layoutItem = m_nodePropertyDisplay->GetDisplayGraphicsLayoutItem();
-                break;
-            default:
-                AZ_Warning("DataSlotLayoutComponent", false, "Unhandled layout case.");
-                m_layoutItem = m_nodePropertyDisplay->GetDisabledGraphicsLayoutItem();
-                break;
-        }
-        
-        m_layout->addItem(m_layoutItem);
-        m_layout->setAlignment(m_layoutItem, Qt::AlignCenter);
-        
-        UpdateGeometry();
+
+            UpdateGeometry();
+        });
     }
     
     void NodePropertyDisplayWidget::UpdateGeometry()
     {
-        m_layoutItem->updateGeometry();
-        m_layout->invalidate();
+        if (m_layoutItem)
+        {
+            m_layoutItem->updateGeometry();
+            m_layout->invalidate();
+        }
 
         AZ::SystemTickBus::Handler::BusConnect();
     }

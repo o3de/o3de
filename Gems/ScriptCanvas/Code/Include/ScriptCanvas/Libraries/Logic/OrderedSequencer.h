@@ -15,8 +15,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Logic/OrderedSequencer.generated.h>
 
 namespace ScriptCanvas
@@ -25,49 +23,44 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution, either through latent node or a terminal endpoint.
             class OrderedSequencer
-                : public Node                
+                : public Node
             {
-                ScriptCanvas_Node(OrderedSequencer,
-                    ScriptCanvas_Node::Name("Ordered Sequencer")
-                    ScriptCanvas_Node::Uuid("{BAFDA139-49A8-453B-A556-D4F4BA213B5C}"),
-                    ScriptCanvas_Node::Description("Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Logic")
-                );
-                
+ 
             public:
+
+                SCRIPTCANVAS_NODE(OrderedSequencer);
 
                 OrderedSequencer();
 
-                void OnInit() override;
-                void OnConfigured() override;
-                void ConfigureVisualExtensions() override;
-                
                 bool CanDeleteSlot(const SlotId& slotId) const;
 
-                SlotId HandleExtension(AZ::Crc32 extensionId);        
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+
+                SlotId HandleExtension(AZ::Crc32 extensionId);
+
+                void OnInit() override;
+
+                void OnConfigured() override;
+
+                void ConfigureVisualExtensions() override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
             protected:
             
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out 0", "Output 0")
-                                 ScriptCanvas_Out::DisplayGroup("OutputGroup")
-                                );
-
             protected:
 
-                void OnInputSignal(const SlotId& slot) override;                
                 void OnSlotRemoved(const SlotId& slotId) override;
 
             private:
 
-                AZStd::string GenerateOutputName(int counter);
+                AZStd::string GenerateOutputName(int counter) const;
                 void FixupStateNames();
                 
                 int m_numOutputs;

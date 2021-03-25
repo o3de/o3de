@@ -35,11 +35,11 @@ CLineGizmo::~CLineGizmo()
 {
     if (m_object[0])
     {
-        m_object[0]->RemoveEventListener(functor(*this, &CLineGizmo::OnObjectEvent));
+        m_object[0]->RemoveEventListener(this);
     }
     if (m_object[1])
     {
-        m_object[1]->RemoveEventListener(functor(*this, &CLineGizmo::OnObjectEvent));
+        m_object[1]->RemoveEventListener(this);
     }
     m_object[0] = 0;
     m_object[1] = 0;
@@ -54,8 +54,8 @@ void CLineGizmo::SetObjects(CBaseObject* pObject1, CBaseObject* pObject2, const 
     m_object[1] = pObject2;
     m_boneName = boneName;
 
-    m_object[0]->AddEventListener(functor(*this, &CLineGizmo::OnObjectEvent));
-    m_object[1]->AddEventListener(functor(*this, &CLineGizmo::OnObjectEvent));
+    m_object[0]->AddEventListener(this);
+    m_object[1]->AddEventListener(this);
     CalcBounds();
 }
 

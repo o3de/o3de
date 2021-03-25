@@ -79,20 +79,20 @@ namespace TimeOfDayDetails
 
     AZ_INLINE static bool SkipUserInterface(int value)
     {
-        // Check for obsolete parameters that we still want to keep around to migrate legacy data to new data 
+        // Check for obsolete parameters that we still want to keep around to migrate legacy data to new data
         // but don't want to display in the UI
         const ITimeOfDay::ETimeOfDayParamID enumValue = static_cast<ITimeOfDay::ETimeOfDayParamID>(value);
-        
-        // Split the check into two parts to try to keep the logic clear. 
+
+        // Split the check into two parts to try to keep the logic clear.
         // The First set of parameters are always checked...
         bool skipParameter = (enumValue == ITimeOfDay::PARAM_HDR_DYNAMIC_POWER_FACTOR) ||
             (enumValue == ITimeOfDay::PARAM_TERRAIN_OCCL_MULTIPLIER) ||
             (enumValue == ITimeOfDay::PARAM_SUN_COLOR_MULTIPLIER);
 
-        // Only check the ocean parameters if the ocean feature (aka the Infinite Ocean Component) 
+        // Only check the ocean parameters if the ocean feature (aka the Infinite Ocean Component)
         // has been enabled
         skipParameter |= HasOceanFeatureToggle() &&
-               ((enumValue == ITimeOfDay::PARAM_OCEANFOG_COLOR) || 
+               ((enumValue == ITimeOfDay::PARAM_OCEANFOG_COLOR) ||
                (enumValue == ITimeOfDay::PARAM_OCEANFOG_COLOR_MULTIPLIER) ||
                (enumValue == ITimeOfDay::PARAM_OCEANFOG_DENSITY));
 
@@ -137,7 +137,7 @@ bool CHDRPane::Init()
     l->addWidget(m_propsCtrl);
     setLayout(l);
 
-    m_propsCtrl->SetSelChangeCallback(functor(*this, &CHDRPane::OnPropertySelected));
+    m_propsCtrl->SetSelChangeCallback(AZStd::bind(&CHDRPane::OnPropertySelected, this, AZStd::placeholders::_1));
 
     return true;
 }
@@ -462,13 +462,13 @@ void CTimeOfDayDialog::UpdateValues()
 //////////////////////////////////////////////////////////////////////////
 void CTimeOfDayDialog::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
 {
-    
+
 
     switch (event)
     {
     case ESYSTEM_EVENT_TIME_OF_DAY_SET:
         // We update the UI in response to a system event (instead of with direct callbacks in the dialog) because time could be set by any of the dialog,
-        // e_TimeOfDay cvar, a Flow Graph Node or Track View. 
+        // e_TimeOfDay cvar, a Flow Graph Node or Track View.
         UpdateUI();
         break;
     default:
@@ -545,15 +545,15 @@ void CTimeOfDayDialog::Init()
 
     QString copyAllLabel(tr("Copy All Parameters"));
     QString pasteAllLabel(tr("Paste All Parameters"));
-    m_ui->parameters->AddCustomPopupMenuItem(copyAllLabel, functor(*this, &CTimeOfDayDialog::CopyAllProperties));
-    m_ui->parameters->AddCustomPopupMenuItem(pasteAllLabel, functor(*this, &CTimeOfDayDialog::PasteAllProperties));
-    m_pHDRPane->properties().AddCustomPopupMenuItem(copyAllLabel, functor(*this, &CTimeOfDayDialog::CopyAllProperties));
-    m_pHDRPane->properties().AddCustomPopupMenuItem(pasteAllLabel, functor(*this, &CTimeOfDayDialog::PasteAllProperties));
+    m_ui->parameters->AddCustomPopupMenuItem(copyAllLabel, AZStd::bind(&CTimeOfDayDialog::CopyAllProperties, this));
+    m_ui->parameters->AddCustomPopupMenuItem(pasteAllLabel, AZStd::bind(&CTimeOfDayDialog::PasteAllProperties, this));
+    m_pHDRPane->properties().AddCustomPopupMenuItem(copyAllLabel, AZStd::bind(&CTimeOfDayDialog::CopyAllProperties, this));
+    m_pHDRPane->properties().AddCustomPopupMenuItem(pasteAllLabel, AZStd::bind(&CTimeOfDayDialog::PasteAllProperties, this));
 
-    m_ui->parameters->SetSelChangeCallback(functor(*this, &CTimeOfDayDialog::OnPropertySelected));
+    m_ui->parameters->SetSelChangeCallback(AZStd::bind(&CTimeOfDayDialog::OnPropertySelected, this, AZStd::placeholders::_1));
     connect(m_pHDRPane, &CHDRPane::propertySelected, this, &CTimeOfDayDialog::HdrPropertySelected);
-    m_pHDRPane->properties().SetUpdateCallback(functor(*this, &CTimeOfDayDialog::OnUpdateProperties));
-    m_ui->parameters->SetUpdateCallback(functor(*this, &CTimeOfDayDialog::OnUpdateProperties));
+    m_pHDRPane->properties().SetUpdateCallback(AZStd::bind(&CTimeOfDayDialog::OnUpdateProperties, this, AZStd::placeholders::_1));
+    m_ui->parameters->SetUpdateCallback(AZStd::bind(&CTimeOfDayDialog::OnUpdateProperties, this, AZStd::placeholders::_1));
 
     connect(m_ui->importFromFileClickable, &QLabel::linkActivated, this, &CTimeOfDayDialog::OnImport);
     connect(m_ui->exportToFileClickable, &QLabel::linkActivated, this, &CTimeOfDayDialog::OnExport);
@@ -1103,7 +1103,7 @@ void CTimeOfDayDialog::OnResetToDefaultValues()
         pTimeOfDay->GetAdvancedInfo(advInfo);
         SetTimeRange(advInfo.fStartTime, advInfo.fEndTime, advInfo.fAnimSpeed);
         RefreshPropertiesValues();
-        
+
         m_pHDRPane->properties().ClearSelection();
         ReflectedPropertyItem* selectedItem = m_ui->parameters->GetSelectedItem();
         if (selectedItem)

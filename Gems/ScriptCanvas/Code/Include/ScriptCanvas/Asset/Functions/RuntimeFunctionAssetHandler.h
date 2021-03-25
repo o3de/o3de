@@ -25,16 +25,16 @@ namespace ScriptCanvas
     /**
     * Manages Script Canvas graph assets.
     */
-    class RuntimeFunctionAssetHandler
+    class SubgraphInterfaceAssetHandler
         : public AZ::Data::AssetHandler
         , protected AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(RuntimeFunctionAssetHandler, AZ::SystemAllocator, 0);
-        AZ_RTTI(RuntimeFunctionAssetHandler, "{560A330A-2905-4A43-952D-70E21F8CE16C}", AZ::Data::AssetHandler);
+        AZ_CLASS_ALLOCATOR(SubgraphInterfaceAssetHandler, AZ::SystemAllocator, 0);
+        AZ_RTTI(SubgraphInterfaceAssetHandler, "{560A330A-2905-4A43-952D-70E21F8CE16C}", AZ::Data::AssetHandler);
 
-        RuntimeFunctionAssetHandler(AZ::SerializeContext* context = nullptr);
-        ~RuntimeFunctionAssetHandler() override;
+        SubgraphInterfaceAssetHandler(AZ::SerializeContext* context = nullptr);
+        ~SubgraphInterfaceAssetHandler() override;
         
         // AZ::AssetTypeInfoBus
         AZ::Data::AssetType GetAssetType() const override;
@@ -73,7 +73,7 @@ namespace ScriptCanvas
     protected:
         // Workaround for VS2013 - Delete the copy constructor and make it private
         // https://connect.microsoft.com/VisualStudio/feedback/details/800328/std-is-copy-constructible-is-broken
-        RuntimeFunctionAssetHandler(const RuntimeFunctionAssetHandler&) = delete;
+        SubgraphInterfaceAssetHandler(const SubgraphInterfaceAssetHandler&) = delete;
 
         AZ::SerializeContext* m_serializeContext;
     };

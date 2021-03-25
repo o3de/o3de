@@ -22,6 +22,6 @@ namespace ScriptCanvas
 
         bool ExpectBooleanVersioner(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
         bool ExpectComparisonVersioner(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
-    } // namespace UnitTesting
+    } 
 
-} // namespace ScriptCanvas
+} 

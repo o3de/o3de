@@ -23,7 +23,7 @@ namespace ScriptCanvas
 {
     class VariableData;
 
-    // Bus Interface for adding, removing and finding exposed Variable datums associated with a ScriptCanvas Graph
+    //! Bus Interface for adding, removing and finding exposed Variable datums associated with a ScriptCanvas Graph
     class VariableRequests
         : public AZ::EBusTraits
     {
@@ -142,7 +142,7 @@ namespace ScriptCanvas
         //! The variable datum pointer is non-null if the variable has been found
         virtual GraphVariable* FindVariableById(const VariableId& varId) = 0;
 
-        virtual GraphVariable* FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& blacklistId) = 0;
+        virtual GraphVariable* FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& excludedVariableIds) = 0;
 
         //! Returns the type associated with the specified variable.
         virtual Data::Type GetVariableType(const VariableId& variableId) = 0;

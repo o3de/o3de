@@ -10,10 +10,13 @@
 *
 */
 
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Libraries/Core/GetVariable.h>
-#include <ScriptCanvas/Variable/VariableBus.h>
+#include "GetVariable.h"
+
 #include <Libraries/Core/MethodUtility.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Grammar/ParsingUtilities.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
+#include <ScriptCanvas/Variable/VariableBus.h>
 
 namespace ScriptCanvas
 {
@@ -21,6 +24,29 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            AZ::Outcome<DependencyReport, void> GetVariableNode::GetDependencies() const
+            {
+                if (auto datum = GetDatum())
+                {
+                    return AZ::Success(DependencyReport::NativeLibrary(Data::GetName(datum->GetType())));
+                }
+                else
+                {
+                    return AZ::Failure();
+                }
+            }
+
+            PropertyFields GetVariableNode::GetPropertyFields() const
+            {
+                PropertyFields propertyFields;
+                for (auto&& propertyAccount : m_propertyAccounts)
+                {
+                    propertyFields.emplace_back(propertyAccount.m_propertyName, propertyAccount.m_propertySlotId);
+                }
+
+                return propertyFields;
+            }
+
             void GetVariableNode::OnInit()
             {
                 VariableNodeRequestBus::Handler::BusConnect(GetEntityId());
@@ -32,20 +58,12 @@ namespace ScriptCanvas
                 {
                     RefreshPropertyFunctions();
                     PopulateNodeType();
+                    GraphVariable* variable = FindGraphVariable(m_variableId);
 
-                    if (GetExecutionType() == ScriptCanvas::ExecutionType::Editor)
+                    if (variable)
                     {
-                        VariableNotificationBus::Handler::BusConnect(GraphScopedVariableId(GetOwningScriptCanvasId(), m_variableId));                        
-                    }
-                    else
-                    {
-                        GraphVariable* variable = FindGraphVariable(m_variableId);
-
-                        if (variable)
-                        {
-                            m_variableName = variable->GetVariableName();
-                            variable->ConfigureDatumView(m_variableView);
-                        }
+                        m_variableName = variable->GetVariableName();
+                        variable->ConfigureDatumView(m_variableView);
                     }
                 }
             }
@@ -164,6 +182,11 @@ namespace ScriptCanvas
             const SlotId& GetVariableNode::GetDataOutSlotId() const
             {
                 return m_variableDataOutSlotId;
+            }
+
+            const Slot* GetVariableNode::GetVariableOutputSlot() const
+            {
+                return GetSlot(m_variableDataOutSlotId);
             }
 
             const Datum* GetVariableNode::GetDatum() const
@@ -320,7 +343,7 @@ namespace ScriptCanvas
                             }
                         }
 
-                        AZStd::sort_heap(varNameToIdList.begin(), varNameToIdList.end(), [](const AZStd::pair<VariableId, AZStd::string>& lhs, const AZStd::pair<VariableId, AZStd::string>& rhs)
+                        AZStd::sort(varNameToIdList.begin(), varNameToIdList.end(), [](const AZStd::pair<VariableId, AZStd::string>& lhs, const AZStd::pair<VariableId, AZStd::string>& rhs)
                         {
                             return lhs.second < rhs.second;
                         });
@@ -346,6 +369,11 @@ namespace ScriptCanvas
             {
                 AZ::EntityId assetNodeId = GetRuntimeBus()->FindAssetNodeIdByRuntimeNodeId(GetEntityId());
                 return AnnotateNodeSignal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), AnnotateNodeSignal::AnnotationLevel::Info, m_variableName, AZ::NamedEntityId(assetNodeId, GetNodeName()));
+            }
+
+            VariableId GetVariableNode::GetVariableIdRead(const Slot*) const
+            {
+                return m_variableId;
             }
         }
     }

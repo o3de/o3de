@@ -33,6 +33,9 @@ namespace AZ
                 static void Reflect(ReflectContext* context);
 
                 Events::ProcessingResult ImportMaterials(AssImpSceneNodeAppendedContext& context);
+
+            private:
+                AZStd::string ResolveTexturePath(const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const;
             };
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI

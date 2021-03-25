@@ -117,5 +117,21 @@ namespace AZ
             bufferStats->m_bindFlags = descriptor.m_bindFlags;
             bufferStats->m_sizeInBytes = m_memoryView.GetSize();
         }
+
+        VkAccelerationStructureKHR Buffer::GetNativeAccelerationStructure() const
+        {
+            AZ_Assert(RHI::CheckBitsAll(GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
+                "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
+
+            return m_nativeAccelerationStructure;
+        }
+
+        void Buffer::SetNativeAccelerationStructure(const VkAccelerationStructureKHR& accelerationStructure)
+        {
+            AZ_Assert(RHI::CheckBitsAll(GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
+                "SetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
+
+            m_nativeAccelerationStructure = accelerationStructure;
+        }
     }
 }

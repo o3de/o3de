@@ -13,7 +13,6 @@
 // include the required headers
 #include <MCore/Source/Config.h>
 #include <MCore/Source/LogManager.h>
-#include "GLInclude.h"
 
 #include <MCore/Source/Array.h>
 #include "GBuffer.h"
@@ -21,8 +20,6 @@
 #include "GLSLShader.h"
 #include "GraphicsManager.h"
 #include "TextureCache.h"
-
-
 
 namespace RenderGL
 {
@@ -57,6 +54,7 @@ namespace RenderGL
     // initialize
     bool GBuffer::Init(uint32 width, uint32 height)
     {
+        initializeOpenGLFunctions();
         Release();
 
         // get the maximum number of draw buffers
@@ -72,7 +70,7 @@ namespace RenderGL
         mHeight = height;
 
         // create the FBO
-        glGenFramebuffersEXT(1, &mFBO);
+        glGenFramebuffers(1, &mFBO);
         for (uint32 i = 0; i < NUM_COMPONENTS; ++i)
         {
             glGenTextures(1, &mComponents[i]);
@@ -81,47 +79,47 @@ namespace RenderGL
         glGenTextures(1, &mDepthBufferID);
 
         // bind the fbo
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
         // init normals texture
         glBindTexture(GL_TEXTURE_2D, mComponents[COMPONENT_SHADED]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mComponents[COMPONENT_SHADED], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mComponents[COMPONENT_SHADED], 0);
 
         // init glow color texture
         glBindTexture(GL_TEXTURE_2D, mComponents[COMPONENT_GLOW]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, mComponents[COMPONENT_GLOW], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mComponents[COMPONENT_GLOW], 0);
 
         // init the depth buffer
         glBindTexture(GL_TEXTURE_2D, mDepthBufferID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8_EXT, width, height, 0, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, mDepthBufferID, 0);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_TEXTURE_2D, mDepthBufferID, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthBufferID, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthBufferID, 0);
 
         // unbind
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // make sure it all works
-        if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             MCore::LogWarning("[OpenGL] GBuffer did not init correctly");
             return false;
         }
 
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // create the render textures
         if (ResizeTextures(width, height) == false)
@@ -139,7 +137,7 @@ namespace RenderGL
     {
         if (mFBO)
         {
-            glDeleteFramebuffersEXT(1, &mFBO);
+            glDeleteFramebuffers(1, &mFBO);
             for (uint32 i = 0; i < NUM_COMPONENTS; ++i)
             {
                 glDeleteTextures(1, &mComponents[i]);
@@ -185,27 +183,27 @@ namespace RenderGL
         mRenderTargetD  = new RenderTexture();
         mRenderTargetE  = new RenderTexture();
 
-        if (mRenderTargetA->Init(GL_RGBA16F_ARB, screenWidth, screenHeight) == false)
+        if (mRenderTargetA->Init(GL_RGBA16F, screenWidth, screenHeight) == false)
         {
             return false;
         }
 
-        if (mRenderTargetB->Init(GL_RGBA16F_ARB, screenWidth, screenHeight) == false)
+        if (mRenderTargetB->Init(GL_RGBA16F, screenWidth, screenHeight) == false)
         {
             return false;
         }
 
-        if (mRenderTargetC->Init(GL_RGBA16F_ARB, screenWidth, screenHeight) == false)
+        if (mRenderTargetC->Init(GL_RGBA16F, screenWidth, screenHeight) == false)
         {
             return false;
         }
 
-        if (mRenderTargetD->Init(GL_RGBA16F_ARB, screenWidth / 2, screenHeight / 2) == false)
+        if (mRenderTargetD->Init(GL_RGBA16F, screenWidth / 2, screenHeight / 2) == false)
         {
             return false;
         }
 
-        if (mRenderTargetE->Init(GL_RGBA16F_ARB, screenWidth / 2, screenHeight / 2) == false)
+        if (mRenderTargetE->Init(GL_RGBA16F, screenWidth / 2, screenHeight / 2) == false)
         {
             return false;
         }
@@ -228,9 +226,9 @@ namespace RenderGL
         // bind the render texture and frame buffer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
-        GLenum bufs[] = { GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT };
+        GLenum bufs[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
         glDrawBuffers(2, bufs);
 
         GLenum code = glGetError();
@@ -258,11 +256,11 @@ namespace RenderGL
     {
         glPopAttrib();
 
-        //GLenum bufs[] = { GL_COLOR_ATTACHMENT0_EXT };
+        //GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
         //glDrawBuffers( 1, bufs);
 
         // undbind the frame buffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // reset viewport to original dimensions
         //glViewport( 0, 0, mPrevWidth, mPrevHeight );

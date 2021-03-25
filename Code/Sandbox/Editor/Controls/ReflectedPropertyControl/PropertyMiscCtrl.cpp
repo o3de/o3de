@@ -1,12 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or 
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
 * a third party where indicated.
 *
 * For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,  
+* distribution (the "License"). All use of this software is governed by the License,
 * or, if provided, by the license below or the license accompanying this file. Do not
 * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
 
@@ -169,7 +169,7 @@ void LensFlarePropertyWidget::SetValue(const QString &value)
 }
 
 QString LensFlarePropertyWidget::GetValue() const
-{ 
+{
     return m_valueEdit->text();
 }
 
@@ -223,7 +223,7 @@ bool LensFlareHandler::ReadValuesIntoGUI(size_t index, LensFlarePropertyWidget* 
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {
     CSplineCtrl *cSpline = new CSplineCtrl(pParent);
-    cSpline->SetUpdateCallback(functor(*this, &FloatCurveHandler::OnSplineChange));
+    cSpline->SetUpdateCallback(AZStd::bind(&FloatCurveHandler::OnSplineChange, this, AZStd::placeholders::_1));
     cSpline->SetTimeRange(0, 1);
     cSpline->SetValueRange(0, 1);
     cSpline->SetGrid(12, 12);

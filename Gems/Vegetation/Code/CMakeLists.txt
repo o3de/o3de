@@ -78,6 +78,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             vegetation_tests_files.cmake
+            vegetation_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests

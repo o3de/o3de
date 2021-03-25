@@ -7,8 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridraytracing.azshader",
         "ShaderResourceGroupAssets":
         [
-            "diffuseprobegridraytracing_raytracingglobalsrg.azsrg",
-            "diffuseprobegridraytracing_raytracinglocalsrg.azsrg"
+            "diffuseprobegridraytracingcommon_raytracingglobalsrg.azsrg"
         ],
         "RootShaderVariantAssets":
         [

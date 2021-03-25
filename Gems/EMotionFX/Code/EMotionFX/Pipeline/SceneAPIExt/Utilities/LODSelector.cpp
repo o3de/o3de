@@ -38,69 +38,17 @@ namespace EMotionFX
                 AZ_CRC("LODMesh5", 0xcc875c95)
             };
 
-            size_t LODSelector::SelectLODMeshes(const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex)
-            {
-                size_t lodMeshCount = 0;
-
-                const SceneContainers::SceneGraph& graph = scene.GetGraph();
-
-                // Find the lod group name, if the scene contains one.
-                // There's two ways for user to create LOD for now. 
-                // 1. Use soft naming (_lod1, _lod2...) as suffix on the meshes
-                // 2. Use LOD group (LOD_1, LOD_2...) and put lod meshes in each group.
-                AZStd::string lodGroupName = AZStd::string::format("LOD_%zu", lodRuleIndex + 1);
-
-                // Loop through all the mesh data.
-                auto contentStorage = graph.GetContentStorage();
-                auto nameStorage = graph.GetNameStorage();
-                auto keyValueView = SceneContainers::Views::MakePairView(nameStorage, contentStorage);
-                auto filteredView = SceneContainers::Views::MakeFilterView(keyValueView, SceneContainers::DerivedTypeFilter<SceneDataTypes::IMeshData>());
-                for (const auto& keyValue : filteredView)
-                {
-                    AZStd::set<AZ::Crc32> types;
-                    SceneContainers::SceneGraph::Name name = keyValue.first;
-                    SceneContainers::SceneGraph::NodeIndex index = graph.Find(name.GetPath());
-                    EBUS_EVENT(SceneEvents::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);
-
-                    bool isLodMesh = false;
-                    if (types.find(s_lodVirtualTypeKeys[lodRuleIndex]) != types.end() && types.find(SceneEvents::GraphMetaInfo::GetIgnoreVirtualType()) == types.end())
-                    {
-                        // If the node uses the lod soft naming, it is a lod mesh.
-                        isLodMesh = true;
-                    }
-                    else
-                    {
-                        // If the node has a parent that matches the lod group name, it is a lod mesh.
-                        SceneContainers::SceneGraph::NodeIndex curIdx = index;
-                        while (graph.HasNodeParent(curIdx))
-                        {
-                            SceneContainers::SceneGraph::NodeIndex parent = graph.GetNodeParent(curIdx);
-                            if (lodGroupName.compare(graph.GetNodeName(parent).GetName()) == 0)
-                            {
-                                isLodMesh = true;
-                                break;
-                            }
-                            curIdx = parent;
-                        }
-                    }
-
-                    if (isLodMesh)
-                    {
-                        // add lod mesh that belong to this lod level.
-                        selection.AddSelectedNode(name.GetPath());
-                        lodMeshCount++;
-                    }
-                }
-                return lodMeshCount;
-            }
-
-            void LODSelector::SelectLODBones(const SceneContainers::Scene & scene, SceneDataTypes::ISceneNodeSelectionList & selection, size_t lodRuleIndex)
+            size_t LODSelector::SelectLODBones(
+                const SceneContainers::Scene& scene, SceneDataTypes::ISceneNodeSelectionList& selection, size_t lodRuleIndex,
+                bool selectBaseBones)
             {
                 const SceneContainers::SceneGraph& graph = scene.GetGraph();
                 const auto contentStorage = graph.GetContentStorage();
                 const auto nameStorage = graph.GetNameStorage();
                 const auto keyValueView = SceneContainers::Views::MakePairView(nameStorage, contentStorage);
                 AZ::u32 lodBoneCount = 0;
+
+                AZ::SceneAPI::Utilities::SceneGraphSelector::UnselectAll(graph, selection);
 
                 // Since LOD Rule doesn't include level 0, the lod level is the rule index plus 1.
                 SceneContainers::SceneGraph::NodeIndex lodGroupNode = FindLODRootIndex(scene, lodRuleIndex + 1);
@@ -117,7 +65,7 @@ namespace EMotionFX
                     }
                 }
 
-                if (lodBoneCount == 0)
+                if (lodBoneCount == 0 && selectBaseBones)
                 {
                     // If the group does not contain any bones, add all the bones in base LOD by default.
                     SceneContainers::SceneGraph::NodeIndex lodZeroGroupNode = FindLODRootIndex(scene, 0);
@@ -127,16 +75,11 @@ namespace EMotionFX
                     for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                     {
                         selection.AddSelectedNode(it->first.GetPath());
+                        lodBoneCount++;
                     }
                 }
-            }
 
-            size_t LODSelector::SelectLODNodes(const SceneContainers::Scene & scene, SceneDataTypes::ISceneNodeSelectionList & selection, size_t lodRuleIndex)
-            {
-                SceneUtilities::SceneGraphSelector::UnselectAll(scene.GetGraph(), selection);
-                const size_t lodSize = SelectLODMeshes(scene, selection, lodRuleIndex);
-                SelectLODBones(scene, selection, lodRuleIndex);
-                return lodSize;
+                return lodBoneCount;
             }
 
             SceneContainers::SceneGraph::NodeIndex LODSelector::FindLODRootIndex(const SceneContainers::Scene& scene, size_t lodLevel)

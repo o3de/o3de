@@ -38,6 +38,7 @@ namespace GraphCanvas
         virtual void SetSteppedSizingEnabled(bool sizing) = 0;
 
         virtual qreal GetCornerRadius() const = 0;
+        virtual qreal GetBorderWidth() const = 0;
     };
 
     using NodeUIRequestBus = AZ::EBus<NodeUIRequests>;

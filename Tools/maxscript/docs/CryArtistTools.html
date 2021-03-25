@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+
+  
+  
+  
+  
+  <title>cryTools: CryArtistTools</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">CryArtistTools </h1>
+
+
+
+
+
+<p style="font-family: Arial;">
+<img alt="CryArtistTools Rollout" src="images/artistTools.png" style="border: 0px solid ; margin-right: 1em; width: 204px; height: 1144px; float: left;">
+</p>
+
+
+
+
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Artist Tools</h2>
+
+
+
+
+<h3 style="font-family: Arial; background-color: rgb(225, 225, 225);">General Tools</h3>
+
+
+<span style="font-weight: bold; font-family: Arial;">centerPivot</span><br style="font-family: Arial;">
+
+
+
+
+<span style="font-family: Arial;">This will cycle through all selected objects and center the pivot of each to the center of the objects respective bounding box.</span><br style="font-family: Arial;">
+
+
+
+
+<br style="font-family: Arial;">
+
+
+
+
+<span style="font-weight: bold; font-family: Arial;">preserveUVs</span><br style="font-family: Arial;">
+
+
+
+
+<span style="font-family: Arial;">This was a request, which turns on and off 'preserve UVs' when clicked. It has also been exposed as a key binding in cryKeys.</span><br style="font-family: Arial;">
+
+
+
+
+
+<br style="font-family: Arial;">
+
+
+
+
+<span style="font-weight: bold; font-family: Arial;">resetXformCollapse</span><span style="font-family: Arial;"><br>
+
+
+
+Upon clicking this, cryTools will
+loop through all currently selected objects and quickly resetXform and
+then collapse each, one by one.</span><br style="font-family: Arial;">
+
+
+
+
+<br style="font-family: Arial;">
+
+
+
+
+<span style="font-weight: bold; font-family: Arial;">Copy/Paste Modifier</span><br style="font-family: Arial;">
+
+
+
+
+<span style="font-family: Arial;">When clicking Copy Modifier, the
+current modifier will be copied and stored in memory. It can then be
+pasted to any number of like objects. This is useful for changing a
+base mesh and applying the change to many other meshes with the same
+point index (useful for heads/morph targets)</span><br style="font-family: Arial;">
+
+
+
+
+<h3 style="font-family: Arial; background-color: rgb(225, 225, 225);">UV Tools</h3>
+
+
+
+
+<span style="font-family: Arial;">By pressing ' &lt; ' or reloading
+Artist Tools, it will grab the UV info from the currently selected
+object. You can now use the following buttons to manipulate the UV
+coordinates. There is the ability to scale selected points to 0 on the
+X and Y, or X+Y, and to rotate 90 degrees clockwise and
+counterclockwise. <br>
+
+
+
+<br>
+
+
+<br>
+
+
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Diagnostics</h2>
+
+
+<h3 style="font-family: Arial; background-color: rgb(225, 225, 225);">polyStats</h3>
+
+
+<span style="font-family: Arial;">polyStats gives realtime face, edge and vert data for any selected object.<br>
+
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">CGF Metadata Manager</h2>
+
+
+<span style="font-family: Arial;">
+This tool is used to set-up breakable/destroyable objects. The data is
+set and stored in the objects' <span style="font-weight: bold;">User Defined Properties</span> (UDP).</span><strong style="font-family: Arial;"><span style="text-decoration: underline;"><br>
+
+</span></strong>
+<h3 style="background-color: rgb(225, 225, 225);"><strong style="font-family: Arial;">Object Properties</strong></h3>
+
+
+<p style="font-family: Arial;"><strong>Mass</strong> (render geometry property)<br>
+
+
+
+
+Mass defines the weight of an object based on real world physics. A value of <span style="font-weight: bold;">0</span> sets the object to "unmovable". This is used on the basement of
+a house for example or the sign pole which should not be movable and
+always stay in the original position. When used in brushes and Geom
+Entities, this is the final part's mass. When used in regular Entities,
+all parts masses are scaled so that their total mass gives the mass
+specified in the entity properties.<strong></strong>
+</p>
+
+
+
+<p style="font-family: Arial;">
+<strong>Density</strong><br>
+
+The engine automatically calculates the mass for an object based on the density and the bounding box of an object.
+Can be used alternatively to <em>mass</em>.
+</p>
+
+
+<span style="font-family: Arial;">
+To set the Mass/Density of an object, check the appropriate checkbox
+and set the value. To &nbsp;apply the setting click "Apply Settings to
+Selected" button. If wishing to scale the mass of multiple objects with
+different masses, select those objects, set the scale value desired,
+and press "Update Data" button.</span><br style="font-family: Arial;">
+
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">
+A forced primitve allows a basic shape be defined for the object based
+on it's bounding box. Check the desired shape, and apply settings.<br>
+
+<br>
+
+</span><strong style="font-family: Arial; color: rgb(255, 0, 0);">TechNote:</strong><span style="font-family: Arial;"> You must either define this value or </span><em style="font-family: Arial;">density</em><span style="font-family: Arial;"> to ensure the simulation is working correctly.</span><br style="font-family: Arial;">
+
+
+
+<br style="font-family: Arial;">
+
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-weight: bold; font-family: Arial;"><span style="font-family: Arial;">Joint Properties</span></span><span style="font-weight: bold; text-decoration: underline; font-family: Arial;"></span></h3>
+
+<span style="font-weight: bold; text-decoration: underline; font-family: Arial;">
+
+
+
+<span style="text-decoration: underline;"><span style="font-weight: bold;"><span style="text-decoration: underline;"><span style="font-weight: bold;"></span></span></span></span></span><span style="font-family: Arial;">Only
+Helpers/Dummies can be joints. Joints hold together pieces of the
+breakable objects and define how much force (and what kind of force) is
+necessary to break the objects from their joints.</span><span style="font-family: Arial;">
+To Set the joint properties enable joint properties and set the needed values for the properties desired.</span>
+
+<p style="font-family: Arial;">
+<strong>Limit</strong> - limit is a general value for several different kind of forces applied
+to the joint. It contains a combination of the values below.<br>
+
+
+
+
+<strong style="font-family: Arial; color: rgb(255, 0, 0);"></strong></p>
+
+<p style="font-family: Arial;"><strong style="font-family: Arial; color: rgb(255, 0, 0);">TechNote:</strong><span style="font-family: Arial;">&nbsp;</span>This value needs to be defined, otherwise the
+simulation will not work correctly.
+Crysis Example values: 100 - 500 can be broken by a bullet; 10000 can
+be broken by the impact of a driving vehicle or a big explosion.
+</p>
+
+
+
+<p style="font-family: Arial;">
+The following values are optional and are used to fine tune the "limit" settings.<br>
+
+
+
+
+<strong></strong></p>
+
+<p style="font-family: Arial;"><strong>Bend</strong> - maximum torque around an axis perpendicular to the normal.
+</p>
+
+
+
+<p style="font-family: Arial;">
+<strong>Twist</strong> - maximum torque around the normal
+</p>
+
+
+
+<p style="font-family: Arial;">
+<strong>Pull</strong> - maximum force
+applied to the joint&rsquo;s 1st object against the joint normal (the parts
+are "pulled together" as a reaction to external forces pulling them
+apart)
+</p>
+
+
+
+<p style="font-family: Arial;">
+<strong>Push</strong> - maximum force
+applied to the joint's 1st object (i.e. the one whose name is listed
+first in the joint's name, or if the names were not specified, the
+object the joint's z axis points towards) along the joint normal; joint
+normal is the joint's z axis, so for this value to actually be "push
+apart" (as a reaction to external forces pressing the parts together),
+this axis must be directed inside the 1st object
+</p>
+
+
+
+<p style="font-family: Arial;">
+<strong>Shift</strong> - maximum force in the direction perpendicular to normal
+</p>
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">
+
+</span></span><span style="font-weight: bold; font-family: Arial; color: rgb(255, 0, 0);">TechNote:</span><span style="font-family: Arial;"> Remember to press '<span style="font-weight: bold;">Apply Settings' </span>after you have made changes to an objects properties.</span><br style="font-family: Arial;">
+
+
+
+<br style="font-family: Arial; font-weight: bold;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Scale Properties</span> - To scale the joint properties, select the joints that you need to
+scale, check the scale properties checkbox, and check the properties
+which you desire to scale. Set the scale value and apply settings to
+the objects.<br>
+<br>
+</span>
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-weight: bold; font-family: Arial;"><span style="font-family: Arial;">Destroyable Objects</span></span></h3>
+<span style="font-family: Arial;"></span><span style="font-weight: bold; font-family: Arial; color: rgb(255, 0, 0);">TechNote: </span><span style="font-family: Arial; color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">please keep in mind that Destroyable objects should also have Mass/Density<br>
+<br>
+</span></span><span style="font-family: Arial;"><span style="font-weight: bold;">Main</span>: This is the option to set the submodel's name to be "Main" so that it becomes the </span><span style="font-family: Arial;">(only) pre-destruction submodel</span><span style="font-family: Arial;">.<br>
+</span> <code style="font-family: Arial; font-weight: bold;"><br>
+Remain</code><span style="font-family: Arial;">: This sets the object's name to "Remain" so it becomes the permanent post-destruction submodel which replaces </span><code style="font-family: Arial;">Main</code><span style="font-family: Arial;">.</span><br>
+<br>
+<span style="font-family: Arial;"><span style="font-weight: bold;">generic</span> = count: Causes the piece to be spawned
+multiple times in random locations throughout the original model. The
+count specifies how many times it is spawned. There can be multiple
+generic pieces.<br>
+<br>
+</span><code style="font-family: Arial; font-weight: bold;">entity</code><span style="font-family: Arial;">: If object is&nbsp;set to entity, the piece is spawned as a persistent entity. Otherwise, it is spawned as a particle.<br>
+<br>
+</span><code style="font-family: Arial; font-weight: bold;">rotaxes</code><span style="font-family: Arial;"> = </span><em style="font-family: Arial;">axes</em><span style="font-family: Arial;">: For generic pieces, this generates random rotation. Set this to the axis letter(s), for example, </span><code style="font-family: Arial;">z</code><span style="font-family: Arial;"> or </span><code style="font-family: Arial;">xyz</code><span style="font-family: Arial;">,
+to cause the piece to rotate randomly about the selected local
+axis/axes. If not set, the pieces will spawn in their authored rotation.<br>
+<br>
+</span><code style="font-family: Arial; font-weight: bold;">sizevar</code><span style="font-family: Arial;"><span style="font-weight: bold;"> </span>= </span><em style="font-family: Arial;">var</em><span style="font-family: Arial;"> : For generic pieces, this randomises the size of each piece, by a scale of 1-var to 1+var.</span><br>
+<span style="font-weight: bold; font-family: Arial; color: rgb(255, 0, 0);"></span><span style="font-family: Arial; color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"></span></span><span style="font-family: Arial; color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"></span></span><span style="font-family: Arial;"></span><br>
+<span style="font-family: Arial;"><br>
+</span><span style="font-family: Arial;">
+<br>
+
+
+ </span>
+</body>
+</html>

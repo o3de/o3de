@@ -33,12 +33,6 @@
                 "Name": "UserInterface_Compressed",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "BC1"
-            },
-            "xenia": {
-                "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
-                "Name": "UserInterface_Compressed",
-                "SuppressEngineReduce": true,
-                "PixelFormat": "BC1"
             }
         }
     }

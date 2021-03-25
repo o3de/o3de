@@ -74,7 +74,7 @@ namespace GraphCanvas
         return m_checked;
     }
 
-    void GraphCanvasCheckBox::paint(QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget /*= nullptr*/)
+    void GraphCanvasCheckBox::paint(QPainter* painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/ /*= nullptr*/)
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
 

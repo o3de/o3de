@@ -12,45 +12,14 @@
 
 #include "Duration.h"
 
+#include <ScriptCanvas/Utils/VersionConverters.h>
+
 namespace ScriptCanvas
 {
     namespace Nodes
     {
         namespace Time
         {
-            bool Duration::DurationNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-            {
-                // Fixed issue with out and done pins not being correctly marked as latent.
-                if (classElement.GetVersion() < 2)
-                {
-                    const char* slotsKey = "Slots";
-                    AZ::Crc32 slotsId = AZ::Crc32(slotsKey);
-
-                    AZStd::list< ScriptCanvas::Slot > nodeSlots;
-
-                    AZ::SerializeContext::DataElementNode* baseClassElement = classElement.FindSubElement(AZ::Crc32("BaseClass1"));
-                    AZ::SerializeContext::DataElementNode* dataNode = baseClassElement->FindSubElement(slotsId);
-
-                    if (dataNode && dataNode->GetData(nodeSlots))
-                    {
-                        baseClassElement->RemoveElementByName(slotsId);
-
-                        for (ScriptCanvas::Slot& slot : nodeSlots)
-                        {
-                            if (slot.GetName() == "Out"
-                                || slot.GetName() == "Done")
-                            {
-                                slot.ConvertToLatentExecutionOut();
-                            }
-                        }
-
-                        baseClassElement->AddElementWithData(context, slotsKey, nodeSlots);
-                    }
-                }
-
-                return true;
-            }
-
             Duration::Duration()
                 : Node()
                 , m_durationSeconds(0.f)

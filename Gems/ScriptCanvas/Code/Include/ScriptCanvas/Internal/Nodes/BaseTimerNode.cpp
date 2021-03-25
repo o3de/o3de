@@ -21,26 +21,9 @@ namespace ScriptCanvas
         {
             namespace
             {
-                AZStd::string StringifyUnits(BaseTimerNode::TimeUnits timeUnits)
-                {
-                    switch (timeUnits)
-                    {
-                    case BaseTimerNode::TimeUnits::Ticks:
-                        return "Ticks";
-                    case BaseTimerNode::TimeUnits::Milliseconds:
-                        return "Milliseconds";
-                    case BaseTimerNode::TimeUnits::Seconds:
-                        return "Seconds";
-                    default:
-                        break;
-                    }
-                    
-                    return "???";
-                }
-
                 AZStd::string CreateTimeSlotName(const AZStd::string& stringFormat, BaseTimerNode::TimeUnits delayUnits)
                 {
-                    AZStd::string stringifiedUnits = StringifyUnits(delayUnits).c_str();
+                    AZStd::string stringifiedUnits = BaseTimerNode::s_timeUnitNames[delayUnits];
                     return AZStd::string::format(stringFormat.c_str(), stringifiedUnits.c_str());
                 }
             }
@@ -64,6 +47,31 @@ namespace ScriptCanvas
                 {
                     m_timeSlotId = slot->GetId();
                 }
+                // Versioning to deal with slot name needing to update
+                // based on old version of the slot name
+                else
+                {
+                    AZStd::string slotName2 = CreateTimeSlotName(GetTimeSlotFormat(), static_cast<TimeUnits>(m_timeUnits));
+
+                    slot = GetSlotByName(slotName2);
+
+                    if (slot)
+                    {
+                        slot->SetToolTip(GetBaseTimeSlotToolTip());
+                        m_timeSlotId = slot->GetId();
+                    }
+                }
+
+                UpdateTimeName();
+                ////
+
+                m_timeUnitsInterface.SetPropertyReference(&m_timeUnits);
+
+                m_timeUnitsInterface.RegisterValueType(s_timeUnitNames[TimeUnits::Ticks], TimeUnits::Ticks);
+                m_timeUnitsInterface.RegisterValueType(s_timeUnitNames[TimeUnits::Milliseconds], TimeUnits::Milliseconds);
+                m_timeUnitsInterface.RegisterValueType(s_timeUnitNames[TimeUnits::Seconds], TimeUnits::Seconds);
+
+                m_timeUnitsInterface.RegisterListener(this);
             }
             
             void BaseTimerNode::OnConfigured()
@@ -74,6 +82,31 @@ namespace ScriptCanvas
             void BaseTimerNode::OnDeactivate()
             {
                 StopTimer();
+            }
+
+            void BaseTimerNode::ConfigureVisualExtensions()
+            {
+                {
+                    VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::PropertySlot);
+
+                    visualExtensions.m_name = "Units";
+                    visualExtensions.m_tooltip = "";
+                    visualExtensions.m_connectionType = ConnectionType::Input;
+
+                    visualExtensions.m_identifier = GetTimeUnitsPropertyId();
+
+                    RegisterExtension(visualExtensions);
+                }
+            }
+
+            NodePropertyInterface* BaseTimerNode::GetPropertyInterface(AZ::Crc32 propertyId)
+            {
+                if (propertyId == GetTimeUnitsPropertyId())
+                {
+                    return &m_timeUnitsInterface;
+                }
+
+                return nullptr;
             }
             
             void BaseTimerNode::OnSystemTick()
@@ -86,8 +119,12 @@ namespace ScriptCanvas
                 }
             }
                
-            void BaseTimerNode::OnTick(float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+            void BaseTimerNode::OnTick(float delta, AZ::ScriptTimePoint)
             {
+                if (m_timeUnits == TimeUnits::Ticks)
+                {
+                    m_timerCounter += 1;
+                }
                 switch (m_timeUnits)
                 {
                 case TimeUnits::Ticks:
@@ -134,6 +171,7 @@ namespace ScriptCanvas
                     // Must have the known name.
                     // Must be a number
                     slotConfiguration.m_name = slotName;
+                    slotConfiguration.m_toolTip = GetBaseTimeSlotToolTip();
                     slotConfiguration.SetConnectionType(ConnectionType::Input);
                     slotConfiguration.SetDefaultValue(1.0);
 
@@ -207,7 +245,7 @@ namespace ScriptCanvas
 
             AZStd::string BaseTimerNode::GetTimeSlotName() const
             {
-                return CreateTimeSlotName(GetTimeSlotFormat(), static_cast<TimeUnits>(m_timeUnits));
+                return GetBaseTimeSlotName();
             }
             
             BaseTimerNode::TimeUnits BaseTimerNode::GetTimeUnits() const
@@ -218,17 +256,15 @@ namespace ScriptCanvas
             AZStd::vector<AZStd::pair<int, AZStd::string>> BaseTimerNode::GetTimeUnitList() const
             {
                 AZStd::vector<AZStd::pair<int, AZStd::string>> timeUnits;
-                timeUnits.reserve(static_cast<int>(UnitCount));
-                
-                for (int i = Ticks; i < UnitCount; ++i)
-                {
-                    timeUnits.emplace_back(i, StringifyUnits(static_cast<TimeUnits>(i)));
-                }
-                
+
+                timeUnits.push_back(AZStd::make_pair(TimeUnits::Ticks, s_timeUnitNames[TimeUnits::Ticks]));
+                timeUnits.push_back(AZStd::make_pair(TimeUnits::Milliseconds, s_timeUnitNames[TimeUnits::Milliseconds]));
+                timeUnits.push_back(AZStd::make_pair(TimeUnits::Seconds, s_timeUnitNames[TimeUnits::Seconds]));
+
                 return timeUnits;
             }
             
-            void BaseTimerNode::OnTimeUnitsChanged([[maybe_unused]] const int& timeUnits)
+            void BaseTimerNode::OnTimeUnitsChanged(const int&)
             {
                 UpdateTimeName();
             }
@@ -245,7 +281,7 @@ namespace ScriptCanvas
 
             bool BaseTimerNode::IsActive() const
             {
-                return false;
+                return m_isActive;
             }
 
             bool BaseTimerNode::AllowInstantResponse() const
@@ -260,6 +296,11 @@ namespace ScriptCanvas
             void BaseTimerNode::ConfigureTimeSlot(DataSlotConfiguration& configuration)
             {
                 AZ_UNUSED(configuration);
+            }
+
+            void BaseTimerNode::OnPropertyChanged()
+            {
+                OnTimeUnitsChanged(m_timeUnits);
             }
         }
     }

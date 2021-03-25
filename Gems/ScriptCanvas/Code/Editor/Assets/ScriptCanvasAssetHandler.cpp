@@ -192,9 +192,29 @@ namespace ScriptCanvasEditor
         extensions.push_back(description.GetExtensionImpl());
     }
 
+    //=========================================================================
+    // GetComponentTypeId
+    //=========================================================================.
     AZ::Uuid ScriptCanvasAssetHandler::GetComponentTypeId() const
     {
         return azrtti_typeid<EditorScriptCanvasComponent>();
     }
 
-} // namespace ScriptCanvasEditor
+    //=========================================================================
+    // GetGroup
+    //=========================================================================.
+    const char* ScriptCanvasAssetHandler::GetGroup() const
+    {
+        return ScriptCanvas::AssetDescription::GetGroup<ScriptCanvasEditor::ScriptCanvasAsset>();
+    }
+
+    //=========================================================================
+    // GetBrowserIcon
+    //=========================================================================.
+    const char* ScriptCanvasAssetHandler::GetBrowserIcon() const
+    {
+        return ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasEditor::ScriptCanvasAsset>();
+    }
+
+
+}

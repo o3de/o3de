@@ -245,6 +245,24 @@ protected:
 
     void OnDestroy();
     void mouseDoubleClickEvent(QMouseEvent* event) override;
+
+private:
+    struct VariableCallbackIndex
+    {
+        enum : unsigned char
+        {
+            OnCharPhysics = 0,
+            OnLightColor,
+            OnLightMultiplier,
+            OnShowShaders,
+
+            // must be at the end
+            Count,
+        };
+    };
+AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZStd::fixed_vector< IVariable::OnSetCallback, VariableCallbackIndex::Count > m_onSetCallbacksCache;
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif // CRYINCLUDE_EDITOR_MODELVIEWPORT_H

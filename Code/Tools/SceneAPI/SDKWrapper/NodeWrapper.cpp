@@ -18,37 +18,31 @@ namespace AZ
     {
         NodeWrapper::NodeWrapper(fbxsdk::FbxNode* fbxNode)
             :m_fbxNode(fbxNode)
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             , m_assImpNode(nullptr)
-#endif
         {
         }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
         NodeWrapper::NodeWrapper(aiNode* aiNode)
             :m_fbxNode(nullptr)
             , m_assImpNode(aiNode)
         {
         }
-#endif
 
         NodeWrapper::~NodeWrapper()
         {
             m_fbxNode = nullptr;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             m_assImpNode = nullptr;
-#endif
         }
 
         fbxsdk::FbxNode* NodeWrapper::GetFbxNode()
         {
             return m_fbxNode;
         }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
         aiNode* NodeWrapper::GetAssImpNode()
         {
             return m_assImpNode;
         }
-#endif
 
         const char* NodeWrapper::GetName() const
         {

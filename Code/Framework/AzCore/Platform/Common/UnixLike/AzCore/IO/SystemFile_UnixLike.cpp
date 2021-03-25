@@ -169,19 +169,20 @@ namespace Platform
             {
                 if (s.st_mode & S_IWUSR)
                 {
+                    // file is already writeable
                     return true;
                 }
                 return chmod(sourceFileName, permissions | S_IWUSR) == 0;
             }
             else
             {
-                if (s.st_mode & S_IRWXG)
+                if (s.st_mode & S_IWUSR)
                 {
                     return chmod(sourceFileName, permissions & ~(S_IWUSR)) == 0;
                 }
                 else
                 {
-                    // file is already writeable
+                    // file is already read-only
                     return true;
                 }
             }

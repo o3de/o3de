@@ -50,6 +50,7 @@ namespace AZ
 
             void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
+            bool SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
 
             Data::Instance<Material> GetMaterial();
 
@@ -93,6 +94,11 @@ namespace AZ
 
             //! A map matches the index of UV names of this material to the custom names from the model.
             MaterialModelUvOverrideMap m_materialModelUvMap;
+
+            //! List of shader options set for this specific draw packet
+            typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
+            typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
+            ShaderOptionVector m_shaderOptions;            
         };
     } // namespace RPI
 } // namespace AZ

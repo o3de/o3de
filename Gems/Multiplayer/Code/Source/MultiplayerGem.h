@@ -9,79 +9,24 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #pragma once
 
-#include "Multiplayer/IMultiplayerGem.h"
-#include "MultiplayerCVars.h"
-#include "CrySystemBus.h"
-
-namespace GridMate
-{
-    class SecureSocketDriver;
-}
+#include <AzCore/Module/Module.h>
 
 namespace Multiplayer
 {
-    class GameLiftListener;
-    class GameLiftMatchmakingComponent;
-
     class MultiplayerModule
-        : public CryHooksModule
-        , public MultiplayerRequestBus::Handler
-        , public GridMate::SessionEventBus::Handler
+        : public AZ::Module
     {
-        friend class MultiplayerCVars;
     public:
 
-        AZ_RTTI(MultiplayerModule, "{946D16FF-7C9D-4134-88F9-03FAE5D5803A}", CryHooksModule);
+        AZ_RTTI(MultiplayerModule, "{497FF057-6CE1-43D5-9A9F-D2B7ABF6D3A7}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(MultiplayerModule, AZ::SystemAllocator, 0);
 
         MultiplayerModule();
-        ~MultiplayerModule() override;
+        ~MultiplayerModule() override = default;
 
-        ////////////////////
-        // IMultiplayerGem
-        bool IsNetSecEnabled() const override;
-        bool IsNetSecVerifyClient() const override;
-
-        void RegisterSecureDriver(GridMate::SecureSocketDriver* driver) override;
-                        
-        GridMate::GridSession* GetSession() override;
-        void RegisterSession(GridMate::GridSession* session) override;
-        GridMate::Simulator* GetSimulator() override;
-        void EnableSimulator() override;
-        void DisableSimulator() override;
-        ////////////////////
-
-    private:
-
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-
-        void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
-
-        void OnSessionCreated(GridMate::GridSession* session) override;
-        void OnSessionHosted(GridMate::GridSession* session) override;
-        void OnSessionJoined(GridMate::GridSession* session) override;
-        void OnSessionDelete(GridMate::GridSession* session) override;
-
-        void OnCrySystemPostShutdown() override;
-
-        void ActivateNetworkSession(GridMate::GridSession* session);
-
-        //! Current game session
-        GridMate::GridSession* m_session;
-
-        //! Secure driver
-        GridMate::SecureSocketDriver* m_secureDriver;
-
-        //! Network specific commands and cvars.
-        MultiplayerCVars m_cvars;
-
-        GridMate::DefaultSimulator* m_simulator;
-        GameLiftListener* m_gameLiftListener;
-
-        static int s_NetsecEnabled;
-        static int s_NetsecVerifyClient;
-
-        GameLiftMatchmakingComponent* m_matchmakingComponent;
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-} // namespace Multiplayer
+}

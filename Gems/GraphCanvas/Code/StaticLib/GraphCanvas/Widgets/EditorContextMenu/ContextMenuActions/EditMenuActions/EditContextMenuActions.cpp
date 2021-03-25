@@ -28,7 +28,7 @@ namespace GraphCanvas
     {
     }
 
-    ContextMenuAction::SceneReaction CutGraphSelectionMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction CutGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 
@@ -45,7 +45,7 @@ namespace GraphCanvas
     {
     }
 
-    ContextMenuAction::SceneReaction CopyGraphSelectionMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction CopyGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 
@@ -90,7 +90,7 @@ namespace GraphCanvas
     {
     }
 
-    ContextMenuAction::SceneReaction DeleteGraphSelectionMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction DeleteGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
 

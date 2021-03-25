@@ -14,10 +14,10 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/typetraits/integral_constant.h>
 #include <EMotionFX/Source/Mesh.h>
-#include <EMotionFX/Source/MeshBuilder.h>
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/MemoryObject.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/MeshFactory.h>
 
 namespace EMotionFX
 {
@@ -56,7 +56,7 @@ namespace EMotionFX
     PlaneActor::PlaneActor(const char* name)
         : SimpleJointChainActor(1, name)
     {
-        SetMesh(0, 0, CreatePlane(0, {
+        SetMesh(0, 0, CreatePlane({
             AZ::Vector3(-1.0f, -1.0f, 0.0f),
             AZ::Vector3(1.0f, -1.0f, 0.0f),
             AZ::Vector3(-1.0f,  1.0f, 0.0f),
@@ -67,58 +67,20 @@ namespace EMotionFX
         }));
     }
 
-    Mesh* PlaneActor::CreatePlane(uint32 nodeIndex, const AZStd::vector<AZ::Vector3>& points) const
+    Mesh* PlaneActor::CreatePlane(const AZStd::vector<AZ::Vector3>& points) const
     {
-        const uint32 vertCount = static_cast<uint32>(points.size());
-        const uint32 faceCount = vertCount / 3;
+        const auto vertCount = static_cast<uint32>(points.size());
 
-        AZStd::unique_ptr<EMotionFX::MeshBuilder> meshBuilder(aznew MeshBuilder(nodeIndex, vertCount));
+        AZStd::vector<AZ::u32> indices(vertCount);
+        std::iota(indices.begin(), indices.end(), 0);
 
-        // Original vertex numbers
-        MeshBuilderVertexAttributeLayerUInt32* orgVtxLayer = MeshBuilderVertexAttributeLayerUInt32::Create(
-                vertCount,
-                EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS,
-                false,
-                false
-                );
-        meshBuilder->AddLayer(orgVtxLayer);
+        AZStd::vector<AZ::Vector3> normals {vertCount, {0.0f, 0.0f, 1.0f}};
 
-        // The positions layer
-        MeshBuilderVertexAttributeLayerVector3* posLayer = MeshBuilderVertexAttributeLayerVector3::Create(
-                vertCount,
-                EMotionFX::Mesh::ATTRIB_POSITIONS,
-                false,
-                true
-                );
-        meshBuilder->AddLayer(posLayer);
-
-        // The normals layer
-        MeshBuilderVertexAttributeLayerVector3* normalsLayer = MeshBuilderVertexAttributeLayerVector3::Create(
-                vertCount,
-                EMotionFX::Mesh::ATTRIB_NORMALS,
-                false,
-                true
-                );
-        meshBuilder->AddLayer(normalsLayer);
-
-        const int materialId = 0;
-        const AZ::Vector3 normalVector(0.0f, 0.0f, 1.0f);
-        for (uint32 faceNum = 0; faceNum < faceCount; ++faceNum)
-        {
-            meshBuilder->BeginPolygon(materialId);
-            for (uint32 vertexOfFace = 0; vertexOfFace < 3; ++vertexOfFace)
-            {
-                uint32 vertexNum = faceNum * 3 + vertexOfFace;
-                orgVtxLayer->SetCurrentVertexValue(&vertexNum);
-                posLayer->SetCurrentVertexValue(&points[vertexNum]);
-                normalsLayer->SetCurrentVertexValue(&normalVector);
-
-                meshBuilder->AddPolygonVertex(vertexNum);
-            }
-            meshBuilder->EndPolygon();
-        }
-
-        return Mesh::CreateFromMeshBuilder(meshBuilder.get());
+        return EMotionFX::MeshFactory::Create(
+            indices,
+            points,
+            normals
+        );
     }
 
     PlaneActorWithJoints::PlaneActorWithJoints(size_t jointCount, const char* name)

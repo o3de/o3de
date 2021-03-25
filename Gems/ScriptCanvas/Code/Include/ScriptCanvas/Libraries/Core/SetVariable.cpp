@@ -10,15 +10,15 @@
 *
 */
 
+#include "SetVariable.h"
+
 #include <Core/ExecutionNotificationsBus.h>
-
 #include <Libraries/Core/MethodUtility.h>
-
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Execution/ExecutionBus.h>
-#include <ScriptCanvas/Libraries/Core/SetVariable.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
+#include <ScriptCanvas/Grammar/ParsingUtilities.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-
 
 namespace ScriptCanvas
 {
@@ -26,6 +26,29 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            AZ::Outcome<DependencyReport, void> SetVariableNode::GetDependencies() const
+            {
+                if (auto datum = ModVariable()->GetDatum())
+                {
+                    return AZ::Success(DependencyReport::NativeLibrary(Data::GetName(datum->GetType()).c_str()));
+                }
+                else
+                {
+                    return AZ::Failure();
+                }
+            }
+
+            PropertyFields SetVariableNode::GetPropertyFields() const
+            {
+                PropertyFields propertyFields;
+                for (auto&& propertyAccount : m_propertyAccounts)
+                {
+                    propertyFields.emplace_back(propertyAccount.m_propertyName, propertyAccount.m_propertySlotId);
+                }
+
+                return propertyFields;
+            }
+
             void SetVariableNode::OnInit()
             {
                 VariableNodeRequestBus::Handler::BusConnect(GetEntityId());
@@ -37,21 +60,7 @@ namespace ScriptCanvas
                 {
                     RefreshPropertyFunctions();
                     PopulateNodeType();
-
-                    if (GetExecutionType() == ScriptCanvas::ExecutionType::Editor)
-                    {
-                        VariableNotificationBus::Handler::BusConnect(GetScopedVariableId());
-                    }
-                    else if (GetExecutionType() == ScriptCanvas::ExecutionType::Runtime)
-                    {
-                        GraphVariable* variable = FindGraphVariable(m_variableId);
-
-                        if (variable)
-                        {
-                            m_variableName = variable->GetVariableName();
-                            variable->ConfigureDatumView(m_variableView);
-                        }
-                    }
+                    VariableNotificationBus::Handler::BusConnect(GetScopedVariableId());
                 }
             }
 
@@ -59,9 +68,7 @@ namespace ScriptCanvas
             {
                 if (slotID == GetSlotId(GetInputSlotName()))
                 {
-                    SC_EXECUTION_TRACE_ANNOTATE_NODE((*this), CreateAnnotationData());
-
-                    const Datum* sourceDatum = FindDatum(m_variableDataInSlotId);
+                    const Datum* sourceDatum = FindDatum(m_variableDataInSlotId);                    
 
                     if (sourceDatum && m_variableView.IsValid())
                     {
@@ -98,6 +105,20 @@ namespace ScriptCanvas
 
                     SignalOutput(GetSlotId(GetOutputSlotName()));
                 }
+            }
+            VariableId SetVariableNode::GetVariableIdRead(const Slot*) const
+            {
+                return m_variableId;
+            }
+
+            VariableId SetVariableNode::GetVariableIdWritten(const Slot*) const
+            {
+                return m_variableId;
+            }
+
+            const Slot* SetVariableNode::GetVariableOutputSlot() const
+            {
+                return GetSlot(m_variableDataOutSlotId);
             }
 
             void SetVariableNode::CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
@@ -281,6 +302,11 @@ namespace ScriptCanvas
                                 varNameToIdList.emplace_back(variablePair.first, variablePair.second.GetVariableName());
                             }
                         }
+
+                        AZStd::sort(varNameToIdList.begin(), varNameToIdList.end(), [](const AZStd::pair<VariableId, AZStd::string>& lhs, const AZStd::pair<VariableId, AZStd::string>& rhs)
+                        {
+                            return lhs.second < rhs.second;
+                        });
                     }
                 }
 

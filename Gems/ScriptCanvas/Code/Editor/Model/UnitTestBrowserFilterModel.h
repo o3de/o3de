@@ -51,7 +51,7 @@ namespace ScriptCanvasEditor
 
         // ScriptCanvasEditor::UnitTestWidgetNotificationBus
         virtual void OnTestStart(const AZ::Uuid& sourceID) override;
-        virtual void OnTestResult(const AZ::Uuid& sourceID, UnitTestResult result) override;
+        virtual void OnTestResult(const AZ::Uuid& sourceID, const UnitTestResult& result) override;
         ////
 
         void GetCheckedScriptsUuidsList(AZStd::vector<AZ::Uuid>& scriptUuids) const;
@@ -88,6 +88,8 @@ namespace ScriptCanvasEditor
 
         // ICONS
         QMovie m_iconRunning;
+        const QIcon m_iconFailedToCompile;
+        const QIcon m_iconFailedToCompileOld;
         const QIcon m_iconPassed;
         const QIcon m_iconPassedOld;
         const QIcon m_iconFailed;

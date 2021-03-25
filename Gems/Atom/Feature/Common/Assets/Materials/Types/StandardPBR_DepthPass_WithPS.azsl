@@ -15,6 +15,7 @@
 #include "./StandardPBR_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
 
 #include "MaterialInputs/AlphaInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
@@ -52,8 +53,9 @@ VSDepthOutput MainVS(VSInput IN)
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    // By design, only UV0 is allowed to apply transforms.
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
-    OUT.m_uv[1] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv1, 1.0)).xy;
+    OUT.m_uv[1] = IN.m_uv1;
 
     if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
     {
@@ -93,13 +95,16 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         float3 tangent = tangents[MaterialSrg::m_parallaxUvIndex];
         float3 bitangent = bitangents[MaterialSrg::m_parallaxUvIndex];
 
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+
         float3 tangentOffset = GetParallaxOffset( MaterialSrg::m_depthFactor,
                                                   IN.m_uv[MaterialSrg::m_parallaxUvIndex],
                                                   ViewSrg::m_worldPosition.xyz - IN.m_worldPosition,
                                                   tangent,
                                                   bitangent,
                                                   IN.m_normal,
-                                                  MaterialSrg::m_uvMatrix);
+                                                  uvMatrix);
 
         PixelDepthOffset pdo = CalcPixelDepthOffset(MaterialSrg::m_depthFactor,
                                                     tangentOffset,
@@ -107,7 +112,7 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
                                                     tangent,
                                                     bitangent,
                                                     IN.m_normal,
-                                                    MaterialSrg::m_uvMatrixInverse,
+                                                    uvMatrixInverse,
                                                     ObjectSrg::GetWorldMatrix(),
                                                     ViewSrg::m_viewProjectionMatrix);
         OUT.m_depth = pdo.m_depth;

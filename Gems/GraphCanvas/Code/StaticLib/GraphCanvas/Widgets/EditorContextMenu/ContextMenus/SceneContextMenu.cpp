@@ -31,7 +31,7 @@ namespace GraphCanvas
         m_alignmentActionsGroups.PopulateMenu(this);
     }
 
-    void SceneContextMenu::OnRefreshActions([[maybe_unused]] const GraphId& graphId, [[maybe_unused]] const AZ::EntityId& targetMemberId)
+    void SceneContextMenu::OnRefreshActions(const GraphId& /*graphId*/, const AZ::EntityId& /*targetMemberId*/)
     {
         m_graphCanvasConstructGroups.RefreshGroup();
         m_nodeGroupPresets.RefreshPresets();

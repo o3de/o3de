@@ -14,6 +14,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -38,16 +39,20 @@ namespace AtomToolsFramework
         AZ_CLASS_ALLOCATOR(InspectorPropertyGroupWidget, AZ::SystemAllocator, 0);
 
         InspectorPropertyGroupWidget(
-            void* object,
-            const AZ::Uuid& objectClassId,
-            AzToolsFramework::IPropertyEditorNotify* objectNotificationHandler = nullptr,
-            QWidget* parent = nullptr);
+            void* instance,
+            void* instanceToCompare,
+            const AZ::Uuid& instanceClassId,
+            AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler = {},
+            QWidget* parent = {},
+            const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction = {});
 
         void Refresh() override;
         void Rebuild() override;
 
+        AzToolsFramework::ReflectedPropertyEditor* GetPropertyEditor();
+
     private:
-        QVBoxLayout* m_layout = nullptr;
-        AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;
+        QVBoxLayout* m_layout = {};
+        AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = {};
     };
 } // namespace AtomToolsFramework

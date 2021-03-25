@@ -38,13 +38,6 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true
-            },
-            "xenia": {
-                "UUID": "{02C3D9F5-3637-49BA-A48A-D68D629A4D14}",
-                "Name": "ReferenceImage_Linear",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "SuppressEngineReduce": true
             }
         }
     }

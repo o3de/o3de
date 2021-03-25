@@ -30,6 +30,7 @@ namespace AzToolsFramework
         virtual void SetBoundsDirty() = 0;
         virtual void Refresh() = 0;
         virtual void SetSpace(const AZ::Transform& worldFromLocal) = 0;
+        virtual void SetNonUniformScale(const AZ::Vector3& nonUniformScale) = 0;
     };
 
     /// NullHoverSelection is used when vertices cannot be inserted. This serves as a no-op
@@ -47,5 +48,6 @@ namespace AzToolsFramework
         void SetBoundsDirty() override {}
         void Refresh() override {}
         void SetSpace(const AZ::Transform& /*worldFromLocal*/) override {}
+        void SetNonUniformScale([[maybe_unused]] const AZ::Vector3& nonUniformScale) override {}
     };
 } // namespace AzToolsFramework

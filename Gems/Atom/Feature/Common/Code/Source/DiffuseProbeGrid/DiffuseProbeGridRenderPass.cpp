@@ -81,7 +81,7 @@ namespace AZ
             Base::FrameBeginInternal(params);
         }
 
-        void DiffuseProbeGridRenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridRenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -119,10 +119,10 @@ namespace AZ
                 }
             }
 
-            Base::SetupFrameGraphDependencies(frameGraph, producer);
+            Base::SetupFrameGraphDependencies(frameGraph);
         }
 
-        void DiffuseProbeGridRenderPass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void DiffuseProbeGridRenderPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -130,11 +130,13 @@ namespace AZ
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see line 93 of ShaderResourceGroupData.cpp)
+                // (see ValidateSetImageView() of ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRenderObjectSrg();
+
+                diffuseProbeGrid->GetRenderObjectSrg()->Compile();
             }
 
-            Base::CompileResources(context, producer);
+            Base::CompileResources(context);
         }
     } // namespace Render
 } // namespace AZ

@@ -15,10 +15,15 @@
 
 #include "VertexBuffer.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
+#include <EMotionFX/Rendering/OpenGL2/Source/GLExtensions.h>
 
 namespace RenderGL
 {
     class RENDERGL_API IndexBuffer
+        : private QOpenGLExtraFunctions
+        , private RenderGL::GLExtensionFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(IndexBuffer, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
@@ -47,8 +52,8 @@ namespace RenderGL
         uint32      mNumIndices;    // the number of indices
 
         // helpers
-        bool GetIsSuccess() const;
-        bool GetHasError() const;
+        bool GetIsSuccess();
+        bool GetHasError();
     };
 }
 

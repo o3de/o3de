@@ -18,6 +18,11 @@
                     "ScopeAttachmentUsage": "Shader",
                     "ShaderInputName": "m_eyeAdaptation"
                 },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                },
                 {
                     "Name": "Output",
                     "SlotType": "Output",

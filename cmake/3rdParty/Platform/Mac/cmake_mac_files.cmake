@@ -12,7 +12,6 @@
 set(FILES
     AWSNativeSDK_mac.cmake
     BuiltInPackages_mac.cmake
-    cityhash_mac.cmake
     civetweb_mac.cmake
     Clang_mac.cmake
     DirectXShaderCompiler_mac.cmake
@@ -20,20 +19,7 @@ set(FILES
     expat_mac.cmake
     FbxSdk_mac.cmake
     FreeType2_mac.cmake
-    googletest_mac.cmake
-    LibTomCrypt_mac.cmake
-    LibTomMath_mac.cmake
-    lz4_mac.cmake
-    Lzma_mac.cmake
-    LZSS_mac.cmake
-    md5_mac.cmake
-    nvcloth_mac.cmake
     OpenSSL_mac.cmake
-    PhysX_mac.cmake
-    poly2tri_mac.cmake
-    PVRTexTool_mac.cmake
     Qt_mac.cmake
-    SQLite_mac.cmake
     Wwise_mac.cmake
-    zstd_mac.cmake
 )

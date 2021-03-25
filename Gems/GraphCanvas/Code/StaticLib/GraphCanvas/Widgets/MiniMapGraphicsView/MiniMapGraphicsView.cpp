@@ -121,7 +121,7 @@ namespace GraphCanvas
     }
 
     // ViewNotificationBus
-    void MiniMapGraphicsView::OnViewResized([[maybe_unused]] QResizeEvent* event)
+    void MiniMapGraphicsView::OnViewResized(QResizeEvent* /*event*/)
     {
         // The main view has been resized.
         // Mainview -> Magnifier
@@ -145,7 +145,7 @@ namespace GraphCanvas
     }
 
     // SceneNotificationBus
-    void MiniMapGraphicsView::OnNodeAdded([[maybe_unused]] const AZ::EntityId& nodeId)
+    void MiniMapGraphicsView::OnNodeAdded(const AZ::EntityId& /*nodeId*/, bool)
     {
         // Mainview -> Magnifier
         m_updateSceneContentNeeded = true;
@@ -153,7 +153,7 @@ namespace GraphCanvas
     }
 
     // SceneNotificationBus
-    void MiniMapGraphicsView::OnNodeRemoved([[maybe_unused]] const AZ::EntityId& nodeId)
+    void MiniMapGraphicsView::OnNodeRemoved(const AZ::EntityId& /*nodeId*/)
     {
         // Mainview -> Magnifier
         m_updateSceneContentNeeded = true;

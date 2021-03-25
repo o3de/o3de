@@ -15,10 +15,10 @@
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
-
 #include <Atom/Utils/StableDynamicArray.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -99,6 +99,11 @@ namespace AZ
                         if (!meshDataIter->m_visible)
                         {
                             continue;
+                        }
+
+                        if (meshDataIter->m_objectSrgNeedsUpdate)
+                        {
+                            meshDataIter->UpdateObjectSrg();
                         }
 
                         // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
@@ -185,11 +190,6 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                if (m_rayTracingFeatureProcessor && meshHandle->m_rayTracingEnabled)
-                {
-                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
-                }
-
                 meshHandle->DeInit();
                 m_transformService->ReleaseObjectId(meshHandle->m_objectId);
 
@@ -253,6 +253,7 @@ namespace AZ
             {
                 MeshDataInstance& meshData = *meshHandle;
                 meshData.m_cullBoundsNeedsUpdate = true;
+                meshData.m_objectSrgNeedsUpdate = true;
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform);
 
@@ -359,6 +360,24 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->m_useForwardPassIblSpecular = useForwardPassIblSpecular;
+                meshHandle->m_objectSrgNeedsUpdate = true;
+
+                if (meshHandle->m_model)
+                {
+                    const size_t modelLodCount = meshHandle->m_model->GetLodCount();
+                    for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+                    {
+                        meshHandle->BuildDrawPacketList(modelLodIndex);
+                    }
+                }
+            }
+        }
+
         void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             m_forceRebuildDrawPackets = true;;
@@ -367,6 +386,18 @@ namespace AZ
         void MeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
         {
             m_forceRebuildDrawPackets = true;
+        }
+
+        void MeshFeatureProcessor::UpdateMeshReflectionProbes()
+        {
+            // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
+            for (auto& meshInstance : m_meshData)
+            {
+                if (meshInstance.m_useForwardPassIblSpecular)
+                {
+                    meshInstance.m_objectSrgNeedsUpdate = true;
+                }
+            }
         }
 
         // MeshDataInstance::MeshLoader...
@@ -435,6 +466,13 @@ namespace AZ
         {
             m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
 
+            // remove from ray tracing
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (rayTracingFeatureProcessor)
+            {
+                rayTracingFeatureProcessor->RemoveMesh(m_objectId);
+            }
+
             m_meshLoader.reset();
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
@@ -477,8 +515,6 @@ namespace AZ
                 {
                     m_shaderResourceGroup->SetConstant(objectIdIndex, m_objectId.GetIndex());
                 }
-
-                m_shaderResourceGroup->Compile();
             }
 
             if (m_rayTracingEnabled)
@@ -488,6 +524,7 @@ namespace AZ
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
+            m_objectSrgNeedsUpdate = true;
         }
 
         void MeshDataInstance::BuildDrawPacketList(size_t modelLodIndex)
@@ -547,8 +584,16 @@ namespace AZ
 
                 SelectMotionVectorShader(material);
 
+                // setup the mesh draw packet
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, m_shaderResourceGroup, materialAssignment.m_matModUvOverrides);
-                drawPacket.SetStencilRef(Render::StencilRefs::UseSpecularIBLPass);
+
+                // set the shader option to select forward pass IBL specular if necessary
+                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_useForwardPassIblSpecular }))
+                {
+                    AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                }
+
+                drawPacket.SetStencilRef(m_useForwardPassIblSpecular || MaterialRequiresForwardPassIblSpecular(material) ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass);
                 drawPacket.SetSortKey(m_sortKey);
                 drawPacket.Update(*m_scene, false);
                 drawPacketListOut.emplace_back(AZStd::move(drawPacket));
@@ -607,9 +652,11 @@ namespace AZ
                 bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, shaderInputContract, meshIndex);
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
-                uint32_t vertexElementSize = RHI::GetFormatSize(StreamFormat);
-                uint32_t vertexElementCount = (uint32_t)streamBufferViews[0].GetByteCount() / vertexElementSize;
-                RHI::BufferViewDescriptor vertexBufferDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, vertexElementCount, vertexElementSize);
+                // note that the element count is the size of the entire buffer, even though this mesh may only
+                // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
+                // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
+                uint32_t vertexBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor vertexBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, vertexBufferByteCount);
 
                 const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
                 uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
@@ -830,5 +877,73 @@ namespace AZ
             }
         }
 
+        void MeshDataInstance::UpdateObjectSrg()
+        {
+            if (!m_shaderResourceGroup)
+            {
+                return;
+            }
+
+            if (m_useForwardPassIblSpecular)
+            {
+                // retrieve probe constant structure index
+                AZ::RHI::ShaderInputConstantIndex m_reflectionProbeDataIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData"));
+                AZ_Error("MeshDataInstance", m_reflectionProbeDataIndex.IsValid(), "Failed to find ReflectionProbeData constant index");
+
+                // retrieve probe cubemap index
+                Name reflectionCubeMapImageName = Name("m_reflectionProbeCubeMap");
+                RHI::ShaderInputImageIndex reflectionCubeMapImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(reflectionCubeMapImageName);
+                AZ_Error("MeshDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
+
+                // must match the struct in DefaultObjectSrg.azsli
+                struct ReflectionProbeData
+                {
+                    Vector3 m_aabbPos = Vector3(0.0f);
+                    Vector3 m_outerAabbMin = Vector3(0.0f);
+                    Vector3 m_outerAabbMax = Vector3(0.0f);
+                    Vector3 m_innerAabbMin = Vector3(0.0f);
+                    Vector3 m_innerAabbMax = Vector3(0.0f);
+                    bool m_useReflectionProbe = false;
+                    bool m_useParallaxCorrection = false;
+                } reflectionProbeData{};
+
+                // retrieve the list of probes that contain the centerpoint of the mesh
+                TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+                Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+
+                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+                ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
+                reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
+
+                if (!reflectionProbes.empty())
+                {
+                    reflectionProbeData.m_aabbPos = reflectionProbes[0]->GetPosition();
+                    reflectionProbeData.m_outerAabbMin = reflectionProbes[0]->GetOuterAabbWs().GetMin();
+                    reflectionProbeData.m_outerAabbMax = reflectionProbes[0]->GetOuterAabbWs().GetMax();
+                    reflectionProbeData.m_innerAabbMin = reflectionProbes[0]->GetInnerAabbWs().GetMin();
+                    reflectionProbeData.m_innerAabbMax = reflectionProbes[0]->GetInnerAabbWs().GetMax();
+                    reflectionProbeData.m_useReflectionProbe = true;
+                    reflectionProbeData.m_useParallaxCorrection = reflectionProbes[0]->GetUseParallaxCorrection();
+
+                    m_shaderResourceGroup->SetImage(reflectionCubeMapImageIndex, reflectionProbes[0]->GetCubeMapImage());
+                }
+
+                m_shaderResourceGroup->SetConstant(m_reflectionProbeDataIndex, reflectionProbeData);
+            }
+
+            m_shaderResourceGroup->Compile();
+            m_objectSrgNeedsUpdate = false;
+        }
+
+        bool MeshDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
+        {
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("general.forwardPassIBLSpecular"));
+            if (propertyIndex.IsValid())
+            {
+               return material->GetPropertyValue<bool>(propertyIndex);
+            }
+
+            return false;
+        }
     } // namespace Render
 } // namespace AZ

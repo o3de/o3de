@@ -1,0 +1,25 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "normal": {
+            "factor": 0.15000000596046449,
+            "flipY": true,
+            "textureMap": "TestData/Textures/test_dome_normal.tiff"
+        },
+        "uv": {
+            "center": [
+                0.25,
+                0.5
+            ],
+            "offsetU": 0.3737373948097229,
+            "offsetV": -0.4545454978942871,
+            "rotateDegrees": 110.0,
+            "scale": 2.0,
+            "tileU": 0.5,
+            "tileV": 1.5
+        }
+    }
+}

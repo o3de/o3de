@@ -121,6 +121,7 @@ namespace GraphCanvas
         void SetGrid(AZ::EntityId gridId) override;
 
         qreal GetCornerRadius() const override;
+        qreal GetBorderWidth() const override;
         ////        
 
     protected:

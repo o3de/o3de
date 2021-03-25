@@ -17,8 +17,10 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <Shape/PolygonPrismShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
@@ -28,6 +30,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_polygonPrismShapeComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_nonUniformScaleComponentDescriptor;
 
     public:
         void SetUp() override
@@ -39,12 +42,15 @@ namespace UnitTest
             m_transformComponentDescriptor->Reflect(&(*m_serializeContext));
             m_polygonPrismShapeComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(LmbrCentral::PolygonPrismShapeComponent::CreateDescriptor());
             m_polygonPrismShapeComponentDescriptor->Reflect(&(*m_serializeContext));
+            m_nonUniformScaleComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::NonUniformScaleComponent::CreateDescriptor());
+            m_nonUniformScaleComponentDescriptor->Reflect(&(*m_serializeContext));
         }
 
         void TearDown() override
         {
             m_transformComponentDescriptor.reset();
             m_polygonPrismShapeComponentDescriptor.reset();
+            m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
             AllocatorsFixture::TearDown();
         }
@@ -60,6 +66,24 @@ namespace UnitTest
         entity.Activate();
 
         AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
+
+        LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequests::SetHeight, height);
+        LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequests::SetVertices, vertices);
+    }
+
+    void CreatePolygonPrismWithNonUniformScale(
+        const AZ::Transform& transform, const float height, const AZStd::vector<AZ::Vector2>& vertices,
+        const AZ::Vector3& nonUniformScale, AZ::Entity& entity)
+    {
+        entity.CreateComponent<LmbrCentral::PolygonPrismShapeComponent>();
+        entity.CreateComponent<AzFramework::TransformComponent>();
+        entity.CreateComponent<AzFramework::NonUniformScaleComponent>();
+
+        entity.Init();
+        entity.Activate();
+
+        AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(entity.GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
 
         LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequests::SetHeight, height);
         LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequests::SetVertices, vertices);
@@ -300,6 +324,61 @@ namespace UnitTest
         }
     }
 
+    TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_IsPointInsideWithNonUniformScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationY(AZ::DegToRad(45.0f)), AZ::Vector3(3.0f, 4.0f, 5.0f));
+        transform.MultiplyByScale(AZ::Vector3(1.5f, 1.5f, 1.5f));
+        const float height = 1.2f;
+        const AZ::Vector3 nonUniformScale(2.0f, 1.2f, 0.5f);
+        const AZStd::vector<AZ::Vector2> vertices =
+        {
+            AZ::Vector2(1.0f, -1.0f),
+            AZ::Vector2(2.0f, 0.0f),
+            AZ::Vector2(-2.0f, 1.0f),
+            AZ::Vector2(-1.0f, -1.0f)
+        };
+
+        CreatePolygonPrismWithNonUniformScale(transform, height, vertices, nonUniformScale, entity);
+
+        // several points which should be outside the prism
+        auto outsidePoints = {
+            AZ::Vector3(4.0f, 5.0f, 4.5f),
+            AZ::Vector3(1.0f, 1.0f, 7.5f),
+            AZ::Vector3(7.5f, 3.0f, 2.5f),
+            AZ::Vector3(-1.0, 6.0f, 11.0f),
+            AZ::Vector3(2.0f, 4.0f, 5.5f),
+            AZ::Vector3(4.0f, 3.5f, 5.5f)
+        };
+
+        // several points which should be just inside the prism
+        auto insidePoints = {
+            AZ::Vector3(0.0f, 5.5f, 9.0f),
+            AZ::Vector3(1.5f, 2.5f, 7.5f),
+            AZ::Vector3(5.5f, 2.5f, 3.75f),
+            AZ::Vector3(7.75f, 4.0f, 1.5f),
+            AZ::Vector3(2.5f, 3.0f, 5.6f),
+            AZ::Vector3(4.0f, 4.5f, 5.25f)
+        };
+
+        for (const auto& point : outsidePoints)
+        {
+            bool inside = true;
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(),
+                &LmbrCentral::ShapeComponentRequests::IsPointInside, point);
+            EXPECT_FALSE(inside);
+        }
+
+        for (const auto& point : insidePoints)
+        {
+            bool inside = false;
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(),
+                &LmbrCentral::ShapeComponentRequests::IsPointInside, point);
+            EXPECT_TRUE(inside);
+        }
+    }
+
     TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_DistanceFromPoint)
     {
         AZ::Entity entity;
@@ -360,6 +439,74 @@ namespace UnitTest
             float distance;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(), &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(5.0f, 13.0f, 14.0f));
             EXPECT_TRUE(AZ::IsCloseMag(distance, 5.0f));
+        }
+    }
+
+    TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_DistanceFromPointWithNonUniformScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationY(AZ::DegToRad(45.0f)), AZ::Vector3(3.0f, 4.0f, 5.0f));
+        transform.MultiplyByScale(AZ::Vector3(1.5f, 1.5f, 1.5f));
+        const float height = 1.2f;
+        const AZ::Vector3 nonUniformScale(2.0f, 1.2f, 0.5f);
+        const AZStd::vector<AZ::Vector2> vertices =
+        {
+            AZ::Vector2(1.0f, -1.0f),
+            AZ::Vector2(2.0f, 0.0f),
+            AZ::Vector2(-2.0f, 1.0f),
+            AZ::Vector2(-1.0f, -1.0f)
+        };
+
+        CreatePolygonPrismWithNonUniformScale(transform, height, vertices, nonUniformScale, entity);
+
+        float distance = AZ::Constants::FloatMax;
+
+        // a point which should be closest to one of the rectangular faces of the prism
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(4.0f, 5.0f, 4.5f));
+        EXPECT_NEAR(distance, 0.2562f, 1e-3f);
+
+        // a point which should be closest to one of the edges connecting the two polygonal faces
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(1.0f, 1.0f, 7.5f));
+        EXPECT_NEAR(distance, 1.2137f, 1e-3f);
+
+        // a point which should be closest to an edge of the top polygonal face
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(7.5f, 3.0f, 2.5f));
+        EXPECT_NEAR(distance, 0.6041f, 1e-3f);
+
+        // a point which should be closest to a corner of the top polygonal face
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(-1.0, 6.0f, 11.0f));
+        EXPECT_NEAR(distance, 1.2048f, 1e-3f);
+
+        // a point which should be closest to the bottom polygonal face
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(2.0f, 4.0f, 5.5f));
+        EXPECT_NEAR(distance, 0.3536f, 1e-3f);
+
+        // a point which should be closest to the top polygonal face
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+            &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(4.0f, 3.5f, 5.5f));
+        EXPECT_NEAR(distance, 0.1607f, 1e-3f);
+
+        // several points which should be just inside the prism
+        auto insidePoints = {
+            AZ::Vector3(0.0f, 5.5f, 9.0f),
+            AZ::Vector3(1.5f, 2.5f, 7.5f),
+            AZ::Vector3(5.5f, 2.5f, 3.75f),
+            AZ::Vector3(7.75f, 4.0f, 1.5f),
+            AZ::Vector3(2.5f, 3.0f, 5.6f),
+            AZ::Vector3(4.0f, 4.5f, 5.25f)
+        };
+
+        for (const auto& point : insidePoints)
+        {
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, entity.GetId(),
+                &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(point));
+            EXPECT_NEAR(distance, 0.0f, 1e-3f);
         }
     }
 
@@ -517,6 +664,61 @@ namespace UnitTest
         EXPECT_FALSE(rayHit);
     }
 
+    TEST_F(PolygonPrismShapeTest, GetRayIntersectWithNonUniformScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationY(AZ::DegToRad(60.0f)), AZ::Vector3(1.0f, 2.5f, -1.0f));
+        transform.MultiplyByScale(AZ::Vector3(2.0f, 2.0f, 2.0f));
+        const float height = 1.5f;
+        const AZ::Vector3 nonUniformScale(0.5f, 1.5f, 2.0f);
+
+        const AZStd::vector<AZ::Vector2> vertices = {
+            AZ::Vector2(0.0f, -2.0f),
+            AZ::Vector2(2.0f, 0.0f),
+            AZ::Vector2(-1.0f, 2.0f)
+        };
+
+        CreatePolygonPrismWithNonUniformScale(transform, height, vertices, nonUniformScale, entity);
+
+        // should hit one of the rectangular faces
+        bool rayHit = false;
+        AZ::Vector3 rayOrigin(3.0f, 3.0f, -3.0f);
+        AZ::Vector3 rayDirection = AZ::Vector3::CreateAxisZ();
+        float distance;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
+            rayOrigin, rayDirection, distance);
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 1.1340f, 1e-3f);
+
+        // should hit a different rectangular face
+        rayHit = false;
+        rayOrigin = AZ::Vector3(2.0f, 2.0f, -3.0f);
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
+            rayOrigin, rayDirection, distance);
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 0.4604f, 1e-3f);
+
+        // should hit one of the triangular end faces
+        rayHit = false;
+        rayOrigin = AZ::Vector3(1.0f, 1.0f, -3.0f);
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
+            rayOrigin, rayDirection, distance);
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 2.0f, 1e-3f);
+
+        // should miss the prism
+        rayHit = true;
+        rayOrigin = AZ::Vector3(0.0f, 0.0f, -3.0f);
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
+            rayOrigin, rayDirection, distance);
+        EXPECT_FALSE(rayHit);
+    }
+
     TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_GetAabb1)
     {
         AZ::Entity entity;
@@ -588,6 +790,33 @@ namespace UnitTest
         EXPECT_TRUE(aabb.GetMax().IsClose(AZ::Vector3(11.0f, 21.0f, 44.5f)));
     }
 
+    TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_GetAabbWithNonUniformScale)
+    {
+        AZ::Entity entity;
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)), AZ::Vector3(2.0f, -5.0f, 3.0f));
+        transform.MultiplyByScale(AZ::Vector3(2.0f, 2.0f, 2.0f));
+        const float height = 1.2f;
+        const AZ::Vector3 nonUniformScale(1.5f, 0.8f, 2.0f);
+        const AZStd::vector<AZ::Vector2> vertices =
+        {
+            AZ::Vector2(-2.0f, -2.0f),
+            AZ::Vector2(1.0f, 0.0f),
+            AZ::Vector2(2.0f, 3.0f),
+            AZ::Vector2(-1.0f, 4.0f),
+            AZ::Vector2(-3.0f, 2.0f)
+        };
+
+        CreatePolygonPrismWithNonUniformScale(transform, height, vertices, nonUniformScale, entity);
+
+        AZ::Aabb aabb;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            aabb, entity.GetId(), &LmbrCentral::ShapeComponentRequests::GetEncompassingAabb);
+
+        EXPECT_THAT(aabb.GetMin(), IsClose(AZ::Vector3(-7.0f, -10.171281f, 1.4f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(AZ::Vector3(8.0f, 0.542563f, 10.356922f)));
+    }
+
     TEST_F(PolygonPrismShapeTest, CopyingPolygonPrismDoesNotAssertInEbusSystem)
     {
         AZ::EntityId testEntityId{ 42 };
@@ -617,7 +846,8 @@ namespace UnitTest
             AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f)};
 
         // when
-        LmbrCentral::GeneratePolygonPrismMesh(vertices, 1.0f, polygonPrismMesh);
+        const AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        LmbrCentral::GeneratePolygonPrismMesh(vertices, 1.0f, nonUniformScale, polygonPrismMesh);
 
         // then
         EXPECT_TRUE(polygonPrismMesh.m_triangles.empty());

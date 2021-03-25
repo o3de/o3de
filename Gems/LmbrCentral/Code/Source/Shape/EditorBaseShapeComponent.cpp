@@ -50,8 +50,8 @@ namespace LmbrCentral
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInEditor, "Visible", "Always display this shape in the editor viewport")
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInGameView, "Game View", "Display the shape while in Game View")
-                // ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_displayFilled, "Filled", "Display the shape as either filled or wireframe") // hidden before selection is resolved
-                //   ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBaseShapeComponent::OnDisplayFilledChanged)
+                ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_displayFilled, "Filled", "Display the shape as either filled or wireframe") // hidden before selection is resolved
+                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBaseShapeComponent::OnDisplayFilledChanged)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBaseShapeComponent::m_shapeColor, "Shape Color", "The color to use when rendering the faces of the shape object")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBaseShapeComponent::OnShapeColorChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorBaseShapeComponent::GetShapeColorIsEditable)

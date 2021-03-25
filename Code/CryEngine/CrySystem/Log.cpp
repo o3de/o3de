@@ -21,7 +21,6 @@
 #include <IConsole.h>
 #include <ISystem.h>
 #include <IStreamEngine.h>
-#include <INetwork.h>  // EvenBalance - M. Quinn
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
 #include <Pak/CryPakUtils.h>

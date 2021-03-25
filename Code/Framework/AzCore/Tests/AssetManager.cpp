@@ -808,6 +808,13 @@ namespace UnitTest
         EXPECT_NE(assets.find(MyAsset1Id), assets.end());
 
         AssetManager::Instance().ResumeAssetRelease();
+        
+        // Sleep to allow for the assets to release
+        int retryCount = 100;
+        while ((--retryCount>0) && assets.size() > 0)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
+        }
 
         EXPECT_EQ(assets.size(), 0);
     }

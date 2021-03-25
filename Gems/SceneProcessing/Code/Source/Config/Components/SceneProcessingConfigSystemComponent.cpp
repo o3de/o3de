@@ -39,12 +39,12 @@ namespace AZ
             ActivateSceneModule(SceneProcessing::s_fbxSceneBuilderModule);
             
             // Defaults in case there's no config setup in the Project Configurator.
-            m_softNames.push_back(aznew NodeSoftNameSetting("_lod1", PatternMatcher::MatchApproach::PostFix, "LODMesh1", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_lod2", PatternMatcher::MatchApproach::PostFix, "LODMesh2", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_lod3", PatternMatcher::MatchApproach::PostFix, "LODMesh3", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_lod4", PatternMatcher::MatchApproach::PostFix, "LODMesh4", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_lod5", PatternMatcher::MatchApproach::PostFix, "LODMesh5", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_phys", PatternMatcher::MatchApproach::PostFix, "PhysicsMesh", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]1(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]2(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh2", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]3(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh3", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]4(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh4", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]5(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh5", true));
+            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Pp][Hh][Yy][Ss](_optimized)?$", PatternMatcher::MatchApproach::Regex, "PhysicsMesh", true));
             m_softNames.push_back(aznew NodeSoftNameSetting("_ignore", PatternMatcher::MatchApproach::PostFix, "Ignore", false));
             // If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData. This will
             // cause only animations to be exported from the .fbx file even if there's other data available.

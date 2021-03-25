@@ -26,6 +26,7 @@ namespace AzToolsFramework
             inline static const char* PatchesName = "Patches";
             inline static const char* SourceName = "Source";
             inline static const char* LinkIdName = "LinkId";
+            inline static const char* EntitiesName = "Entities";
 
             /**
             * Find Prefab value from given parent value and target value's name.

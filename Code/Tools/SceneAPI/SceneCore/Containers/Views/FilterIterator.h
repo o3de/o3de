@@ -85,7 +85,7 @@ namespace AZ
                     RootIterator& operator++();
                     RootIterator operator++(int);
 
-                    const Iterator& GetBaseIterator();
+                    const Iterator& GetBaseIterator() const;
 
                 protected:
                     // Pseudo default constructor.

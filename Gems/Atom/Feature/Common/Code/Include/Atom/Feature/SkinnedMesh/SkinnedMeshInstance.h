@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
-#include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+#include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace Render
     {
+        struct MorphTargetInstanceMetaData;
+
         //! SkinnedMeshInstance contains the data that is needed to represent the output from skinning a single instance of a skinned mesh.
         //! It does not contain the actual skinned vertex data, but rather views into the buffers that do contain the data, which are owned by the SkinnedMeshOutputStreamManager
         class SkinnedMeshInstance
@@ -41,7 +43,7 @@ namespace AZ
 
             //! Offsets into the output stream buffer to a location that contains accumulated morph target deltas from the morph pass. One offset per-lod.
             //! Set to MorphTargetConstants::s_invalidDeltaOffset if there are no morph targets for the lod
-            AZStd::vector<uint32_t> m_accumulatedMorphTargetDeltaOffsetsInBytes;
+            AZStd::vector<MorphTargetInstanceMetaData> m_morphTargetInstanceMetaData;
 
             //! Typically, when a SkinnedMeshInstance goes out of scope and the memory is freed, the SkinnedMeshOutputStreamManager will signal an event indicating more memory is available
             //! If the creation of a SkinnedMeshInstance fails part way through after some memory has already been allocated,

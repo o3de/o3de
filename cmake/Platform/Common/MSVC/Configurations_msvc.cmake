@@ -49,9 +49,8 @@ endif()
 
 ly_append_configurations_options(
     DEFINES
-        _ENABLE_EXTENDED_ALIGNED_STORAGE #Enables support for extended alignment for the MSVC std::aligned_storage class
+        _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
     COMPILATION
-        /nologo         # Suppress Copyright and version number message
         /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions
         /MP             # Multicore compilation in Visual Studio
@@ -140,7 +139,7 @@ ly_append_configurations_options(
         /INCREMENTAL:NO
 )
 
-set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
+ly_set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     ly_append_configurations_options(
         COMPILATION_DEBUG
@@ -167,13 +166,13 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio 15")
 endif()
 
 # Configure system includes
-set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
+ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
     /experimental:external # Turns on "external" headers feature for MSVC compilers
     /external:W0 # Set warning level in external headers to 0. This is used to suppress warnings 3rdParty libraries which uses the "system_includes" option in their json configuration
     /wd4193 # Temporary workaround for the /experiment:external feature generating warning C4193: #pragma warning(pop): no matching '#pragma warning(push)'
 )
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX /external:I)
+    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX /external:I)
 endif()
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)

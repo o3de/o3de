@@ -134,8 +134,8 @@ namespace EMotionFX
                 bitangent = bitangents[v];
 
                 const uint32 orgVertex = orgVerts[v]; // get the original vertex number
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
-                for (uint32 i = 0; i < numInfluences; ++i)
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     const SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                     MCore::Skin(mBoneMatrices[influence->GetBoneNr()], &vtxPos, &normal, &tangent, &bitangent, &newPos, &newNormal, &newTangent, &newBitangent, influence->GetWeight());
@@ -163,8 +163,8 @@ namespace EMotionFX
                 tangent = tangents[v];
 
                 const uint32 orgVertex = orgVerts[v]; // get the original vertex number
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
-                for (uint32 i = 0; i < numInfluences; ++i)
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     const SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                     MCore::Skin(mBoneMatrices[influence->GetBoneNr()], &vtxPos, &normal, &tangent, &newPos, &newNormal, &newTangent, influence->GetWeight());
@@ -190,8 +190,8 @@ namespace EMotionFX
 
                 // skin the vertex
                 const uint32 orgVertex = orgVerts[v]; // get the original vertex number
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
-                for (uint32 i = 0; i < numInfluences; ++i)
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
+                for (size_t i = 0; i < numInfluences; ++i)
                 {
                     const SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                     MCore::Skin(mBoneMatrices[influence->GetBoneNr()], &vtxPos, &normal, &newPos, &newNormal, influence->GetWeight());
@@ -238,8 +238,8 @@ namespace EMotionFX
             // if the bone of that influence already is in the array with used bones
             const AZ::Matrix3x4 mat = AZ::Matrix3x4::CreateIdentity();
 
-            const uint32 numInfluences = skinningLayer->GetNumInfluences(i);
-            for (uint32 a = 0; a < numInfluences; ++a)
+            const size_t numInfluences = skinningLayer->GetNumInfluences(i);
+            for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
 

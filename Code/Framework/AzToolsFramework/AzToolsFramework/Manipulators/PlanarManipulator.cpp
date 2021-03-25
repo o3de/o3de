@@ -22,13 +22,13 @@
 namespace AzToolsFramework
 {
     PlanarManipulator::StartInternal PlanarManipulator::CalculateManipulationDataStart(
-        const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform,
-        const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction,
-        const float intersectionDistance)
+        const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+        const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
+        const ViewportInteraction::MouseInteraction& interaction, const float intersectionDistance)
     {
         const ManipulatorInteraction manipulatorInteraction =
             BuildManipulatorInteraction(
-                worldFromLocal, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
+                worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
 
         const AZ::Vector3 normal = TransformDirectionNoScaling(localTransform, fixed.m_normal);
         const AZ::Vector3 axis1 = TransformDirectionNoScaling(localTransform, fixed.m_axis1);
@@ -61,12 +61,12 @@ namespace AzToolsFramework
 
     PlanarManipulator::Action PlanarManipulator::CalculateManipulationDataAction(
         const Fixed& fixed, const StartInternal& startInternal, const AZ::Transform& worldFromLocal,
-        const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
+        const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
         const ViewportInteraction::MouseInteraction& interaction)
     {
         const ManipulatorInteraction manipulatorInteraction =
             BuildManipulatorInteraction(
-                worldFromLocal, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
+                worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
 
         const AZ::Vector3 normal = TransformDirectionNoScaling(localTransform, fixed.m_normal);
 
@@ -85,10 +85,11 @@ namespace AzToolsFramework
         const AZ::Vector3 axis1 = TransformDirectionNoScaling(localTransform, fixed.m_axis1);
         const AZ::Vector3 axis2 = TransformDirectionNoScaling(localTransform, fixed.m_axis2);
 
-        const AZ::Vector3 hitDelta = (localHitPosition - startInternal.m_localHitPosition);
+        const AZ::Vector3 hitDelta = (localHitPosition - startInternal.m_localHitPosition) / nonUniformScale;
         const AZ::Vector3 unsnappedOffset = axis1.Dot(hitDelta) * axis1 + axis2.Dot(hitDelta) * axis2;
 
         const float scaleRecip = manipulatorInteraction.m_scaleReciprocal;
+        const AZ::Vector3 nonUniformScaleRecip = manipulatorInteraction.m_nonUniformScaleReciprocal;
         const float gridSize = gridSnapAction.m_gridSnapParams.m_gridSize;
         const bool snapping = gridSnapAction.m_gridSnapParams.m_gridSnap;
 
@@ -99,8 +100,8 @@ namespace AzToolsFramework
         action.m_start.m_localHitPosition = startInternal.m_localHitPosition;
         action.m_current.m_localOffset = snapping
             ? unsnappedOffset +
-                CalculateSnappedOffset(unsnappedOffset, axis1, gridSize * scaleRecip) +
-                CalculateSnappedOffset(unsnappedOffset, axis2, gridSize * scaleRecip)
+                CalculateSnappedOffset(unsnappedOffset, axis1, gridSize * scaleRecip * nonUniformScaleRecip.Dot(axis1)) +
+                CalculateSnappedOffset(unsnappedOffset, axis2, gridSize * scaleRecip * nonUniformScaleRecip.Dot(axis2))
             : unsnappedOffset;
 
         // record what modifier keys are held during this action
@@ -115,8 +116,8 @@ namespace AzToolsFramework
     }
 
     PlanarManipulator::PlanarManipulator(const AZ::Transform& worldFromLocal)
-        : m_worldFromLocal(worldFromLocal)
     {
+        SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
     }
 
@@ -138,19 +139,19 @@ namespace AzToolsFramework
     void PlanarManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(m_worldFromLocal);
+        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
 
         const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
         m_startInternal = CalculateManipulationDataStart(
-            m_fixed, worldFromLocalUniformScale, TransformNormalizedScale(m_localTransform),
+            m_fixed, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
             GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt()),
             interaction, rayIntersectionDistance);
 
         if (m_onLeftMouseDownCallback)
         {
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, worldFromLocalUniformScale, TransformNormalizedScale(m_localTransform),
+                m_fixed, m_startInternal, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
                 GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt()), interaction));
         }
     }
@@ -162,8 +163,8 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onMouseMoveCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, TransformUniformScale(m_worldFromLocal),
-                TransformNormalizedScale(m_localTransform),
+                m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
+                TransformNormalizedScale(GetLocalTransform()),
                 GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt()), interaction));
         }
     }
@@ -175,8 +176,8 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, TransformUniformScale(m_worldFromLocal),
-                TransformNormalizedScale(m_localTransform),
+                m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
+                TransformNormalizedScale(GetLocalTransform()),
                 GridSnapAction(gridSnapParams, interaction.m_keyboardModifiers.Alt()), interaction));
         }
     }
@@ -193,27 +194,29 @@ namespace AzToolsFramework
             {
                 const GridSnapParameters gridSnapParams = GridSnapSettings(mouseInteraction.m_interactionId.m_viewportId);
                 const auto action = CalculateManipulationDataAction(
-                    m_fixed, m_startInternal, TransformUniformScale(m_worldFromLocal),
-                    TransformNormalizedScale(m_localTransform),
+                    m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
+                    TransformNormalizedScale(GetLocalTransform()),
                     GridSnapAction(gridSnapParams, mouseInteraction.m_keyboardModifiers.Alt()), mouseInteraction);
 
                 // display the exact hit (ray intersection) of the mouse pick on the manipulator
                 DrawTransformAxes(
-                    debugDisplay, TransformUniformScale(m_worldFromLocal) *
+                    debugDisplay, TransformUniformScale(GetSpace()) *
                     AZ::Transform::CreateTranslation(
-                        action.m_start.m_localHitPosition + action.m_current.m_localOffset));
+                        action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localOffset));
             }
 
-            const AZ::Transform combined = m_worldFromLocal * m_localTransform;
+            AZ::Transform combined = GetLocalTransform();
+            combined.SetTranslation(GetNonUniformScale() * combined.GetTranslation());
+            combined = GetSpace() * combined;
 
             DrawTransformAxes(debugDisplay, combined);
 
             DrawAxis(
                 debugDisplay, combined.GetTranslation(),
-                TransformDirectionNoScaling(m_localTransform, m_fixed.m_axis1));
+                TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis1));
             DrawAxis(
                 debugDisplay, combined.GetTranslation(),
-                TransformDirectionNoScaling(m_localTransform, m_fixed.m_axis2));
+                TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis2));
         }
 
         for (auto& view : m_manipulatorViews)
@@ -221,7 +224,7 @@ namespace AzToolsFramework
             view->Draw(
                 GetManipulatorManagerId(), managerState,
                 GetManipulatorId(), {
-                    m_worldFromLocal * m_localTransform,
+                    ApplySpace(GetLocalTransform()), GetNonUniformScale(),
                     AZ::Vector3::CreateZero(), MouseOver()
                 },
                 debugDisplay, cameraState, mouseInteraction);
@@ -233,27 +236,6 @@ namespace AzToolsFramework
         m_fixed.m_axis1 = axis1;
         m_fixed.m_axis2 = axis2;
         m_fixed.m_normal = axis1.Cross(axis2);
-    }
-
-    void PlanarManipulator::SetSpace(const AZ::Transform& worldFromLocal)
-    {
-        m_worldFromLocal = worldFromLocal;
-    }
-
-    void PlanarManipulator::SetLocalTransform(const AZ::Transform& localTransform)
-    {
-        m_localTransform = localTransform;
-    }
-
-    void PlanarManipulator::SetLocalPosition(const AZ::Vector3& localPosition)
-    {
-        m_localTransform.SetTranslation(localPosition);
-    }
-
-    void PlanarManipulator::SetLocalOrientation(const AZ::Quaternion& localOrientation)
-    {
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
     void PlanarManipulator::InvalidateImpl()

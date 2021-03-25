@@ -58,6 +58,8 @@ namespace LmbrCentral
     {
         EntityDebugDisplayComponent::Activate();
         ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+        m_nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
     }
 
     void BoxShapeDebugDisplayComponent::Deactivate()

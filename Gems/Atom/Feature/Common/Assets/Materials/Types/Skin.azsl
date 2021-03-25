@@ -1,0 +1,336 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+#include "Skin_Common.azsli"
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_DETAIL_MAPS()
+
+option bool o_wrinkleLayers_enabled;
+[[range(0,4)]]
+option uint o_wrinkleLayers_count = 0;
+option bool o_wrinkleLayers_baseColor_enabled;
+option bool o_wrinkleLayers_baseColor_useTexture1;
+option bool o_wrinkleLayers_baseColor_useTexture2;
+option bool o_wrinkleLayers_baseColor_useTexture3;
+option bool o_wrinkleLayers_baseColor_useTexture4;
+
+option bool o_wrinkleLayers_normal_enabled;
+option bool o_wrinkleLayers_normal_useTexture1;
+option bool o_wrinkleLayers_normal_useTexture2;
+option bool o_wrinkleLayers_normal_useTexture3;
+option bool o_wrinkleLayers_normal_useTexture4;
+
+//! Enables a debug mode that colors the different blend weights coming from the vertex color stream.
+option bool o_wrinkleLayers_showBlendMaskValues; 
+
+// Indicates whether the vertex input struct's "m_optional_blendMask" is bound. If false, it is not safe to read from m_optional_blendMask.
+// This option gets set automatically by the system at runtime; there is a soft naming convention that associates it with m_optional_blendMask.
+// (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+// [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+option bool o_blendMask_isBound;
+
+#include "MaterialInputs/SubsurfaceInput.azsli"
+#include "MaterialInputs/TransmissionInput.azsli"
+
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0_unwrapped : UV0;
+    float2 m_uv1_tiled : UV1;
+    
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
+    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+    float4 m_optional_blendMask : COLOR0;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_DepthLessEqual to compile
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+    float2 m_detailUv : UV3;
+    
+    float4 m_blendMask : UV8;
+};
+
+#include <Atom/Features/PBR/AlphaUtils.azsli> // TODO: Remove this after OpacityMode is removed from LightingModel
+#include <Atom/Features/PBR/LightingModel.azsli>
+
+VSOutput SkinVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+ 
+    // UV0 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
+    OUT.m_uv[0] = IN.m_uv0_unwrapped;
+
+    // UV1 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
+    // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
+    // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
+    // could consider adding the main layer UV transform back in.
+    OUT.m_uv[1] = IN.m_uv1_tiled;
+    
+    // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
+    // either UV0 or UV1, in either case we apply the transform.
+    OUT.m_detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? IN.m_uv0_unwrapped : IN.m_uv1_tiled;
+    OUT.m_detailUv = mul(MaterialSrg::m_detailUvMatrix, float3(OUT.m_detailUv, 1.0)).xy;
+    
+    if(o_blendMask_isBound)
+    {
+        OUT.m_blendMask = IN.m_optional_blendMask;
+    }
+    else
+    {
+        OUT.m_blendMask = float4(0,1,0,0);
+    }
+
+    PbrVsHelper(IN, OUT, worldPosition, false);
+
+    return OUT;
+}
+
+float3 ApplyBaseColorWrinkleMap(bool shouldApply, float3 baseColor, Texture2D map, sampler mapSampler, float2 uv, float factor)
+{
+    if (shouldApply)
+    {
+        float3 sampledColor = map.Sample(mapSampler, uv).rgb;
+        sampledColor = TransformColor(sampledColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        return lerp(baseColor, sampledColor, factor);
+    }
+    else
+    {
+        return baseColor;
+    }
+}
+
+float2 ApplyNormalWrinkleMap(bool shouldApply, float2 baseNormalSample, Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float factor)
+{
+    if (shouldApply)
+    {
+        float2 sampledValue = SampleNormal(map, mapSampler, uv, flipX, flipY);
+        return lerp(baseNormalSample, sampledValue, factor);
+    }
+    else
+    {
+        return baseNormalSample;
+    }
+}
+
+PbrLightingOutput SkinPS_Common(VSOutput IN)
+{
+    bool isFrontFace = true;
+    float3x3 uvMatrix = CreateIdentity3x3();
+
+    // ------- Tangents & Bitangets -------
+
+    // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
+
+    if ( (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0) || 
+         (o_detail_normal_useTexture && MaterialSrg::m_detail_allMapsUvIndex != 0))
+    {
+        // Generate the tangent/bitangent for UV[1+]
+        const int startIndex = 1;
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, startIndex);
+    }
+    
+    // ------- Detail Layer Setup -------
+    
+    // When the detail maps and the detail blend mask are on the same UV, they both use the transformed detail UVs because they are 'attached' to each other
+    const float2 detailBlendMaskUv = (MaterialSrg::m_detail_blendMask_uvIndex == MaterialSrg::m_detail_allMapsUvIndex) ?
+        IN.m_detailUv : 
+        IN.m_uv[MaterialSrg::m_detail_blendMask_uvIndex];
+        
+    const float detailLayerBlendFactor = GetDetailLayerBlendFactor(
+        MaterialSrg::m_detail_blendMask_texture,
+        MaterialSrg::m_sampler,
+        detailBlendMaskUv,
+        o_detail_blendMask_useTexture,
+        MaterialSrg::m_detail_blendFactor);
+
+    // ------- Normal -------
+    
+    float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
+    float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
+    
+    // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
+    // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
+    
+    float2 normalMapSample = float2(0.5,0.5);
+    if(o_normal_useTexture)
+    {
+        normalMapSample = SampleNormal(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY);
+    }
+    if(o_wrinkleLayers_enabled && o_blendMask_isBound && o_wrinkleLayers_normal_enabled)
+    {
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture1, normalMapSample, MaterialSrg::m_wrinkle_normal_texture1, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.r);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture2, normalMapSample, MaterialSrg::m_wrinkle_normal_texture2, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.g);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture3, normalMapSample, MaterialSrg::m_wrinkle_normal_texture3, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.b);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.a);
+    }
+
+    float3 normalWS;
+    if(o_detail_normal_useTexture)
+    {
+        float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, MaterialSrg::m_normalFactor);
+    
+        bool applyOverlay = true;
+        normalWS = ApplyNormalMapOverlayWS(applyOverlay, IN.m_normal, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
+            normalTS, MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, IN.m_detailUv, detailLayerNormalFactor, 
+            MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, MaterialSrg::m_detailUvMatrix);
+    }
+    else
+    {
+        normalWS = GetWorldSpaceNormal(normalMapSample, IN.m_normal, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
+            uvMatrix, MaterialSrg::m_normalFactor);
+    }
+
+
+    //--------------------- Base Color ----------------------
+        
+    float2 baseColorUv = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
+    float detailLayerBaseColorFactor = MaterialSrg::m_detail_baseColor_factor * detailLayerBlendFactor;
+    
+    float3 baseColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor, o_baseColor_useTexture);
+    
+    bool useSampledBaseColor = o_baseColor_useTexture;
+    if(o_wrinkleLayers_enabled && o_blendMask_isBound && o_wrinkleLayers_baseColor_enabled)
+    {
+        // If any of the wrinkle maps are applied, we will use the Base Color blend settings to apply the MaterialSrg::m_baseColor tint to the wrinkle maps,
+        // even if the main base color map is not used.
+        useSampledBaseColor = useSampledBaseColor || 
+            o_wrinkleLayers_baseColor_useTexture1 || 
+            o_wrinkleLayers_baseColor_useTexture2 || 
+            o_wrinkleLayers_baseColor_useTexture3 || 
+            o_wrinkleLayers_baseColor_useTexture4;
+
+        // There is a particular case where the MaterialSrg::m_baseColor could otherwise be blended twice, making it look too dark,
+        // we reset the initial baseColor back to white to make sure it will only be applied once.
+        if(useSampledBaseColor && !o_baseColor_useTexture)
+        {
+            baseColor = float3(1,1,1);
+        }
+
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture1, baseColor, MaterialSrg::m_wrinkle_baseColor_texture1, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.r);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture2, baseColor, MaterialSrg::m_wrinkle_baseColor_texture2, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.g);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture3, baseColor, MaterialSrg::m_wrinkle_baseColor_texture3, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.b);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture4, baseColor, MaterialSrg::m_wrinkle_baseColor_texture4, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.a);
+    
+    }
+    
+    baseColor = BlendBaseColor(baseColor, MaterialSrg::m_baseColor, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, useSampledBaseColor);
+    
+    baseColor = ApplyTextureOverlay(o_detail_baseColor_useTexture, baseColor, MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, IN.m_detailUv, detailLayerBaseColorFactor);
+
+
+    // ------- Roughness -------
+
+    float2 roughnessUv = IN.m_uv[MaterialSrg::m_roughnessMapUvIndex];
+    float roughness = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
+                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+
+    // ------- Specular -------
+
+    float2 specularUv = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+
+    // ------- Subsurface -------
+
+    float2 subsurfaceUv = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
+
+    // ------- Transmission -------
+
+    float2 transmissionUv = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
+
+    // ------- Lighting Calculation -------
+
+    if(o_wrinkleLayers_enabled && o_wrinkleLayers_showBlendMaskValues && o_blendMask_isBound)
+    {
+        // Overlay debug colors to highlight the different blend weights coming from the vertex color stream.
+        if(o_wrinkleLayers_count > 0) { baseColor = lerp(baseColor, float3(1,0,0), IN.m_blendMask.r); }
+        if(o_wrinkleLayers_count > 1) { baseColor = lerp(baseColor, float3(0,1,0), IN.m_blendMask.g); }
+        if(o_wrinkleLayers_count > 2) { baseColor = lerp(baseColor, float3(0,0,1), IN.m_blendMask.b); }
+        if(o_wrinkleLayers_count > 3) { baseColor = lerp(baseColor, float3(1,1,1), IN.m_blendMask.a); }
+    }
+
+    float metallic = 0;
+    float3 emissive = float3(0,0,0);
+    float occlusion = 1;
+    float2 anisotropy = float2(0,0);
+    float clearCoatFactor = 0.0;
+    float clearCoatRoughness = 0.0;
+    float3 clearCoatNormal = float3(0.0, 0.0, 0.0);
+    float alpha = 1;
+
+    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
+        normalWS, tangents[0], bitangents[0], anisotropy,
+        emissive, occlusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
+        
+    // ------- Preparing output -------
+
+    // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
+    uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
+    lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
+    lightingOutput.m_scatterDistance = MaterialSrg::m_scatterDistance;
+
+    return lightingOutput;
+}
+
+[earlydepthstencil]
+ForwardPassOutput SkinPS(VSOutput IN)
+{
+    ForwardPassOutput OUT;
+
+    PbrLightingOutput lightingOutput = SkinPS_Common(IN);
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
+    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
+
+    return OUT;
+}

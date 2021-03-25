@@ -107,7 +107,7 @@ namespace UnitTest
         AZ::Vector3 movementAlongAxis = AZ::Vector3::CreateZero();
         const AZ::Vector3 expectedMovementAlongAxis = AZ::Vector3(-5.0f, 0.0f, 0.0f);
 
-        const AZ::Vector3 initialManipulatorPosition = m_linearManipulator->GetPosition();
+        const AZ::Vector3 initialManipulatorPosition = m_linearManipulator->GetLocalPosition();
         m_linearManipulator->InstallMouseMoveCallback(
             [&movementAlongAxis, this](const AzToolsFramework::LinearManipulator::Action& action)
         {
@@ -141,6 +141,6 @@ namespace UnitTest
 
         // expect the manipulator movement along the axis to match the mouse movement along the axis
         EXPECT_EQ(movementAlongAxis, expectedMovementAlongAxis);
-        EXPECT_EQ(m_linearManipulator->GetPosition(), initialManipulatorPosition + expectedMovementAlongAxis);
+        EXPECT_EQ(m_linearManipulator->GetLocalPosition(), initialManipulatorPosition + expectedMovementAlongAxis);
     }
 } // namespace UnitTest

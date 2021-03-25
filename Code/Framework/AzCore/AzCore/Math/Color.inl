@@ -13,19 +13,28 @@
 
 namespace AZ
 {
+
+    AZ_MATH_INLINE Color::Color(const Vector2& source)
+    {
+        m_color = Vector4(source);
+    }
+
+    AZ_MATH_INLINE Color::Color(const Vector3& source)
+    {
+        m_color = Vector4(source);
+    }
+
     AZ_MATH_INLINE Color::Color(float rgba)
         : m_color(rgba)
     {
         ;
     }
 
-
     AZ_MATH_INLINE Color::Color(float r, float g, float b, float a)
         : m_color(r, g, b, a)
     {
         ;
     }
-
 
     AZ_MATH_INLINE Color::Color(u8 r, u8 g, u8 b, u8 a)
     {

@@ -171,7 +171,7 @@ namespace GraphCanvas
         virtual void CachePixmap(const AZ::Crc32& keyName, QPixmap* pixmap) = 0;
 
         // Layering
-        virtual int FindLayerZValue(AZStd::string_view layer) = 0;
+        virtual int FindLayer(AZStd::string_view layer) = 0;
 
         // Size Stepping
         virtual int GetSteppedWidth(int gridSteps) = 0;

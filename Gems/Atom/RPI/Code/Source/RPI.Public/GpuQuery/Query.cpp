@@ -28,6 +28,12 @@ namespace AZ
     {
         Query::Query(RPI::QueryPool* queryPool, RHI::Interval rhiQueryIndices, RHI::QueryType queryType, RHI::QueryPoolScopeAttachmentType attachmentType, RHI::ScopeAttachmentAccess attachmentAccess)
         {
+            if (!queryPool)
+            {
+                AZ_Error("RPI::Query", false, "Query must be initialized with valid queryPool");
+                return;
+            }
+
             m_queryPool = queryPool;
 
             m_rhiQueryIndices = rhiQueryIndices;
@@ -59,11 +65,6 @@ namespace AZ
 
         QueryResultCode Query::AddToFrameGraph(RHI::FrameGraphInterface frameGraph)
         {
-            if (!m_queryPool)
-            {
-                return QueryResultCode::Fail;
-            }
-
             // Assign the FrameIndex of the query pool.
             if (!AssignNewFrameIndexToSubQuery(m_queryPool->GetPoolFrameIndex()))
             {
@@ -89,15 +90,16 @@ namespace AZ
 
         QueryResultCode Query::BeginQuery(const RHI::FrameGraphExecuteContext& context)
         {
+            // Return fail if the query wasn't added to frame graph
+            if (m_cachedSubQueryArrayIndex == InvalidQueryIndex)
+            {
+                return QueryResultCode::Fail;
+            }
+
             // Limit calling BeginQuery() to the first CommandList in the array.
             if (context.GetCommandListIndex() != 0)
             {
                 return QueryResultCode::Success;
-            }
-
-            if (!m_queryPool)
-            {
-                return QueryResultCode::Fail;
             }
 
             const auto rhiQueryIndices = GetRhiQueryIndicesFromCurrentFrame();
@@ -116,15 +118,16 @@ namespace AZ
 
         QueryResultCode Query::EndQuery(const RHI::FrameGraphExecuteContext& context)
         {
+            // return fail if the query wasn't added to frame graph
+            if (m_cachedSubQueryArrayIndex == InvalidQueryIndex)
+            {
+                return QueryResultCode::Fail;
+            }
+
             // Limit calling EndQuery() to the last CommandList in the array.
             if (context.GetCommandListIndex() != context.GetCommandListCount() - 1)
             {
                 return QueryResultCode::Success;
-            }
-
-            if (!m_queryPool)
-            {
-                return QueryResultCode::Fail;
             }
 
             // Validate that the queries are recorded for the same scope.
@@ -149,11 +152,6 @@ namespace AZ
 
         QueryResultCode Query::GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes)
         {
-            if (!m_queryPool)
-            {
-                return QueryResultCode::Fail;
-            }
-
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
                 AZ_Warning("RPI::Query", false, "Not enough space to copy the query result into the provided data container.");
@@ -176,11 +174,6 @@ namespace AZ
 
         QueryResultCode Query::GetLatestResult(void* queryResult, uint32_t resultSizeInBytes)
         {
-            if (!m_queryPool)
-            {
-                return QueryResultCode::Fail;
-            }
-
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
                 AZ_Warning("RPI::Query", false, "Not enough space to copy the query result into the provided data container.");
@@ -317,6 +310,11 @@ namespace AZ
 
         AZStd::optional<RHI::Interval> Query::GetRhiQueryIndicesFromCurrentFrame() const
         {
+            if (m_cachedSubQueryArrayIndex == InvalidQueryIndex)
+            {
+                return AZStd::nullopt;
+            }
+
             const SubQuery& subQuery = m_subQueryArray[m_cachedSubQueryArrayIndex];
             const uint64_t poolFrameIndex = m_queryPool->GetPoolFrameIndex();
 

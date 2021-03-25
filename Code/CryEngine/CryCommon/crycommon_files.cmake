@@ -24,7 +24,6 @@ set(FILES
     IColorGradingController.h
     IConsole.h
     ICryMiniGUI.h
-    ICrypto.h
     IDeferredCollisionEvent.h
     IDefragAllocator.h
     IEngineModule.h
@@ -54,7 +53,6 @@ set(FILES
     IMeshBaking.h
     IMiniLog.h
     IMovieSystem.h
-    INetwork.h
     INotificationNetwork.h
     IOverloadSceneManager.h
     IPerfHud.h
@@ -171,7 +169,6 @@ set(FILES
     CryVersion.h
     CryZlib.h
     FrameProfiler.h
-    functor.h
     GeomCacheFileFormat.h
     HashGrid.h
     HeapAllocator.h

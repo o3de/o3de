@@ -36,14 +36,14 @@ namespace ScriptCanvas
     class Connection;
     class GraphVariableManagerRequests;
 
-    //! TODO: Remove the execution logic from this class and change all ScriptCanvas UnitTest to use the Runtime Component
     //! Graph is the execution model of a ScriptCanvas graph.
     class Graph
         : public AZ::Component
         , protected GraphRequestBus::Handler
         , protected RuntimeRequestBus::Handler
         , protected StatusRequestBus::Handler
-        , private AZ::EntityBus::Handler        
+        , private AZ::EntityBus::Handler
+        , private ValidationRequestBus::Handler
     {
     private:
         struct ValidationStruct
@@ -71,6 +71,11 @@ namespace ScriptCanvas
         const AZStd::unordered_set<AZ::Entity*>& GetNodeEntities() const { return m_graphData.m_nodes; }
 
         const ScriptCanvas::ScriptCanvasId& GetScriptCanvasId() const { return m_scriptCanvasId; }
+
+        void MarkVersion();
+        const VersionData& GetVersion() const;
+
+        void Parse(ValidationResults& validationResults);
 
         //// GraphRequestBus::Handler
         bool AddNode(const AZ::EntityId&) override;
@@ -111,6 +116,9 @@ namespace ScriptCanvas
 
         Graph* GetGraph() { return this; }
 
+        bool IsFunctionGraph() const;
+        void MarkFunctionGraph();
+
         GraphData* GetGraphData() override { return &m_graphData; }
         const GraphData* GetGraphDataConst() const override { return &m_graphData; }
         const VariableData* GetVariableDataConst() const { return const_cast<Graph*>(this)->GetVariableData(); }
@@ -132,13 +140,12 @@ namespace ScriptCanvas
 
         // StatusRequestBus
         void ValidateGraph(ValidationResults& validationEvents);
+        void ReportValidationResults(ValidationResults&) override { }
         ////
 
-        virtual void ReportError(const Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage);
+        AZStd::pair<ScriptCanvas::ScriptCanvasId, ValidationResults> GetValidationResults() override;
 
-        bool IsInErrorState() const { return m_executionContext.IsInErrorState(); }
-        bool IsInIrrecoverableErrorState() const { return m_executionContext.IsInErrorState(); }
-        AZStd::string_view GetLastErrorDescription() const { return m_executionContext.GetLastErrorDescription(); }
+        virtual void ReportError(const Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage);
 
     protected:
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -166,9 +173,6 @@ namespace ScriptCanvas
         AZ::Outcome<void, AZStd::vector<ValidationStruct> > ValidateNode(AZ::Entity* nodeEntity, ValidationResults& validationEvents) const;
 
         AZ::Outcome<void, ValidationStruct> ValidateConnection(AZ::Entity* connection) const;
-
-        AZ::Outcome<void, ValidationStruct> ValidateExecutionConnection(const Node& sourceNode, const Slot& sourceSlot, const Node& targetNode, const Slot& targetSlot) const;
-        AZ::Outcome<void, ValidationStruct> ValidateDataConnection(const Node& sourceNode, const Slot& sourceSlot, const Node& targetNode, const Slot& targetSlot) const;
 
         bool IsInDataFlowPath(const Node* sourceNode, const Node* targetNode) const;
 
@@ -202,15 +206,16 @@ namespace ScriptCanvas
         const AZStd::unordered_map<AZ::EntityId, Node* >& GetNodeMapping() const { return m_nodeMapping; }
 
     protected:
-
         void VersioningRemoveSlot(ScriptCanvas::Node& scriptCanvasNode, const SlotId& slotId);
 
         GraphData m_graphData;
         AZ::Data::AssetType m_assetType;
 
     private:
+        bool m_isFunctionGraph = false;
         ScriptCanvasId m_scriptCanvasId;
-        ExecutionContext m_executionContext;
+        ExecutionMode m_executionMode = ExecutionMode::Interpreted;
+        VersionData m_versionData;
 
         GraphVariableManagerRequests* m_variableRequests = nullptr;
 

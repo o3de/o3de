@@ -20,6 +20,7 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -41,6 +42,8 @@ namespace ScriptCanvasEditor
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
         , private AssetTrackerNotificationBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
@@ -96,6 +99,13 @@ namespace ScriptCanvasEditor
         void OnAssetReloaded(const ScriptCanvasMemoryAsset::pointer asset) override;
         //=====================================================================
 
+
+        //=====================================================================
+        // EditorEntityContextNotificationBus
+        void OnStartPlayInEditor() override;
+
+        void OnStopPlayInEditor() override;
+
     protected:
         static void Reflect(AZ::ReflectContext* context);
 
@@ -146,9 +156,5 @@ namespace ScriptCanvasEditor
         ScriptCanvasAssetHolder m_scriptCanvasAssetHolder;
         
         ScriptCanvas::EditableVariableData m_editableData;
-
-        //< Contains a mapping of the EntityId value from the ScriptCanvasAsset stored as an AZ::u64 so that it does not get remapped
-        //< to itself stored as an EntityId
-        AZStd::unordered_map<AZ::u64, AZ::EntityId> m_variableEntityIdMap; 
     };
 }

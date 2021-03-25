@@ -66,7 +66,7 @@ CRotateTool::CRotateTool(CBaseObject* pObject, QWidget* parent /*= nullptr*/)
 
     if (m_object)
     {
-        m_object->AddEventListener(functor(*this, &CRotateTool::OnObjectEvent));
+        m_object->AddEventListener(this);
     }
 
     GetIEditor()->GetObjectManager()->SetSelectCallback(this);
@@ -77,7 +77,7 @@ bool CRotateTool::OnSelectObject(CBaseObject* object)
     m_object = object;
     if (m_object)
     {
-        m_object->AddEventListener(functor(*this, &CRotateTool::OnObjectEvent));
+        m_object->AddEventListener(this);
     }
     return true;
 }
@@ -93,7 +93,7 @@ void CRotateTool::OnObjectEvent(CBaseObject* object, int event)
     {
         if (m_object && m_object == object)
         {
-            m_object->RemoveEventListener(functor(*this, &CRotateTool::OnObjectEvent));
+            m_object->RemoveEventListener(this);
             m_object = nullptr;
         }
     }
@@ -107,8 +107,8 @@ void CRotateTool::Display(DisplayContext& dc)
     }
 
     const bool visible =
-            !m_object->IsHidden() 
-        &&  !m_object->IsFrozen() 
+            !m_object->IsHidden()
+        &&  !m_object->IsFrozen()
         &&  m_object->IsSelected();
 
     if (!visible)
@@ -364,7 +364,7 @@ CRotateTool::~CRotateTool()
 {
     if (m_object)
     {
-        m_object->RemoveEventListener(functor(*this, &CRotateTool::OnObjectEvent));
+        m_object->RemoveEventListener(this);
     }
     GetIEditor()->GetObjectManager()->SetSelectCallback(nullptr);
 }
@@ -592,7 +592,7 @@ bool CRotateTool::OnMouseMove(CViewport* view, int nFlags, const QPoint& p)
                 directionZ = directionToObject.Dot(Vec3(0, 0, 1)) > 0 ? -1.0f : 1.0f;
                 break;
             }
-          
+
             switch (m_highlightAxis)
             {
             case AxisX:

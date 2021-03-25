@@ -10,8 +10,8 @@
 #
 
 if(LY_MONOLITHIC_GAME)
-    set(PIX_LIBS ${BASE_PATH}/lib/WinPixEventRuntime.lib)
+    set(PIX_LIBS ${BASE_PATH}/bin/x64/WinPixEventRuntime.lib)
 else()
-    set(PIX_LIBS ${BASE_PATH}/bin/WinPixEventRuntime.lib)
-    set(PIX_RUNTIME_DEPENDENCIES ${BASE_PATH}/bin/WinPixEventRuntime.dll)
+    set(PIX_LIBS ${BASE_PATH}/bin/x64/WinPixEventRuntime.lib)
+    set(PIX_RUNTIME_DEPENDENCIES ${BASE_PATH}/bin/x64/WinPixEventRuntime.dll)
 endif()

@@ -29,15 +29,6 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
-            
-            //! Enable/disable loading the referenced image mip chain assets when loading StreamingImageAssets
-            void SetLoadMipChainsEnabled(bool enabled);
-
-            //! Get the state of whether to load referenced image mip chain assets 
-            bool GetLoadMipChainsEnabled() const;
-
-        private:
-            bool m_enableLoadMipChains = false;
         };
     }
 }

@@ -15,8 +15,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Graph.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <AzCore/Component/TickBus.h>
 
 #include <Include/ScriptCanvas/Libraries/Time/Timer.generated.h>
@@ -29,46 +27,17 @@ namespace ScriptCanvas
     {
         namespace Time
         {
+            //! Deprecated: See TimerNodeableNode
             class Timer 
                 : public Node
                 , AZ::TickBus::Handler
             {
-                ScriptCanvas_Node(Timer,
-                    ScriptCanvas_Node::Uuid("{60CF8540-E51A-434D-A32C-461C41D68AF9}")
-                    ScriptCanvas_Node::Description("Provides a time value.")
-                    ScriptCanvas_Node::Version(2)
-                );
-
             public:
 
+                SCRIPTCANVAS_NODE(Timer);
+
                 Timer();
-
-            protected:
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("Start", "Starts the timer."));
-                ScriptCanvas_In(ScriptCanvas_In::Name("Stop", "Stops the timer."));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled every frame while the timer is running."));
-
-                ScriptCanvas_Property(float,
-                    ScriptCanvas_Property::Name("Milliseconds", "The amount of time that has elapsed since the timer started in milliseconds.")
-                    ScriptCanvas_Property::Visibility(false)
-                    ScriptCanvas_Property::Transient
-                    ScriptCanvas_Property::Output
-                    ScriptCanvas_Property::OutputStorageSpec
-                );
-
-                ScriptCanvas_Property(float,
-                    ScriptCanvas_Property::Name("Seconds", "The amount of time that has elapsed since the timer started in seconds.")
-                    ScriptCanvas_Property::Visibility(false)
-                    ScriptCanvas_Property::Transient
-                    ScriptCanvas_Property::Output
-                    ScriptCanvas_Property::OutputStorageSpec
-                );
                 
-                // Temps
                 float m_seconds;
                 float m_milliseconds;
             

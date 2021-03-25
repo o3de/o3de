@@ -108,7 +108,6 @@ namespace ScriptCanvasEditor
         void ProcessNodeStateChanged(const ScriptCanvas::NodeStateChange& stateChangeSignal);
         void ProcessInputSignal(const ScriptCanvas::InputSignal& inputSignal);
         void ProcessOutputSignal(const ScriptCanvas::OutputSignal& outputSignal);
-        void ProcessOutputDataSignal(const ScriptCanvas::OutputDataSignal& outputDataSignal);
         void ProcessAnnotateNode(const ScriptCanvas::AnnotateNodeSignal& annotateNodeSignal);
 
         void ProcessVariableChangedSignal(const ScriptCanvas::VariableChange& variableChangeSignal);

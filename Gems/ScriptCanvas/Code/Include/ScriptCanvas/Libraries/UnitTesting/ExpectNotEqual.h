@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/ExpectNotEqual.generated.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/UnitTesting.h>
@@ -27,39 +26,13 @@ namespace ScriptCanvas
                 : public Node
             {
             public:
-                ScriptCanvas_Node(ExpectNotEqual,
-                    ScriptCanvas_Node::Name("Expect Not Equal", "Expects lhs not equal to rhs")
-                    ScriptCanvas_Node::Uuid("{66334794-0F98-4BFC-9DB0-8AB6A4052D09}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/ExpectNotEqual.png")
-                    ScriptCanvas_Node::Version(1, ScriptCanvas::UnitTesting::ExpectComparisonVersioner)
-                );
+
+                SCRIPTCANVAS_NODE(ExpectNotEqual);
 
                 void OnInit() override;
                 void OnInputSignal(const SlotId& slotId) override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_DynamicDataSlot(DynamicDataType::Any,
-                                             ConnectionType::Input,
-                                             ScriptCanvas_DynamicDataSlot::Name("Candidate", "left of !=")
-                                             ScriptCanvas_DynamicDataSlot::DynamicGroup("DynamicGroup")
-                                         );
-                
-                ScriptCanvas_DynamicDataSlot(DynamicDataType::Any,
-                                             ConnectionType::Input,
-                                             ScriptCanvas_DynamicDataSlot::Name("Reference", "right of !=")
-                                             ScriptCanvas_DynamicDataSlot::DynamicGroup("DynamicGroup")
-                                            );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report")
-                    ScriptCanvas_Property::Input);
-            }; // class ExpectNotEqual
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            };
+        }
+    }
+}

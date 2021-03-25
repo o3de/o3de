@@ -55,8 +55,6 @@ namespace GraphCanvas
         static const SlotType ExtenderSlot = AZ_CRC("SlotType_Extender", 0x9635d575);
 
         static const SlotType PropertySlot = AZ_CRC("SlotType_Property", 0xccaefd85);
-
-        //static const SlotType VariableReferenceSlot = AZ_CRC("SlotType_Variable", 0x8b1166d6);
     }
 
     // Visual Identification of how the Slot should be grouped for display
@@ -98,6 +96,9 @@ namespace GraphCanvas
         TranslationKeyedString m_tooltip = TranslationKeyedString();
         TranslationKeyedString m_name = TranslationKeyedString();
         SlotGroup m_slotGroup = SlotGroups::Invalid;
+
+        AZStd::string m_textDecoration;
+        AZStd::string m_textDecorationToolTip;
     };
 
     struct ExecutionSlotConfiguration
@@ -295,6 +296,9 @@ namespace GraphCanvas
         //! Clears all of the connections currently attached to this slot.
         virtual void ClearConnections() = 0;
 
+        // Returns the slot configuration for the slot.
+        virtual const SlotConfiguration& GetSlotConfiguration() const = 0;
+
         // Clones the configurations in use by a slot
         virtual SlotConfiguration* CloneSlotConfiguration() const = 0;
 
@@ -341,6 +345,7 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = SlotId;
 
+        virtual QPointF GetPinCenter() const = 0;
         virtual QPointF GetConnectionPoint() const = 0;
         virtual QPointF GetJutDirection() const = 0;
     };

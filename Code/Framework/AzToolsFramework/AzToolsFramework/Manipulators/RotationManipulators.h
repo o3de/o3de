@@ -34,10 +34,10 @@ namespace AzToolsFramework
         void InstallLeftMouseUpCallback(const AngularManipulator::MouseActionCallback& onMouseUpCallback);
         void InstallMouseMoveCallback(const AngularManipulator::MouseActionCallback& onMouseMoveCallback);
 
-        void SetSpace(const AZ::Transform& worldFromLocal) override;
-        void SetLocalTransform(const AZ::Transform& localTransform) override;
-        void SetLocalPosition(const AZ::Vector3& localPosition) override;
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation) override;
+        void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
+        void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
+        void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;
+        void SetLocalOrientationImpl(const AZ::Quaternion& localOrientation) override;
         void RefreshView(const AZ::Vector3& worldViewPosition) override;
 
         void SetLocalAxes(

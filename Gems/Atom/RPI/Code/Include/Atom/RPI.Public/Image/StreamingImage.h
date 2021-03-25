@@ -65,10 +65,10 @@ namespace AZ
             AZ_INSTANCE_DATA(StreamingImage, "{E48A7FF0-3065-42C6-9673-4FE7C8905629}", Image);
             AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator, 0);
 
-            /// Instantiates or returns an existing streaming image instance using its paired asset.
+            //! Instantiates or returns an existing streaming image instance using its paired asset.
             static Data::Instance<StreamingImage> FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset);
 
-            /// Helper method to instantiate a single-mip, single array streaming image from CPU data.
+            //! Helper method to instantiate a single-mip, single array streaming image from CPU data.
             static Data::Instance<StreamingImage> CreateFromCpuData(
                 const StreamingImagePool& streamingImagePool,
                 RHI::ImageDimension imageDimension,
@@ -80,59 +80,44 @@ namespace AZ
 
             ~StreamingImage() override;
 
-            /**
-             * Requests that image mips be made available for use by the streaming controller. This method should be
-             * called each frame with updated information based on visibility, etc. *Not* calling this method within
-             * a frame effectively tells the streaming controller that the image is not being used, and is a candidate
-             * for eviction. The streaming controller will prioritize attempt to service the request as quickly as
-             * possible. It is safe to call this method multiple times, and from multiple threads. The controller will track
-             * the most detailed request.
-             *
-             * A value of 0 is the most detailed mip level. The value is clamped to the last mip in the chain.
-             */
+            //! Requests that image mips be made available for use by the streaming controller. This method should be
+            //! called each frame with updated information based on visibility, etc. *Not* calling this method within
+            //! a frame effectively tells the streaming controller that the image is not being used, and is a candidate
+            //! for eviction. The streaming controller will prioritize attempt to service the request as quickly as
+            //! possible. It is safe to call this method multiple times, and from multiple threads. The controller will track
+            //! the most detailed request.
+            //! 
+            //! A value of 0 is the most detailed mip level. The value is clamped to the last mip in the chain.
             void SetTargetMip(uint16_t targetMipLevel);
             
             const Data::Instance<StreamingImagePool>& GetPool() const;
 
-            /// Returns whether the streaming image is allowed to evict or expand mip chains.
+            //! Returns whether the streaming image is allowed to evict or expand mip chains.
             bool IsStreamable() const;
 
             ///////////////////////////////////////////////////////////////////
             // Streaming Controller API
 
-            /**
-             * Trims the image to (and including) the requested mip chain index. Mip chains of higher detail
-             * than the requested mip chain are evicted from the GPU and any in-flight fetch requests are
-             * aborted.
-             * @param mipChainLevel The index of the mip chain (where 0 is most detailed) to target.
-             */
+            //! Trims the image to (and including) the requested mip chain index. Mip chains of higher detail
+            //! than the requested mip chain are evicted from the GPU and any in-flight fetch requests are
+            //! aborted.
+            //! @param mipChainLevel The index of the mip chain (where 0 is most detailed) to target.
             RHI::ResultCode TrimToMipChainLevel(size_t mipChainLevel);
 
-            /**
-             * Queues an expansion operation which fetches mip chain assets from disk. Each time a contiguous range
-             * of mip chains is ready, an expansion is queued on the parent controller.
-             */
+            //! Queues an expansion operation which fetches mip chain assets from disk. Each time a contiguous range
+            //! of mip chains is ready, an expansion is queued on the parent controller.
             void QueueExpandToMipChainLevel(size_t mipChainLevel);
             
-            /**
-             * Queues an expansion to the mip chain that is one level higher than the resident mip chain.
-             */
+            //! Queues an expansion to the mip chain that is one level higher than the resident mip chain.
             void QueueExpandToNextMipChainLevel();
 
-            /**
-             * Performs the GPU mip chain expansion for any contiguous range of ready mip chain assets. Returns
-             * the result of the RHI pool residency update. If no new mip chains are available, this will no-op
-             * and return success.
-             */
+            //! Performs the GPU mip chain expansion for any contiguous range of ready mip chain assets. Returns
+            //! the result of the RHI pool residency update. If no new mip chains are available, this will no-op
+            //! and return success.
             RHI::ResultCode ExpandMipChain();
 
             //! Returns the most detailed mip level currently resident in memory, where a value of 0 is the highest detailed mip.
             uint16_t GetResidentMipLevel();
-
-            //! Returns the number of mip levels of this image
-            uint16_t GetMipLevelCount();
-
-            Data::AssetId GetMipAssetId(size_t mipChainIndex);
 
         private:
             StreamingImage() = default;

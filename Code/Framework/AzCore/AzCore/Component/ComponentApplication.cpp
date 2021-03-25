@@ -349,7 +349,7 @@ namespace AZ
                         // Update the currentGameSpecialization
                         currentGameSpecialization = specializationKey;
 
-                        // Update all the runtime filepaths based on the new "sys_game_folder" value 
+                        // Update all the runtime filepaths based on the new "sys_game_folder" value
                         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
                     }
                 }
@@ -460,6 +460,23 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CreateCommon()
     {
+        {
+            AZ::SettingsRegistryInterface::FixedValueString registryValue;
+            m_settingsRegistry->Get(registryValue, AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage);
+            AZ::IO::FixedMaxPath outputPath{ registryValue };
+            outputPath /= "eventlogger";
+
+            registryValue.clear();
+
+            AZ::IO::FixedMaxPathString baseFileName{ "EventLog" }; // default name
+            if (m_settingsRegistry->Get(registryValue, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey))
+            {
+                baseFileName = registryValue;
+            }
+
+            m_eventLogger.Start(outputPath.c_str(), baseFileName.c_str());
+        }
+
         CreateDrillers();
 
         Sfmt::Create();
@@ -583,6 +600,8 @@ namespace AZ
             Debug::DrillerManager::Destroy(m_drillerManager);
             m_drillerManager = nullptr;
         }
+
+        m_eventLogger.Stop();
 
         // Clear the descriptor to deallocate all strings (owned by ModuleDescriptor)
         m_descriptor = Descriptor();
@@ -997,7 +1016,7 @@ namespace AZ
             AZ::OSString m_dynamicLibraryPath;
             bool m_autoLoad{ true };
         };
-        
+
         struct GemModuleVisitor
             : AZ::SettingsRegistryInterface::Visitor
         {
@@ -1020,7 +1039,7 @@ namespace AZ
                         {
                             return gemName == moduleLoadData.m_gemName;
                         };
-                        
+
                         if (auto foundIt = AZStd::find_if(m_modulesLoadData.begin(), m_modulesLoadData.end(), FindGemModuleLoadEntry);
                             foundIt == m_modulesLoadData.end())
                         {

@@ -51,20 +51,20 @@ ConnectionManager::ConnectionManager(QObject* parent)
 
     ConnectionManagerRequestBus::Handler::BusConnect();
 
-    QTimer::singleShot(0, this, SLOT(UpdateWhiteListFromBootStrap()));
+    QTimer::singleShot(0, this, SLOT(UpdateAllowedListFromBootStrap()));
 }
 
-void ConnectionManager::UpdateWhiteListFromBootStrap()
+void ConnectionManager::UpdateAllowedListFromBootStrap()
 {
-    m_whiteListedAddresses.clear();
-    QString whitelist = AssetUtilities::ReadWhitelistFromSettingsRegistry();
-    AZStd::vector<AZStd::string> whitelistaddressList;
-    AzFramework::StringFunc::Tokenize(whitelist.toUtf8().constData(), whitelistaddressList, ", \t\n\r");
-    for (const AZStd::string& whitelistaddress : whitelistaddressList)
+    m_allowedListAddresses.clear();
+    QString allowedlist = AssetUtilities::ReadAllowedlistFromSettingsRegistry();
+    AZStd::vector<AZStd::string> allowedlistaddressList;
+    AzFramework::StringFunc::Tokenize(allowedlist.toUtf8().constData(), allowedlistaddressList, ", \t\n\r");
+    for (const AZStd::string& allowedlistaddress : allowedlistaddressList)
     {
-        m_whiteListedAddresses << whitelistaddress.c_str();
+        m_allowedListAddresses << allowedlistaddress.c_str();
     }
-    Q_EMIT SyncWhiteListAndRejectedList(m_whiteListedAddresses, m_rejectedAddresses);
+    Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
 
@@ -121,8 +121,8 @@ unsigned int ConnectionManager::internalAddConnection(bool isUserConnection, qin
     }
 
     Connection* connection = new Connection(isUserConnection, socketDescriptor, this);
-    connect(connection, &Connection::IsAddressWhiteListed, this, &ConnectionManager::IsAddressWhiteListed);
-    connect(this, &ConnectionManager::AddressIsWhiteListed, connection, &Connection::AddressIsWhiteListed);
+    connect(connection, &Connection::IsAddressInAllowedList, this, &ConnectionManager::IsAddressInAllowedList);
+    connect(this, &ConnectionManager::AddressIsInAllowedList, connection, &Connection::AddressIsInAllowedList);
   
     connection->SetConnectionId(connectionId);
     connect(connection, &Connection::StatusChanged, this, &ConnectionManager::OnStatusChanged);
@@ -496,31 +496,31 @@ void ConnectionManager::NewConnection(qintptr socketDescriptor)
     addConnection(socketDescriptor);
 }
 
-void ConnectionManager::WhiteListingEnabled(bool enabled)
+void ConnectionManager::AllowedListingEnabled(bool enabled)
 {
-    m_whiteListingEnabled = enabled;
+    m_allowedListingEnabled = enabled;
 }
 
-void ConnectionManager::AddWhiteListedAddress(QString address)
+void ConnectionManager::AddAddressToAllowedList(QString address)
 {
-    UpdateWhiteListFromBootStrap();
-    while (m_whiteListedAddresses.removeOne(address)) {}
-    m_whiteListedAddresses << address;
-    AssetUtilities::WriteWhitelistToBootstrap(m_whiteListedAddresses);
-    Q_EMIT SyncWhiteListAndRejectedList(m_whiteListedAddresses, m_rejectedAddresses);
+    UpdateAllowedListFromBootStrap();
+    while (m_allowedListAddresses.removeOne(address)) {}
+    m_allowedListAddresses << address;
+    AssetUtilities::WriteAllowedlistToBootstrap(m_allowedListAddresses);
+    Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
-void ConnectionManager::RemoveWhiteListedAddress(QString address)
+void ConnectionManager::RemoveAddressFromAllowedList(QString address)
 {
-    UpdateWhiteListFromBootStrap();
-    while (m_whiteListedAddresses.removeOne(address)) {}
-    AssetUtilities::WriteWhitelistToBootstrap(m_whiteListedAddresses);
-    Q_EMIT SyncWhiteListAndRejectedList(m_whiteListedAddresses, m_rejectedAddresses);
+    UpdateAllowedListFromBootStrap();
+    while (m_allowedListAddresses.removeOne(address)) {}
+    AssetUtilities::WriteAllowedlistToBootstrap(m_allowedListAddresses);
+    Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
 void ConnectionManager::AddRejectedAddress(QString address, bool surpressWarning)
 {
-    UpdateWhiteListFromBootStrap();
+    UpdateAllowedListFromBootStrap();
     bool alreadyRejected = false;
     while (m_rejectedAddresses.removeOne(address)) { alreadyRejected = true; }
     m_rejectedAddresses << address;
@@ -528,21 +528,21 @@ void ConnectionManager::AddRejectedAddress(QString address, bool surpressWarning
     {
         Q_EMIT FirstTimeAddedToRejctedList(address);
     }
-    Q_EMIT SyncWhiteListAndRejectedList(m_whiteListedAddresses, m_rejectedAddresses);
+    Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
 void ConnectionManager::RemoveRejectedAddress(QString address)
 {
-    UpdateWhiteListFromBootStrap();
+    UpdateAllowedListFromBootStrap();
     while (m_rejectedAddresses.removeOne(address)) {}
-    Q_EMIT SyncWhiteListAndRejectedList(m_whiteListedAddresses, m_rejectedAddresses);
+    Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
-void ConnectionManager::IsAddressWhiteListed(QHostAddress incominghostaddr, void* token)
+void ConnectionManager::IsAddressInAllowedList(QHostAddress incominghostaddr, void* token)
 {
-    if (!m_whiteListingEnabled)
+    if (!m_allowedListingEnabled)
     {
-        Q_EMIT AddressIsWhiteListed(token, true);
+        Q_EMIT AddressIsInAllowedList(token, true);
         return;
     }
 
@@ -550,9 +550,9 @@ void ConnectionManager::IsAddressWhiteListed(QHostAddress incominghostaddr, void
 
     if (incominghostaddr != QHostAddress::Null)
     {
-        // any ipv4 address will be like ::ffff:A.B.C.D, we have to retrieve A.B.C.D for comparision with the whitelisted addresses.
+        // any ipv4 address will be like ::ffff:A.B.C.D, we have to retrieve A.B.C.D for comparision with the allowedlisted addresses.
         // for example Qt will tell us the ipv6 (::ffff:127.0.0.1) for 127.0.0.1, 
-        // but the whitelist below will report ipv4 (127.0.0.1) and ipv6 (::1), and they both won't match to ipv6 (::ffff:127.0.0.1).
+        // but the allowedlist below will report ipv4 (127.0.0.1) and ipv6 (::1), and they both won't match to ipv6 (::ffff:127.0.0.1).
         bool wasConverted = false;
         quint32 incomingIPv4 = incominghostaddr.toIPv4Address(&wasConverted);
         if (wasConverted)
@@ -567,29 +567,29 @@ void ConnectionManager::IsAddressWhiteListed(QHostAddress incominghostaddr, void
 
     QHostInfo incomingInfo = QHostInfo::fromName(incomingIpAddress);
 
-    QString whitelist = AssetUtilities::ReadWhitelistFromSettingsRegistry();
+    QString allowedlist = AssetUtilities::ReadAllowedlistFromSettingsRegistry();
 
-    AZStd::vector<AZStd::string> whitelistaddressList;
-    AzFramework::StringFunc::Tokenize(whitelist.toUtf8().constData(), whitelistaddressList, ", \t\n\r");
+    AZStd::vector<AZStd::string> allowedlistaddressList;
+    AzFramework::StringFunc::Tokenize(allowedlist.toUtf8().constData(), allowedlistaddressList, ", \t\n\r");
 
     // allow localhost, loopback regardless, there's no good reason to accidentally lock yourself out your own computer.
     for (const auto& address : QNetworkInterface::allAddresses()) // allAdresses returns the ip address of all local interfaces.
     {
-        whitelistaddressList.push_back(address.toString().toUtf8().constData());
+        allowedlistaddressList.push_back(address.toString().toUtf8().constData());
     }
 
     // does the incoming connection match any entries?
-    for (const AZStd::string& whitelistaddress : whitelistaddressList)
+    for (const AZStd::string& allowedListaddress : allowedlistaddressList)
     {
         //address range matching
-        size_t maskLocation = whitelistaddress.find('/');
+        size_t maskLocation = allowedListaddress.find('/');
         if (maskLocation != AZStd::string::npos)
         {
             //x.x.x.x/0 is all addresses
-            int mask = atoi(whitelistaddress.substr(maskLocation + 1).c_str());
+            int mask = atoi(allowedListaddress.substr(maskLocation + 1).c_str());
             if (mask == 0)
             {
-                Q_EMIT AddressIsWhiteListed(token, true);
+                Q_EMIT AddressIsInAllowedList(token, true);
                 return;
             }
             else
@@ -602,35 +602,35 @@ void ConnectionManager::IsAddressWhiteListed(QHostAddress incominghostaddr, void
                 //QT should first do a check and see if we are comparing convertible protocols before just early outing.
                 //If it wasn't convertible to ipv4 then we know it is ipv6 in which case the protocols will match which make this unnecessary, but still correct.
                 QHostAddress ha(incomingIpAddress);
-                if (ha.isInSubnet(QHostAddress::parseSubnet(whitelistaddress.c_str())))
+                if (ha.isInSubnet(QHostAddress::parseSubnet(allowedListaddress.c_str())))
                 {
-                    Q_EMIT AddressIsWhiteListed(token, true);
+                    Q_EMIT AddressIsInAllowedList(token, true);
                     return;
                 }
             }
         }
         else//direct address matching
         {
-            QHostInfo whiteInfo;
-            QHostAddress whiteHostAddress(whitelistaddress.c_str());
-            if ((whiteHostAddress.isNull()))
+            QHostInfo allowedInfo;
+            QHostAddress allowedHostAddress(allowedListaddress.c_str());
+            if ((allowedHostAddress.isNull()))
             {
-                whiteInfo = QHostInfo::fromName(QString::fromUtf8(whitelistaddress.c_str()));
+                allowedInfo = QHostInfo::fromName(QString::fromUtf8(allowedListaddress.c_str()));
             }
             else
             {
                 QList<QHostAddress> addresses;
-                addresses << whiteHostAddress;
-                whiteInfo.setAddresses(addresses);
+                addresses << allowedHostAddress;
+                allowedInfo.setAddresses(addresses);
             }
 
-            for (const auto& whiteAddress : whiteInfo.addresses())
+            for (const auto& allowedAddress : allowedInfo.addresses())
             {
                 for (const auto& address : incomingInfo.addresses())
                 {
-                    if (address == whiteAddress)
+                    if (address == allowedAddress)
                     {
-                        Q_EMIT AddressIsWhiteListed(token, true);
+                        Q_EMIT AddressIsInAllowedList(token, true);
                         return;
                     }
                 }
@@ -639,7 +639,7 @@ void ConnectionManager::IsAddressWhiteListed(QHostAddress incominghostaddr, void
     }
 
     AddRejectedAddress(incomingIpAddress);
-    Q_EMIT AddressIsWhiteListed(token, false);
+    Q_EMIT AddressIsInAllowedList(token, false);
 }
 
 void ConnectionManager::AddBytesReceived(unsigned int connId, qint64 add, bool update)

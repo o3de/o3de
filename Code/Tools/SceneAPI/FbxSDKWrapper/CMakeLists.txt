@@ -9,9 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
-set(sdkwrapper_pal_dir ${sdkwrapper_dir}/Platform/${PAL_PLATFORM_NAME})
 
 if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
@@ -23,9 +21,6 @@ ly_add_target(
     FILES_CMAKE
         fbxsdkwrapper_files.cmake
         ${sdkwrapper_dir}/sdkwrapper_files.cmake
-        ${sdkwrapper_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    PLATFORM_INCLUDE_FILES
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -37,4 +32,5 @@ ly_add_target(
             AZ::AzToolsFramework
         PUBLIC
             3rdParty::FbxSdk
+            3rdParty::assimplib
 )

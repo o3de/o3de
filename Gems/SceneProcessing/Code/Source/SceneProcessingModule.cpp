@@ -18,8 +18,9 @@
 #include <Config/Components/SceneProcessingConfigSystemComponent.h>
 #include <Config/Components/SoftNameBehavior.h>
 #include <Config/Widgets/GraphTypeSelector.h>
-#include <Exporting/Components/TangentGenerateComponent.h>
-#include <Exporting/Components/TangentPreExportComponent.h>
+#include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
+#include <Generation/Components/TangentGenerator/TangentPreExportComponent.h>
+#include <Generation/Components/MeshOptimizer/MeshOptimizerComponent.h>
 #include <Source/SceneProcessingModule.h>
 
 namespace AZ
@@ -45,8 +46,9 @@ namespace AZ
                     SceneProcessingConfig::SoftNameBehavior::CreateDescriptor(),
                     SceneBuilder::BuilderPluginComponent::CreateDescriptor(),
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
-                    AZ::SceneExportingComponents::TangentPreExportComponent::CreateDescriptor(),
-                    AZ::SceneExportingComponents::TangentGenerateComponent::CreateDescriptor()
+                    AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
                 });
 
                 // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.

@@ -78,20 +78,17 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 18;   // [ATOM-6058] Blocky diffuse cubemaps
+        builderDescriptor.m_version = 19;   // [ATOM-14459]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
 
         m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
         m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
-
-        ImageProcessingRequestBus::Handler::BusConnect();
     }
 
     void BuilderPluginComponent::Deactivate()
     {
-        ImageProcessingRequestBus::Handler::BusDisconnect();
         m_imageBuilder.BusDisconnect();
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
@@ -126,11 +123,6 @@ namespace ImageProcessingAtom
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
-    }
-
-    IImageObject* BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
-    {
-        return LoadImageFromFile(filePath);
     }
 
     void ImageBuilderWorker::ShutDown()

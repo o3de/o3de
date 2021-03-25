@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -85,101 +85,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-
-            AZ::Outcome<Data::StringType, Data::StringType> ProduceOutcome::FailureVE(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Failure(failure);
-            }
-
-            AZ::Outcome<void, Data::StringType> ProduceOutcome::FailureE(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Failure(failure);
-            }
-
-            AZ::Outcome<Data::StringType, void> ProduceOutcome::FailureV(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Failure();
-            }
-
-            AZ::Outcome<void, void> ProduceOutcome::Failure(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Failure();
-            }
-
-            AZ::Outcome<Data::StringType, Data::StringType> ProduceOutcome::SuccessVE(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Success(success);
-            }
-
-            AZ::Outcome<void, Data::StringType> ProduceOutcome::SuccessE(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Success();
-            }
-
-            AZ::Outcome<Data::StringType, void> ProduceOutcome::SuccessV(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Success(success);
-            }
-
-            AZ::Outcome<void, void> ProduceOutcome::Success(Data::StringType success, Data::StringType failure)
-            {
-                return AZ::Success();
-            }
-
-            void ProduceOutcome::Reflect(AZ::ReflectContext* reflection)
-            {
-                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
-                {
-                    serializeContext->Class<ProduceOutcome>()
-                        ->Version(0)
-                        ;
-
-                    if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZ::Outcome<Data::StringType, Data::StringType>>::GetGenericInfo())
-                    {
-                        genericClassInfo->Reflect(serializeContext);
-                    }
-
-                    if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZ::Outcome<Data::StringType, void>>::GetGenericInfo())
-                    {
-                        genericClassInfo->Reflect(serializeContext);
-                    }
-
-                    if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZ::Outcome<void, Data::StringType>>::GetGenericInfo())
-                    {
-                        genericClassInfo->Reflect(serializeContext);
-                    }
-
-                    if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZ::Outcome<void, void>>::GetGenericInfo())
-                    {
-                        genericClassInfo->Reflect(serializeContext);
-                    }
-                }
-
-                if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
-                {
-                    behaviorContext->Class<ProduceOutcome>("ProduceOutcome")
-                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
-                        ->Method("FailureVE", &ProduceOutcome::FailureVE)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("FailureE", &ProduceOutcome::FailureE)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("FailureV", &ProduceOutcome::FailureV)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("Failure", &ProduceOutcome::Failure)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("SuccessVE", &ProduceOutcome::SuccessVE)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("SuccessE", &ProduceOutcome::SuccessE)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("SuccessV", &ProduceOutcome::SuccessV)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("Success", &ProduceOutcome::Success)
-                            ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AZ::AttributeIsValid::IfPresent)
-                        ->Method("Reflect_AZStd::array<AZ::Vector3, 2>", [](AZStd::array<AZ::Vector3, 2>& vector) {  return vector.size();  })
-                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                        ;
-                }
-            }
-        } // namespace Auxiliary
-    } // namespace UnitTesting
-} // namespace ScriptCanvas
+        }
+    } 
+} 

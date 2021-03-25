@@ -20,11 +20,11 @@
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
-#include <SceneAPI/SceneData/Rules/OriginRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
@@ -70,12 +70,12 @@ namespace AZ
             SceneData::CommentRule::Reflect(context);
             SceneData::LodRule::Reflect(context);
             SceneData::StaticMeshAdvancedRule::Reflect(context);
-            SceneData::OriginRule::Reflect(context);
             SceneData::MaterialRule::Reflect(context);
             SceneData::ScriptProcessorRule::Reflect(context);
             SceneData::SkeletonProxyRule::Reflect(context);
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
+            SceneData::CoordinateSystemRule::Reflect(context);
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);
@@ -85,11 +85,11 @@ namespace AZ
             context->Class<AZ::SceneData::GraphData::BlendShapeData>()->Version(1);
             AZ::SceneData::GraphData::BoneData::Reflect(context);
             AZ::SceneData::GraphData::MaterialData::Reflect(context);
-            context->Class<AZ::SceneData::GraphData::MeshData>()->Version(1);
-            context->Class<AZ::SceneData::GraphData::MeshVertexColorData>()->Version(1);
-            context->Class<AZ::SceneData::GraphData::MeshVertexUVData>()->Version(1);
-            context->Class<AZ::SceneData::GraphData::MeshVertexTangentData>()->Version(1);
-            context->Class<AZ::SceneData::GraphData::MeshVertexBitangentData>()->Version(1);
+            AZ::SceneData::GraphData::MeshData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexColorData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexUVData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexTangentData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexBitangentData::Reflect(context);
             AZ::SceneData::GraphData::RootBoneData::Reflect(context);
             context->Class<AZ::SceneData::GraphData::SkinMeshData>()->Version(1);
             context->Class<AZ::SceneData::GraphData::SkinWeightData>()->Version(1);
@@ -102,6 +102,11 @@ namespace AZ
             AZ::SceneData::GraphData::MaterialData::Reflect(context);
             AZ::SceneData::GraphData::RootBoneData::Reflect(context);
             AZ::SceneData::GraphData::TransformData::Reflect(context);
+            AZ::SceneData::GraphData::MeshData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexColorData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexUVData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexTangentData::Reflect(context);
+            AZ::SceneData::GraphData::MeshVertexBitangentData::Reflect(context);
         }
     } // namespace SceneAPI
 } // namespace AZ

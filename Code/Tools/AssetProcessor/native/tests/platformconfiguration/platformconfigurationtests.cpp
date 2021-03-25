@@ -13,6 +13,8 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include "native/tests/platformconfiguration/platformconfigurationtests.h"
 
+#include <AzTest/AzTest.h>
+
 const char TestAppRoot[] = ":/testdata";
 const char EmptyDummyProjectName[] = "EmptyDummyProject";
 const char DummyProjectName[] = "DummyProject";
@@ -111,7 +113,6 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
     ASSERT_NE(config.GetPlatformByIdentifier(AzToolsFramework::AssetSystem::GetHostAssetPlatform()), nullptr);
     ASSERT_NE(config.GetPlatformByIdentifier("es3"), nullptr);
     ASSERT_NE(config.GetPlatformByIdentifier("server"), nullptr);
-    ASSERT_EQ(config.GetPlatformByIdentifier("xenia"), nullptr);
 
     ASSERT_TRUE(config.GetPlatformByIdentifier("es3")->HasTag("mobile"));
     ASSERT_TRUE(config.GetPlatformByIdentifier("es3")->HasTag("renderer"));
@@ -431,7 +432,11 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     ASSERT_FALSE(config.IsFileExcluded("blahblah/Levels/blahblahhold/whatever.test"));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(PlatformConfigurationUnitTests, DISABLED_TestFailReadConfigFile_Recognizers)
+#else
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
@@ -530,7 +535,6 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Overrides)
     ASSERT_NE(config.GetPlatformByIdentifier("es3"), nullptr);
     ASSERT_NE(config.GetPlatformByIdentifier("provo"), nullptr);
     // this override swaps server with provo in that it turns ON provo, turns off server
-    ASSERT_EQ(config.GetPlatformByIdentifier("xenia"), nullptr);
     ASSERT_EQ(config.GetPlatformByIdentifier("server"), nullptr); // this should be off due to overrides
 
     // there is a rule which only output on server, so that rule should be omitted

@@ -139,7 +139,7 @@ namespace GraphCanvas
         return m_proxyWidget;
     }
 
-    void EntityIdNodePropertyDisplay::OnEntityNameChanged([[maybe_unused]] const AZStd::string& name)
+    void EntityIdNodePropertyDisplay::OnEntityNameChanged(const AZStd::string& /*name*/)
     {
         UpdateDisplay();
     }
@@ -213,4 +213,6 @@ namespace GraphCanvas
             m_proxyWidget = nullptr;
         }
     }
+
+#include <Source/Components/NodePropertyDisplays/moc_EntityIdNodePropertyDisplay.cpp>
 }

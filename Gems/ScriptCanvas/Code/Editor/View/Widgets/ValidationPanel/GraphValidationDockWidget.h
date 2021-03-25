@@ -16,6 +16,8 @@
 #include <QIcon>
 #include <QSortFilterProxyModel>
 
+#include <AzCore/Debug/TraceMessageBus.h>
+
 #include <AzQtComponents/Components/StyledDockWidget.h>
 
 #include <GraphCanvas/Editor/AssetEditorBus.h>
@@ -40,6 +42,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
+    //! Visual effect interface
     class ValidationEffect
     {
     public:
@@ -51,6 +54,7 @@ namespace ScriptCanvasEditor
         virtual void CancelEffect() = 0;
     };
 
+    //! Highlights the border of a graph element to display its status
     class HighlightElementValidationEffect
         : public ValidationEffect
     {
@@ -75,6 +79,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneMemberGlowOutlineConfiguration m_templateConfiguration;
     };
 
+    //! Effect used to show when a node is unused
     class UnusedNodeValidationEffect
         : public ValidationEffect
     {
@@ -123,6 +128,8 @@ namespace ScriptCanvasEditor
         ~GraphValidationModel() override;
         
         void RunValidation(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
+        void AddEvents(ScriptCanvas::ValidationResults& validationEvents);
+        void Clear();
 
         // QAbstractItemModel
         QModelIndex index(int row, int column, const QModelIndex& parent) const override;
@@ -177,11 +184,54 @@ namespace ScriptCanvasEditor
         QRegExp m_regex;
     };
 
+    //! Owns the model for each currently opened graph
+    class ValidationData
+        : private ScriptCanvas::StatusRequestBus::Handler
+        , private GraphCanvas::ToastNotificationBus::MultiHandler
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ValidationData, AZ::SystemAllocator, 0);
+
+        ValidationData();
+        ValidationData(GraphCanvas::GraphId graphCanvasId, ScriptCanvas::ScriptCanvasId scriptCanvasId);
+        ~ValidationData() override;
+
+        // ScriptCanvas::StatusRequestBus
+        void ValidateGraph(ScriptCanvas::ValidationResults& validationEvents) override;
+        void ReportValidationResults(ScriptCanvas::ValidationResults& validationEvents) override;
+        ////
+
+        ValidationEffect* GetEffect(int row);
+        void SetEffect(int row, ValidationEffect* effect);
+        void ClearEffect(int row);
+        void ClearEffects();
+
+        GraphValidationModel* GetModel() { return m_model.get(); }
+
+        void DisplayToast();
+
+    private:
+
+        // ToastNotification
+        void OnToastInteraction() override;
+        void OnToastDismissed() override;
+        ////
+
+        AZStd::unique_ptr<GraphValidationModel> m_model;
+
+        using ValidationEffectMap = AZStd::unordered_map< int, ValidationEffect* >;
+        ValidationEffectMap m_validationEffects;
+
+        GraphCanvas::GraphId m_graphCanvasId;
+
+    };
+
+    //! Displays warnings or errors related for a Script Canvas graph
     class GraphValidationDockWidget
         : public AzQtComponents::StyledDockWidget
         , public GraphCanvas::AssetEditorNotificationBus::Handler
         , public GraphCanvas::SceneNotificationBus::Handler
-        , public GraphCanvas::ToastNotificationBus::MultiHandler
+        , public GraphCanvas::ToastNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -200,14 +250,9 @@ namespace ScriptCanvasEditor
         void OnConnectionDragBegin() override;
         ////
 
-        // ToastNotification
-        void OnToastInteraction() override;
-        void OnToastDismissed() override;
-        ////
-
         bool HasValidationIssues() const;
-        
-    public slots:
+
+    public Q_SLOTS:
     
         void OnRunValidator(bool displayAsNotification = false);
         void OnShowErrors();
@@ -232,21 +277,33 @@ namespace ScriptCanvasEditor
         ////
 
         void UpdateText();
+        void UpdateSelectedText();
 
         void OnRowSelected(int row);
         void OnRowDeselected(int row);
 
-        void UpdateSelectedText();
-    
-        GraphValidationModel* m_model;
+        void Refresh();
+
         GraphValidationSortFilterProxyModel* m_proxyModel;
-    
-        ScriptCanvas::ScriptCanvasId    m_scriptCanvasId;
-        GraphCanvas::GraphId            m_graphCanvasGraphId;
+        AZStd::unique_ptr<Ui::GraphValidationPanel> ui;
 
         UnusedNodeValidationEffect m_unusedNodeValidationEffect;
-        AZStd::unordered_map< int, ValidationEffect* > m_validationEffects;
-        
-        AZStd::unique_ptr<Ui::GraphValidationPanel> ui;
+
+        //! Every graph will store its own validation model, this makes it possible to display the latest
+        //! validation state even if the active graph changes
+        using GraphModelPair = AZStd::pair<ScriptCanvas::ScriptCanvasId, AZStd::unique_ptr<ValidationData>>;
+        AZStd::unordered_map<GraphCanvas::GraphId, GraphModelPair> m_models;
+
+        const GraphValidationModel* GetActiveModel() const;
+        GraphModelPair& GetActiveData();
+
+        // We use the IDs of the active graph for different functions, so we keep both for easy access
+        struct IdPair
+        {
+            GraphCanvas::GraphId graphCanvasId;
+            ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        };
+        IdPair m_activeGraphIds;
+
     };
 }

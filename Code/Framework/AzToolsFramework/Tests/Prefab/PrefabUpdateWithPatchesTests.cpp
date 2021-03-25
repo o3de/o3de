@@ -46,9 +46,9 @@ namespace UnitTest
         ASSERT_EQ(wheelTemplateEntityAliases.size(), 1);
 
         // Validate that the wheel entity has 1 component under it.
-        AZStd::string entityAlias = wheelTemplateEntityAliases.front();
+        EntityAlias wheelEntityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
-            PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
+            PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(wheelTemplateDom);
         ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsArray());
         EXPECT_EQ(wheelEntityComponents->GetArray().Size(), 1);
 
@@ -66,6 +66,7 @@ namespace UnitTest
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
+        ASSERT_EQ(wheelInstanceAliasesUnderAxle.size(), 1);
         
 
         // Create a car with 0 entities and 1 axle instance.
@@ -80,16 +81,19 @@ namespace UnitTest
         axleInstance->InitializeNestedEntities();
         axleInstance->ActivateNestedEntities();
 
+        InstanceOptionalReference nestedWheelInstanceRef = axleInstance->FindNestedInstance(wheelInstanceAliasesUnderAxle[0]);
+        ASSERT_TRUE(nestedWheelInstanceRef);
+
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
-        axleInstance->GetNestedEntityIds([&entityIdVector](const AZ::EntityId& entityId)
+        axleInstance->GetNestedEntityIds([&entityIdVector](AZ::EntityId entityId)
         {
             entityIdVector.push_back(entityId);
             return true;
         });
 
-        EXPECT_EQ(entityIdVector.size(), 1);
-        AZ::EntityId wheelEntityIdUnderAxle = entityIdVector.front();
+        ASSERT_EQ(entityIdVector.size(), 3);
+        AZ::EntityId wheelEntityIdUnderAxle = nestedWheelInstanceRef->get().GetEntityId(wheelEntityAlias);
 
         // Retrieve the entity pointer from the component application bus.
         AZ::Entity* wheelEntityUnderAxle = nullptr;
@@ -118,7 +122,7 @@ namespace UnitTest
         // Even though we changed the property to false, it won't be serialized out because it's a default value.
         PrefabDomValue* wheelInstanceDomUnderAxle =
             PrefabTestDomUtils::GetPrefabDomInstancePath(wheelInstanceAliasesUnderAxle.front()).Get(axleTemplateDom);
-        wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(*wheelInstanceDomUnderAxle);
+        wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(*wheelInstanceDomUnderAxle);
         ASSERT_TRUE(wheelEntityComponents != nullptr);
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents->Begin(), PrefabTestDomUtils::BoolPropertyName);

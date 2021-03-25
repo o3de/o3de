@@ -87,6 +87,12 @@ namespace AZ
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportSizeChanged.
             void ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler);
 
+            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
+            //! Notifies consumers when the view matrix has changed.
+            void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
+            //! Notifies consumers when the projection matrix has changed.
+            void ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
+
             // ViewportRequestBus interface
             //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
@@ -112,6 +118,8 @@ namespace AZ
             ViewPtr m_defaultView;
             AzFramework::WindowSize m_viewportSize;
             SizeChangedEvent m_sizeChangedEvent;
+            MatrixChangedEvent m_viewMatrixChangedEvent;
+            MatrixChangedEvent m_projectionMatrixChangedEvent;
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;
             Name m_name;

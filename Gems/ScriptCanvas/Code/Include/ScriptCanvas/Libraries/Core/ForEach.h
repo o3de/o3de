@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Endpoint.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -28,25 +27,44 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! Provides a node that will iterate over the values in a container
             class ForEach
                 : public Node
                 , public EndpointNotificationBus::Handler
             {
             public:
-                ScriptCanvas_Node(ForEach,
-                    ScriptCanvas_Node::Name("For Each", "Node for iterating through a container")
-                    ScriptCanvas_Node::Uuid("{31823035-A3FF-4B8D-A3A6-819519478B7C}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Category("Containers")
-                    ScriptCanvas_Node::Version(2, VersionConverter)
-                );
 
-                static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
+                SCRIPTCANVAS_NODE(ForEach);
 
-                Data::Type GetSourceSlotDataType() const;
-                AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>> GetPropertyFields() const;
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                SlotId GetLoopBreakSlotId() const;
+
+                SlotId GetLoopFinishSlotId() const override;
+
+                SlotId GetLoopSlotId() const override;
+
+                Data::Type GetKeySlotDataType() const;
+
+                SlotId GetKeySlotId() const;
+
+                Data::Type GetValueSlotDataType() const;
+
+                SlotId GetValueSlotId() const;
+
+                bool IsFormalLoop() const override;
+
+                bool IsBreakSlot(const SlotId&) const;
+
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
+
+                UpdateResult OnUpdateNode() override;
 
             protected:
+                ExecutionNameMap GetExecutionNameMap() const override;
+
                 void OnInit() override;
                 void OnInputSignal(const SlotId&) override;
 
@@ -62,18 +80,9 @@ namespace ScriptCanvas
 
                 static AZ::Crc32 GetContainerGroupId() { return AZ_CRC("ContainerGroup", 0xb81ed451); }
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Signaled upon node entry"));
-                ScriptCanvas_In(ScriptCanvas_In::Name("Break", "Stops the iteration when signaled"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Each", "Signalled after each element of the container"));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Finished", "The container has been fully iterated over"));
-
-                // Properties
-                ScriptCanvas_SerializeProperty(SlotId, m_sourceSlot);
-                ScriptCanvas_SerializeProperty(AZ::TypeId, m_previousTypeId);
-                ScriptCanvas_SerializeProperty(AZStd::vector<Data::PropertyMetadata>, m_propertySlots);
+                SlotId m_sourceSlot;
+                AZ::TypeId m_previousTypeId;
+                AZStd::vector<Data::PropertyMetadata> m_propertySlots;
 
                 static const size_t k_keySlotIndex;
                 static const size_t k_valueSlotIndex;

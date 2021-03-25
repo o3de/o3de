@@ -38,7 +38,6 @@ ly_add_target(
             AZ::AzCore
             Legacy::CryCommon
             Legacy::EditorLib
-            3rdParty::p4api
 )
 
 ly_add_dependencies(Editor PerforcePlugin)

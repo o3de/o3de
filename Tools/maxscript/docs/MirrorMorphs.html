@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+
+  
+  
+  
+  
+  <title>cryTools: MorphTools: Mirror Morphs</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: MorphTools: Mirroring Morph Targets</h1>
+
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">Mirroring Morphs: Background and Explanation </h2>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><b style=""><o:p></o:p></b>To save time you should mirror your morphs. But this is not
+that easy like it sounds, because you are not able to use the tools which 3D
+Studio Max provides. The problem of the 3Ds Max tools, like the Symmetry
+modifier is that they don&rsquo;t keep your vertex index, which is necessary for
+morphtargets. Here is an example:</p>
+<p style="font-family: Arial;" class="MsoNormal">I selected a vertex which has the vertex ID 442</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Now I add a symmetry modifier to mirror my model and an
+editable poly modifier to select the vertex again.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">As you can see, the vertex ID changed to 1432.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shapetype id="_x0000_t75" coordsize="21600,21600"
+ o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f"
+ stroked="f">
+ <v:stroke joinstyle="miter"/>
+ <v:formulas>
+  <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+  <v:f eqn="sum @0 1 0"/>
+  <v:f eqn="sum 0 0 @1"/>
+  <v:f eqn="prod @2 1 2"/>
+  <v:f eqn="prod @3 21600 pixelWidth"/>
+  <v:f eqn="prod @3 21600 pixelHeight"/>
+  <v:f eqn="sum @0 0 1"/>
+  <v:f eqn="prod @6 1 2"/>
+  <v:f eqn="prod @7 21600 pixelWidth"/>
+  <v:f eqn="sum @8 21600 0"/>
+  <v:f eqn="prod @7 21600 pixelHeight"/>
+  <v:f eqn="sum @10 21600 0"/>
+ </v:formulas>
+ <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+ <o:lock v:ext="edit" aspectratio="t"/>
+</v:shapetype><v:shape id="_x0000_i1025" type="#_x0000_t75" style='width:418.5pt;
+ height:423.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image001.jpg"
+  o:title="vertexB"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 558px; height: 565px;" alt="1" src="images/morph_tut/image001.jpg" v:shapes="_x0000_i1025"><!--[endif]--><o:p><br>
+<br>
+</o:p></p>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: Mirror Deformation: Setup</h2>
+<p style="font-family: Arial;" class="MsoNormal">To mirror morph targets we created our own tool, which keep
+the vertex index. Open <span style="font-weight: bold;">CryTools &gt; Cry MorphManager</span> and open <span style="font-weight: bold;">Mirror
+Deformation</span>.</p>
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1026" type="#_x0000_t75"
+ style='width:153pt;height:279.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image002.jpg"
+  o:title="tool"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 204px; height: 373px;" alt="2" src="images/morph_tut/image002.jpg" v:shapes="_x0000_i1026"><!--[endif]--><br>
+<br>
+Here is a little example scene. </p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">On the left side you see a completely symmetrical mesh. On
+the right is an asymmetrical mesh. Now we want to mirror the right side of the
+morph(the blue mesh) to the left.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1027" type="#_x0000_t75"
+ style='width:565.5pt;height:341.25pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image003.jpg"
+  o:title="6"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 754px; height: 455px;" alt="3" src="images/morph_tut/image003.jpg" v:shapes="_x0000_i1027"><!--[endif]--></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">First you have to set your source object. Simply select your
+main mesh with the neutral facial expression and press the &ldquo;Select Source
+Object&rdquo; button. After you did that, the name of the chosen object will be
+displayed on the button.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1028" type="#_x0000_t75"
+ style='width:575.25pt;height:326.25pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image004.jpg"
+  o:title="5"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 767px; height: 435px;" alt="4" src="images/morph_tut/image004.jpg" v:shapes="_x0000_i1028"><!--[endif]--></p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Now you have to save the vertices which shall be influenced
+by the mirror function. For this select the vertices from one side of the
+model, without the vertices in the center of your head and press &ldquo;Save&rdquo; to save
+your selection.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">After you saved the selection as a file you have to load the
+file into max. Press the load button and chose the file which you recently
+saved.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1029" type="#_x0000_t75"
+ style='width:561.75pt;height:315pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image005.jpg"
+  o:title="8"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 749px; height: 420px;" alt="5" src="images/morph_tut/image005.jpg" v:shapes="_x0000_i1029"><!--[endif]--></p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Next time when you open your maxfile you only have to set
+your source object and load the saved selection.</p>
+
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: Mirror Deformation: Usage</h2>
+<p style="font-family: Arial;" class="MsoNormal">You will notice, that you are now able to use the
+<span style="font-weight: bold;">right-----&gt;left</span> /<span style="font-weight: bold;"> left-----&gt;right </span>buttons.</p>
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1030" type="#_x0000_t75"
+ style='width:149.25pt;height:178.5pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image006.jpg"
+  o:title="t4"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 199px; height: 238px;" alt="6" src="images/morph_tut/image006.jpg" v:shapes="_x0000_i1030"><!--[endif]--><o:p><br>
+</o:p>If want to mirror you object, select &ldquo;<span style="font-weight: bold;">Same Obj</span>&rdquo;. To mirror
+the right side to the left side press <!--[if gte vml 1]><v:shape id="_x0000_i1031"
+ type="#_x0000_t75" style='width:79.5pt;height:15.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image007.jpg"
+  o:title="9"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 106px; height: 21px;" alt="7" src="images/morph_tut/image007.jpg" v:shapes="_x0000_i1031"><!--[endif]--></p>
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1032" type="#_x0000_t75"
+ style='width:958.5pt;height:618pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image008.jpg"
+  o:title="t5"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 1278px; height: 824px;" alt="8" src="images/morph_tut/image008.jpg" v:shapes="_x0000_i1032"><!--[endif]--></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">To flip you object you have the select &ldquo;New Obj&rdquo; instead of
+&ldquo;Same Obj&rdquo;</p>
+
+<p style="font-family: Arial;"></p>
+
+
+<p style="font-family: Arial;"></p>
+
+
+<span style="font-family: Arial;">
+
+</span>
+</body>
+</html>

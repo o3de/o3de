@@ -20,26 +20,31 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
-             Gate::Gate()
-                 : Node()
-                 , m_condition(false)
-             {}
+            Gate::Gate()
+                : Node()
+                , m_condition(false)
+            {}
 
-             void Gate::OnInputSignal(const SlotId&)
-             {
-                 SlotId trueSlot = GateProperty::GetTrueSlotId(this);
-                 SlotId falseSlot = GateProperty::GetFalseSlotId(this);
+            AZ::Outcome<DependencyReport, void> Gate::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport{});
+            }
 
-                 m_condition = GateProperty::GetCondition(this);
-                 if (m_condition)
-                 {
-                     SignalOutput(trueSlot);
-                 }
-                 else
-                 {
-                     SignalOutput(falseSlot);
-                 }
-             }
+            void Gate::OnInputSignal(const SlotId&)
+            {
+                SlotId trueSlot = GateProperty::GetTrueSlotId(this);
+                SlotId falseSlot = GateProperty::GetFalseSlotId(this);
+
+                m_condition = GateProperty::GetCondition(this);
+                if (m_condition)
+                {
+                    SignalOutput(trueSlot);
+                }
+                else
+                {
+                    SignalOutput(falseSlot);
+                }
+            }
         }
     }
 }

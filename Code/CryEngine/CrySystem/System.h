@@ -258,10 +258,6 @@ struct SSystemCVars
     int sys_vtune;
     float sys_update_profile_time;
     int sys_limit_phys_thread_count;
-    int sys_usePlatformSavingAPI;
-#ifndef _RELEASE
-    int sys_usePlatformSavingAPIEncryption;
-#endif
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
     int sys_force_installtohdd_mode;
@@ -476,7 +472,6 @@ public:
 
     IRenderer* GetIRenderer(){ return m_env.pRenderer; }
     ITimer* GetITimer(){ return m_env.pTimer; }
-    INetwork* GetINetwork(){ return m_env.pNetwork; }
     AZ::IO::IArchive* GetIPak() { return m_env.pCryPak; };
     IConsole* GetIConsole() { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole();
@@ -506,7 +501,6 @@ public:
     ILZ4Decompressor* GetLZ4Decompressor() { return m_pILZ4Decompressor; }
     IZStdDecompressor* GetZStdDecompressor() { return m_pIZStdDecompressor; }
     WIN_HWND GetHWND(){ return m_hWnd; }
-    ICrypto* GetCrypto() { return m_crypto; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen();
@@ -687,9 +681,6 @@ private:
 
     //! @name Initialization routines
     //@{
-
-    bool InitNetwork(const SSystemInitParams& startupParams);
-
     bool InitConsole();
     bool InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInitParams& initParams);
 
@@ -903,9 +894,6 @@ private: // ------------------------------------------------------
 
     //! System access to zstd decompressor
     IZStdDecompressor* m_pIZStdDecompressor;
-
-    //! System for cryptography
-    ICrypto* m_crypto;
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;

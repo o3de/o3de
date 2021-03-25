@@ -40,6 +40,7 @@
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
@@ -49,6 +50,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -189,6 +191,15 @@ void SandboxIntegrationManager::Setup()
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SELECTED_SLICE, [this]() {
         SaveSlice(true);
     });
+
+    // Keep a reference to the interface EditorEntityUiInterface.
+    // This is used to register layer entities to their UI handler when the layer component is activated.
+    m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+
+    AZ_Assert((m_editorEntityUiInterface != nullptr),
+        "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
+
+    AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
 
 void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
@@ -248,38 +259,46 @@ void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
 // This event handler is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
 {
-    AZ::SliceComponent* editorRootSlice = nullptr;
-    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(editorRootSlice,
-        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-    AZ_Assert(editorRootSlice, "Editor root slice missing!");
-
-    for (auto restoreItr = m_sliceAssetDeletionErrorRestoreInfos.begin(); restoreItr != m_sliceAssetDeletionErrorRestoreInfos.end(); )
+    bool isLegacySliceSystemEnabled = true;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        isLegacySliceSystemEnabled, &AzToolsFramework::ToolsApplicationRequests::IsLegacySliceSystemEnabled);
+    if (isLegacySliceSystemEnabled)
     {
-        if (restoreItr->m_assetId == assetId)
+        AZ::SliceComponent* editorRootSlice = nullptr;
+        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
+            editorRootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
+        AZ_Assert(editorRootSlice, "Editor root slice missing!");
+
+        for (auto restoreItr = m_sliceAssetDeletionErrorRestoreInfos.begin(); restoreItr != m_sliceAssetDeletionErrorRestoreInfos.end();)
         {
-            for (const auto& entityRestore : restoreItr->m_entityRestoreInfos)
+            if (restoreItr->m_assetId == assetId)
             {
-                const AZ::EntityId& entityId = entityRestore.first;
-                const AZ::SliceComponent::EntityRestoreInfo& restoreInfo = entityRestore.second;
+                for (const auto& entityRestore : restoreItr->m_entityRestoreInfos)
+                {
+                    const AZ::EntityId& entityId = entityRestore.first;
+                    const AZ::SliceComponent::EntityRestoreInfo& restoreInfo = entityRestore.second;
 
-                AZ::Entity* entity = editorRootSlice->FindEntity(entityId);
-                if (entity)
-                {
-                    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity,
-                        entity, restoreInfo, AzToolsFramework::SliceEntityRestoreType::Detached);
+                    AZ::Entity* entity = editorRootSlice->FindEntity(entityId);
+                    if (entity)
+                    {
+                        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
+                            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity, entity, restoreInfo,
+                            AzToolsFramework::SliceEntityRestoreType::Detached);
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            "DetachSliceEntity", entity, "Unable to find previous detached entity of Id %s. Cannot undo \"Detach\" action.",
+                            entityId.ToString().c_str());
+                    }
                 }
-                else
-                {
-                    AZ_Error("DetachSliceEntity", entity, "Unable to find previous detached entity of Id %s. Cannot undo \"Detach\" action.", entityId.ToString().c_str());
-                }
+
+                restoreItr = m_sliceAssetDeletionErrorRestoreInfos.erase(restoreItr);
             }
-
-            restoreItr = m_sliceAssetDeletionErrorRestoreInfos.erase(restoreItr);
-        }
-        else
-        {
-            restoreItr++;
+            else
+            {
+                restoreItr++;
+            }
         }
     }
 }
@@ -360,6 +379,7 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 
 void SandboxIntegrationManager::Teardown()
 {
+    AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     if( m_debugDisplayBusImplementationActive)
@@ -642,8 +662,17 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
     AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
-    SetupSliceContextMenu(menu);
+    if (!GetIEditor()->IsPrefabSystemEnabled())
+    {
+        SetupSliceContextMenu(menu);
+    }
+    else
+    {
+        menu->addSeparator();
 
+        // Allow handlers to append menu items to the context menu
+        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
+    }
 
     action = menu->addAction(QObject::tr("Duplicate"));
     QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
@@ -1382,7 +1411,16 @@ void SandboxIntegrationManager::OnSliceInstantiated(const AZ::Data::AssetId& /*s
         // The second in the pair is the local instance's entity ID.
         m_unsavedEntities.insert(sliceInstantEntityIdPair.second);
     }
+}
 
+void SandboxIntegrationManager::OnLayerComponentActivated(AZ::EntityId entityId)
+{
+    m_editorEntityUiInterface->RegisterEntity(entityId, m_layerUiOverrideHandler.GetHandlerId());
+}
+
+void SandboxIntegrationManager::OnLayerComponentDeactivated(AZ::EntityId entityId)
+{
+    m_editorEntityUiInterface->UnregisterEntity(entityId);
 }
 
 void SandboxIntegrationManager::ContextMenu_NewEntity()
@@ -1422,6 +1460,7 @@ AZ::EntityId SandboxIntegrationManager::ContextMenu_NewLayer()
         return AZ::EntityId();
     }
     m_unsavedEntities.insert(newEntityId);
+
     return newEntityId;
 }
 

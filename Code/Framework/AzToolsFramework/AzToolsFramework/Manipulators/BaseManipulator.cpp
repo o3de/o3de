@@ -26,8 +26,8 @@ namespace AzToolsFramework
 
     AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator, 0)
 
-    static bool EntityIdAndEntityComponentIdComparison(
-        const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
+        static bool EntityIdAndEntityComponentIdComparison(
+            const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
     {
         return entityId == entityComponentId.GetEntityId();
     }
@@ -347,64 +347,64 @@ namespace AzToolsFramework
     void Manipulators::Register(const ManipulatorManagerId manipulatorManagerId)
     {
         ProcessManipulators([manipulatorManagerId](BaseManipulator* manipulator)
-        {
-            manipulator->Register(manipulatorManagerId);
-        });
+            {
+                manipulator->Register(manipulatorManagerId);
+            });
     }
 
     void Manipulators::Unregister()
     {
         ProcessManipulators([](BaseManipulator* manipulator)
-        {
-            if (manipulator->Registered())
             {
-                manipulator->Unregister();
-            }
-        });
+                if (manipulator->Registered())
+                {
+                    manipulator->Unregister();
+                }
+            });
     }
 
     void Manipulators::SetBoundsDirty()
     {
         ProcessManipulators([](BaseManipulator* manipulator)
-        {
-            manipulator->SetBoundsDirty();
-        });
+            {
+                manipulator->SetBoundsDirty();
+            });
     }
 
     void Manipulators::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         ProcessManipulators([&entityComponentIdPair](BaseManipulator* manipulator)
-        {
-            manipulator->AddEntityComponentIdPair(entityComponentIdPair);
-        });
+            {
+                manipulator->AddEntityComponentIdPair(entityComponentIdPair);
+            });
     }
 
     void Manipulators::RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         ProcessManipulators([&entityComponentIdPair](BaseManipulator* manipulator)
-        {
-            manipulator->RemoveEntityComponentIdPair(entityComponentIdPair);
-        });
+            {
+                manipulator->RemoveEntityComponentIdPair(entityComponentIdPair);
+            });
     }
 
     void Manipulators::RemoveEntityId(const AZ::EntityId entityId)
     {
         ProcessManipulators([entityId](BaseManipulator* manipulator)
-        {
-            manipulator->RemoveEntityId(entityId);
-        });
+            {
+                manipulator->RemoveEntityId(entityId);
+            });
     }
 
     bool Manipulators::PerformingAction()
     {
         bool performingAction = false;
         ProcessManipulators([&performingAction](BaseManipulator* manipulator)
-        {
-            if (manipulator->PerformingAction())
             {
-                performingAction = true;
-            }
-        });
+                if (manipulator->PerformingAction())
+                {
+                    performingAction = true;
+                }
+            });
 
         return performingAction;
     }
@@ -413,14 +413,54 @@ namespace AzToolsFramework
     {
         bool registered = false;
         ProcessManipulators([&registered](BaseManipulator* manipulator)
-        {
-            if (manipulator->Registered())
             {
-                registered = true;
-            }
-        });
+                if (manipulator->Registered())
+                {
+                    registered = true;
+                }
+            });
 
         return registered;
+    }
+
+    const AZ::Transform& Manipulators::GetLocalTransform() const
+    {
+        return m_manipulatorSpaceWithLocalTransform.GetLocalTransform();
+    }
+
+    const AZ::Transform& Manipulators::GetSpace() const
+    {
+        return m_manipulatorSpaceWithLocalTransform.GetSpace();
+    }
+
+    void Manipulators::SetSpace(const AZ::Transform& worldFromLocal)
+    {
+        m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
+        SetSpaceImpl(worldFromLocal);
+    }
+
+    void Manipulators::SetLocalTransform(const AZ::Transform& localTransform)
+    {
+        m_manipulatorSpaceWithLocalTransform.SetLocalTransform(localTransform);
+        SetLocalTransformImpl(localTransform);
+    }
+
+    void Manipulators::SetLocalPosition(const AZ::Vector3& localPosition)
+    {
+        m_manipulatorSpaceWithLocalTransform.SetLocalPosition(localPosition);
+        SetLocalPositionImpl(localPosition);
+    }
+
+    void Manipulators::SetLocalOrientation(const AZ::Quaternion& localOrientation)
+    {
+        m_manipulatorSpaceWithLocalTransform.SetLocalOrientation(localOrientation);
+        SetLocalOrientationImpl(localOrientation);
+    }
+
+    void Manipulators::SetNonUniformScale(const AZ::Vector3& nonUniformScale)
+    {
+        m_manipulatorSpaceWithLocalTransform.SetNonUniformScale(nonUniformScale);
+        SetNonUniformScaleImpl(nonUniformScale);
     }
 
     namespace Internal

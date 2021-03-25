@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>cryTools: CryAnimTools</title>
+</head>
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+<h1 style="font-family: Arial; background-color: rgb(192, 192, 192);">CryAnimTools&nbsp;</h1>
+<span style="font-family: Arial;">(CryAnimTools are old and have been
+replaced with animTools, they still exist and are accessible through
+the Control Panel. This is mainly for reference and some old tools that
+were not merged into animTools)</span> 
+<p style="font-family: Arial;">
+<img alt="CryAnimTools Rollout" src="images/animationTools.png" style="border: 0px solid ; margin-right: 1em; width: 204px; height: 2275px; float: left;">
+</p>
+<span style="font-family: Arial;"><br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;"><span style="font-weight: bold;">CryPlantKey</span></span></h2>
+<span style="font-family: Arial;">CryPlantKey is one of the first
+cryTools written, it is used to plant a node (i.e. foot) in a spot
+specified by the animator for a given number of frames.<br>
+<br>
+<span style="font-weight: bold;">Key Type</span><br>
+Here you can set the key type of the keys that are generated. You may
+choose from any of the three supported Biped key types: Planted,
+Sliding, or Free. Checking 'Only for existing' will only overwrite the
+existing keys, if this is unchecked the tool will default to one key
+per frame.<br>
+<br>
+<span style="font-weight: bold;">Begin/End (Set Range)</span><br>
+You can set a range either by entering a numeric range, or by clicking
+the 'begin' and 'end' buttons to dump the current time into the field.<br>
+<br>
+<span style="font-weight: bold;">Use Begin/End - Use Timeline</span><br>
+Upon pressing either of these, the script will run. When 'Use
+Begin/End' is pressed, the values entered in the Begin/End fields will
+be used, when pressing 'Use Animation Range', the beginning and ending
+of the animation range will be used.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;"><span style="font-weight: bold;">BipedTools</span></span></h2>
+<span style="font-family: Arial;">The BipedTools are an extremely user friendly front end to more laborious Biped-related tasks.<br>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">Biped Selection</span><br>
+At the top you see this drop down menu where you select the biped you
+are currently wanting to manipulate. This list is set at the time you
+open the Animation tools, if you have imported other biped and would
+like to update/refresh the list, click the arrow: &lt; . (less than)<br>
+<br>
+<span style="font-weight: bold;">Bip Motion Menu</span><br>
+This takes you to the motion menu tab for the current biped loaded in the tools.<br>
+<br>
+<span style="font-weight: bold;">LoadBIP</span><br>
+An improved (resizable) BIP file requester for loading animations.<br>
+<br>
+<span style="font-weight: bold;">Figure Mode / Hide Biped [Toggles]</span><br>
+These two checkbuttons are toggles, meaning that when you press 'Figure
+Mode' it stays hilighted for the duration that the characte is in
+figure mode. 'Hide Biped is one of the most used buttons in the entire
+Aniamtion toolset; it just hides the entire skeleton.<br>
+<br>
+<span style="font-weight: bold;">In Place Mode [Toggle]</span><br>
+Clikcing the 'In place Mode' toggle will turn on In Place Mode, which
+constrains the motion on X and Y, however, pressing 'X or Y will
+constrain the motion to only the selected axis.<br>
+<br>
+<span style="font-weight: bold;">Select Only Biped Bones</span><br>
+Selects the original biped skeleton, and ignores any extra helper bones
+that have been added. Useful when you want to load up a pose or do some
+motion panel operation to all the original biped bones. (motion panel
+biped options will not load if a single non-original biped bone is in
+the current selection)<br>
+<br>
+<span style="font-weight: bold;">Clamp Timeline</span><br>
+This clamps the timeline at the current key, if you click 'At Last Key'
+it will clamp the timeline at the last keyframe of the currently
+selected object.<br>
+<br>
+<span style="font-weight: bold;">Reverse Animation to FBX Skeleton</span><br>
+This will generate a skeleton with our internal FBX naming convention
+and it will reverse the current animation onto that skeleton. Just give
+the script the start and end frames of the animation you would like to
+reverse.<br>
+<br>
+<span style="font-weight: bold;">Attach Biped to FBX Skeleton / Delete FBX Skeleton</span><br>
+This will copy the animation of an imported FBX skeleton with the
+correct naming convention to the currently loaded biped. 'Delete FBX
+Skeleton' removes the FBX skeleton.<br>
+<br>
+<span style="font-weight: bold;">Collections</span><br>
+This loads Biped pose collections and allows you to manually sync to the latest files from Perforce.<br>
+<br>
+<span style="font-weight: bold;">Crysis Rig Navigator</span><br>
+This acts as a synaptic rig element selector, much like what people are
+used to in Maya, XSI, and MotionBuilder. You can click on part of the
+rig to select it. When working with multiple bipeds in the same scene,
+remember to select the biped you want to manipulate at the top of the
+BipedTools rollout.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Internal Tools/Fixes</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Animation Setup</span><br>
+This drop down menu offers you the choices of none, pistol, rifle, mg,
+and law. Upon selecting a weapon, it appears in the character's hand<br>
+<br>
+<span style="font-weight: bold;">Add Trooper Weapon Bone</span><br>
+This adds a correctly oriented trooper weapon bone into the trooper
+hierarchy. It was made when Antoine needed to iterate through all
+trooper animations and add a central weapon bone.<br>
+<br>
+<span style="font-weight: bold;">XAF Import/Export</span><br>
+This is an XAF importer/exporter for non human characters. The idea was
+to save XML Animation files (XAF) for all non human characters like we
+do BIPs for humans. I implemented it for the trooper, but Animation
+never used it and it does not work for other characters currently.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">GeneralTools</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Change Rotation to TCB</span><br>
+This iterates through all selected objects and changes their rotation
+controllers to TCB. It really comes in handy when trying to export
+vehicles into CryEngine as CGAs (all moving parts need to be TCB).<br>
+<br>
+<span style="font-weight: bold;">Bake Motion to Keys</span><br>
+Bakes all motion on an object to dense keys (1 key/frame)<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">RangeView</span></h2>
+<span style="font-family: Arial;">This drop down menu is populated by
+Animator-created 'time-tagged' sequences. It reads in the names and
+allows you to select individual sequences. When a sequence is selected,
+the timeline beginning/end is set the the time-tagged range's
+beginning/ending.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">MirrorArms</span></h2>
+<span style="font-family: Arial;">When you press 'Mirror' the animation
+from one arm to the other will be mirrored for the frames currently in
+the timeline. 'copy/mirror root anim' will also copy the root and
+reverse it's animation. Keep in mind that you need to be using the
+Crysis first person arms rig, and also that these newly created
+keyframes might not tween correctly to other keys outside of the
+animation range, so you might want to do all keys at once.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Batch Export</span></h2>
+<span style="font-family: Arial;">The Batch Exporter was created to
+manipulate many animations at once, and make sweeping changes in
+animation data. You can do things like add new procedurally driven
+bones to a hierarchy then batch export these bones/animation to 3,000
+animations. You could also flip every animation 180 deg on the Z axis.
+The exporter works by loading many BIP animations onto a currently
+loaded Biped, and exporting them one by one. This makes it very
+flexible, and allows you to generate sweeping changes to the animation
+dataset with relative ease.<br>
+<br>
+<span style="font-weight: bold;">Specify Modes</span><br>
+The idea was that here you couls specify modes, switching from a BIP
+batch exporter to an XAF batch exporter. That idea has currently been
+put on hold, since XAF was not switched to as a standard animation
+format for non-human characters.<br>
+<br>
+<span style="font-weight: bold;">Batch Folder / Save Folder</span><br>
+Here you set the Batch Folder that has trhe BIP files you would like to
+batch process/export, you also select the Save Folder. Upon selecting
+the Batch Folder the Export button should enable with the number of bip
+files there are present to be batched.<br>
+<br>
+<span style="font-weight: bold;">Batching Mutliple Folders</span><br>
+If you check the box next to Multiple Folders, the Add to list button
+should become active. If you press this, your current Batch/Save
+folders will be saved in a que below (Folders to Process in List:). You
+can save your que and load old queues you have made.<br>
+<br>
+<span style="font-weight: bold;">Generate CAL File</span><br>
+This would generate a CAL file for the animations you were batch
+exporting, making it easier to test them and also would make it so you
+did not need to dump those new animations directly into your build. The
+CAL file system has changed a lot in the past months, so this may no
+longer work.<br>
+<br>
+<span style="font-weight: bold;">Log to File</span><br>
+With this enabled, cryTools will generate a log file to the folder in which you are exporting. Here is an example:<br>
+7/20/2006 12:38:22 PM --- Exporting combat_blinded_nw_01<br>
+7/20/2006 12:38:30 PM --- Exporting combat_blinded_pistol_01<br>
+7/20/2006 12:38:40 PM --- Exporting combat_blinded_rifle_01<br>
+7/20/2006 12:38:52 PM --- Exporting combat_callBase_01<br>
+<br>
+<span style="font-weight: bold;">Flip on Z Axis</span><br>
+This will flip all exported animation on the Z axis. This was used to
+convert all out animations from facing -Y direction to +Y direction.<br>
+<br>
+<span style="font-weight: bold;">Export RAW CAF Data</span><br>
+This is somewhat deprecated. It used to export RAW CAF animation data,
+but now we use a different RAW format and compression scheme. This
+option however, is still here for testing and backwards compatibility.<br>
+<br>
+<span style="font-weight: bold;">Save BIP/XAF Files</span><br>
+With this option enabled, the Batch Exporter will also save the BIP
+file when it exports. If you check 'Only Save, No Export, the Batch
+Exporter becomes a kind of "Batch Saver" that can step through folders
+of BIP files and load them onto a new skeleton and resave them with new
+bones or other changes. <br>
+<br>
+
+</span>
+</body>
+</html>

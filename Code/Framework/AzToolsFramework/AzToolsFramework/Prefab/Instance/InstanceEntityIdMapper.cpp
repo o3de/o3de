@@ -42,26 +42,21 @@ namespace AzToolsFramework
                 inputAlias = EntityAlias(inputValue.GetString(), inputValue.GetStringLength());
             }
 
-            if(!inputAlias.empty())
+            if (!inputAlias.empty())
             {
-                auto entityIdMapIter = m_loadingInstance->m_templateToInstanceEntityIdMap.find(inputAlias);
-
-                if (entityIdMapIter != m_loadingInstance->m_templateToInstanceEntityIdMap.end())
+                if (m_isEntityReference)
                 {
-                    mappedValue = entityIdMapIter->second;
+                    m_unresolvedEntityAliases[m_loadingInstance].emplace_back(inputAlias, &outputValue);
                 }
                 else
                 {
-                    if (inputAlias[0] != ReferencePathDelimiter)
+                    mappedValue = AZ::Entity::MakeId();
+
+                    if (m_loadingInstance->RegisterEntity(mappedValue, inputAlias))
                     {
-                        mappedValue = AZ::Entity::MakeId();
+                        m_resolvedEntityAliases[m_loadingInstance].emplace_back(inputAlias, mappedValue);
                     }
                     else
-                    {
-                        mappedValue = ResolveEntityReferencePath(inputAlias);
-                    }
-
-                    if (!m_loadingInstance->RegisterEntity(mappedValue, inputAlias))
                     {
                         mappedValue = AZ::EntityId(AZ::EntityId::InvalidEntityId);
                         context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed,
@@ -92,15 +87,27 @@ namespace AzToolsFramework
             EntityAlias mappedValue;
             if (inputValue.IsValid())
             {
-                auto idMapIter = m_storingInstance->m_instanceToTemplateEntityIdMap.find(inputValue);
-
-                if (idMapIter != m_storingInstance->m_instanceToTemplateEntityIdMap.end())
+                if (m_isEntityReference)
                 {
-                    mappedValue = idMapIter->second;
+                    mappedValue = ResolveReferenceId(inputValue);
                 }
                 else
                 {
-                    mappedValue = ResolveEntityId(inputValue);
+                    auto idMapIter = m_storingInstance->m_instanceToTemplateEntityIdMap.find(inputValue);
+
+                    if (idMapIter != m_storingInstance->m_instanceToTemplateEntityIdMap.end())
+                    {
+                        mappedValue = idMapIter->second;
+                    }
+                    else
+                    {
+                        AZStd::string defaultErrorMessage =
+                            "Entity with Id " + inputValue.ToString() +
+                            " could not be found within its owning instance. Defaulting to invalid Id for Store.";
+
+                        AZ_Assert(false, defaultErrorMessage.c_str());
+                        context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, defaultErrorMessage);
+                    }
                 }
             }
 
@@ -112,6 +119,7 @@ namespace AzToolsFramework
         void InstanceEntityIdMapper::SetStoringInstance(const Instance& storingInstance)
         {
             m_storingInstance = &storingInstance;
+            GetAbsoluteInstanceAliasPath(m_storingInstance, m_instanceAbsolutePath);
         }
 
         void InstanceEntityIdMapper::SetLoadingInstance(Instance& loadingInstance)
@@ -119,77 +127,87 @@ namespace AzToolsFramework
             m_loadingInstance = &loadingInstance;
         }
 
-        AZ::EntityId InstanceEntityIdMapper::ResolveEntityReferencePath(const AZStd::string& entityIdReferencePath)
+        void InstanceEntityIdMapper::FixUpUnresolvedEntityReferences()
         {
-            // If we can't resolve the path treat the entire path as one alias.
-            // Assigning a random id instead of an invalid id will save off a unique mapping.
-            // Allowing the ability to store the instance back to this full alias again.
-            // This prevents the replacement of the path with an empty alias and avoids data loss.
-            AZ::EntityId resolvedId = AZ::Entity::MakeId();
-
-            AZStd::string_view referencePathView = entityIdReferencePath;
-
-            // Trim the starting '/' from the path view as tokenizing it would result in an empty token
-            referencePathView.remove_prefix(1);
-
-            AZStd::optional<AZStd::string_view> currentPathToken = AZ::StringFunc::TokenizeNext(referencePathView, ReferencePathDelimiter);
-
-            const Instance* currentInstance = m_loadingInstance;
-
-            // Walk down the instance hierarchy using the Alias path
-            while(!referencePathView.empty() && currentPathToken.has_value())
+            // Nothing to resolve
+            if (m_unresolvedEntityAliases.empty())
             {
-                auto aliasedInstanceIter = currentInstance->m_nestedInstances.find(currentPathToken.value());
-                if (aliasedInstanceIter != currentInstance->m_nestedInstances.end())
-                {
-                    AZ_Assert(aliasedInstanceIter->second,
-                        "Prefab - EntityIdMapper: An instance of %s contained a null instance using alias %.*s",
-                        currentInstance->GetTemplateSourcePath().c_str(),
-                        aznumeric_cast<int>(currentPathToken.value().size()), currentPathToken.value().data());
+                return;
+            }
 
-                    currentInstance = aliasedInstanceIter->second.get();
+            // Calculate the absolute path to each instance based on its position in the hierarchy
+            // We'll use this to generate the absolute paths of resolved and unresolved aliases
+            AZStd::unordered_map<Instance*, AliasPath> absoluteInstanceAliasPaths;
+            absoluteInstanceAliasPaths.reserve(m_resolvedEntityAliases.bucket_count());
+
+            // Also calculate the absolute path to each resolved entity based on its position in the hierarchy
+            AZStd::unordered_map<AliasPath, AZ::EntityId> resolvedAbsoluteEntityAliasPaths;
+
+            for (auto& [instance, resolvedAliasIdList] : m_resolvedEntityAliases)
+            {
+                AliasPath absoluteInstancePath;
+                GetAbsoluteInstanceAliasPath(instance, absoluteInstancePath);
+
+                absoluteInstanceAliasPaths.emplace(instance, absoluteInstancePath);
+
+                for (auto& [entityAlias, entityId] : resolvedAliasIdList)
+                {
+                    resolvedAbsoluteEntityAliasPaths.emplace(absoluteInstancePath / entityAlias, entityId);
+                }
+            }
+
+            // Using the absolute paths of the instances containing the unresolved aliases
+            // Attempt to find a match within the resolved paths
+            // A match will allow us to update the unresolved reference id to match the id it's referencing
+            for (auto& [instance, unresolvedAliasIdList] : m_unresolvedEntityAliases)
+            {
+                auto findResolvedInstance = absoluteInstanceAliasPaths.find(instance);
+
+                if (findResolvedInstance != absoluteInstanceAliasPaths.end())
+                {
+                    AliasPath& absoluteInstancePath = findResolvedInstance->second;
+
+                    for (auto& [entityAlias, entityPointer] : unresolvedAliasIdList)
+                    {
+                        AliasPath absoluteEntityReferencePath = (absoluteInstancePath / entityAlias).LexicallyNormal();
+
+                        auto foundResolvedPath =
+                            resolvedAbsoluteEntityAliasPaths.find(absoluteEntityReferencePath);
+
+                        if (foundResolvedPath != resolvedAbsoluteEntityAliasPaths.end())
+                        {
+                            *entityPointer = foundResolvedPath->second;
+                        }
+                        else
+                        {
+                            AZ_Warning("Prefabs", false,
+                                "Unable to resolve entity reference alias path [%s] while loading Prefab instance. "
+                                "The reference was likely made on a parent or sibling prefab without the use of an override. "
+                                "Defaulting the reference to an invalid EntityId.",
+                                absoluteEntityReferencePath.String().c_str());
+                        }
+                    }
                 }
                 else
                 {
-                    // If there's ever a path mismatch then there's no valid entity to reference
-                    return resolvedId;
+                    AZ_Assert(false, "Prefabs - "
+                        "Attempted to resolve entity alias path(s) but the instance owning the unresolved reference has no entities. "
+                        "An Entity Reference can only come from an entity/component property.");
                 }
-
-                currentPathToken = AZ::StringFunc::TokenizeNext(referencePathView, ReferencePathDelimiter);
             }
 
-            // If we ever recieved an invalid token then our path was empty or we walked too far
-            if (!currentPathToken.has_value())
-            {
-                return resolvedId;
-            }
-
-            // Our current alias should be an entity in our current instance
-            auto aliasedEntityIter = currentInstance->m_entities.find(currentPathToken.value());
-            if (aliasedEntityIter != currentInstance->m_entities.end())
-            {
-                const AZStd::unique_ptr<AZ::Entity>& aliasedEntity = aliasedEntityIter->second;
-
-                AZ_Assert(aliasedEntity,
-                    "Prefab - EntityIdMapper: An instance of %s contained a null entity using alias %s",
-                     currentInstance->GetTemplateSourcePath().c_str(),
-                    aznumeric_cast<int>(currentPathToken.value().size()), currentPathToken.value().data());
-
-                resolvedId = aliasedEntity->GetId();
-            }
-
-            return resolvedId;
+            return;
         }
 
-        EntityAlias InstanceEntityIdMapper::ResolveEntityId(const AZ::EntityId& entityId)
+        EntityAlias InstanceEntityIdMapper::ResolveReferenceId(const AZ::EntityId& entityId)
         {
             // Acquire the owning instance of our entity
-            InstanceOptionalReference currentInstanceOptionalReference = m_storingInstance->m_instanceEntityMapper->FindOwningInstance(entityId);
+            InstanceOptionalReference owningInstanceReference = m_storingInstance->m_instanceEntityMapper->FindOwningInstance(entityId);
 
             // Start with an empty alias to build out our reference path
             // If we can't resolve this id we'll return a random new alias instead of a reference path
-            EntityAlias resolvedAlias;
-            if (!currentInstanceOptionalReference)
+            AliasPath relativeEntityAliasPath;
+            if (!owningInstanceReference)
             {
                 AZ_Assert(false,
                     "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
@@ -197,41 +215,29 @@ namespace AzToolsFramework
 
                 return Instance::GenerateEntityAlias();
             }
-            Instance* currentInstance = &(currentInstanceOptionalReference->get());
 
-            // This entity should have an alias in its owning instance
-            // If not
-            auto entityAliasIter = currentInstance->m_instanceToTemplateEntityIdMap.find(entityId);
-            if (entityAliasIter == currentInstance->m_instanceToTemplateEntityIdMap.end())
+            Instance* owningInstance = &(owningInstanceReference->get());
+
+            // Build out the absolute path of this alias
+            // so we can compare it to the absolute path of our currently scoped instance
+            GetAbsoluteInstanceAliasPath(owningInstance, relativeEntityAliasPath);
+            relativeEntityAliasPath.Append(owningInstance->GetEntityAlias(entityId)->get());
+
+            return relativeEntityAliasPath.LexicallyRelative(m_instanceAbsolutePath).String();
+        }
+
+        void InstanceEntityIdMapper::GetAbsoluteInstanceAliasPath(const Instance* instance, AliasPath& aliasPathResult)
+        {
+            // Reset the path using our preferred seperator
+            aliasPathResult = AliasPath(m_aliasPathSeperator);
+            const Instance* currentInstance = instance;
+
+            // If no parent instance we are a root instance and our absolute path is empty
+            while (currentInstance->m_parent)
             {
-                AZ_Assert(false,
-                    "Prefab - EntityIdMapper: Instance of Prefab %s was registered to own entity with Id %s. "
-                    "However the entity has no alias within the instance",
-                    currentInstance->GetTemplateSourcePath().c_str(), entityId.ToString().c_str());
-
-                return Instance::GenerateEntityAlias();
-            }
-
-            // Start off the reference path with /EntityAlias
-            resolvedAlias = ReferencePathDelimiter + entityAliasIter->second;
-
-            // Walk up the instance hierarchy
-            while (currentInstance)
-            {
-                if (currentInstance == m_storingInstance)
-                {
-                    // Path is resolved if we intersect with the instance resolving this id
-                    return resolvedAlias;
-                }
-
-                // Continue building out the reference path
-                // /InstanceAlias/InstanceAlias/EntityAlias
-                resolvedAlias = ReferencePathDelimiter + currentInstance->m_alias + resolvedAlias;
+                aliasPathResult.Append(currentInstance->m_alias);
                 currentInstance = currentInstance->m_parent;
             }
-
-            // If we hit a null instance we failed to resolve the id
-            return Instance::GenerateEntityAlias();
         }
     }
 }

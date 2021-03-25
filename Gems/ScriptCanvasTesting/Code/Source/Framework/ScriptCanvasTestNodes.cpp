@@ -12,9 +12,12 @@
 
 
 #include "ScriptCanvasTestNodes.h"
+
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
+#include <ScriptCanvas/Grammar/GrammarContext.h>
+#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 
 #include <gtest/gtest.h>
 
@@ -201,14 +204,10 @@ namespace TestNodes
         return addedSlotId;
     }
 
-    bool AddNodeWithRemoveSlot::RemoveSlot(const ScriptCanvas::SlotId& slotId)
+    bool AddNodeWithRemoveSlot::RemoveSlot(const ScriptCanvas::SlotId& slotId, bool emitWarning /*= true*/)
     {
-        auto dynamicSlotIt = AZStd::find(m_dynamicSlotIds.begin(), m_dynamicSlotIds.end(), slotId);
-        if (dynamicSlotIt != m_dynamicSlotIds.end())
-        {
-            m_dynamicSlotIds.erase(dynamicSlotIt);
-        }
-        return Node::RemoveSlot(slotId);
+        AZStd::erase_if(m_dynamicSlotIds, [slotId](const ScriptCanvas::SlotId& sId) { return (sId == slotId); });
+        return Node::RemoveSlot(slotId, true, emitWarning);
     }
 
     void AddNodeWithRemoveSlot::OnInputSignal(const ScriptCanvas::SlotId& slotId)
@@ -396,7 +395,7 @@ namespace TestNodes
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralOutSlot());
         Node::AddSlot(ScriptCanvas::DataSlotConfiguration(ScriptCanvas::Data::Type::String(), "Result", ScriptCanvas::ConnectionType::Output));
     }
-
+    
     /////////////////////////////
     // ConfigurableUnitTestNode
     /////////////////////////////
@@ -442,11 +441,12 @@ namespace TestNodes
 
     bool ConfigurableUnitTestNode::TestHasConcreteDisplayType(const AZ::Crc32& dynamicGroup) const
     {
-        return HasConcreteDisplayType(dynamicGroup);
+        return FindConcreteDisplayType(dynamicGroup).IsValid();
     }
 
     bool ConfigurableUnitTestNode::TestIsSlotConnectedToConcreteDisplayType(const ScriptCanvas::Slot& slot, ExploredDynamicGroupCache& exploredGroupCache) const
     {
-        return IsSlotConnectedToConcreteDisplayType(slot, exploredGroupCache);
+        return FindConnectedConcreteDisplayType(slot, exploredGroupCache).IsValid();
     }    
 }
+

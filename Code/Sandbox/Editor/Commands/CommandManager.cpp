@@ -148,7 +148,7 @@ bool CEditorCommandManager::RegisterUICommand(
     const char* name,
     const char* description,
     const char* example,
-    const Functor0& functor,
+    const AZStd::function<void()>& functor,
     const CCommand0::SUIInfo& uiInfo)
 {
     bool ok = CommandManagerHelper::RegisterCommand(this, module, name, description, example, functor);

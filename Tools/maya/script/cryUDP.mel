@@ -1,0 +1,157 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+// This script needs to know its own mel name.  If you change the file name, change this.
+global string $cryUDP_nameOfScript = "cryUDP.mel";
+
+
+
+
+global proc UDPCloseWindow()
+{
+	if(`window -ex CRYUDP_WINDOW`) 
+		deleteUI -window CRYUDP_WINDOW;
+}
+
+global proc UDPSave(string $value)
+{
+	string $selected[];
+	$selected = `ls -sl`;
+	if( size($selected) > 0 )
+	{
+		string $node = $selected[0];
+
+		// Add the UDP attribute
+		if( !`attributeExists "UDP" $node` )
+			addAttr -ln UDP -dt "string" $node;
+
+		//string $value = `scrollField -q -text UDP_LINES`;
+		setAttr -type "string" ($node+".UDP") $value;
+
+		//button -e -enable false UDP_SAVEBUTTON;
+	}
+}
+
+
+
+global proc UDPUpdate()
+{
+	int $set = 0;
+	string $selected[];
+	$selected = `ls -sl`;
+	string $nodeName = "<None>";
+	if( size($selected) > 0 )
+	{
+		string $node = $selected[0];
+		$nodeName = $node;
+
+		if( `attributeExists "UDP" $node` )
+		{
+			string $value = `getAttr ($node+".UDP")`;
+			scrollField -e -text $value UDP_LINES;
+			$set = 1;
+		}		
+	}
+	if( $set == 0 )
+		scrollField -e -text "" UDP_LINES;
+
+	text -e -label (" Node : " + $nodeName) UDP_NODE;
+
+	button -e -enable false UDP_SAVEBUTTON;
+}
+
+
+global proc cryPopulatePopup()
+{
+	string $scriptPath = `whatIs "cryUDP.mel"`;
+	string $path = `match "[^ ]*$" $scriptPath`;
+	$path = dirname($path);
+	string $textFile = $path + "/cryUDP_Values.txt";
+	print $textFile;
+	print "\n";
+	
+	$fileId=`fopen $textFile "r"`;
+	
+	string $nextLine = `fgetline $fileId`;
+	while ( size( $nextLine ) > 0 ) 
+	{
+		//$nextLine = ($nextLine + "\n");
+		string $noReturn = `substitute "\n" $nextLine ""`;
+		print ("scrollField -e -it " + $noReturn  + " -ip 0 UDP_LINES;\n");
+		menuItem -label $nextLine -c ("scrollField -e -it \"" + $noReturn + "\" -ip 0 UDP_LINES; scrollField -e -it \"\\n\" -ip 0 UDP_LINES;") -parent UDP_OPTIONMENU;
+		$nextLine = `fgetline $fileId`;
+	}
+	
+			
+	fclose $fileId;
+}
+
+
+global proc cryUDPWindow( )
+{
+	if(!`window -ex CRYUDP_WINDOW`) 
+	{
+		if(`windowPref -exists CRYUDP_WINDOW`) 
+		{
+			windowPref -wh 350 210 -tlc `windowPref -q -topEdge CRYUDP_WINDOW` `windowPref -q -leftEdge CRYUDP_WINDOW` CRYUDP_WINDOW;
+		}
+		window -titleBar true -title "User Defined Properties" -widthHeight 350 210 -sizeable false -mnb false -mxb false CRYUDP_WINDOW;
+
+		$layout1 = `formLayout -numberOfDivisions 100`;
+
+		text -label "Node : <None>" -align "left" -font "boldLabelFont" UDP_NODE;
+		
+		scrollField -keyPressCommand ("button -e -enable true UDP_SAVEBUTTON") UDP_LINES;
+
+		popupMenu -parent UDP_LINES UDP_OPTIONMENU;
+		//menuItem -label "test\n" -c "scrollField -e -it test -ip 0 UDP_LINES;" -parent UDP_OPTIONMENU;
+		cryPopulatePopup();
+
+		button -label "Save" -command ("UDPSave(`scrollField -q -text UDP_LINES`); button -e -enable false UDP_SAVEBUTTON;") UDP_SAVEBUTTON;
+		button -label "Close" -command ("UDPCloseWindow") UDP_CLOSEBUTTON;
+		setParent ..;
+
+		formLayout -edit
+			-attachForm UDP_NODE "top" 5
+			-attachForm UDP_NODE "left" 5
+			-attachForm UDP_NODE "right" 5
+			-attachNone UDP_NODE "bottom"
+			
+			//-attachControl UDP_OPTIONMENU "top" 5 UDP_NODE
+			//-attachForm UDP_OPTIONMENU "left" 5
+			//-attachForm UDP_OPTIONMENU "right" 5
+			//-attachControl UDP_OPTIONMENU "bottom" 5 UDP_LINES 
+
+			-attachControl UDP_LINES "top" 5 UDP_NODE
+			-attachForm UDP_LINES "left" 5
+			-attachForm UDP_LINES "right" 5
+			-attachControl UDP_LINES "bottom" 5 UDP_SAVEBUTTON
+
+			-attachControl UDP_SAVEBUTTON "bottom" 5 UDP_CLOSEBUTTON 
+			-attachForm UDP_SAVEBUTTON "left" 5
+			-attachForm UDP_SAVEBUTTON "right" 5
+			-attachNone UDP_SAVEBUTTON "top"
+
+			-attachForm UDP_CLOSEBUTTON "bottom" 5 
+			-attachForm UDP_CLOSEBUTTON "left" 5
+			-attachForm UDP_CLOSEBUTTON "right" 5
+			-attachNone UDP_CLOSEBUTTON "top"
+		$layout1;
+
+		UDPUpdate();
+
+		showWindow CRYUDP_WINDOW;	
+
+		scriptJob -event "SelectionChanged" "UDPUpdate" -parent "CRYUDP_WINDOW";
+	}
+}

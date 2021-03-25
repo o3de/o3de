@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
@@ -49,6 +50,14 @@ namespace AzToolsFramework
                 const AZStd::string* defaultSourcePath = defaultInstance ? &defaultInstance->GetTemplateSourcePath() : nullptr;
 
                 result = ContinueStoringToJsonObjectField(outputValue, "Source", sourcePath, defaultSourcePath, azrtti_typeid<AZStd::string>(), context);
+            }
+            
+            {
+                AZ::ScopedContextPath subPathContainerEntity(context, "m_containerEntity");
+                JSR::ResultCode resultContainerEntity = ContinueStoringToJsonObjectField(outputValue, "ContainerEntity",
+                    &instance->m_containerEntity, nullptr, azrtti_typeid<decltype(instance->m_containerEntity)>(), context);
+
+                result.Combine(resultContainerEntity);
             }
 
             {
@@ -94,15 +103,8 @@ namespace AzToolsFramework
 
             InstanceEntityIdMapper** idMapper = context.GetMetadata().Find<InstanceEntityIdMapper*>();
 
-            if (idMapper && *idMapper)
-            {
-                (*idMapper)->SetLoadingInstance(*instance);
-            }
-
             JSR::ResultCode result(JSR::Tasks::ReadField);
             {
-                AZ::ScopedContextPath subPathSource(context, "Source");
-
                 JSR::ResultCode sourceLoadResult =
                     ContinueLoadingFromJsonObjectField(&instance->m_templateSourcePath, azrtti_typeid<AZStd::string>(), inputValue, "Source", context);
 
@@ -123,8 +125,6 @@ namespace AzToolsFramework
             }
 
             {
-                AZ::ScopedContextPath subPathInstances(context, "Instances");
-
                 // An already filled instance should be cleared if inputValue's Instances member is empty
                 // The Json serializer will not do this by default as it will not attempt to load a missing member
                 if (!instance->m_nestedInstances.empty() && !inputValue.HasMember("Instances"))
@@ -146,19 +146,32 @@ namespace AzToolsFramework
                 result.Combine(instanceResult);
             }
 
+            // An already filled instance should be cleared if inputValue's Entities member is empty
+            // The Json serializer will not do this by default as it will not attempt to load a missing member
+            instance->ClearEntities();
+
+            if (instance->m_containerEntity)
             {
-                AZ::ScopedContextPath subPathEntities(context, "Entities");
+                instance->m_instanceEntityMapper->UnregisterEntity(instance->m_containerEntity->GetId());
+            }
 
-                // An already filled instance should be cleared if inputValue's Entities member is empty
-                // The Json serializer will not do this by default as it will not attempt to load a missing member
-                instance->ClearEntities();
+            if (idMapper && *idMapper)
+            {
+                (*idMapper)->SetLoadingInstance(*instance);
+            }
 
+            {
+                JSR::ResultCode containerEntityResult = ContinueLoadingFromJsonObjectField(
+                    &instance->m_containerEntity, azrtti_typeid<decltype(instance->m_containerEntity)>(), inputValue, "ContainerEntity", context);
+
+                result.Combine(containerEntityResult);
+            }
+
+            {
                 result.Combine(ContinueLoadingFromJsonObjectField(&instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context));
             }
 
             {
-                AZ::ScopedContextPath subPathEntities(context, "LinkId");
-
                 result.Combine(ContinueLoadingFromJsonObjectField(&instance->m_linkId, azrtti_typeid<LinkId>(), inputValue, "LinkId", context));
             }
 

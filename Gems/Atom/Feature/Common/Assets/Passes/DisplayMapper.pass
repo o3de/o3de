@@ -12,6 +12,11 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                },
                 {
                     "Name": "Output",
                     "SlotType": "Output",

@@ -15,6 +15,7 @@
 #include "Time.h"
 #include <ScriptCanvas/Core/Attributes.h>
 
+#include <ScriptCanvas/Internal/Nodeables/BaseTimer.h>
 #include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 
 namespace ScriptCanvas
@@ -42,18 +43,24 @@ namespace ScriptCanvas
                 }
             }
 
+            ScriptCanvas::Nodeables::Time::BaseTimer::Reflect(reflection);
             ScriptCanvas::Nodes::Internal::BaseTimerNode::Reflect(reflection);
         }
 
         void Time::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
-            using namespace ScriptCanvas::Nodes::Time;
-            AddNodeToRegistry<Time, Countdown>(nodeRegistry);
-            AddNodeToRegistry<Time, Duration>(nodeRegistry);
-            AddNodeToRegistry<Time, HeartBeat>(nodeRegistry);
-            AddNodeToRegistry<Time, TickDelay>(nodeRegistry);
-            AddNodeToRegistry<Time, TimeDelay>(nodeRegistry);
-            AddNodeToRegistry<Time, Timer>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Countdown>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Duration>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::HeartBeat>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TickDelay>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TimeDelay>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Timer>(nodeRegistry);
+
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::DelayNodeableNode>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::DurationNodeableNode>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::HeartBeatNodeableNode>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimeDelayNodeableNode>(nodeRegistry);
+            AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimerNodeableNode>(nodeRegistry);
         }
         
         AZStd::vector<AZ::ComponentDescriptor*> Time::GetComponentDescriptors()
@@ -65,6 +72,12 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Time::Duration::CreateDescriptor(),
                 ScriptCanvas::Nodes::Time::HeartBeat::CreateDescriptor(),
                 ScriptCanvas::Nodes::Time::Timer::CreateDescriptor(),
+
+                ScriptCanvas::Nodes::DelayNodeableNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::DurationNodeableNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::HeartBeatNodeableNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::TimeDelayNodeableNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::TimerNodeableNode::CreateDescriptor(),
             });
         }
     }

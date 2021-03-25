@@ -1,4 +1,5 @@
 {
+    "gem_name": "PhysXDebug",
     "Dependencies": [
         {
             "Uuid": "4e08125824434932a0fe3717259caa47",

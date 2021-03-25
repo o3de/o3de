@@ -14,7 +14,6 @@
 
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Data/PropertyTraits.h>
@@ -29,18 +28,15 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! Provides a node for retreiving the value of a variable
             class GetVariableNode
                 : public Node
                 , protected VariableNotificationBus::Handler
                 , protected VariableNodeRequestBus::Handler
             {
             public:
-                ScriptCanvas_Node(GetVariableNode,
-                    ScriptCanvas_Node::Name("Get Variable", "Node for referencing a property within the graph")
-                    ScriptCanvas_Node::Uuid("{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(GetVariableNode);
 
                 // Node
                 void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
@@ -56,7 +52,21 @@ namespace ScriptCanvas
 
                 const SlotId& GetDataOutSlotId() const;
 
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                PropertyFields GetPropertyFields() const override;
+
+                VariableId GetVariableIdRead(const Slot*) const override;
+
+                const Slot* GetVariableOutputSlot() const override;
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
+                bool IsSupportedByNewBackend() const override { return true; }
+
             protected:
+
                 void OnInit() override;
                 void OnPostActivate() override;
                 void OnInputSignal(const SlotId&) override;
@@ -81,19 +91,9 @@ namespace ScriptCanvas
 
                 void RefreshPropertyFunctions();
 
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "When signaled sends the property referenced by this node to a Data Output slot"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled after the referenced property has been pushed to the Data Output slot"));
-
-                ScriptCanvas_EditPropertyWithDefaults(VariableId, m_variableId, , EditProperty::NameLabelOverride("Variable Name"),
-                    EditProperty::DescriptionTextOverride("Name of ScriptCanvas Variable"),
-                    EditProperty::UIHandler(AZ::Edit::UIHandlers::ComboBox),
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::GenericValueList(&GetVariableNode::GetGraphVariables), AZ::Edit::Attributes::PostChangeNotify(&GetVariableNode::OnIdChanged)));
-
-                ScriptCanvas_SerializeProperty(SlotId, m_variableDataOutSlotId);
-
-                ScriptCanvas_SerializeProperty(AZStd::vector<Data::PropertyMetadata>, m_propertyAccounts);
+                VariableId m_variableId;
+                SlotId m_variableDataOutSlotId;
+                AZStd::vector<Data::PropertyMetadata> m_propertyAccounts;
 
                 AZStd::string_view m_variableName;
                 ModifiableDatumView m_variableView;

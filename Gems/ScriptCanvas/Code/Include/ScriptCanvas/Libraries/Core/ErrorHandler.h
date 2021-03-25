@@ -30,13 +30,13 @@ namespace ScriptCanvas
 
                 AZStd::vector<AZStd::pair<Node*, const SlotId>> GetSources() const;
 
-                
+                bool IsDeprecated() const override { return true; }
 
             protected:
                 static const char* k_sourceName;
                 void OnInit() override;
             };
 
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        } 
+    } 
+} 

@@ -16,100 +16,162 @@
 
 namespace AzFramework
 {
-    void ViewportControllerList::Add(ViewportControllerPtr controller, ViewportControllerList::Priority priority)
+    void ViewportControllerList::Add(ViewportControllerPtr controller)
     {
-        auto controllerIt = AZStd::find_if(
-            m_controllers.begin(), m_controllers.end(),
-            [controller](const ViewportControllerData& data)
+        for (auto &controllerData : m_controllers)
         {
-            return data.controller == controller;
-        });
-        if (controllerIt != m_controllers.end())
-        {
-            AZ_Assert(false, "Attempted to add a duplicate controller to a ViewportControllerList");
-            return;
+            auto& controllerList = controllerData.second;
+            auto controllerIt = AZStd::find(
+                controllerList.begin(), controllerList.end(),
+                controller
+            );
+            if (controllerIt != controllerList.end())
+            {
+                AZ_Assert(false, "Attempted to add a duplicate controller to a ViewportControllerList");
+                return;
+            }
         }
-        m_controllers.push_back({controller, priority});
+        m_controllers[controller->GetPriority()].push_back(controller);
         for (auto viewportId : m_viewports)
         {
             controller->RegisterViewportContext(viewportId);
         }
-        SortControllers();
     }
 
     void ViewportControllerList::Remove(ViewportControllerPtr controller)
     {
-        m_controllers.erase(AZStd::remove_if(
-            m_controllers.begin(), m_controllers.end(),
-            [controller](const ViewportControllerData& data)
+        for (auto &controllerData : m_controllers)
         {
-            return data.controller == controller;
-        }));
-    }
-
-    void ViewportControllerList::SetPriority(ViewportControllerPtr controller, ViewportControllerList::Priority priority)
-    {
-        auto controllerIt = AZStd::find_if(
-            m_controllers.begin(), m_controllers.end(),
-            [controller](const ViewportControllerData& data)
-        {
-            return data.controller == controller;
-        });
-        if (controllerIt != m_controllers.end())
-        {
-            controllerIt->priority = priority;
+            auto& controllerList = controllerData.second;
+            controllerList.erase(AZStd::remove(controllerList.begin(), controllerList.end(), controller));
         }
-        SortControllers();
     }
 
-    bool ViewportControllerList::HandleInputChannelEvent(ViewportId viewport, const AzFramework::InputChannel& inputChannel)
+    bool ViewportControllerList::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        // Iterate in forward order, so that the lowest priority values get the first opportunity to consume the event
-        for (const auto& controllerInfo : m_controllers)
+        // If our event priority is "custom", we should dispatch at all priority levels in order
+        using AzFramework::ViewportControllerPriority;
+        if (event.m_priority == AzFramework::ViewportControllerPriority::DispatchToAllPriorities)
         {
-            if (controllerInfo.controller->HandleInputChannelEvent(viewport, inputChannel))
+            AzFramework::ViewportControllerInputEvent syntheticEvent = event;
+            for (const auto priority : {
+                ViewportControllerPriority::Highest,
+                ViewportControllerPriority::High,
+                ViewportControllerPriority::Normal,
+                ViewportControllerPriority::Low,
+                ViewportControllerPriority::Lowest })
             {
-                return true;
+                syntheticEvent.m_priority = priority;
+                if (DispatchInputChannelEvent(syntheticEvent))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        else
+        {
+            // Otherwise, dispatch to controllers at our priority
+            return DispatchInputChannelEvent(event);
+        }
+    }
+
+    bool ViewportControllerList::DispatchInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
+    {
+        if (auto priorityListIt = m_controllers.find(event.m_priority); priorityListIt != m_controllers.end())
+        {
+            for (const auto& controller : priorityListIt->second)
+            {
+                if (controller->HandleInputChannelEvent(event))
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Also dispatch to any nested controllers with "Custom" priority
+        if (auto priorityListIt = m_controllers.find(ViewportControllerPriority::DispatchToAllPriorities);
+            priorityListIt != m_controllers.end())
+        {
+            for (const auto& controller : priorityListIt->second)
+            {
+                if (controller->HandleInputChannelEvent(event))
+                {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    void ViewportControllerList::UpdateViewport(ViewportId viewport, FloatSeconds deltaTime, AZ::ScriptTimePoint time)
+    void ViewportControllerList::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
-        // Iterate in reverse order, so that the lowest priority values go last
-        // This lets authoritative state changes in controllers with priority "win"
-        for (auto controllerIt = m_controllers.rbegin(), end = m_controllers.rend(); controllerIt != end; ++controllerIt)
+        // If our event priority is "custom", we should dispatch at all priority levels in reverse order
+        // Reverse order lets high priority controllers get the last say in viewport update operations
+        using AzFramework::ViewportControllerPriority;
+        if (event.m_priority == AzFramework::ViewportControllerPriority::DispatchToAllPriorities)
         {
-            controllerIt->controller->UpdateViewport(viewport, deltaTime, time);
+            AzFramework::ViewportControllerUpdateEvent syntheticEvent = event;
+            for (const auto priority : {
+                ViewportControllerPriority::Lowest,
+                ViewportControllerPriority::Low,
+                ViewportControllerPriority::Normal,
+                ViewportControllerPriority::High,
+                ViewportControllerPriority::Highest })
+            {
+                syntheticEvent.m_priority = priority;
+                DispatchUpdateViewport(syntheticEvent);
+            }
+        }
+        else
+        {
+            // Otherwise, dispatch to controllers at our priority
+            DispatchUpdateViewport(event);
+        }
+    }
+
+    void ViewportControllerList::DispatchUpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
+    {
+        if (auto priorityListIt = m_controllers.find(event.m_priority); priorityListIt != m_controllers.end())
+        {
+            for (const auto& controller : priorityListIt->second)
+            {
+                controller->UpdateViewport(event);
+            }
+        }
+
+        // Also dispatch to any nested controllers with "Custom" priority
+        if (auto priorityListIt = m_controllers.find(ViewportControllerPriority::DispatchToAllPriorities);
+            priorityListIt != m_controllers.end())
+        {
+            for (const auto& controller : priorityListIt->second)
+            {
+                controller->UpdateViewport(event);
+            }
         }
     }
 
     void ViewportControllerList::RegisterViewportContext(ViewportId viewport)
     {
         m_viewports.insert(viewport);
-        for (const auto& controllerInfo : m_controllers)
+        for (auto& controllerData : m_controllers)
         {
-            controllerInfo.controller->RegisterViewportContext(viewport);
+            for (auto& controller : controllerData.second)
+            {
+                controller->RegisterViewportContext(viewport);
+            }
         }
     }
 
     void ViewportControllerList::UnregisterViewportContext(ViewportId viewport)
     {
         m_viewports.erase(viewport);
-        for (const auto& controllerInfo : m_controllers)
+        for (auto& controllerData : m_controllers)
         {
-            controllerInfo.controller->UnregisterViewportContext(viewport);
+            for (auto& controller : controllerData.second)
+            {
+                controller->UnregisterViewportContext(viewport);
+            }
         }
-    }
-
-    void ViewportControllerList::SortControllers()
-    {
-        AZStd::sort(
-            m_controllers.begin(), m_controllers.end(),
-            [](const ViewportControllerData& d1, const ViewportControllerData& d2)
-        {
-            return d1.priority < d2.priority;
-        });
     }
 } //namespace AzFramework

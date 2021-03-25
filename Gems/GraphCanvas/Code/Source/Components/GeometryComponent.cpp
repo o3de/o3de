@@ -19,6 +19,7 @@
 
 #include <Components/Nodes/NodeComponent.h>
 #include <GraphCanvas/tools.h>
+#include <GraphCanvas/Utils/ConversionUtils.h>
 
 namespace GraphCanvas
 {
@@ -110,9 +111,9 @@ namespace GraphCanvas
     void GeometryComponent::SetPosition(const AZ::Vector2& position)
     {
         if (!position.IsClose(m_saveData.m_position)
-            && (!m_animating || !m_animatingPosition.IsClose(position)))
+            && (!IsAnimating() || !m_animatingPosition.IsClose(position)))
         {
-            if (!m_animating)
+            if (!IsAnimating())
             {
                 m_saveData.m_position = position;
             }
@@ -123,7 +124,7 @@ namespace GraphCanvas
 
             GeometryNotificationBus::Event(GetEntityId(), &GeometryNotifications::OnPositionChanged, GetEntityId(), position);
 
-            if (!m_animating)
+            if (!IsAnimating())
             {
                 m_saveData.SignalDirty();
             }
@@ -135,7 +136,36 @@ namespace GraphCanvas
         GeometryNotificationBus::Event(GetEntityId(), &GeometryNotifications::OnBoundsChanged);
     }
 
-    void GeometryComponent::OnItemChange([[maybe_unused]] const AZ::EntityId& entityId, QGraphicsItem::GraphicsItemChange change, const QVariant& value)
+    void GeometryComponent::SetIsPositionAnimating(bool animating)
+    {
+        if (m_animating != animating)
+        {
+            m_animating = animating;
+
+            if (m_animating)
+            {
+                // Store the animating position separate from the savedata position
+                // so any attempts to save will cause appropriate data to be saved
+                // while visually I can animate cleanly between the values.
+                m_animatingPosition = m_saveData.m_position;
+            }
+            else
+            {
+                AZ::Vector2 forcedPosition = m_saveData.m_position;
+
+                // Force the alignment to wherever we were aiming at.
+                ForceSetPosition(forcedPosition);
+            }
+        }
+    }
+
+    void GeometryComponent::SetAnimationTarget(const AZ::Vector2& targetPoint)
+    {
+        m_saveData.m_position = targetPoint;
+        m_saveData.SignalDirty();
+    }
+
+    void GeometryComponent::OnItemChange(const AZ::EntityId& entityId, QGraphicsItem::GraphicsItemChange change, const QVariant& value)
     {
         AZ_Assert(entityId == GetEntityId(), "EIDs should match");
 
@@ -144,45 +174,13 @@ namespace GraphCanvas
         case QGraphicsItem::ItemPositionChange:
         {
             QPointF qt = value.toPointF();
-            SetPosition(::AZ::Vector2(aznumeric_cast<float>(qt.x()), aznumeric_cast<float>(qt.y())));
+            SetPosition(ConversionUtils::QPointToVector(qt));
+
             break;
         }
         default:
             break;
         }
-    }
-
-    void GeometryComponent::OnPositionAnimateBegin(const AZ::Vector2& targetPoint)
-    {
-        // Store the animating position separate from the savedata position
-        // so any attempts to save will cause appropriate data to be saved
-        // while visually I can lerp cleanly between the values.
-        m_animatingPosition = m_saveData.m_position;
-
-        // Set a flag so we know not to signal out tha the save data needs to be dirtied while the element
-        // is moving
-        m_animating = true;
-        m_saveData.m_position = targetPoint;        
-        m_saveData.SignalDirty();
-    }
-
-    void GeometryComponent::OnPositionAnimateEnd()
-    {
-        m_animating = false;
-
-        // Force the alignment to wherever we were aiming at.
-        AZ::Vector2 position = m_saveData.m_position;
-
-        if (m_saveData.m_position.IsZero())
-        {
-            m_saveData.m_position = AZ::Vector2(1,1);
-        }
-        else
-        {
-            m_saveData.m_position = AZ::Vector2::CreateZero();
-        }
-
-        SetPosition(position);
     }
 
     void GeometryComponent::WriteSaveData(EntitySaveDataContainer& saveDataContainer) const
@@ -203,5 +201,24 @@ namespace GraphCanvas
         {
             m_saveData = (*saveData);
         }
+    }
+
+    void GeometryComponent::ForceSetPosition(const AZ::Vector2& forcedPosition)
+    {
+        if (forcedPosition.IsZero())
+        {
+            m_saveData.m_position = AZ::Vector2(1, 1);
+        }
+        else
+        {
+            m_saveData.m_position = AZ::Vector2::CreateZero();
+        }
+
+        SetPosition(forcedPosition);
+    }
+
+    bool GeometryComponent::IsAnimating() const
+    {
+        return m_animating;
     }
 }

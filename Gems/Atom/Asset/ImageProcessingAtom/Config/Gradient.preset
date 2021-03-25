@@ -38,13 +38,6 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "IsPowerOf2": true
-            },
-            "xenia": {
-                "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
-                "Name": "Gradient",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "IsPowerOf2": true
             }
         }
     }

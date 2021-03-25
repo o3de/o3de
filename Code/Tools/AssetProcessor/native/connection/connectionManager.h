@@ -109,10 +109,10 @@ Q_SIGNALS:
 
     void ReadyToQuit(QObject* source);
 
-    void SyncWhiteListAndRejectedList(QStringList whiteList, QStringList rejectedList);
+    void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
 
-    // this is a response to the whitelist request with that same token.
-    void AddressIsWhiteListed(void* token, bool result);
+    // this is a response to the allowedlist request with that same token.
+    void AddressIsInAllowedList(void* token, bool result);
 
     void FirstTimeAddedToRejctedList(QString ipAddress);
 
@@ -123,10 +123,10 @@ public Q_SLOTS:
     void MakeSureConnectionMapEmpty();
     void NewConnection(qintptr socketDescriptor);
     
-    void WhiteListingEnabled(bool enabled);
-    void IsAddressWhiteListed(QHostAddress hostAddress, void* token);
-    void AddWhiteListedAddress(QString address);
-    void RemoveWhiteListedAddress(QString address);
+    void AllowedListingEnabled(bool enabled);
+    void IsAddressInAllowedList(QHostAddress hostAddress, void* token);
+    void AddAddressToAllowedList(QString address);
+    void RemoveAddressFromAllowedList(QString address);
     void AddRejectedAddress(QString address, bool surpressWarning = false);
     void RemoveRejectedAddress(QString address);
 
@@ -185,7 +185,7 @@ public Q_SLOTS:
 
     void OnStatusChanged(unsigned int connId);
     
-    void UpdateWhiteListFromBootStrap();
+    void UpdateAllowedListFromBootStrap();
 
 private:
 
@@ -205,11 +205,11 @@ private:
     // the key is the name of the platform, and the value is the number of those kind of platforms.
     QHash<QString, int> m_platformsConnected;
 
-    //white listing
-    bool m_whiteListingEnabled = true;
+    //allowed listing
+    bool m_allowedListingEnabled = true;
 
     //these lists are just caches, only used for updating    
-    QStringList m_whiteListedAddresses;
+    QStringList m_allowedListAddresses;
     QStringList m_rejectedAddresses;
 };
 

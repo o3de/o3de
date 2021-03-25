@@ -23,6 +23,8 @@
 #include "GLRenderUtil.h"
 #include "GBuffer.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 
 namespace RenderGL
@@ -39,6 +41,7 @@ namespace RenderGL
 
 
     class RENDERGL_API GraphicsManager
+        : private QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(GraphicsManager, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
@@ -95,7 +98,6 @@ namespace RenderGL
         MCORE_INLINE void SetRenderTexture(RenderTexture* texture)                              { mRenderTexture = texture; }
         MCORE_INLINE void SetShaderPath(const char* shaderPath)                                 { mShaderPath = shaderPath; }
 
-        MCORE_INLINE void SetAdvancedRendering(bool enabled)                                    { mAdvancedRendering = enabled; }
         MCORE_INLINE void SetBloomEnabled(bool enabled)                                         { mBloomEnabled     = enabled; }
         MCORE_INLINE void SetBloomThreshold(float threshold)                                    { mBloomThreshold   = threshold; }
         MCORE_INLINE void SetBloomIntensity(float intensity)                                    { mBloomIntensity   = intensity; }
@@ -116,7 +118,6 @@ namespace RenderGL
         MCORE_INLINE void SetMainLightAngleB(float angleInDegrees)                              { mMainLightAngleB  = angleInDegrees; }
         MCORE_INLINE void SetSpecularIntensity(float intensity)                                 { mSpecularIntensity = intensity; }
 
-        MCORE_INLINE bool GetAdvancedRendering() const                                          { return mAdvancedRendering; }
         MCORE_INLINE bool GetBloomEnabled() const                                               { return mBloomEnabled; }
         MCORE_INLINE float GetBloomThreshold() const                                            { return mBloomThreshold; }
         MCORE_INLINE float GetBloomIntensity() const                                            { return mBloomIntensity; }
@@ -178,7 +179,6 @@ namespace RenderGL
         GLRenderUtil*       mRenderUtil;    /**< The rendering utility. */
         TextureCache        mTextureCache;  /**< The texture manager used to load and manage textures. */
 
-        bool                mAdvancedRendering;
         bool                mBloomEnabled;
         float               mBloomThreshold;
         float               mBloomIntensity;

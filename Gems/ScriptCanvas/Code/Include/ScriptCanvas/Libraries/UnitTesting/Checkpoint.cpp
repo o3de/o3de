@@ -24,13 +24,10 @@ namespace ScriptCanvas
             {
                 const auto report = FindDatum(GetSlotId("Report"))->GetAs<Data::StringType>();
 
-                ScriptCanvas::UnitTesting::Bus::Event
-                          ( GetOwningScriptCanvasId()
-                          , &ScriptCanvas::UnitTesting::BusTraits::Checkpoint
-                          , *report);
+                ScriptCanvas::UnitTesting::Bus::Event(GetOwningScriptCanvasId(), &ScriptCanvas::UnitTesting::BusTraits::Checkpoint, *report);
                 
                 SignalOutput(GetSlotId("Out"));
             }
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        }
+    }
+}

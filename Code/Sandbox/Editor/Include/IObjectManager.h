@@ -63,7 +63,10 @@ public:
     virtual ~IObjectManager() = default;
 
     //! This callback will be called on response to object event.
-    typedef Functor2<CBaseObject*, int> EventCallback;
+    struct EventListener
+    {
+        virtual void OnObjectEvent(CBaseObject*, int) = 0;
+    };
 
     virtual CBaseObject* NewObject(CObjectClassDesc* cls, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr) = 0;
     virtual CBaseObject* NewObject(const QString& typeName, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr) = 0;
@@ -257,8 +260,8 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // ObjectManager notification Callbacks.
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddObjectEventListener(const EventCallback& cb) = 0;
-    virtual void RemoveObjectEventListener(const EventCallback& cb) = 0;
+    virtual void AddObjectEventListener(EventListener* listener) = 0;
+    virtual void RemoveObjectEventListener(EventListener* listener) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Used to indicate starting and ending of objects loading.

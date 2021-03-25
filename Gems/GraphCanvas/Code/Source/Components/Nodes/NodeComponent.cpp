@@ -123,6 +123,7 @@ namespace GraphCanvas
     {
         GraphCanvasPropertyComponent::Deactivate();
 
+        GroupableSceneMemberRequestBus::Handler::BusDisconnect();
         SceneMemberRequestBus::Handler::BusDisconnect();
         NodeRequestBus::Handler::BusDisconnect();
 
@@ -140,16 +141,13 @@ namespace GraphCanvas
         ConnectionNotificationBus::Handler::BusDisconnect();
     }
 
-    void NodeComponent::OnConnectedTo([[maybe_unused]] const AZ::EntityId& connectionId, [[maybe_unused]] const Endpoint& endpoint)
+    void NodeComponent::OnConnectedTo(const AZ::EntityId& /*connectionId*/, const Endpoint& /*endpoint*/)
     {
         UpdateDisabledStateVisuals();
     }
 
-    void NodeComponent::OnDisconnectedFrom(const AZ::EntityId& connectionId, const Endpoint& endpoint)
+    void NodeComponent::OnDisconnectedFrom(const AZ::EntityId& /*connectionId*/, const Endpoint& /*endpoint*/)
     {
-        AZ_UNUSED(connectionId);
-        AZ_UNUSED(endpoint);
-
         RootGraphicsItemRequests* itemInterface = RootGraphicsItemRequestBus::FindFirstHandler(GetEntityId());
 
         if (itemInterface)
@@ -167,7 +165,7 @@ namespace GraphCanvas
         }
     }
 
-    void NodeComponent::OnEntityExists([[maybe_unused]] const AZ::EntityId& entityId)
+    void NodeComponent::OnEntityExists(const AZ::EntityId& /*entityId*/)
     {
         // Temporary version conversion added in 1.xx to add a PersistentId onto the SceneMembers.
         // Remove after a few revisions with warnings about resaving graphs.
@@ -190,6 +188,7 @@ namespace GraphCanvas
 
         NodeRequestBus::Handler::BusConnect(GetEntityId());
         SceneMemberRequestBus::Handler::BusConnect(GetEntityId());
+        GroupableSceneMemberRequestBus::Handler::BusConnect(GetEntityId());
 
         for (AZ::Entity* slotEntity : m_slots)
         {
@@ -277,27 +276,7 @@ namespace GraphCanvas
     {
         return m_sceneId;
     }
-
-    bool NodeComponent::LockForExternalMovement(const AZ::EntityId& sceneMemberId)
-    {
-        // If we are wrapped, this means we should not be moving independently
-        // So we never want to let someone else lock us for external movement.
-        if (!m_wrappingNode.IsValid() && !m_lockingSceneMember.IsValid())
-        {
-            m_lockingSceneMember = sceneMemberId;
-        }
-
-        return m_lockingSceneMember == sceneMemberId;
-    }
-
-    void NodeComponent::UnlockForExternalMovement(const AZ::EntityId& sceneMemberId)
-    {
-        if (m_lockingSceneMember == sceneMemberId)
-        {
-            m_lockingSceneMember.SetInvalid();
-        }
-    }
-        
+    
     void NodeComponent::OnSceneReady()
     {
         SceneMemberNotificationBus::Event(GetEntityId(), &SceneMemberNotifications::OnSceneReady);
@@ -671,6 +650,11 @@ namespace GraphCanvas
         m_saveData.SignalDirty();
     }
 
+    void NodeComponent::SignalNodeAboutToBeDeleted()
+    {
+        NodeNotificationBus::Event(GetEntityId(), &NodeNotifications::OnNodeAboutToBeDeleted);
+    }
+
     void NodeComponent::OnMoveFinalized(bool isValidConnection)
     {
         if (isValidConnection)
@@ -679,6 +663,41 @@ namespace GraphCanvas
         }
 
         ConnectionNotificationBus::Handler::BusDisconnect();
+    }
+
+    bool NodeComponent::IsGrouped() const
+    {
+        return !IsWrapped() && m_owningGroupId.IsValid();
+    }
+
+    const AZ::EntityId& NodeComponent::GetGroupId() const
+    {
+        return m_owningGroupId;
+    }
+
+    void NodeComponent::RegisterToGroup(const AZ::EntityId& groupId)
+    {
+        if (!IsWrapped())
+        {
+            m_owningGroupId = groupId;
+            GroupableSceneMemberNotificationBus::Event(GetEntityId(), &GroupableSceneMemberNotifications::OnGroupChanged);
+        }
+    }
+
+    void NodeComponent::UnregisterFromGroup(const AZ::EntityId& groupId)
+    {
+        if (m_owningGroupId == groupId)
+        {
+            m_owningGroupId.SetInvalid();
+            GroupableSceneMemberNotificationBus::Event(GetEntityId(), &GroupableSceneMemberNotifications::OnGroupChanged);
+        }
+    }
+    void NodeComponent::RemoveFromGroup()
+    {
+        if (m_owningGroupId.IsValid())
+        {
+            NodeGroupRequestBus::Event(m_owningGroupId, &NodeGroupRequests::RemoveElementFromGroup, GetEntityId());
+        }
     }
 
     void NodeComponent::HideUnusedSlotsImpl()

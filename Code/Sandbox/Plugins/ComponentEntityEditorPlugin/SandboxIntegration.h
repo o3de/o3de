@@ -23,7 +23,10 @@
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/UI/Layer/LayerUiHandler.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/UI/Slice/SliceOverridesNotificationWindowManager.hxx>
 #include <AzToolsFramework/UI/Slice/SliceOverridesNotificationWindow.hxx>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -74,6 +77,8 @@ class CHyperGraph;
 
 namespace AzToolsFramework
 {
+    class EditorEntityUiInterface;
+
     namespace AssetBrowser
     {
         class AssetSelectionModel;
@@ -95,6 +100,7 @@ class SandboxIntegrationManager
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
     , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
+    , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
 
@@ -314,6 +320,10 @@ private:
     // Listens for Cry Undo System events.
     void UndoStackFlushed() override;
 
+    // EditorLayerRequestBus...
+    void OnLayerComponentActivated(AZ::EntityId entityId) override;
+    void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
+
 private:
     void SetupFileExtensionMap();
     // Right click context menu when a layer is included in the selection.
@@ -369,6 +379,13 @@ private:
     const AZStd::string m_defaultEntityIconLocation = "Editor/Icons/Components/Viewport/Transform.png";
 
     bool m_debugDisplayBusImplementationActive = false;
+
+    AzToolsFramework::Prefab::PrefabIntegrationManager m_prefabIntegrationManager;
+
+    AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+
+    // Overrides UI styling and behavior for Layer Entities
+    AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
 };
 
 //////////////////////////////////////////////////////////////////////////

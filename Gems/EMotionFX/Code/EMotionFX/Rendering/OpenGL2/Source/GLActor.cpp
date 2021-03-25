@@ -12,7 +12,6 @@
 
 #include <AzCore/Math/Vector2.h>
 
-#include "GLInclude.h"
 #include <AzCore/Debug/Timer.h>
 #include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
 #include <EMotionFX/Source/Node.h>
@@ -22,7 +21,6 @@
 #include "GraphicsManager.h"
 #include "glactor.h"
 #include "StandardMaterial.h"
-
 
 namespace RenderGL
 {
@@ -34,14 +32,11 @@ namespace RenderGL
         mEnableGPUSkinning  = true;
 
         mMaterials.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mDynamicNodes.SetMemoryCategory(MEMCATEGORY_RENDERING);
 
         mHomoMaterials.SetMemoryCategory(MEMCATEGORY_RENDERING);
 
         for (uint32 i = 0; i < 3; i++)
         {
-            mPrimitives[i].SetMemoryCategory(MEMCATEGORY_RENDERING);
-            mVertexBuffers[i].SetMemoryCategory(MEMCATEGORY_RENDERING);
             mIndexBuffers[i].SetMemoryCategory(MEMCATEGORY_RENDERING);
         }
 
@@ -119,6 +114,10 @@ namespace RenderGL
     // initialize based on an EMotion FX Actor
     bool GLActor::Init(EMotionFX::Actor* actor, const char* texturePath, bool gpuSkinning, bool removeGPUSkinnedMeshes)
     {
+        if (QOpenGLContext::currentContext())
+        {
+            initializeOpenGLFunctions();
+        }
         AZ::Debug::Timer initTimer;
         initTimer.Stamp();
 
@@ -214,9 +213,9 @@ namespace RenderGL
                     materialPrims->mPrimitives[meshType].Add(newPrimitive);
 
                     totalNumIndices[meshType] += newPrimitive.mNumTriangles * 3;
+                    totalNumVerts[meshType] += subMesh->GetNumVertices();
                 }
 
-                totalNumVerts[meshType] += mesh->GetNumVertices();
 
                 // add dynamic meshes to the dynamic node list
                 if (meshType == EMotionFX::Mesh::MESHTYPE_CPU_DEFORMED)
@@ -386,6 +385,11 @@ namespace RenderGL
     // render the given actor instance
     void GLActor::Render(EMotionFX::ActorInstance* actorInstance, uint32 renderFlags)
     {
+        if (!mActor->IsReady())
+        {
+            return;
+        }
+
         // make sure our actor instance is valid and that we initialized the gl actor
         assert(mActor && actorInstance);
 
@@ -474,7 +478,7 @@ namespace RenderGL
     {
         // get the number of dynamic nodes
         const uint32 lodLevel = actorInstance->GetLODLevel();
-        const uint32 numNodes = mDynamicNodes.GetNumElements(lodLevel);
+        const size_t numNodes = mDynamicNodes.GetNumElements(lodLevel);
         if (numNodes == 0)
         {
             return;
@@ -496,11 +500,11 @@ namespace RenderGL
         uint32 globalVert = 0;
 
         // iterate through the nodes
-        for (uint32 n = 0; n < numNodes; ++n)
+        for (size_t n = 0; n < numNodes; ++n)
         {
             // get the node and its mesh
-            const uint32        nodeIndex   = mDynamicNodes.GetElement(lodLevel, n);
-            EMotionFX::Mesh*    mesh        = mActor->GetMesh(lodLevel, nodeIndex);
+            const size_t        nodeIndex   = mDynamicNodes.GetElement(lodLevel, n);
+            EMotionFX::Mesh*    mesh        = mActor->GetMesh(lodLevel, aznumeric_cast<uint32>(nodeIndex));
 
             // is the mesh valid?
             if (mesh == nullptr)
@@ -624,8 +628,8 @@ namespace RenderGL
                     for (uint32 v = 2; v < numPolyVerts; v++)
                     {
                         dynamicIndices[totalNumDynamicIndices++] = indices[polyStartIndex]          + dynamicOffset;
-                        dynamicIndices[totalNumDynamicIndices++] = indices[polyStartIndex + v]      + dynamicOffset;
-                        dynamicIndices[totalNumDynamicIndices++] = indices[polyStartIndex + v - 1]  + dynamicOffset;
+                        dynamicIndices[totalNumDynamicIndices++] = indices[polyStartIndex + v - 1]      + dynamicOffset;
+                        dynamicIndices[totalNumDynamicIndices++] = indices[polyStartIndex + v]  + dynamicOffset;
                     }
                     polyStartIndex += numPolyVerts;
                 }
@@ -647,8 +651,8 @@ namespace RenderGL
                     for (uint32 v = 2; v < numPolyVerts; v++)
                     {
                         staticIndices[totalNumStaticIndices++] = indices[polyStartIndex]            + staticOffset;
-                        staticIndices[totalNumStaticIndices++] = indices[polyStartIndex + v]        + staticOffset;
-                        staticIndices[totalNumStaticIndices++] = indices[polyStartIndex + v - 1]    + staticOffset;
+                        staticIndices[totalNumStaticIndices++] = indices[polyStartIndex + v - 1]        + staticOffset;
+                        staticIndices[totalNumStaticIndices++] = indices[polyStartIndex + v]    + staticOffset;
                     }
                     polyStartIndex += numPolyVerts;
                 }
@@ -671,8 +675,8 @@ namespace RenderGL
                     for (uint32 v = 2; v < numPolyVerts; v++)
                     {
                         skinnedIndices[totalNumSkinnedIndices++] = indices[polyStartIndex]          + gpuSkinnedOffset;
-                        skinnedIndices[totalNumSkinnedIndices++] = indices[polyStartIndex + v]      + gpuSkinnedOffset;
-                        skinnedIndices[totalNumSkinnedIndices++] = indices[polyStartIndex + v - 1]  + gpuSkinnedOffset;
+                        skinnedIndices[totalNumSkinnedIndices++] = indices[polyStartIndex + v - 1]      + gpuSkinnedOffset;
+                        skinnedIndices[totalNumSkinnedIndices++] = indices[polyStartIndex + v]  + gpuSkinnedOffset;
                     }
                     polyStartIndex += numPolyVerts;
                 }
@@ -879,8 +883,8 @@ namespace RenderGL
                     skinnedVertices[globalVert].mUV         = (uvsA == nullptr) ? AZ::Vector2(0.0f, 0.0f) : uvsA[meshVertexNr];
 
                     // get the number of influences and iterate through them
-                    const uint32 numInfluences = skinningInfo->GetNumInfluences(orgVertex);
-                    uint32 i;
+                    const size_t numInfluences = skinningInfo->GetNumInfluences(orgVertex);
+                    size_t i;
                     for (i = 0; i < numInfluences; ++i)
                     {
                         // get the influence and its weight and set the indices
@@ -892,7 +896,7 @@ namespace RenderGL
                     }
 
                     // reset remaining weights and offsets
-                    for (uint32 a = i; a < 4; ++a)
+                    for (size_t a = i; a < 4; ++a)
                     {
                         skinnedVertices[globalVert].mWeights[a]     = 0.0f;
                         skinnedVertices[globalVert].mBoneIndices[a] = 0;

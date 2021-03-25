@@ -12,8 +12,8 @@
 
 #include "precompiled.h"
 #include "DebugLibraryDefinition.h"
-#include "Log.h"
 #include "DrawText.h"
+#include "DrawTextNodeable.h"
 #include <ScriptCanvas/Libraries/Libraries.h>
 
 namespace ScriptCanvas
@@ -43,14 +43,14 @@ namespace ScriptCanvas
         void Debug::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             Library::AddNodeToRegistry<Debug, Nodes::Debug::DrawTextNode>(nodeRegistry);
-            Library::AddNodeToRegistry<Debug, Nodes::Debug::Log>(nodeRegistry);
+            //Library::AddNodeToRegistry<Debug, Nodes::DrawTextNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Debug::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
                 Nodes::Debug::DrawTextNode::CreateDescriptor(),
-                Nodes::Debug::Log::CreateDescriptor(),
+               // Nodes::DrawTextNodeableNode::CreateDescriptor(),
             });
         }
     }

@@ -194,7 +194,8 @@ namespace AzToolsFramework
                     ->Field("m_name", &AssetBrowserEntry::m_name)
                     ->Field("m_children", &AssetBrowserEntry::m_children)
                     ->Field("m_row", &AssetBrowserEntry::m_row)
-                    ->Version(1);
+                    ->Field("m_fullPath", &AssetBrowserEntry::m_fullPath)
+                    ->Version(2);
             }
         }
 

@@ -25,26 +25,6 @@ namespace EMotionFX
     {
         namespace Data
         {
-            LodNodeSelectionList::LodNodeSelectionList()
-            : m_lodLevel(0)
-            {
-            }
-
-            LodNodeSelectionList::LodNodeSelectionList(AZ::u32 lodLevel)
-            : m_lodLevel(lodLevel)
-            {
-            }
-
-            AZStd::string LodNodeSelectionList::GetNameLabelOverride() const
-            {
-                return AZStd::string::format("LOD %d", m_lodLevel);
-            }
-
-            AZ::u32 LodNodeSelectionList::GetLODLevel() const
-            {
-                return m_lodLevel;
-            }
-
             bool LodNodeSelectionList::ContainsNode(const AZStd::string & nodeName) const
             {
                 for (const AZStd::string& nodePath : m_selectedNodes)
@@ -78,12 +58,10 @@ namespace EMotionFX
                 {
                     editContext->Class<LodNodeSelectionList>("LOD Node selection list", "Select node for each LOD.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &LodNodeSelectionList::GetNameLabelOverride)
-                            ->Attribute("NarrowSelection", true)
-                            ->Attribute("FilterName", "nodes")
-                            ->Attribute("FilterType", azrtti_typeid<SceneDataTypes::IBoneData>())
-                            ->Attribute("FilterType", azrtti_typeid<SceneDataTypes::IMeshData>())
-                            ->Attribute("HideUncheckable", true);
+                        ->Attribute("NarrowSelection", true)
+                        ->Attribute("FilterName", "joints")
+                        ->Attribute("FilterType", azrtti_typeid<SceneDataTypes::IBoneData>())
+                        ->Attribute("HideUncheckable", true);
                 }
             }
         }

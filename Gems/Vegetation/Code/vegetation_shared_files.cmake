@@ -10,6 +10,8 @@
 #
 
 set(FILES
+    Source/AreaSystemComponent.cpp
+    Source/AreaSystemComponent.h
     Source/VegetationModule.cpp
     Source/VegetationModule.h
 )

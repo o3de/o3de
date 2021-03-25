@@ -37,32 +37,11 @@ namespace EMotionFX
                 : SceneGraphWidget(scene, targetList, parent)
                 , m_hideUncheckableItem(false)
             {
-                AZ_Error("EMotionFX", azrtti_istypeof<Data::LodNodeSelectionList>(m_targetList.get()), "LOD SceneGraph widget must be used on LodNodeSelectionList");
-
-                // Store a local list of LOD node for this level. Then we can compare this list with the actual selected node list in LOD Rule.
-                Data::LodNodeSelectionList* lodNodeList = azrtti_cast<Data::LodNodeSelectionList*>(m_targetList.get());
-                const AZ::u32 lodRuleIndex = lodNodeList->GetLODLevel() - 1;
-                Utilities::LODSelector::SelectLODNodes(scene, m_LODSelectionList, lodRuleIndex);
             }
 
             void LODSceneGraphWidget::HideUncheckableItem(bool hide)
             {
                 m_hideUncheckableItem = hide;
-            }
-
-            bool LODSceneGraphWidget::IsFilteredType([[maybe_unused]] const AZStd::shared_ptr<const SceneDataTypes::IGraphObject>& object,
-                SceneContainers::SceneGraph::NodeIndex index) const
-            {
-                // In the LOD specific version of SceneGraphWidget, we want to filter out nodes that aren't belong to this LOD Level.
-                // Noted: We intentionally skip the filterType check in base class because we know only the filter type nodes should be included in mLODSelectionList.
-                const SceneContainers::SceneGraph& graph = m_scene.GetGraph();
-                const char* nodePath = graph.ConvertToNameIterator(index)->GetPath();
-                if (m_LODSelectionList.ContainsNode(nodePath))
-                {
-                    return true;
-                }
-
-                return false;
             }
 
             void LODSceneGraphWidget::Build()
@@ -87,18 +66,20 @@ namespace EMotionFX
                 }
 
                 auto sceneGraphView = SceneContainers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
-                auto sceneGraphDownardsIteratorView = SceneContainers::Views::MakeSceneGraphDownwardsView<SceneContainers::Views::BreadthFirst>(
+                auto sceneGraphDownwardsIteratorView = SceneContainers::Views::MakeSceneGraphDownwardsView<SceneContainers::Views::BreadthFirst>(
                     graph, graph.GetRoot(), sceneGraphView.begin(), true);
 
                 // Some importer implementations may write an empty node to force collection all items under a common root
                 //  If that is the case, we're going to skip it so we don't show the user an empty node root
-                auto iterator = sceneGraphDownardsIteratorView.begin();
-                if (iterator->first.GetPathLength() == 0 && !iterator->second)
+                auto startIterator = sceneGraphDownwardsIteratorView.begin();
+                if (startIterator->first.GetPathLength() == 0 && !startIterator->second)
                 {
-                    ++iterator;
+                    ++startIterator;
                 }
 
-                for (; iterator != sceneGraphDownardsIteratorView.end(); ++iterator)
+                // 1. First find all the items to add to this widget.
+                AZStd::unordered_map<SceneContainers::SceneGraph::NodeIndex::IndexType, bool> itemsToAdd;
+                for (auto iterator = startIterator; iterator != sceneGraphDownwardsIteratorView.end(); ++iterator)
                 {
                     SceneContainers::SceneGraph::HierarchyStorageConstIterator hierarchy = iterator.GetHierarchyIterator();
                     SceneContainers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(hierarchy);
@@ -152,6 +133,33 @@ namespace EMotionFX
                         continue;
                     }
 
+                    itemsToAdd.emplace(currentIndex.AsNumber(), isCheckable);
+
+                    // We want to add all parent item to this item as well.
+                    SceneContainers::SceneGraph::NodeIndex parentIndex = graph.GetNodeParent(currentIndex);
+                    while (parentIndex.IsValid())
+                    {
+                        if (itemsToAdd.contains(parentIndex.AsNumber()))
+                        {
+                            break;
+                        }
+                        itemsToAdd.emplace(parentIndex.AsNumber(), true);
+                        parentIndex = graph.GetNodeParent(parentIndex);
+                    }
+                }
+
+                // 2. Add all the items following the scene graph order.
+                for (auto iterator = startIterator; iterator != sceneGraphDownwardsIteratorView.end(); ++iterator)
+                {
+                    SceneContainers::SceneGraph::HierarchyStorageConstIterator hierarchy = iterator.GetHierarchyIterator();
+                    SceneContainers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(hierarchy);
+                    if (!itemsToAdd.contains(currentIndex.AsNumber()))
+                    {
+                        continue;
+                    }
+
+                    AZStd::shared_ptr<const SceneDataTypes::IGraphObject> currentItem = iterator->second;
+                    const bool isCheckable = itemsToAdd[currentIndex.AsNumber()];
                     QStandardItem* treeItem = BuildTreeItem(currentItem, iterator->first, isCheckable, hierarchy->IsEndPoint());
                     if (isCheckable)
                     {
@@ -162,8 +170,8 @@ namespace EMotionFX
                         }
                         m_totalCount++;
                     }
-
                     m_treeItems[currentIndex.AsNumber()] = treeItem;
+
                     SceneContainers::SceneGraph::NodeIndex parentIndex = graph.GetNodeParent(currentIndex);
                     if (parentIndex.IsValid() && m_treeItems[parentIndex.AsNumber()])
                     {

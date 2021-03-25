@@ -137,7 +137,6 @@
 #include <ITimer.h>
 #include <IXml.h>
 #include <IMovieSystem.h>
-#include <functor.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Commonly used Editor includes.
@@ -155,7 +154,6 @@
 
 // Utility classes.
 #include "Util/bitarray.h"
-#include "Util/FunctorMulticaster.h"
 #include "Util/RefCountBase.h"
 #include "Util/TRefCountBase.h"
 #include "Util/MemoryBlock.h"

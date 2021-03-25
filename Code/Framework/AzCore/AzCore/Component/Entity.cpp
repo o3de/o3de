@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/EntityIdSerializer.h>
+#include <AzCore/Component/EntitySerializer.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -71,38 +72,27 @@ namespace AZ
         }
     };
 
-    Entity::Entity(const char* name)
-        : m_state(State::Constructed)
-        , m_transform(nullptr)
-        , m_isDependencyReady(false)
-        , m_isRuntimeActiveByDefault(true)
+    //=========================================================================
+    // Entity
+    // [5/31/2012]
+    //=========================================================================
+    Entity::Entity(AZStd::string name)
+        : Entity(MakeId(), AZStd::move(name))
     {
-        m_id = MakeId();
-        if (name)
-        {
-            m_name = name;
-        }
-        else
-        {
-            to_string(m_name, static_cast<u64>(m_id));
-        }
     }
 
-    Entity::Entity(const EntityId& id, const char* name)
+    //=========================================================================
+    // Entity
+    // [5/30/2012]
+    //=========================================================================
+    Entity::Entity(const EntityId& id, AZStd::string name)
         : m_id(id)
-        , m_state(State::Constructed)
         , m_transform(nullptr)
+        , m_name{ name.empty() ? AZStd::to_string(static_cast<u64>(m_id)) : AZStd::move(name) }
+        , m_state(State::Constructed)
         , m_isDependencyReady(false)
         , m_isRuntimeActiveByDefault(true)
     {
-        if (name)
-        {
-            m_name = name;
-        }
-        else
-        {
-            to_string(m_name, static_cast<u64>(m_id));
-        }
     }
 
     Entity::~Entity()
@@ -825,6 +815,7 @@ namespace AZ
         AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(reflection);
         if (jsonRegistration)
         {
+            jsonRegistration->Serializer<JsonEntitySerializer>()->HandlesType<Entity>();
             jsonRegistration->Serializer<JsonEntityIdSerializer>()->HandlesType<EntityId>();
         }
     }
@@ -1153,8 +1144,8 @@ namespace AZ
                     {
                         if (processingRequiredServices)
                         {
-                            return FailureCode(DependencySortResult::MissingRequiredService, "Component '%s' is missing another required component.",
-                                componentInfo.m_component->RTTI_GetTypeName());
+                            return FailureCode(DependencySortResult::MissingRequiredService, "Component '%s' is missing another required service: 0x%0x",
+                                componentInfo.m_component->RTTI_GetTypeName(), service);
                         }
                         else
                         {

@@ -1,0 +1,11 @@
+{
+    "Amazon": {
+        "Gems": {
+            "PhysX": {
+                "Debug": {
+                    "PhysXDebugConfiguration": {}
+                }
+            }
+        }
+    }
+}

@@ -10,14 +10,16 @@
 *
 */
 
-#include "precompiled.h"
 #include "TranslationUtilities.h"
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileIOEventBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <stdarg.h> 
+
+#include "Configuration.h"
 
 namespace TranslationUtilitiesCPP
 {
@@ -26,7 +28,7 @@ namespace TranslationUtilitiesCPP
     
     const char* k_namespaceNameNative = "AutoNative";
     const char* k_fileDirectoryPathNative = "@engroot@/Gems/ScriptCanvas/Include/ScriptCanvas/AutoNative";
-    const char* k_fileDirectoryPathLua = "@engroot@/Gems/ScriptCanvas/Scripts/AutoLua";
+    const char* k_fileDirectoryPathLua = "@engroot@/DebugScriptCanvas2LuaOutput/";
     const char* k_space = " ";
     
     const size_t k_maxTabs = 20;
@@ -69,6 +71,11 @@ namespace TranslationUtilitiesCPP
         text.append(GetTabs(indent));
     }
 
+    AZStd::string GetDebugLuaFilePath(const Grammar::Source& source, AZStd::string_view extension)
+    {
+        return AZStd::string::format("%s%s_VM.%s", TranslationUtilitiesCPP::k_fileDirectoryPathLua, source.m_name.data(), extension.data());
+    }
+
     class FileEventHandler
         : public AZ::IO::FileIOEventBus::Handler
     {
@@ -81,7 +88,12 @@ namespace TranslationUtilitiesCPP
             BusConnect();
         }
 
-        void OnError(const AZ::IO::SystemFile* file, const char* fileName, int errorCode) override
+        ~FileEventHandler()
+        {
+            BusDisconnect();
+        }
+
+        void OnError(const AZ::IO::SystemFile* /*file*/, const char* fileName, int errorCode) override
         {
             m_errorCode = errorCode;
             
@@ -113,15 +125,13 @@ namespace TranslationUtilitiesCPP
  
              fileIO->SetAlias("@engroot@", engineRoot);
         }
-        
-        // create an auto-gen directory layout that matches the layout of where the .scriptcanvas assets are saved
-        const AZStd::string filePath = AZStd::string::format("%s/%s%s.%s", TranslationUtilitiesCPP::k_fileDirectoryPathNative, source.m_path.c_str(), source.m_name.data(), extension.data());
+        // \todo get a (debug) file path based on the extension
+        const AZStd::string filePath = TranslationUtilitiesCPP::GetDebugLuaFilePath(source, extension);
 
         FileEventHandler eventHandler;
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         const AZ::IO::Result fileOpenResult = fileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle);
-
         if (fileOpenResult != AZ::IO::ResultCode::Success)
         {
             return AZ::Failure(AZStd::string::format("Failed to open file: %s, error code: %d", filePath.c_str(), eventHandler.m_errorCode));
@@ -140,15 +150,41 @@ namespace TranslationUtilitiesCPP
         }
 
         return AZ::Success();
-    } // AZ::Outcome<void, AZStd::string> SaveFile(const Grammar::Source& source, AZStd::string_view text, AZStd::string_view extension)
+    }
 
-} // namespace TranslationUtilitiesCPP
+}
 
 namespace ScriptCanvas
 {
     namespace Translation
     {
-        const char* GetAmazonCopyright()
+        AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config)
+        {
+            if (entityId == GraphOwnerId)
+            {
+                return config.m_executionStateEntityIdRef;
+            }
+            else if (entityId == UniqueId)
+            {
+                return config.m_executionStateScriptCanvasIdRef;
+            }
+            else
+            {
+                return EntityIdToU64String(entityId);
+            }
+        }
+
+        AZStd::string EntityIdToU64String(const AZ::EntityId& entityId)
+        {
+            return AZStd::string::format("%llu", AZ::u64(entityId));
+        }
+
+        AZStd::string_view GetAutoNativeNamespace()
+        {
+            return TranslationUtilitiesCPP::k_namespaceNameNative;
+        }
+
+        AZStd::string_view GetAmazonCopyright()
         {
             return
                 "* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or\n"
@@ -163,18 +199,13 @@ namespace ScriptCanvas
                 ;
         }
 
-        const char* GetDoNotModifyCommentText()
+        AZStd::string_view GetDoNotModifyCommentText()
         {
             return 
                 "DO NOT MODIFY THIS FILE, IT IS AUTO-GENERATED FROM A SCRIPT CANVAS GRAPH!"
                 ;
         }
 
-        const char* GetAutoNativeNamespace()
-        {
-            return TranslationUtilitiesCPP::k_namespaceNameNative;
-        }
-                
         AZ::Outcome<void, AZStd::string> SaveDotCPP(const Grammar::Source& source, AZStd::string_view dotCPP)
         {
             return TranslationUtilitiesCPP::SaveFile(source, dotCPP, "cpp");
@@ -267,6 +298,6 @@ namespace ScriptCanvas
             m_output.append(TranslationUtilitiesCPP::k_space);
         }
 
-    } // namespace Translation
+    } 
 
-} // namespace ScriptCanvas
+} 

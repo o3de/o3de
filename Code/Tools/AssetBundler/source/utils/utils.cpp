@@ -121,7 +121,7 @@ namespace AssetBundler
 
     namespace Internal
     {
-        const AZ::u32 PlatformFlags_RESTRICTED = aznumeric_cast<AZ::u32>(AzFramework::PlatformFlags::Platform_JASPER | AzFramework::PlatformFlags::Platform_PROVO | AzFramework::PlatformFlags::Platform_SALEM | AzFramework::PlatformFlags::Platform_XENIA);
+        const AZ::u32 PlatformFlags_RESTRICTED = aznumeric_cast<AZ::u32>(AzFramework::PlatformFlags::Platform_JASPER | AzFramework::PlatformFlags::Platform_PROVO | AzFramework::PlatformFlags::Platform_SALEM);
 
         void AddPlatformSeeds(
             AZStd::string rootFolder,

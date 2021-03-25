@@ -16,52 +16,61 @@ namespace ScriptCanvasTests
 {
     ScriptCanvasEditor::UnitTestResult VerifyReporterEditor(const ScriptCanvasEditor::Reporter& reporter)
     {
-        ScriptCanvasEditor::UnitTestResult result = ScriptCanvasEditor::UnitTestResult(false, true, "");
+        ScriptCanvasEditor::UnitTestResult result = ScriptCanvasEditor::UnitTestResult::AssumeFailure();
 
-        if (!reporter.GetScriptCanvasId().IsValid())
+        AZStd::string details;
+
+        if (!reporter.IsCompiled())
         {
-            result.m_consoleOutput += "Graph is not valid\n";
+            details = "Graph did not compile.\n";
         }
         else if (reporter.IsReportFinished())
         {
+            result.m_compiled = true;
+
             const auto& successes = reporter.GetSuccess();
             for (const auto& success : successes)
             {
-                result.m_consoleOutput += "SUCCESS - ";
-                result.m_consoleOutput += success.data();
-                result.m_consoleOutput += "\n";
+                details += "SUCCESS - ";
+                details += success.data();
+                details += "\n";
             }
 
             if (!reporter.IsActivated())
             {
-                result.m_consoleOutput += "Graph did not activate\n";
+                details += "Graph did not activate\n";
             }
 
             if (!reporter.IsDeactivated())
             {
-                result.m_consoleOutput += "Graph did not deactivate\n";
+                // \todo track this more aggressively, graphs should deactivate
+                details += "Graph did not deactivate\n";
             }
 
             if (!reporter.IsErrorFree())
             {
-                result.m_consoleOutput += "Graph had errors\n";
+                details += "Graph had errors\n";
             }
 
             const auto& failures = reporter.GetFailure();
             for (const auto& failure : failures)
             {
-                result.m_consoleOutput += "FAILURE - ";
-                result.m_consoleOutput += failure.data();
-                result.m_consoleOutput += "\n";
+                details += "FAILURE - ";
+                details += failure.data();
+                details += "\n";
             }
 
             if (!reporter.IsComplete())
             {
-                result.m_consoleOutput += "Graph was not marked complete\n";
+                details += "Graph was not marked complete\n";
             }
 
             const auto& checkpoints = reporter.GetCheckpoints();
-            if (!checkpoints.empty())            
+            if (checkpoints.empty())
+            {
+                details += "No checkpoints or other unit test nodes found, using them can help parse graph test failures\n";
+            }
+            else
             {
                 AZStd::string checkpointPath = "Checkpoint Path:\n";
                 int i = 0;
@@ -70,28 +79,26 @@ namespace ScriptCanvasTests
                 {
                     checkpointPath += AZStd::string::format("%2d: %s\n", ++i, checkpoint.data());
                 }
-
-                result.m_consoleOutput += checkpointPath.data();
+                details += checkpointPath.data();
             }
 
             if (reporter.IsComplete() && failures.empty())
             {
-                result.m_consoleOutput += "COMPLETE!\n";
-                result.m_success = true;
-
+                result.m_completed = true;
+                result.m_consoleOutput = "SUCCEEDED, COMPLETE!\n";
+                result.m_consoleOutput += details;
                 return result;
             }
-
         }
         else
         {
-            result.m_consoleOutput += "Graph report did not finish\n";
+            result.m_compiled = true;
+            details += "Graph report did not finish\n";
         }
 
-        result.m_consoleOutput += "FAILED!\n";
-        result.m_success = false;
-
+        result.m_consoleOutput = "FAILED!\n";
+        result.m_consoleOutput += details;
         return result;
     }
 
-} // namespace ScriptCanvasTests
+}

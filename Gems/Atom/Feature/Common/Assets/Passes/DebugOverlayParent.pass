@@ -1,0 +1,115 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DebugOverlayParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "RawLightingInput",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "LuminanceMipChainInput",
+                    "SlotType": "Input"
+                },
+                // Input/Outputs...
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "LightCullingHeatmapPass",
+                    "TemplateName": "LightCullingHeatmapTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "LuminanceHistogramGenerator",
+                    "TemplateName": "LuminanceHistogramGeneratorTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RawLightingInput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "LuminanceHeatmap",
+                    "TemplateName": "LuminanceHeatmapTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RawLightingInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SceneLuminanceInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LuminanceMipChainInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Histogram",
+                            "AttachmentRef": {
+                                "Pass": "LuminanceHistogramGenerator",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingHeatmapPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -118,9 +118,7 @@ bool SPostEffectsUtils::Create()
         CreateRenderTarget("$BackBufferScaledTemp_d2", CTexture::s_ptexBackBufferScaledTemp[0], nWidth >> 1, nHeight >> 1, Clr_Unknown, 1, 0, eTF_R8G8B8A8, -1, FT_DONT_RELEASE);
 
         CreateRenderTarget("$WaterVolumeRefl", CTexture::s_ptexWaterVolumeRefl[0], nWidth >> 1, nHeight >> 1, Clr_Unknown, 1, true, nHDRReducedFormat, TO_WATERVOLUMEREFLMAP, FT_DONT_RELEASE);
-        //CTexture::s_ptexWaterVolumeRefl[0]->DisableMgpuSync();
         CreateRenderTarget("$WaterVolumeReflPrev", CTexture::s_ptexWaterVolumeRefl[1], nWidth >> 1, nHeight >> 1, Clr_Unknown, 1, true, nHDRReducedFormat, TO_WATERVOLUMEREFLMAPPREV, FT_DONT_RELEASE);
-        //CTexture::s_ptexWaterVolumeRefl[1]->DisableMgpuSync();
 
         CreateRenderTarget("$BackBufferScaled_d4", CTexture::s_ptexBackBufferScaled[1], nWidth >> 2, nHeight >> 2, Clr_Unknown, 1, 0, eTF_R8G8B8A8, TO_BACKBUFFERSCALED_D4, FT_DONT_RELEASE);
         CreateRenderTarget("$BackBufferScaledTemp_d4", CTexture::s_ptexBackBufferScaledTemp[1], nWidth >> 2, nHeight >> 2, Clr_Unknown, 1, 0, eTF_R8G8B8A8, -1, FT_DONT_RELEASE);
@@ -137,7 +135,6 @@ bool SPostEffectsUtils::Create()
 
         // Water phys simulation requires data overframes, need to handle for each GPU in MGPU mode
         CreateRenderTarget("$WaterRipplesDDN_0", CTexture::s_ptexWaterRipplesDDN, 256, 256, Clr_Unknown, 1, true, eTF_R8G8B8A8, TO_WATERRIPPLESMAP);
-        //CTexture::s_ptexWaterRipplesDDN->DisableMgpuSync();
         if (gRenDev->UseHalfFloatRenderTargets())
         {
             CreateRenderTarget("$WaterVolumeDDN", CTexture::s_ptexWaterVolumeDDN, 64, 64, Clr_Unknown, 1, true, eTF_R16G16B16A16F, TO_WATERVOLUMEMAP);
@@ -146,7 +143,6 @@ bool SPostEffectsUtils::Create()
         {
             CreateRenderTarget("$WaterVolumeDDN", CTexture::s_ptexWaterVolumeDDN, 64, 64, Clr_Unknown, 1, true, eTF_R8G8B8A8, TO_WATERVOLUMEMAP);
         }
-        //CTexture::s_ptexWaterVolumeDDN->DisableMgpuSync();
 
         if (CRenderer::CV_r_watervolumecaustics && CRenderer::CV_r_watercaustics) //@NOTE: CV_r_watercaustics will be removed when the infinite ocean component feature toggle is removed.
         {

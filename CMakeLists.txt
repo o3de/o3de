@@ -21,20 +21,16 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
-project(Lumberyard LANGUAGES C CXX)
+include(cmake/Version.cmake)
 
-# Turn on the ability to create folders to organize projects (.vcproj)
-# It creates "CMakePredefinedTargets" folder by default and adds CMake
-# defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set(CMAKE_WARN_DEPRECATED ON)
+if(NOT PROJECT_NAME)
+    project(Lumberyard 
+        LANGUAGES C CXX
+        VERSION ${LY_VERSION_STRING}
+    )
+endif()
 
-# Set output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib CACHE PATH "Build directory for static libraries and import libraries")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for shared libraries")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for executables")
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Installation prefix")
-
+include(cmake/Initialize.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
@@ -46,17 +42,14 @@ include(cmake/LYPython.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/UnitTest.cmake)
 include(cmake/LYTestWrappers.cmake)
-include(cmake/Version.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+include(cmake/CMakeFiles.cmake)
 
-# Add all cmake files in a project so they can be handled from within the IDE
-ly_include_cmake_file_list(cmake/cmake_files.cmake)
-add_custom_target(CMakeFiles SOURCES ${ALLFILES})
-ly_source_groups_from_folders("${ALLFILES}")
-unset(ALLFILES)
+################################################################################
+# Subdirectory processing
+################################################################################
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
@@ -75,6 +68,21 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     endif()
 endforeach()
 
+# Recurse into directory of general python test scripts
+add_subdirectory(ctest_scripts)
+
+add_subdirectory(scripts)
+
+# SPEC-1417 will investigate and fix this
+if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+    add_subdirectory(Tools/LyTestTools/tests/)
+    add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+endif()
+
+################################################################################
+# Post-processing
+################################################################################
+
 # The following steps have to be done after all targets were registered:
 # 1. link targets where the dependency was yet not declared, we need to have the declaration so we do different
 #    linking logic depending on the type of target
@@ -89,26 +97,5 @@ endif()
 # 4. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
 #    the dependencies
 include(cmake/RuntimeDependencies.cmake)
-
-################################################################################
-# Tests
-################################################################################
-# Recurse into directory of general python test scripts
-# specific python test registration can be specified within the CMakeLists.txt that is associated with the test(i.e Gem/<Foo>/CMakeLists.txt)
-add_subdirectory(ctest_scripts)
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/CMakeLists.txt")
-    add_subdirectory(scripts)
-endif()
-
-# SPEC-1417 will investigate and fix this
-if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
-    add_subdirectory(Tools/LyTestTools/tests/)
-    add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
-endif()
-
-################################################################################
-# Test Impact Framework
-################################################################################
-# Perform test impact framework post steps once all of the targets have been enumerated
+# 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()

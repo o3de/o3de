@@ -393,6 +393,37 @@ namespace ScriptCanvas
                 AZ_UNUSED(sourceType);
             }
 
+            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> OperatorBase::GetReplacementSlotsMap() const
+            {
+                AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotsMap;
+                slotsMap.emplace("In", AZStd::vector<AZStd::string>{ "In" });
+                slotsMap.emplace("Out", AZStd::vector<AZStd::string>{ "Out" });
+                return slotsMap;
+            }
+
+            void OperatorBase::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                auto newDataInSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                auto oldDataInSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                if (newDataInSlots.size() == oldDataInSlots.size())
+                {
+                    for (size_t index = 0; index < newDataInSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataInSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataInSlots[index]->GetId() });
+                    }
+                }
+
+                auto newDataOutSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                auto oldDataOutSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                if (newDataOutSlots.size() == oldDataOutSlots.size())
+                {
+                    for (size_t index = 0; index < newDataOutSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataOutSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataOutSlots[index]->GetId() });
+                    }
+                }
+            }
+
             void OperatorBase::RemoveInputs()
             {
                 SlotSet inputSlots = m_inputSlots;

@@ -23,7 +23,7 @@
 
 #include <Editor/Nodes/EditorLibrary.h>
 
-#include <Editor/View/Dialogs/Settings.h>
+#include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
 
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
@@ -57,6 +57,7 @@ namespace ScriptCanvasEditor
 
         // Specific Mime Event Implementations
         CreateClassMethodMimeEvent::Reflect(context);
+        CreateGlobalMethodMimeEvent::Reflect(context);
         CreateNodeGroupMimeEvent::Reflect(context);
         CreateCommentNodeMimeEvent::Reflect(context);
         CreateCustomNodeMimeEvent::Reflect(context);

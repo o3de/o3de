@@ -26,6 +26,9 @@
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 namespace EMotionFX
 {
     namespace Integration
@@ -192,25 +195,28 @@ namespace EMotionFX
         {
             if (actorInstance)
             {
+                // Compute the distance between the camera and the entity
                 AZ::Transform worldTransform;
                 AZ::TransformBus::EventResult(worldTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
                 const AZ::Vector3& worldPos = worldTransform.GetTranslation();
 
-                // Compute the distance between the camera and the entity
-                if (gEnv->pSystem)
+                auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                if (!viewportContextManager)
                 {
-                    const CCamera& camera = gEnv->pSystem->GetViewCamera();
-                    const AZ::Vector3& cameraPos = LYVec3ToAZVec3(camera.GetPosition());
-                    const float distance = cameraPos.GetDistance(worldPos);
-                    const AZ::u32 lodByDistance = GetLodByDistance(configuration.m_lodDistances, distance);
-                    actorInstance->SetLODLevel(lodByDistance);
+                    return;
+                }
 
-                    if (configuration.m_enableLodSampling)
-                    {
-                        const float animGraphSampleRate = configuration.m_lodSampleRates[lodByDistance];
-                        const float updateRateInSeconds = animGraphSampleRate > 0.0f ? 1.0f / animGraphSampleRate : 0.0f;
-                        actorInstance->SetMotionSamplingRate(updateRateInSeconds);
-                    }
+                AZ::RPI::ViewportContextPtr defaultViewportContext =
+                    viewportContextManager->GetViewportContextByName(viewportContextManager->GetDefaultViewportContextName());
+                const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
+                const AZ::u32 lodByDistance = GetLodByDistance(configuration.m_lodDistances, distance);
+                actorInstance->SetLODLevel(lodByDistance);
+
+                if (configuration.m_enableLodSampling)
+                {
+                    const float animGraphSampleRate = configuration.m_lodSampleRates[lodByDistance];
+                    const float updateRateInSeconds = animGraphSampleRate > 0.0f ? 1.0f / animGraphSampleRate : 0.0f;
+                    actorInstance->SetMotionSamplingRate(updateRateInSeconds);
                 }
             }
         }

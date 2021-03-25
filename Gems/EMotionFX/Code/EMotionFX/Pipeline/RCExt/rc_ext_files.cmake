@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    CoordinateSystemConverter.h
-    CoordinateSystemConverter.cpp
     ExportContexts.h
     ExportContexts.cpp
     Actor/ActorBuilder.h

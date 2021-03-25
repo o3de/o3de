@@ -12,6 +12,7 @@
 
 #include "EntityOwnershipServiceTestFixture.h"
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 
 namespace UnitTest
 {
@@ -41,6 +42,12 @@ namespace UnitTest
         AZ::ComponentTypeList defaultRequiredComponents = AzFramework::Application::GetRequiredSystemComponents();
         auto findComponentIterator = AZStd::find(defaultRequiredComponents.begin(), defaultRequiredComponents.end(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>());
+        if (findComponentIterator != defaultRequiredComponents.end())
+        {
+            defaultRequiredComponents.erase(findComponentIterator);
+        }
+        findComponentIterator = AZStd::find(defaultRequiredComponents.begin(), defaultRequiredComponents.end(),
+            azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>());
         if (findComponentIterator != defaultRequiredComponents.end())
         {
             defaultRequiredComponents.erase(findComponentIterator);

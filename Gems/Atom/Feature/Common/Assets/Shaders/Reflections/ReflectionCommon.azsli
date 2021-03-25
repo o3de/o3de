@@ -29,36 +29,3 @@ float4 ReconstructWorldPositionFromDepth(float2 screenCoords, uint sampleIndex)
     float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
     return positionWS;
 }
-
-// computes [0..1] percentage of a point that's in between the inner and outer AABBs
-float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax, float3 outerAabbMax, float3 aabbPos, float3 position)
-{
-    float3 closestPointOnInnerAabb = AabbClosestPoint(innerAabbMin, innerAabbMax, position);
-
-    // find the distance to the outer AABB by intersecting the ray from the closestPointOnInnerAabb through the position
-    // to each plane of the AABB, and take the shortest hit - this is the closest AABB plane to our point
-
-    // translate the points and outer AABB to the origin
-    // take the abs() of the points to move them to the max quadrant of the outer AABB so everything is positive
-    outerAabbMax -= aabbPos;
-    position = abs(position - aabbPos);
-    closestPointOnInnerAabb = abs(closestPointOnInnerAabb - aabbPos);
-    float3 dirToPoint = normalize(position - closestPointOnInnerAabb);
-
-    // intersect the ray from the closest point through the position with all three planes of the AABB
-    // using outerAabbMax as the plane point and the plane normal defined in the array above (n.p = d)
-    // Note: this is an optimized form of the following equation, performed simultaneously in all three planes:
-    //       abs(dot(planeNormal, (outerAabbMax - position)) / dot(planeNormal, dirToPoint));
-    float3 distance = abs(outerAabbMax - position) / dirToPoint;
-    float shortestDistance = min(min(distance.x, distance.y), distance.z);
-
-    // divide the distance by the total distance between the two intersect points
-    // this is the blend weight for this pixel, e.g., 
-    // if (shortest distance == total distance) the blend is 1 since it's on the inner AABB
-    // if (shortest distance == 0) the blend is 0 since it's on the outer AABB
-    // if in between then it's the [0..1] percentage of the distance between inner and outer
-    // if the inner and outer AABBs are identical then it's on both and the blend is 1
-    float3 outerAabbIntersect = position + (dirToPoint * shortestDistance);
-    float totalDistance = length(outerAabbIntersect - closestPointOnInnerAabb);
-    return totalDistance > 0.0f ? saturate(shortestDistance / totalDistance) : 1.0f;
-}

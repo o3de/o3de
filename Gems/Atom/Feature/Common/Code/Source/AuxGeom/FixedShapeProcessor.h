@@ -184,7 +184,7 @@ namespace AZ
                 const ShapeBufferEntry& shape,
                 int drawStyle,
                 const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
-                const AZ::RHI::PipelineState* pipelineState,
+                const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 LodIndex lodIndex,
                 RHI::DrawItemSortKey sortKey = 0);
 
@@ -198,7 +198,7 @@ namespace AZ
                 const BoxBufferEntry& box,
                 int drawStyle,
                 const AZStd::vector<AZ::Matrix4x4>& overrideViewProjMatrices,
-                const AZ::RHI::PipelineState* pipelineState,
+                const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 RHI::DrawItemSortKey sortKey = 0);
 
             //! Uses the given drawPacketBuilder to build a draw packet with the given data

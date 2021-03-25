@@ -15,6 +15,7 @@
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
@@ -183,6 +184,12 @@ namespace UnitTest
         AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> Factory::CreateIndirectBufferWriter()
         {
             return aznew IndirectBufferWriter;
+        }
+
+        AZ::RHI::Ptr<AZ::RHI::RayTracingBufferPools> Factory::CreateRayTracingBufferPools()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
         }
 
         AZ::RHI::Ptr<AZ::RHI::RayTracingBlas> Factory::CreateRayTracingBlas()

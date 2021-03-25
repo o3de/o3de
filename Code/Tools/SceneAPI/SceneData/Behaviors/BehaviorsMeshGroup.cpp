@@ -115,7 +115,8 @@ namespace AZ
 
             Events::ProcessingResult MeshGroup::BuildDefault(Containers::Scene& scene) const
             {
-                if (SceneHasMeshGroup(scene) || !Utilities::DoesSceneGraphContainDataLike<DataTypes::IMeshData>(scene, true) || Utilities::DoesSceneGraphContainDataLike<DataTypes::IBoneData>(scene, true))
+                if (SceneHasMeshGroup(scene) ||
+                    !Utilities::DoesSceneGraphContainDataLike<DataTypes::IMeshData>(scene, true))
                 {
                     return Events::ProcessingResult::Ignored;
                 }

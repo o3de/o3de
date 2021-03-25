@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 #include <AzNetworking/UdpTransport/UdpConnection.h>
 #include <AzNetworking/UdpTransport/DtlsSocket.h>
@@ -17,7 +18,6 @@
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/Framework/ICompressor.h>
-#include <AzNetworking/Utilities/CompressionCommon.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -26,8 +26,11 @@ namespace AzNetworking
 {
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
+    AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
+
 #else
     static const bool net_UdpUseEncryption = false;
+    static const uint32_t net_SslInflationOverhead = 0;
 #endif
 
     AZ_CVAR(bool, net_UdpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Udp connections");
@@ -64,8 +67,8 @@ namespace AzNetworking
         , m_readerThread(readerThread)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_UdpCompressor);
-        const char* compressorName = compressor.c_str();
-        m_compressor = CreateCompressor(compressorName);
+        const AZ::Name compressorName = AZ::Name(compressor);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
     }
 
     UdpNetworkInterface::~UdpNetworkInterface()
@@ -122,7 +125,7 @@ namespace AzNetworking
     {
         if (!m_socket->IsOpen())
         {
-            m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone);
+            m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone);
             m_readerThread.RegisterSocket(m_socket.get());
         }
 
@@ -137,7 +140,12 @@ namespace AzNetworking
         connection->m_state = ConnectionState::Connecting;
         connection->SetConnectionMtu(MaxUdpTransmissionUnit);
         connection->SetTimeoutId(timeoutId);
-        connection->SendReliablePacket(CorePackets::InitiateConnectionPacket());
+
+        // Signal the connection attempt
+        CorePackets::InitiateConnectionPacket connectPacket = CorePackets::InitiateConnectionPacket();
+        connectPacket.SetHandshakeBuffer(dtlsData);
+        connection->SendReliablePacket(connectPacket);
+
         m_connectionListener.OnConnect(connection.get());
         m_connectionSet.AddConnection(AZStd::move(connection));
         return connectionId;
@@ -149,10 +157,6 @@ namespace AzNetworking
         {
             return;
         }
-
-#ifdef ENABLE_LATENCY_DEBUG
-        m_socket->ProcessDeferredPackets();
-#endif
 
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         const UdpReaderThread::ReceivedPackets* packets = m_readerThread.GetReceivedPackets(m_socket.get());
@@ -191,7 +195,7 @@ namespace AzNetworking
 
             int32_t decodedPacketSize = 0;
             m_decryptBuffer.Resize(m_decryptBuffer.GetCapacity());
-            const uint8_t* decodedPacketData = connection->GetDtlsEndpoint().DecodePacket(*m_socket, packet.m_buffer, packet.m_receivedBytes, m_decryptBuffer.GetBuffer(), decodedPacketSize);
+            const uint8_t* decodedPacketData = connection->GetDtlsEndpoint().DecodePacket(*connection, packet.m_buffer, packet.m_receivedBytes, m_decryptBuffer.GetBuffer(), decodedPacketSize);
             m_decryptBuffer.Resize(decodedPacketSize);
 
             if (decodedPacketSize == 0)
@@ -201,8 +205,7 @@ namespace AzNetworking
             }
             else if (decodedPacketSize < 0)
             {
-                // Something bad happened on the SSL read and we're now invalid, we should disconnect
-                connection->Disconnect(DisconnectReason::SslFailure, TerminationEndpoint::Local);
+                // Late unencrypted handshake packets or just random garbage can show up, discard and continue
                 continue;
             }
 
@@ -233,8 +236,8 @@ namespace AzNetworking
                 }
                 decodedPacketData = m_decompressBuffer.GetBuffer();
                 decodedPacketSize = m_decompressBuffer.GetSize();
-                GetMetrics().m_recvBytesUncompressed += decodedPacketSize;
             }
+            GetMetrics().m_recvBytesUncompressed += decodedPacketSize;
 
             TimeoutQueue::TimeoutItem* timeoutItem = m_connectionTimeoutQueue.RetrieveItem(connection->GetTimeoutId());
             if (timeoutItem == nullptr)
@@ -273,10 +276,18 @@ namespace AzNetworking
                 if (handledPacket)
                 {
                     connection->UpdateHeartbeat(currentTimeMs);
-                    if (connection->GetConnectionState() == ConnectionState::Connecting)
+                    if (connection->GetConnectionState() == ConnectionState::Connecting && !connection->GetDtlsEndpoint().IsConnecting())
                     {
+                        // Connection is realized once a packet is received and socket handshake is verified complete
                         connection->m_state = ConnectionState::Connected;
                     }
+                }
+                else if (m_socket->IsEncrypted() && connection->GetDtlsEndpoint().IsConnecting() &&
+                    !IsHandshakePacket(connection->GetDtlsEndpoint(), header.GetPacketType()))
+                {
+                    // It's possible for one side to finish its half of the handshake and start sending encrypted data
+                    // If it's not an expected unencrypted type then skip it for now
+                    continue;
                 }
                 else if (connection->GetConnectionState() != ConnectionState::Disconnecting)
                 {
@@ -309,6 +320,8 @@ namespace AzNetworking
         // Update metrics
         GetMetrics().m_sendPackets = m_socket->GetSentPackets();
         GetMetrics().m_sendBytes = m_socket->GetSentBytes();
+        GetMetrics().m_sendPacketsEncrypted = m_socket->GetSentPacketsEncrypted();
+        GetMetrics().m_sendBytesEncryptionInflation = m_socket->GetSentBytesEncryptionInflation();
         GetMetrics().m_recvTimeMs += receiveTimeMs;
         GetMetrics().m_recvPackets = m_socket->GetRecvPackets();
         GetMetrics().m_recvBytes = m_socket->GetRecvBytes();
@@ -410,8 +423,7 @@ namespace AzNetworking
 
         // The ordering inside this function is incredibly important and fragile
         const IpAddress& address = connection.GetRemoteAddress();
-        // We don't want to compress the initial InitiateConnectionPacket
-        // We can use this to transmit compression and encryption details in the future
+        // We don't want to compress the initial InitiateConnectionPacket, ConnectionHandshakePackets or FragmentedPackets of those two
         const bool shouldCompress = packet.GetPacketType() != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket);
 
         if (address.GetAddress(ByteOrder::Host) == 0)
@@ -426,6 +438,29 @@ namespace AzNetworking
         // we start throwing PacketId's and SequenceId's into our other tracking data structures below
         UdpPacketHeader header(connection.GetPacketTracker(), packet.GetPacketType(), reliableSequence);
         const PacketId localPacketId = header.GetPacketId();
+
+        // If it's a reliable packet, make sure our reliable queue knows about it now because we might need to drop it if our connection is
+        // not set up
+        if (reliabilityType == ReliabilityType::Reliable)
+        {
+            if (!connection.PrepareReliablePacketForSend(localPacketId, reliableSequence, packet))
+            {
+                connection.Disconnect(DisconnectReason::ReliableQueueFull, TerminationEndpoint::Local);
+            }
+        }
+
+        // If we're still connecting, only transmit packets related to establishing connection and queue the rest for later
+        // This implicitly enforces that the only FragmentedPackets sent here are of ConnectionHandshakePacket
+        // Other large packets are simply queued before they are fragmented
+        if (connection.GetDtlsEndpoint().IsConnecting() && !IsHandshakePacket(connection.GetDtlsEndpoint(), packet.GetPacketType()))
+        {
+            // IMPORTANT that we register with the timeout queue here, otherwise we don't have the timer to pop for reliable packets
+            RegisterWithTimeoutQueue(connection.GetConnectionId(), localPacketId, reliabilityType, connection.GetMetrics());
+            AZLOG(
+                NET_DebugDtls, "Connection is still in handshake negotiation, blocking packet send for packet type %d",
+                (int)packet.GetPacketType());
+            return localPacketId;
+        }
 
         UdpPacketEncodingBuffer buffer;
         {
@@ -457,11 +492,12 @@ namespace AzNetworking
         uint32_t packetSize = buffer.GetSize();
         uint8_t* packetData = buffer.GetBuffer();
 
-        // If the packet doesn't fit within our MTU, break it up
-        if (packetSize > connection.GetConnectionMtu())
+        // If the packet doesn't fit within our MTU (minus potential SSL encryption overhead), break it up
+        if (packetSize > connection.GetConnectionMtu() - net_SslInflationOverhead)
         {
             // Each fragmented packet we send adds an extra fragmented packet header, need to deduct that from our chunk size, otherwise we infinitely loop
-            const uint32_t chunkSize = connection.GetConnectionMtu() - net_FragmentedHeaderOverhead;
+            // SSL encryption can also inflate our payload so we pre-emptively deduct an estimated tax
+            const uint32_t chunkSize = connection.GetConnectionMtu() - net_FragmentedHeaderOverhead - net_SslInflationOverhead;
             const uint32_t numChunks = (packetSize + chunkSize - 1) / chunkSize; // We want to round up on the remainder
             const uint8_t* chunkStart = packetData;
             const SequenceId fragmentedSequence = connection.m_fragmentQueue.GetNextFragmentedSequenceId();
@@ -529,30 +565,9 @@ namespace AzNetworking
             aznumeric_cast<uint32_t>(header.GetSequenceWindow())
         );
 
-        // If it's a reliable packet, make sure our reliable queue knows about it now because we might need to drop it if our connection is not set up
-        if (reliabilityType == ReliabilityType::Reliable)
-        {
-            if (!connection.PrepareReliablePacketForSend(localPacketId, reliableSequence, packet))
-            {
-                connection.Disconnect(DisconnectReason::ReliableQueueFull, TerminationEndpoint::Local);
-            }
-        }
-
-        // Okay, if we're still connecting, and the packet we're trying to send is not a retransmitted initiate connection packet, return an error, don't send yet
-        if (connection.GetDtlsEndpoint().IsConnecting() && (packet.GetPacketType() != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket)))
-        {
-            const DtlsEndpoint::ConnectResult result = connection.CompleteHandshake();
-            if (result != DtlsEndpoint::ConnectResult::Complete) // DTLS handshake still in progress
-            {
-                // IMPORTANT that we register with the timeout queue here, otherwise we don't have the timer to pop for reliable packets
-                RegisterWithTimeoutQueue(connection.GetConnectionId(), localPacketId, reliabilityType, connection.GetMetrics());
-                AZLOG(NET_DebugDtls, "Connection is still in handshake negotiation, blocking packet send for packet type %d", (int)packet.GetPacketType());
-                return localPacketId;
-            }
-        }
-
         AZLOG(NET_DebugDtls, "Connection is sending packet type %d", aznumeric_cast<int32_t>(packet.GetPacketType()));
-        const bool shouldEncrypt = packet.GetPacketType() == aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket);
+        // If we're not connected then we're still handshaking and require packets to be unencrypted
+        const bool shouldEncrypt = !IsHandshakePacket(connection.GetDtlsEndpoint(), packet.GetPacketType());
         if (m_socket->Send(address, packetData, packetSize, shouldEncrypt, connection.GetDtlsEndpoint(), connection.GetConnectionQuality()))
         {
             RegisterWithTimeoutQueue(connection.GetConnectionId(), localPacketId, reliabilityType, connection.GetMetrics());
@@ -626,11 +641,10 @@ namespace AzNetworking
 
         AZLOG(Debug_UdpConnect, "Accepted new Udp Connection");
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, connectPacket.m_address, *this, ConnectionRole::Acceptor);
-        UdpPacketEncodingBuffer dtlsData;
-        m_socket->AcceptDtlsEndpoint(connection->GetDtlsEndpoint(), connectPacket.m_address, dtlsData);
+        DtlsEndpoint::ConnectResult result = m_socket->AcceptDtlsEndpoint(connection->GetDtlsEndpoint(), connectPacket.m_address);
 
-        // We're accepting this connection, so we can immediately transition to a connected state
-        connection->m_state = ConnectionState::Connected;
+        // Transition state based on our how our socket resolved
+        connection->m_state = result == DtlsEndpoint::ConnectResult::Complete ? ConnectionState::Connected : ConnectionState::Connecting;
         connection->SetTimeoutId(timeoutId);
         m_connectionListener.OnConnect(connection.get());
         m_connectionSet.AddConnection(AZStd::move(connection));
@@ -644,6 +658,14 @@ namespace AzNetworking
         }
         connection->m_state = ConnectionState::Disconnecting;
         m_removedConnections.emplace_back(RemovedConnection{ connection, reason, endpoint });
+    }
+
+    bool UdpNetworkInterface::IsHandshakePacket(const DtlsEndpoint& endpoint, PacketType packetType) const
+    {
+        // Packets involved in handshake are InitiateConnection, ConnectionHandshake and FragmentedPackets of ConnectionHandshake
+        return packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket) ||
+            packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket) ||
+            (packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::FragmentedPacket) && endpoint.IsConnecting());
     }
 
 
@@ -668,7 +690,9 @@ namespace AzNetworking
         {
             if (udpConnection->GetDtlsEndpoint().IsConnecting())
             {
-                udpConnection->CompleteHandshake();
+                // DTLS prefers we resend data lost over the wire with fresh SSL IDs so account for that here
+                UdpPacketEncodingBuffer dtlsData;
+                udpConnection->ProcessHandshakeData(dtlsData);
                 return TimeoutResult::Refresh;
             }
         }

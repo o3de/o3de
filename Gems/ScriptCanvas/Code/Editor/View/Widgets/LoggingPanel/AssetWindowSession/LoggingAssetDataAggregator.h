@@ -38,7 +38,6 @@ namespace ScriptCanvasEditor
         void Visit(ScriptCanvas::GraphDeactivation&);
         void Visit(ScriptCanvas::NodeStateChange&);
         void Visit(ScriptCanvas::InputSignal&);
-        void Visit(ScriptCanvas::OutputDataSignal&);
         void Visit(ScriptCanvas::OutputSignal&);
         void Visit(ScriptCanvas::VariableChange&);
 

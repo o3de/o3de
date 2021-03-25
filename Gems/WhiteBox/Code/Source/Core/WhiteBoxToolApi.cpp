@@ -144,10 +144,39 @@ namespace OpenMesh
     template<>
     inline void vector_cast(const OpenMesh::Vec2f& src, AZ::Vector2& dst, GenProg::Int2Type<2> /*unused*/)
     {
-        dst.SetX(static_cast<vector_traits<Vec3f>::value_type>(src[0]));
-        dst.SetY(static_cast<vector_traits<Vec3f>::value_type>(src[1]));
+        dst.SetX(static_cast<vector_traits<Vec2f>::value_type>(src[0]));
+        dst.SetY(static_cast<vector_traits<Vec2f>::value_type>(src[1]));
     }
 
+    template<>
+    inline void vector_cast(const AZ::Vector3& src, OpenMesh::Vec3d& dst, GenProg::Int2Type<3> /*unused*/)
+    {
+        dst[0] = static_cast<vector_traits<Vec3d>::value_type>(src.GetX());
+        dst[1] = static_cast<vector_traits<Vec3d>::value_type>(src.GetY());
+        dst[2] = static_cast<vector_traits<Vec3d>::value_type>(src.GetZ());
+    }
+
+    template<>
+    inline void vector_cast(const AZ::Vector2& src, OpenMesh::Vec2d& dst, GenProg::Int2Type<2> /*unused*/)
+    {
+        dst[0] = static_cast<vector_traits<Vec2d>::value_type>(src.GetX());
+        dst[1] = static_cast<vector_traits<Vec2d>::value_type>(src.GetY());
+    }
+
+    template<>
+    inline void vector_cast(const OpenMesh::Vec3d& src, AZ::Vector3& dst, GenProg::Int2Type<3> /*unused*/)
+    {
+        dst.SetX(static_cast<float>(src[0]));
+        dst.SetY(static_cast<float>(src[1]));
+        dst.SetZ(static_cast<float>(src[2]));
+    }
+
+    template<>
+    inline void vector_cast(const OpenMesh::Vec2d& src, AZ::Vector2& dst, GenProg::Int2Type<2> /*unused*/)
+    {
+        dst.SetX(static_cast<float>(src[0]));
+        dst.SetY(static_cast<float>(src[1]));
+    }
 } // namespace OpenMesh
 
 #ifdef AZ_ENABLE_TRACING

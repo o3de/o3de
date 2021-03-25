@@ -16,9 +16,9 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/NodeGroup.h>
 #include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MorphSetup.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
-#include <EMotionFX/CommandSystem/Source/LODCommands.h>
 #include <EMotionFX/CommandSystem/Source/MetaData.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>

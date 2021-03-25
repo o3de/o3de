@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
 
@@ -24,53 +23,18 @@ namespace ScriptCanvas
     {
         namespace String
         {
-            //! Checks if the specified substring exists in the provided string
+            //! Deprecated: see String class reflection of method "Contains String"
             class Contains
                 : public Node
             {
             public:
 
-                ScriptCanvas_Node(Contains,
-                    ScriptCanvas_Node::Name("Contains String", "Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched.")
-                    ScriptCanvas_Node::Uuid("{8481E892-DE37-4CCF-86AA-E4770DE90643}")
-                    ScriptCanvas_Node::Category("String")
-                    ScriptCanvas_Node::Version(0)
-                );
+                SCRIPTCANVAS_NODE(Contains);
+
+                void OnInit() override;
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
             protected:
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Source", "The string to search in.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Pattern", "The substring to search for.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Property(bool,
-                    ScriptCanvas_Property::Name("Search From End", "Start the match checking from the end of a string.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_PropertyWithDefaults(bool, true,
-                    ScriptCanvas_Property::Name("Case Sensitive", "Take into account the case of the string when searching.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("True", "The string contains the provided pattern."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("False", "The string did not contain the provided pattern."));
-                
-                
-                ScriptCanvas_Property(int,
-                    ScriptCanvas_Property::Name("Index", "The first index at which the substring was found.")
-                    ScriptCanvas_Property::Output,
-                    ScriptCanvas_Property::OutputStorageSpec
-                );
 
                 void OnInputSignal(const SlotId& slotId) override;
 

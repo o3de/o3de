@@ -13,33 +13,11 @@
 
 #pragma once
 
-#define USERNAME_LENGTH 64
-
 #include "IEditorClassFactory.h"
 #include "Include/IEditorClassFactory.h"
 
 #include "Include/ISourceControl.h"
 
-class CMyClientUser
-    : public ClientUser
-{
-public:
-    CMyClientUser()
-    {
-        Init();
-    }
-    void Init();
-
-    Error m_e;
-};
-
-class CMyClientApi
-    : public ClientApi
-{
-public:
-    void Run(const char* func);
-    void Run(const char* func, ClientUser* ui);
-};
 
 class CPerforceSourceControl
     : public ISourceControl
@@ -47,21 +25,15 @@ class CPerforceSourceControl
 {
 public:
     // constructor
-    CPerforceSourceControl();
-    virtual ~CPerforceSourceControl();
+    CPerforceSourceControl() = default;
+    ~CPerforceSourceControl() = default;
 
-    bool Connect();
-    bool Reconnect();
-    void FreeData();
     void Init();
-    bool CheckConnectionAndNotifyListeners();
 
-    virtual void SetSourceControlState(SourceControlState state) override;
-    virtual ConnectivityState GetConnectivityState() override;
-
-    virtual void ShowSettings() override;
-
-    bool Run(const char* func, int nArgs, char* argv[], bool bOnlyFatal = false);
+    // ISourceControl
+    void SetSourceControlState(SourceControlState state) override;
+    ConnectivityState GetConnectivityState() override { return m_connectionState; };
+    void ShowSettings() override;
 
     // from IClassDesc
     virtual ESystemClassID SystemClassID() { return ESYSTEM_CLASS_SCM_PROVIDER; };
@@ -90,29 +62,9 @@ public:
     ULONG STDMETHODCALLTYPE AddRef() { return ++m_ref; };
     ULONG STDMETHODCALLTYPE Release();
 
-
-protected:
-    bool IsSomeTimePassed();
-
-    static const char* GetErrorByGenericCode(int nGeneric);
-
 private:
-    CMyClientUser m_ui;
-    CMyClientApi* m_client;
-    Error m_e;
+    void UpdateSourceControlState();
 
-    bool m_bIsWorkOffline;
-    bool m_bIsWorkOfflineBecauseOfConnectionLoss;
-    bool m_bIsFailConnectionLogged;
-    bool m_configurationInvalid;
-
-    DWORD m_dwLastAccessTime;
-
-    ULONG m_ref;
-    uint m_nextHandle;
-
-    bool m_lastWorkOfflineResult;
-    bool m_lastWorkOfflineBecauseOfConnectionLossResult;
-
-    bool m_clientInitialized;
+    ULONG m_ref{ 0 };
+    ConnectivityState m_connectionState{ ConnectivityState::Disconnected };
 };

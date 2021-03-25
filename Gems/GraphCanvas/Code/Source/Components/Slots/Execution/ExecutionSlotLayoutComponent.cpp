@@ -26,6 +26,7 @@ namespace GraphCanvas
     ExecutionSlotLayout::ExecutionSlotLayout(ExecutionSlotLayoutComponent& owner)
         : m_connectionType(ConnectionType::CT_Invalid)
         , m_owner(owner)
+        , m_textDecoration(nullptr)
     {
         setInstantInvalidatePropagation(true);
         setOrientation(Qt::Horizontal);
@@ -56,17 +57,27 @@ namespace GraphCanvas
 
     void ExecutionSlotLayout::OnSceneSet(const AZ::EntityId&)
     {
-        SlotRequestBus::EventResult(m_connectionType, m_owner.GetEntityId(), &SlotRequests::GetConnectionType);
+        SlotRequests* slotRequests = SlotRequestBus::FindFirstHandler(m_owner.GetEntityId());
 
-        TranslationKeyedString slotName;
-        SlotRequestBus::EventResult(slotName, m_owner.GetEntityId(), &SlotRequests::GetTranslationKeyedName);
+        if (slotRequests)
+        {
+            m_connectionType = slotRequests->GetConnectionType();
 
-        m_slotText->SetLabel(slotName);
+            TranslationKeyedString slotName = slotRequests->GetTranslationKeyedName();
 
-        TranslationKeyedString toolTip;
-        SlotRequestBus::EventResult(toolTip, m_owner.GetEntityId(), &SlotRequests::GetTranslationKeyedTooltip);
+            m_slotText->SetLabel(slotName);
 
-        OnTooltipChanged(toolTip);
+            TranslationKeyedString toolTip = slotRequests->GetTranslationKeyedTooltip();
+
+            OnTooltipChanged(toolTip);
+
+            const SlotConfiguration& configuration = slotRequests->GetSlotConfiguration();
+
+            if (!configuration.m_textDecoration.empty())
+            {
+                SetTextDecoration(configuration.m_textDecoration, configuration.m_textDecorationToolTip);
+            }
+        }
 
         UpdateLayout();
         OnStyleChanged();
@@ -77,7 +88,7 @@ namespace GraphCanvas
         OnStyleChanged();
     }
 
-    void ExecutionSlotLayout::OnRegisteredToNode([[maybe_unused]] const AZ::EntityId& nodeId)
+    void ExecutionSlotLayout::OnRegisteredToNode(const AZ::EntityId& /*nodeId*/)
     {
         OnStyleChanged();
     }
@@ -99,18 +110,12 @@ namespace GraphCanvas
     {
         m_style.SetStyle(m_owner.GetEntityId());
 
-        switch (m_connectionType)
+        ApplyTextStyle(m_slotText);
+
+        if (m_textDecoration)
         {
-        case ConnectionType::CT_Input:
-            m_slotText->SetStyle(m_owner.GetEntityId(), ".inputSlotName");
-            break;
-        case ConnectionType::CT_Output:
-            m_slotText->SetStyle(m_owner.GetEntityId(), ".outputSlotName");
-            break;
-        default:
-            m_slotText->SetStyle(m_owner.GetEntityId(), ".slotName");
-            break;
-        };
+            ApplyTextStyle(m_textDecoration);
+        }
 
         m_slotConnectionPin->RefreshStyle();
 
@@ -119,6 +124,46 @@ namespace GraphCanvas
         setSpacing(m_style.GetAttribute(Styling::Attribute::Spacing, 2.));
 
         UpdateGeometry();
+    }
+
+    void ExecutionSlotLayout::SetTextDecoration(const AZStd::string& textDecoration, const AZStd::string& toolTip)
+    {
+        if (m_textDecoration)
+        {
+            delete m_textDecoration;
+            m_textDecoration = nullptr;
+        }
+
+        if (!textDecoration.empty())
+        {
+            m_textDecoration = new GraphCanvasLabel();
+            m_textDecoration->SetLabel(textDecoration, "", "");
+            m_textDecoration->setToolTip(toolTip.c_str());
+
+            ApplyTextStyle(m_textDecoration);
+        }
+    }
+
+    void ExecutionSlotLayout::ClearTextDecoration()
+    {
+        delete m_textDecoration;
+        m_textDecoration = nullptr;
+    }
+
+    void ExecutionSlotLayout::ApplyTextStyle(GraphCanvasLabel* graphCanvasLabel)
+    {
+        switch (m_connectionType)
+        {
+        case ConnectionType::CT_Input:
+            graphCanvasLabel->SetStyle(m_owner.GetEntityId(), ".inputSlotName");
+            break;
+        case ConnectionType::CT_Output:
+            graphCanvasLabel->SetStyle(m_owner.GetEntityId(), ".outputSlotName");
+            break;
+        default:
+            graphCanvasLabel->SetStyle(m_owner.GetEntityId(), ".slotName");
+            break;
+        };
     }
 
     void ExecutionSlotLayout::UpdateLayout()
@@ -136,8 +181,22 @@ namespace GraphCanvas
 
             addItem(m_slotText);
             setAlignment(m_slotText, Qt::AlignLeft);
+
+            if (m_textDecoration)
+            {
+                addItem(m_textDecoration);
+                setAlignment(m_textDecoration, Qt::AlignLeft);
+            }
+
             break;
         case ConnectionType::CT_Output:
+
+            if (m_textDecoration)
+            {
+                addItem(m_textDecoration);
+                setAlignment(m_textDecoration, Qt::AlignRight);
+            }
+
             addItem(m_slotText);
             setAlignment(m_slotText, Qt::AlignRight);
 
@@ -145,6 +204,11 @@ namespace GraphCanvas
             setAlignment(m_slotConnectionPin, Qt::AlignRight);
             break;
         default:
+            if (m_textDecoration)
+            {
+                addItem(m_textDecoration);
+            }
+
             addItem(m_slotConnectionPin);
             addItem(m_slotText);
             break;

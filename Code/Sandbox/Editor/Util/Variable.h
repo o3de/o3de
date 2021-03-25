@@ -17,7 +17,6 @@
 
 
 #include "RefCountBase.h"
-#include <functor.h>
 
 #include "Include/EditorCoreAPI.h"
 
@@ -196,7 +195,7 @@ struct IVariable
         UI_CREATE_SPLINE     = BIT(12), //!< To indicate the spline need to be re-created. This is usually because the data was changed directly through the data address
     };
 
-    typedef Functor1<IVariable*> OnSetCallback;
+    typedef AZStd::function<void(IVariable*)> OnSetCallback;
     using OnSetEnumCallback = OnSetCallback;
 
     // Store IGetCustomItems into IVariable's UserData and set datatype to
@@ -335,15 +334,15 @@ struct IVariable
     //////////////////////////////////////////////////////////////////////////
     // Assign on set callback.
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddOnSetCallback(OnSetCallback func) = 0;
-    virtual void RemoveOnSetCallback(OnSetCallback func) = 0;
+    virtual void AddOnSetCallback(OnSetCallback* func) = 0;
+    virtual void RemoveOnSetCallback(OnSetCallback* func) = 0;
     virtual void ClearOnSetCallbacks() {}
 
     //////////////////////////////////////////////////////////////////////////
     // Assign callback triggered when enums change.
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddOnSetEnumCallback(OnSetEnumCallback func) = 0;
-    virtual void RemoveOnSetEnumCallback(OnSetCallback func) = 0;
+    virtual void AddOnSetEnumCallback(OnSetEnumCallback* func) = 0;
+    virtual void RemoveOnSetEnumCallback(OnSetCallback* func) = 0;
     virtual void ClearOnSetEnumCallbacks() {}
 
     //////////////////////////////////////////////////////////////////////////
@@ -489,7 +488,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void AddOnSetCallback(OnSetCallback func)
+    void AddOnSetCallback(OnSetCallback* func)
     {
         if (!stl::find(m_onSetFuncs, func))
         {
@@ -498,7 +497,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void RemoveOnSetCallback(OnSetCallback func)
+    void RemoveOnSetCallback(OnSetCallback* func)
     {
         stl::find_and_erase(m_onSetFuncs, func);
     }
@@ -509,7 +508,7 @@ public:
         m_onSetFuncs.clear();
     }
 
-    void AddOnSetEnumCallback(OnSetEnumCallback func) override
+    void AddOnSetEnumCallback(OnSetEnumCallback* func) override
     {
         if (!stl::find(m_onSetEnumFuncs, func))
         {
@@ -518,7 +517,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void RemoveOnSetEnumCallback(OnSetCallback func)
+    void RemoveOnSetEnumCallback(OnSetCallback* func)
     {
         stl::find_and_erase(m_onSetEnumFuncs, func);
     }
@@ -553,7 +552,7 @@ public:
         for (auto it = m_onSetFuncs.begin(); it != m_onSetFuncs.end(); ++it)
         {
             // Call on set callback.
-            (*it)(this);
+            (*it)->operator()(this);
         }
     }
 
@@ -607,13 +606,13 @@ protected:
     {
         return *this;
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Variables.
     //////////////////////////////////////////////////////////////////////////
-    typedef std::vector<OnSetCallback> OnSetCallbackList;
+    typedef std::vector<OnSetCallback*> OnSetCallbackList;
     typedef std::vector<IVariablePtr> WiredList;
-    using OnSetEnumCallbackList = std::vector<OnSetEnumCallback>;
+    using OnSetEnumCallbackList = std::vector<OnSetEnumCallback*>;
 
     QString m_name;
     QString m_humanName;
@@ -1637,7 +1636,7 @@ protected:
         for (auto it = m_onSetEnumFuncs.begin(); it != m_onSetEnumFuncs.end(); ++it)
         {
             // Call on set callback.
-            (*it)(this);
+            (*it)->operator()(this);
         }
     }
 
@@ -1829,9 +1828,9 @@ public:
     void Unwire(CVarBlock* varBlock);
 
     //! Add this callback to every variable in block (recursively).
-    void AddOnSetCallback(IVariable::OnSetCallback func);
+    void AddOnSetCallback(IVariable::OnSetCallback* func);
     //! Remove this callback from every variable in block (recursively).
-    void RemoveOnSetCallback(IVariable::OnSetCallback func);
+    void RemoveOnSetCallback(IVariable::OnSetCallback* func);
 
     //////////////////////////////////////////////////////////////////////////
     void Serialize(XmlNodeRef vbNode, bool load);
@@ -1848,7 +1847,7 @@ public:
     void Sort();
 
 protected:
-    void SetCallbackToVar(IVariable::OnSetCallback func, IVariable* pVar, bool bAdd);
+    void SetCallbackToVar(IVariable::OnSetCallback* func, IVariable* pVar, bool bAdd);
     void WireVar(IVariable* src, IVariable* trg, bool bWire);
     void GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources);
 
@@ -1874,9 +1873,9 @@ public:
     void Serialize(XmlNodeRef node, bool load);
     CVarBlock* GetVarBlock() const { return m_vars; };
 
-    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
     void ReserveNumVariables(int numVars);
     void RemoveVariable(IVariable* var);
 

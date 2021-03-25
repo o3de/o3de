@@ -13,10 +13,3 @@ set(LY_COMPILE_OPTIONS
     PRIVATE
         -xobjective-c++
 )
-
-set(LY_BUILD_DEPENDENCIES
-    PUBLIC
-        3rdParty::LibTomCrypt
-        3rdParty::LibTomMath
-)
-

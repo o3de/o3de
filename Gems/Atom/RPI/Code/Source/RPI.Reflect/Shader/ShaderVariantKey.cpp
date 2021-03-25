@@ -28,9 +28,21 @@ namespace AZ
                     ->Field("Mask", &ShaderVariantId::m_mask)
                     ;
             }
+
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ShaderVariantId>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Shader")
+                    ->Attribute(AZ::Script::Attributes::Module, "shader")
+                    ->Method("Equal", &ShaderVariantId::operator==)
+                        ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
+                    ->Method("IsEmpty", &ShaderVariantId::IsEmpty)
+                    ;
+            }
         }
 
-        ShaderVariantId& ShaderVariantId::reset()
+        ShaderVariantId& ShaderVariantId::Reset()
         {
             m_key.reset();
             m_mask.reset();
@@ -65,6 +77,11 @@ namespace AZ
         bool ShaderVariantId::operator>=(const ShaderVariantId& other) const
         {
             return ShaderVariantIdComparator::Compare(*this, other) != -1;
+        }
+
+        bool ShaderVariantId::IsEmpty() const
+        {
+            return m_key.none();
         }
 
         ShaderVariantSearchResult::ShaderVariantSearchResult(ShaderVariantStableId stableId, uint32_t dynamicOptionCount)

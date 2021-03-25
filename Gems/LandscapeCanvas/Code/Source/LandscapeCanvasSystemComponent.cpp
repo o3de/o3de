@@ -45,7 +45,6 @@
 #include <Editor/Nodes/Areas/BlockerAreaNode.h>
 #include <Editor/Nodes/Areas/MeshBlockerAreaNode.h>
 #include <Editor/Nodes/Areas/SpawnerAreaNode.h>
-#include <Editor/Nodes/Areas/StaticVegetationBlockerAreaNode.h>
 #include <Editor/Nodes/AreaFilters/AltitudeFilterNode.h>
 #include <Editor/Nodes/AreaFilters/DistanceBetweenFilterNode.h>
 #include <Editor/Nodes/AreaFilters/DistributionFilterNode.h>

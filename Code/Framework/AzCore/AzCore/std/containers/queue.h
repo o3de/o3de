@@ -199,7 +199,7 @@ namespace AZStd
         void push(value_type&& value)       {   m_container.push_back(AZStd::move(value)); AZStd::push_heap(m_container.begin(), m_container.end(), m_comp); }
         template<class Args>
         void emplace(Args&& args)           {   m_container.emplace_back(AZStd::forward<Args>(args)); AZStd::push_heap(m_container.begin(), m_container.end(), m_comp); }
-        void swap(this_type& rhs)           {   AZStd::swap(m_container, rhs.m_continer); AZStd::swap(m_comp, rhs.m_comp); }
+        void swap(this_type& rhs)           {   AZStd::swap(m_container, rhs.m_container); AZStd::swap(m_comp, rhs.m_comp); }
 
         AZ_FORCE_INLINE Container& get_container()              { return m_container; }
         AZ_FORCE_INLINE const Container& get_container() const  { return m_container; }

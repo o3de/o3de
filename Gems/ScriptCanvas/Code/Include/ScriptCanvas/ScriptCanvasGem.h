@@ -31,11 +31,8 @@ namespace ScriptCanvas
         AZ::ComponentTypeList GetCommonSystemComponents() const;
     };
 
-    /*!
-    * The ScriptCanvas::Module class coordinates with the application
-    * to reflect classes and create system components.
-    *
-    */
+    
+    //! The ScriptCanvas::Module class coordinates with the application to reflect classes and create system components.
     class ScriptCanvasModule : public ScriptCanvasModuleCommon
     {
     public:
@@ -49,4 +46,4 @@ namespace ScriptCanvas
 
     };
 
-} // namespace ScriptCanvas
+} 

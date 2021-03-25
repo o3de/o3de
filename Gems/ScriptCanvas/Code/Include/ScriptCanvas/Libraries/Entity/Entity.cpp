@@ -75,6 +75,14 @@ namespace ScriptCanvas
                 const AZ::TypeId oldIsValidNodeAggregateTypeId = nodeFunctionGenericMultiReturnTemplateTypeId + (oldEntityIdIsValidFuncSignatureTypeId + oldEntityIdIsValidTypeId);
                 serializeContext->ClassDeprecate("EntityId::IsValidNode", oldIsValidNodeAggregateTypeId, &OldEntityIdIsValidNodeVersionConverter);
             }
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
+            {
+                using namespace ScriptCanvas::Nodes::Entity;
+                SCRIPT_CANVAS_GENERICS_TO_VM(EntityIDNodes::Registrar, EntityID, behaviorContext, EntityIDNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(EntityNodes::Registrar, Entity, behaviorContext, EntityNodes::k_categoryName);
+            }
+
+            ScriptCanvas::Entity::RotateMethod::Reflect(reflection);
         }
 
         void Entity::InitNodeRegistry(NodeRegistry& nodeRegistry)

@@ -51,6 +51,8 @@ set(FILES
     Component/EntityId.h
     Component/EntityIdSerializer.cpp
     Component/EntityIdSerializer.h
+    Component/EntitySerializer.cpp
+    Component/EntitySerializer.h
     Component/EntityUtils.cpp
     Component/EntityUtils.h
     Component/NamedEntityId.cpp
@@ -73,9 +75,6 @@ set(FILES
     Console/ILogger.h
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
-    Prefab/PrefabAsset.h
-    Prefab/PrefabBus.h
-    Prefab/PrefabComponent.h
     Slice/SliceAsset.cpp
     Slice/SliceAsset.h
     Slice/SliceAssetHandler.cpp
@@ -96,10 +95,13 @@ set(FILES
     Debug/AssetTracking.h
     Debug/AssetTrackingTypesImpl.h
     Debug/AssetTrackingTypes.h
+    Debug/LocalFileEventLogger.h
+    Debug/LocalFileEventLogger.cpp
     Debug/FrameProfiler.h
     Debug/FrameProfilerBus.h
     Debug/FrameProfilerComponent.cpp
     Debug/FrameProfilerComponent.h
+    Debug/IEventLogger.h
     Debug/ProfileModuleInit.cpp
     Debug/ProfileModuleInit.h
     Debug/Profiler.cpp
@@ -274,7 +276,7 @@ set(FILES
     Math/Internal/SimdMathCommon_neonDouble.inl
     Math/Internal/SimdMathCommon_neonQuad.inl
     Math/Internal/SimdMathCommon_simd.inl
-    Math/Internal/SimdMathCommon_sse.inl    
+    Math/Internal/SimdMathCommon_sse.inl
     Math/Internal/VectorConversions.inl
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
@@ -286,7 +288,7 @@ set(FILES
     Math/MathReflection.h
     Math/MathScriptHelpers.cpp
     Math/MathScriptHelpers.h
-    Math/MathUtils.cpp        
+    Math/MathUtils.cpp
     Math/MathUtils.h
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp

@@ -21,17 +21,12 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Add Element at End"
             class OperatorPushBack : public OperatorBase
             {
             public:
 
-                ScriptCanvas_Node(OperatorPushBack,
-                    ScriptCanvas_Node::Name("Add Element at End")
-                    ScriptCanvas_Node::Uuid("{11DDEEC1-7111-4655-B47F-8F0372B1A1A9}")
-                    ScriptCanvas_Node::Description("Adds the provided element at the end of the container")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+                SCRIPTCANVAS_NODE(OperatorPushBack);
 
                 OperatorPushBack()
                     : OperatorBase(DefaultContainerManipulationOperatorConfiguration())

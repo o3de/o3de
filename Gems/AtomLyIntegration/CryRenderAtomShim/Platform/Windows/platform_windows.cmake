@@ -11,5 +11,4 @@
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        3rdParty::nvapi
 )

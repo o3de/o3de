@@ -11,10 +11,12 @@
 */
 #include <ScriptCanvas/Utils/NodeUtils.h>
 
+#include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionNode.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include <ScriptCanvas/Libraries/Core/MethodOverloaded.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
@@ -26,7 +28,7 @@ namespace ScriptCanvas
     //////////////
     
     NodeTypeIdentifier NodeUtils::ConstructNodeType(const Node* scriptCanvasNode)
-    {   
+    {
         if (auto sendScriptEventNode = azrtti_cast<const Nodes::Core::SendScriptEvent*>(scriptCanvasNode))
         {
             return ConstructSendScriptEventIdentifier(sendScriptEventNode->GetBusId(), sendScriptEventNode->GetEventId());
@@ -37,7 +39,19 @@ namespace ScriptCanvas
         }
         else if (auto methodNode = azrtti_cast<const Nodes::Core::Method*>(scriptCanvasNode))
         {
-            if (methodNode->GetMethodType() == Nodes::Core::MethodType::Event)
+            if (auto overloadNode = azrtti_cast<const Nodes::Core::MethodOverloaded*>(scriptCanvasNode))
+            {
+                if (overloadNode->GetMethodType() == MethodType::Event)
+                {
+                    // TODO: Make this use some proper IDs rather then regenerating them here.
+                    return ConstructEBusEventSenderOverloadedIdentifier(ScriptCanvas::EBusEventId(overloadNode->GetRawMethodClassName()), ScriptCanvas::EBusEventId(overloadNode->GetName()));
+                }
+                else
+                {
+                    return ConstructMethodOverloadedNodeIdentifier(overloadNode->GetName());
+                }
+            }
+            else if (methodNode->GetMethodType() == MethodType::Event)
             {
                 // TODO: Make this use some proper IDs rather then regenerating them here.
                 return ConstructEBusEventSenderIdentifier(ScriptCanvas::EBusEventId(methodNode->GetRawMethodClassName()), ScriptCanvas::EBusEventId(methodNode->GetName()));
@@ -71,7 +85,7 @@ namespace ScriptCanvas
         return NodeTypeIdentifier(0);
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructEBusIdentifier(const AZ::Crc32& ebusIdentifier)
+    NodeTypeIdentifier NodeUtils::ConstructEBusIdentifier(ScriptCanvas::EBusBusId ebusIdentifier)
     {
         NodeTypeIdentifier resultHash = 0;
 
@@ -81,7 +95,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructEBusEventSenderIdentifier(const AZ::Crc32& ebusIdentifier, const EBusEventId& eventId)
+    NodeTypeIdentifier NodeUtils::ConstructEBusEventSenderIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId)
     {
         NodeTypeIdentifier resultHash = 0;
 
@@ -92,7 +106,18 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructEBusEventReceiverIdentifier(const AZ::Crc32& ebusIdentifier, const EBusEventId& eventId)
+    NodeTypeIdentifier NodeUtils::ConstructEBusEventSenderOverloadedIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId)
+    {
+        NodeTypeIdentifier resultHash = 0;
+
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::MethodOverloaded>()));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Crc32>()(ebusIdentifier));
+        AZStd::hash_combine(resultHash, AZStd::hash<EBusEventId>()(eventId));
+
+        return resultHash;
+    }
+
+    NodeTypeIdentifier NodeUtils::ConstructEBusEventReceiverIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId)
     {
         NodeTypeIdentifier resultHash = ConstructEBusIdentifier(ebusIdentifier);
 
@@ -101,7 +126,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructScriptEventIdentifier(const ScriptCanvas::EBusBusId& busId)
+    NodeTypeIdentifier NodeUtils::ConstructScriptEventIdentifier(ScriptCanvas::EBusBusId busId)
     {
         NodeTypeIdentifier resultHash = 0;
 
@@ -113,7 +138,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructSendScriptEventIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId)
+    NodeTypeIdentifier NodeUtils::ConstructSendScriptEventIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId)
     {
         NodeTypeIdentifier resultHash = 0;
 
@@ -124,7 +149,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructScriptEventReceiverIdentifier(const AZ::Crc32& ebusIdentifier, const EBusEventId& eventId)
+    NodeTypeIdentifier NodeUtils::ConstructScriptEventReceiverIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId)
     {
         NodeTypeIdentifier resultHash = ConstructScriptEventIdentifier(ebusIdentifier);
 
@@ -139,6 +164,26 @@ namespace ScriptCanvas
 
         AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::Method>()));
         AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string_view>()(methodClass));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string>()(methodName));
+
+        return resultHash;
+    }
+
+    NodeTypeIdentifier NodeUtils::ConstructGlobalMethodNodeIdentifier(AZStd::string_view methodName)
+    {
+        NodeTypeIdentifier resultHash = 0;
+
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::Method>()));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string_view>()(methodName));
+
+        return resultHash;
+    }
+
+    NodeTypeIdentifier NodeUtils::ConstructMethodOverloadedNodeIdentifier(AZStd::string_view methodName)
+    {
+        NodeTypeIdentifier resultHash = 0;
+
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::MethodOverloaded>()));
         AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string>()(methodName));
 
         return resultHash;
@@ -178,8 +223,27 @@ namespace ScriptCanvas
         NodeTypeIdentifier resultHash = 0;
 
         AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionNode>()));
-        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Data::AssetId>()(assetId));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Data::AssetId>()(assetId.m_guid));
 
         return resultHash;
+    }
+
+    NodeTypeIdentifier NodeUtils::ConstructAzEventIdentifier(AzEventIdentifier azEventIdentifier)
+    {
+        NodeTypeIdentifier resultHash = 0;
+
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::AzEventHandler>()));
+        AZStd::hash_combine(resultHash, AZStd::hash<size_t>()(static_cast<size_t>(azEventIdentifier)));
+
+        return resultHash;
+    }
+
+    void NodeUtils::InitializeNode(Node* node, const NodeConfiguration& config)
+    {
+        if (auto* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node))
+        {
+            ScriptCanvas::NamespacePath emptyNamespaces;
+            method->InitializeBehaviorMethod(emptyNamespaces, config.m_className, config.m_methodName);
+        }
     }
 }

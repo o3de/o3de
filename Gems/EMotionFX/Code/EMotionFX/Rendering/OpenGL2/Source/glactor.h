@@ -25,10 +25,14 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
+
 namespace RenderGL
 {
     class RENDERGL_API GLActor
         : public MCore::MemoryObject
+        , protected QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(GLActor, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 

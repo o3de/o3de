@@ -63,18 +63,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
-                "Name": "ReflectanceWithSmoothness_Legacy",
-                "FileMasks": [
-                    "_spec"
-                ],
-                "PixelFormat": "BC7",
-                "IsPowerOf2": true,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

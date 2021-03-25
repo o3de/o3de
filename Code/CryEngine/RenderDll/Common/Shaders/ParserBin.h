@@ -647,7 +647,6 @@ enum EToken
     eT_AnisotropyLevel,
 
     eT_ORBIS,
-    eT_DURANGO,
     eT_PCDX11,
     eT_GL4,
     eT_GLES3,
@@ -833,7 +832,6 @@ struct SortByToken
 #define SF_GLES3 0x08000000
 #define SF_D3D11 0x10000000
 #define SF_ORBIS 0x20000000
-#define SF_DURANGO 0x40000000
 #define SF_GL4 0x80000000
 #define SF_PLATFORM 0xfc000000
 
@@ -1023,22 +1021,21 @@ public:
     static void SetupForGMEM(int gmemPath);
     static void SetupGMEMCommonStaticFlags();
     static void RemoveGMEMStaticFlags();
-    static void SetupForDurango();
     static void SetupForJasper(); 
     static void SetupFeatureDefines();
     static void SetupShadersCacheAndFilter();
     static CCryNameTSCRC GetPlatformSpecName(CCryNameTSCRC orgName);
 
-    static bool PlatformSupportsConstantBuffers(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL); };
-    static bool PlatformSupportsGeometryShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
-    static bool PlatformSupportsHullShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
-    static bool PlatformSupportsDomainShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
+    static bool PlatformSupportsConstantBuffers(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL); };
+    static bool PlatformSupportsGeometryShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
+    static bool PlatformSupportsHullShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
+    static bool PlatformSupportsDomainShaders(){return (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4); }
     static bool PlatformSupportsComputeShaders()
     {
-        bool ret = (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_METAL || CParserBin::m_nPlatform == SF_GLES3);
+        bool ret = (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_METAL || CParserBin::m_nPlatform == SF_GLES3);
         return ret;
     }
-    static bool PlatformIsConsole(){return (CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER); };
+    static bool PlatformIsConsole(){return (CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_JASPER); };
 
     static bool m_bEditable;
     static uint32 m_nPlatform;                  // Shader language

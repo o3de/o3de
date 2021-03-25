@@ -167,7 +167,7 @@ bool CResFileLookupDataMan::LoadData(
         gEnv->pCryPak->FClose(fileHandle);
         return false;
     }
-    if (versionInfo.m_ResVersion != RESVERSION_LZSS && versionInfo.m_ResVersion != RESVERSION_LZMA && versionInfo.m_ResVersion != RESVERSION_DEBUG)
+    if (versionInfo.m_ResVersion != RESVERSION_DEBUG)
     {
         gEnv->pCryPak->FClose(fileHandle);
         return false;

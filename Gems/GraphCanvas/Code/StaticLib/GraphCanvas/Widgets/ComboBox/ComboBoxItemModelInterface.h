@@ -11,7 +11,6 @@
 */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QAbstractItemModel>
 #include <QString>
@@ -19,7 +18,6 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
-#endif
 
 namespace GraphCanvas
 {

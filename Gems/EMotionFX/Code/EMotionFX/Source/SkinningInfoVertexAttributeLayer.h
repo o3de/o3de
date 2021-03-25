@@ -12,7 +12,7 @@
 
 #pragma once
 
-// include the required headers
+#include <AzCore/std/containers/set.h>
 #include "EMotionFXConfig.h"
 #include "VertexAttributeLayer.h"
 #include <MCore/Source/Array2D.h>
@@ -138,7 +138,7 @@ namespace EMotionFX
          * @param weight The weight to use in the influence.
          * @param boneNr The bone number, used for optimizations inside the softskin deformer.
          */
-        void AddInfluence(uint32 attributeNr, uint32 nodeNr, float weight, uint32 boneNr = 0);
+        void AddInfluence(size_t attributeNr, size_t nodeNr, float weight, size_t boneNr = 0);
 
         /**
          * Remove the given influence.
@@ -146,14 +146,14 @@ namespace EMotionFX
          * @param attributeNr The attribute/vertex number.
          * @param influenceNr The influence number
          */
-        void RemoveInfluence(uint32 attributeNr, uint32 influenceNr);
+        void RemoveInfluence(size_t attributeNr, size_t influenceNr);
 
         /**
          * Get the number of influences.
          * @param attributeNr The attribute/vertex number.
          * @result The number of influences.
          */
-        MCORE_INLINE uint32 GetNumInfluences(uint32 attributeNr)                                            { return mData.GetNumElements(attributeNr); }
+        MCORE_INLINE size_t GetNumInfluences(size_t attributeNr)                                            { return mData.GetNumElements(attributeNr); }
 
         /**
          * Get a given influence.
@@ -161,7 +161,7 @@ namespace EMotionFX
          * @param influenceNr The influence number, which must be in range of [0..GetNumInfluences()]
          * @result The given influence.
          */
-        MCORE_INLINE SkinInfluence* GetInfluence(uint32 attributeNr, uint32 influenceNr)                    { return &mData.GetElement(attributeNr, influenceNr); }
+        MCORE_INLINE SkinInfluence* GetInfluence(size_t attributeNr, size_t influenceNr)                    { return &mData.GetElement(attributeNr, influenceNr); }
 
         /**
          * Get direct access to the jagged 2D array that contains the skinning influence data.
@@ -169,6 +169,13 @@ namespace EMotionFX
          * @result A reference to the 2D array containing all the skinning influences.
          */
         MCORE_INLINE MCore::Array2D<SkinInfluence>& GetArray2D()                                            { return mData; }
+
+        /**
+        * Collect all unique joint indices used by the skin.
+        * @param numOrgVertices The number of original vertices in the mesh.
+        * @result Vector of unique joint indices used by the skinning info layer.
+        */
+        AZStd::set<AZ::u32> CalcLocalJointIndices(AZ::u32 numOrgVertices);
 
         /**
          * Clone the vertex attribute layer.
@@ -191,7 +198,7 @@ namespace EMotionFX
          * @param oldNodeNr The node to search and replace all influence links.
          * @param newNodeNr The node with which all found influence links will be replaced with.
          */
-        void RemapInfluences(uint32 oldNodeNr, uint32 newNodeNr);
+        void RemapInfluences(size_t oldNodeNr, size_t newNodeNr);
 
         /**
          * Remove a range of attributes.
@@ -205,14 +212,14 @@ namespace EMotionFX
          * afterwards.
          * @param nodeNr The node in the actor. All influences linked to this node will be removed from the skinning info.
          */
-        void RemoveAllInfluencesForNode(uint32 nodeNr);
+        void RemoveAllInfluencesForNode(size_t nodeNr);
 
         /**
          * Collect all nodes to which the skinning info refers to.
          * @param influencedNodes The array to which the node numbers which are influenced by the skinning info will be added.
          * @param clearInfluencedNodesArray When set to true the given influenced nodes array will be cleared before filling it.
          */
-        void CollectInfluencedNodes(MCore::Array<uint32>& influencedNodes, bool clearInfluencedNodesArray = true);
+        void CollectInfluencedNodes(AZStd::vector<uint32>& influencedNodes, bool clearInfluencedNodesArray = true);
 
         /**
          * Optimize the skinning informations memory usage.
@@ -227,7 +234,7 @@ namespace EMotionFX
          * @param tolerance The minimum weight value of an influence, smaller ones will be removed.
          * @param maxWeights The maximum number of influences per vertex you want to have in the output.
          */
-        void OptimizeInfluences(float tolerance, uint32 maxWeights);
+        void OptimizeInfluences(float tolerance, size_t maxWeights);
 
         /**
          * Reset the layer data to it's original data.
@@ -245,7 +252,7 @@ namespace EMotionFX
          * when there are say 2 influences using bone A and another two influences using bone B. It only optimizes things when all influences are mapped to bone A.
          * @param attributeNr The attribute number (original vertex number) to apply this to.
          */
-        void CollapseInfluences(uint32 attributeNr);
+        void CollapseInfluences(size_t attributeNr);
 
     private:
         MCore::Array2D<SkinInfluence>   mData;  /**< The stored influence data. The Array2D template allows a different number of skinning influences per vertex. */

@@ -2,7 +2,6 @@
 = Platform names = 
 (case insensitive) 
 "ANDROID"
-"XENIA"
 "PROVO"
 "PC"
 "LINUX"
@@ -66,97 +65,6 @@ StackSizeKB:
 
 
 <ThreadConfig>
-	<!-- =============== -->
-	<!-- === XENIA === -->
-	<!-- =============== -->
-	<Platform name="Xenia">
-		<ThreadDefault Affinity="-1" Priority="Normal" StackSizeKB="32"/>
-
-		<!-- [PROCESS] -->
-		<Thread name ="Main" Affinity="0" Priority="Above_Normal"/>
-		
-		<!-- [RenderDLL] -->
-		<Thread name ="RenderThread" Affinity="1" StackSizeKB="128"/>
-		<Thread name ="RenderLoadingThread" Affinity="3" Priority="Above_Normal" StackSizeKB="72"/>
-		<Thread name ="ShaderCompile" Affinity="5" Priority="Below_Normal"/>
-		
-		<!-- [SYSTEM] -->
-		<Thread name ="GFxMeshCacheReset" Affinity="5"/>		
-		<Thread name ="MTrace NetPump" Priority="25" StackSizeKB="64"/>
-		<Thread name ="NotificationNetwork"/>
-		<Thread name ="ReplayRecord" Affinity="3"/>
-		<Thread name ="ResourceActivator"/>		
-		<Thread name ="StatoscopeDataWriter" Affinity="5"/>
-		<Thread name ="RemoteCommandClient"/>
-		<Thread name ="RemoteCommandServer" Affinity="5"/>
-		<Thread name ="ServiceNetwork" Affinity="3"/>	
-		<Thread name ="SysCrashTestOnThread"/>
-		
-		<!-- [SYSTEM] - JobSystem -->
-		<Thread name ="JobSystem_Worker_0(Blocking)" Affinity="4" StackSizeKB="32"/>
-		<Thread name ="JobSystem_Worker_1(Blocking)" Affinity="2" StackSizeKB="32"/>
-		<Thread name ="JobSystem_Worker_2(Blocking)" Affinity="3" StackSizeKB="32"/>
-
-		<Thread name ="JobSystem_Worker_0(Regular)" Affinity="2" StackSizeKB="256"/>
-		<Thread name ="JobSystem_Worker_1(Regular)" Affinity="3" StackSizeKB="256"/>
-		<Thread name ="JobSystem_Worker_2(Regular)" Affinity="4" StackSizeKB="256"/>
-		<Thread name ="JobSystem_Worker_3(Regular)" Affinity="5" StackSizeKB="256"/>
-		
-		<!-- [SYSTEM] - Physics -->
-		<Thread name ="Physics"  Affinity="2,3" StackSizeKB="128"/>	
-		<Thread name ="PhysicsWorkerThread_*" Affinity="4,5" StackSizeKB="128"/>
-				
-		<!-- [SYSTEM] - Streaming -->
-		<Thread name ="Streaming File IO HDD" Priority="Above_Normal" Affinity="5"/>
-		<Thread name ="Streaming File IO Optical" Priority="Above_Normal" Affinity="5"/>
-		<Thread name ="Streaming File IO InMemory" Priority="Above_Normal" Affinity="5"/>		
-
-		<Thread name ="Streaming AsyncCallback" Affinity="4"/>
-		<Thread name ="Streaming AsyncCallback Pak 0" Affinity="4"/>
-		
-		<!-- [SYSTEM] - Console -->
-		<Thread name ="RemoteConsoleServer"/>
-		<Thread name ="RemoteConsoleClient"/>	
-		
-		<!-- [NETWORK] -->
-		<Thread name ="Network" Affinity="5"/>
-		<Thread name ="ServerProbe"/>		
-		<Thread name ="NetworkDebugKit"/>
-		<Thread name ="NetFileDownload"/>
-		<Thread name ="NetworkWatchdog" Affinity="5" StackSizeKB="8"/>
-		<Thread name ="NetAddressSolver" Affinity="5" StackSizeKB="16" />
-		
-		<!-- [AUDIO] -->		
-		<Thread name ="MainAudioThread" Affinity="2,3,4,5" Priority="below_normal" StackSize="ignore"/>
-		
-		<Thread name ="Wwise_Device" Affinity="2,3,4,5" Priority="ignore" StackSize="ignore"/>
-		<Thread name ="Wwise_BankManager" Affinity="5" Priority="ignore" StackSize="ignore"/>
-		<Thread name ="Wwise_LEngine" Affinity="5" Priority="ignore" StackSize="ignore"/>
-		<Thread name ="Wwise_Monitor" Affinity="5" Priority="ignore" StackSize="ignore"/>
-		
-		<!-- [AI] -->
-		<Thread name ="NavigationSystemBackgroundUpdate"/>
-		
-		<!-- [ACTION] -->
-		<Thread name ="NetworkStallTicker"/>
-		<Thread name ="ZLibCompressor" Affinity="3" Priority="Above_Normal" StackSizeKB="32"/>
-		
-		<!-- [INPUT] -->
-		<Thread name ="InputWorker"/>
-		<Thread name ="Synergy"/>
-		
-		<!-- [LIVE_CREATE]-->
-		<Thread name ="LiveCreate_Server"/>	
-		<Thread name ="LiveCreate_FileSync"/>
-		<Thread name ="LiveCreatePlatformService"/>
-		<Thread name ="LiveCreateUtilityService"/>		
-		
-		<!-- [SCALEFORM][3rd Party] -->
-		<Thread name ="GFxVideo_SoundUpdate" Affinity="5" Priority="time_critical" DisablePriorityBoost="ignore" StackSizeKB="16"/>	
-		<Thread name ="GFxVideo_Decoder" Affinity="4" Priority="highest" DisablePriorityBoost="ignore" StackSizeKB="ignore"/>	
-		<Thread name ="GFxVideo_Reader" Affinity="5" Priority="highest" DisablePriorityBoost="ignore" StackSizeKB="ignore"/>	
-	</Platform> 
-
 	<!-- ============= -->
 	<!-- === PROVO === -->
 	<!-- ============= -->

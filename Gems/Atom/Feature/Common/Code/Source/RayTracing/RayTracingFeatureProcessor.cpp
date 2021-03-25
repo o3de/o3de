@@ -42,7 +42,8 @@ namespace AZ
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools
-            m_bufferPools.Init(device);
+            m_bufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+            m_bufferPools->Init(device);
 
             // create TLAS attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
@@ -92,7 +93,7 @@ namespace AZ
                 subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
 
                 // create the buffers from the descriptor
-                subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, m_bufferPools);
+                subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
             }
 
             // set initial transform

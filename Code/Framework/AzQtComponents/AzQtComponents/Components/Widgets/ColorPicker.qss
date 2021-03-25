@@ -22,7 +22,9 @@ AzQtComponents--ColorPicker *
     font-size: 12px;
 }
 
-AzQtComponents--ColorPicker QToolButton
+/* Only apply this to direct children QToolButton so it doesn't affect
+   nested ones (e.g. action buttons in the TabWidget) */
+AzQtComponents--ColorPicker > QToolButton
 {
     border: none;
     max-width: 16px;

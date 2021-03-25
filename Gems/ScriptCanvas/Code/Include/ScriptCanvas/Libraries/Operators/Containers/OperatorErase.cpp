@@ -22,6 +22,25 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            void OperatorErase::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                OperatorBase::CustomizeReplacementNode(replacementNode, outSlotIdMap);
+
+                // Need to map Out slot to Out and Key Not Found slots
+                if (m_missedElementNotFound)
+                {
+                    auto newExecutionOutSlots = replacementNode->GetSlotsByType(CombinedSlotType::ExecutionOut);
+                    if (newExecutionOutSlots.size() == 2)
+                    {
+                        outSlotIdMap.emplace(OperatorBaseProperty::GetOutSlotId(this), AZStd::vector<SlotId>{ newExecutionOutSlots[0]->GetId(), newExecutionOutSlots[1]->GetId() });
+                    }
+                    else
+                    {
+                        AZ_Warning("ScriptCanvas", false, "Erase node execution outs expected 2, actual %zu.", newExecutionOutSlots.size());
+                    }
+                }
+            }
+
             void OperatorErase::OnInit()
             {
                 // Version Conversion away from Operator Base
@@ -30,6 +49,7 @@ namespace ScriptCanvas
                     const Slot* slot = GetSlot(OperatorEraseProperty::GetElementNotFoundSlotId(this));
                     if (slot == nullptr)
                     {
+                        m_missedElementNotFound = true;
                         ConfigureSlots();
                     }
                 }

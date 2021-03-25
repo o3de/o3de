@@ -11,6 +11,8 @@
 */
 
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -18,6 +20,29 @@ namespace AZ
     {
         namespace GraphData
         {
+            void MeshVertexTangentData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<MeshVertexTangentData>()->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<MeshVertexTangentData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetCount", &MeshVertexTangentData::GetCount)
+                        ->Method("GetTangent", &MeshVertexTangentData::GetTangent)
+                        ->Method("GetTangentSetIndex", &MeshVertexTangentData::GetTangentSetIndex)
+                        ->Method("GetTangentSpace", &MeshVertexTangentData::GetTangentSpace)
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::EMotionFX>("EMotionFX")
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromFbx>("FromFbx")
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::MikkT>("MikkT");
+                }
+            }
 
             size_t MeshVertexTangentData::GetCount() const
             {

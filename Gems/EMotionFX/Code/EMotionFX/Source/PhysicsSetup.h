@@ -27,6 +27,7 @@ namespace EMotionFX
 {
     class Actor;
     class Node;
+    class Skeleton;
 
     class PhysicsSetup
     {
@@ -80,4 +81,8 @@ namespace EMotionFX
 
         Physics::AnimationConfiguration m_config;
     };
+
+    //! Computes an estimate of the direction of the bone, based on a weighted average of the bone's children,
+    //! or pointing away from the parent in the case where there are no children.
+    AZ::Vector3 GetBoneDirection(const Skeleton* skeleton, const Node* node);
 } // namespace EMotionFX

@@ -42,7 +42,7 @@ namespace AZ
             const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
 
             // RHI::RayTracingBlas overrides...
-            virtual const RHI::Ptr<RHI::Buffer> GetBlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_blasBuffer; }
+            virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_blasBuffer != nullptr; }
 
         private:
             RayTracingBlas() = default;

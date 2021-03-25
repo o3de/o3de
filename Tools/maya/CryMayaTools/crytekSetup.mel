@@ -1,0 +1,485 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+// Original file Copyright Crytek GMBH or its affiliates, used under license.  
+
+global proc crytekSetup()
+{
+	print "\n#######################\n";
+	print "EXECUTING: crytekSetup.mel\n";
+	print "#######################\n\n";
+
+	if(`optionVar -exists "CryToolsPath"`)
+	{
+		print ("Tools Path Set To\n");
+		print (`optionVar -q "CryToolsPath"`);
+	}
+	else
+	{
+		optionVar -stringValue "CryOverrideToolsPath" "False";
+		optionVar -stringValue "CryOverrideLibsPath" "False";
+		optionVar -stringValue "CryToolsPath" "\\\\fs1/TECHART/Tools/";
+		optionVar -stringValue "CryLibsPath" "\\\\fs1/TECHART/Tools/libs/";
+	}
+
+	global string $CryToolsPath;
+	$toolsPath = `optionVar -q "CryToolsPath"`;
+
+	// Setting the windows environment variable
+	// First checking if the variable exists or not, if we dont check it will take longer for maya to start.
+	string $mayaToolsPath = $toolsPath+"CryMayaTools/";
+	
+	$moduleList = `getFileList -folder $mayaToolsPath -filespec "Cry*"`;
+
+	// Making sure that there are CRY modules otherwise it will prompt the user again. This will have to be changed for Licensees.
+	if (size($moduleList) != 0)
+	{
+		string $subString = substituteAllString($mayaToolsPath, "\\", "/");
+		string $s=`getenv "MAYA_SHELF_PATH"`;
+		string $s2=`getenv "MAYA_SHELF_PATH"`;
+		print ("\nSHELF PATH: " + $s2 + "\n\n");
+		for ($module in $moduleList)
+		{
+			if (`filetest -d ($mayaToolsPath+$module)` == 1)
+			{
+				putenv "MAYA_SCRIPT_PATH"  (`getenv "MAYA_SCRIPT_PATH"`+";"+$mayaToolsPath+$module+"/scripts");
+				print (">>MAYA SCRIPT PATH APPEND: " + $mayaToolsPath+$module+"/scripts\n");
+				putenv "XBMLANGPATH"  (`getenv "XBMLANGPATH"`+";"+$mayaToolsPath+$module+"/icons");
+				print (">>MAYA ICON PATH APPEND: " + $mayaToolsPath+$module+"/icons\n");
+			}
+		}
+
+		//run startup.py
+		string $toolsPath2 = "";
+		$toolsPath2 = substituteAllString($mayaToolsPath, "\\", "\\\\");
+		$toolsPath2 = substituteAllString($toolsPath2, "/", "\\\\");
+		string $exec = "execfile('" + $toolsPath2 + "CryCore\\startup.py"+"')";
+		python($exec);
+	}
+	else
+	{
+		ControlPanel();
+	}
+	print "\n#######################\n";
+	print "EXIT: crytekSetup.mel\n\n";
+}
+
+//*************************************************
+
+global proc browseToolsPath()
+{
+	global string $toolsPathTextField;
+	global string $toolsPathOptions;
+	
+	string $result[] = `fileDialog2 -fileMode 3 -dialogStyle 2`;
+	if(size($result) != 0)
+	{
+		textField -edit -tx $result $toolsPathTextField;
+		radioButtonGrp -edit -select 2 $toolsPathOptions;
+	}
+}
+
+global proc browseLibsPath()
+{
+	global string $libsPathTextField;
+	global string $libsPathOptions;
+	
+	string $result[] = `fileDialog2 -fileMode 3 -dialogStyle 2`;
+    if(size($result) != 0)
+	{
+		textField -edit -tx $result $libsPathTextField;
+		radioButtonGrp -edit -select 2 $libsPathOptions;
+
+	}
+}
+
+proc executeSetPath()
+{
+	global string $toolsPathOptions;
+	global string $libsPathOptions;
+	global string $toolsPathTextField;
+	global string $controlPanelUI;
+	global string $libsPathTextField;
+	global string $informationField;
+	global string $message;
+	
+	if (`radioButtonGrp -q -select $toolsPathOptions` == 1)
+	{
+		optionVar -stringValue "CryOverrideToolsPath" "False";
+		optionVar -stringValue "CryToolsPath" "\\\\fs1\\TECHART\\Tools\\";
+	}
+	else
+	{
+		optionVar -stringValue "CryOverrideToolsPath" "True";
+		string $toolspath = `textField -q -tx $toolsPathTextField`;
+		if( ! endsWith($toolspath, "\\") && ! endsWith($toolspath, "/"))
+		{
+			$toolspath += "\\";
+		}
+		$toolspath = substituteAllString($toolspath, "/", "\\");
+		optionVar -stringValue "CryToolsPath" $toolspath;
+	}
+	
+	if (`radioButtonGrp -q -select $libsPathOptions` == 1)
+	{
+		optionVar -stringValue "CryOverrideLibsPath" "False";
+		optionVar -stringValue "CryLibsPath" "\\\\fs1\\TECHART\\Tools\\Libs\\";
+	}
+	else
+	{
+		optionVar -stringValue "CryOverrideLibsPath" "True";
+		string $libspath = `textField -q -tx $libsPathTextField`;
+		if( ! endsWith($libspath, "\\") && ! endsWith($libspath, "/"))
+		{
+			$libspath += "\\";
+		}
+		$libspath = substituteAllString($libspath, "/", "\\");
+		optionVar -stringValue "CryLibsPath" $libspath;
+	}
+}
+
+global proc setToolsPath()
+{
+	global string $toolsPathOptions;
+	global string $libsPathOptions;
+	global string $toolsPathTextField;
+	global string $controlPanelUI;
+	global string $libsPathTextField;
+	global string $informationField;
+	global int $oldToolsPathOption;
+	global int $oldLibsPathOption;
+	global string $message;
+	
+	string $setToolsPath = `textField -q -tx $toolsPathTextField`;
+	string $setLibsPath = `textField -q -tx $libsPathTextField`;
+	int $setToolsPathOption = `radioButtonGrp -q -select $toolsPathOptions`;
+	int $setLibsPathOption = `radioButtonGrp -q -select $libsPathOptions`;
+	
+	$message = "";
+	
+	if($setToolsPath != `optionVar -q "CryToolsPath"` || $setLibsPath != `optionVar -q "CryLibsPath"`)
+	{
+		if($setToolsPath != `optionVar -q "CryToolsPath"` && $setLibsPath != `optionVar -q "CryLibsPath"`)
+		{
+			$message = "You have changed both Tools and Libs paths\n\n"+ "Old Tools path: " + `optionVar -q "CryToolsPath"` + "\nNew Tools path: " + $setToolsPath + "\n" + "\nAnd\n\n" + "Old Libs path: "+ `optionVar -q "CryLibsPath"` + "\nNew Libs path: " + $setLibsPath + "\n";
+			print $message;
+		}
+		else if($setToolsPath != `optionVar -q "CryToolsPath"`)
+		{
+			$message = "Old Tools path: " + `optionVar -q "CryToolsPath"` + "\nNew Tools path: " + $setToolsPath + "\n";
+			print $message;
+		}
+		else if($setLibsPath != `optionVar -q "CryLibsPath"`) 
+		{
+			$message = "Old Libs path: "+ `optionVar -q "CryLibsPath"` + "\nNew Libs path: " + $setLibsPath + "\n";
+			print $message;
+		}
+	}
+	
+	if(($setToolsPathOption != $oldToolsPathOption && $oldToolsPathOption != 1) || ($setLibsPathOption != $oldLibsPathOption && $oldLibsPathOption != 1))
+	{
+		if($setToolsPathOption != $oldToolsPathOption && $setLibsPathOption != $oldLibsPathOption && $oldToolsPathOption != 1 && $oldLibsPathOption != 1)
+		{
+			$message = "You have changed both paths to server location.\n\\\\fs1\\TECHART\\Tools\\\n";
+			print $message;
+		}
+		else if($setToolsPathOption != $oldToolsPathOption && $oldToolsPathOption != 1)
+		{
+			$message += "\nYou have changed the old Tools path to server location.\n\\\\fs1\\TECHART\\Tools\\\n";
+			print $message;
+		}
+		else if($setLibsPathOption != $oldLibsPathOption && $oldLibsPathOption != 1) 
+		{
+			$message += "\nYou have changed the old Libs path to server location.\n\\\\fs1\\TECHART\\Tools\\libs\\\n";
+			print $message;
+		}
+	}
+	
+	if($message == "")
+	{
+		print "Neither Tools or Libs Path has changed.";
+	}
+	else
+	{
+		string $result = `confirmDialog -title "Confirm Change of Path" -message ($message+"\nIs that correct?")
+		-button "Yes" -button "No" -defaultButton "Yes"
+		-cancelButton "No" -dismissString "No"`;
+		if ($result == "Yes") 
+		{
+			executeSetPath();
+			deleteUI $controlPanelUI;
+		}    
+		
+		if ($result == "No") 
+		{
+			print "Nothing changed.";
+		} 
+	}
+	
+	global string $projString; 
+	$projString = "";
+	global string $myChecks[];
+	for ($i = 0; $i < size($myChecks); $i++)
+	{
+		int $sthg = `checkBox -query -value ($myChecks[$i]+"check")`;
+		if ($sthg)
+			{
+				$projString += $myChecks[$i]+":";
+			}
+		eval("global string $" + $myChecks[$i]+ "Val = \"" + $sthg + "\";" );
+	}
+	
+	optionVar -sv "CryProjects" $projString;
+
+
+//optionVar -exists "CryProjects";
+	
+	print $projString;
+	string $myProjShelves[];
+	$something = `tokenize $projString ":" $myProjShelves`;
+	print `size($myProjShelves)`;
+	print $myProjShelves;
+	global string $toolsPath;
+	$toolsPath = `optionVar -q "CryToolsPath"`;
+	string $mayaToolsPath = $toolsPath+"CryMayaTools/";
+	$myShelfPaths = $mayaToolsPath + "shelves";
+	string $subString = substituteAllString($myShelfPaths, "\\", "/");
+	$myShelfPaths = $subString;
+	$mstr = "";
+	for($projShelf in $myProjShelves)
+	{
+		if ($projShelf != "")
+		{
+			$mstr += ";"+$myShelfPaths+"/"+$projShelf;
+		}
+	}
+
+	//print $myShelfPaths;
+	$pathString = $myShelfPaths+$mstr+";";
+	print $pathString;
+	system("setx MAYA_SHELF_PATH " + $pathString);
+	
+}
+
+global proc ControlPanel()
+{
+	global string $controlPanelUI;
+	global string $toolsPathOptions;
+	global string $libsPathOptions;
+	global string $toolsPathTextField;
+	global string $libsPathTextField;
+	global int $oldToolsPathOption;
+	global int $oldLibsPathOption;
+
+	if(`window -exists $controlPanelUI`)
+		deleteUI $controlPanelUI;
+		
+	$controlPanelUI = `window -title "Control Panel" -widthHeight 160 90 -resizeToFitChildren 1`;
+	frameLayout -label "Tools Path" -borderStyle "etchedOut";
+	rowColumnLayout -numberOfColumns 2 -columnWidth 1 170 -columnWidth 2 50 -columnAttach 1 "both" 0 -columnAttach 2 "both" 0;
+	$toolsPathOptions = `radioButtonGrp -labelArray2 "Server" "Override" -numberOfRadioButtons 2 -select 1 -columnWidth2 80 80`;
+	text -label "";
+	$toolsPathTextField = `textField`;
+	button -label "Browse" -command "browseToolsPath()";
+	setParent "..";
+	setParent "..";
+
+	frameLayout -label "Libs Path" -borderStyle "etchedOut";
+	rowColumnLayout -numberOfColumns 2 -columnWidth 1 170 -columnWidth 2 50;
+
+	$libsPathOptions = `radioButtonGrp -labelArray2 "Server" "Override" -numberOfRadioButtons 2 -select 1 -columnWidth2 80 80`;
+	text -label "";
+	$libsPathTextField = `textField`;
+	button -label "Browse" -command "browseLibsPath()";
+	setParent "..";
+	setParent "..";
+
+	
+	// --------------------Checkboxes for Shelves--------------------
+	frameLayout -label "Shelves Paths" -borderStyle "etchedOut";
+	rowColumnLayout -numberOfColumns 3 -columnWidth 1 70 -columnWidth 2 70 -columnWidth 3 70;
+	
+	global string $myChecks[];
+	clear($myChecks);
+	$toolsPath = `optionVar -q "CryToolsPath"`;
+	string $shelvesPath = $toolsPath+"CryMayaTools\\shelves\\";
+	global string $projectShelvesList[];
+	string $projectShelvesList[]  = `getFileList -folder $shelvesPath`;
+	for ($shelf in $projectShelvesList)
+	{
+		if (`filetest -d ($shelvesPath+$shelf)` == 1)
+		{
+			$myChecks[ size($myChecks) ] = $shelf ; 
+		}
+	}
+
+	for ($i = 0; $i < size($myChecks); $i++)
+	{
+		checkBox -label $myChecks[$i] ($myChecks[$i]+"check");
+		print ($myChecks[$i]+"check"+  "\n");
+	}
+	
+	setParent "..";
+	setParent "..";
+	
+	// Setting the checkboxes for the shelves you already have selected
+	if(`optionVar -exists "CryProjects"`)
+	{
+		if(`optionVar -q "CryProjects"` != "")
+		{
+			string $CryProjects;
+			$CryProjects = `optionVar -q "CryProjects"`;
+			string $setCheckBox[];
+			int $tokenValue;
+			$tokenValue = `tokenize $CryProjects ":" $setCheckBox`;
+
+			for($check in $setCheckBox)
+			{
+				if($check != "")
+				{
+					eval("checkBox -edit -value 1 " + ($check + "check"));
+				}
+			}
+		}
+	}
+	// --------------------Variables of Interest--------------------
+	frameLayout -label "Variables Of Interest" -borderStyle "etchedOut";
+	$informationField = `scrollField -height 180 -editable false -wordWrap false -text "ALL THE INFORMATION NEEDED WILL BE HERE"`;
+	button -label "Set" -command "setToolsPath()";
+
+	// Changing the UI to reflect the settings you have.
+	if(`optionVar -exists "CryOverrideToolsPath"`)
+	{
+		if (`optionVar -q "CryOverrideToolsPath"` == "True")
+		{
+			radioButtonGrp -edit -select 2 $toolsPathOptions;
+		}
+		textField -edit -it `optionVar -q "CryToolsPath"` $toolsPathTextField;
+	}
+	else
+	{
+		optionVar -stringValue "CryOverrideToolsPath" "False";
+		textField -edit -it `optionVar -q "CryToolsPath"` $toolsPathTextField;
+	}
+
+	if(`optionVar -exists "CryOverrideLibsPath"`)
+	{
+		if (`optionVar -q "CryOverrideLibsPath"` == "True")
+		{
+			radioButtonGrp -edit -select 2 $libsPathOptions;
+		}
+		textField -edit -it `optionVar -q "CryLibsPath"` $libsPathTextField;
+	}
+	else
+	{
+		optionVar -stringValue "CryOverrideLibsPath" "False";
+		textField -edit -it `optionVar -q "CryLibsPath"` $libsPathTextField;
+	}
+
+	$oldToolsPathOption = `radioButtonGrp -q -select $toolsPathOptions`;
+	$oldLibsPathOption = `radioButtonGrp -q -select $libsPathOptions`;
+	
+	string $myString;
+	$myString = ($myString + "TOOLS PATH AND LIBS PATH \n");
+	$myString = ($myString + "****************** \n");
+	$myString = ($myString + "ToolsPath: " + `optionVar -q "CryToolsPath"` + "\n");
+	$myString = ($myString + "LibsPath: " + `optionVar -q "CryLibsPath"` + "\n");
+	$myString = ($myString + "overrideToolsPath: " + `optionVar -q "CryOverrideToolsPath"` + "\n");
+	$myString = ($myString + "overrideLibsPath: " + `optionVar -q "CryOverrideLibsPath"` + "\n");
+	$myString = ($myString + "****************** \n\n");
+	
+	$myString = ($myString + "MAYA_PLUG_IN_PATHS \n");
+	$myString = ($myString + "****************** \n");
+	$myMPIPString = (`getenv "MAYA_PLUG_IN_PATH"`);
+	string $buffer[];
+	$numTokens = `tokenize $myMPIPString ";" $buffer`;
+	for($path in $buffer)
+	{
+		$myString = ($myString + $path + "\n");
+	}
+	$myString = ($myString + "****************** \n\n");
+	
+	$myString = ($myString + "MAYA_SCRIPT_PATH \n");
+	$myString = ($myString + "****************** \n");
+	$myMSPString = (`getenv "MAYA_SCRIPT_PATH"`);
+	string $buffer[];
+	$numTokens = `tokenize $myMSPString ";" $buffer`;
+	for($path in $buffer)
+	{
+		$myString = ($myString + $path + "\n");
+	}
+	$myString = ($myString + "****************** \n\n");
+
+	$myString = ($myString + "XBMLANGPATH/Icon Paths \n");
+	$myString = ($myString + "****************** \n");
+	$myXBMLPString = (`getenv "XBMLANGPATH"`);
+	string $buffer[];
+	$numTokens = `tokenize $myXBMLPString ";" $buffer`;
+	for($path in $buffer)
+	{
+		$myString = ($myString + $path + "\n");
+	}
+	$myString = ($myString + "****************** \n\n");
+	
+	$myString = ($myString + "MAYA_SHELF_PATH \n");
+	$myString = ($myString + "****************** \n");
+	$myMSHPString = (`getenv "MAYA_SHELF_PATH"`);
+	string $buffer[];
+	$numTokens = `tokenize $myMSHPString ";" $buffer`;
+	for($path in $buffer)
+	{
+		$myString = ($myString + $path + "\n");
+	}
+	$myString = ($myString + "****************** \n\n");
+	
+	$myString = ($myString + "DEFAULT SETTINGS\n");
+	$myString = ($myString + "****************** \n");
+	$myString = ($myString + "defaultFileSaveType: " + `optionVar -q  "defaultFileSaveType"` + "\n");
+	$myString = ($myString + "workingUnitAngularDefault: " + `optionVar -q  "workingUnitAngularDefault"` + "\n");
+	$myString = ($myString + "workingUnitLinearDefault: " + `optionVar -q  "workingUnitLinearDefault"` + "\n");
+	$myString = ($myString + "workingUnitTimeDefault: " + `optionVar -q  "workingUnitTimeDefault"` + "\n");
+	$myString = ($myString + "upAxisDirection: " + `optionVar -q  "upAxisDirection"` + "\n");
+	$myString = ($myString + "playbackMinRangeDefault: " + `optionVar -q  "playbackMinRangeDefault"` + "\n");
+	$myString = ($myString + "playbackMinDefault: " + `optionVar -q  "playbackMinDefault"` + "\n");
+	$myString = ($myString + "maxInfl: " + `optionVar -q  "maxInfl"` + "\n");
+	$myString = ($myString + "****************** \n\n");
+	
+	$myString = ($myString + "ENV SETTINGS\n");
+	$myString = ($myString + "****************** \n");
+	// Maya.env File Path  
+	string $filePath;
+	$filePath = python("import maya.cmds as cmds; cmds.internalVar(usd=True).rsplit(\"/\", 2)[0]");
+	$filePath += "/Maya.env";
+	  
+	// Open File  
+	$fileId = `fopen $filePath "r"` ;  
+	  
+	// Get The First Line  
+	string $nextLine = `fgetline $fileId` ;  
+	  
+	// Loop Until The String Size Is Zero (No Data)  
+	while (size($nextLine) > 0) 
+	{  
+		// Strip Whitespace From The Beginning And End Of The Line  
+		string $cleanLine = strip($nextLine) ;  
+		$myString = ($myString + $cleanLine + "\n");  
+		  
+		// Get Next Line And Continue  
+		$nextLine = `fgetline $fileId` ;  
+	} 
+	$myString = ($myString + "****************** \n");
+	
+	// Adding the information to the text field.
+	scrollField -edit -text $myString $informationField;
+
+	showWindow $controlPanelUI;
+}

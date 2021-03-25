@@ -156,4 +156,4 @@ namespace ScriptCanvasEditor
 
         return dataFlags;
     }
-} // namespace ScriptCanvasEditor
+}

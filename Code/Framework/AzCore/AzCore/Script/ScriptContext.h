@@ -888,7 +888,7 @@ namespace AZ
         int CacheGlobal(const char* name);
         /// Release any cached resource (global or local)
         void ReleaseCached(int cacheIndex);
-        bool Call(const char* functionName, ScriptDataContext& dc, bool warnIfNotFound = true);
+        bool Call(const char* functionName, ScriptDataContext& dc);
         bool CallCached(int cachedIndex, ScriptDataContext& dc);
 
         bool InspectTable(const char* tableName, ScriptDataContext& dc);

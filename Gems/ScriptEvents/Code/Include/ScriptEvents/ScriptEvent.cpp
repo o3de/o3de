@@ -13,12 +13,14 @@
 #include "precompiled.h"
 
 #include "ScriptEvent.h"
+#include "ScriptEventRegistration.h"
 
 #include <ScriptEvents/ScriptEventsBus.h>
 #include <ScriptEvents/ScriptEventFundamentalTypes.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 #include <ScriptEvents/Internal/BehaviorContextBinding/ScriptEventMethod.h>
 #include <ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBroadcast.h>
+#include "ScriptEventDefinition.h"
 
 namespace ScriptEvents
 {
@@ -173,7 +175,7 @@ namespace ScriptEvents
 
             return bus;
         }
-        
+
         bool Utils::DestroyScriptEventBehaviorEBus(AZStd::string_view ebusName)
         {
             AZ::BehaviorContext* behaviorContext = nullptr;
@@ -199,130 +201,5 @@ namespace ScriptEvents
             return erasedBus;
         }
 
-
-        ScriptEvent::~ScriptEvent()
-        {            
-            for (auto ebusPair : m_behaviorEBus)
-            {                
-                Utils::DestroyScriptEventBehaviorEBus(ebusPair.second->m_name);
-            }
-
-            m_scriptEventBindings.clear();
-        }
-
-        void ScriptEvent::Init(AZ::Data::AssetId scriptEventAssetId)
-        {
-            AZ_Assert(scriptEventAssetId.IsValid(), "Script Event requires a valid Asset Id");
-            
-            m_assetId = scriptEventAssetId;
-
-            AZ::Data::AssetBus::Handler::BusConnect(scriptEventAssetId);
-
-            auto asset = AZ::Data::AssetManager::Instance().FindAsset<ScriptEvents::ScriptEventsAsset>(m_assetId, AZ::Data::AssetLoadBehavior::Default);
-            if (asset && asset.IsReady())
-            {
-                CompleteRegistration(asset);
-            }
-        }
-
-        void ScriptEvent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            CompleteRegistration(asset);
-        }
-
-        void ScriptEvent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            CompleteRegistration(asset);
-        }
-
-        void ScriptEvent::CompleteRegistration(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            m_assetId = asset.GetId();
-
-            const ScriptEvents::ScriptEvent& definition = asset.GetAs<ScriptEvents::ScriptEventsAsset>()->m_definition;
-
-            if (m_behaviorEBus.find(definition.GetVersion()) != m_behaviorEBus.end())
-            {
-                return;
-            }
-
-            AZ::BehaviorContext* behaviorContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
-            AZ_Assert(behaviorContext, "Script Events require a valid Behavior Context");
-
-            m_busName = definition.GetName();
-
-            auto behaviorEbusEntry = behaviorContext->m_ebuses.find(definition.GetBehaviorContextName());
-            if (behaviorEbusEntry != behaviorContext->m_ebuses.end())
-            {
-                m_behaviorEBus[definition.GetVersion()] = behaviorEbusEntry->second;
-
-                if (m_maxVersion < definition.GetVersion())
-                {
-                    m_maxVersion = definition.GetVersion();
-                }
-
-                m_scriptEventBindings[m_assetId] = AZStd::make_unique<ScriptEventBinding>(behaviorContext, m_busName.c_str(), definition.GetAddressType());                
-
-                ScriptEventNotificationBus::Broadcast(&ScriptEventNotifications::OnRegistered, definition);
-
-                return;
-            }
-
-            AZ::BehaviorEBus* bus = Utils::ConstructAndRegisterScriptEventBehaviorEBus(definition);
-
-            if (bus == nullptr)
-            {
-                return;
-            }
-
-            m_behaviorEBus[definition.GetVersion()] = bus;
-
-            if (m_maxVersion < definition.GetVersion())
-            {
-                m_maxVersion = definition.GetVersion();
-            }
-
-            AZ::BehaviorContextBus::Broadcast(&AZ::BehaviorContextBus::Events::OnAddEBus, m_busName.c_str(), bus);
-            m_scriptEventBindings[m_assetId] = AZStd::make_unique<ScriptEventBinding>(behaviorContext, m_busName.c_str(), definition.GetAddressType());            
-
-            ScriptEventNotificationBus::Event(m_assetId, &ScriptEventNotifications::OnRegistered, definition);
-
-            asset.Release();
-
-            m_isReady = true;
-        }
-
-        bool ScriptEvent::GetMethod(AZStd::string_view eventName, AZ::BehaviorMethod*& outMethod)
-        {
-            AZ::BehaviorEBus* ebus = GetBehaviorBus();
-            AZ_Assert(ebus, "BehaviorEBus is invalid: %s", m_busName.c_str());
-
-            const auto& method = ebus->m_events.find(eventName);
-            if (method == ebus->m_events.end())
-            {
-                AZ_Error("Script Events", false, "No method by name of %s found in the script event: %s", eventName.data(), m_busName.c_str());
-                return false;
-            }
-
-            AZ::EBusAddressPolicy addressPolicy
-                = (ebus->m_idParam.m_typeId.IsNull() || ebus->m_idParam.m_typeId == AZ::AzTypeInfo<void>::Uuid())
-                ? AZ::EBusAddressPolicy::Single
-                : AZ::EBusAddressPolicy::ById;
-
-            AZ::BehaviorMethod* behaviorMethod
-                = ebus->m_queueFunction
-                ? (addressPolicy == AZ::EBusAddressPolicy::ById ? method->second.m_queueEvent : method->second.m_queueBroadcast)
-                : (addressPolicy == AZ::EBusAddressPolicy::ById ? method->second.m_event : method->second.m_broadcast);
-
-            if (!behaviorMethod)
-            {
-                AZ_Error("Script Canvas", false, "Queue function mismatch in %s-%s", eventName.data(), m_busName.c_str());
-                return false;
-            }
-
-            outMethod = behaviorMethod;
-            return true;
-        }        
     }
 }

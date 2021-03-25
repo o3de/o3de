@@ -161,7 +161,6 @@ float DirectionalLightShadow::GetThickness(uint lightIndex, float3 shadowCoords[
 
 bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade)
 {
-    static const float Bias = 0.0001;
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
     static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
 
@@ -181,7 +180,7 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
         if (shadowCoord.z < 1. - DepthMargin)
         {
             const float depthDiff = shadowCoord.z - depthInShadowmap;
-            return bool2(true, (depthDiff > Bias + m_slopeBias[indexOfCascade]));
+            return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
         }
     }
     return bool2(false, false);

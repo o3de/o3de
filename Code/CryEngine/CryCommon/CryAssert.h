@@ -45,7 +45,7 @@
 #undef CRY_ASSERT_DIALOG_ONLY_IN_DEBUG
 #endif
 
-// Using AZ_Assert for all assert kinds (assert =, CRY_ASSERT, AZ_Assert). This is for Provo and Xenia
+// Using AZ_Assert for all assert kinds (assert =, CRY_ASSERT, AZ_Assert).
 // see Trace::Assert for implementation
 #if defined(USE_AZ_ASSERT)
 #undef assert

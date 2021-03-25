@@ -40,7 +40,11 @@ class CUiAnimViewKeyUIControls
 {
     Q_OBJECT
 public:
-    CUiAnimViewKeyUIControls() { m_pVarBlock = new CVarBlock; };
+    CUiAnimViewKeyUIControls()
+    {
+        m_pVarBlock = new CVarBlock;
+        m_onSetCallback = AZStd::bind(&CUiAnimViewKeyUIControls::OnInternalVariableChange, this, AZStd::placeholders::_1);
+    };
 
     void SetKeyPropertiesDlg(CUiAnimViewKeyPropertiesDlg* pDlg) { m_pKeyPropertiesDlg = pDlg; }
 
@@ -92,7 +96,7 @@ protected:
             var.SetName(varName);
         }
         var.SetDataType(dataType);
-        var.AddOnSetCallback(functor(*this, &CUiAnimViewKeyUIControls::OnInternalVariableChange));
+        var.AddOnSetCallback(&m_onSetCallback);
         varArray.AddVariable(&var);
         m_registeredVariables.push_back(&var);
     }
@@ -104,7 +108,7 @@ protected:
             var.SetName(varName);
         }
         var.SetDataType(dataType);
-        var.AddOnSetCallback(functor(*this, &CUiAnimViewKeyUIControls::OnInternalVariableChange));
+        var.AddOnSetCallback(&m_onSetCallback);
         m_pVarBlock->AddVariable(&var);
         m_registeredVariables.push_back(&var);
     }
@@ -114,6 +118,7 @@ protected:
     _smart_ptr<CVarBlock> m_pVarBlock;
     std::vector<_smart_ptr<IVariable> > m_registeredVariables;
     CUiAnimViewKeyPropertiesDlg* m_pKeyPropertiesDlg;
+    IVariable::OnSetCallback m_onSetCallback;
 };
 
 //////////////////////////////////////////////////////////////////////////

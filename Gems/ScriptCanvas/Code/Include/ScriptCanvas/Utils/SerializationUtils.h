@@ -74,5 +74,45 @@ namespace ScriptCanvas
 
             return addedBaseClass;
         }
+
+        template<typename T>
+        static bool GetElementData(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement, T& outData, uint32_t crc)
+        {
+            AZ::SerializeContext::DataElementNode* dataElement = classElement.FindSubElement(crc);
+            if (!dataElement)
+            {
+                return false;
+            }
+
+            if (!dataElement->GetData(outData))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        static AZ::SerializeContext::DataElementNode* FindFirstSubElement(AZ::SerializeContext::DataElementNode& classElement, uint32_t crc, int depthLimit = 10)
+        {
+            if (depthLimit <= 0)
+            {
+                return nullptr;
+            }
+
+            if (auto element = classElement.FindSubElement(crc))
+            {
+                return element;
+            }
+
+            for (int index = 0; index < classElement.GetNumSubElements(); index ++)
+            {
+                if (auto element = FindFirstSubElement(classElement.GetSubElement(index), crc, depthLimit - 1))
+                {
+                    return element;
+                }
+            }
+
+            return nullptr;
+        }
     };
 }

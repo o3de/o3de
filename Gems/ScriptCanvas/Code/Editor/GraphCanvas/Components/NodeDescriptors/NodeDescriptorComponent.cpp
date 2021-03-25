@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
             GraphCanvas::GraphId graphId;
             GraphCanvas::SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
 
-            GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::Disable, GetEntityId());
+            GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::DisableVisualState, GetEntityId());
         }
     }
 
@@ -82,6 +82,22 @@ namespace ScriptCanvasEditor
     {
         AZ_UNUSED(graphId);
         AZ_UNUSED(scriptCanvasNodeId);
+    }
+
+    void NodeDescriptorComponent::OnNodeDisabled()
+    {
+        GraphCanvas::GraphId graphId;
+        GraphCanvas::SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
+
+        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::DisableVisualState, GetEntityId());
+    }
+
+    void NodeDescriptorComponent::OnNodeEnabled()
+    {
+        GraphCanvas::GraphId graphId;
+        GraphCanvas::SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
+
+        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::EnableVisualState, GetEntityId());
     }
 
     AZ::EntityId NodeDescriptorComponent::FindScriptCanvasNodeId() const

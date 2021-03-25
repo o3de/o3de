@@ -37,44 +37,14 @@ namespace AZ
         class RenderPass;
         class Query;
 
-        //! Implements RHI::ScopeProducer by simply forwarding it's
-        //! virtual function calls to it's parent RenderPass
-        class PassScopeProducer
-            : public RHI::ScopeProducer
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(PassScopeProducer, SystemAllocator, 0);
-
-            PassScopeProducer(const RHI::ScopeId& scopeId, RenderPass* parent, uint16_t childIndex)
-                : ScopeProducer(scopeId)
-                , m_parentPass(parent)
-                , m_childIndex(childIndex)
-            { }
-
-            virtual ~PassScopeProducer() = default;
-
-        private:
-
-            // RHI::ScopeProducer overrides
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override final;
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override final;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override final;
-
-            // Pointer to the RenderPass that owns this scope producer
-            RenderPass* m_parentPass;
-
-            // Index so that the scope producer can identify itself to the parent pass during callbacks
-            uint16_t m_childIndex;
-        };
-
         //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that 
         //! implements rendering functionality (raster, compute, copy)
-        class RenderPass
-            : public Pass
+        class RenderPass :
+            public Pass,
+            public RHI::ScopeProducer
         {
             AZ_RPI_PASS(RenderPass);
 
-            friend class PassScopeProducer;
             friend class ImageAttachmentPreviewPass;
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;
@@ -107,11 +77,12 @@ namespace AZ
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
 
-            // Adds a new scope producer to the list
-            void AddScopeProducer();
+            // RHI::ScopeProducer overrides...
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            // Note: BuildCommandList is the final implementation. And all derived passes should override BuildCommandListInternal to build their CommandList
+            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) final;
 
-            // Imports all the RenderPass's scope producers into the FrameGraphBuilder
-            void ImportScopeProducers(RHI::FrameGraphBuilder* frameGraphBuilder);
+            virtual void BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context){};
 
             // Binds all attachments from the pass 
             void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const;
@@ -124,7 +95,7 @@ namespace AZ
             // Binds the pass's attachments to the provide SRG (this will usually be the pass's own SRG)
             void BindPassSrg(const RHI::FrameGraphCompileContext& context, Data::Instance<ShaderResourceGroup>& shaderResourceGroup);
 
-            // Pass behavior overrides
+            // Pass behavior overrides...
             void OnBuildAttachmentsFinishedInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
@@ -147,52 +118,37 @@ namespace AZ
             // If the View bound to the tag exists,the view's srg will be collected to pass' srg bind list
             void SetPipelineViewTag(const PipelineViewTag& viewTag);
 
+            // Add the ScopeQuery's QueryPool to the FrameGraph
+            void AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph);
+
             // The shader resource group for this pass
             Data::Instance<ShaderResourceGroup> m_shaderResourceGroup = nullptr;
-
-            // Desired number of scopes for this RenderPass
-            uint32_t m_numberOfScopes = 1;
-
-            // Scope producer functions - derived classes must implements these
-            virtual void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer);
-            virtual void CompileResources(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer) = 0;
-            virtual void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const PassScopeProducer& producer) = 0;
 
         private:
             // Helper function that binds a single attachment to the pass shader resource group
             void BindAttachment(const RHI::FrameGraphCompileContext& context, const PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
 
             // Helper function to get the query by the scope index and query type
-            RHI::Ptr<Query> GetQuery(uint16_t scopeIdx, ScopeQueryType queryType) const;
+            RHI::Ptr<Query> GetQuery(ScopeQueryType queryType);
 
             // Executes a lambda depending on the passed ScopeQuery types
             template <typename Func>
-            void ExecuteOnTimestampQuery(uint16_t scopeIdx, Func&& func);
+            void ExecuteOnTimestampQuery(Func&& func);
             template <typename Func>
-            void ExecuteOnPipelineStatisticsQuery(uint16_t scopeIdx, Func&& func);
+            void ExecuteOnPipelineStatisticsQuery(Func&& func);
 
             // RPI::Pass overrides...
             TimestampResult GetTimestampResultInternal() const override;
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
 
-            // Adds a ScopeQuery entry
-            void AddScopeQuery();
-
-            // Add the ScopeQuery's QueryPool to the FrameGraph
-            void AddScopeQueryToFrameGraph(uint16_t scopeIdx, RHI::FrameGraphInterface frameGraph);
-
             // Begin recording commands for the ScopeQueries 
-            void BeginScopeQuery(uint16_t scopeIdx, const RHI::FrameGraphExecuteContext& context);
+            void BeginScopeQuery(const RHI::FrameGraphExecuteContext& context);
 
             // End recording commands for the ScopeQueries
-            void EndScopeQuery(uint16_t scopeIdx, const RHI::FrameGraphExecuteContext& context);
+            void EndScopeQuery(const RHI::FrameGraphExecuteContext& context);
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            // Scope producers used to render the pass (in cases like split-screen where
-            // there are multiple views, the pass will have one scope producer per view)
-            AZStd::vector<AZStd::unique_ptr<PassScopeProducer>> m_scopeProducers;
 
             // For read back attachments
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
@@ -200,13 +156,13 @@ namespace AZ
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
             // Readback results from the Timestamp queries
-            AZStd::vector<TimestampResult> m_timestampResults;
+            TimestampResult m_timestampResult;
             // Readback results from the PipelineStatistics queries
-            AZStd::vector<PipelineStatisticsResult> m_statisticsResults;
+            PipelineStatisticsResult m_statisticsResult;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of an Timestamp and PipelineStatistic query.
-            AZStd::vector<ScopeQuery> m_scopeQueries;
+            ScopeQuery m_scopeQueries;
 
             // List of all ShaderResourceGroups to be bound during rendering or computing
             // Derived classed may call BindSrg function to add other srgs the list

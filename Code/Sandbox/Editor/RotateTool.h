@@ -17,6 +17,7 @@
 #include "EditTool.h"
 #include "IObjectManager.h"
 #include "EditMode/ObjectMode.h"
+#include "Objects/BaseObject.h" // for CBaseObject::EventListener
 #include "Objects/DisplayContext.h"
 #include "Include/HitContext.h"
 #endif
@@ -134,6 +135,7 @@ namespace RotationDrawHelper
 class SANDBOX_API CRotateTool
     : public CObjectMode
     , public IObjectSelectCallback
+    , public CBaseObject::EventListener
 {
     Q_OBJECT
 public:
@@ -230,7 +232,7 @@ protected:
     bool CanSelectObject(CBaseObject* object) override;
 
     //! Callback installed on the object, used to determine destruction or deselection.
-    void OnObjectEvent(CBaseObject* object, int event);
+    void OnObjectEvent(CBaseObject* object, int event) override;
 
     //! Handle key down events.
     bool OnKeyDown(CViewport* view, uint32 nChar, uint32 nRepCnt, uint32 nFlags) override;

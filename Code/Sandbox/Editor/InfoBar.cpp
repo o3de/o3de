@@ -146,13 +146,16 @@ CInfoBar::CInfoBar(QWidget* parent)
 
     ui->m_moveSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, ui->m_moveSpeed));
 
+    // Save off the move speed here since setting up the combo box can cause it to update values in the background.
+    float cameraMoveSpeed = gSettings.cameraMoveSpeed;
+
     // Populate the presets in the ComboBox
     for (float presetValue : m_speedPresetValues)
     {
         ui->m_moveSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
     }
 
-    SetSpeedComboBox(gSettings.cameraMoveSpeed);
+    SetSpeedComboBox(cameraMoveSpeed);
 
     ui->m_moveSpeed->setInsertPolicy(QComboBox::NoInsert);
 

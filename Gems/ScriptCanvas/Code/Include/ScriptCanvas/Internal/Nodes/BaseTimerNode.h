@@ -14,7 +14,6 @@
 
 #include <AzCore/Component/TickBus.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.generated.h>
@@ -25,41 +24,47 @@ namespace ScriptCanvas
     {
         namespace Internal
         {
+            //! Deprecated: see TimerNodeable
             class BaseTimerNode
                 : public Node
+                , public NodePropertyInterfaceListener
                 , public AZ::TickBus::Handler
                 , public AZ::SystemTickBus::Handler
             {
-                ScriptCanvas_Node(BaseTimerNode,
-                    ScriptCanvas_Node::Name("BaseTimerNode", "Provides a basic interaction layer for all time based nodes for users(handles swapping between ticks and seconds).")
-                    ScriptCanvas_Node::Uuid("{BAD6C904-6078-49E8-B461-CA4410B785A4}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Category("Utilities")
-                    ScriptCanvas_Node::Version(0)
-                );
-
             public:
+
+                SCRIPTCANVAS_NODE(BaseTimerNode);
+
                 enum TimeUnits
                 {
-                    Unknown = -1,
                     Ticks,
                     Milliseconds,
-                    Seconds,
+                    Seconds
+                };
 
-                    UnitCount
+                static constexpr const char* s_timeUnitNames[] =
+                {
+                    "Ticks",
+                    "Milliseconds",
+                    "Seconds"
                 };
                 
                 virtual ~BaseTimerNode();
 
+                // Node...
                 void OnInit() override;
                 void OnConfigured() override;
                 void OnDeactivate() override;
+
+                void ConfigureVisualExtensions() override;
+                NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override;
+                ////
                 
-                // SystemTickBus
+                // SystemTickBus...
                 void OnSystemTick() override;
                 ////
                 
-                // TickBus
+                // TickBus...
                 void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
                 int GetTickOrder() override;
                 ////
@@ -84,27 +89,35 @@ namespace ScriptCanvas
                 
                 virtual bool AllowInstantResponse() const;
                 virtual void OnTimeElapsed();
-                
+
+                // Store until versioning is complete
                 virtual const char* GetTimeSlotFormat() const { return "Time (%s)";  }
+                ////
+
+                virtual const char* GetBaseTimeSlotName() const { return "Delay"; }
+                virtual const char* GetBaseTimeSlotToolTip() const { return "The amount of time for the specific action to trigger."; }
                 
                 virtual void ConfigureTimeSlot(DataSlotConfiguration& configuration);
 
-                SlotId              m_timeSlotId;                
+                SlotId              m_timeSlotId;
                 
             private:
-                ScriptCanvas_EditPropertyWithDefaults(int, m_timeUnits, 0, EditProperty::NameLabelOverride("Units"),
-                    EditProperty::DescriptionTextOverride("Units to represent the time in."),
-                    EditProperty::UIHandler(AZ::Edit::UIHandlers::ComboBox),
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::GenericValueList(&BaseTimerNode::GetTimeUnitList), AZ::Edit::Attributes::PostChangeNotify(&BaseTimerNode::OnTimeUnitsChanged)));
 
-                ScriptCanvas_EditPropertyWithDefaults(int, m_tickOrder, static_cast<int>(AZ::TICK_DEFAULT), EditProperty::NameLabelOverride("TickOrder"),
-                    EditProperty::DescriptionTextOverride("When the tick for this time update should be handled.")
-                );
+                AZ::Crc32 GetTimeUnitsPropertyId() const { return AZ::Crc32("TimeUnitProperty"); }
+
+                // NodePropertyInterface
+                void OnPropertyChanged() override;
+                ////
+
+                int m_timeUnits = 0;
+                int m_tickOrder = static_cast<int>(AZ::TICK_DEFAULT);
                     
-                bool                m_isActive      = false;
+                bool m_isActive = false;
                     
-                Data::NumberType    m_timerCounter   = 0.0;
-                Data::NumberType    m_timerDuration   = 0.0;
+                Data::NumberType m_timerCounter   = 0.0;
+                Data::NumberType m_timerDuration   = 0.0;
+
+                ScriptCanvas::EnumComboBoxNodePropertyInterface m_timeUnitsInterface;
             };
         }
     }

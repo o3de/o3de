@@ -39,7 +39,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -165,19 +165,10 @@ namespace AZ
 
         struct FontShaderData
         {
-            const char* m_fontShaderFilepath;
-            AZ::Data::Instance<AZ::RPI::Shader> m_fontShader;
-            AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_perDrawSrgAsset;
-            AZ::RPI::ShaderVariantKey m_shaderVariantKeyFallback;
             AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
+            AZ::RHI::ShaderInputSamplerIndex m_samplerInputIndex;
             AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
-
-            AZ::RPI::ShaderVariantStableId m_fontVariantStableId;
-
-            AZ::RHI::DrawListTag m_drawListTag;
-            AZStd::map<FontPipelineStateMapKey, AZ::RHI::ConstPtr<AZ::RHI::PipelineState>> m_pipelineStates;
         };
-
 
     public:
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,20 +252,10 @@ namespace AZ
 
         bool UpdateTexture();
 
-        void LoadShader(const char* shaderFilepath);
-
-        void CommitDrawGeometry();
-        void UpdateVertexBuffer();
-        void MapVertexBuffer();
-        void UpdateIndexBuffer();
-        void MapIndexBuffer();
-
         void ScaleCoord(float& x, float& y) const;
 
         void InitWindowContext();
         void InitViewportContext();
-
-        AZ::RHI::ConstPtr<AZ::RHI::PipelineState> GetPipelineState(const AZ::RPI::Scene* scene, AZ::RHI::DrawListTag drawListTag);
 
         void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
 
@@ -295,10 +276,9 @@ namespace AZ
 
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
-        AZ::RHI::Ptr<const AZ::RHI::ImageView> m_fontImageView;
         uint32_t m_fontImageVersion = 0;
 
-        AtomFont* m_atomFont;
+        AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
         bool m_fontInitialized = false;
@@ -307,32 +287,21 @@ namespace AZ
 
         // Atom data
         AZStd::mutex                        m_vertexDataMutex;
-        AZ::RHI::Ptr<AZ::RHI::Buffer>       m_vertexBuffer[NumBuffers];
-        AZ::RHI::StreamBufferView           m_streamBufferView[NumBuffers];
-        SVF_P3F_C4B_T2F*                    m_mappedVertexPtr = nullptr;
+        SVF_P3F_C4B_T2F*                    m_vertexBuffer = nullptr;
         uint16_t                            m_vertexCount = 0;
 
-        AZ::RHI::Ptr<AZ::RHI::Buffer>       m_indexBuffer[NumBuffers];
-        AZ::RHI::IndexBufferView            m_indexBufferView[NumBuffers];
-        uint16_t*                           m_mappedIndexPtr = nullptr;
+        uint16_t*                           m_indexBuffer = nullptr;
         uint16_t                            m_indexCount = 0;
 
-        AZ::RHI::Ptr<AZ::RHI::BufferPool>   m_inputAssemblyPool;
-
-        AZStd::mutex                        m_pipelineStateCacheMutex;
         FontShaderData                      m_fontShaderData;
-        AZ::RHI::DrawListTag                m_2DPassDrawListTag;
 
-        AZ::RPI::DynamicDrawPreRenderNotificationHandler m_preRenderNotificationHandler;
+        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
 
         bool m_monospacedFont = false; //!< True if this font is fixed/monospaced, false otherwise (obtained from FreeType)
 
         float m_sizeRatio = IFFontConstants::defaultSizeRatio;
         SizeBehavior m_sizeBehavior = SizeBehavior::Scale;   //!< Changes how glyphs rendered at different sizes are rendered.
         FontHintParams m_fontHintParams; //!< How the font should be hinted when its loaded and rendered to the font texture
-
-        AZStd::vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>> m_processSrgs[NumBuffers]; // remember srg's for 2 frames
-        uint m_activeIndex = 0; // controls which vertex buffer & view, index buffer & view, and process srgs list is active
 
         static constexpr char LogName[] = "AtomFont::FFont";
     };

@@ -217,7 +217,7 @@ namespace GraphCanvas
     }
 
 
-    void BookmarkDockWidget::SelectionChanged(const QItemSelection &selected, [[maybe_unused]] const QItemSelection &deselected)
+    void BookmarkDockWidget::SelectionChanged(const QItemSelection &selected, const QItemSelection &/*deselected*/)
     {
         if (selected.isEmpty())
         {

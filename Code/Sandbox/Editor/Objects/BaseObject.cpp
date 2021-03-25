@@ -1845,8 +1845,8 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         //////////////////////////////////////////////////////////////////////////
         SetMaterial(mtlName);
 
-        ar.SetResolveCallback(this, parentId, functor(*this, &CBaseObject::ResolveParent));
-        ar.SetResolveCallback(this, lookatId, functor(*this, &CBaseObject::SetLookAt));
+        ar.SetResolveCallback(this, parentId, AZStd::bind(&CBaseObject::ResolveParent, this, AZStd::placeholders::_1 ));
+        ar.SetResolveCallback(this, lookatId, AZStd::bind(&CBaseObject::SetLookAt, this, AZStd::placeholders::_1));
 
         InvalidateTM(0);
         SetModified(false);
@@ -2883,26 +2883,26 @@ bool CBaseObject::IsLookAtTarget() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::AddEventListener(const EventCallback& cb)
+void CBaseObject::AddEventListener(EventListener* listener)
 {
-    if (find(m_eventListeners.begin(), m_eventListeners.end(), cb) == m_eventListeners.end())
+    if (find(m_eventListeners.begin(), m_eventListeners.end(), listener) == m_eventListeners.end())
     {
-        m_eventListeners.push_back(cb);
+        m_eventListeners.push_back(listener);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::RemoveEventListener(const EventCallback& cb)
+void CBaseObject::RemoveEventListener(EventListener* listener)
 {
-    std::vector<EventCallback>::iterator cbFound = find(m_eventListeners.begin(), m_eventListeners.end(), cb);
-    if (cbFound != m_eventListeners.end())
+    std::vector<EventListener*>::iterator listenerFound = find(m_eventListeners.begin(), m_eventListeners.end(), listener);
+    if (listenerFound != m_eventListeners.end())
     {
-        (*cbFound) = EventCallback();
+        (*listenerFound) = nullptr;
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool IsBaseObjectEventCallbackNULL(const CBaseObject::EventCallback& cb) { return cb.getFunc() == NULL; }
+bool IsBaseObjectEventCallbackNULL(CBaseObject::EventListener* listener) { return listener == nullptr; }
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::NotifyListeners(EObjectListenerEvent event)
@@ -2910,15 +2910,14 @@ void CBaseObject::NotifyListeners(EObjectListenerEvent event)
     for (auto it = m_eventListeners.begin(); it != m_eventListeners.end(); ++it)
     {
         // Call listener callback.
-        if ((*it).getFunc() != NULL)
+        if (*it)
         {
-            (*it)(this, event);
+            (*it)->OnObjectEvent(this, event);
         }
     }
 
     m_eventListeners.erase(remove_if(m_eventListeners.begin(), m_eventListeners.end(), IsBaseObjectEventCallbackNULL), std::end(m_eventListeners));
 }
-
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::ConvertFromObject(CBaseObject* object)
 {
@@ -3169,9 +3168,6 @@ void CBaseObject::OnContextMenu(QMenu* menu)
     GatherUsedResources(resources);
 
     static_cast<CEditorImpl*>(GetIEditor())->OnObjectContextMenuOpened(menu, this);
-
-    //TODO: to be re-added when AssetBrowser is loading fast
-    //menu->Add("Show in Asset Browser", functor(*this, &CBaseObject::OnMenuShowInAssetBrowser)).Enable(!resources.files.empty());
 }
 
 //////////////////////////////////////////////////////////////////////////

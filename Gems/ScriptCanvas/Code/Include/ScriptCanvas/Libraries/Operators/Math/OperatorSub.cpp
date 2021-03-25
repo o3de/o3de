@@ -70,6 +70,20 @@ namespace ScriptCanvas
                 }
             };
 
+            AZStd::unordered_set< Data::Type > OperatorSub::GetSupportedNativeDataTypes() const
+            {
+                return{
+                    Data::Type::Number(),
+                    Data::Type::Vector2(),
+                    Data::Type::Vector3(),
+                    Data::Type::Vector4(),
+                    Data::Type::Color(),
+                    Data::Type::Matrix3x3(),
+                    Data::Type::Matrix4x4()
+                };
+            }
+
+
             void OperatorSub::Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result)
             {
                 switch (type)

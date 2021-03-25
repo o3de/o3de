@@ -56,7 +56,7 @@ namespace AZ
                 Data::Instance<RPI::Buffer> skinningMatrices,
                 const SkinnedMeshShaderOptions& shaderOptions,
                 RPI::Ptr<SkinnedMeshComputePass> skinnedMeshComputePass,
-                uint32_t morphTargetDeltaOffsetInBytes,
+                MorphTargetInstanceMetaData morphTargetInstanceMetaData,
                 float morphTargetDeltaIntegerEncoding
             );
             ~SkinnedMeshDispatchItem();
@@ -100,8 +100,8 @@ namespace AZ
             SkinnedMeshShaderOptions m_shaderOptions;
             RPI::ShaderOptionGroup m_shaderOptionGroup;
 
-            // Byte offset into the SkinnedMeshOutputVertexStream buffer to a location that has the accumulated morph target deltas
-            uint32_t m_morphTargetDeltaOffsetInBytes;
+            // MetaData for the morph target that is specific to this instance
+            MorphTargetInstanceMetaData m_morphTargetInstanceMetaData;
             // A conservative value for encoding/decoding the accumulated deltas
             float m_morphTargetDeltaIntegerEncoding;
         };

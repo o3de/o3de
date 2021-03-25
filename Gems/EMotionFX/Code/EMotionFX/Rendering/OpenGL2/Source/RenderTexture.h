@@ -17,7 +17,6 @@
 #include <MCore/Source/Color.h>
 #include "RenderGLConfig.h"
 
-
 namespace RenderGL
 {
     class RENDERGL_API RenderTexture

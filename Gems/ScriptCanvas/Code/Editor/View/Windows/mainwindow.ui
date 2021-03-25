@@ -138,7 +138,7 @@
     <property name="title">
      <string>&amp;Utilities</string>
     </property>
-    <addaction name="action_BatchConversion"/>
+    <addaction name="action_UpgradeTool"/>
    </widget>
    <widget class="QMenu" name="menuSettings_2">
     <property name="title">
@@ -594,12 +594,12 @@
     <string>Presets Editor</string>
    </property>
   </action>
-  <action name="action_BatchConversion">
+  <action name="action_UpgradeTool">
    <property name="text">
-    <string>Batch Conversion</string>
+    <string>Upgrade Graphs</string>
    </property>
    <property name="toolTip">
-    <string>Opens and saves all of the ScriptCanvas files contained within a specific directory.</string>
+    <string>Utility tool to upgrade the active project's Script Canvas graphs.</string>
    </property>
   </action>
   <action name="action_GraphRecreator">

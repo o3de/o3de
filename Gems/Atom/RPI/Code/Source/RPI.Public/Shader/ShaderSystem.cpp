@@ -38,6 +38,7 @@ namespace AZ
             ShaderOptionDescriptor::Reflect(context);
             ShaderOptionGroupLayout::Reflect(context);
             ShaderOptionGroupHints::Reflect(context);
+            ShaderOptionGroup::Reflect(context);
             ShaderVariantId::Reflect(context);
             ShaderVariantStableId::Reflect(context);
             ShaderAsset::Reflect(context);

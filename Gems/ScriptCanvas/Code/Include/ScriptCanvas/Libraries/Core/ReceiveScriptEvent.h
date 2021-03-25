@@ -14,7 +14,6 @@
 
 #include <ScriptCanvas/Libraries/Core/ScriptEventBase.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.generated.h>
 
 #include <AzCore/std/containers/map.h>
@@ -34,21 +33,15 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! Provides a node to handle a Script Event
             class ReceiveScriptEvent
                 : public Internal::ScriptEventBase
             {
             public:
 
-                ScriptCanvas_Node(ReceiveScriptEvent,
-                    ScriptCanvas_Node::Name("Receive Script Event", "Allows you to handle a event.")
-                    ScriptCanvas_Node::Uuid("{76CF9938-4A7E-4CDA-8DF3-77C10239D99C}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Bus.png")
-                    ScriptCanvas_Node::Version(2)
-                    ScriptCanvas_Node::GraphEntryPoint(true)
-                    ScriptCanvas_Node::EditAttributes(AZ::Script::Attributes::ExcludeFrom(AZ::Script::Attributes::ExcludeFlags::All))
-                );
+                SCRIPTCANVAS_NODE(ReceiveScriptEvent);
 
-                ScriptCanvas_SerializeProperty(ScriptCanvas::EBusBusId, m_busId);
+                ScriptCanvas::EBusBusId m_busId;
 
                 ReceiveScriptEvent();
                 ~ReceiveScriptEvent() override;
@@ -57,26 +50,22 @@ namespace ScriptCanvas
                 void OnPostActivate() override;
                 void OnDeactivate() override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("Connect", "Connect this event handler to the specified entity."));
-                ScriptCanvas_In(ScriptCanvas_In::Name("Disconnect", "Disconnect this event handler."));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnConnected", "Signaled when a connection has taken place."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnDisconnected", "Signaled when this event handler is disconnected."));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("OnFailure", "Signaled when it is not possible to connect this handler."));
-
                 const AZ::Data::AssetId GetAssetId() const { return m_scriptEventAssetId; }
                 ScriptCanvas::EBusBusId GetBusId() const { return ScriptCanvas::EBusBusId(GetAssetId().ToString<AZStd::string>().c_str()); }
 
-                AZStd::vector<SlotId> GetEventSlotIds() const;
-                AZStd::vector<SlotId> GetNonEventSlotIds() const;
-                bool IsEventSlotId(const SlotId& slotId) const;
-
+                const Internal::ScriptEventEntry* FindEventWithSlot(const Slot& slot) const;
+                AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const override;
+                const Slot* GetEBusConnectSlot() const override;
+                const Slot* GetEBusDisconnectSlot() const override;
+                AZStd::vector<SlotId> GetEventSlotIds() const override;
+                AZStd::vector<SlotId> GetNonEventSlotIds() const override;
+                
                 bool IsIDRequired() const;
-
-                // NodeVersioning
-                bool IsOutOfDate() const override;
+                
+                bool IsEventSlotId(const SlotId& slotId) const;
+                                
+                // NodeVersioning...
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
                 UpdateResult OnUpdateNode() override;
                 AZStd::string GetUpdateString() const override;
                 ////
@@ -85,7 +74,18 @@ namespace ScriptCanvas
 
                 void SetAutoConnectToGraphOwner(bool enabled);
 
+                AZStd::string GetEBusName() const override;
+                bool HandlerStartsConnected() const override;
+                bool IsEBusAddressed() const override;
+                bool IsEventHandler() const override;
+                const Datum* GetHandlerStartAddress() const override;
+                const Slot* GetEBusConnectAddressSlot() const override;
+                AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
+                AZStd::vector<const Slot*> GetOnVariableHandlingDataSlots() const override;
+                AZStd::vector<const Slot*> GetOnVariableHandlingExecutionSlots() const override;
+
             protected:
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
                 void OnScriptEventReady(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>&) override;
 
@@ -132,11 +132,11 @@ namespace ScriptCanvas
 
                 EventHookUserData m_userData;
 
-                ScriptCanvas_SerializePropertyWithDefaults(bool, m_autoConnectToGraphOwner, true);
+                bool m_autoConnectToGraphOwner = true;
 
                 bool m_connected;
 
             };
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        } 
+    }
+}

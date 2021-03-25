@@ -15,7 +15,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_set.h>
 
-#include <MultiplayerCompression/MultiplayerCompressionBus.h>
 #include <MultiplayerCompressionFactory.h>
 
 namespace MultiplayerCompression
@@ -26,32 +25,25 @@ namespace MultiplayerCompression
     */
     class MultiplayerCompressionSystemComponent
         : public AZ::Component
-        , protected MultiplayerCompressionRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerCompressionSystemComponent, "{C3099AC9-47A6-41D2-8928-F38F904BAC1B}");
+
+        MultiplayerCompressionSystemComponent();
+        ~MultiplayerCompressionSystemComponent() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-    protected:
-        ////////////////////////////////////////////////////////////////////////
-        // MultiplayerCompressionRequestBus interface implementation
-        AZStd::string GetCompressorName() override;
-        AzNetworking::CompressorType GetCompressorType() override;
-        AZStd::shared_ptr<AzNetworking::ICompressorFactory> GetCompressionFactory() override;
-        ////////////////////////////////////////////////////////////////////////
-
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
-        void Init() override;
-        void Activate() override;
-        void Deactivate() override;
+        void Init() override {}
+        void Activate() override {}
+        void Deactivate() override {}
         ////////////////////////////////////////////////////////////////////////
-
     private:
-        AZStd::shared_ptr<MultiplayerCompressionFactory> m_multiplayerCompressionFactory;
+        MultiplayerCompressionFactory* m_multiplayerCompressionFactory;
     };
 }

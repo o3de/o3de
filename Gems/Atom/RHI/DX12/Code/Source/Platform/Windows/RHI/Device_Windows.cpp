@@ -12,6 +12,7 @@
 #include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
+#include <RHI/NsightAftermath.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/WindowsVersionQuery.h>
 #include <AzCore/Casting/lossy_cast.h>
@@ -191,6 +192,11 @@ namespace AZ
 
         RHI::ResultCode Device::InitSubPlatform(RHI::PhysicalDevice& physicalDeviceBase)
         {
+#if defined(USE_NSIGHT_AFTERMATH)
+            // Enable Nsight Aftermath GPU crash dump creation.
+            // This needs to be done before the D3D device is created.
+            m_gpuCrashTracker.EnableGPUCrashDumps();
+#endif
             PhysicalDevice& physicalDevice = static_cast<PhysicalDevice&>(physicalDeviceBase);
             RHI::ValidationMode validationMode = GetValidationMode();
 
@@ -221,6 +227,8 @@ namespace AZ
             m_dx12Device = dx12Device.Get();
             m_dxgiFactory = physicalDevice.GetFactory();
             m_dxgiAdapter = physicalDevice.GetAdapter();
+
+            m_isAftermathInitialized = Aftermath::InitializeAftermath(m_dx12Device);
             return RHI::ResultCode::Success;
         }
 

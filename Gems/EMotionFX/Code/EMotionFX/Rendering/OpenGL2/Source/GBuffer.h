@@ -18,6 +18,8 @@
 #include <MCore/Source/Color.h>
 #include "RenderGLConfig.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 namespace RenderGL
 {
@@ -30,6 +32,7 @@ namespace RenderGL
      *
      */
     class RENDERGL_API GBuffer
+        : private QOpenGLExtraFunctions
     {
     public:
         enum EComponent

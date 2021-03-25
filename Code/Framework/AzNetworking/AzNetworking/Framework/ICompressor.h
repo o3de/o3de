@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Name/Name.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -92,7 +93,14 @@ namespace AzNetworking
     {
     public:
         virtual ~ICompressorFactory() = default;
+
+        //! Instantiate a new compressor
+        //! @return A unique_ptr to a new Compressor
         virtual AZStd::unique_ptr<ICompressor> Create() = 0;
+
+        //! Gets the AZ Name of this compressor factory
+        //! @return the AZ Name of this compressor factory
+        virtual AZ::Name GetFactoryName() const = 0;
     };
 }
 

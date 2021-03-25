@@ -63,8 +63,8 @@ namespace AZ
             AZStd::array<AZStd::array<float, 4>, SampleMax> m_sampleTexcoords;
 
             // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             bool m_needToUpdateShaderVariant = true;
 

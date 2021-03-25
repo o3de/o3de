@@ -214,11 +214,11 @@ public:
 
     /** Set ID of this viewport
     */
-    void SetViewportId(int id) { m_nCurViewportID = id; };
+    virtual void SetViewportId(int id) { m_nCurViewportID = id; };
 
     /** Get ID of this viewport
     */
-    int GetViewportId() const { return m_nCurViewportID; };
+    virtual int GetViewportId() const { return m_nCurViewportID; };
 
     // Store final Game Matrix ready for editor
     void SetGameTM(const Matrix34& tm) { m_gameTM = tm; };

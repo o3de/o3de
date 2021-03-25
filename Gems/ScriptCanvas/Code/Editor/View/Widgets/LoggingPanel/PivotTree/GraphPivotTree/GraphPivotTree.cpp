@@ -379,6 +379,22 @@ namespace ScriptCanvasEditor
             LoggingDataNotificationBus::Handler::BusDisconnect();
         }
 
+        if (m_loggedDataId.IsValid())
+        {
+            const LoggingDataAggregator* previousDataAggregator = nullptr;
+            LoggingDataRequestBus::EventResult(previousDataAggregator, m_loggedDataId, &LoggingDataRequests::FindLoggingData);
+
+            if (previousDataAggregator)
+            {
+                const EntityGraphRegistrationMap& entityPivoting = previousDataAggregator->GetEntityGraphRegistrationMap();
+
+                for (const auto& registrationMap : entityPivoting)
+                {
+                    OnEntityGraphUnregistered(registrationMap.first, registrationMap.second);
+                }
+            }
+        }
+
         m_loggedDataId = aggregateDataSource;
         for (auto assetPair : m_graphTreeItemMapping)
         {
@@ -394,7 +410,7 @@ namespace ScriptCanvasEditor
 
             for (const auto& registrationMap : entityPivoting)
             {
-                OnEntityGraphUnregistered(registrationMap.first, registrationMap.second);
+                OnEntityGraphRegistered(registrationMap.first, registrationMap.second);
             }
 
             if (dataAggregator->IsCapturingData())

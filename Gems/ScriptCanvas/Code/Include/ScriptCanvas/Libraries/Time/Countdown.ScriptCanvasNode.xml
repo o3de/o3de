@@ -7,8 +7,9 @@
            Uuid="{364F5AC9-8351-44B6-A069-03367B21F7AA}"
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
            GeneratePropertyFriend="True"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
            Description="Delays all incoming execution for the specified number of ticks">
-        <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of times." Contract="DisallowReentrantExecutionContract"/>
+        <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of times." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled after waiting for the specified amount of times."/>
     </Class>
     <Class Name="TickDelay"
@@ -17,9 +18,9 @@
            Uuid="{399A2608-77E3-41F9-90FA-58A9B6E0E34D}"
            Base="ScriptCanvas::Node"
            GeneratePropertyFriend="True"
-           Deprecated="True"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
            Description="Delays all incoming execution for the specified number of ticks">
-        <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of frames." Contract="DisallowReentrantExecutionContract"/>
+        <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of frames." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled after waiting for the specified amount of frames."/>
         <Property Name="Ticks"
                   Description="The amount of ticks that need to occur before exeuction triggers"
@@ -39,12 +40,14 @@
 	       PreferredClassName="Delay"
            Uuid="{FAEADF5A-F7D9-415A-A3E8-F534BD379B9A}"
            Base="ScriptCanvas::Node"
-           Version="2"
-           VersionConverter="CountdownNodeVersionConverter"
+           Version="3"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
+           VersionConverter="ScriptCanvas::VersionConverters::DelayVersionConverter"
            GeneratePropertyFriend="True"
            Description="Counts down time from a specified value.">
-        <In Name="In" Description="When signaled, execution is delayed at this node according to the specified properties." Contract="DisallowReentrantExecutionContract"/>
-        <In Name="Reset" Description="Resets the delay." Contract="DisallowReentrantExecutionContract"/>
+        <In Name="In" Description="When signaled, execution is delayed at this node according to the specified properties." Contracts="DisallowReentrantExecutionContract"/>
+        <In Name="Cancel" Description="Cancels the delay." Contracts="DisallowReentrantExecutionContract"/>
+        <In Name="Reset" Description="Resets the delay." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled when the delay reaches zero."/>
         <Property Name="Time"
                   Description="Amount of time to delay, in seconds"

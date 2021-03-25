@@ -49,7 +49,7 @@ namespace AZ
             void InvalidateDestImage();
 
         protected:
-            // Scope producer functions
+            // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
@@ -109,7 +109,7 @@ namespace AZ
             // Pass overrides
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            // Scope producer functions
+            // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;

@@ -1,4 +1,5 @@
 {
+    "gem_name": "StartingPointCamera",
     "Dependencies": [
         {
             "Uuid": "54f2763fe191432fa681ce4a354eedf5", 

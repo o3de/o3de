@@ -39,7 +39,13 @@ namespace ScriptCanvas
             static const char* k_onTrue;
             static const char* k_onFalse;
 
+            bool IsSupportedByNewBackend() const override { return true; }
+
         protected:
+            SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
+            {
+                return AZ::Success(GetSlotsByType(targetSlotType));
+            }
 
             // Indices into m_inputData
             static const int k_datumIndexLHS = 0;
@@ -64,6 +70,11 @@ namespace ScriptCanvas
 
             static void Reflect(AZ::ReflectContext* reflection);
 
+            bool IsDeprecated() const override { return true; }
+            bool IsSupportedByNewBackend() const override { return false; }
+            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const override;
+            void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
+
         protected:
             // adds Number inputs, adds Number output type
             void OnInit() override;
@@ -81,6 +92,25 @@ namespace ScriptCanvas
             
             static void Reflect(AZ::ReflectContext* reflection);
 
+            //////////////////////////////////////////////////////////////////////////
+            // Translation
+            AZ::Outcome<DependencyReport, void> GetDependencies() const override
+            {
+                return AZ::Success(DependencyReport{});
+            }
+
+            bool IsIfBranch() const override
+            {
+                return true;
+            }
+
+            bool IsIfBranchPrefacedWithBooleanExpression() const override
+            {
+                return true;
+            }
+            // Translation
+            //////////////////////////////////////////////////////////////////////////
+
         protected:
             // initialize boolean expression, adds boolean output type calls 
             void OnInit() override;
@@ -97,7 +127,7 @@ namespace ScriptCanvas
             AZ_COMPONENT(EqualityExpression, "{78D20EB6-BA07-4071-B646-7C2D68A0A4A6}", BooleanExpression);
             
             static void Reflect(AZ::ReflectContext* reflection);
-
+            
         protected:
             // adds any required input types
             void InitializeBooleanExpression() override;
@@ -124,5 +154,5 @@ namespace ScriptCanvas
             void InitializeBooleanExpression() override;
             
         };
-    } // namespace Nodes
-} // namespace ScriptCanvas
+    } 
+} 

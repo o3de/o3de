@@ -18,23 +18,7 @@
 
 namespace MaterialEditor
 {
-    void DollyCameraBehavior::Start()
-    {
-        Behavior::Start();
-
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_cameraEntityId,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetCameraEntityId);
-        AZ_Assert(m_cameraEntityId.IsValid(), "Failed to find m_cameraEntityId");
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_distanceToTarget,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetDistanceToTarget);
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_targetPosition,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetTargetPosition);
-    }
-
-    void DollyCameraBehavior::TickInternal([[maybe_unused]] float x, float y)
+    void DollyCameraBehavior::TickInternal([[maybe_unused]] float x, float y, [[maybe_unused]] float z)
     {
         m_distanceToTarget = m_distanceToTarget + y;
         AZ::Transform transform = AZ::Transform::CreateIdentity();

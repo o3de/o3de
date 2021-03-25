@@ -1,4 +1,4 @@
-/*
+﻿/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -10,26 +10,29 @@
 *
 */
 
+#include <ScriptCanvas/SystemComponent.h>
+
 namespace ScriptCanvasEditor
 {
 
     using namespace ScriptCanvas;
 
-    inline Reporter::Reporter()
+    AZ_INLINE Reporter::Reporter()
     {
+        m_parseDuration = m_translationDuration = 0;
+        ScriptCanvas::ExecutionNotificationsBus::Handler::BusConnect();
     }
         
-    inline Reporter::Reporter(const ScriptCanvasId& scriptCanvasId, const AZ::EntityId& entityID) : Reporter()
+    AZ_INLINE Reporter::Reporter(const AZ::EntityId& entityID) : Reporter()
     {
-        SetGraph(scriptCanvasId, entityID);
+        m_parseDuration = m_translationDuration = 0;
+        SetEntity(entityID);
+        ScriptCanvas::ExecutionNotificationsBus::Handler::BusConnect();
     }
 
-    inline Reporter::~Reporter()
-    {
-        Reset();
-    }
+    AZ_INLINE Reporter::~Reporter() {}
 
-    inline void Reporter::Checkpoint(const Report& report)
+    AZ_INLINE void Reporter::Checkpoint(const Report& report)
     {
         if (m_isReportFinished)
         {
@@ -39,7 +42,35 @@ namespace ScriptCanvasEditor
         m_checkpoints.push_back(report);
     }
 
-    inline const AZStd::vector<Report>& Reporter::GetCheckpoints() const
+    AZ_INLINE void Reporter::CollectPerformanceTiming()
+    {
+        ScriptCanvas::SystemComponent::ModPerformanceTracker()->CalculateReports();
+        m_performanceReport = ScriptCanvas::SystemComponent::ModPerformanceTracker()->GetSnapshotReport();
+    }
+
+    AZ_INLINE bool Reporter::ExpectsParseError() const
+    {
+        return m_expectParseError;
+    }
+
+    AZ_INLINE bool Reporter::ExpectsRuntimeFailure() const
+    {
+        return m_expectsRuntimeError;
+    }
+
+    AZ_INLINE void Reporter::FinishReport()
+    {
+        if (m_isReportFinished)
+        {
+            AZ_Error("ScriptCanvas", false, "The report is already finished");
+        }
+
+        m_isReportFinished = true;
+        Bus::Handler::BusDisconnect(m_scriptCanvasId);
+        AZ::EntityBus::Handler::BusDisconnect(m_entityId);
+    }
+
+    AZ_INLINE const AZStd::vector<Report>& Reporter::GetCheckpoints() const
     {
         if (!m_isReportFinished)
         {
@@ -49,7 +80,17 @@ namespace ScriptCanvasEditor
         return m_checkpoints;
     }
 
-    inline const AZStd::vector<Report>& Reporter::GetFailure() const
+    AZ_INLINE ExecutionConfiguration Reporter::GetExecutionConfiguration() const
+    {
+        return m_configuration;
+    }
+
+    AZ_INLINE ExecutionMode Reporter::GetExecutionMode() const
+    {
+        return m_mode;
+    }
+
+    AZ_INLINE const AZStd::vector<Report>& Reporter::GetFailure() const
     {
         if (!m_isReportFinished)
         {
@@ -59,12 +100,22 @@ namespace ScriptCanvasEditor
         return m_failures;
     }
 
-    inline const ScriptCanvasId& Reporter::GetScriptCanvasId() const
+    AZ_INLINE const ScriptCanvasId& Reporter::GetScriptCanvasId() const
     {
         return m_scriptCanvasId;
     }
 
-    inline const AZStd::vector<Report>& Reporter::GetSuccess() const
+    AZ_INLINE AZStd::sys_time_t Reporter::GetParseDuration() const
+    {
+        return m_parseDuration;
+    }
+
+    AZ_INLINE const Execution::PerformanceTrackingReport& Reporter::GetPerformanceReport() const
+    {
+        return m_performanceReport;
+    }
+
+    AZ_INLINE const AZStd::vector<Report>& Reporter::GetSuccess() const
     {
         if (!m_isReportFinished)
         {
@@ -74,17 +125,27 @@ namespace ScriptCanvasEditor
         return m_successes;
     }
 
-    inline bool Reporter::IsActivated() const
+    AZ_INLINE AZStd::sys_time_t Reporter::GetTranslateDuration() const
+    {
+        return m_translationDuration;
+    }
+
+    AZ_INLINE bool Reporter::IsActivated() const
     {
         return m_graphIsActivated;
     }
 
-    inline bool Reporter::IsComplete() const
+    AZ_INLINE bool Reporter::IsCompiled() const
+    {
+        return m_graphIsCompiled;
+    }
+
+    AZ_INLINE bool Reporter::IsComplete() const
     {
         return m_graphIsComplete;
     }
 
-    inline bool Reporter::IsDeactivated() const
+    AZ_INLINE bool Reporter::IsDeactivated() const
     {
         if (!m_isReportFinished)
         {
@@ -94,63 +155,82 @@ namespace ScriptCanvasEditor
         return m_graphIsDeactivated;
     }
 
-    inline bool Reporter::IsErrorFree() const
+    AZ_INLINE bool Reporter::IsErrorFree() const
     {
         if (!m_isReportFinished)
         {
             AZ_Error("ScriptCanvas", false, "The report must be finished before evaluation");
         }
 
-        return m_graphIsErrorFree;
+        return m_failures.empty();
     }
 
-    inline bool Reporter::IsReportFinished() const
+    AZ_INLINE bool Reporter::IsGraphLoaded() const
+    {
+        return m_isGraphLoaded;
+    }
+
+    AZ_INLINE bool Reporter::IsGraphObserved(const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier)
+    {
+        return m_scriptCanvasId == entityId && m_configuration == ExecutionConfiguration::Traced;
+    }
+
+    AZ_INLINE void Reporter::RuntimeError([[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier, const AZStd::string_view& description)
+    {
+        m_failures.push_back(AZStd::string::format("ScriptCanvas runtime error: %s", description.data()));
+    }
+
+    AZ_INLINE bool Reporter::IsParseAttemptMade() const
+    {
+        return m_isParseAttemptMade;
+    }
+
+    AZ_INLINE bool Reporter::IsProcessOnly() const
+    {
+        return m_processOnly;
+    }
+
+    AZ_INLINE bool Reporter::IsReportFinished() const
     {
         return m_isReportFinished;
     }
         
-    inline void Reporter::FinishReport()
+    AZ_INLINE void Reporter::MarkCompiled()
     {
-        if (m_isReportFinished)
-        {
-            AZ_Error("ScriptCanvas", false, "The report is already finished");
-        }
-
-        m_isReportFinished = true;
+        m_graphIsCompiled = true;
     }
 
-    inline void Reporter::FinishReport(const bool inErrorState)
+    AZ_INLINE void Reporter::MarkExpectParseError()
     {
-        if (m_isReportFinished)
-        {
-            AZ_Error("ScriptCanvas", false, "The report is already finished");
-        }
-        else
-        {
-            Bus::Handler::BusDisconnect(m_scriptCanvasId);
-            AZ::EntityBus::Handler::BusDisconnect(m_entityId);
-            m_graphIsErrorFree = !inErrorState;
-            m_isReportFinished = true;
-        }
+        m_expectParseError = true;
     }
 
-    inline bool Reporter::operator==(const Reporter& other) const
+    AZ_INLINE void Reporter::MarkExpectRuntimeFailure()
     {
-        if (m_isReportFinished)
-        {
-            AZ_Error("ScriptCanvas", false, "The report is already finished");
-        }
+        m_expectsRuntimeError = true;
+    }
 
+    AZ_INLINE void Reporter::MarkGraphLoaded()
+    {
+        m_isGraphLoaded = true;
+    }
+
+    AZ_INLINE void Reporter::MarkParseAttemptMade()
+    {
+        m_isParseAttemptMade = true;
+    }
+
+    AZ_INLINE bool Reporter::operator==(const Reporter& other) const
+    {
         return m_graphIsActivated == other.m_graphIsActivated
             && m_graphIsDeactivated == other.m_graphIsDeactivated
             && m_graphIsComplete == other.m_graphIsComplete
-            && m_graphIsErrorFree == other.m_graphIsErrorFree
             && m_isReportFinished == other.m_isReportFinished
             && m_failures == other.m_failures
             && m_successes == other.m_successes;
     }
 
-    inline void Reporter::OnEntityActivated(const AZ::EntityId& entity)
+    AZ_INLINE void Reporter::OnEntityActivated(const AZ::EntityId& entity)
     {
         if (m_entityId != entity)
         {
@@ -165,7 +245,7 @@ namespace ScriptCanvasEditor
         m_graphIsActivated = true;
     }
         
-    inline void Reporter::OnEntityDeactivated(const AZ::EntityId& entity)
+    AZ_INLINE void Reporter::OnEntityDeactivated(const AZ::EntityId& entity)
     {
         if (m_entityId != entity)
         {
@@ -179,32 +259,42 @@ namespace ScriptCanvasEditor
 
         m_graphIsDeactivated = true;
     }
-        
-    inline void Reporter::Reset()
+      
+    AZ_INLINE void Reporter::SetDurations(AZStd::sys_time_t parse, AZStd::sys_time_t translate)
     {
-        Bus::Handler::BusDisconnect();
-        AZ::EntityBus::Handler::BusDisconnect();
-            
-        m_graphIsActivated = false;
-        m_graphIsComplete = false;
-        m_graphIsErrorFree = false;
-        m_isReportFinished = false;
-        m_scriptCanvasId = ScriptCanvasId{};
-        m_entityId = AZ::EntityId{};
-        m_failures.clear();
+        m_parseDuration = parse;
+        m_translationDuration = translate;
     }
 
-    inline void Reporter::SetGraph(const ScriptCanvasId& scriptCanvasId, const AZ::EntityId& entityID)
+    AZ_INLINE void Reporter::SetExecutionConfiguration(ExecutionConfiguration configuration)
     {
-        Reset();
-        m_scriptCanvasId = scriptCanvasId;
+        m_configuration = configuration;
+    }
+
+    AZ_INLINE void Reporter::SetExecutionMode(ExecutionMode mode)
+    {
+        m_mode = mode;
+    }
+
+    AZ_INLINE void Reporter::SetEntity(const AZ::EntityId& entityID)
+    {
         m_entityId = entityID;
-        Bus::Handler::BusConnect(m_scriptCanvasId);
         AZ::EntityBus::Handler::BusConnect(m_entityId);
     }
-       
+
+    AZ_INLINE void Reporter::SetGraph(const ScriptCanvasId& scriptCanvasId)
+    {
+        m_scriptCanvasId = scriptCanvasId;
+        Bus::Handler::BusConnect(m_scriptCanvasId);
+    }
+
+    AZ_INLINE void Reporter::SetProcessOnly(bool processOnly)
+    {
+        m_processOnly = processOnly;
+    }
+
     // Handler
-    inline void Reporter::MarkComplete(const Report& report)
+    AZ_INLINE void Reporter::MarkComplete(const Report& report)
     {
         if (m_isReportFinished)
         {
@@ -226,7 +316,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    inline void Reporter::AddFailure(const Report& report)
+    AZ_INLINE void Reporter::AddFailure(const Report& report)
     {
         if (m_isReportFinished)
         {
@@ -234,10 +324,11 @@ namespace ScriptCanvasEditor
         }
 
         m_failures.push_back(report);
+        
         Checkpoint(AZStd::string::format("AddFailure: %s", report.data()));
     }
 
-    inline void Reporter::AddSuccess(const Report& report)
+    AZ_INLINE void Reporter::AddSuccess(const Report& report)
     {
         if (m_isReportFinished)
         {
@@ -252,11 +343,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    inline void Reporter::ExpectFalse(const bool value, const Report& report)
+    AZ_INLINE void Reporter::ExpectFalse(const bool value, const Report& report)
     {
         if (value)
         {
-            AddFailure(AZStd::string::format("Error | Expected false.\n%s", report.data()));
+            AddFailure(AZStd::string::format("Error | Expected false.: %s", report.data()));
         }
 
         if (!report.empty())
@@ -265,11 +356,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    inline void Reporter::ExpectTrue(const bool value, const Report& report)
+    AZ_INLINE void Reporter::ExpectTrue(const bool value, const Report& report)
     {
         if (!value)
         {
-            AddFailure(AZStd::string::format("Error | Expected true.\n%s", report.data()));
+            AddFailure(AZStd::string::format("Error | Expected true.: %s", report.data()));
         }
 
         if (!report.empty())
@@ -278,26 +369,29 @@ namespace ScriptCanvasEditor
         }
     }
     
-    inline void Reporter::ExpectEqualNumber(const Data::NumberType lhs, const Data::NumberType rhs, const Report& report)
+    AZ_INLINE void Reporter::ExpectEqual(const Data::NumberType lhs, const Data::NumberType rhs, const Report& report)
     {
         if (!AZ::IsClose(lhs, rhs, 0.001))
         {
-            AddFailure(AZStd::string::format("Error | Expected near value.\n%s", report.data()));
+            AddFailure(AZStd::string::format("Error | Expected(candidate: %s) == (reference: %s): %s", Datum(lhs).ToString().data(), Datum(rhs).ToString().data(), report.data()));
         }
 
         if (!report.empty())
         {
-            Checkpoint(AZStd::string::format("ExpectEqualNumber: %s", report.data()));
+            Checkpoint(AZStd::string::format("ExpectEqual: %s", report.data()));
         }
     }
     
-    inline void Reporter::ExpectNotEqualNumber(const Data::NumberType lhs, const Data::NumberType rhs, const Report& report)
+    AZ_INLINE void Reporter::ExpectNotEqual(const Data::NumberType lhs, const Data::NumberType rhs, const Report& report)
     {
-        SCRIPT_CANVAS_UNIT_TEST_REPORTER_EXPECT_NE(lhs, rhs)
+        if (AZ::IsClose(lhs, rhs, 0.001))
+        {
+            AddFailure(AZStd::string::format("Error | Expected(candidate: %s) != (reference: %s): %s", Datum(lhs).ToString().data(), Datum(rhs).ToString().data(), report.data()));
+        }
 
         if (!report.empty())
         {
-            Checkpoint(AZStd::string::format("ExpectNotEqualNumber: %s", report.data()));
+            Checkpoint(AZStd::string::format("ExpectNotEqual: %s", report.data()));
         }
     }
 
@@ -308,4 +402,11 @@ namespace ScriptCanvasEditor
     SCRIPT_CANVAS_UNIT_TEST_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectLessThan, SCRIPT_CANVAS_UNIT_TEST_REPORTER_EXPECT_LT)
     SCRIPT_CANVAS_UNIT_TEST_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectLessThanEqual, SCRIPT_CANVAS_UNIT_TEST_REPORTER_EXPECT_LE)
 
-} // namespace ScriptCanvasEditor
+    // Vector Implementations
+    SCRIPT_CANVAS_UNIT_TEST_VECTOR_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectGreaterThan, SCRIPT_CANVAS_UNIT_TEST_REPORTER_VECTOR_EXPECT_GT)
+    SCRIPT_CANVAS_UNIT_TEST_VECTOR_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectGreaterThanEqual, SCRIPT_CANVAS_UNIT_TEST_REPORTER_VECTOR_EXPECT_GE)
+    SCRIPT_CANVAS_UNIT_TEST_VECTOR_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectLessThan, SCRIPT_CANVAS_UNIT_TEST_REPORTER_VECTOR_EXPECT_LT)
+    SCRIPT_CANVAS_UNIT_TEST_VECTOR_COMPARE_OVERLOAD_IMPLEMENTATIONS(Reporter, ExpectLessThanEqual, SCRIPT_CANVAS_UNIT_TEST_REPORTER_VECTOR_EXPECT_LE)
+
+
+}

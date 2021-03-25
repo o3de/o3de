@@ -34,8 +34,6 @@ namespace AZ
             //! @return if resolving is successful. An error will be reported if it fails.
             bool ResolveMaterialPropertyEnumValue(const MaterialPropertyDescriptor* propertyDescriptor, const AZ::Name& enumName, MaterialPropertyValue& outResolvedValue);
 
-            bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB);
-
             //! Load material type from a json file. If the file path is relative, the loaded json document must be provided.
             //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
             //! @param filePath a relative path if document is provided, an absolute path if document is not provided.

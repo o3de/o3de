@@ -55,7 +55,7 @@ namespace UnitTest
     TEST_F(GridSnappingFixture, MouseDownWithSnappingEnabledSnapsToClosestGridSize)
     {
         // the initial starting position of the manipulator (in front of the camera)
-        const auto initialPositionWorld = m_linearManipulator->GetPosition();
+        const auto initialPositionWorld = m_linearManipulator->GetLocalPosition();
         // where the manipulator should end up (in front and to the left of the camera)
         const auto finalPositionWorld = AZ::Vector3(-10.0f, 50.0f, 0.0f);
         // perspective scale factor for manipulator distance to camera
@@ -89,7 +89,7 @@ namespace UnitTest
             ->MousePosition(finalPositionScreen)
             ->MouseLButtonUp()
             ->ExpectManipulatorNotBeingInteracted()
-            ->ExpectTrue(m_linearManipulator->GetPosition().IsClose(finalPositionWorld, 0.01f))
+            ->ExpectTrue(m_linearManipulator->GetLocalPosition().IsClose(finalPositionWorld, 0.01f))
             ;
     }
 } // namespace UnitTest

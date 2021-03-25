@@ -25,7 +25,7 @@ namespace AzToolsFramework
 
         m_uniformScaleManipulator = LinearManipulator::MakeShared(worldFromLocal);
 
-        m_space = worldFromLocal;
+        m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
     }
 
     void ScaleManipulators::InstallAxisLeftMouseDownCallback(
@@ -73,7 +73,7 @@ namespace AzToolsFramework
          m_uniformScaleManipulator->InstallLeftMouseUpCallback(onMouseUpCallback);
     }
 
-    void ScaleManipulators::SetLocalTransform(const AZ::Transform& localTransform)
+    void ScaleManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_axisScaleManipulators)
         {
@@ -85,11 +85,9 @@ namespace AzToolsFramework
         m_uniformScaleManipulator->SetLocalTransform(
             AZ::Transform::CreateTranslation(localTransform.GetTranslation()) *
             AZ::Transform::CreateScale(localTransform.GetScale()));
-
-        m_localTransform = localTransform;
     }
 
-    void ScaleManipulators::SetLocalPosition(const AZ::Vector3& localPosition)
+    void ScaleManipulators::SetLocalPositionImpl(const AZ::Vector3& localPosition)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_axisScaleManipulators)
         {
@@ -97,22 +95,17 @@ namespace AzToolsFramework
         }
 
         m_uniformScaleManipulator->SetLocalPosition(localPosition);
-
-        m_localTransform.SetTranslation(localPosition);
     }
 
-    void ScaleManipulators::SetLocalOrientation(const AZ::Quaternion& localOrientation)
+    void ScaleManipulators::SetLocalOrientationImpl(const AZ::Quaternion& localOrientation)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_axisScaleManipulators)
         {
             manipulator->SetLocalOrientation(localOrientation);
         }
-
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
-    void ScaleManipulators::SetSpace(const AZ::Transform& worldFromLocal)
+    void ScaleManipulators::SetSpaceImpl(const AZ::Transform& worldFromLocal)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_axisScaleManipulators)
         {
@@ -120,8 +113,6 @@ namespace AzToolsFramework
         }
 
         m_uniformScaleManipulator->SetSpace(worldFromLocal);
-
-        m_space = worldFromLocal;
     }
 
     void ScaleManipulators::SetAxes(

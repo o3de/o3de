@@ -62,6 +62,8 @@ namespace AZ
                 shaderOptionGroup.SetValue(m_applyMorphTargetOptionIndex, m_applyMorphTargetFalseValue);
             }
 
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
+
             return shaderOptionGroup;
         }
     } // namespace Render

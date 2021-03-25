@@ -109,7 +109,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothComponentMesh clothComponentMesh(m_actorComponent->GetEntityId(), {});
@@ -129,7 +129,7 @@ namespace UnitTest
             actor->AddJoint(MeshNodeName);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -150,10 +150,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -171,10 +171,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -206,11 +206,11 @@ namespace UnitTest
 
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->AddClothCollider(collider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -243,10 +243,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -270,10 +270,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -295,10 +295,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test2");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, newMeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(newMeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            newActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            newActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         clothComponentMesh.UpdateConfiguration(newActorComponent->GetEntityId(), clothConfig);
@@ -319,10 +319,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -355,11 +355,11 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
             auto meshNode2Index = actor->AddJoint(meshNode2Name);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
-            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(meshNode2Index, mesh2Vertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(mesh2Vertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -386,10 +386,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;
@@ -426,10 +426,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(MeshNodeName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         NvCloth::ClothConfiguration clothConfig;

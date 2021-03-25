@@ -153,6 +153,27 @@ namespace ScriptCanvasEditor
         void CreateNodeling(const GraphCanvas::GraphId& graphId, AZ::EntityId scriptCanvasGraphId, GraphCanvas::GraphId slotId, const AZ::Vector2& scenePos, GraphCanvas::ConnectionType connectionType);
     };
 
+    //! Context Menu Action for Creating an AzEventHandler node from a data slot of a Behavior Method node
+    //! which returns an AZ::Event<Params...> type
+    class CreateAzEventHandlerSlotMenuAction
+        : public GraphCanvas::SlotContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CreateAzEventHandlerSlotMenuAction, AZ::SystemAllocator, 0);
+
+        CreateAzEventHandlerSlotMenuAction(QObject* parent);
+
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
+
+        static const AZ::BehaviorMethod* FindBehaviorMethodWithAzEventReturn(const GraphCanvas::GraphId& graphId, AZ::EntityId targetId);
+
+    protected:
+
+        const AZ::BehaviorMethod* m_methodWithAzEventReturn{};
+        GraphCanvas::Endpoint m_methodNodeAzEventEndpoint;
+    };
+
     /////////////////
     // ContextMenus
     /////////////////

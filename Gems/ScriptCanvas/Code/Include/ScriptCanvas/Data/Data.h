@@ -130,7 +130,6 @@ namespace ScriptCanvas
             bool operator!=(const Type& other) const;
 
             // returns true if this type is, or is derived from the other type
-            // \todo support polymorphism
             AZ_FORCE_INLINE bool IS_A(const Type& other) const;
             AZ_FORCE_INLINE bool IS_EXACTLY_A(const Type& other) const;
 
@@ -149,7 +148,7 @@ namespace ScriptCanvas
             explicit Type(eType type);
             // for BehaviorContextObjects specifically
             explicit Type(const AZ::Uuid& aztype);
-        }; // class Type
+        };
 
         /**
          * assumes that azType is a valid script canvas type of some kind, asserts if not
@@ -159,7 +158,7 @@ namespace ScriptCanvas
 
         // if azType is not a valid script canvas type of some kind, returns invalid, NOT for use at run-time
         Type FromAZTypeChecked(const AZ::Uuid& aztype);
-        
+
         template<typename T>
         Type FromAZType();
 
@@ -170,9 +169,11 @@ namespace ScriptCanvas
         AZStd::string GetBehaviorClassName(const AZ::Uuid& typeID);
         // returns a possibly prettier name for the type
         AZStd::string GetName(const Type& type);
+        const Type GetBehaviorParameterDataType(const AZ::BehaviorParameter& parameter);
+
+        bool IsAZRttiTypeOf(const AZ::Uuid& candidate, const AZ::Uuid& reference);
 
         // returns true if candidate is, or is derived from reference
-        // todo support polymorphism
         bool IS_A(const Type& candidate, const Type& reference);
         bool IS_EXACTLY_A(const Type& candidate, const Type& reference);
 
@@ -195,6 +196,8 @@ namespace ScriptCanvas
         bool IsSetContainerType(const Type& type);
         bool IsVectorContainerType(const AZ::Uuid& type);
         bool IsVectorContainerType(const Type& type);
+
+        bool IsAllowedBehaviorClassVariableType(const AZ::Uuid& id);
 
         AZStd::vector<AZ::Uuid> GetContainedTypes(const AZ::Uuid& type);
         AZStd::vector<Type> GetContainedTypes(const Type& type);
@@ -676,24 +679,55 @@ namespace ScriptCanvas
 
         AZ_FORCE_INLINE bool Type::IsConvertibleTo(const Type& target) const
         {
-            AZ_Assert(!IS_A(target), "Don't mix concepts, it is too dangerous.");
-
-            if (GetType() == eType::BehaviorContextObject)
+            auto isVector2Vector = [&]()->bool 
             {
-                return target.GetType() != eType::BehaviorContextObject && target.IsConvertibleTo(*this);
-            }
+                return IsVectorType(target) || (target.GetType() == eType::BehaviorContextObject && IsVectorType(target.GetAZType()));
+            };
 
-            if (target.GetType() == eType::BehaviorContextObject)
+            AZ_Assert(!IS_A(target)
+                , "Don't mix concepts, it is too dangerous. "
+                  "Check IS-A separately from conversion at all times. "
+                  "Use IS_A || IsConvertibleTo in an expression");
+
+            const auto targetEType = target.GetType();
+            if (targetEType == eType::String)
             {
-                return IS_A(FromAZType(target.GetAZType()));
+                // everything is implicitly convertible to strings, including strings
+                return true;
             }
 
             switch (GetType())
             {
-            case eType::Vector3:
+            case eType::Boolean:
+                return targetEType == eType::Number;
+
+            case eType::Color:
+                return targetEType == eType::Vector3
+                    || targetEType == eType::Vector4;
+
+            case eType::Matrix3x3:
+                return targetEType == eType::Quaternion;
+
+            case eType::Matrix4x4:
+                return targetEType == eType::Transform
+                    || targetEType == eType::Quaternion;
+
+            case eType::Number:
+                return targetEType == eType::Boolean;
+
+            case eType::Transform:
+                return targetEType == eType::Matrix4x4;
+
+            case eType::Quaternion:
+                return targetEType == eType::Matrix3x3
+                    || targetEType == eType::Matrix4x4
+                    || targetEType == eType::Transform;
+
             case eType::Vector2:
+                return isVector2Vector();
+            case eType::Vector3:
             case eType::Vector4:
-                return IsVectorType(target) || (target.GetType() == eType::BehaviorContextObject && IsVectorType(target.GetAZType()));
+                return isVector2Vector() || targetEType == eType::Color;
             default:
                 return false;
             }
@@ -701,8 +735,7 @@ namespace ScriptCanvas
 
         AZ_FORCE_INLINE bool Type::IS_A(const Type& other) const
         {
-            // \todo support polymorphism
-            return IS_EXACTLY_A(other);
+            return m_type == other.m_type && (m_type != eType::BehaviorContextObject || m_azType == other.m_azType || IsAZRttiTypeOf(m_azType, other.m_azType));
         }
 
         AZ_FORCE_INLINE bool Type::IS_EXACTLY_A(const Type& other) const
@@ -780,9 +813,9 @@ namespace ScriptCanvas
             return Type(eType::Vector4);
         }
 
-    } // namespace Data
+    } 
 
-} // namespace ScriptCanvas
+} 
 
 namespace AZStd
 {

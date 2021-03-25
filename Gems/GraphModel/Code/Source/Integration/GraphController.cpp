@@ -479,7 +479,7 @@ namespace GraphModelIntegration
 
     void GraphController::AddNodeUiToScene(AZ::EntityId nodeUiId, const AZ::Vector2& scenePosition)
     {
-        GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::AddNode, nodeUiId, scenePosition);
+        GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::AddNode, nodeUiId, scenePosition, false);
         GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
     }
 
@@ -850,7 +850,7 @@ namespace GraphModelIntegration
     }
 
 
-    void GraphController::OnNodeAdded(const AZ::EntityId& nodeUiId)
+    void GraphController::OnNodeAdded(const AZ::EntityId& nodeUiId, bool)
     {
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
@@ -1318,17 +1318,15 @@ namespace GraphModelIntegration
     }
 
 
-    bool GraphController::EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
+    void GraphController::EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
     {
         AZ_UNUSED(nodeIds);
-        return true;
     }
 
 
-    bool GraphController::DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
+    void GraphController::DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
     {
         AZ_UNUSED(nodeIds);
-        return true;
     }
 
 

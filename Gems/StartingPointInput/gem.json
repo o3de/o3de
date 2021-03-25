@@ -1,4 +1,5 @@
 {
+    "gem_name": "StartingPointInput",
     "Dependencies": [
         {
             "Uuid" : "869a0d0ec11a45c299917d45c81555e6",

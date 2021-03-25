@@ -12,7 +12,6 @@
 
 #pragma once
 
-// include the required headers
 #include "../EMotionFXConfig.h"
 #include <MCore/Source/Array.h>
 #include <MCore/Source/CompressedQuaternion.h>
@@ -320,26 +319,19 @@ namespace EMotionFX
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionEventTrackTable2,  FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE,      2)
 
     // Actor file format chunk processors
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorMesh,                 FileFormat::ACTOR_CHUNK_MESH,                 1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorSkinningInfo,         FileFormat::ACTOR_CHUNK_SKINNINGINFO,         1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorStdMaterial,          FileFormat::ACTOR_CHUNK_STDMATERIAL,          1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorStdMaterialLayer,     FileFormat::ACTOR_CHUNK_STDMATERIALLAYER,     1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorGenericMaterial,      FileFormat::ACTOR_CHUNK_GENERICMATERIAL,      1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo,                 FileFormat::ACTOR_CHUNK_INFO,                 1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo2,                FileFormat::ACTOR_CHUNK_INFO,                 2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo3,                FileFormat::ACTOR_CHUNK_INFO,                 3)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorMeshLOD,              FileFormat::ACTOR_CHUNK_MESHLODLEVELS,        1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTarget,      FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET,   1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeGroups,           FileFormat::ACTOR_CHUNK_NODEGROUPS,           1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodes,                FileFormat::ACTOR_CHUNK_NODES,                1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorMaterialInfo,         FileFormat::ACTOR_CHUNK_MATERIALINFO,         1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets,     FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets2,    FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeMotionSources,    FileFormat::ACTOR_CHUNK_NODEMOTIONSOURCES,    1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorAttachmentNodes,      FileFormat::ACTOR_CHUNK_ATTACHMENTNODES,      1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorMaterialAttributeSet, FileFormat::ACTOR_CHUNK_MATERIALATTRIBUTESET, 1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorPhysicsSetup,         FileFormat::ACTOR_CHUNK_PHYSICSSETUP,         1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorSimulatedObjectSetup, FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP, 1)
+    EMFX_CHUNKPROCESSOR(ChunkProcessorMeshAsset,                 FileFormat::ACTOR_CHUNK_MESHASSET,            1)
 
     // Motion skeletal motion file format chunk processors
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionInfo,                     FileFormat::MOTION_CHUNK_INFO,                 1)

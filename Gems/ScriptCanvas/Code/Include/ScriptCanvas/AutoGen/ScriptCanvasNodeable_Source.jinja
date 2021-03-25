@@ -1,0 +1,478 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or 
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+{% import 'ScriptCanvas_Nodeable_Macros.jinja' as nodemacro %}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
+
+#include <ScriptCanvas/Core/Contracts.h>
+#include <ScriptCanvas/Core/NodeableNode.h>
+#include <ScriptCanvas/Core/SlotExecutionMap.h>
+#include <ScriptCanvas/Grammar/ParsingUtilities.h>
+
+#include <ScriptCanvas/Utils/VersionConverters.h>
+
+{% for xml in dataFiles %}
+{%   for Class in xml.iter('Class') %}
+
+{# Include the node's header #}
+{%     for Include in xml.iter('ScriptCanvas') %}
+#include <{{ Include.attrib['Include'] }}>
+{%         endfor %}
+
+{# Class Attributes #}
+{# ----------------------------------------------------------------------------------------- #}
+{%- set attribute_Name = macros.CleanName(Class.attrib['Name']) %}
+{%- set attribute_QualifiedName = macros.CleanName(Class.attrib['QualifiedName']) %}
+{%- set attribute_PreferredClassName = macros.CleanName(Class.attrib['PreferredClassName']) %}
+{%- set attribute_Description = Class.attrib['Description']  %}
+{%- set attribute_Category = Class.attrib['Category']  %}
+{%- set attribute_Uuid = Class.attrib['Uuid']  %}
+{%- set attribute_Icon = Class.attrib['Icon']  %}
+{%- set attribute_Base = Class.attrib['Base']  %}
+{%- set attribute_GeneratePropertyFriend = Class.attrib['GeneratePropertyFriend']  %}
+{%- set attribute_Version = Class.attrib['Version'] %}
+{%- set attribute_VersionConverter = Class.attrib['VersionConverter'] %}
+{%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
+{%- set attribute_Deprecated = Class.attrib['Deprecated'] %}
+
+{% set attribute_Namespace = undefined %}
+{%- if Class.attrib['Namespace'] is defined %}
+{%      if Class.attrib['Namespace'] != "None" %}
+{%          set attribute_Namespace = Class.attrib['Namespace'] %}
+{%      endif %}
+{% endif %}
+
+{# ----------------------------------------------------------------------------------------- #}
+
+{# Groups al tags that do not provide a DisplayGroup #}
+{% set global_standaloneTagMap = dict() %}
+
+{# Display Group Support #}
+{# The DisplayGroup dictionary is keyed by the DisplayGroup user provided name #}
+{# and the value is the XML tag that has the DisplayGroup #}
+{% set global_displayGroupMap = dict() %}
+{% macro CollectDisplayGroups(tagKind) %}
+{%      for item in Class.findall(tagKind) %}
+{%          set value = [] %}
+{%          if item.attrib['DisplayGroup'] is defined %}
+{%              set key = item.attrib['DisplayGroup'] %}
+{%              if key in global_displayGroupMap %}
+{%                  set value = global_displayGroupMap[key] %}
+{%              endif %}
+{%              if value.append(item) %}{% endif %}
+{%              set _dummy = global_displayGroupMap.update( { key: value })  %}
+{%          else %}
+{%              set key = tagKind %}
+{%              if key in global_standaloneTagMap %}
+{%                  set value = global_standaloneTagMap[key] %}
+{%              endif %}
+{%              if value.append(item) %}{% endif %}
+{%              set _dummy = global_standaloneTagMap.update( { key: value })  %}
+{%          endif %}
+{%      endfor %}
+{% endmacro %}
+
+{{CollectDisplayGroups('Input')}}
+{{CollectDisplayGroups('Output')}}
+{{CollectDisplayGroups('Parameter')}}
+
+{# FOR DEBUGGING / DIAGNOSTIC
+
+// Standalone (No DisplayGroup) {{ global_standaloneTagMap }}
+{% for key, value in global_standaloneTagMap.items() %}
+// {{key}} : {{value}} 
+{% endfor %}
+
+// DisplayGrouped {{ global_displayGroupMap }}
+{% for key, value in global_displayGroupMap.items() %}
+// {{key}} : {{value}}
+{% endfor %}
+#}
+
+{# ----------------------------------------------------------------------------------------- #}
+
+{% if attribute_Namespace is defined %}
+namespace {{attribute_Namespace}} 
+{
+{% endif %}
+
+{# Standard "In" function }
+{{nodemacro.FunctionSignature(attribute_QualifiedName, Class)}}
+{
+{%-  for parameter in Class.findall('Parameter') -%}
+{%     if parameter.attrib['Input'] is defined and parameter.attrib['Input'] == "True" %}
+
+//    this->{{parameter.attrib['Name']}} = arg{{loop.index0}};
+
+{%-     endif -%}
+{%  endfor %}
+
+{%  set returnNames = [] %}
+{%  set returnTypes = [] %}
+{%-     for return in Class.findall('Parameter') -%}
+{%-         if return.attrib['Output'] is defined and return.attrib['Output'] == "True" -%}
+{%              if returnTypes.append(return.attrib['Type']) %}{% endif %}
+{%              if returnNames.append("this->" + return.attrib['Name']) %}{% endif %}
+{%-         endif -%}
+{%-     endfor -%}
+
+{%  if returnNames|length() == 1 %}
+return {{returnNames[0]}};
+{%  elif returnNames|length() > 1 %}
+    return AZStd::tuple<{{returnTypes|join(", ")}}>({{returnNames|join(", ")}});
+{%  endif %}
+}
+#}
+{%- set nodeableNodeName = attribute_Name + 'Node' %}
+{% set list_outputs = [] %}
+{% for output in Class.iter('Output') %}
+    {% if list_outputs.append(output) %}{% endif %}
+{% endfor %}
+{% set latent_outputs = [] %}
+{% for output in Class.iter('Output') %}
+{%   if output.attrib['Latent'] is defined %}
+{%      if latent_outputs.append(output) %}{% endif %}
+{%   endif %}
+{% endfor %}
+{% for item in Class.iter('Output') %}
+{%      if item.attrib['DisplayGroup'] is defined %}{% set displayGroup = item.attrib['DisplayGroup'] %}{% endif %}
+{% endfor %}
+{# ExecutionOuts #}
+// ExecutionOuts begin
+{{ nodemacro.ExecutionOutDefinitions(Class, attribute_QualifiedName )}}
+// ExecutionOuts end
+{# Reflect #}
+void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
+{
+    using namespace ScriptCanvas;
+
+    if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>()
+{% if attribute_EventHandler is defined %}
+            ->EventHandler<{{ attribute_EventHandler }}>()
+{% endif %}
+
+{# Serialized Properties #}
+{% for Property in Class.iter('Property') %}
+{% set property_Name = Property.attrib['Name'] %}
+            ->Field("{{ property_Name }}", &{{ attribute_Name }}::{{ property_Name | replace(' ','') }})
+{% endfor %}
+        ;
+
+        if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+        {
+            editContext->Class<{{ attribute_QualifiedName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}")
+                       ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+
+{% if attribute_Category is defined %}
+            ->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}")
+{%- endif %}
+
+{% if attribute_Icon is defined %}
+            ->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}")
+{%- endif %}
+
+{% if attribute_Deprecated is defined %}
+            ->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}")
+{%- endif %}
+
+{% set uihandler = 'AZ::Edit::UIHandlers::Default' %}
+
+{% for Property in Class.iter('Property') %}
+{% for item in Property.iter('PropertyData') %}
+{% if item.attrib['UIHandler'] is defined %}
+    {% set uihandler = item.attrib['UIHandler'] %}
+{% endif %}
+{% set description = "" %}
+{% if item.attrib['Description'] is defined %}
+    {% set description = item.attrib['Description'] %}
+{% endif %}
+        // {{ item.attrib['Name'] }}
+                ->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ Property.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}")
+{% for EditAttribute in Property.iter('EditAttribute') %}
+                            ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
+{% endfor %}
+{% endfor %}
+{% endfor %}
+                            ;
+            }
+        }
+
+    // Behavior Context Reflection
+    if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+    {
+        behaviorContext->Class<{{ attribute_Name }}>("{{ attribute_Name }}")
+            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+{% for inputMethod in Class.iter('Input') %}
+{% set methodName = inputMethod.attrib['Name'] %}
+            // {{ inputMethod.attrib['Name'] }}
+            ->Method(Grammar::ToIdentifier("{{ macros.SlotName(methodName) }}").c_str(), &{{ attribute_Name }}::{{ macros.CleanName(methodName) }})
+{% endfor %}
+
+        ;
+    }
+}
+
+{# GetPropertyInterface #}
+ScriptCanvas::NodePropertyInterface* {{ attribute_QualifiedName }}::GetPropertyInterface([[maybe_unused]] AZ::Crc32 propertyId)
+{
+{% for field in Class.iter('PropertyInterface') %}
+    if (propertyId == AZ::Crc32("{{ macros.CleanName(field.attrib['Name']) }}PropertyId"))
+    {
+        return &{{field.attrib['Property']}};
+    }
+{% endfor %}
+    return nullptr;
+}
+
+{# ----------------------------------------------------------------------- #}
+////////////////////////////////////////////////////////////////////////////
+
+{# Constructor #}
+Nodes::{{ nodeableNodeName }}::{{ nodeableNodeName }}() 
+{ 
+    SetNodeable(AZStd::make_unique<{{ attribute_QualifiedName }}>()); 
+}
+
+{# NodeableNode Reflection #}
+void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
+{
+
+    {{ attribute_QualifiedName }}::Reflect(context);
+
+    // Serialization Context Reflection
+    if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<{{ nodeableNodeName }}, NodeableNode>()
+{% if attribute_Version is defined %}
+            ->Version({{ attribute_Version }}{% if attribute_VersionConverter is defined %}, &{{ attribute_VersionConverter }}{% endif %})
+{% else %}
+            ->Version(0)
+{% endif %}
+        ;
+
+        if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+        {
+            editContext->Class<{{ nodeableNodeName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}")
+                       ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ;
+        }
+    }
+}
+
+{# Fingerprint #}
+size_t Nodes::{{ nodeableNodeName }}::GenerateFingerprint() const
+{
+    using namespace ScriptCanvas;
+
+    size_t hash = 0;
+
+    {%- set methods = [] %}
+    {%- for method in xml.iter('Input') %}
+    {%- if methods.append(method) %}{% endif %}
+    {%- endfor %}
+    {%- for method in xml.iter('Output') %}
+    {%- if methods.append(method) %}{% endif %}
+    {%- endfor %}
+
+    {% for method in methods %}
+        // {{method.attrib['Name']}}
+        {% if method.attrib['ReturnType'] is defined and method.attrib['ReturnType'] != "void" %}
+        AZStd::hash_combine(hash, azrtti_typeid<{{method.attrib['ReturnType']}}>());
+        {% endif %}
+        AZStd::hash_combine(hash, Grammar::ToIdentifier("{{macros.SlotName(method.attrib['Name'])}}"));
+
+        {# get parameters types for hash #}
+        {%- for parameter in method.iter('Parameter') %}
+        AZStd::hash_combine(hash, azrtti_typeid<{{parameter.attrib['Type']}}>());
+        {% endfor %}
+    {% endfor %}
+
+    return hash;
+}
+
+{# ConfigureVisualExtensions #}
+void Nodes::{{ nodeableNodeName }}::ConfigureVisualExtensions()
+{
+{% for field in Class.findall('PropertyInterface') %}
+    {
+        VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::PropertySlot);
+
+        visualExtensions.m_name = "{{field.attrib['Name']}}";
+        visualExtensions.m_tooltip = "{{field.attrib['Description']}}";
+        visualExtensions.m_connectionType = ConnectionType::{{field.attrib['Type']}};
+        visualExtensions.m_identifier = AZ::Crc32("{{macros.CleanName(field.attrib['Name'])}}PropertyId");
+
+        RegisterExtension(visualExtensions);
+    }
+{% endfor %}
+}
+
+{# ConfigureSlots #}
+// Configure Slots and Build the Nodeable Execution Maps
+void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
+{
+    using namespace ScriptCanvas;
+    NodeableNode::ConfigureSlots();
+    SlotExecution::Ins ins;
+    SlotExecution::Outs outs;
+
+{%- for item in Class.findall('Input') %}
+{%-     set itemName = item.attrib['Name'] %}
+{%      set itemDisplayGroup = item.attrib['DisplayGroup'] if item.attrib['DisplayGroup'] is defined else macros.SlotName(itemName) %}
+    // execution in begin 
+    { 
+        SlotExecution::In in;
+
+{{      nodemacro.CreateExecutionSlot(item, "Input", undefined) }}
+        in.slotId = slotId{{ macros.CleanName(itemName) }}Input;
+
+{% for paraItem in item.findall('Parameter') %}
+        {{ nodemacro.AddDataSlot("true", "in.inputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{% endfor %}
+        { // execution outs begin    
+{%      if item.findall("Branch")|length == 0 %}
+{#          add a single out slot, as there are no branches #}
+// NO branches were found, at the default
+            SlotExecution::Out out;
+            ScriptCanvas::ExecutionSlotConfiguration outSlotConfiguration;
+{%          if item.attrib['OutputName'] is defined %}
+            outSlotConfiguration.m_name = "{{ item.attrib['OutputName'] }}";
+{%          else %}
+            outSlotConfiguration.m_name = "On {{itemName}}";
+{%          endif %}
+            outSlotConfiguration.m_toolTip = "{{item.attrib['Description']}}";
+            outSlotConfiguration.m_displayGroup = "{{ itemDisplayGroup }}";
+            outSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+            outSlotConfiguration.m_isLatent = false;
+            out.name = outSlotConfiguration.m_name;
+            SlotId outSlotId = AddSlot(outSlotConfiguration);
+            AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
+            out.slotId = outSlotId;
+{%          for return in item.findall('Return') %}
+                {{ nodemacro.AddDataSlot("false", "out.outputs", itemDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], item.attrib['Name']) }}
+{%          endfor %}
+            in.outs.push_back(out);
+{%      else %}
+// branches were found
+{%          for branchItem in item.findall("Branch") %}
+            {
+                SlotExecution::Out out;
+                ScriptCanvas::ExecutionSlotConfiguration outSlotConfiguration;
+                outSlotConfiguration.m_name = "{{ branchItem.attrib['Name'] }}";
+                outSlotConfiguration.m_toolTip = "{{ branchItem.attrib['Description'] }}";
+{%              set branchDisplayGroup = branchItem.attrib['DisplayGroup'] if branchItem.attrib['DisplayGroup'] is defined else itemDisplayGroup %}
+                outSlotConfiguration.m_displayGroup = "{{ branchDisplayGroup }}";
+                outSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+                outSlotConfiguration.m_isLatent = false;
+                out.name = outSlotConfiguration.m_name;
+                SlotId outSlotId = AddSlot(outSlotConfiguration);
+                AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
+                out.slotId = outSlotId;
+{%              for return in branchItem.findall('Return') %}
+                    {{ nodemacro.AddDataSlot("false", "out.outputs", branchDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], branchItem.attrib['Name']) }}
+{%              endfor %}
+                in.outs.push_back(out);
+            }
+{%          endfor %}{# each branch #}
+{%      endif %}{# branch count == 0 #}
+        } // execution outs end
+        ins.push_back(in);
+    } // execution in end
+{% endfor %}
+{%- for item in Class.findall('Output') %}
+{%-     set itemName = item.attrib['Name'] %}
+{%      set itemDisplayGroup = item.attrib['DisplayGroup'] if item.attrib['DisplayGroup'] is defined else macros.SlotName(itemName) %}  
+    // Latent out
+    {
+        SlotExecution::Out out;
+{{      nodemacro.CreateExecutionSlot(item, "Output", item.attrib['Latent']) }}
+        out.slotId = slotId{{ nodemacro.SlotName(itemName) }}Output;
+        out.name = "{{itemName}}";
+{%      for paraItem in item.findall('Parameter') %}
+{{     nodemacro.AddDataSlot("false", "out.outputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{%      endfor %}
+{%      for paraItem in item.findall('Return') %}
+{{     nodemacro.AddDataSlot("true", "out.returnValues.values", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{%      endfor %}
+        outs.push_back(out);
+    }
+{% endfor  %}
+
+{# Go through the DisplayGroups dictionary and add inputs as grouped 
+// Display Grouped
+{% for key, tagList in global_displayGroupMap.items() %}
+{%      for item in tagList %}
+{%          if item.tag == "Input" %}
+{%              set itemName = macros.SlotName(item.attrib['Name']) %}
+    {
+        SlotExecution::In in;
+
+{{ nodemacro.CreateExecutionSlot(item, "Input", undefined) }}
+        in.slotId = slotId{{ macros.CleanName(itemName) }}Input;
+
+{# process the parameters
+{% for paraItem in item.findall('Parameter') %}
+{{      nodemacro.AddDataSlot("true", "in.inputs", key, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type']) }}
+{% endfor %}
+
+        ins.push_back(in);
+    }
+{%          endif %}
+
+{%          if item.tag == "Output" %}
+{%              set itemName = macros.SlotName(item.attrib['Name']) %}
+    {
+        SlotExecution::Out out;
+
+{{      nodemacro.CreateExecutionSlot(item, "Output", item.attrib['Latent']) }}
+        out.slotId = slotId{{ macros.CleanName(itemName) }}Output;
+
+{% for paraItem in item.findall('Parameter') %}
+{{      nodemacro.AddDataSlot("false", "out.outputs", key, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type']) }}
+{% endfor %}
+
+        outs.push_back(out);
+    }
+{%          endif %}
+{%      endfor %}
+{% endfor %}
+#}
+
+    // Generate the execution map
+    m_slotExecutionMap = SlotExecution::Map(AZStd::move(ins), AZStd::move(outs));
+
+}
+
+{# -- #}
+
+{% if attribute_Namespace is defined %}
+}
+{% endif %}
+
+{%   endfor %}
+{% endfor %}
+

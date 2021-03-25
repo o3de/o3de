@@ -17,15 +17,10 @@
 #include "CryName.h"
 
 #define IDRESHEADER     (('K' << 24) + ('C' << 16) + ('P' << 8) + 'C')
-#define RESVERSION_LZSS  10 // LZSS
-#define RESVERSION_LZMA  11 // LZMA
 #define RESVERSION_DEBUG  12 // Uncompressed
 
 // defines the current compression for any files written
-#define RES_COMPRESSION RESVERSION_LZSS
-
-#include <LZSS.H>
-#include <Lzma86.h>
+#define RES_COMPRESSION RESVERSION_DEBUG
 
 // Resource files flags
 #define RF_NOTSAVED 1

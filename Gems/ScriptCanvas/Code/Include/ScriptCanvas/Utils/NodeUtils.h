@@ -23,21 +23,28 @@ namespace ScriptCanvas
         static NodeTypeIdentifier ConstructNodeType(const Node* scriptCanvasNode);
         
         // Individual Identifier Methods
-        static NodeTypeIdentifier ConstructEBusIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier);
-        static NodeTypeIdentifier ConstructEBusEventSenderIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
-        static NodeTypeIdentifier ConstructEBusEventReceiverIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
-        
+        static NodeTypeIdentifier ConstructEBusIdentifier(ScriptCanvas::EBusBusId ebusIdentifier);
+        static NodeTypeIdentifier ConstructEBusEventSenderIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);
+        static NodeTypeIdentifier ConstructEBusEventSenderOverloadedIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);
+        static NodeTypeIdentifier ConstructEBusEventReceiverIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);
+        // \todo examine if this is required
+        // static NodeTypeIdentifier ConstructEBusEventReceiverOverloadedIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
         static NodeTypeIdentifier ConstructFunctionNodeIdentifier(const AZ::Data::AssetId& assetId);
 
-        static NodeTypeIdentifier ConstructScriptEventIdentifier(const ScriptCanvas::EBusBusId& busId);
-        static NodeTypeIdentifier ConstructSendScriptEventIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
-        static NodeTypeIdentifier ConstructScriptEventReceiverIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
+        static NodeTypeIdentifier ConstructScriptEventIdentifier(ScriptCanvas::EBusBusId busId);
+        static NodeTypeIdentifier ConstructSendScriptEventIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);
+        static NodeTypeIdentifier ConstructScriptEventReceiverIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);
         
         static NodeTypeIdentifier ConstructCustomNodeIdentifier(const AZ::Uuid& nodeId);
         
         static NodeTypeIdentifier ConstructMethodNodeIdentifier(AZStd::string_view methodClass, AZStd::string_view methodName);
-        
+        static NodeTypeIdentifier ConstructGlobalMethodNodeIdentifier(AZStd::string_view methodName);
+        static NodeTypeIdentifier ConstructMethodOverloadedNodeIdentifier(AZStd::string_view methodName);
+
         static NodeTypeIdentifier ConstructGetVariableNodeIdentifier(const VariableId& variableId);
         static NodeTypeIdentifier ConstructSetVariableNodeIdentifier(const VariableId& variableId);
+        static NodeTypeIdentifier ConstructAzEventIdentifier(AzEventIdentifier azEventIdentifier);
+
+        static void InitializeNode(Node* node, const NodeConfiguration& config);
     };
 }

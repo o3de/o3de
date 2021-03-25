@@ -15,7 +15,6 @@
 #include <AzCore/Module/Module.h>
 
 #include <CommonSystemComponent.h>
-#include <DynamicDraw/DynamicDrawSystemComponent.h>
 #include <FrameCaptureSystemComponent.h>
 #include <ProfilingCaptureSystemComponent.h>
 #include <ImGui/ImGuiSystemComponent.h>
@@ -49,7 +48,6 @@ namespace AZ
                     CommonSystemComponent::CreateDescriptor(),
                     FrameCaptureSystemComponent::CreateDescriptor(),
                     ProfilingCaptureSystemComponent::CreateDescriptor(),
-                    DynamicDrawSystemComponent::CreateDescriptor(),
                     ImGuiSystemComponent::CreateDescriptor(),
                     SkinnedMeshSystemComponent::CreateDescriptor(),
                     
@@ -69,7 +67,6 @@ namespace AZ
                     azrtti_typeid<FrameCaptureSystemComponent>(),
                     azrtti_typeid<ProfilingCaptureSystemComponent>(),
                     azrtti_typeid<CoreLightsSystemComponent>(),
-                    azrtti_typeid<DynamicDrawSystemComponent>(),
                     azrtti_typeid<ImGuiSystemComponent>(),
                     azrtti_typeid<SkinnedMeshSystemComponent>(),
 #ifdef ATOM_FEATURE_COMMON_EDITOR

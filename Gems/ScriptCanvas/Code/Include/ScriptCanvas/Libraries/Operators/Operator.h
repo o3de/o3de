@@ -15,7 +15,6 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/SlotMetadata.h>
@@ -29,9 +28,11 @@ namespace ScriptCanvas
         namespace Operators
         {
             class OperatorBase 
-                : public ScriptCanvas::Node                 
+                : public ScriptCanvas::Node
             {
             public:
+
+                SCRIPTCANVAS_NODE(OperatorBase);
 
                 typedef AZStd::vector<const Datum*> OperatorOperands;
 
@@ -56,31 +57,23 @@ namespace ScriptCanvas
                     AZStd::vector< SourceSlotConfiguration > m_sourceSlotConfigurations;
                 };
 
-                ScriptCanvas_Node(OperatorBase,
-                    ScriptCanvas_Node::Uuid("{30FED030-71ED-4498-AB2C-F5586DFA490E}")
-                    ScriptCanvas_Node::Description("")
-                    ScriptCanvas_Node::Version(2)
-                    ScriptCanvas_Node::Category("Operators")
-                );
-
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Output signal"));
+                AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const override;
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 using TypeList = AZStd::vector<AZ::TypeId>;
                 using SlotSet = AZStd::unordered_set<SlotId>;
 
-                ScriptCanvas_SerializeProperty(SlotSet, m_sourceSlots);
+                SlotSet m_sourceSlots;
 
                 // Contains the ScriptCanvas data types used for display and other state control
-                ScriptCanvas_SerializeProperty(ScriptCanvas::Data::Type, m_sourceType);
-                ScriptCanvas_SerializeProperty(ScriptCanvas::Data::Type, m_sourceDisplayType);
+                ScriptCanvas::Data::Type m_sourceType;
+                ScriptCanvas::Data::Type m_sourceDisplayType;
 
                 // Has all of the internal AZ types that may be apart of the source type(i.e. for containers)
                 TypeList m_sourceTypes;
 
-                //
-                ScriptCanvas_SerializeProperty(SlotSet, m_outputSlots);
-                ScriptCanvas_SerializeProperty(SlotSet, m_inputSlots);
+                SlotSet m_outputSlots;
+                SlotSet m_inputSlots;
 
                 OperatorBase();
                 OperatorBase(const OperatorConfiguration& c);

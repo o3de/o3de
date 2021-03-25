@@ -1,0 +1,20 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "subsurfaceScattering": {
+            "enableSubsurfaceScattering": true,
+            "influenceMap": "TestData/Textures/checker8x8_512.png",
+            "scatterColor": [
+                1.0,
+                0.19937437772750855,
+                0.07179369777441025,
+                1.0
+            ],
+            "scatterDistance": 40.0,
+            "subsurfaceScatterFactor": 1.0
+        }
+    }
+}

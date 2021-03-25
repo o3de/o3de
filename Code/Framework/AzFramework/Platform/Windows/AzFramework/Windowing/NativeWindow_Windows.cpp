@@ -223,6 +223,25 @@ namespace AzFramework
             AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, codeUnitUTF16);
             break;
         }
+        case WM_SYSKEYDOWN:
+        {
+            // Handle ALT+ENTER to toggle full screen unless exclsuive full screen
+            // mode is preferred, in which case this will be handled by the system.
+            if ((wParam == VK_RETURN) && (lParam & (1 << 29)))
+            {
+                bool isExclusiveFullScreenPreferred = false;
+                ExclusiveFullScreenRequestBus::EventResult(isExclusiveFullScreenPreferred,
+                                                           nativeWindowImpl->GetWindowHandle(),
+                                                           &ExclusiveFullScreenRequests::IsExclusiveFullScreenPreferred);
+                if (!isExclusiveFullScreenPreferred)
+                {
+                    WindowRequestBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowRequests::ToggleFullScreenState);
+                    return 0;
+                }
+            }
+            // Send all other WM_SYSKEYDOWN messages to the default WndProc.
+            break;
+        }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
             break;

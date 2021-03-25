@@ -49,17 +49,18 @@ namespace EMotionFX
         EXPECT_CALL(testBus, OnActorInstanceCreated(testing::_)).Times(testing::AtLeast(1));
         EXPECT_CALL(testBus, OnActorInstanceDestroyed(testing::_)).Times(1);
 
-        const AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-        AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, ActorFactory::CreateAndInit<SimpleJointChainActor>(3));
-
         AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>(id);
         auto transformComponent = entity->CreateComponent<AzFramework::TransformComponent>();
-        Integration::ActorComponent* actorComponent = entity->CreateComponent<Integration::ActorComponent>();
-        actorComponent->OnAssetReady(actorAsset);
+        Integration::ActorComponent::Configuration actorConf;
+        Integration::ActorComponent* actorComponent = entity->CreateComponent<Integration::ActorComponent>(&actorConf);
 
         entity->Init();
-
         entity->Activate();
+
+        const AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, ActorFactory::CreateAndInit<SimpleJointChainActor>(3));
+        actorConf.m_actorAsset = actorAsset;
+        actorComponent->SetActorAsset(actorConf.m_actorAsset);
 
         entity->Deactivate();
     }
@@ -85,6 +86,8 @@ namespace EMotionFX
 
             m_entity->Init();
             m_entity->Activate();
+
+            m_actorComponent->SetActorAsset(actorAsset);
         }
         AZStd::unique_ptr<AZ::Entity> m_entity;
         Integration::ActorComponent* m_actorComponent;
@@ -141,11 +144,14 @@ namespace EMotionFX
         AzFramework::TransformComponent* targetTransformComponent = targetEntity->CreateComponent<AzFramework::TransformComponent>();
         targetTransformComponent->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(9.0f, 24.0f, 84.0f)));
 
-        Integration::ActorComponent* targetActorComponent = targetEntity->CreateComponent<Integration::ActorComponent>();
-        targetActorComponent->OnAssetReady(targetActorAsset);
+        Integration::ActorComponent::Configuration actorConf;
+        actorConf.m_actorAsset = targetActorAsset;
+        Integration::ActorComponent* targetActorComponent = targetEntity->CreateComponent<Integration::ActorComponent>(&actorConf);
 
         targetEntity->Init();
         targetEntity->Activate();
+
+        targetActorComponent->SetActorAsset(targetActorAsset);
 
         Integration::ActorComponentRequestBus::Event(m_entity->GetId(), &Integration::ActorComponentRequestBus::Events::AttachToEntity, targetEntity->GetId(), Integration::AttachmentType::SkinAttachment);
 

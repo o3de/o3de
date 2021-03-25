@@ -19,6 +19,19 @@ namespace AzFramework
     using EntityContextId = AZ::Uuid;
     using EntityList = AZStd::vector<AZ::Entity*>;
 
+    class EntityOwnershipService;   
+
+    class EntityOwnershipServiceInterface
+    {
+    public:
+        AZ_RTTI(EntityOwnershipServiceInterface, "{6490E958-5DF5-45CF-9A25-D857DB0C67DB}");
+
+        EntityOwnershipServiceInterface() = default;
+        virtual ~EntityOwnershipServiceInterface() = default;
+
+        virtual AZStd::unique_ptr<EntityOwnershipService> CreateEntityOwnershipService() = 0;
+    };
+
     class EntityOwnershipServiceNotifications
         : public AZ::EBusTraits
     {

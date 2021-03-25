@@ -15,20 +15,6 @@
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 
-// compute parallax corrected reflection vector
-// we do this by finding the intersection with the probe volume and adjusting the reflection vector for the surface position 
-// https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-float3 ApplyParallaxCorrection(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
-{
-    float3 rcpReflectDir = 1.0f / reflectDir;
-    float3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
-    float3 intersectB = (aabbMin - positionWS) * rcpReflectDir;
-    float3 furthestIntersect = max(intersectA, intersectB);
-    float distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
-    float3 intersectPos = reflectDir * distance + positionWS;
-    return (intersectPos - aabbPos);
-}
-
 // compute final probe specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
 bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin, float3 aabbMax, uint sampleIndex, out float3 specular)
 {

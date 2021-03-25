@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAssetCreator.h>
 
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 
@@ -23,6 +24,8 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexTangentData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexBitangentData.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ISkinWeightData.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 
 #include <Model/ModelExporterContexts.h>
@@ -40,6 +43,7 @@ namespace AZ
         using MaterialData = AZ::SceneAPI::DataTypes::IMaterialData;
         using TangentData = AZ::SceneAPI::DataTypes::IMeshVertexTangentData;
         using BitangentData = AZ::SceneAPI::DataTypes::IMeshVertexBitangentData;
+        using SkinData = AZ::SceneAPI::DataTypes::ISkinWeightData;
 
         class Stream;
         class ModelLodAssetCreator;
@@ -72,7 +76,6 @@ namespace AZ
 
             AZ::SceneAPI::Events::ProcessingResult BuildModel(ModelAssetBuilderContext& context);
 
-        private:
             using MaterialUid = uint64_t;
 
             //! Describes the source SceneAPI data that makes up a "Mesh" as understood by Atom.
@@ -85,7 +88,10 @@ namespace AZ
                 AZStd::shared_ptr<const BitangentData> m_meshBitangents;
                 AZStd::vector<AZStd::shared_ptr<const UVData>> m_meshUVData;
                 AZStd::vector<AZStd::shared_ptr<const ColorData>> m_meshColorData;
+                AZStd::vector<AZStd::shared_ptr<const SkinData>> m_skinData;
                 AZStd::vector<MaterialUid> m_materials;
+                bool m_isMorphed = false;
+
                 MaterialUid GetMaterialUniqueId(uint32_t index) const;
             };
             using SourceMeshContentList = AZStd::vector<SourceMeshContent>;
@@ -104,9 +110,30 @@ namespace AZ
                 AZStd::vector<AZStd::vector<float>> m_colorSets;
                 AZStd::vector<AZ::Name> m_colorCustomNames;
 
+                //! Joint index per vertex in range [0, numJoints].
+                //! Note: The joint indices have to match the used skeleton when applying skinning.
+                //! A mapping between the joint name and the used joint index is stored as a separate skin meta asset.
+                AZStd::vector<uint16_t> m_skinJointIndices;
+                AZStd::vector<float> m_skinWeights;
+
+                // Morph targets
+                struct MorphTargetVertexData
+                {
+                    AZStd::vector<uint32_t> m_vertexIndices;
+                    AZStd::vector<float> m_uncompressedPositionDeltas;
+                    AZStd::vector<uint16_t> m_positionDeltas;
+                    AZStd::vector<uint8_t> m_normalDeltas;
+                };
+                MorphTargetVertexData m_morphTargetVertexData;
+
                 MaterialUid m_materialUid;
+                bool CanBeMerged() const { return true; }
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
+
+            static constexpr inline const char* s_builderName = "Atom Model Builder";
+
+        private:
 
             //! Used to accumulate info about how much space to allocate when creating a ProductMeshContent structure.
             //! 
@@ -124,6 +151,8 @@ namespace AZ
                 size_t m_bitangentsFloatCount = 0;
                 AZStd::vector<size_t> m_uvSetFloatCounts;
                 AZStd::vector<size_t> m_colorSetFloatCounts;
+                size_t m_skinInfluencesCount = 0;
+                size_t m_morphTargetVertexDeltaCount = 0;
             };
 
             //! Describes a view into data described in a ProductMeshContent structure.
@@ -144,6 +173,16 @@ namespace AZ
                 AZStd::vector<AZ::Name> m_colorCustomNames;
                 RHI::BufferViewDescriptor m_tangentView;
                 RHI::BufferViewDescriptor m_bitangentView;
+                RHI::BufferViewDescriptor m_skinJointIndicesView;
+                RHI::BufferViewDescriptor m_skinWeightsView;
+
+                struct MorphTargetVertexDataView
+                {
+                    RHI::BufferViewDescriptor m_vertexIndexView;
+                    RHI::BufferViewDescriptor m_positionDeltaView;
+                    RHI::BufferViewDescriptor m_normalDeltaView;
+                };
+                MorphTargetVertexDataView m_morphTargetVertexDataView;
 
                 MaterialUid m_materialUid;
             };
@@ -159,19 +198,23 @@ namespace AZ
             //! Since a SouceMeshContent object may have faces that have multiple materials we have to break 
             //! that into a ProductMeshContent object for each material. No further processing is done
             ProductMeshContentList SourceMeshListToProductMeshList(
-                const SourceMeshContentList& sourceMeshContentList);
+                const ModelAssetBuilderContext& context,
+                const SourceMeshContentList& sourceMeshContentList,
+                AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
+                MorphTargetMetaAssetCreator& morphTargetMetaCreator);
 
             //! Takes in a ProductMeshContentList and merges all elements that share the same MaterialUid.
             ProductMeshContentList MergeMeshesByMaterialUid(
                 const ProductMeshContentList& productMeshList);
 
             //! Simple helper to create a MeshView that views an entire given ProductMeshContent object as one mesh.
-            ProductMeshView CreateViewToEntireMesh(const ProductMeshContent& mesh);
+            ProductMeshView CreateViewToEntireMesh(const ModelAssetBuilderContext& context, const ProductMeshContent& mesh);
 
             //! Takes a ProductMeshContentList and merges all elements into a single ProductMeshContent object.
             //! This also produces a ProductMeshViewList that contains views to all
             //! the original meshes described in the lodMeshList collection.
             void MergeMeshesToCommonBuffers(
+                const ModelAssetBuilderContext& context,
                 const ProductMeshContentList& lodMeshList,
                 ProductMeshContent& lodMeshContent,
                 ProductMeshViewList& meshViewsPerLodBuffer);
@@ -193,6 +236,39 @@ namespace AZ
                 const ProductMeshContentList& productMeshList,
                 IndicesOperation indicesOp);
 
+            //! Create stream buffer asset with a raw view descriptor from the given data and add it to the out stream buffers.
+            template<typename T>
+            bool BuildRawStreamBuffer(
+                AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
+                const AZStd::vector<T>& bufferData,
+                const RHI::ShaderSemantic& semantic,
+                const AZ::Name& uvCustomName = AZ::Name());
+
+            //! Create stream buffer asset from the given data and add it to the out stream buffers.
+            template<typename T>
+            bool BuildStreamBuffer(
+                AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
+                const AZStd::vector<T>& bufferData,
+                AZ::RHI::Format format,
+                const RHI::ShaderSemantic& semantic,
+                const AZ::Name& uvCustomName = AZ::Name());
+
+            template<typename T>
+            bool BuildStreamBuffer(
+                size_t vertexCount,
+                AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
+                const AZStd::vector<T>& bufferData,
+                AZ::RHI::Format format,
+                const RHI::ShaderSemantic& semantic,
+                const AZ::Name& uvCustomName = AZ::Name());
+
+            //! Checks to see if a data buffer is the expected size
+            template<typename T>
+            void ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
+
+            //! Checks to see if the vertex count for each stream within a mesh is the same
+            void ValidateStreamAlignment(const ProductMeshContent& mesh) const;
+
             //! Takes a ProductMeshContent object, produces BufferAsset objects for each
             //! stream and then applies those to the given ModelLodAssetCreator as the
             //! lod-wide buffers. It also returns the index and stream buffer data so that it
@@ -200,6 +276,7 @@ namespace AZ
             //! 
             //! Returns false if an error occurs
             bool CreateModelLodBuffers(
+                const ModelAssetBuilderContext& context,
                 const ProductMeshContent& lodBufferContent,
                 BufferAssetView& outIndexBuffer,
                 AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
@@ -217,8 +294,17 @@ namespace AZ
                 const MaterialAssetsByUid& materialAssetsByUid);
 
             //! Takes in a pointer to data with a given element count and format and creates a BufferAsset.
-            Outcome<Data::Asset<BufferAsset>> CreateBufferAsset(
+            Outcome<Data::Asset<BufferAsset>> CreateTypedBufferAsset(
                 const void* data, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName);
+
+            //! Takes in a pointer to data and a size in bytes and creates a BufferAsset.
+            Outcome<Data::Asset<BufferAsset>> CreateRawBufferAsset(
+                const void* data, const size_t totalSizeInBytes, const AZStd::string& bufferName);
+
+            //! Takes in a pointer to data with a view descriptor count and format and creates a BufferAsset.
+            Outcome<Data::Asset<BufferAsset>> CreateBufferAsset(
+                const void* data, const RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
+
 
             //! Helper method for CreateMesh.
             //! Searches lodStreamBuffers for the given semantic and if found takes
@@ -258,6 +344,9 @@ namespace AZ
                 const RHI::ShaderSemantic& streamSemantic,
                 ModelLodAsset::Mesh::StreamBufferInfo& outStreamBufferInfo);
 
+            // Check if a given node contains any morph target data.
+            bool GetIsMorphed(const AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const;
+
             Uuid m_sourceUuid;
 
             // cached names for asset id generation
@@ -273,6 +362,17 @@ namespace AZ
 
             //! Calculates the world transform of the node given all of its parent nodes
             SceneAPI::DataTypes::MatrixType GetWorldTransform(const SceneAPI::Containers::SceneGraph& sceneGraph, SceneAPI::Containers::SceneGraph::NodeIndex node);
+
+        private:
+            //! Collects skinning influences from the SceneAPI source mesh and fills them in the resulting mesh
+            void GatherSkinningInfluences(
+                const ModelAssetBuilderContext& context,
+                const SourceMeshContent& sourceMesh,
+                ProductMeshContent& productMesh,
+                AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
+                size_t vertexIndex) const;
+
+            AZ::u32 ExtractMaxNumInfluencesPerVertex(const SceneAPI::DataTypes::ISkinRule* skinRule) const;
         };
     } // namespace RPI
 } // namespace AZ

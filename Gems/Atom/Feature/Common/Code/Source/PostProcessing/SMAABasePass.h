@@ -59,7 +59,7 @@ namespace AZ
             void UpdateCurrentShaderVariant();
 
             // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             AZ::RPI::ShaderVariantKey m_currentShaderVariantKeyFallbackValue;
             bool m_needToUpdateShaderVariant = false;

@@ -20,9 +20,8 @@ namespace fbxsdk
     class FbxSurfaceMaterial;
 }
 
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
 struct aiMaterial;
-#endif
+
 
 namespace AZ
 {
@@ -37,22 +36,23 @@ namespace AZ
                 Diffuse,
                 Specular,
                 Bump,
-                Normal
+                Normal,
+                Metallic,
+                Roughness,
+                AmbientOcclusion,
+                Emissive,
+                BaseColor
             };
 
             MaterialWrapper(fbxsdk::FbxSurfaceMaterial* fbxMaterial);
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             MaterialWrapper(aiMaterial* assImpmaterial);
-#endif
             virtual ~MaterialWrapper();
 
             fbxsdk::FbxSurfaceMaterial* GetFbxMaterial();
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             aiMaterial* GetAssImpMaterial();
-#endif
 
             virtual AZStd::string GetName() const;
-            virtual uint64_t GetUniqueId() const;
+            virtual AZ::u64 GetUniqueId() const;
             virtual AZStd::string GetTextureFileName(MaterialMapType textureType) const;
             virtual AZ::Vector3 GetDiffuseColor() const;
             virtual AZ::Vector3 GetSpecularColor() const;
@@ -62,9 +62,7 @@ namespace AZ
 
         protected:
             fbxsdk::FbxSurfaceMaterial* m_fbxMaterial = nullptr;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             aiMaterial* m_assImpMaterial = nullptr;
-#endif
         };
     } // namespace SDKMaterial
 } // namespace AZ

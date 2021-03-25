@@ -14,10 +14,11 @@
 #include "ScriptEventSystem.h"
 #include "ScriptEventDefinition.h"
 #include "ScriptEventsAsset.h"
+#include "ScriptEvent.h"
 
 namespace ScriptEvents
 {
-    AZStd::intrusive_ptr<Internal::ScriptEvent> ScriptEventsSystemComponentImpl::RegisterScriptEvent(const AZ::Data::AssetId& assetId, [[maybe_unused]] AZ::u32 version)
+    AZStd::intrusive_ptr<Internal::ScriptEventRegistration> ScriptEventsSystemComponentImpl::RegisterScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 /*version*/)
     {
         AZ_Assert(assetId.IsValid(), "Unable to register Script Event with invalid asset Id");
         if (!assetId.IsValid())
@@ -29,7 +30,7 @@ namespace ScriptEvents
 
         if (m_scriptEvents.find(key) == m_scriptEvents.end())
         {
-            m_scriptEvents[key] = AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent>(aznew ScriptEvents::Internal::ScriptEvent(assetId));
+            m_scriptEvents[key] = AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>(aznew ScriptEvents::Internal::ScriptEventRegistration(assetId));
         }
 
         return m_scriptEvents[key];
@@ -55,13 +56,13 @@ namespace ScriptEvents
 
         if (m_scriptEvents.find(key) == m_scriptEvents.end())
         {
-            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().CreateAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
+            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().CreateAsset<ScriptEvents::ScriptEventsAsset>(assetId);
 
             // Install the definition that's coming from Lua
             ScriptEvents::ScriptEventsAsset* scriptAsset = assetData.Get();
             scriptAsset->m_definition = definition;
 
-            m_scriptEvents[key] = AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent>(aznew ScriptEvents::Internal::ScriptEvent(assetId));
+            m_scriptEvents[key] = AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>(aznew ScriptEvents::Internal::ScriptEventRegistration(assetId));
             m_scriptEvents[key]->CompleteRegistration(assetData);
 
         }
@@ -72,14 +73,14 @@ namespace ScriptEvents
         const AZStd::string& busName = definition.GetName();
         const AZ::Uuid& assetId = AZ::Uuid::CreateName(busName.c_str());
 
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().FindAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().FindAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
         if (assetData)
         {
             assetData.Release();
         }
     }
 
-    AZStd::intrusive_ptr<Internal::ScriptEvent> ScriptEventsSystemComponentImpl::GetScriptEvent(const AZ::Data::AssetId& assetId, [[maybe_unused]] AZ::u32 version)
+    AZStd::intrusive_ptr<Internal::ScriptEventRegistration> ScriptEventsSystemComponentImpl::GetScriptEvent(const AZ::Data::AssetId& assetId, [[maybe_unused]] AZ::u32 version)
     {
         ScriptEventKey key(assetId, 0);
 

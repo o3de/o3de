@@ -14,6 +14,7 @@
 
 #include <QCoreApplication>
 
+#include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <ScriptCanvas/Core/Slot.h>
@@ -26,6 +27,7 @@ namespace ScriptCanvasEditor
         EbusSender,
         EbusHandler,
         ClassMethod,
+        GlobalMethod,
         Invalid
     };
 
@@ -54,6 +56,7 @@ namespace ScriptCanvasEditor
         const char* const ebusSender  = "EBus";
         const char* const ebusHandler = "Handler";
         const char* const classMethod = "Method";
+        constexpr const char* const globalMethod = "GlobalMethod";
     };
 
     namespace TranslationKeyParts
@@ -74,7 +77,7 @@ namespace ScriptCanvasEditor
     class TranslationHelper
     {
     public:
-        static AZStd::string GetContextName(TranslationContextGroup group, const AZStd::string& keyBase)
+        static AZStd::string GetContextName(TranslationContextGroup group, AZStd::string_view keyBase)
         {
             if (group == TranslationContextGroup::Invalid || keyBase.empty())
             {
@@ -95,64 +98,65 @@ namespace ScriptCanvasEditor
             case TranslationContextGroup::ClassMethod:
                 groupPart = TranslationContextGroupParts::classMethod;
                 break;
+            case TranslationContextGroup::GlobalMethod:
+                groupPart = TranslationContextGroupParts::globalMethod;
+                break;
             default:
                 AZ_Warning("TranslationComponent", false, "Invalid translation group ID.");
                 groupPart = "";
             }
 
-            AZStd::string fullKey = AZStd::string::format("%s: %s",
-                groupPart,
-                keyBase.c_str()
-            );
+            AZStd::string fullKey = AZStd::string::format("%s: %.*s", groupPart,
+                aznumeric_cast<int>(keyBase.size()), keyBase.data());
 
             return fullKey;
         }
         
         // UserDefined
-        static AZStd::string GetUserDefinedContext(const AZStd::string& contextName)
+        static AZStd::string GetUserDefinedContext(AZStd::string_view contextName)
         {
             return GetContextName(TranslationContextGroup::ClassMethod, contextName);
         }
 
-        static AZStd::string GetUserDefinedKey(const AZStd::string& contextName, TranslationKeyId keyId)
+        static AZStd::string GetUserDefinedKey(AZStd::string_view contextName, TranslationKeyId keyId)
         {
             return GetClassKey(TranslationContextGroup::ClassMethod, contextName, keyId);
         }
 
-        static AZStd::string GetUserDefinedNodeKey(const AZStd::string& contextName, const AZStd::string& nodeName, TranslationKeyId keyId)
+        static AZStd::string GetUserDefinedNodeKey(AZStd::string_view contextName, AZStd::string_view nodeName, TranslationKeyId keyId)
         {
             return GetKey(TranslationContextGroup::ClassMethod, contextName, nodeName, TranslationItemType::Node, keyId);
         }
 
-        static AZStd::string GetUserDefinedNodeSlotKey(const AZStd::string& contextName, const AZStd::string& nodeName, TranslationItemType itemType, TranslationKeyId keyId, int slotIndex)
+        static AZStd::string GetUserDefinedNodeSlotKey(AZStd::string_view contextName, AZStd::string_view nodeName, TranslationItemType itemType, TranslationKeyId keyId, int slotIndex)
         {
             return GetKey(TranslationContextGroup::ClassMethod, contextName, nodeName, itemType, keyId, slotIndex);
         }
         ////
 
         // EBusEvent
-        static AZStd::string GetEbusHandlerContext(const AZStd::string& busName)
+        static AZStd::string GetEbusHandlerContext(AZStd::string_view busName)
         {
             return GetContextName(TranslationContextGroup::EbusHandler, busName);
         }
 
-        static AZStd::string GetEbusHandlerKey(const AZStd::string& busName, TranslationKeyId keyId)
+        static AZStd::string GetEbusHandlerKey(AZStd::string_view busName, TranslationKeyId keyId)
         {
             return GetClassKey(TranslationContextGroup::EbusHandler, busName, keyId);
         }
 
-        static AZStd::string GetEbusHandlerEventKey(const AZStd::string& busName, const AZStd::string& eventName, TranslationKeyId keyId)
+        static AZStd::string GetEbusHandlerEventKey(AZStd::string_view busName, AZStd::string_view eventName, TranslationKeyId keyId)
         {
             return GetKey(TranslationContextGroup::EbusHandler, busName, eventName, TranslationItemType::Node, keyId);
         }
 
-        static AZStd::string GetEBusHandlerSlotKey(const AZStd::string& busName, const AZStd::string& eventName, TranslationItemType type, TranslationKeyId keyId, int paramIndex)
+        static AZStd::string GetEBusHandlerSlotKey(AZStd::string_view busName, AZStd::string_view eventName, TranslationItemType type, TranslationKeyId keyId, int paramIndex)
         {
             return GetKey(TranslationContextGroup::EbusHandler, busName, eventName, type, keyId, paramIndex);
         }
         ////
 
-        static AZStd::string GetKey(TranslationContextGroup group, const AZStd::string& keyBase, const AZStd::string& keyName, TranslationItemType type, TranslationKeyId keyId, int paramIndex = 0)
+        static AZStd::string GetKey(TranslationContextGroup group, AZStd::string_view keyBase, AZStd::string_view keyName, TranslationItemType type, TranslationKeyId keyId, int paramIndex = 0)
         {
             if (group == TranslationContextGroup::Invalid || keyBase.empty()
                 || type == TranslationItemType::Invalid || keyId == TranslationKeyId::Invalid)
@@ -180,10 +184,12 @@ namespace ScriptCanvasEditor
             switch (type)
             {
             case TranslationItemType::Node:
-                fullKey = AZStd::string::format("%s%s_%s_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     keyPart
                 );
                 break;
@@ -191,54 +197,64 @@ namespace ScriptCanvasEditor
                 fullKey = GetClassKey(group, keyBase, keyId);
                 break;
             case TranslationItemType::ExecutionInSlot:
-                fullKey = AZStd::string::format("%s%s_%s_%s_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     TranslationKeyParts::in,
                     keyPart
                 );
                 break;
             case TranslationItemType::ExecutionOutSlot:
-                fullKey = AZStd::string::format("%s%s_%s_%s_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     TranslationKeyParts::out,
                     keyPart
                 );
                 break;
             case TranslationItemType::ParamDataSlot:
-                fullKey = AZStd::string::format("%s%s_%s_%s%d_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s%d_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     TranslationKeyParts::param,
                     paramIndex,
                     keyPart
                 );
                 break;
             case TranslationItemType::ReturnDataSlot:
-                fullKey = AZStd::string::format("%s%s_%s_%s%d_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s%d_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     TranslationKeyParts::output,
                     paramIndex,
                     keyPart
                 );
                 break;
             case TranslationItemType::BusIdSlot:
-                fullKey = AZStd::string::format("%s%s_%s_%s_%s",
+                fullKey = AZStd::string::format("%s%.*s_%.*s_%s_%s",
                     prefix,
-                    keyBase.c_str(),
-                    keyName.c_str(),
+                    aznumeric_cast<int>(keyBase.size()),
+                    keyBase.data(),
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
                     TranslationKeyParts::busid,
                     keyPart
                 );
                 break;
             default:
-                AZ_Warning("TranslationComponent", false, "Invalid translation item type.");
+                AZ_Warning("ScriptCanvas TranslationHelper", false, "Invalid translation item type.");
             }
 
             AZStd::to_upper(fullKey.begin(), fullKey.end());
@@ -246,7 +262,7 @@ namespace ScriptCanvasEditor
             return fullKey;
         }
 
-        static AZStd::string GetClassKey(TranslationContextGroup group, const AZStd::string& keyBase, TranslationKeyId keyId)
+        static AZStd::string GetClassKey(TranslationContextGroup group, AZStd::string_view keyBase, TranslationKeyId keyId)
         {
             const char* prefix = "";
             if (group == TranslationContextGroup::EbusHandler)
@@ -256,11 +272,70 @@ namespace ScriptCanvasEditor
 
             const char* keyPart = GetKeyPart(keyId);
 
-            AZStd::string fullKey = AZStd::string::format("%s%s_%s",
+            AZStd::string fullKey = AZStd::string::format("%s%.*s_%s",
                 prefix,
-                keyBase.c_str(),
+                aznumeric_cast<int>(keyBase.size()),
+                keyBase.data(),
                 keyPart
             );
+
+            AZStd::to_upper(fullKey.begin(), fullKey.end());
+
+            return fullKey;
+        }
+
+        static AZStd::string GetGlobalMethodKey(AZStd::string_view keyName, TranslationItemType keyType,
+            TranslationKeyId keyId, int paramIndex = 0)
+        {
+            const char* keyPart = GetKeyPart(keyId);
+
+            AZStd::string fullKey;
+            switch (keyType)
+            {
+            case TranslationItemType::Node:
+                fullKey = AZStd::string::format("%.*s_%s",
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
+                    keyPart
+                );
+                break;
+            case TranslationItemType::ExecutionInSlot:
+                fullKey = AZStd::string::format("%.*s_%s_%s",
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
+                    TranslationKeyParts::in,
+                    keyPart
+                );
+                break;
+            case TranslationItemType::ExecutionOutSlot:
+                fullKey = AZStd::string::format("%.*s_%s_%s",
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
+                    TranslationKeyParts::out,
+                    keyPart
+                );
+                break;
+            case TranslationItemType::ParamDataSlot:
+                fullKey = AZStd::string::format("%.*s_%s%d_%s",
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
+                    TranslationKeyParts::param,
+                    paramIndex,
+                    keyPart
+                );
+                break;
+            case TranslationItemType::ReturnDataSlot:
+                fullKey = AZStd::string::format("%.*s_%s%d_%s",
+                    aznumeric_cast<int>(keyName.size()),
+                    keyName.data(),
+                    TranslationKeyParts::output,
+                    paramIndex,
+                    keyPart
+                );
+                break;
+            default:
+                AZ_Warning("ScriptCanvas TranslationHelper", false, "Invalid translation item type.");
+            }
 
             AZStd::to_upper(fullKey.begin(), fullKey.end());
 
@@ -285,7 +360,7 @@ namespace ScriptCanvasEditor
 
 
             default:
-                AZ_Warning("TranslationComponent", false, "Invalid translation key ID.");
+                AZ_Warning("ScriptCanvas TranslationHelper", false, "Invalid translation key ID.");
             }
 
             return keyPart;
@@ -323,7 +398,7 @@ namespace ScriptCanvasEditor
             return ScriptCanvas::Data::GetName(dataType);
         }
 
-        static AZStd::string GetKeyTranslation(TranslationContextGroup group, const AZStd::string& keyBase, const AZStd::string& keyName, TranslationItemType type, TranslationKeyId keyId, int paramIndex = 0)
+        static AZStd::string GetKeyTranslation(TranslationContextGroup group, AZStd::string_view keyBase, AZStd::string_view keyName, TranslationItemType type, TranslationKeyId keyId, int paramIndex = 0)
         {
             AZStd::string translationContext = TranslationHelper::GetContextName(group, keyBase);
             AZStd::string translationKey = TranslationHelper::GetKey(group, keyBase, keyName, type, keyId, paramIndex);
@@ -337,11 +412,25 @@ namespace ScriptCanvasEditor
             return translated;
         }
 
-        static AZStd::string GetClassKeyTranslation(TranslationContextGroup group, const AZStd::string& keyBase, TranslationKeyId keyId)
+        static AZStd::string GetClassKeyTranslation(TranslationContextGroup group, AZStd::string_view keyBase, TranslationKeyId keyId)
         {
             AZStd::string translationContext = TranslationHelper::GetContextName(group, keyBase);
             AZStd::string translationKey = TranslationHelper::GetClassKey(group, keyBase, keyId);
             AZStd::string translated = QCoreApplication::translate(translationContext.c_str(), translationKey.c_str()).toUtf8().data();
+
+            if (translated == translationKey)
+            {
+                return AZStd::string();
+            }
+
+            return translated;
+        }
+
+        static AZStd::string GetGlobalMethodKeyTranslation(AZStd::string_view keyName,
+            TranslationItemType keyType, TranslationKeyId keyId, int paramIndex = 0)
+        {
+            AZStd::string translationKey = TranslationHelper::GetGlobalMethodKey(keyName, keyType, keyId, paramIndex);
+            AZStd::string translated = QCoreApplication::translate(TranslationContextGroupParts::globalMethod, translationKey.c_str()).toUtf8().data();
 
             if (translated == translationKey)
             {
@@ -409,6 +498,21 @@ namespace ScriptCanvasEditor
             keyedString.SetFallback("BusId");
 
             return keyedString;
+        }
+
+        // Use the StackedString to index the translation keys as a Json Pointer
+        static constexpr AZStd::string_view GetAzEventHandlerContextKey()
+        {
+            return { "AzEventHandler" };
+        }
+
+        // Use the StackedString to index the translation keys as a Json Pointer
+        static AZ::StackedString GetAzEventHandlerRootPointer(AZStd::string_view eventName)
+        {
+            AZ::StackedString path(AZ::StackedString::Format::JsonPointer);
+            path.Push(eventName);
+
+            return path;
         }
     };
 }

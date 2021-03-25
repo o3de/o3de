@@ -43,5 +43,6 @@ namespace UnitTest
         MOCK_METHOD4(AcquireMesh, MeshHandle (const AZ::Data::Asset<AZ::RPI::ModelAsset>&, const AZ::Data::Instance<AZ::RPI::Material>&, bool, bool));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
+        MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));
     };
 } // namespace UnitTest

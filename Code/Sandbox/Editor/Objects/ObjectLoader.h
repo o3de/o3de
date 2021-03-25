@@ -44,9 +44,9 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     ~CObjectArchive();
 
     //! Resolve callback with only one parameter of CBaseObject.
-    typedef Functor1<CBaseObject*> ResolveObjRefFunctor1;
+    typedef AZStd::function<void(CBaseObject*)> ResolveObjRefFunctor1;
     //! Resolve callback with two parameters one is pointer to CBaseObject and second use data integer.
-    typedef Functor2<CBaseObject*, unsigned int> ResolveObjRefFunctor2;
+    typedef AZStd::function<void(CBaseObject*, unsigned int)> ResolveObjRefFunctor2;
 
     /** Register Object id.
         @param objectId Original object id from the file.

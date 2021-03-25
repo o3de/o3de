@@ -11,6 +11,7 @@
 
 set(FILES
     ../Common/UnixLike/AzTest/ColorizedOutput_UnixLike.cpp
+    ../Common/UnixLike/AzTest/ScopedAutoTempDirectory_UnixLike.cpp
     Platform_Mac.cpp
     AzTest_Traits_Platform.h
     AzTest_Traits_Mac.h

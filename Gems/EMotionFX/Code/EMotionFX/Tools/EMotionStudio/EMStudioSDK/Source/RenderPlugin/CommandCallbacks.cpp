@@ -92,16 +92,15 @@ namespace EMStudio
         return true;
     }
 
+    bool RenderPlugin::UpdateRenderActorsCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)      { return ReInitOpenGLRenderPlugin(); }
+    bool RenderPlugin::UpdateRenderActorsCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)         { return ReInitOpenGLRenderPlugin(); }
+    bool RenderPlugin::ReInitRenderActorsCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)      { return ReInitOpenGLRenderPlugin(true, commandLine.GetValueAsBool("resetViewCloseup", true)); }
+    bool RenderPlugin::ReInitRenderActorsCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)         { return ReInitOpenGLRenderPlugin(true, commandLine.GetValueAsBool("resetViewCloseup", true)); }
 
-    bool RenderPlugin::UpdateRenderActorsCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)      { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
-    bool RenderPlugin::UpdateRenderActorsCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)         { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
-    bool RenderPlugin::ReInitRenderActorsCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)      { MCORE_UNUSED(command); return ReInitOpenGLRenderPlugin(true, commandLine.GetValueAsBool("resetViewCloseup", true)); }
-    bool RenderPlugin::ReInitRenderActorsCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)         { MCORE_UNUSED(command); return ReInitOpenGLRenderPlugin(true, commandLine.GetValueAsBool("resetViewCloseup", true)); }
-
-    bool RenderPlugin::CreateActorInstanceCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)     { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
-    bool RenderPlugin::CreateActorInstanceCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)        { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
-    bool RenderPlugin::RemoveActorInstanceCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)     { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
-    bool RenderPlugin::RemoveActorInstanceCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)        { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitOpenGLRenderPlugin(); }
+    bool RenderPlugin::CreateActorInstanceCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)     { return ReInitOpenGLRenderPlugin(/*clearActors=*/false, /*resetViewCloseup=*/true); }
+    bool RenderPlugin::CreateActorInstanceCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)        { return ReInitOpenGLRenderPlugin(); }
+    bool RenderPlugin::RemoveActorInstanceCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)     { return ReInitOpenGLRenderPlugin(); }
+    bool RenderPlugin::RemoveActorInstanceCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)        { return ReInitOpenGLRenderPlugin(); }
 
     bool RenderPlugin::SelectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
     {

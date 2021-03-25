@@ -25,11 +25,12 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 
-#include <AzCore/Component/EntityId.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -125,6 +126,8 @@ namespace ScriptCanvasEditor
         , public GraphCanvas::AssetEditorNotificationBus::Handler
         , public AzToolsFramework::EditorEvents::Bus::Handler
         , public UnitTestWidgetNotificationBus::Handler
+        , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::SystemTickBus::Handler
     {
         Q_OBJECT
 
@@ -147,6 +150,9 @@ namespace ScriptCanvasEditor
         void OnResultsButtonClicked(QModelIndex index);
 
     private:
+        bool IsModeEnabled(ScriptCanvas::ExecutionMode mode);
+        QLabel* GetStatusLabel(ScriptCanvas::ExecutionMode mode);
+        QCheckBox* GetEnabledCheckBox(ScriptCanvas::ExecutionMode mode);
         void ClearSearchFilter();
         void UpdateSearchFilter();
 
@@ -160,6 +166,12 @@ namespace ScriptCanvasEditor
         void OpenTestResults(AZ::Uuid sourceUuid, AZStd::string_view sourceDisplayName);
         void RunTests(const AZStd::vector<AZ::Uuid>& scriptUuids);
 
+        void RunTestGraph(AZ::Data::Asset<AZ::Data::AssetData>, ScriptCanvas::ExecutionMode);
+
+        void OnTestsComplete();
+
+        void OnSystemTick() override;
+
         AZ::EntityId m_scriptCanvasGraphId;
         AZ::EntityId m_graphCanvasGraphId;
 
@@ -171,5 +183,39 @@ namespace ScriptCanvasEditor
         ItemButtonsDelegate* m_itemButtonsDelegate;
 
         QTimer m_filterTimer;
+
+        class PendingTests
+        {
+        public:
+
+            void Add(AZ::Data::AssetId assetId, ExecutionMode mode);
+
+            void Complete(AZ::Data::AssetId assetId, ExecutionMode mode);
+
+            bool IsFinished() const;
+
+        private:
+
+            AZStd::vector<AZStd::pair<AZ::Data::AssetId, ExecutionMode>> m_pendingTests;
+        };
+
+        PendingTests m_pendingTests;
+
+        struct TestMetrics
+        {
+            int m_graphsTested = 0;
+            int m_success = 0;
+            int m_failures = 0;
+            int m_compilationFailures = 0;
+
+            void Clear()
+            {
+                m_graphsTested = 0;
+                m_success = 0;
+                m_failures = 0;
+                m_compilationFailures = 0;
+            }
+        };
+        TestMetrics m_testMetrics[static_cast<int>(ExecutionMode::COUNT)];
     };
 }

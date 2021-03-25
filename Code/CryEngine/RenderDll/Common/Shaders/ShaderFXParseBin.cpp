@@ -56,17 +56,6 @@ void CShaderManBin::GetMemoryUsage(ICrySizer* pSizer) const
     }
 }
 
-void SShaderBin::CryptData()
-{
-    uint32 i;
-    uint32* pData = &m_Tokens[0];
-    uint32 CRC32 = m_CRC32;
-    for (i = 0; i < m_Tokens.size(); i++)
-    {
-        pData[i] ^= CRC32;
-    }
-}
-
 uint32 SShaderBin::ComputeCRC()
 {
     if (!m_Tokens.size())
@@ -309,8 +298,6 @@ SShaderBin* CShaderManBin::SaveBinShader(
 
     pBin->SetCRC(pBin->ComputeCRC());
     pBin->m_bReadOnly = false;
-    //pBin->CryptData();
-    //pBin->CryptTable();
 
     char nameFile[256];
     sprintf_s(nameFile, "%s%s.%s", m_pCEF->m_ShadersCache.c_str(), szName, bInclude ? "cfib" : "cfxb");
@@ -906,7 +893,6 @@ SShaderBin* CShaderManBin::LoadBinShader(AZ::IO::HandleType fpBin, const char* s
         SwapEndian(&pBin->m_Tokens[0], (size_t)Header.m_nTokens, eBigEndian);
     }
 
-    //pBin->CryptData();
     int nSizeTable = Header.m_nOffsetParamsLocal - Header.m_nOffsetStringTable;
     if (nSizeTable < 0)
     {
@@ -2959,7 +2945,7 @@ void CShaderManBin::AddAffectedParameter(CParserBin& Parser, std::vector<SFXPara
     int nFlags = pParam->GetFlags();
     bool bCheckAffect = CParserBin::m_bParseFX ? true : false;
 
-    if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL)
+    if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL)
     {
         CRY_ASSERT(eSHClass < eHWSC_Num);
         if (((nFlags & PF_TWEAKABLE_MASK) || pParam->m_Values.c_str()[0] == '(') && pParam->m_Register[eSHClass] >= 0 && pParam->m_Register[eSHClass] < 1000)
@@ -3960,7 +3946,7 @@ bool CShaderManBin::ParseBinFX_Technique_Pass_GenerateShaderData(CParserBin& Par
             Parser.CopyTokens(cf, SHData, Replaces, NewTokens, h);
             if (cf->m_eType == eFT_Sampler)
             {
-                if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL)
+                if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 || CParserBin::m_nPlatform == SF_METAL)
                 {
                     int nT = Parser.m_Tokens[cf->m_nLastToken - 1];
                     //CRY_ASSERT(nT >= eT_s0 && nT <= eT_s15);
@@ -5248,7 +5234,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
                     }
                 }
                 else
-                if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_JASPER | SF_GL4 | SF_GLES3 | SF_METAL))
+                if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_JASPER | SF_GL4 | SF_GLES3 | SF_METAL))
                 {
                     uint32 nTokName = Parser.GetToken(Parser.m_Name);
                     const char* name = Parser.GetString(nTokName);

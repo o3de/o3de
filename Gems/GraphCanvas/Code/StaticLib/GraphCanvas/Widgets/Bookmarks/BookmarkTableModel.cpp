@@ -31,7 +31,7 @@ namespace GraphCanvas
     {
     }
 
-    QWidget* BookmarkShorcutComboBoxDelegate::createEditor(QWidget* parent, [[maybe_unused]] const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    QWidget* BookmarkShorcutComboBoxDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
     {
         QComboBox* comboBox = new QComboBox(parent);
 
@@ -85,7 +85,7 @@ namespace GraphCanvas
         }
     }
 
-    void BookmarkShorcutComboBoxDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void BookmarkShorcutComboBoxDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
     {
         editor->setGeometry(option.rect);
     }
@@ -101,7 +101,7 @@ namespace GraphCanvas
         QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOption, painter);
     }
 
-    void BookmarkShorcutComboBoxDelegate::OnIndexChanged([[maybe_unused]] int index)
+    void BookmarkShorcutComboBoxDelegate::OnIndexChanged(int /*index*/)
     {
         QComboBox* comboBox = qobject_cast<QComboBox*>(sender());
 
@@ -160,7 +160,7 @@ namespace GraphCanvas
         return static_cast<int>(m_activeBookmarks.size());
     }
     
-    int BookmarkTableSourceModel::columnCount([[maybe_unused]] const QModelIndex& index) const
+    int BookmarkTableSourceModel::columnCount(const QModelIndex& /*index*/) const
     {
         return CD_Count;
     }
@@ -253,6 +253,8 @@ namespace GraphCanvas
                 const AZ::EntityId& bookmarkId = FindBookmarkForIndex(index);
 
                 BookmarkRequestBus::Event(bookmarkId, &BookmarkRequests::SetBookmarkName, bookmarkName.toStdString().c_str());
+                GraphCanvas::GraphModelRequestBus::Event(m_activeScene, &GraphCanvas::GraphModelRequests::RequestUndoPoint);
+
                 return true;
             }
         }
@@ -260,41 +262,55 @@ namespace GraphCanvas
         {
             if (role == Qt::EditRole)
             {
-                int shortcut = value.toInt();
+                bool postUndo = false;
 
-                const AZ::EntityId& bookmarkId = FindBookmarkForIndex(index);
-
-                AZ::EntityId existingBookmark;
-                BookmarkManagerRequestBus::EventResult(existingBookmark, m_activeScene, &BookmarkManagerRequests::FindBookmarkForShortcut, shortcut);
-
-                if (existingBookmark.IsValid() && existingBookmark != bookmarkId)
                 {
-                    AZStd::string bookmarkName;
-                    BookmarkRequestBus::EventResult(bookmarkName, existingBookmark, &BookmarkRequests::GetBookmarkName);
+                    GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_activeScene);
 
-                    AZ::EntityId viewId;
-                    SceneRequestBus::EventResult(viewId, m_activeScene, &SceneRequests::GetViewId);
+                    int shortcut = value.toInt();
 
-                    GraphCanvasGraphicsView* graphicsView = nullptr;
-                    ViewRequestBus::EventResult(graphicsView, viewId, &ViewRequests::AsGraphicsView);
+                    const AZ::EntityId& bookmarkId = FindBookmarkForIndex(index);
 
-                    QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
-                    response = QMessageBox::question(graphicsView, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with remapping and remove shortcut?").arg(bookmarkName.c_str()).arg(shortcut), QMessageBox::StandardButton::Yes | QMessageBox::No);
+                    AZ::EntityId existingBookmark;
+                    BookmarkManagerRequestBus::EventResult(existingBookmark, m_activeScene, &BookmarkManagerRequests::FindBookmarkForShortcut, shortcut);
 
-                    if (response == QMessageBox::StandardButton::No)
+                    if (existingBookmark.IsValid() && existingBookmark != bookmarkId)
                     {
-                        return false;
+                        AZStd::string bookmarkName;
+                        BookmarkRequestBus::EventResult(bookmarkName, existingBookmark, &BookmarkRequests::GetBookmarkName);
+
+                        AZ::EntityId viewId;
+                        SceneRequestBus::EventResult(viewId, m_activeScene, &SceneRequests::GetViewId);
+
+                        GraphCanvasGraphicsView* graphicsView = nullptr;
+                        ViewRequestBus::EventResult(graphicsView, viewId, &ViewRequests::AsGraphicsView);
+
+                        QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
+                        response = QMessageBox::question(graphicsView, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with remapping and remove shortcut?").arg(bookmarkName.c_str()).arg(shortcut), QMessageBox::StandardButton::Yes | QMessageBox::No);
+
+                        if (response == QMessageBox::StandardButton::No)
+                        {
+                            return false;
+                        }
+                        else if (response == QMessageBox::StandardButton::Yes)
+                        {
+                            BookmarkRequestBus::Event(existingBookmark, &BookmarkRequests::RemoveBookmark);
+                            postUndo = true;
+                        }
                     }
-                    else if (response == QMessageBox::StandardButton::Yes)
+
+                    if (existingBookmark != bookmarkId)
                     {
-                        BookmarkRequestBus::Event(existingBookmark, &BookmarkRequests::RemoveBookmark);
+                        BookmarkManagerRequestBus::Event(m_activeScene, &BookmarkManagerRequests::RequestShortcut, bookmarkId, shortcut);
+                        postUndo = true;
                     }
                 }
 
-                if (existingBookmark != bookmarkId)
+                if (postUndo)
                 {
-                    BookmarkManagerRequestBus::Event(m_activeScene, &BookmarkManagerRequests::RequestShortcut, bookmarkId, shortcut);
+                    GraphCanvas::GraphModelRequestBus::Event(m_activeScene, &GraphCanvas::GraphModelRequests::RequestUndoPoint);
                 }
+
                 return true;
             }
         }
@@ -398,7 +414,7 @@ namespace GraphCanvas
         }
     }
 
-    void BookmarkTableSourceModel::OnShortcutChanged([[maybe_unused]] int shortcut, const AZ::EntityId& oldBookmark, const AZ::EntityId& newBookmark)
+    void BookmarkTableSourceModel::OnShortcutChanged(int /*shortcut*/, const AZ::EntityId& oldBookmark, const AZ::EntityId& newBookmark)
     {
         int row = FindRowForBookmark(oldBookmark);
 

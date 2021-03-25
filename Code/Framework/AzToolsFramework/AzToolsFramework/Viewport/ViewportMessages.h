@@ -170,8 +170,6 @@ namespace AzToolsFramework
             /// Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
             /// Returns a ray containing the ray's origin and a direction normal, if successful.
             virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) = 0;
-            /// Gets the last recorded cursor position in the viewport in screen space coordinates.
-            virtual QPoint ViewportCursorScreenPosition() = 0;
 
         protected:
             ~ViewportInteractionRequests() = default;
@@ -227,6 +225,29 @@ namespace AzToolsFramework
 
         /// Type to inherit to implement MainEditorViewportInteractionRequests.
         using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportEBusTraits>;
+
+        /// Viewport requests for managing the viewport's cursor state.
+        class ViewportMouseCursorRequests
+        {
+        public:
+            /// Begins hiding the cursor and locking it in place, to prevent the cursor from escaping the viewport window.
+            virtual void BeginCursorCapture() = 0;
+            /// Restores the cursor and ends locking it in place, allowing it to be moved freely.
+            virtual void EndCursorCapture() = 0;
+            /// Gets the most recent recorded cursor position in the viewport in screen space coordinates.
+            virtual QPoint ViewportCursorScreenPosition() = 0;
+            /// Gets the cursor position recorded prior to the most recent cursor position.
+            /// Note: The cursor may be captured by the viewport, in which case this may not correspond to the last result
+            /// from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
+            /// position delta.
+            virtual AZStd::optional<QPoint> PreviousViewportCursorScreenPosition() = 0;
+
+        protected:
+            ~ViewportMouseCursorRequests() = default;
+        };
+
+        /// Type to inherit to implement MainEditorViewportInteractionRequests.
+        using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportEBusTraits>;
 
         /// A helper to wrap Begin/EndWidgetContext.
         class WidgetContextGuard

@@ -48,7 +48,6 @@
 #include <Integration/Assets/MotionAsset.h>
 #include <Integration/Assets/MotionSetAsset.h>
 #include <Integration/Assets/AnimGraphAsset.h>
-#include <Integration/Rendering/Cry/CryRenderBackend.h>
 
 #include <Integration/System/SystemComponent.h>
 #include <Integration/System/CVars.h>
@@ -506,9 +505,6 @@ namespace EMotionFX
 
 
             m_renderBackendManager = AZStd::make_unique<RenderBackendManager>();
-            // Default to Cry render backend. The RenderBackendManager will manage the lifetime of the CryRenderBackend.
-            CryRenderBackend* cryRenderBackend = aznew CryRenderBackend();
-            m_renderBackendManager->SetRenderBackend(cryRenderBackend);
 #if defined (EMOTIONFXANIMATION_EDITOR)
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
@@ -579,6 +575,7 @@ namespace EMotionFX
         {
             RaycastRequestBus::Handler::BusDisconnect();
         }
+
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
         {

@@ -12,7 +12,6 @@
 #pragma once
 
 #include <cmath>
-#include <AzCore/Math/MathUtils.h>
 
 #include <qpoint.h>
 
@@ -24,7 +23,7 @@ namespace GraphCanvas
         static QPointF PointOnCircle(const QPointF& centerPoint, float radius, float degrees)
         {
             float radians = AZ::DegToRad(degrees);
-            return QPointF(centerPoint.x() + radius * std::cos(radians), centerPoint.y() + radius * std::sin(radians));
+            return QPointF(centerPoint.x() + radius * cosf(radians), centerPoint.y() + radius * sinf(radians));
         }
     };
 
@@ -38,7 +37,7 @@ namespace GraphCanvas
         
         static float GetLength(const QPointF& point)
         {
-            return std::sqrt(aznumeric_cast<float>(point.x() * point.x() + point.y() * point.y()));
+            return sqrtf(aznumeric_cast<float>(point.x() * point.x() + point.y() * point.y()));
         }
         
         static QPointF Normalize(const QPointF& point)

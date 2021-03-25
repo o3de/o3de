@@ -205,6 +205,8 @@ namespace AZ
                 return "Typed";
             case ShaderInputBufferType::Raw:
                 return "Raw";
+            case ShaderInputBufferType::AccelerationStructure:
+                return "AccelerationStructure";
             }
             return "";
         }

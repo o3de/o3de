@@ -12,6 +12,10 @@
 
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
+#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+
 namespace ScriptCanvasEditor
 {
     namespace AssetHelpers
@@ -151,5 +155,37 @@ namespace ScriptCanvasEditor
 
         }
 
+        bool IsValidSourceFile(const AZStd::string& filePath, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+        {
+            bool isValidSourceFile = true;
+
+            if (scriptCanvasId.IsValid())
+            {
+                bool isRuntimeGraph = false;
+                EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &EditorGraphRequests::IsRuntimeGraph);
+
+                if (isRuntimeGraph)
+                {
+                    ScriptCanvasAssetDescription assetDescription;
+
+                    if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
+                    {
+                        isValidSourceFile = false;
+                    }
+                }
+                // Assume it's a function for now
+                else
+                {
+                    ScriptCanvasEditor::ScriptCanvasFunctionDescription assetDescription;
+
+                    if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
+                    {
+                        isValidSourceFile = false;
+                    }
+                }
+            }
+
+            return isValidSourceFile;
+        }
     }
 }

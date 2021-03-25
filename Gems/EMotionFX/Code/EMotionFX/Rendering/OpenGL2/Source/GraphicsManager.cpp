@@ -12,7 +12,6 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <MCore/Source/Config.h>
-#include "GLInclude.h"
 
 #include "GraphicsManager.h"
 
@@ -45,7 +44,6 @@ namespace RenderGL
     {
         gGraphicsManager    = this;
         mPostProcessing     = false;
-        mAdvancedRendering  = false;
 
         // render background
         mUseGradientBackground  = true;
@@ -191,16 +189,6 @@ namespace RenderGL
             RenderGradientBackground(mGradientSourceColor, mGradientTargetColor);
         }
 
-        if (mPostProcessing && mAdvancedRendering)
-        {
-            glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-            glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FALSE);
-            glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
-
-            mGBuffer->Activate();
-            mGBuffer->Clear(mClearColor);
-        }
-
         return true;
     }
 
@@ -208,99 +196,6 @@ namespace RenderGL
     // end a frame (perform the swap)
     void GraphicsManager::EndRender()
     {
-        if (mPostProcessing && mAdvancedRendering)
-        {
-            mGBuffer->Deactivate();
-            //mGBuffer->Render();
-
-            RenderTexture* renderTargetA = mGBuffer->GetRenderTargetA();
-            RenderTexture* renderTargetB = mGBuffer->GetRenderTargetB();
-            //RenderTexture* renderTargetC = mGBuffer->GetRenderTargetC();
-            RenderTexture* renderTargetD = mGBuffer->GetRenderTargetD();
-            RenderTexture* renderTargetE = mGBuffer->GetRenderTargetE();
-
-            // output the render output to the render target
-            mDownSample->ActivateRT(renderTargetA);
-            mDownSample->SetUniformTextureID("inputMap", mGBuffer->GetTextureID(GBuffer::COMPONENT_SHADED));
-            renderTargetA->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-            mDownSample->Render();
-            mDownSample->Deactivate();
-
-            // process blooming
-            if (mBloomEnabled)
-            {
-                // downsample
-                mDownSample->ActivateRT(renderTargetD);
-                mDownSample->SetUniformTextureID("inputMap", mGBuffer->GetTextureID(GBuffer::COMPONENT_GLOW));
-                renderTargetD->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mDownSample->Render();
-                mDownSample->Deactivate();
-
-                // process horizontal bloom
-                mHBloom->ActivateFromGBuffer(renderTargetE);
-                mHBloom->SetUniform("inputMap", renderTargetD);
-                mHBloom->SetUniform("sigma", mBloomRadius);
-                mHBloom->SetUniform("bloomIntensity", mBloomIntensity);
-                mHBloom->SetUniform("inputSize", AZ::Vector2(static_cast<float>(renderTargetD->GetWidth()), static_cast<float>(renderTargetD->GetHeight())));
-                renderTargetE->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mHBloom->Render();
-                mHBloom->Deactivate();
-
-                // render the vertical bloom
-                mVBloom->ActivateRT(renderTargetA);
-                mVBloom->SetUniform("inputMap", renderTargetE);
-                mVBloom->SetUniformTextureID("shadedMap", mGBuffer->GetTextureID(GBuffer::COMPONENT_SHADED));
-                mVBloom->SetUniform("sigma", mBloomRadius);
-                mVBloom->SetUniform("bloomIntensity", mBloomIntensity);
-                mVBloom->SetUniform("inputSize", AZ::Vector2(static_cast<float>(renderTargetE->GetWidth()), static_cast<float>(renderTargetE->GetHeight())));
-                renderTargetA->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mVBloom->Render();
-                mVBloom->Deactivate();
-            }
-
-            // process depth of field
-            if (mDOFEnabled)
-            {
-                // downsample
-                mDownSample->ActivateRT(renderTargetA, renderTargetD);
-                renderTargetD->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mDownSample->Render();
-                mDownSample->Deactivate();
-
-                // horizontal blur
-                mHBlur->ActivateRT(renderTargetD, renderTargetE);
-                mHBlur->SetUniform("sigma", mDOFBlurRadius);
-                renderTargetE->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mHBlur->Render();
-                mHBlur->Deactivate();
-
-                // vertical blur
-                mVBlur->ActivateRT(renderTargetE, renderTargetD);
-                mVBlur->SetUniform("sigma", mDOFBlurRadius);
-                renderTargetD->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mVBlur->Render();
-                mVBlur->Deactivate();
-
-                // apply depth of field
-                mDOF->ActivateRT(renderTargetB);
-                mDOF->SetUniformTextureID("sharpMap", renderTargetA->GetID());
-                mDOF->SetUniformTextureID("blurredMap", renderTargetD->GetID());
-                mDOF->SetUniformTextureID("dofInfoMap", mGBuffer->GetTextureID(GBuffer::COMPONENT_SHADED));
-                renderTargetB->Clear(MCore::RGBAColor(0.0f, 0.0f, 0.0f, 1.0f));
-                mDOF->Render();
-                mDOF->Deactivate();
-
-                renderTargetB->Render();
-            }
-            else
-            {
-                renderTargetA->Render();
-            }
-        }
-
-        //glPopAttrib();
-
-
         mRenderUtil->RenderTextPeriods();
         mRenderUtil->RenderTextures();
         ((MCommon::RenderUtil*)mRenderUtil)->Render2DLines();
@@ -310,12 +205,7 @@ namespace RenderGL
     // try to initialize the graphics system
     bool GraphicsManager::Init(const char* shaderPath)
     {
-        GLenum err = glewInit();
-        if (GLEW_OK != err)
-        {
-            MCore::LogError("GraphicsManager::Init() - Failed to initialize Glew, because: %s", glewGetErrorString(err));
-            return false;
-        }
+        initializeOpenGLFunctions();
 
         // shaders
         SetShaderPath(shaderPath);
@@ -339,21 +229,11 @@ namespace RenderGL
         glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-        //glEnable( GL_MULTISAMPLE_ARB );
-
-        //glEnable( GL_LINE_SMOOTH );
-        //glEnable( GL_POLYGON_SMOOTH );
         glDisable(GL_BLEND);
-
-        //glEnable( GL_BLEND );
-        //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-        //glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-        //glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FALSE);
-        //glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 
         // initialize utility rendering
         mRenderUtil = new GLRenderUtil(this);
+        mRenderUtil->Init();
 
         // post processing
         if (mPostProcessing)
@@ -594,57 +474,6 @@ namespace RenderGL
     {
         MCORE_UNUSED(screenWidth);
         MCORE_UNUSED(screenHeight);
-        /*
-            if (mGBuffer == nullptr)
-                return false;
-
-            // is post processing enabled? if not we don't have to resize the textures
-            if (mPostProcessing == false)
-                return false;
-
-            delete mSceneRT;
-            delete mRenderTargetA;
-            delete mRenderTargetB;
-            delete mRenderTargetC;
-            delete mRenderTargetD;
-            delete mRenderTargetE;
-            delete mRandomVectorTexture;
-
-            mSceneRT        = new RenderTexture();
-            mRenderTargetA  = new RenderTexture();
-            mRenderTargetB  = new RenderTexture();
-            mRenderTargetC  = new RenderTexture();
-            mRenderTargetD  = new RenderTexture();
-            mRenderTargetE  = new RenderTexture();
-
-            // recreate the random vector texture
-        //  if (CreateRandomVectorTexture(screenWidth, screenHeight) == false)
-        //      return false;
-
-            // init the gbuffer
-            mGBuffer->Init( screenWidth, screenHeight );
-
-            if (mSceneRT->Init(GL_RGBA32F_ARB, screenWidth, screenHeight) == false)
-                return false;
-
-            if (mRenderTargetA->Init(GL_RGBA32F_ARB, screenWidth, screenHeight) == false)
-                return false;
-
-            if (mRenderTargetB->Init(GL_RGBA32F_ARB, screenWidth, screenHeight) == false)
-                return false;
-
-            if (mRenderTargetC->Init(GL_RGBA32F_ARB, screenWidth, screenHeight) == false)
-                return false;
-
-            if (mRenderTargetD->Init(GL_RGBA32F_ARB, screenWidth/2, screenHeight/2) == false)
-                return false;
-
-            if (mRenderTargetE->Init(GL_RGBA32F_ARB, screenWidth/2, screenHeight/2) == false)
-                return false;
-
-            //if( !mHDRTextureC->Init(GL_RGBA8, screenWidth, screenHeight, mSceneRT->GetDepthBuffer()))
-                //return false;
-        */
         return true;
     }
 
@@ -659,7 +488,7 @@ namespace RenderGL
 
         if (shader == nullptr)
         {
-            glUseProgramObjectARB(0);
+            glUseProgram(0);
             mActiveShader = nullptr;
             return;
         }
@@ -667,7 +496,7 @@ namespace RenderGL
         if (shader->GetType() == GLSLShader::TypeID)
         {
             GLSLShader* g = (GLSLShader*)shader;
-            glUseProgramObjectARB(g->GetProgram());
+            glUseProgram(g->GetProgram());
         }
 
         mActiveShader = shader;
@@ -706,7 +535,7 @@ namespace RenderGL
         }
 
         // allocate texture
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
 
         MCore::Free(data);
 

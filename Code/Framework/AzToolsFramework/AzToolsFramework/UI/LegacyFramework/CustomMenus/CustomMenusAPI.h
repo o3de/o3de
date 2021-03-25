@@ -33,7 +33,7 @@ namespace LegacyFramework
     {
         struct WorldEditor
         {
-            static const AZ::Crc32 Woodpecker;
+            static const AZ::Crc32 Application;
             static const AZ::Crc32 File;
             static const AZ::Crc32 Debug;
             static const AZ::Crc32 Edit;
@@ -41,13 +41,13 @@ namespace LegacyFramework
         };
         struct Driller
         {
-            static const AZ::Crc32 Woodpecker;
+            static const AZ::Crc32 Application;
             static const AZ::Crc32 DrillerMenu;
             static const AZ::Crc32 Channels;
         };
         struct LUAEditor
         {
-            static const AZ::Crc32 Woodpecker;
+            static const AZ::Crc32 Application;
             static const AZ::Crc32 File;
             static const AZ::Crc32 Edit;
             static const AZ::Crc32 View;

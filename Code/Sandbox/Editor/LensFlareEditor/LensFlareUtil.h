@@ -355,7 +355,7 @@ namespace LensFlareUtil
     IOpticsElementBasePtr CreateOptics(IOpticsElementBasePtr pOptics, bool bForceTypeToGroup = false);
     bool FillOpticsFromXML(IOpticsElementBasePtr pOptics, const XmlNodeRef& xmlNode);
     bool CreateXmlData(IOpticsElementBasePtr pOptics, XmlNodeRef& pOutNode);
-    void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBlockPtr& pRootVar, std::vector<IVariable::OnSetCallback>& funcs);
+    void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBlockPtr& pRootVar, std::vector<IVariable::OnSetCallback*>& funcs);
     void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBlockPtr& pRootVar);
     void CopyOptics(IOpticsElementBasePtr pSrcOptics, IOpticsElementBasePtr pDestOptics, bool bReculsiveCopy = true);
     void OutputOpticsDebug(IOpticsElementBasePtr pOptics);

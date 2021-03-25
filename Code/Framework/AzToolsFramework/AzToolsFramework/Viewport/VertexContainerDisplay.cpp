@@ -35,6 +35,7 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AZ::FixedVertices<Vertex>& vertices,
             const AZ::Transform& transform,
+            const AZ::Vector3& nonUniformScale,
             const bool selected, const float textSize,
             const AZ::Color& textColor,
             const AZ::Vector3& textOffset)
@@ -51,7 +52,7 @@ namespace AzToolsFramework
                 if (vertices.GetVertex(vertIndex, vertex))
                 {
                     DisplayVertexContainerIndex(
-                        debugDisplay, transform.TransformPoint(AdaptVertexOut(vertex) + textOffset), vertIndex, textSize);
+                        debugDisplay, transform.TransformPoint(nonUniformScale * (AdaptVertexOut(vertex) + textOffset)), vertIndex, textSize);
                 }
             }
         }
@@ -62,6 +63,7 @@ namespace AzToolsFramework
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector2>& vertices,
         const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
         bool selected, float textSize,
         const AZ::Color& textColor,
         const AZ::Vector3& textOffset);
@@ -69,6 +71,7 @@ namespace AzToolsFramework
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector3>& vertices,
         const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
         bool selected, float textSize,
         const AZ::Color& textColor,
         const AZ::Vector3& textOffset);

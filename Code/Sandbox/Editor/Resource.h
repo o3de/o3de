@@ -71,7 +71,6 @@
 #define IDC_POINTER_SO_SELECT_MINUS                2000
 #define IDC_SELECTION                              2634
 #define IDC_SELECTION_MASK                         2637
-#define IDC_PLATFORM_XENIA                         2757
 #define IDC_PLATFORM_PROVO                         2758
 #define IDC_PLATFORM_SALEM                         2759
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
@@ -389,9 +388,6 @@
 #define ID_EDIT_RESET_LOCAL                          36205
 #define ID_EDIT_RESET_WORLD                          36206
 #define ID_EDIT_RESET_MANIPULATOR                    36207
-#define ID_GAME_XENIA_ENABLELOWSPEC                 34600
-#define ID_GAME_XENIA_ENABLEMEDIUMSPEC              34601
-#define ID_GAME_XENIA_ENABLEHIGHSPEC                34602
 #define ID_GAME_PROVO_ENABLELOWSPEC                   34603
 #define ID_GAME_PROVO_ENABLEMEDIUMSPEC                34604
 #define ID_GAME_PROVO_ENABLEHIGHSPEC                  34605

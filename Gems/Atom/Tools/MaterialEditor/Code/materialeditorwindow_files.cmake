@@ -23,8 +23,12 @@ set(FILES
     Source/Window/MaterialBrowserWidget.cpp
     Source/Window/MaterialBrowserWidget.ui
     Source/Window/MaterialEditor.qrc
+    Source/Window/MaterialEditor.qss
     Source/Window/MaterialEditorWindowComponent.h
     Source/Window/MaterialEditorWindowComponent.cpp
+    Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
+    Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
+    Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.cpp
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.ui
@@ -39,10 +43,11 @@ set(FILES
     Source/Window/StatusBar/StatusBarWidget.cpp
     Source/Window/StatusBar/StatusBarWidget.h
     Source/Window/StatusBar/StatusBarWidget.ui
-    Source/Window/MaterialTypesLibrary.h
-    Source/Window/MaterialTypesLibrary.cpp
     Source/Window/MaterialInspector/MaterialInspector.h
     Source/Window/MaterialInspector/MaterialInspector.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
+    Source/Window/HelpDialog/HelpDialog.h
+    Source/Window/HelpDialog/HelpDialog.cpp
+    Source/Window/HelpDialog/HelpDialog.ui
 )

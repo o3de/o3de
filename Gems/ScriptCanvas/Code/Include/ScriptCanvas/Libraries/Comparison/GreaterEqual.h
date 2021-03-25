@@ -63,19 +63,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class GreaterEqualGeneric
-                : public BinaryOperatorGeneric<GreaterEqualGeneric, ComparisonOperator<OperatorType::GreaterEqual>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<GreaterEqualGeneric, ComparisonOperator<OperatorType::GreaterEqual>>;
-                AZ_COMPONENT(GreaterEqual, "{974AC852-E75E-40D5-B1A1-0D70FFE3D608}", BaseType);
-
-                static const char* GetOperatorName() { return "Greater or Equal"; }
-                static const char* GetOperatorDesc() { return "Compares if first value is greater than or equal to second value"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Placeholder.png"; } // TODO: Get final icon image
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

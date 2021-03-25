@@ -63,7 +63,7 @@ namespace AZ
             //! been called), and an error code is returned.
             ResultCode Init(PhysicalDevice& physicalDevice);
             
-            //! Called to initialize anything that wasnt done as part of Init. DeviceDescriptor is passed down
+            //! Called to initialize anything that wasn't done as part of Init. DeviceDescriptor is passed down
             //! as part of this API. This is called after AssetCatalog is loaded and hence any file can be loaded at this point
             ResultCode PostInit(const DeviceDescriptor& descriptor);
 

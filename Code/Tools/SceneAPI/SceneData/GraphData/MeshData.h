@@ -32,6 +32,8 @@ namespace AZ
             public:
                 AZ_RTTI(MeshData, "{a2589bd4-42fb-40ba-a38d-cfcd6e9ea169}", AZ::SceneAPI::DataTypes::IMeshData)
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API ~MeshData() override;
                 //assumes 1 to 1 mapping for these position, normal, color, uv
                 //positions with more than one normal or uv (seam) will duplicate shared values in multiple verts

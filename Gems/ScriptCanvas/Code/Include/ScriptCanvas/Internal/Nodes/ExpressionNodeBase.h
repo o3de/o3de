@@ -14,7 +14,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/regex.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <ExpressionEvaluation/ExpressionEngine.h>
@@ -33,32 +32,29 @@ namespace ScriptCanvas
                 , public NodePropertyInterfaceListener
             {
             public:
-                ScriptCanvas_Node(ExpressionNodeBase,
-                    ScriptCanvas_Node::Name("ExpressionNodeBase", "Base class for any node that wants to evaluate user given expressions.")
-                    ScriptCanvas_Node::Uuid("{797C800D-8C96-4675-B5B5-2A321AC09433}")
-                    ScriptCanvas_Node::Category("Internal")
-                    ScriptCanvas_Node::DynamicSlotOrdering(true)
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(ExpressionNodeBase);
 
                 ExpressionNodeBase();
 
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                AZStd::string GetRawFormat() const;
+
+                const AZStd::unordered_map<AZStd::string, SlotId>& GetSlotsByName() const;
+
+                bool IsSupportedByNewBackend() const override { return true; }
+                                
             protected:
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                ScriptCanvas_EditPropertyWithDefaults(AZStd::string, m_format, "",
-                    EditProperty::Name("Expression", "The expression string; Any word within {} will create a data pin on the node.")
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::StringLineEditingCompleteNotify(&ExpressionNodeBase::SignalFormatChanged)
-                    )
-                );
 
                 // Maps the slot name to the created SlotId for that slot
                 using NamedSlotIdMap = AZStd::map<AZ::Crc32, SlotId>;
                 NamedSlotIdMap m_formatSlotMap;
 
-                // Node
+                // The string formatting string used on the node, any value within brackets creates an input slot
+                AZStd::string m_format = "";
+
+                // Node...
                 void OnInit() override;  
                 void OnPostActivate() override;
                 void ConfigureVisualExtensions() override;
@@ -99,7 +95,7 @@ namespace ScriptCanvas
 
                 void PushVariable(const AZStd::string& variableName, const Datum& datum);
 
-                // NodePropertyInterface
+                // NodePropertyInterface...
                 void OnPropertyChanged() override;
                 ////
 
@@ -114,14 +110,13 @@ namespace ScriptCanvas
                     Datum      m_defaultValue;
                 };
                 
-                ScriptCanvas_SerializeProperty(ExpressionEvaluation::ExpressionTree, m_expressionTree);
+                ExpressionEvaluation::ExpressionTree m_expressionTree;
 
-                // Going to store out a bool here to track whether or not we have an error. This way I don't need to parse everything all the time
-                // And I don't need to pointlessly store a potentially long error message in the save data.
-                ScriptCanvas_SerializePropertyWithDefaults(bool, m_isInError, false);
+                bool m_isInError = false;
 
                 AZStd::unordered_map<SlotId, AZStd::string> m_slotToVariableMap;
                 AZStd::unordered_set<SlotId> m_dirtyInputs;
+                AZStd::unordered_map<AZStd::string, SlotId> m_slotsByVariables;
 
                 ExpressionEvaluation::ParsingError m_parseError;
 

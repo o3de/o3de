@@ -39,7 +39,7 @@ namespace EMotionFX
         gameEntity->Init();
         gameEntity->Activate();
 
-        actorComponent->OnAssetReady(actorAsset);
+        actorComponent->SetActorAsset(actorAsset);
         
         // Entity 2 - attaches to previous entity
         auto gameEntityAttachment = AZStd::make_unique<AZ::Entity>();
@@ -54,7 +54,7 @@ namespace EMotionFX
         gameEntityAttachment->Init();
         gameEntityAttachment->Activate();
 
-        actorComponentAttachmentEntity->OnAssetReady(actorAsset);
+        actorComponentAttachmentEntity->SetActorAsset(actorAsset);
         
         // Deactivate main actor first
         gameEntity->Deactivate();
@@ -80,7 +80,7 @@ namespace EMotionFX
         gameEntity->Init();
         gameEntity->Activate();
 
-        actorComponent->OnAssetReady(actorAsset);
+        actorComponent->SetActorAsset(actorAsset);
         
         // Entity 2 - attaches to previous entity        
         auto gameEntityAttachment = AZStd::make_unique<AZ::Entity>();
@@ -95,7 +95,7 @@ namespace EMotionFX
         gameEntityAttachment->Init();
         gameEntityAttachment->Activate();
 
-        actorComponentAttachmentEntity->OnAssetReady(actorAsset);
+        actorComponentAttachmentEntity->SetActorAsset(actorAsset);
         
         // Deactivate attachment first
         gameEntityAttachment->Deactivate();

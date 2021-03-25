@@ -1,0 +1,55 @@
+<ObjectStream version="3">
+	<Class name="DescriptorListAsset" type="{60961B36-E3CA-4877-B197-1462C1363F6E}">
+		<Class name="AZStd::vector" field="Descriptors" type="{FC36C5E0-6152-5B06-AF30-3FC494B85FAB}">
+			<Class name="Descriptor" field="element" version="8" type="{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}">
+				<Class name="AZ::Uuid" field="SpawnerType" value="{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="AZStd::shared_ptr" field="InstanceSpawner" type="{7C7046DE-F8B1-529D-AD8C-829C6C0E2FCD}">
+					<Class name="DynamicSliceInstanceSpawner" field="element" type="{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}">
+						<Class name="InstanceSpawner" field="BaseClass1" type="{01AD0758-B04A-4B43-BC2B-BDCD77F4EF6A}"/>
+						<Class name="Asset" field="SliceAsset" value="id={EBFE34EB-D0A8-5E51-8234-3BE38082B28C}:2,type={78802ABF-9595-463A-8D2B-D022F906F9B1},hint={slices/pinkflower.dynamicslice}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+					</Class>
+				</Class>
+				<Class name="float" field="Weight" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="Advanced" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="bool" field="PositionOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="PositionMinX" value="-0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="PositionMaxX" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="PositionMinY" value="-0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="PositionMaxY" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="PositionMinZ" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="PositionMaxZ" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="RotationOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="RotationMinX" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="RotationMaxX" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="RotationMinY" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="RotationMaxY" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="RotationMinZ" value="-180.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="RotationMaxZ" value="180.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="ScaleOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="ScaleMin" value="0.1000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="ScaleMax" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="AltitudeFilterOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="AltitudeFilterMin" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="AltitudeFilterMax" value="128.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="RadiusOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="unsigned char" field="BoundMode" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+				<Class name="float" field="RadiusMin" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="SurfaceAlignmentOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="SurfaceAlignmentMin" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="SurfaceAlignmentMax" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="bool" field="SlopeFilterOverrideEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				<Class name="float" field="SlopeFilterMin" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="float" field="SlopeFilterMax" value="20.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				<Class name="unsigned char" field="SurfaceFilterOverrideMode" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+				<Class name="AZStd::vector" field="InclusiveSurfaceFilterTags" type="{94CD3484-8501-5A1C-A8C0-40801AB402F3}"/>
+				<Class name="AZStd::vector" field="ExclusiveSurfaceFilterTags" type="{94CD3484-8501-5A1C-A8C0-40801AB402F3}"/>
+				<Class name="SurfaceTagDistance" field="SurfaceTagDistance" type="{2AB6096D-C7C0-4C5E-AA84-7CA804A9680C}">
+					<Class name="AZStd::vector" field="SurfaceTag" type="{94CD3484-8501-5A1C-A8C0-40801AB402F3}"/>
+					<Class name="float" field="UpperDistanceInMeters" value="1000.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="LowerDistanceInMeters" value="-1000.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

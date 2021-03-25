@@ -19,7 +19,7 @@
 #include <QDropEvent>
 #include <QGraphicsView>
 
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 
@@ -193,7 +193,7 @@ namespace ScriptCanvasEditor
                 for (const ScriptCanvas::VariableId& variableId : variableIds)
                 {
                     NodeIdPair nodePair = Nodes::CreateGetVariableNode(variableId, scriptCanvasId);
-                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, pos);
+                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, pos, false);
                     pos += gridStep;
                 }
                 
@@ -210,4 +210,4 @@ namespace ScriptCanvasEditor
     {
 
     }
-} // namespace ScriptCanvasEditor
+}

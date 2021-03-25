@@ -83,13 +83,13 @@ LensFlareLightEntityModel::LensFlareLightEntityModel(QObject* pParent)
     : QAbstractListModel(pParent)
 {
     CLensFlareEditor::GetLensFlareEditor()->RegisterLensFlareItemChangeListener(this);
-    GetIEditor()->GetObjectManager()->AddObjectEventListener(functor(*this, &LensFlareLightEntityModel::OnObjectEvent));
+    GetIEditor()->GetObjectManager()->AddObjectEventListener(this);
 }
 
 LensFlareLightEntityModel::~LensFlareLightEntityModel()
 {
     CLensFlareEditor::GetLensFlareEditor()->UnregisterLensFlareItemChangeListener(this);
-    GetIEditor()->GetObjectManager()->RemoveObjectEventListener(functor(*this, &LensFlareLightEntityModel::OnObjectEvent));
+    GetIEditor()->GetObjectManager()->RemoveObjectEventListener(this);
 }
 
 void LensFlareLightEntityModel::OnLensFlareChangeItem(CLensFlareItem* pLensFlareItem)

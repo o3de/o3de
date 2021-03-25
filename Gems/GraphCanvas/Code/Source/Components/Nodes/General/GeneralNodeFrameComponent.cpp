@@ -83,14 +83,14 @@ namespace GraphCanvas
         m_frameWidget->setLayout(layout);
     }
 
-    void GeneralNodeFrameComponent::OnNodeWrapped([[maybe_unused]] const AZ::EntityId& wrappingNode)
+    void GeneralNodeFrameComponent::OnNodeWrapped(const AZ::EntityId& /*wrappingNode*/)
     {
         // When wrapped, our NodeFrame widget is part of another objects layout, and will
         // be deleted when that object gets deleted.
         m_shouldDeleteFrame = false;
     }
 
-    void GeneralNodeFrameComponent::OnNodeUnwrapped([[maybe_unused]] const AZ::EntityId& wrappingNode)
+    void GeneralNodeFrameComponent::OnNodeUnwrapped(const AZ::EntityId& /*wrappingNode*/)
     {
         m_shouldDeleteFrame = true;
     }

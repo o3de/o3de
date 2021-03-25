@@ -402,9 +402,11 @@ namespace GraphCanvas
         return containsEndpoint;
     }
 
-    void ConnectionComponent::ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos)
+    void ConnectionComponent::ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget)
     {
         UpdateMovePosition(scenePos);
+
+        SetGroupTarget(groupTarget);
 
         const bool chainAddition = true;
         FinalizeMove(scenePos, screenPos, chainAddition);
@@ -441,7 +443,7 @@ namespace GraphCanvas
         }
         else if (m_dragContext == DragContext::TryConnection)
         {
-            OnConnectionMoveComplete(QPointF(), QPoint());
+            OnConnectionMoveComplete(QPointF(), QPoint(), AZ::EntityId());
         }
 
         SceneMemberNotificationBus::Event(GetEntityId(), &SceneMemberNotifications::OnSceneSet, m_graphId);
@@ -469,24 +471,6 @@ namespace GraphCanvas
     AZ::EntityId ConnectionComponent::GetScene() const
     {
         return m_graphId;
-    }
-
-    bool ConnectionComponent::LockForExternalMovement(const AZ::EntityId& sceneMemberId)
-    {
-        if (!m_lockingSceneMember.IsValid())
-        {
-            m_lockingSceneMember = sceneMemberId;
-        }
-        
-        return m_lockingSceneMember == sceneMemberId;
-    }
-
-    void ConnectionComponent::UnlockForExternalMovement(const AZ::EntityId& sceneMemberId)
-    {
-        if (m_lockingSceneMember == sceneMemberId)
-        {
-            m_lockingSceneMember.SetInvalid();
-        }
     }
 
     AZStd::string ConnectionComponent::GetTooltip() const
@@ -527,6 +511,34 @@ namespace GraphCanvas
         if (isBeingEdited)
         {
             OnEscape();
+        }
+    }
+
+    void ConnectionComponent::SetGroupTarget(AZ::EntityId groupTarget)
+    {
+        if (groupTarget != m_groupTarget)
+        {
+            m_groupTarget = groupTarget;
+
+            if (m_groupTarget.IsValid())
+            {
+                StateController<RootGraphicsItemDisplayState>* displayStateController = nullptr;
+                RootGraphicsItemRequestBus::EventResult(displayStateController, m_groupTarget, &RootGraphicsItemRequests::GetDisplayStateStateController);
+
+                m_forcedGroupDisplayStateStateSetter.AddStateController(displayStateController);
+                m_forcedGroupDisplayStateStateSetter.SetState(RootGraphicsItemDisplayState::Inspection);
+
+                StateController<AZStd::string>* layerStateController = nullptr;
+                LayerControllerRequestBus::EventResult(layerStateController, m_groupTarget, &LayerControllerRequests::GetLayerModifierController);
+
+                m_forcedLayerStateSetter.AddStateController(layerStateController);
+                m_forcedLayerStateSetter.SetState("dropTarget");
+            }
+            else
+            {
+                m_forcedGroupDisplayStateStateSetter.ResetStateSetter();
+                m_forcedLayerStateSetter.ResetStateSetter();
+            }
         }
     }
 
@@ -600,7 +612,7 @@ namespace GraphCanvas
         return keepConnection;
     }
 
-    ConnectionComponent::ConnectionMoveResult ConnectionComponent::OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos)
+    ConnectionComponent::ConnectionMoveResult ConnectionComponent::OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget)
     {
         ConnectionMoveResult connectionResult = ConnectionMoveResult::DeleteConnection;
 
@@ -623,7 +635,7 @@ namespace GraphCanvas
 
             EditorId editorId;
             SceneRequestBus::EventResult(editorId, m_graphId, &SceneRequests::GetEditorId);
-            AssetEditorRequestBus::EventResult(otherEndpoint, editorId, &AssetEditorRequests::CreateNodeForProposal, GetEntityId(), knownEndpoint, scenePos, screenPos);
+            AssetEditorRequestBus::EventResult(otherEndpoint, editorId, &AssetEditorRequests::CreateNodeForProposalWithGroup, GetEntityId(), knownEndpoint, scenePos, screenPos, groupTarget);
 
             if (otherEndpoint.IsValid())
             {
@@ -768,6 +780,8 @@ namespace GraphCanvas
         m_nodeDisplayStateStateSetter.ResetStateSetter();
         SceneRequestBus::Event(m_graphId, &SceneRequests::SignalConnectionDragEnd);
         ConnectionUIRequestBus::Event(GetEntityId(), &ConnectionUIRequests::SetAltDeletionEnabled, true);
+
+        SetGroupTarget(AZ::EntityId());
     }
 
     bool ConnectionComponent::UpdateProposal(Endpoint& activePoint, const Endpoint& proposalPoint, AZStd::function< void(const AZ::EntityId&, const AZ::EntityId&)> endpointChangedFunctor)
@@ -844,10 +858,13 @@ namespace GraphCanvas
 
         for (Endpoint endpoint : endpoints)
         {
-            bool isVisible = true;
-            VisualRequestBus::EventResult(isVisible, endpoint.GetSlotId(), &VisualRequests::IsVisible);
+            // Skip over ourselves.
+            if (endpoint == knownEndpoint)
+            {
+                continue;
+            }
 
-            if (!isVisible)
+            if (!GraphUtils::IsSlotVisible(endpoint.GetSlotId()))
             {
                 continue;
             }
@@ -863,7 +880,7 @@ namespace GraphCanvas
             if (m_dragContext == DragContext::MoveSource && endpoint == m_sourceEndpoint)
             {
                 canCreateConnection = true;
-            }            
+            }
             else if (m_dragContext == DragContext::MoveTarget && endpoint == m_targetEndpoint)
             {
                 canCreateConnection = true;
@@ -940,10 +957,17 @@ namespace GraphCanvas
             {
                 Endpoint invalidEndpoint;
                 DisplayConnectionToolTip(position, invalidEndpoint);
+
+                // If we have a valid target. We want to not manage our group target.
+                SetGroupTarget(AZ::EntityId());
             }
             else
             {
                 DisplayConnectionToolTip(position, connectionCandidate.m_testedTarget);
+                
+                AZ::EntityId groupTarget;
+                SceneRequestBus::EventResult(groupTarget, GetScene(), &SceneRequests::FindTopmostGroupAtPoint, m_mousePoint);
+                SetGroupTarget(groupTarget);                
             }
 
             if (updateConnection)
@@ -965,12 +989,14 @@ namespace GraphCanvas
 
         DragContext chainContext = m_dragContext;
 
+        AZ::EntityId groupTarget = m_groupTarget;
+
         StopMove();
 
         // Have to copy the GraphId here because deletion of the Entity this component is attached to deletes this component.
         GraphId graphId = m_graphId;
 
-        ConnectionMoveResult connectionResult = OnConnectionMoveComplete(scenePos, screenPos);
+        ConnectionMoveResult connectionResult = OnConnectionMoveComplete(scenePos, screenPos, groupTarget);
 
         if (connectionResult == ConnectionMoveResult::DeleteConnection)
         {
@@ -1026,15 +1052,15 @@ namespace GraphCanvas
                     connectionType = CT_Output;
                 }
 
-                SceneRequestBus::Event(graphId2, &SceneRequests::HandleProposalDaisyChain, nodeId, slotType, connectionType, screenPos, scenePos);
+                SceneRequestBus::Event(graphId2, &SceneRequests::HandleProposalDaisyChainWithGroup, nodeId, slotType, connectionType, screenPos, scenePos, groupTarget);
             }
         }
     }
 
-    void ConnectionComponent::DisplayConnectionToolTip(const QPointF& scenePoint, const Endpoint& connectionTarget)
+    void ConnectionComponent::DisplayConnectionToolTip(const QPointF& /*scenePoint*/, const Endpoint& connectionTarget)
     {
         if (m_endpointTooltip != connectionTarget)
-        {            
+        {
             GraphId graphId;
             SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &SceneMemberRequests::GetScene);
 
@@ -1080,22 +1106,12 @@ namespace GraphCanvas
                         m_validationResult = GraphUtils::GetModelConnnectionValidityToolTip(graphId, m_endpointTooltip, m_targetEndpoint);
                     }
                 }
-            }            
+            }
 
             if (!m_validationResult.m_isValid)
             {
-                QPointF position;
-
                 EditorId editorId;
                 SceneRequestBus::EventResult(editorId, graphId, &SceneRequests::GetEditorId);
-
-                AZ::Vector2 screenVector(0, 0);
-                AZ::Vector2 sceneVector = ConversionUtils::QPointToVector(scenePoint);
-
-                screenVector = viewHandler->MapToGlobal(sceneVector);
-                ViewRequestBus::EventResult(screenVector, viewId, &ViewRequests::MapToGlobal, sceneVector);
-
-                QPointF screenPoint = ConversionUtils::AZToQPoint(screenVector);
 
                 QPointF connectionPoint;
                 SlotUIRequestBus::EventResult(connectionPoint, m_endpointTooltip.GetSlotId(), &SlotUIRequests::GetConnectionPoint);

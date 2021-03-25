@@ -41,6 +41,7 @@ namespace AZ
         class StreamingImagePool;
         class SwapChain;
         class TransientAttachmentPool;
+        class RayTracingBufferPools;
         class RayTracingBlas;
         class RayTracingTlas;
         class RayTracingPipelineState;
@@ -182,6 +183,8 @@ namespace AZ
             virtual Ptr<IndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
             virtual Ptr<IndirectBufferWriter> CreateIndirectBufferWriter() = 0;
+
+            virtual Ptr<RayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
             virtual Ptr<RayTracingBlas> CreateRayTracingBlas() = 0;
 

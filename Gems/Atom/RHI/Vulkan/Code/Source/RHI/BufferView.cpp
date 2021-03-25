@@ -64,6 +64,10 @@ namespace AZ
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
+            else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
+            {
+                m_nativeAccelerationStructure = buffer.GetNativeAccelerationStructure();
+            }
 
             SetName(GetName());
             return RHI::ResultCode::Success;
@@ -105,5 +109,18 @@ namespace AZ
 
             return RHI::ResultCode::Success;
         }
+
+        VkAccelerationStructureKHR BufferView::GetNativeAccelerationStructure() const
+        {
+            const RHI::BufferViewDescriptor& viewDescriptor = GetDescriptor();
+            bool hasOverrideFlags = GetDescriptor().m_overrideBindFlags != RHI::BufferBindFlags::None;
+            const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
+
+            AZ_Assert(RHI::CheckBitsAll(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
+                "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
+
+            return m_nativeAccelerationStructure;
+        }
+
     }
 }

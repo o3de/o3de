@@ -203,6 +203,8 @@ namespace AZ
             return nullptr;
         }
 
+        // --- Timestamp functions ---
+
         void ParentPass::SetTimestampQueryEnabled(bool enable)
         {
             Pass::SetTimestampQueryEnabled(enable);
@@ -319,6 +321,8 @@ namespace AZ
                 child->FrameEnd();
             }
         }
+
+        // --- Misc ---
 
         void ParentPass::SetRenderPipeline(RenderPipeline* pipeline)
         {

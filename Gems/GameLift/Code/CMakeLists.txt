@@ -33,7 +33,9 @@ ly_add_target(
             AZ::GridMate #GameLift client buses interface uses GridMate classes as function parameters
     COMPILE_DEFINITIONS
         PUBLIC
-            BUILD_GAMELIFT_CLIENT
+            # Disabling client and server gamelift integration so that we can redcode crynetwork
+            # The new gamelift gem will work directly against the new transport framework and multiplayer gem
+            #BUILD_GAMELIFT_CLIENT
 )
 
 ly_add_target( 
@@ -51,13 +53,14 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Legacy::CryNetwork.Static
             3rdParty::AWSNativeSDK::Core
             AWSNativeSDKInit
             Gem::GameLift.Static
     COMPILE_DEFINITIONS
         PUBLIC
-            BUILD_GAMELIFT_CLIENT
+            # Disabling client and server gamelift integration so that we can redcode crynetwork
+            # The new gamelift gem will work directly against the new transport framework and multiplayer gem
+            #BUILD_GAMELIFT_CLIENT
 )
 
 ################################################################################
@@ -88,7 +91,9 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
                 3rdParty::AWSGameLiftServerSDK
         COMPILE_DEFINITIONS
             PUBLIC
-                BUILD_GAMELIFT_SERVER
+                # Disabling client and server gamelift integration so that we can redcode crynetwork
+                # The new gamelift gem will work directly against the new transport framework and multiplayer gem
+                #BUILD_GAMELIFT_SERVER
 )
 
     ly_add_target(
@@ -105,7 +110,6 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 Legacy::CryCommon
-                Legacy::CryNetwork.Static
                 3rdParty::AWSNativeSDK::Core
                 AWSNativeSDKInit
                 GameLift.Server.Static
@@ -113,7 +117,9 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
                 3rdParty::AWSGameLiftServerSDK #GameLiftServerService.h includes GameLiftServiceEventsBus.h which include GameLiftServerAPI
         COMPILE_DEFINITIONS
             PUBLIC
-                BUILD_GAMELIFT_SERVER
+                # Disabling client and server gamelift integration so that we can redcode crynetwork
+                # The new gamelift gem will work directly against the new transport framework and multiplayer gem
+                #BUILD_GAMELIFT_SERVER
     )
 endif ()
 

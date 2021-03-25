@@ -1,0 +1,255 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+global proc cryValidateMessageControlClose()
+{
+    if( `window -exists CRYVALIDATEMESSAGECONTROL_WINDOW` )
+    {
+		deleteUI -window CRYVALIDATEMESSAGECONTROL_WINDOW;
+    }
+}
+
+proc string cryValidateMessageControlGetMessageData()
+{
+	string $s;
+	// messageType, MessageDesc, ignorable, disabled
+	//$s = "messageType1,Message Description 1,1,1;messageType1,Message Description 2,1,1;messageType1,Message Description 3,1,1;messageType1,Message Description 4,1,1;";
+
+	$s = `cryValidatePlugin messages getMessageData`;
+	return $s;
+}
+
+global proc string[] cryValidateMessageControlDecodeMessageDataString( string $messageData )
+{
+	string $decode[];
+	string $tokens[];
+	$numTokens = `tokenize $messageData "," $tokens`;
+	if( $numTokens == 5 )
+	{
+		$decode[0] = $tokens[0]; // Message Type
+		$decode[1] = $tokens[1]; // Message Desc
+		$decode[2] = $tokens[2]; // Editable
+		$decode[3] = $tokens[3]; // Ignorable
+		$decode[4] = $tokens[4]; // Disabled
+	}
+
+	return $decode;
+}
+
+global proc cryValidateMessageControlSettingChange()
+{
+	global int $cryValidateMessageControlSettingsHaveChanged = 0;
+	$cryValidateMessageControlSettingsHaveChanged = 1;
+
+	if( `control -exists CRYVALIDATEMESSAGECONTROL_SAVE` )
+	{
+		button -e -enable true CRYVALIDATEMESSAGECONTROL_SAVE;
+	}
+}
+
+proc cryValidateMessageControlPopulateMessageList()
+{
+	global string $g_validateMessageControlHiLight = "";
+
+    setParent CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT;
+    string $childControls[];
+    $childControls = `layout -q -childArray CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT`;
+
+    for( $child in $childControls )
+    {
+		deleteUI $child;
+    }
+
+    string $s;
+	$s = `cryValidateMessageControlGetMessageData`;
+
+    if( size($s) > 0 )
+    {
+		string $messages[];
+		$messageCount = `tokenize $s ";" $messages`;
+
+		int $messageNum = 0;
+		for( $message in $messages )
+		{
+			string $decode[];
+			$decode = `cryValidateMessageControlDecodeMessageDataString $message`;
+			string $messageType = $decode[0];
+			string $messageDesc = $decode[1];
+			int $editable = $decode[2];
+			int $ignorable = $decode[3];
+			int $disabled = $decode[4];
+
+			setParent CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT;
+			print("Message `"+$message+"`   MessageType `"+$messageType+"`\n");
+			$rowName = `rowLayout -numberOfColumns 3 -columnWidth3 200 80 80 -adjustableColumn 1 -columnAlign 1 "left"
+			-columnAlign 2 "center" -columnAlign 3 "center"
+			-columnAttach 2 "both" 0 -columnAttach 3 "both" 0 -bgc .4 .4 .4
+			$messageType`; // Name the rowLayout with the messageType so we know what it's about.
+			
+			// If we launched the settings widow using a perticular message, hilight it.
+			if( $g_validateMessageControlHiLight != "" )
+			{
+				if( `strcmp $g_validateMessageControlHiLight $messageType` == 0 )
+					rowLayout -edit -bgc .45 .45 .45 $messageType;
+			}
+
+			{
+				string $messageText = $messageDesc;
+				if( size($messageText) == 0 || $messageText == " " )
+					$messageText = "* Message With No Description *";
+				$messageTextControl = `text -h 22 -label ("  " + $messageText)`;		
+
+				checkBox -v $ignorable -label "Ignorable" -enable $editable -cc("cryValidateMessageControlSettingChange");
+				checkBox -v $disabled -label "Disabled" -enable $editable -cc("cryValidateMessageControlSettingChange");
+			}
+			setParent ..;
+			$messageNum++;
+		}
+    }
+    else
+    {
+		text -label "No validate messages." -align "center" -bgc .4 .4 .4;
+    }
+}
+
+proc cryValidateMessageControlCreateWindow()
+{
+    // If the window exists but is not visible, close it - and reset the messages.
+    if( `window -ex CRYVALIDATEMESSAGECONTROL_WINDOW` && !`window -q -vis CRYVALIDATEMESSAGECONTROL_WINDOW`)
+    {
+		cryValidateCloseAndReset;
+    }
+
+    if(!`window -ex CRYVALIDATEMESSAGECONTROL_WINDOW`) 
+    {
+		if(`windowPref -exists CRYVALIDATEMESSAGECONTROL_WINDOW`) 
+		{
+			windowPref -wh 800 400 -tlc `windowPref -q -topEdge CRYVALIDATEMESSAGECONTROL_WINDOW` `windowPref -q -leftEdge CRYVALIDATEMESSAGECONTROL_WINDOW` CRYVALIDATEMESSAGECONTROL_WINDOW;
+			//windowPref -remove CRYVALIDATEMESSAGECONTROL_WINDOW;
+		}
+		window -titleBar true -title "Lumberyard Validate Messages" -wh 800 400 -sizeable true -mnb false -mxb false CRYVALIDATEMESSAGECONTROL_WINDOW;
+
+		formLayout -numberOfDivisions 100 -visible false CRYVALIDATEMESSAGECONTROL_FORMLAYOUT;
+		{
+			scrollLayout -childResizable true -hst 0 -vst 15 -bgc .4 .4 .4 CRYVALIDATEMESSAGECONTROL_SCROLLLAYOUT;
+			{
+				columnLayout -adjustableColumn true -columnOffset "both" 5 -rowSpacing 5 -bgc .4 .4 .4 CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT;
+				{
+				}
+				setParent ..;
+			}
+			setParent ..;
+		
+			button -label "Reset to Defaults" -command ("cryValidateMessageControlReset") CRYVALIDATEMESSAGECONTROL_RESET;
+			button -label "Save" -enable false -command ("cryValidateMessageControlSave") CRYVALIDATEMESSAGECONTROL_SAVE;
+			button -label "Close" -command ("cryValidateMessageControlClose") CRYVALIDATEMESSAGECONTROL_CLOSE;
+		}
+
+		formLayout -edit
+			-attachForm CRYVALIDATEMESSAGECONTROL_SCROLLLAYOUT "top" 5
+			-attachForm CRYVALIDATEMESSAGECONTROL_SCROLLLAYOUT "left" 5
+			-attachForm CRYVALIDATEMESSAGECONTROL_SCROLLLAYOUT "right" 5
+			-attachControl CRYVALIDATEMESSAGECONTROL_SCROLLLAYOUT "bottom" 5 CRYVALIDATEMESSAGECONTROL_CLOSE
+
+			-attachForm CRYVALIDATEMESSAGECONTROL_RESET "bottom" 5 
+			-attachForm CRYVALIDATEMESSAGECONTROL_RESET "left" 5
+			-attachPosition CRYVALIDATEMESSAGECONTROL_RESET "right" 5 33
+			-attachNone CRYVALIDATEMESSAGECONTROL_RESET "top"
+
+			-attachForm CRYVALIDATEMESSAGECONTROL_SAVE "bottom" 5 
+			-attachPosition CRYVALIDATEMESSAGECONTROL_SAVE "left" 5 33
+			-attachPosition CRYVALIDATEMESSAGECONTROL_SAVE "right" 5 66
+			-attachNone CRYVALIDATEMESSAGECONTROL_SAVE "top"
+
+			-attachForm CRYVALIDATEMESSAGECONTROL_CLOSE "bottom" 5 
+			-attachPosition CRYVALIDATEMESSAGECONTROL_CLOSE "left" 5 66
+			-attachForm CRYVALIDATEMESSAGECONTROL_CLOSE "right" 5
+			-attachNone CRYVALIDATEMESSAGECONTROL_CLOSE "top"
+
+			CRYVALIDATEMESSAGECONTROL_FORMLAYOUT;
+
+			// Make sure the latest data is loaded before populating the list.
+			cryValidatePlugin messages loadMessageData;
+			cryValidateMessageControlPopulateMessageList;
+
+		showWindow CRYVALIDATEMESSAGECONTROL_WINDOW;
+    }
+}
+
+global proc cryValidateMessageControl( string $hilightMessageType )
+{
+	global string $g_validateMessageControlHiLight = "";
+	$g_validateMessageControlHiLight = $hilightMessageType;
+	
+	cryValidateMessageControlCreateWindow( );
+}
+
+/////////////////////////////////////////////////////////
+// Util functions for saving/reseting etc.
+/////////////////////////////////////////////////////////
+global proc cryValidateMessageControlReset()
+{
+	cryValidatePlugin messages resetMessageData;
+	// Populate the list without reloading the data. It will need to be saved before the optionVar string will get changed.
+	cryValidateMessageControlPopulateMessageList;
+	//cryValidateMessageControlSave;
+
+	if( `control -exists CRYVALIDATEMESSAGECONTROL_SAVE` )
+	{
+		button -e -enable true CRYVALIDATEMESSAGECONTROL_SAVE;
+	}
+}
+
+global proc cryValidateMessageControlSave()
+{
+	string $s = "";
+
+    setParent CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT;
+    string $childControls[];
+    $childControls = `layout -q -childArray CRYVALIDATEMESSAGECONTROL_COLUMNLAYOUT`;
+
+    for( $child in $childControls )
+    {
+		string $messageType = "";
+
+		// Get the messageType from the rowLayout name
+		{
+			string $layoutName = `layout -q -fullPathName $child`;
+			string $tokens[];
+			$numTokens = `tokenize $layoutName "|" $tokens`;
+			if( $numTokens > 0 )
+				$messageType = $tokens[$numTokens-1];
+		}
+
+		string $rowChildren[];
+		$rowChildren = `layout -q -childArray $child`;
+
+		int $ignorable = `checkBox -q -v $rowChildren[1]`;
+		int $disabled = `checkBox -q -v $rowChildren[2]`;
+
+
+		if( size($s) > 0 )
+			$s += ";";
+		$s += ($messageType+","+$ignorable+","+$disabled);
+
+		//print ("Type : "+$messageType+","+$ignorable+","+$disabled+"\n");
+
+    }
+
+	optionVar -sv "cryValidateMessageControl" $s;
+
+	if( `control -exists CRYVALIDATEMESSAGECONTROL_SAVE` )
+	{
+		button -e -enable false CRYVALIDATEMESSAGECONTROL_SAVE;
+	}
+}

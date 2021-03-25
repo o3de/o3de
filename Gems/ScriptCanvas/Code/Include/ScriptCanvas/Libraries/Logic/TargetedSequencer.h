@@ -14,8 +14,6 @@
 
 #include <ScriptCanvas/Core/Node.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.generated.h>
 
 
@@ -25,14 +23,11 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            // Will trigger the specified execution upon being triggered
             class TargetedSequencer
                 : public Node
             {
-                ScriptCanvas_Node(TargetedSequencer,
-                    ScriptCanvas_Node::Name("Switch")
-                    ScriptCanvas_Node::Uuid("{E1B5F3F8-AFEE-42C9-A22C-CB93F8281CC4}")
-                    ScriptCanvas_Node::Description("Triggers the specified output when triggered.")
-                );
+                SCRIPTCANVAS_NODE(TargetedSequencer);
 
             public:
 
@@ -46,26 +41,25 @@ namespace ScriptCanvas
 
                 SlotId HandleExtension(AZ::Crc32 extensionId);        
 
+                // Script Canvas Translation...
+                bool IsSupportedByNewBackend() const override { return true; }
+
+                bool IsSwitchStatement() const override { return true; }
+
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override
+                {
+                    return AZ::Success(DependencyReport{});
+                }
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
+                //////////////////////////////////////////////////////////////////////////
+
             protected:
             
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out 0", "Output 0")
-                                 ScriptCanvas_Out::DisplayGroup("OutputGroup")
-                                );
-
-                // Data
-                ScriptCanvas_Property(int, 
-                                    ScriptCanvas_Property::Name("Index", "Select which [Out#] to trigger.")
-                                    ScriptCanvas_Property::Input
-                                    ScriptCanvas_Property::DisplayGroup("OutputGroup")
-                                    );
-
-            protected:
 
                 void OnInputSignal(const SlotId& slot) override;                
                 void OnSlotRemoved(const SlotId& slotId) override;

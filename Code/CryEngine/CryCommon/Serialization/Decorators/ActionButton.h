@@ -15,7 +15,7 @@
 
 #include <SmartPointersHelpers.h>
 #include <Serialization/IArchive.h>
-#include <functor.h>
+#include <AzCore/std/functional.h>
 
 namespace Serialization
 {
@@ -32,7 +32,7 @@ namespace Serialization
         virtual IActionButtonPtr Clone() const = 0;
     };
 
-    typedef Functor0 FunctorActionButtonCallback;
+    typedef AZStd::function<void()> FunctorActionButtonCallback;
 
     struct FunctorActionButton
         : public IActionButton

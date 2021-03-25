@@ -86,6 +86,8 @@ namespace UnitTest
 
             AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> CreateIndirectBufferWriter() override;
 
+            AZ::RHI::Ptr<AZ::RHI::RayTracingBufferPools> CreateRayTracingBufferPools() override;
+
             AZ::RHI::Ptr<AZ::RHI::RayTracingBlas> CreateRayTracingBlas() override;
 
             AZ::RHI::Ptr<AZ::RHI::RayTracingTlas> CreateRayTracingTlas() override;

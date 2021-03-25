@@ -47,11 +47,14 @@ namespace AzToolsFramework
         AZ::Vector3 m_localRayDirection; ///< The ray direction in the reference from of the manipulator.
         float m_scaleReciprocal; ///< The scale reciprocal (1.0 / scale) of the transform used to move the
                                  ///< ray from world space to local space.
+        AZ::Vector3 m_nonUniformScaleReciprocal; ///< Handles inverting any non-uniform scale which was applied
+                                                 ///< separately from the transform.
     };
 
     /// Build a ManipulatorInteraction structure from the incoming viewport interaction.
     ManipulatorInteraction BuildManipulatorInteraction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection);
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection);
 
     /// Calculate the offset along an axis to adjust a position
     /// to stay snapped to a given grid size.
@@ -111,5 +114,17 @@ namespace AzToolsFramework
     inline float ScaleReciprocal(const AZ::Transform& transform)
     {
         return Round3(transform.GetScale().GetReciprocal().GetMinElement());
+    }
+
+    /// Find the reciprocal of the non-uniform scale.
+    /// Each element will be rounded to three significant digits to eliminate noise
+    /// when dealing with values far from the origin.
+    inline AZ::Vector3 NonUniformScaleReciprocal(const AZ::Vector3& nonUniformScale)
+    {
+        AZ::Vector3 scaleReciprocal = nonUniformScale.GetReciprocal();
+        return AZ::Vector3(
+            Round3(scaleReciprocal.GetX()),
+            Round3(scaleReciprocal.GetY()),
+            Round3(scaleReciprocal.GetZ()));
     }
 } // namespace AzToolsFramework

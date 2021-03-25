@@ -142,6 +142,11 @@ namespace AZ
 
         AZ::Outcome<void, AZStd::string> EditorDiffuseProbeGridComponent::OnProbeSpacingValidateX(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
         {
+            if (!m_controller.m_featureProcessor)
+            {
+                return AZ::Failure(AZStd::string("Unable to adjust probe spacing, please try again"));
+            }
+
             float newProbeSpacingX = *(reinterpret_cast<float*>(newValue));
 
             Vector3 newSpacing(newProbeSpacingX, m_probeSpacingY, m_probeSpacingZ);
@@ -155,6 +160,11 @@ namespace AZ
 
         AZ::Outcome<void, AZStd::string> EditorDiffuseProbeGridComponent::OnProbeSpacingValidateY(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
         {
+            if (!m_controller.m_featureProcessor)
+            {
+                return AZ::Failure(AZStd::string("Unable to adjust probe spacing, please try again"));
+            }
+
             float newProbeSpacingY = *(reinterpret_cast<float*>(newValue));
 
             Vector3 newSpacing(m_probeSpacingX, newProbeSpacingY, m_probeSpacingZ);
@@ -168,6 +178,11 @@ namespace AZ
 
         AZ::Outcome<void, AZStd::string> EditorDiffuseProbeGridComponent::OnProbeSpacingValidateZ(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
         {
+            if (!m_controller.m_featureProcessor)
+            {
+                return AZ::Failure(AZStd::string("Unable to adjust probe spacing, please try again"));
+            }
+
             float newProbeSpacingZ = *(reinterpret_cast<float*>(newValue));
 
             Vector3 newSpacing(m_probeSpacingX, m_probeSpacingY, newProbeSpacingZ);

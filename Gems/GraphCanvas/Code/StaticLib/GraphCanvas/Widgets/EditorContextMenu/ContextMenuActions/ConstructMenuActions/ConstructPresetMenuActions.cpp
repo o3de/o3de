@@ -13,7 +13,9 @@
 
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.h>
 
+#include <GraphCanvas/Components/GraphCanvasPropertyBus.h>
 #include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/Components/EntitySaveDataBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
@@ -99,6 +101,62 @@ namespace GraphCanvas
         }
     }
 
+    //////////////////////////
+    // ApplyPresetMenuAction
+    //////////////////////////
+
+    ApplyPresetMenuAction::ApplyPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset, AZStd::string_view subMenuPath)
+        : ConstructContextMenuAction("Apply Preset", contextMenu)
+        , m_subMenuPath(subMenuPath)
+        , m_preset(preset)
+    {
+        if (preset->GetDisplayName().size() > s_maximumDisplaySize)
+        {
+            AZStd::string substring = preset->GetDisplayName();
+            substring = substring.substr(0, s_maximumDisplaySize - 3);
+
+            substring.append("...");
+
+            setText(substring.c_str());
+        }
+        else
+        {
+            setText(preset->GetDisplayName().c_str());
+        }
+
+        QPixmap* pixmap = preset->GetDisplayIcon(contextMenu->GetEditorId());
+
+        if (pixmap)
+        {
+            setIcon(QIcon((*pixmap)));
+        }
+    }
+
+    bool ApplyPresetMenuAction::IsInSubMenu() const
+    {
+        return true;
+    }
+
+    AZStd::string ApplyPresetMenuAction::GetSubMenuPath() const
+    {
+        return m_subMenuPath;
+    }
+
+    ConstructContextMenuAction::SceneReaction ApplyPresetMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
+    {
+        if (m_preset->IsValidEntityForPreset(GetTargetId()))
+        {
+            const auto& presetSaveData = m_preset->GetPresetData();
+
+            EntitySaveDataRequestBus::Event(GetTargetId(), &EntitySaveDataRequests::ApplyPresetData, presetSaveData);
+            GraphCanvasPropertyInterfaceNotificationBus::Event(GetTargetId(), &GraphCanvasPropertyInterfaceNotifications::OnPropertyComponentChanged);
+
+            return SceneReaction::PostUndo;
+        }
+
+        return SceneReaction::Nothing;
+    }
+
     //////////////////////////////
     // CreatePresetFromSelection
     //////////////////////////////
@@ -112,7 +170,7 @@ namespace GraphCanvas
     {
     }
 
-    ContextMenuAction::SceneReaction CreatePresetFromSelection::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction CreatePresetFromSelection::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         bool acceptText = true;
 
@@ -228,7 +286,7 @@ namespace GraphCanvas
             {
                 for (auto preset : presetBucket->GetPresets())
                 {
-                    AddPresetMenuAction* menuAction = CreatePresetMenuAction(m_contextMenu, preset);
+                    ConstructContextMenuAction* menuAction = CreatePresetMenuAction(m_contextMenu, preset);
 
                     if (isFinalized)
                     {
@@ -291,6 +349,35 @@ namespace GraphCanvas
     }
 
     ///////////////////////////////
+    // ApplyPresetMenuActionGroup
+    ///////////////////////////////
+
+    ApplyPresetMenuActionGroup::ApplyPresetMenuActionGroup(ConstructType constructType)
+        : PresetsMenuActionGroup(constructType)
+    {
+    }
+
+    ApplyPresetMenuActionGroup::~ApplyPresetMenuActionGroup()
+    {
+    }
+
+    void ApplyPresetMenuActionGroup::RefreshActionGroup(const GraphId& graphId, const AZ::EntityId& /*targetId*/)
+    {
+        bool hasMultipleSelection = false;
+        SceneRequestBus::EventResult(hasMultipleSelection, graphId, &SceneRequests::HasMultipleSelection);
+
+        if (hasMultipleSelection)
+        {
+            SetEnabled(false);
+        }
+    }
+
+    ConstructContextMenuAction* ApplyPresetMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
+    {
+        return aznew ApplyPresetMenuAction(contextMenu, preset, "Apply Preset");
+    }
+
+    ///////////////////////////////
     // AddCommentPresetMenuAction
     ///////////////////////////////
 
@@ -309,8 +396,16 @@ namespace GraphCanvas
 
     void AddCommentPresetMenuAction::AddEntityToGraph(const GraphId& graphId, AZ::Entity* graphCanvasEntity, const AZ::Vector2& scenePos) const
     {
+        AZ::EntityId groupTarget;
+        SceneRequestBus::EventResult(groupTarget, graphId, &SceneRequests::FindTopmostGroupAtPoint, ConversionUtils::AZToQPoint(scenePos));
+
         SceneRequestBus::Event(graphId, &SceneRequests::ClearSelection);
-        SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos);
+        SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos, false);
+
+        if (groupTarget.IsValid())
+        {
+            NodeGroupRequestBus::Event(groupTarget, &NodeGroupRequests::AddElementToGroup, graphCanvasEntity->GetId());
+        }
 
         if (IsInSubMenu())
         {
@@ -323,17 +418,17 @@ namespace GraphCanvas
         }
     }
 
-    //////////////////////////////////
-    // CommentPresetsMenuActionGroup
-    //////////////////////////////////
+    ///////////////////////////////////////
+    // CreateCommentPresetMenuActionGroup
+    ///////////////////////////////////////
 
-    CommentPresetsMenuActionGroup::CommentPresetsMenuActionGroup()
+    CreateCommentPresetMenuActionGroup::CreateCommentPresetMenuActionGroup()
         : PresetsMenuActionGroup(ConstructType::CommentNode)
     {
 
     }
 
-    AddPresetMenuAction* CommentPresetsMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
+    ConstructContextMenuAction* CreateCommentPresetMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
     {
         return aznew AddCommentPresetMenuAction(contextMenu, preset);
     }
@@ -357,17 +452,131 @@ namespace GraphCanvas
 
     void AddNodeGroupPresetMenuAction::AddEntityToGraph(const GraphId& graphId, AZ::Entity* graphCanvasEntity, const AZ::Vector2& scenePos) const
     {
-        SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos);
-
         AZStd::vector< AZ::EntityId > selectedNodes;
         SceneRequestBus::EventResult(selectedNodes, graphId, &SceneRequests::GetSelectedNodes);
 
-        GraphCanvas::GraphUtils::ResizeGroupToElements(graphCanvasEntity->GetId(), selectedNodes);
+        AZ::EntityId topMostGroup;
+
+        // If we don't have any selected nodes, we'll create this at the center of the view. Need to account for when a group
+        // already exists there.
+        if (selectedNodes.empty())
+        {
+            SceneRequestBus::EventResult(topMostGroup, graphId, &SceneRequests::FindTopmostGroupAtPoint, ConversionUtils::AZToQPoint(scenePos));
+
+            if (topMostGroup == graphCanvasEntity->GetId())
+            {
+                topMostGroup.SetInvalid();
+            }
+        }
+
+        AZStd::unordered_set<AZ::EntityId> selectedGroups;
+        AZStd::unordered_set<AZ::EntityId> groupableSet;
+
+        // Phase one find all of the groups
+        for (AZ::EntityId selectedNode : selectedNodes)
+        {
+            if (GraphUtils::IsNodeGroup(selectedNode))
+            {
+                selectedGroups.insert(selectedNode);
+            }
+        }
+
+        SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos, false);
+
+        // Work our way up the group parent chain. If we find a single group which will be the parent for our new group.
+        AZStd::unordered_multiset<AZ::EntityId> previousGroups;
+        AZStd::vector< AZ::EntityId > previousGroupOrdering;
+        bool setupPreviousGroup = true;
+
+        for (AZ::EntityId selectedNode : selectedNodes)
+        {
+            AZ::EntityId groupableElement = GraphUtils::FindOutermostNode(selectedNode);
+
+            if (GraphUtils::IsGroupableElement(groupableElement))
+            {
+                bool manageGroupOwnership = true;
+
+                AZStd::vector< AZ::EntityId> parentGroupOrdering;
+                
+                AZ::EntityId groupId;
+                GroupableSceneMemberRequestBus::EventResult(groupId, groupableElement, &GroupableSceneMemberRequests::GetGroupId);
+
+                while (groupId.IsValid())
+                {
+                    parentGroupOrdering.emplace_back(groupId);
+
+                    if (selectedGroups.find(groupId) != selectedGroups.end())
+                    {
+                        manageGroupOwnership = false;
+                        break;
+                    }
+
+                    GroupableSceneMemberRequestBus::EventResult(groupId, groupId, &GroupableSceneMemberRequests::GetGroupId);
+                }
+
+                // If one of our parent groups is apart of the selections, do not modify our group.
+                if (manageGroupOwnership)
+                {
+                    groupableSet.insert(groupableElement);
+
+                    previousGroups.insert(parentGroupOrdering.begin(), parentGroupOrdering.end());
+
+                    if (setupPreviousGroup)
+                    {
+                        previousGroupOrdering = parentGroupOrdering;
+                        setupPreviousGroup = false;
+                    }                    
+                    
+                    GroupableSceneMemberRequestBus::Event(groupableElement, &GroupableSceneMemberRequests::RemoveFromGroup);
+                }
+            }
+        }
+
+        // IF all of our selected nodes have the same parent group. We want to create a new subgroup inside of the previous group.
+        AZ::EntityId parentGroup;
+
+        for (AZ::EntityId groupId : previousGroupOrdering)
+        {
+            if (previousGroups.count(groupId) == groupableSet.size())
+            {
+                parentGroup = groupId;
+                break;
+            }
+        }
+
+        // If our parent group is invalid. Assign it to the topmost group.
+        if (!parentGroup.IsValid())
+        {
+            parentGroup = topMostGroup;
+        }
+
+        NodeGroupRequestBus::Event(graphCanvasEntity->GetId(), &NodeGroupRequests::AddElementsToGroup, groupableSet);
+
+        // Initialize the title size so when we resize, we're accounting for our title space.
+        // There's a weird edge case here: Coming from a context menu, this won't be initialized.
+        // But if we're coming from the tool bar, the title is the correct size.
+        //
+        // Both flows more or less invoke this exact path, so I'm guessing it's the context menu causing some interruption
+        // with the qt application update that causes this to be slightly delayed at this point?
+        if (IsInSubMenu())
+        {
+            NodeGroupRequestBus::Event(graphCanvasEntity->GetId(), &NodeGroupRequests::AdjustTitleSize);
+        }
+
+        const bool growGroupOnly = false;
+        NodeGroupRequestBus::Event(graphCanvasEntity->GetId(), &NodeGroupRequests::ResizeGroupToElements, growGroupOnly);
 
         SceneRequestBus::Event(graphId, &SceneRequests::ClearSelection);
 
         CommentRequestBus::Event(graphCanvasEntity->GetId(), &CommentRequests::SetComment, "New Group");
 
+        if (parentGroup.IsValid())
+        {
+            NodeGroupRequestBus::Event(parentGroup, &NodeGroupRequests::AddElementToGroup, graphCanvasEntity->GetId());
+
+            NodeGroupRequestBus::Event(parentGroup, &NodeGroupRequests::ResizeGroupToElements, true);
+        }
+        
         if (IsInSubMenu())
         {
             CommentUIRequestBus::Event(graphCanvasEntity->GetId(), &CommentUIRequests::SetEditable, true);
@@ -378,16 +587,16 @@ namespace GraphCanvas
         }
     }
 
-    ////////////////////////////////////
-    // NodeGroupPresetsMenuActionGroup
-    ////////////////////////////////////
+    /////////////////////////////////////////
+    // CreateNodeGroupPresetMenuActionGroup
+    /////////////////////////////////////////
 
-    NodeGroupPresetsMenuActionGroup::NodeGroupPresetsMenuActionGroup()
+    CreateNodeGroupPresetMenuActionGroup::CreateNodeGroupPresetMenuActionGroup()
         : PresetsMenuActionGroup(ConstructType::NodeGroup)
     {
     }
 
-    AddPresetMenuAction* NodeGroupPresetsMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
+    ConstructContextMenuAction* CreateNodeGroupPresetMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
     {
         return aznew AddNodeGroupPresetMenuAction(contextMenu, preset);
     }

@@ -15,6 +15,9 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
+
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ
@@ -25,12 +28,16 @@ namespace AZ
         {
             ModelLodAsset::Reflect(context);
             ModelAsset::Reflect(context);
+            MorphTargetMetaAsset::Reflect(context);
+            SkinMetaAsset::Reflect(context);
         }
 
         void ModelSystem::GetAssetHandlers(AssetHandlerPtrList& assetHandlers)
         {
             assetHandlers.emplace_back(MakeAssetHandler<ModelLodAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<ModelAssetHandler>());
+            assetHandlers.emplace_back(MakeAssetHandler<MorphTargetMetaAssetHandler>());
+            assetHandlers.emplace_back(MakeAssetHandler<SkinMetaAssetHandler>());
         }
 
         void ModelSystem::Init()

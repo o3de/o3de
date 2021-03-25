@@ -20,6 +20,7 @@ from shiboken2 import wrapInstance, getCppPointer
 # The `view_pane_handlers` holds onto the callback handlers that get created
 # for responding to requests for when the Editor needs to construct the view pane
 view_pane_handlers = {}
+registration_handlers = {}
 
 # Helper method for registering a Python widget as a tool/view pane with the Editor
 def register_view_pane(name, widget_type, options=editor.ViewPaneOptions()):
@@ -42,7 +43,18 @@ def register_view_pane(name, widget_type, options=editor.ViewPaneOptions()):
 
         return new_widget.winId()
 
-    # Register our widget as an Editor view pane
+    def on_notify_register_views(parameters, my_name=name, my_options=options):
+        # Register our widget as an Editor view pane
+        print('Calling on_notify_register_views RegisterCustomViewPane')
+        editor.EditorRequestBus(azlmbr.bus.Broadcast, 'RegisterCustomViewPane', my_name, 'Tools', my_options)
+
+    # We keep a handler around in case a request for registering custom view panes comes later
+    print('Initializing callback for RegisterCustomViewPane')
+    registration_handler = azlmbr.bus.NotificationHandler("EditorEventBus")
+    registration_handler.connect()
+    registration_handler.add_callback("NotifyRegisterViews", on_notify_register_views)
+    global registration_handlers
+    registration_handlers[name] = registration_handler
     editor.EditorRequestBus(azlmbr.bus.Broadcast, 'RegisterCustomViewPane', name, 'Tools', options)
 
     # Connect to the ViewPaneCallbackBus in order to respond to requests to create our widget

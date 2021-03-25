@@ -14,7 +14,6 @@
 
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/SlotNames.h>
@@ -30,32 +29,45 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! Provides a node to set the value of a variable
             class SetVariableNode
                 : public Node
                 , protected VariableNotificationBus::Handler
                 , protected VariableNodeRequestBus::Handler
             {
             public:
-                ScriptCanvas_Node(SetVariableNode,
-                    ScriptCanvas_Node::Name("Set Variable", "Node for setting a property within the graph")
-                    ScriptCanvas_Node::Uuid("{5EFD2942-AFF9-4137-939C-023AEAA72EB0}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Version(1)
-                );
 
-                // Node
+                SCRIPTCANVAS_NODE(SetVariableNode);
+
+                // Node...
                 void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
                 bool ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
                 bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) override;
                 ////
 
-                //// VariableNodeRequestBus
+                //// VariableNodeRequestBus...
                 void SetId(const VariableId& variableId) override;
                 const VariableId& GetId() const override;
                 ////
 
                 const SlotId& GetDataInSlotId() const;
                 const SlotId& GetDataOutSlotId() const;
+
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                VariableId GetVariableIdRead(const Slot*) const override;
+
+                VariableId GetVariableIdWritten(const Slot*) const override;
+
+                const Slot* GetVariableOutputSlot() const override;
+
+                PropertyFields GetPropertyFields() const override;
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
             protected:
 
@@ -82,20 +94,12 @@ namespace ScriptCanvas
 
                 AnnotateNodeSignal CreateAnnotationData();
 
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "When signaled sends the variable referenced by this node to a Data Output slot"));
+                VariableId m_variableId;
 
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled after the referenced variable has been pushed to the Data Output slot"));
+                SlotId m_variableDataInSlotId;
+                SlotId m_variableDataOutSlotId;
 
-                ScriptCanvas_EditPropertyWithDefaults(VariableId, m_variableId, , EditProperty::NameLabelOverride("Variable Name"),
-                    EditProperty::DescriptionTextOverride("Name of ScriptCanvas Variable"),
-                    EditProperty::UIHandler(AZ::Edit::UIHandlers::ComboBox),
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::GenericValueList(&SetVariableNode::GetGraphVariables), AZ::Edit::Attributes::PostChangeNotify(&SetVariableNode::OnIdChanged)));
-
-                ScriptCanvas_SerializeProperty(SlotId, m_variableDataInSlotId);
-                ScriptCanvas_SerializeProperty(SlotId, m_variableDataOutSlotId);
-
-                ScriptCanvas_SerializeProperty(AZStd::vector<Data::PropertyMetadata>, m_propertyAccounts);
+                AZStd::vector<Data::PropertyMetadata> m_propertyAccounts;
 
                 AZStd::string_view  m_variableName;
                 ModifiableDatumView m_variableView;

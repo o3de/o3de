@@ -9,8 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(IOS_FRAMEWORK_TARGET_TYPES MODULE_LIBRARY SHARED_LIBRARY)
-set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE)
+ly_set(IOS_FRAMEWORK_TARGET_TYPES MODULE_LIBRARY SHARED_LIBRARY)
+ly_set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE)
 
 # Function that recursively retrieves all the .framework dependencies of an iOS project.
 # There is a generic 'ly_get_runtime_dependencies' function we could use instead of
@@ -149,9 +149,13 @@ endforeach()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     add_dependencies("AzTestRunner" ${test_runner_dependencies})
     
+    # We still need to add indirect dependencies(eg. 3rdParty)
+    unset(all_dependencies)
+    ios_get_dependencies_recursive(all_dependencies AzTestRunner)
+
     set_target_properties("AzTestRunner"
         PROPERTIES
-        XCODE_EMBED_FRAMEWORKS "${test_runner_dependencies}"
+        XCODE_EMBED_FRAMEWORKS "${all_dependencies}"
         XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
         XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
     )

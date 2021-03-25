@@ -42,7 +42,7 @@ namespace AzNetworking
     NetworkingSystemComponent::NetworkingSystemComponent()
     {
         SocketLayerInit();
-        //EncryptionLayerInit();
+        EncryptionLayerInit();
         AZ::Interface<INetworking>::Register(this);
 
         m_listenThread = AZStd::make_unique<TcpListenThread>();
@@ -53,11 +53,14 @@ namespace AzNetworking
     {
         // Delete all our network interfaces first so they can unregister from the reader and listen threads
         m_networkInterfaces.clear();
+
+        m_compressorFactories.clear();
+
         m_readerThread = nullptr;
         m_listenThread = nullptr;
 
         AZ::Interface<INetworking>::Unregister(this);
-        //EncryptionLayerShutdown();
+        EncryptionLayerShutdown();
         SocketLayerShutdown();
     }
 
@@ -121,6 +124,29 @@ namespace AzNetworking
     bool NetworkingSystemComponent::DestroyNetworkInterface(AZ::Name name)
     {
         return m_networkInterfaces.erase(name) > 0;
+    }
+
+    void NetworkingSystemComponent::RegisterCompressorFactory(ICompressorFactory* factory)
+    {
+        AZ_Assert(m_compressorFactories.find(factory->GetFactoryName()) == m_compressorFactories.end(), "A compressor factory with this name already exists");
+
+        m_compressorFactories.emplace(factory->GetFactoryName(), factory);
+    }
+
+    AZStd::unique_ptr<ICompressor> NetworkingSystemComponent::CreateCompressor(AZ::Name name)
+    {
+        auto compressorFactory = m_compressorFactories.find(name);
+        if(compressorFactory != m_compressorFactories.end())
+        {
+            return compressorFactory->second->Create();
+        }
+
+        return nullptr;
+    }
+
+    bool NetworkingSystemComponent::UnregisterCompressorFactory(AZ::Name name)
+    {
+        return m_compressorFactories.erase(name) > 0;
     }
 
     void NetworkingSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

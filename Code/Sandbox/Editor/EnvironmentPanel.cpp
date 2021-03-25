@@ -42,12 +42,14 @@ CEnvironmentPanel::CEnvironmentPanel(QWidget* pParent /*=nullptr*/)
     if (bHasOceanFeature)
     {
         node->findChild("Ocean")->setAttr("hidden", true);
-        node->findChild("OceanAnimation")->setAttr("hidden", true);        
+        node->findChild("OceanAnimation")->setAttr("hidden", true);
     }
-    
+
+    m_onSetCallback = AZStd::bind(&CCryEditDoc::OnEnvironmentPropertyChanged, GetIEditor()->GetDocument(), AZStd::placeholders::_1);
+
     ui->setupUi(this);
     ui->m_wndProps->Setup();
-    ui->m_wndProps->CreateItems(node, m_varBlock, functor(*GetIEditor()->GetDocument(), &CCryEditDoc::OnEnvironmentPropertyChanged), true);
+    ui->m_wndProps->CreateItems(node, m_varBlock, &m_onSetCallback, true);
     ui->m_wndProps->RebuildCtrl(false);
     ui->m_wndProps->ExpandAll();
     connect(ui->APPLYBTN, &QPushButton::clicked, this, &CEnvironmentPanel::OnBnClickedApply);

@@ -49,9 +49,6 @@ namespace AZ
                 const Name& imageName,
                 const RHI::ClearValue* optimizedClearValue = nullptr,
                 const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
-
-            //! Updates content of a single sub-resource in the image from the CPU.
-            RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
             
             const RHI::AttachmentId& GetAttachmentId();
 

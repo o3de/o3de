@@ -242,10 +242,28 @@ namespace GraphCanvas
 
         beginRemoveRows(parent, row, row + (count - 1));
 
+        AZStd::unordered_set< GraphCanvasTreeItem* > aboutToBeRemovedSet;
+
         for (int i = 0; i < count; ++i)
         {
             GraphCanvasTreeItem* childItem = parentItem->m_childItems[row + i];
+
+            aboutToBeRemovedSet.insert(childItem);
             childItem->RemoveParent(parentItem);
+        }
+
+        while (!aboutToBeRemovedSet.empty())
+        {
+            GraphCanvasTreeItem* currentItem = (*aboutToBeRemovedSet.begin());
+            aboutToBeRemovedSet.erase(currentItem);
+
+            Q_EMIT(OnTreeItemAboutToBeRemoved(currentItem));
+
+            for (int i = 0; i < currentItem->GetChildCount(); ++i)
+            {
+                GraphCanvasTreeItem* item = currentItem->FindChildByRow(i);
+                aboutToBeRemovedSet.insert(item);
+            }
         }
 
         if (parentItem->m_deleteRemoveChildren)
@@ -289,18 +307,21 @@ namespace GraphCanvas
         return parent(CreateIndex(treeItem, column));
     }
 
-    void GraphCanvasTreeModel::ChildAboutToBeAdded(GraphCanvasTreeItem* treeItem, int position)
+    void GraphCanvasTreeModel::ChildAboutToBeAdded(GraphCanvasTreeItem* parentItem, int position)
     {
         if (position < 0)
         {
-            position = treeItem->GetChildCount() - 1;
+            position = parentItem->GetChildCount() - 1;
         }
 
-        beginInsertRows(CreateIndex(treeItem), position, position);
+        beginInsertRows(CreateIndex(parentItem), position, position);
     }
 
-    void GraphCanvasTreeModel::OnChildAdded()
+    void GraphCanvasTreeModel::OnChildAdded(GraphCanvasTreeItem* itemAdded)
     {
         endInsertRows();
+        Q_EMIT(OnTreeItemAdded(itemAdded));
     }
+
+    #include <StaticLib/GraphCanvas/Widgets/moc_GraphCanvasTreeModel.cpp>
 }

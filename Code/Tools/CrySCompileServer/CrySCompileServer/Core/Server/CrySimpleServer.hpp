@@ -69,7 +69,6 @@ public:
     
     // Shader Compilers ID
     static const char* m_Orbis_DXC;
-    static const char* m_Durango_FXC;
     static const char* m_Jasper_FXC;
     static const char* m_D3D11_FXC;
     static const char* m_GLSL_HLSLcc;

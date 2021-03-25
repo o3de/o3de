@@ -14,62 +14,49 @@
 
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace AzFramework
 {
-    //! A list of ViewportControllers that allows priority-ordered dispatch to the registered ViewportControllers.
+    //! A list of ViewportControllers that allows priority-ordered dispatch to controllers registered to it.
+    //! ViewportControllerList itself is-a controller, meaning it controllers can be contained in nested lists.
     class ViewportControllerList final
         : public ViewportControllerInterface
     {
     public:
-        //! Controller Priority determines when controllers receive input and update events.
-        //! Input channel events are received from highest to lowest priority order,
-        //! allowing high priority controllers to consume input events and stop their propagation.
-        //! Viewport update events are received from lowest to highest priority order,
-        //! allowing high priority controllers to be the last to update the viewport state.
-        enum class Priority : unsigned char {
-            Highest = 0,
-            High,
-            Normal,
-            Low,
-            Lowest
-        };
-
         //! Adds a controller to this list at the specified priority.
         //! This controller will be notified of all InputChannelEvents not consumed by a higher priority controller
         //! via OnInputChannelEvent.
-        void Add(ViewportControllerPtr controller, Priority priority = Priority::Normal);
+        void Add(ViewportControllerPtr controller);
         //! Removes a controller from this list.
         void Remove(ViewportControllerPtr controller);
-        //! Updates the priority level for a controller.
-        void SetPriority(ViewportControllerPtr controller, Priority priority);
 
         // ViewportControllerInterface overrides
         //! Dispatches an InputChannelEvent to all controllers registered to this list until
         //! either a controller returns true to consume the event in OnInputChannelEvent or the controller list is exhausted.
         //! InputChannelEvents are sent to controllers in priority order (from the lowest priority value to the highest).
-        bool HandleInputChannelEvent(ViewportId viewport, const AzFramework::InputChannel& inputChannel) override;
+        bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         //! Dispatches an update tick to all controllers registered to this list.
         //! This occurs in *reverse* priority order (i.e. from the highest priority value to the lowest) so that
         //! controllers with the highest registration priority may override the transforms of the controllers with the
         //! lowest registration priority.
-        void UpdateViewport(ViewportId viewport, FloatSeconds deltaTime, AZ::ScriptTimePoint time) override;
+        void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
         //! Registers a Viewport to this list.
         //! All current and added controllers will be registered with this viewport.
         void RegisterViewportContext(ViewportId viewport) override;
         //! Unregisters a Viewport from this list and all associated controllers.
         void UnregisterViewportContext(ViewportId viewport);
+        //! All ViewportControllerLists have a priority of Custom to ensure
+        //! that they receive events at all priorities from any parent controllers.
+        AzFramework::ViewportControllerPriority GetPriority() const { return ViewportControllerPriority::DispatchToAllPriorities; }
 
     private:
         void SortControllers();
+        bool DispatchInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event);
+        void DispatchUpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event);
 
-        struct ViewportControllerData
-        {
-            ViewportControllerPtr controller;
-            Priority priority = Priority::Normal;
-        };
-        AZStd::vector<ViewportControllerData> m_controllers;
+        AZStd::unordered_map<AzFramework::ViewportControllerPriority, AZStd::vector<ViewportControllerPtr>> m_controllers;
         AZStd::unordered_set<ViewportId> m_viewports;
     };
 } //namespace AzFramework

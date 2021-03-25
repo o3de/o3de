@@ -16,24 +16,10 @@
 
 namespace MaterialEditor
 {
-    void OrbitCameraBehavior::Start()
+    void OrbitCameraBehavior::TickInternal(float x, float y, float z)
     {
-        Behavior::Start();
+        Behavior::TickInternal(x, y, z);
 
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_cameraEntityId,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetCameraEntityId);
-        AZ_Assert(m_cameraEntityId.IsValid(), "Failed to find m_cameraEntityId");
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_targetPosition,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetTargetPosition);
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_distanceToTarget,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetDistanceToTarget);
-    }
-
-    void OrbitCameraBehavior::TickInternal(float x, float y)
-    {
         // don't align camera until a movement has been made so that accidental right-click doesn't reset camera
         if (!m_aligned)
         {

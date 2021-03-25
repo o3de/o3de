@@ -1,143 +1,167 @@
 {
-  "metrics": {
-    "TAGS":[
-        "weekly"
+  "profile_pipe": {
+    "TAGS": [
+      "default",
+      "weekly-build-metrics",
+      "daily-pipeline-metrics"
     ],
-    "COMMAND":"python_linux.sh",
+    "steps": [
+      "profile",
+      "test_profile"
+    ]
+  },
+  "metrics": {
+    "TAGS": [
+      "weekly"
+    ],
+    "COMMAND": "python_linux.sh",
     "PARAMETERS": {
-        "SCRIPT_PATH":"Tools/build/JenkinsScripts/build/ci_build_metrics.py",
-        "SCRIPT_PARAMETERS":"--platform Linux --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
+      "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/ci_build_metrics.py",
+      "SCRIPT_PARAMETERS": "--platform Linux --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
     }
   },
   "debug": {
-    "TAGS":[
-        "default",
-        "metric"
+    "TAGS": [
+      "default",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_linux.sh",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"debug",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"all"
+      "CONFIGURATION": "debug",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
     }
   },
   "profile": {
-    "TAGS":[
-        "default",
-        "metric"
-    ],
-    "COMMAND":"build_linux.sh",
+    "TAGS": [],
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"all"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
     }
   },
   "profile_nounity": {
-    "TAGS":[
-        "default",
-        "metric"
+    "TAGS": [
+      "default",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_linux.sh",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"all"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
     }
   },
   "test_profile": {
-    "TAGS":[
-        "default",
-        "metric"
-    ],
-    "COMMAND":"build_test_linux.sh",
+    "TAGS": [],
+    "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"AzCore.Tests",
-      "CTEST_OPTIONS":"-R AzCore.Tests -L (smoke|main)"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest"
     }
   },
   "asset_profile": {
-    "TAGS":[
-        "default",
-        "metric"
+    "TAGS": [
+      "default",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_asset_linux.sh",
+    "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
-        "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build/linux",
-        "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-        "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample",
-        "CMAKE_TARGET":"AssetProcessorBatch",
-        "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-        "ASSET_PROCESSOR_PLATFORMS":"pc,server"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
+    }
+  },
+  "asset_clean_profile": {
+    "TAGS": [
+      "nightly"
+    ],
+    "PIPELINE_ENV": {
+      "CLEAN_OUTPUT_DIRECTORY": "1"
+    },
+    "COMMAND": "build_asset_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
   "periodic_test_profile": {
-    "TAGS":[
-        "nightly",
-        "metric"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_test_linux.sh",
+    "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"TEST_SUITE_periodic",
-      "CTEST_OPTIONS":"-L \"(periodic)\""
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_periodic",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
     }
   },
   "benchmark_test_profile": {
-    "TAGS":[
-        "nightly",
-        "metric"
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_test_linux.sh",
+    "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"TEST_SUITE_benchmark",
-      "CTEST_OPTIONS":"-L \"(benchmark)\""
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_benchmark",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
     }
   },
   "release": {
-    "TAGS":[
-        "metric"
+    "TAGS": [
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_linux.sh",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"release",
-      "OUTPUT_DIRECTORY":"build/linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"all"
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
     }
   },
   "monolithic_release": {
-    "TAGS":[
-        "default",
-        "metric"
+    "TAGS": [
+      "default",
+      "weekly-build-metrics"
     ],
-    "COMMAND":"build_linux.sh",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-      "CONFIGURATION":"release",
-      "OUTPUT_DIRECTORY":"build/mono_linux",
-      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS":"CMakeTestbed;StarterGame;SamplesProject;Helios;MultiplayerSample;AutomatedTesting",
-      "CMAKE_TARGET":"all"
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/mono_linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
     }
   }
 }

@@ -34,6 +34,10 @@ namespace AZ
             int32_t numArgs = dc.GetNumArguments();
             switch (numArgs)
             {
+            case 0:
+            {
+                *thisPtr = Color(1.0f, 1.0f, 1.0f, 1.0f);
+            }
             case 1:
             {
                 if (dc.IsNumber(0))
@@ -42,9 +46,12 @@ namespace AZ
                     dc.ReadArg(0, number);
                     *thisPtr = Color(number);
                 }
-                else
+                else if (!(ConstructOnTypedArgument<Color>(*thisPtr, dc, 0)
+                    || ConstructOnTypedArgument<Vector4>(*thisPtr, dc, 0)
+                    || ConstructOnTypedArgument<Vector3>(*thisPtr, dc, 0)
+                    || ConstructOnTypedArgument<Vector2>(*thisPtr, dc, 0)))
                 {
-                    dc.GetScriptContext()->Error(AZ::ScriptContext::ErrorType::Error, true, "When only providing 1 argument to Color(), it must be a number!");
+                    dc.GetScriptContext()->Error(AZ::ScriptContext::ErrorType::Error, true, "When only providing 1 argument to Color(), it must be a number, Color, Vector4, Vector3, or Vector2");
                 }
             } break;
             case 3:

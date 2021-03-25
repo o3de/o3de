@@ -16,9 +16,12 @@ set(FILES
     Configurations.cmake
     Dependencies.cmake
     Deployment.cmake
+    EngineFinder.cmake
     FileUtil.cmake
+    Findo3de.cmake
     LyAutoGen.cmake
     LYTestWrappers.cmake
+    LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
     PAL.cmake

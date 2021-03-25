@@ -185,7 +185,7 @@ namespace GraphCanvas
         UpdateDisplay();
     }
 
-    void DataSlotComponent::RemoveProposedConnection([[maybe_unused]] const AZ::EntityId& connectionId, [[maybe_unused]] const Endpoint& endpoint)
+    void DataSlotComponent::RemoveProposedConnection(const AZ::EntityId& /*connectionId*/, const Endpoint& /*endpoint*/)
     {
         RestoreDisplay(true);
     }

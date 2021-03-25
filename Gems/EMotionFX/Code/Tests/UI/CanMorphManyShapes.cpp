@@ -64,7 +64,6 @@ namespace EMotionFX
             ScaleMesh(morphMesh);
             MorphTargetStandard* morphTarget = MorphTargetStandard::Create(
                 /*captureTransforms=*/ false,
-                /*captureMeshDeforms=*/ true,
                 m_actor.get(),
                 morphActor.get(),
                 "morphTarget"

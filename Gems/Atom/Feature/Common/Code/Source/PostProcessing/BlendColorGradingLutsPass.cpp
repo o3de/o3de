@@ -67,14 +67,13 @@ namespace AZ
                 auto shaderOption = m_shader->CreateShaderOptionGroup();
                 shaderOption.SetValue(m_numSourceLutsShaderVariantOptionName, RPI::ShaderOptionValue{ shaderVariantIndex });
 
-                RPI::ShaderVariantSearchResult searchResult = m_shader->FindVariantStableId(shaderOption.GetShaderVariantId());
-                RPI::ShaderVariant shaderVariant = m_shader->GetVariant(searchResult.GetStableId());
+                RPI::ShaderVariant shaderVariant = m_shader->GetVariant(shaderOption.GetShaderVariantId());
 
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
                 ShaderVariantInfo variantInfo{
-                    searchResult.IsFullyBaked(),
+                    shaderVariant.IsFullyBaked(),
                     m_shader->AcquirePipelineState(pipelineStateDescriptor)
                 };
                 m_shaderVariant.push_back(AZStd::move(variantInfo));
@@ -98,6 +97,7 @@ namespace AZ
             }
 
             auto shaderOption = m_shader->CreateShaderOptionGroup();
+            shaderOption.SetValue(m_numSourceLutsShaderVariantOptionName, RPI::ShaderOptionValue{ m_numSourceLuts });
 
             if (!m_shaderVariant[m_currentShaderVariantIndex].m_isFullyBaked)
             {
@@ -140,9 +140,9 @@ namespace AZ
             InitializeShaderVariant();
         }
 
-        void BlendColorGradingLutsPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void BlendColorGradingLutsPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            ComputePass::SetupFrameGraphDependencies(frameGraph, producer);
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
 
             CheckLutBlendSettings();
 
@@ -170,9 +170,8 @@ namespace AZ
             frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
         }
 
-        void BlendColorGradingLutsPass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void BlendColorGradingLutsPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
-            AZ_UNUSED(producer);
             AZ_Assert(m_shaderResourceGroup != nullptr, "BlendColorGradingLutsPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 
             // Early out if no LUT is needed
@@ -217,18 +216,18 @@ namespace AZ
 
                 if (m_colorGradingLuts[2].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[2].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[2].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[2].scale);
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut3ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].scale);
                 }
 
                 if (m_colorGradingLuts[3].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[3].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[3].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[3].scale);
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut4ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].scale);
                 }
 
                 if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
@@ -241,13 +240,13 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void BlendColorGradingLutsPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer)
+        void BlendColorGradingLutsPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             if (m_needToUpdateLut && m_blendedLut.m_lutImage && m_currentShaderVariantIndex <= LookModificationSettings::MaxBlendLuts)
             {
                 m_dispatchItem.m_pipelineState = m_shaderVariant[m_currentShaderVariantIndex].m_pipelineState;
 
-                ComputePass::BuildCommandList(context, producer);
+                ComputePass::BuildCommandListInternal(context);
 
                 m_needToUpdateLut = false;
             }

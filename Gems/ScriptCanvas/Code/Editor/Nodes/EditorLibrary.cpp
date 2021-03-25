@@ -58,4 +58,4 @@ namespace ScriptCanvasEditor
     {
         return Library::Editor::GetComponentDescriptors();
     }
-} // namespace ScriptCanvasEditor
+}

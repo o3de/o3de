@@ -67,7 +67,7 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 
 endif()
 
-foreach(project ${LY_PROJECTS})
+foreach(project ${LY_PROJECTS_NAME})
 
     ################################################################################
     # Monolithic game
@@ -86,6 +86,7 @@ foreach(project ${LY_PROJECTS})
             # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
             # and remove the ".Static" from the suffix
             string(REGEX REPLACE "^Gem::" "Gem_" game_gem_dependency ${game_gem_dependency})
+            string(REGEX REPLACE "^Project::" "Project_" game_gem_dependency ${game_gem_dependency})
             # Replace "." with "_"
             string(REPLACE "." "_" game_gem_dependency ${game_gem_dependency})
 
@@ -103,7 +104,6 @@ foreach(project ${LY_PROJECTS})
             Legacy::CrySystem
             Legacy::CryFont
             Legacy::Cry3DEngine
-            Legacy::CryNetwork
         )
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
@@ -116,6 +116,7 @@ foreach(project ${LY_PROJECTS})
                 # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
                 # and remove the ".Static" from the suffix
                 string(REGEX REPLACE "^Gem::" "Gem_" server_gem_dependency ${server_gem_dependency})
+                string(REGEX REPLACE "^Project::" "Project_" server_gem_dependency ${server_gem_dependency})
                 # Replace "." with "_"
                 string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
 
@@ -133,7 +134,6 @@ foreach(project ${LY_PROJECTS})
                 Legacy::CrySystem
                 Legacy::CryFont
                 Legacy::Cry3DEngine
-                Legacy::CryNetwork
             )
         endif()
 
@@ -143,7 +143,6 @@ foreach(project ${LY_PROJECTS})
             Legacy::CrySystem
             Legacy::CryFont
             Legacy::Cry3DEngine
-            Legacy::CryNetwork
         )
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)  # Only Atom is supported in monolithic builds
             set(server_runtime_dependencies

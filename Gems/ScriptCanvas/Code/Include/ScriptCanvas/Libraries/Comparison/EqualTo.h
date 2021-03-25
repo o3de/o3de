@@ -64,19 +64,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class EqualToGeneric
-                : public BinaryOperatorGeneric<EqualToGeneric, ComparisonOperator<OperatorType::Equal>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<EqualToGeneric, ComparisonOperator<OperatorType::Equal>>;
-                AZ_COMPONENT(EqualTo, "{68775617-0C31-4E25-8C5D-362B152FA2FD}", BaseType);
-
-                static const char* GetOperatorName() { return "EqualTo"; }
-                static const char* GetOperatorDesc() { return "Compares two values for equality"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Placeholder.png"; } // TODO: Get final icon image
-            };
-#endif // defined(EXPRESSION_TEMPLATES_ENABLED)        
         }
     }
 }

@@ -12,6 +12,7 @@
 
 #include <AzNetworking/UdpTransport/DtlsEndpoint.h>
 #include <AzNetworking/UdpTransport/DtlsSocket.h>
+#include <AzNetworking/UdpTransport/UdpConnection.h>
 #include <AzNetworking/Utilities/EncryptionCommon.h>
 #include <AzNetworking/Utilities/NetworkIncludes.h>
 #include <AzCore/Console/IConsole.h>
@@ -57,14 +58,8 @@ namespace AzNetworking
         return result;
     }
 
-    DtlsEndpoint::ConnectResult DtlsEndpoint::Accept(const DtlsSocket& socket, const IpAddress& address, const UdpPacketEncodingBuffer& dtlsData)
+    DtlsEndpoint::ConnectResult DtlsEndpoint::Accept(const DtlsSocket& socket, const IpAddress& address)
     {
-        if (dtlsData.GetSize() <= 0)
-        {
-            AZLOG_WARN("Encryption is enabled on accepting endpoint, but connector provided an empty DTLS handshake blob.  Check that encryption is properly disabled on *BOTH* endpoints");
-            return DtlsEndpoint::ConnectResult::Failed;
-        }
-
         const ConnectResult result = ConstructEndpointInternal(socket, address);
 #if AZ_TRAIT_USE_OPENSSL
         if (result != ConnectResult::Failed)
@@ -72,10 +67,7 @@ namespace AzNetworking
             // This SSL should be configured to accept connections
             SSL_set_accept_state(m_sslSocket);
             m_state = HandshakeState::Accepting;
-            const uint8_t* encryptedData = dtlsData.GetBuffer();
-            const uint32_t encryptedSize = dtlsData.GetSize();
-            BIO_write(m_readBio, encryptedData, encryptedSize);
-            return CompleteHandshake(socket);
+            return ConnectResult::Pending;
         }
 #endif
         return result;
@@ -88,49 +80,53 @@ namespace AzNetworking
              || (m_state == HandshakeState::Failed)); // In all cases caller should call CompleteHandshake() next and check the return value
     }
 
-    DtlsEndpoint::ConnectResult DtlsEndpoint::CompleteHandshake(const UdpSocket& socket)
+    DtlsEndpoint::ConnectResult DtlsEndpoint::ProcessHandshakeData([[maybe_unused]] UdpConnection& connection, [[maybe_unused]] const UdpPacketEncodingBuffer& dtlsData)
     {
-        UdpPacketEncodingBuffer responseData;
-        const ConnectResult result = PerformHandshakeInternal(responseData);
-        if ((result != ConnectResult::Failed) && (responseData.GetSize() > 0))
+        ConnectResult result = ConnectResult::Failed;
+#if AZ_TRAIT_USE_OPENSSL
+        UdpPacketEncodingBuffer outDtlsData;
+        if (dtlsData.GetSize() > 0)
         {
-            struct sockaddr_in dest;
-            memset(&dest, 0, sizeof(dest));
-            dest.sin_family = AF_INET;
-            dest.sin_addr.s_addr = m_address.GetAddress(ByteOrder::Network);
-            dest.sin_port = m_address.GetPort(ByteOrder::Network);
-            sendto(static_cast<int32_t>(socket.GetSocketFd()), reinterpret_cast<char*>(responseData.GetBuffer()), responseData.GetSize(), 0, (sockaddr*)&dest, sizeof(dest));
-            AZLOG(NET_DebugDtls, "Replying to DTLS handshake datagram, %u bytes", static_cast<int32_t>(responseData.GetSize()));
+            const uint8_t* encryptedData = dtlsData.GetBuffer();
+            const uint32_t encryptedSize = dtlsData.GetSize();
+            BIO_write(m_readBio, encryptedData, encryptedSize);
         }
+        DtlsEndpoint::HandshakeState prevState = m_state;
+        result = PerformHandshakeInternal(outDtlsData);
+
+        // Pass along any remaining handshake data
+        // If we're the connecting endpoint and the handshake is complete, both sides are encrypted and this isn't necessary so skip it
+        bool continueHandshake = prevState != DtlsEndpoint::HandshakeState::Connecting || m_state != DtlsEndpoint::HandshakeState::Complete;
+        if (outDtlsData.GetSize() > 0 && continueHandshake)
+        {
+            CorePackets::ConnectionHandshakePacket handshakePacket = CorePackets::ConnectionHandshakePacket();
+            handshakePacket.SetHandshakeBuffer(outDtlsData);
+            // SSL prefers we handle resend by reobtaining data through SSL so we use unreliable and resend on timeout
+            connection.SendUnreliablePacket(handshakePacket);
+        }
+#endif
 
         return result;
     }
 
-    const uint8_t* DtlsEndpoint::DecodePacket
-    (
-        [[maybe_unused]] const UdpSocket& socket,
-        [[maybe_unused]] const uint8_t* encryptedData,
-        [[maybe_unused]] int32_t encryptedSize,
-        [[maybe_unused]] uint8_t* outDecodedData,
-        [[maybe_unused]] int32_t& outDecodedSize
-    )
+    const uint8_t* DtlsEndpoint::DecodePacket([[maybe_unused]] UdpConnection& connection, const uint8_t* encryptedData, int32_t encryptedSize, uint8_t* outDecodedData, int32_t& outDecodedSize)
     {
-        if (m_sslSocket == nullptr)
+        if (m_sslSocket == nullptr || IsConnecting())
         {
             // If the ssl socket is nullptr, it means encryption is not enabled, just passthrough the received data
+            // If the socket is connecting/handshaking, it means we can't yet encrypt, just passthrough the received data
             outDecodedSize = encryptedSize;
             return encryptedData;
         }
 #if AZ_TRAIT_USE_OPENSSL
-        BIO_write(m_readBio, encryptedData, encryptedSize);
-        if (IsConnecting())
-        {
-            CompleteHandshake(socket);
-            outDecodedSize = 0;
-        }
-        // CompleteHandshake() above may have failed and destroyed the SSL context, check here that state is valid so we don't crash on SSL_read
+
+        int32_t bioWriteSize = BIO_write(m_readBio, encryptedData, encryptedSize);
         if (m_state != HandshakeState::Failed)
         {
+            if (bioWriteSize != encryptedSize)
+            {
+                AZLOG_ERROR("BIO did not write as many bytes as provided");
+            }
             outDecodedSize = SSL_read(m_sslSocket, outDecodedData, encryptedSize);
         }
 #endif
@@ -175,13 +171,6 @@ namespace AzNetworking
 
         ConnectResult connectResult = ConnectResult::Pending;
 #if AZ_TRAIT_USE_OPENSSL
-        if (SSL_is_init_finished(m_sslSocket))
-        {
-            const char* stateString = GetEnumString(m_state);
-            AZLOG(NET_DebugDtls, "dtls handshake is completed, unblocking connection for game traffic, prior state: %s", stateString);
-            m_state = HandshakeState::Complete;
-            connectResult = ConnectResult::Complete;
-        }
         ERR_clear_error();
         const int32_t result = SSL_do_handshake(m_sslSocket);
         if (result <= 0)
@@ -198,6 +187,14 @@ namespace AzNetworking
                 m_state = HandshakeState::Failed;
                 connectResult = ConnectResult::Failed;
             }
+        }
+
+        if (SSL_is_init_finished(m_sslSocket))
+        {
+            const char* stateString = GetEnumString(m_state);
+            AZLOG(NET_DebugDtls, "dtls handshake is completed, unblocking connection for game traffic, prior state: %s", stateString);
+            m_state = HandshakeState::Complete;
+            connectResult = ConnectResult::Complete;
         }
 
         // Need to do this... connection negotiation may have left data in the write bio that we need to send out

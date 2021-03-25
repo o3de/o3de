@@ -53,16 +53,6 @@
                     "_layers"
                 ],
                 "PixelFormat": "R8G8B8X8"
-            },
-            "xenia": {
-                "UUID": "{B1AC2F76-CB1A-46A8-B92D-B8DFBB564FCF}",
-                "Name": "LayerMask",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_layers"
-                ],
-                "PixelFormat": "R8G8B8X8"
             }
         }
     }

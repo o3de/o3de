@@ -53,8 +53,7 @@ namespace EMotionFX
             {
                 if (m_nodeSelectionLists.size() < m_nodeSelectionLists.capacity())
                 {
-                    const AZ::u32 lodLevel = aznumeric_caster(m_nodeSelectionLists.size() + 1);
-                    m_nodeSelectionLists.push_back(Data::LodNodeSelectionList(lodLevel));
+                    m_nodeSelectionLists.push_back(Data::LodNodeSelectionList());
                 }
             }
 
@@ -96,20 +95,20 @@ namespace EMotionFX
                     return;
                 }
 
-                serializeContext->Class<LodRule>()->Version(1)
+                serializeContext->Class<LodRule, IRule>()->Version(1)
                     ->Field("nodeSelectionList", &LodRule::m_nodeSelectionLists);
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<LodRule>("Level of Detail", "Set up the level of detail for the meshes in this group.")
+                    editContext->Class<LodRule>("Skeleton LOD", "Set up the level of detail for skeletons in this group.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute("AutoExpand", true)
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Level of detail")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Lod Meshes", "Select the meshes to assign to each level of detail.")
-                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718))
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Skeleton",
+                            "Select the joints to assign to each level of detail.")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Additional LOD")
-                        ->Attribute("ContainerCanBeModified", false);
+                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718));
                 }
             }
         }

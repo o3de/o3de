@@ -122,8 +122,8 @@ namespace AzToolsFramework
         /// Update the translation manipulator to be correctly positioned based
         /// on the current selection (recenter it).
         void RefreshTranslationManipulator();
-        /// Update manipulators based on changes to the entities transform.
-        void RefreshSpace(const AZ::Transform& worldFromLocal);
+        /// Update manipulators based on changes to the entity's transform and non-uniform scale.
+        void RefreshSpace(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
 
         /// Set bounds dirty (need recalculating) for all owned manipulators (selection, translation, hover).
         void SetBoundsDirty();

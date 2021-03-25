@@ -53,3 +53,17 @@ float GetRoughnessMip(float roughness)
     const float maxRoughnessMip = 5;
     return roughness * maxRoughnessMip;
 }
+
+// compute parallax corrected reflection vector
+// we do this by finding the intersection with the volume and adjusting the reflection vector for the surface position 
+// https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
+float3 ApplyParallaxCorrection(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
+{
+    float3 rcpReflectDir = 1.0f / reflectDir;
+    float3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
+    float3 intersectB = (aabbMin - positionWS) * rcpReflectDir;
+    float3 furthestIntersect = max(intersectA, intersectB);
+    float distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
+    float3 intersectPos = reflectDir * distance + positionWS;
+    return (intersectPos - aabbPos);
+}

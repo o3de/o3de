@@ -2,7 +2,6 @@
 = Platform names = 
 (case insensitive) 
 "ANDROID"
-"XENIA"
 "PROVO"
 "PC"
 "MAC"

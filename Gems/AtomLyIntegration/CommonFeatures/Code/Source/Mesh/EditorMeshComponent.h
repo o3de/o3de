@@ -67,6 +67,9 @@ namespace AZ
             AZ::Crc32 AddEditorMaterialComponent();
             bool HasEditorMaterialComponent() const;
             AZ::u32 GetEditorMaterialComponentVisibility() const;
+
+            // Flag used for button placement
+            bool m_addMaterialComponentFlag = false;
         };
     } // namespace Render
 } // namespace AZ

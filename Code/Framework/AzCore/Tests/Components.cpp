@@ -1336,7 +1336,11 @@ namespace UnitTest
         size_t m_numThreads;
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_FRAMEPROFILER_TEST
+    TEST_F(FrameProfilerComponentTest, DISABLED_Test)
+#else
     TEST_F(FrameProfilerComponentTest, Test)
+#endif
     {
         run();
     }

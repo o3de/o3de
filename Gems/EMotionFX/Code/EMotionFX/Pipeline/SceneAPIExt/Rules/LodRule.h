@@ -26,6 +26,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
+            // The LOD rule in EMotionFX only handles skeleton. LOD information of Meshes is handled by atom.
             class LodRule
                 : public SceneDataTypes::IRule
             {

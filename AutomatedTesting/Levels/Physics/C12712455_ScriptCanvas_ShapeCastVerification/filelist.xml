@@ -1,0 +1,6 @@
+<download name="C12712455_ScriptCanvas_ShapeCastVerification" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39334" md5="5417e93c2bad794e3224d1a528bc6e41"/>
+ </files>
+</download>

@@ -25,13 +25,19 @@
 #include <AzCore/Component/NamedEntityId.h>
 
 #include <Core/NamedId.h>
-
-// #define EXPRESSION_TEMPLATES_ENABLED
+#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 namespace AZ
 {
     class Entity;
     class ReflectContext;
+    
+    template<typename t_Attribute, typename t_Container>
+    bool ReadAttribute(t_Attribute& resultOut, AttributeId id, const t_Container& attributes)
+    {
+        AZ::Attribute* attribute = FindAttribute(id, attributes);
+        return attribute && AZ::AttributeReader(nullptr, attribute).Read<t_Attribute>(resultOut);
+    }
 }
 
 namespace ScriptCanvas
@@ -47,19 +53,79 @@ namespace ScriptCanvas
     using RuntimeIdType = AZ::EntityId;
     static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
+    constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
+
+    constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
+    constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
+    
     class Node;
     class Edge;
 
     using ID = AZ::EntityId;
+
+    using NamespacePath = AZStd::vector<AZStd::string>;
+    bool IsNamespacePathEqual(const NamespacePath& lhs, const NamespacePath& rhs);
+
     using NodeIdList = AZStd::vector<ID>;
     using NodePtrList = AZStd::vector<Node*>;
     using NodePtrConstList = AZStd::vector<const Node*>;
-    
+
+    enum class GrammarVersion : int
+    {
+        Initial = -1,
+        BackendSplit = 0,
+
+        // add new entries above
+        Current,
+    };
+
+    enum class RuntimeVersion : int
+    {
+        Initial = -1,
+        DirectTraversal = 0,
+
+        // add new entries above
+        Current,
+    };
+
+    struct VersionData
+    {
+        AZ_TYPE_INFO(VersionData, "{14C629F6-467B-46FE-8B63-48FDFCA42175}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static VersionData Latest();
+
+        GrammarVersion grammarVersion = GrammarVersion::Initial;
+        RuntimeVersion runtimeVersion = RuntimeVersion::Initial;
+
+        bool operator == (const VersionData& rhs) const
+        {
+            return grammarVersion == rhs.grammarVersion && runtimeVersion == rhs.runtimeVersion;
+        }
+
+        bool IsLatest() const
+        {
+            return (*this) == Latest();
+        }
+
+        void MarkLatest();
+    };
+
+    enum class EventType
+    {
+        Broadcast,
+        BroadcastQueue,
+        Event,
+        EventQueue,
+        Count,
+    };
+
     enum class ExecutionMode : AZ::u8
     {
-        GraphTraversal,
         Interpreted,
         Native,
+        COUNT
     };
 
     struct SlotId
@@ -105,6 +171,28 @@ namespace ScriptCanvas
 
     };
 
+    struct GraphIdentifier final
+    {
+        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(GraphIdentifier, "{0DAFC7EF-D23A-4353-8DA5-7D0CC186D8E3}");
+
+        AZ::ComponentId m_componentId = 0;
+        AZ::Data::AssetId m_assetId;
+
+        GraphIdentifier() = default;
+
+        GraphIdentifier(const AZ::Data::AssetId assetId, const AZ::ComponentId& componentId)
+            : m_componentId(componentId)
+            , m_assetId(assetId)
+        {}
+
+        bool operator==(const GraphIdentifier& other) const;
+
+        AZStd::string ToString() const;
+    };
+
+    using PropertyFields = AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>>;
+
     using NamedActiveEntityId = AZ::NamedEntityId;    
     using NamedNodeId = NamedId<AZ::EntityId>;
     using NamedSlotId = NamedId<SlotId>;
@@ -113,6 +201,43 @@ namespace ScriptCanvas
     using EBusEventId = AZ::Crc32;
     using EBusBusId = AZ::Crc32;
     using ScriptCanvasId = AZ::EntityId;
+    enum class AzEventIdentifier : size_t {};
+    
+    struct NamespacePathHasher
+    {
+        AZ_FORCE_INLINE size_t operator()(const NamespacePath& path) const
+        {
+            return AZStd::hash_range(path.begin(), path.end());
+        }
+    };
+
+    using DependencySet = AZStd::unordered_set<NamespacePath, NamespacePathHasher>;
+
+    struct DependencyReport
+    {
+        static DependencyReport NativeLibrary(const AZStd::string& library);
+
+        DependencySet nativeLibraries;
+        AZStd::unordered_set<AZ::Data::AssetId> scriptEventsAssetIds;
+        DependencySet userSubgraphs;
+        AZStd::unordered_set<AZ::Data::AssetId> userSubgraphAssetIds;
+
+        void MergeWith(const DependencyReport& other);
+    };
+
+    //! Globally accessible Script Canvas settings, we use these to pass user provided settings
+    //! into the Script Canvas code
+    class ScriptCanvasSettingsRequests : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        virtual bool CanShowNetworkSettings() { return false; }
+
+    };
+
+    using ScriptCanvasSettingsRequestBus = AZ::EBus<ScriptCanvasSettingsRequests>;
+
 }
 
 namespace AZStd
@@ -126,7 +251,6 @@ namespace AZStd
         {
             return AZStd::hash<AZ::Uuid>()(ref.m_id);
         }
-
     };
 }
 

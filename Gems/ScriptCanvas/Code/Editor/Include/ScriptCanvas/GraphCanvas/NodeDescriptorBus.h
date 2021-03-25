@@ -49,8 +49,8 @@ namespace ScriptCanvasEditor
         UserDefined,
         ClassMethod,
         FunctionNode,
-        ExecutionNodeling,
-        
+        FunctionDefinitionNode,
+        AzEventHandler,
         Invalid
     };
     
