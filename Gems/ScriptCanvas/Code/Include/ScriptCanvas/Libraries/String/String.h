@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -21,3 +21,4 @@
 #include "Contains.h"
 #include "Utilities.h"
 #include "StringGenerics.h"
+#include "StringMethods.h"

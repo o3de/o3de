@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ScriptEventsBus.h"
+#include "ScriptEvent.h"
 
 namespace ScriptEvents
 {
@@ -37,17 +38,17 @@ namespace ScriptEvents
 
         ////////////////////////////////////////////////////////////////////////
         // ScriptEvents::ScriptEventBus::Handler
-        AZStd::intrusive_ptr<Internal::ScriptEvent> RegisterScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) override;
+        AZStd::intrusive_ptr<Internal::ScriptEventRegistration> RegisterScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) override;
         void RegisterScriptEventFromDefinition(const ScriptEvents::ScriptEvent& definition) override;
         void UnregisterScriptEventFromDefinition(const ScriptEvents::ScriptEvent& definition) override;
-        AZStd::intrusive_ptr<Internal::ScriptEvent> GetScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) override;
+        AZStd::intrusive_ptr<Internal::ScriptEventRegistration> GetScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) override;
         const FundamentalTypes* GetFundamentalTypes() override;
         ////////////////////////////////////////////////////////////////////////
 
     private:
 
         // Script Event Assets
-        AZStd::unordered_map<ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent>> m_scriptEvents;
+        AZStd::unordered_map<ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>> m_scriptEvents;
 
         FundamentalTypes m_fundamentalTypes;
 

@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Libraries/Logic/Boolean.h>
@@ -26,34 +24,24 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! An execution flow gate that will only activate once. The gate will reopen if it receives a Reset pulse.
             class Once
                 : public Node
             {
-                ScriptCanvas_Node(Once,
-                    ScriptCanvas_Node::Uuid("{0E37D3CA-2862-4667-BFDB-7393DD48241B}")
-                    ScriptCanvas_Node::Description("An execution flow gate that will only activate once. The gate will reopen if it receives a Reset pulse.")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Print.png")
-                    ScriptCanvas_Node::Version(0)
-                );
 
             public:
 
+                SCRIPTCANVAS_NODE(Once);
+
                 Once();
 
-            private:
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                bool m_resetStatus;
+                bool IsSupportedByNewBackend() const override { return true; }
 
             protected:
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-                ScriptCanvas_In(ScriptCanvas_In::Name("Reset", "Reset signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Output signal"));
-
-                void OnInputSignal(const SlotId& slotId) override;
+                ExecutionNameMap GetExecutionNameMap() const override;
             };
         }
     }

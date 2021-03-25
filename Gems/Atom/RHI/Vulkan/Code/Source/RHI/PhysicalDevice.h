@@ -59,6 +59,8 @@ namespace AZ
             const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& GetPhysicalDeviceFloat16Int8Features() const;
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
+            const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
+            const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -87,6 +89,8 @@ namespace AZ
             VkPhysicalDeviceRobustness2FeaturesEXT m_robutness2Features{};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR m_float16Int8Features{};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR m_separateDepthStencilFeatures{};
+            VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
+            VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
         };
     }

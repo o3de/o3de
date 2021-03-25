@@ -44,6 +44,8 @@ namespace GraphCanvas
                 AddMenuAction(m_createPresetFrom);
             }
         }
+
+        m_applyNodeGroupPresets.PopulateMenu(this);
     }
     
     void NodeGroupContextMenu::OnRefreshActions(const GraphId& graphId, const AZ::EntityId& targetId)
@@ -54,5 +56,8 @@ namespace GraphCanvas
         m_editActionsGroup.SetPasteEnabled(false);
 
         m_nodeGroupActionsGroup.RefreshPresets();
+
+        m_applyNodeGroupPresets.RefreshPresets();
+        m_applyNodeGroupPresets.RefreshActionGroup(graphId, targetId);
     }
 }

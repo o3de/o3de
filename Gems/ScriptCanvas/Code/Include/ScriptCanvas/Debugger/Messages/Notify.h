@@ -87,7 +87,6 @@ namespace ScriptCanvas
             using GraphActivated = NotificationPayload<GraphActivation>;
             using GraphDeactivated = NotificationPayload<GraphDeactivation>;
             using AnnotateNode = NotificationPayload<AnnotateNodeSignal>;
-            using SignaledDataOutput = NotificationPayload<OutputDataSignal>;
 
             class NotificationVisitor
             {
@@ -107,7 +106,6 @@ namespace ScriptCanvas
                 virtual void Visit(GraphDeactivated& notification) = 0;
                 virtual void Visit(SignaledInput& notification) = 0;
                 virtual void Visit(SignaledOutput& notification) = 0;
-                virtual void Visit(SignaledDataOutput& notification) = 0;
                 virtual void Visit(VariableChanged& notification) = 0;
             };
 

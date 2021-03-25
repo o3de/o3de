@@ -1,4 +1,0 @@
-Legal Notice - Twitch API
-
-By using the Twitch API you agree to the Twitch API Terms of Service posted at http://www.twitch.tv/p/api_terms_of_service and the Twitch Terms of Service posted at http://www.twitch.tv/p/terms_of_service.
-

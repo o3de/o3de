@@ -73,20 +73,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{B6B04FD3-BD7B-44AC-AD93-6FECD2BD4D76}",
-                "Name": "Greyscale",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_mask"
-                ],
-                "PixelFormat": "BC4",
-                "IsPowerOf2": true,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

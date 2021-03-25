@@ -13,8 +13,8 @@
 
 namespace AzFramework
 {
-    template <class TViewportControllerInstance>
-    MultiViewportController<TViewportControllerInstance>::~MultiViewportController()
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    MultiViewportController<TViewportControllerInstance, Priority>::~MultiViewportController()
     {
         static_assert(
             AZStd::is_constructible<TViewportControllerInstance, ViewportId>::value,
@@ -22,31 +22,37 @@ namespace AzFramework
         );
     }
 
-    template <class TViewportControllerInstance>
-    bool MultiViewportController<TViewportControllerInstance>::HandleInputChannelEvent(ViewportId viewport, const AzFramework::InputChannel& inputChannel)
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    bool MultiViewportController<TViewportControllerInstance, Priority>::HandleInputChannelEvent(const ViewportControllerInputEvent& event)
     {
-        auto instanceIt = m_instances.find(viewport);
+        auto instanceIt = m_instances.find(event.m_viewportId);
         AZ_Assert(instanceIt != m_instances.end(), "Attempted to call HandleInputChannelEvent on an unregistered viewport");
-        return instanceIt->second->HandleInputChannelEvent(inputChannel);
+        return instanceIt->second->HandleInputChannelEvent(event);
     }
 
-    template <class TViewportControllerInstance>
-    void MultiViewportController<TViewportControllerInstance>::UpdateViewport(ViewportId viewport, FloatSeconds deltaTime, AZ::ScriptTimePoint time)
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    void MultiViewportController<TViewportControllerInstance, Priority>::UpdateViewport(const ViewportControllerUpdateEvent& event)
     {
-        auto instanceIt = m_instances.find(viewport);
+        auto instanceIt = m_instances.find(event.m_viewportId);
         AZ_Assert(instanceIt != m_instances.end(), "Attempted to call UpdateViewport on an unregistered viewport");
-        instanceIt->second->UpdateViewport(deltaTime, time);
+        instanceIt->second->UpdateViewport(event);
     }
 
-    template <class TViewportControllerInstance>
-    void MultiViewportController<TViewportControllerInstance>::RegisterViewportContext(ViewportId viewport)
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    void MultiViewportController<TViewportControllerInstance, Priority>::RegisterViewportContext(ViewportId viewport)
     {
         m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport);
     }
 
-    template <class TViewportControllerInstance>
-    void MultiViewportController<TViewportControllerInstance>::UnregisterViewportContext(ViewportId viewport)
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    void MultiViewportController<TViewportControllerInstance, Priority>::UnregisterViewportContext(ViewportId viewport)
     {
         m_instances.erase(viewport);
+    }
+
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    ViewportControllerPriority MultiViewportController<TViewportControllerInstance, Priority>::GetPriority() const
+    {
+        return Priority;
     }
 } //namespace AzFramework

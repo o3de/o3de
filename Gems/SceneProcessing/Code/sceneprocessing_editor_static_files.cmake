@@ -11,17 +11,29 @@
 
 set(FILES
     Include/Config/SceneProcessingConfigBus.h
-    Source/SceneProcessingModule.h
     Source/Config/Components/SceneProcessingConfigSystemComponent.h
     Source/Config/Components/SceneProcessingConfigSystemComponent.cpp
     Source/Config/Components/SoftNameBehavior.h
     Source/Config/Components/SoftNameBehavior.cpp
-    Source/Exporting/Components/TangentGenerateComponent.h
-    Source/Exporting/Components/TangentGenerateComponent.cpp
-    Source/Exporting/Components/TangentPreExportComponent.h
-    Source/Exporting/Components/TangentPreExportComponent.cpp
-    Source/Exporting/Components/TangentGenerators/MikkTGenerator.h
-    Source/Exporting/Components/TangentGenerators/MikkTGenerator.cpp
+    Source/Generation/Components/TangentGenerator/TangentGenerateComponent.h
+    Source/Generation/Components/TangentGenerator/TangentGenerateComponent.cpp
+    Source/Generation/Components/TangentGenerator/TangentPreExportComponent.h
+    Source/Generation/Components/TangentGenerator/TangentPreExportComponent.cpp
+    Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.h
+    Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.cpp
+    Source/Generation/Components/MeshOptimizer/Array2D.h
+    Source/Generation/Components/MeshOptimizer/Array2D.inl
+    Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp
+    Source/Generation/Components/MeshOptimizer/MeshBuilder.h
+    Source/Generation/Components/MeshOptimizer/MeshBuilderInvalidIndex.h
+    Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.cpp
+    Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.h
+    Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.cpp
+    Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.h
+    Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.cpp
+    Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.h
+    Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.cpp
+    Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.h
     Source/Config/SettingsObjects/SoftNameSetting.h
     Source/Config/SettingsObjects/SoftNameSetting.cpp
     Source/Config/SettingsObjects/NodeSoftNameSetting.h

@@ -873,7 +873,6 @@ enum ERenderType
     eRT_Null,
     eRT_DX11,
     eRT_DX12,
-    eRT_Xenia,
     eRT_Provo,
     eRT_OpenGL,
     eRT_Metal,

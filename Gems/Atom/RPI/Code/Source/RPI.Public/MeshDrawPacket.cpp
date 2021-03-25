@@ -47,6 +47,49 @@ namespace AZ
             return m_material;
         }
 
+        bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
+        {
+            // check if the material owns this option in any of its shaders, if so it can't be set externally
+            for (auto& shaderItem : m_material->GetShaderCollection())
+            {
+                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                if (index.IsValid())
+                {
+                    if (shaderItem.MaterialOwnsShaderOption(index))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            for (auto& shaderItem : m_material->GetShaderCollection())
+            {
+                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                if (index.IsValid())
+                {
+                    // try to find an existing option entry in the list
+                    auto itEntry = AZStd::find_if(m_shaderOptions.begin(), m_shaderOptions.end(), [&shaderOptionName](const ShaderOptionPair& entry)
+                    {
+                        return entry.first == shaderOptionName;
+                    });
+
+                    // store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
+                    if (itEntry == m_shaderOptions.end())
+                    {
+                        m_shaderOptions.push_back({ shaderOptionName, value });
+                    }
+                    else
+                    {
+                        itEntry->second == value;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
         {
             // Why we need to check "!m_material->NeedsCompile()"...
@@ -130,10 +173,21 @@ namespace AZ
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
 
-                const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
+                // apply shader options from this draw packet to the ShaderItem
+                for (auto& meshShaderOption : m_shaderOptions)
+                {
+                    Name& name = meshShaderOption.first;
+                    RPI::ShaderOptionValue& value = meshShaderOption.second;
 
-                ShaderVariantSearchResult findVariantResult = shader->FindVariantStableId(finalVariantId);
-                const ShaderVariant& variant = shader->GetVariant(findVariantResult.GetStableId());
+                    ShaderOptionIndex index = shaderOptions.FindShaderOptionIndex(name);
+                    if (index.IsValid())
+                    {
+                        shaderOptions.SetValue(name, value);
+                    }
+                }
+
+                const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
+                const ShaderVariant& variant = shader->GetVariant(finalVariantId);
 
                 Data::Instance<ShaderResourceGroup> drawSrg;
                 if (drawSrgAsset)

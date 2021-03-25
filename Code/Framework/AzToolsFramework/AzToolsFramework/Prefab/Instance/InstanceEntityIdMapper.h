@@ -13,13 +13,15 @@
 #pragma once
 
 #include <AzCore/Component/EntityIdSerializer.h>
+#include <AzCore/IO/Path/Path.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
     {
         class Instance;
 
-        class InstanceEntityIdMapper
+        class InstanceEntityIdMapper final
             : public AZ::JsonEntityIdSerializer::JsonEntityIdMapper
         {
         public:
@@ -31,14 +33,33 @@ namespace AzToolsFramework
             void SetStoringInstance(const Instance& storingInstance);
             void SetLoadingInstance(Instance& loadingInstance);
 
+            /**
+            * Fixes up any unresolved entity references by assigning them to the id value of the entity it references.
+            * This is done by computing the absolute alias paths of all EntityIds and EntityId references
+            * then matching the references to the id values they reference.
+            * During a load instance and alias information is stored to build out these paths,
+            * but will be incomplete until the whole Load call is finished.
+            * Calling this after Load and the mapper have finished will give complete information
+            * on all entities and references discovered in the load
+            */
+            void FixUpUnresolvedEntityReferences();
+
         private:
-            AZ::EntityId ResolveEntityReferencePath(const AZStd::string& entityIdReferencePath);
-            EntityAlias ResolveEntityId(const AZ::EntityId& entityId);
+            using AliasPath = AZ::IO::Path;
+
+            EntityAlias ResolveReferenceId(const AZ::EntityId& entityId);
+
+            void GetAbsoluteInstanceAliasPath(const Instance* instance, AliasPath& aliasPathResult);
+
+            AliasPath m_instanceAbsolutePath;
 
             const Instance* m_storingInstance = nullptr;
             Instance* m_loadingInstance = nullptr;
 
-            inline static constexpr char ReferencePathDelimiter = '/';
+            static constexpr const char m_aliasPathSeperator = '/';
+
+            AZStd::unordered_map<Instance*, AZStd::vector<AZStd::pair<EntityAlias, AZ::EntityId>>> m_resolvedEntityAliases;
+            AZStd::unordered_map<Instance*, AZStd::vector<AZStd::pair<EntityAlias, AZ::EntityId*>>> m_unresolvedEntityAliases;
         };
     }
 }

@@ -90,7 +90,7 @@ namespace GraphCanvas
         TryAndSetupSlot();
     }
 
-    void PropertySlotLayout::OnRegisteredToNode([[maybe_unused]] const AZ::EntityId& nodeId)
+    void PropertySlotLayout::OnRegisteredToNode(const AZ::EntityId& /*nodeId*/)
     {
         TryAndSetupSlot();
     }

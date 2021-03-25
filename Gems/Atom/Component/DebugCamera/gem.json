@@ -1,4 +1,5 @@
 {
+    "gem_name": "Atom_Component_DebugCamera",
     "Dependencies": [
         {
             "Uuid": "a218db9eb2114477b46600fea4441a6c",

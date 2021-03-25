@@ -62,7 +62,6 @@ namespace AZ
                     SceneNodeFinalizeContext finalizeNode(addedAttributes);
                     nodeResults += Events::Process(finalizeNode);
                 }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
                 else
                 {
                     AssImpSceneDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneDataPopulatedContext*>(&dataPopulated);
@@ -75,7 +74,6 @@ namespace AZ
                     AssImpSceneNodeFinalizeContext finalizeNode(addedAttributes);
                     nodeResults += Events::Process(finalizeNode);
                 }
-#endif
 
                 return nodeResults.GetResult();
             }
@@ -99,14 +97,12 @@ namespace AZ
                     SceneAttributeNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
                     nodeResults += Events::Process(nodeAppended);
                 }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
                 else
                 {
                     AssImpSceneAttributeDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneAttributeDataPopulatedContext*>(&dataPopulated);
                     AssImpSceneAttributeNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
                     nodeResults += Events::Process(nodeAppended);
                 }
-#endif
 
                 return nodeResults.GetResult();
             }

@@ -313,6 +313,11 @@ namespace ScriptCanvas
             }
         }
 
+        const Type GetBehaviorParameterDataType(const AZ::BehaviorParameter& parameter)
+        {
+            return AZ::BehaviorContextHelper::IsStringParameter(parameter) ? Data::Type::String() : Data::FromAZType(parameter.m_typeId);
+        }
+
         const char* GetBehaviorContextName(const AZ::Uuid& azType)
         {
             return GetBehaviorContextName(FromAZType(azType));
@@ -356,6 +361,14 @@ namespace ScriptCanvas
             }
         }
 
+        bool IsAZRttiTypeOf(const AZ::Uuid& candidate, const AZ::Uuid& reference)
+        {
+            auto bcClass = AZ::BehaviorContextHelper::GetClass(candidate);
+            return bcClass
+                && bcClass->m_azRtti
+                && bcClass->m_azRtti->IsTypeOf(reference);
+        }
+
         bool IsOutcomeType(const AZ::Uuid& type)
         {
             return AZ::Utils::IsOutcomeType(type);
@@ -374,6 +387,29 @@ namespace ScriptCanvas
         bool IsVectorContainerType(const Type& type)
         {
             return AZ::Utils::IsVectorContainerType(ToAZType(type));
+        }
+
+        bool IsAllowedBehaviorClassVariableType(const AZ::Uuid& id)
+        {
+            AZ::BehaviorContext* behaviorContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            AZ_Assert(behaviorContext, "Unable to retrieve behavior context.");
+
+            const auto& classIterator = behaviorContext->m_typeToClassMap.find(id);
+            if (classIterator != behaviorContext->m_typeToClassMap.end())
+            {
+                AZ::BehaviorClass* behaviorClass = classIterator->second;
+                if (behaviorClass->FindAttribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
 
         bool IsSetContainerType(const AZ::Uuid& type)

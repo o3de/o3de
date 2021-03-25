@@ -52,7 +52,18 @@ namespace ScriptCanvasEditor
         }
         else if (auto classMethodTreeItem = azrtti_cast<const ClassMethodEventPaletteTreeItem*>(treeItem))
         {
-            resultHash = ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(classMethodTreeItem->GetClassMethodName(), classMethodTreeItem->GetMethodName());
+            if (classMethodTreeItem->IsOverload())
+            {
+                resultHash = ScriptCanvas::NodeUtils::ConstructMethodOverloadedNodeIdentifier(classMethodTreeItem->GetMethodName());
+            }
+            else
+            {
+                resultHash = ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(classMethodTreeItem->GetClassMethodName(), classMethodTreeItem->GetMethodName());
+            }
+        }
+        else if (auto globalMethodTreeItem = azrtti_cast<const GlobalMethodEventPaletteTreeItem*>(treeItem); globalMethodTreeItem != nullptr)
+        {
+            resultHash = ScriptCanvas::NodeUtils::ConstructGlobalMethodNodeIdentifier(globalMethodTreeItem->GetMethodName());
         }
         else if (auto customNodeTreeItem = azrtti_cast<const CustomNodePaletteTreeItem*>(treeItem))
         {
@@ -68,7 +79,7 @@ namespace ScriptCanvasEditor
         }
         else if (auto functionTreeItem = azrtti_cast<const FunctionPaletteTreeItem*>(treeItem))
         {
-            resultHash = ScriptCanvas::NodeUtils::ConstructFunctionNodeIdentifier(functionTreeItem->GetSourceAssetId());
+            resultHash = ScriptCanvas::NodeUtils::ConstructFunctionNodeIdentifier(functionTreeItem->GetRuntimeAssetId());
         }
 
         return resultHash;

@@ -51,7 +51,7 @@ namespace ScriptCanvasEditor
         return ColumnIndex::Count;
     }
 
-    int DataTypePaletteModel::rowCount([[maybe_unused]] const QModelIndex& parent) const
+    int DataTypePaletteModel::rowCount(const QModelIndex&) const
     {
         return aznumeric_cast<int>(m_variableTypes.size());
     }
@@ -195,6 +195,12 @@ namespace ScriptCanvasEditor
 
             endRemoveRows();
         }
+    }
+
+    bool DataTypePaletteModel::HasType(const AZ::TypeId& dataType) const
+    {
+        auto typeIter = AZStd::find(m_variableTypes.begin(), m_variableTypes.end(), dataType);
+        return typeIter != m_variableTypes.end();
     }
     
     AZ::TypeId DataTypePaletteModel::FindTypeIdForIndex(const QModelIndex& index) const

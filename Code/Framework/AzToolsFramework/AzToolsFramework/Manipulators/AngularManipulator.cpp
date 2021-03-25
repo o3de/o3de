@@ -119,8 +119,8 @@ namespace AzToolsFramework
     }
 
     AngularManipulator::AngularManipulator(const AZ::Transform& worldFromLocal)
-        : m_worldFromLocal(worldFromLocal)
     {
+        SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
     }
 
@@ -147,7 +147,7 @@ namespace AzToolsFramework
 
         // calculate initial state when mouse press first happens
         m_actionInternal = CalculateManipulationDataStart(
-            m_fixed, TransformNormalizedScale(m_worldFromLocal), TransformNormalizedScale(m_localTransform),
+            m_fixed, TransformNormalizedScale(GetSpace()), TransformNormalizedScale(GetLocalTransform()),
             interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
             rayIntersectionDistance);
 
@@ -199,7 +199,7 @@ namespace AzToolsFramework
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState,
             GetManipulatorId(), {
-                m_worldFromLocal * m_localTransform,
+                ApplySpace(GetLocalTransform()), GetNonUniformScale(),
                 AZ::Vector3::CreateZero(), MouseOver()
             },
             debugDisplay, cameraState, mouseInteraction);
@@ -208,27 +208,6 @@ namespace AzToolsFramework
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)
     {
         m_fixed.m_axis = axis;
-    }
-
-    void AngularManipulator::SetSpace(const AZ::Transform& worldFromLocal)
-    {
-        m_worldFromLocal = worldFromLocal;
-    }
-
-    void AngularManipulator::SetLocalTransform(const AZ::Transform& localTransform)
-    {
-        m_localTransform = localTransform;
-    }
-
-    void AngularManipulator::SetLocalPosition(const AZ::Vector3& localPosition)
-    {
-        m_localTransform.SetTranslation(localPosition);
-    }
-
-    void AngularManipulator::SetLocalOrientation(const AZ::Quaternion& localOrientation)
-    {
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
     void AngularManipulator::SetView(AZStd::unique_ptr<ManipulatorView>&& view)

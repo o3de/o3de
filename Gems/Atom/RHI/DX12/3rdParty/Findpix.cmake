@@ -9,11 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../External/pix/include/WinPixEventRuntime/pix3.h")
+file(TO_CMAKE_PATH "$ENV{ATOM_PIX_PATH}" ATOM_PIX_PATH_CMAKE_FORMATTED)
+
+if(EXISTS "${ATOM_PIX_PATH_CMAKE_FORMATTED}/include/WinPixEventRuntime/pix3.h")
     ly_add_external_target(
         NAME pix
         VERSION
-        3RDPARTY_ROOT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../External/pix
+        3RDPARTY_ROOT_DIRECTORY ${ATOM_PIX_PATH_CMAKE_FORMATTED}
         INCLUDE_DIRECTORIES include
     )
 endif()

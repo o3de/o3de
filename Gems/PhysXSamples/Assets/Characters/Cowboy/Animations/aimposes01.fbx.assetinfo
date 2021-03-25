@@ -1,0 +1,109 @@
+<ObjectStream version="3">
+	<Class name="SceneManifest" version="1" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}">
+		<Class name="AZStd::vector" field="values" type="{5D6A7C67-11CA-59A4-829B-0B20B781B292}">
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MotionGroup" field="element" version="3" type="{1B0ABB1E-F6DF-4534-9A35-2DD8244BF58C}">
+					<Class name="IMotionGroup" field="BaseClass1" version="1" type="{1CA400A8-2C3E-423D-B8A3-C457EF88E533}">
+						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="aimposes01" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="selectedRootBone" value="RootNode.Reference" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZ::Uuid" field="id" value="{394BA97A-7EF3-56B3-ADE2-D9D734AA5B6B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="MotionRangeRule" field="element" version="1" type="{3107B08E-5D9D-49A0-8B1B-2133B5A1B041}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="unsigned int" field="startFrame" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="unsigned int" field="endFrame" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="bool" field="processRangeRuleConversion" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MotionGroup" field="element" version="3" type="{1B0ABB1E-F6DF-4534-9A35-2DD8244BF58C}">
+					<Class name="IMotionGroup" field="BaseClass1" version="1" type="{1CA400A8-2C3E-423D-B8A3-C457EF88E533}">
+						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="aimposes01-1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="selectedRootBone" value="RootNode.Reference" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZ::Uuid" field="id" value="{991539D2-8F87-40EF-9664-7994FFEA6B34}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="MotionRangeRule" field="element" version="1" type="{3107B08E-5D9D-49A0-8B1B-2133B5A1B041}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="unsigned int" field="startFrame" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="unsigned int" field="endFrame" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="bool" field="processRangeRuleConversion" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MotionGroup" field="element" version="3" type="{1B0ABB1E-F6DF-4534-9A35-2DD8244BF58C}">
+					<Class name="IMotionGroup" field="BaseClass1" version="1" type="{1CA400A8-2C3E-423D-B8A3-C457EF88E533}">
+						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="aimposes01-2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="selectedRootBone" value="RootNode.Reference" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZ::Uuid" field="id" value="{DBCED014-4E7E-4865-9F94-F84B85F6B007}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="MotionRangeRule" field="element" version="1" type="{3107B08E-5D9D-49A0-8B1B-2133B5A1B041}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="unsigned int" field="startFrame" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="unsigned int" field="endFrame" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="bool" field="processRangeRuleConversion" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

@@ -34,21 +34,32 @@ namespace AzQtComponents
         {
             QToolButton* actionButton;
             QActionEvent* actionEvent;
+            QAction* action;
 
             case QEvent::ActionAdded:
                 actionEvent = static_cast<QActionEvent*>(event);
                 actionButton = new QToolButton(this);
-                actionButton->setIcon(actionEvent->action()->icon());
-                actionButton->setToolTip(actionEvent->action()->text());
-                if (!actionEvent->action()->objectName().isEmpty())
+                action = actionEvent->action();
+                actionButton->setIcon(action->icon());
+                actionButton->setToolTip(action->text());
+                if (!action->objectName().isEmpty())
                 {
-                    actionButton->setObjectName(actionEvent->action()->objectName());
+                    actionButton->setObjectName(action->objectName());
                 }
+
+                // If the action has a menu, we need to configure the QToolButton appropriately
+                if (action->menu())
+                {
+                    actionButton->setAutoRaise(true);
+                    actionButton->setPopupMode(QToolButton::InstantPopup);
+                    actionButton->setMenu(action->menu());
+                }
+
                 // Forcing styled background to allow using background-color from QSS
                 actionButton->setAttribute(Qt::WA_StyledBackground, true);
                 layout()->addWidget(actionButton);
-                connect(actionButton, &QToolButton::clicked, actionEvent->action(), &QAction::trigger);
-                m_actionButtons[actionEvent->action()] = actionButton;
+                connect(actionButton, &QToolButton::clicked, action, &QAction::trigger);
+                m_actionButtons[action] = actionButton;
                 emit actionsChanged();
                 return true;
             case QEvent::ActionChanged:

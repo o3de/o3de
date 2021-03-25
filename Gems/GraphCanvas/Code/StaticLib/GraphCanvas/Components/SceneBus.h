@@ -87,7 +87,7 @@ namespace GraphCanvas
         //! # Parameters
         //! 1. The entity ID of the node to add.
         //! 2. A 2D vector indicating the position in scene space the node should initially have.
-        virtual bool AddNode(const AZ::EntityId&, const AZ::Vector2&) = 0;
+        virtual bool AddNode(const AZ::EntityId&, const AZ::Vector2&, bool isPaste) = 0;
 
         //! Add a list of nodes to the scene.
         //! Nodes are owned by the scene and will follow the scene's entity life-cycle and be destroyed along with it.
@@ -169,7 +169,7 @@ namespace GraphCanvas
         virtual bool RemoveBookmarkAnchor(const AZ::EntityId& bookmarkAnchorId) = 0;
 
         //! Add an entity of any valid type to the scene.
-        virtual bool Add(const AZ::EntityId&) = 0;
+        virtual bool Add(const AZ::EntityId&, bool) = 0;
 
         //! Remove an entity of any valid type from the scene.
         virtual bool Remove(const AZ::EntityId&) = 0;
@@ -180,14 +180,23 @@ namespace GraphCanvas
         //! Hides the specified graph member from the scene.
         virtual bool Hide(const AZ::EntityId& graphMember) = 0;
 
+        //! Returns whether or not the specified member is hidden or not
+        virtual bool IsHidden(const AZ::EntityId& graphMember) const = 0;
+
         //! Enables the specified graph member in the graph
         virtual bool Enable(const NodeId& nodeId) = 0;
+
+        //! Enables the specified graph members visually
+        virtual void EnableVisualState(const NodeId& nodeId) = 0;
 
         //! Enables the selected elements in the graph.
         virtual void EnableSelection() = 0;
 
         //! Disables the specified graph member in the graph
         virtual bool Disable(const NodeId& nodeId) = 0;
+
+        //! Disables the specified graph members visually
+        virtual void DisableVisualState(const NodeId& nodeId) = 0;
 
         //! Disables the selected elements in the graph
         virtual void DisableSelection() = 0;
@@ -346,8 +355,12 @@ namespace GraphCanvas
         virtual void SignalDragSelectStart() = 0;
         virtual void SignalDragSelectEnd() = 0;
 
+        virtual bool IsDragSelecting() const = 0;
+
         virtual void SignalConnectionDragBegin() = 0;
         virtual void SignalConnectionDragEnd() = 0;
+
+        virtual bool IsDraggingConnection() const = 0;
 
         virtual void SignalDesplice() = 0;
 
@@ -362,13 +375,21 @@ namespace GraphCanvas
         virtual void RemoveUnusedNodes() = 0;
         virtual void RemoveUnusedElements() = 0;
 
-        virtual void HandleProposalDaisyChain(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint) = 0;
+        virtual void HandleProposalDaisyChainWithGroup(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint, AZ::EntityId groupTarget) = 0;
+
+        virtual void HandleProposalDaisyChain(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint)
+        {
+            HandleProposalDaisyChainWithGroup(startNode, slotType, connectionType, screenPoint, focusPoint, AZ::EntityId());
+        }
 
         virtual void StartNudging(const AZStd::unordered_set<AZ::EntityId>& fixedNodes) = 0;
         virtual void FinalizeNudging() = 0;
         virtual void CancelNudging() = 0;
 
-        // Signals used to managge the state around the generic add position
+        // Helper method to find the topmost group at a particular point
+        virtual AZ::EntityId FindTopmostGroupAtPoint(QPointF scenePoint) = 0;
+
+        // Signals used to manage the state around the generic add position
         virtual QPointF SignalGenericAddPositionUseBegin() = 0;
         virtual void SignalGenericAddPositionUseEnd() = 0;
     };
@@ -386,7 +407,7 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
 
         //! A node has been added to the scene.
-        virtual void OnNodeAdded(const AZ::EntityId& /*nodeId*/) {}
+        virtual void OnNodeAdded(const AZ::EntityId& /*nodeId*/, bool /*isPaste*/) {}
         //! A node has been removed from the scene.
         virtual void OnNodeRemoved(const AZ::EntityId& /*nodeId*/) {}
         //! A node is about to be removed from the scene.
@@ -398,7 +419,7 @@ namespace GraphCanvas
         virtual void OnNodePositionChanged(const AZ::EntityId& /*nodeId*/, const AZ::Vector2& /*position*/) {}
 
         //! A node in the scene is being edited
-        virtual void OnNodeIsBeingEdited([[maybe_unused]] bool isEditing){}
+        virtual void OnNodeIsBeingEdited(bool /*isEditing*/){}
 
         //! A Scene Member was added to the scene
         virtual void OnSceneMemberAdded(const AZ::EntityId& /*sceneMemberId*/) {};
@@ -444,7 +465,7 @@ namespace GraphCanvas
         virtual void OnEntitiesDeserializationComplete(const GraphSerialization&) {}
 
         //! Signalled when a paste event is received, and it does not contain the CopyMimeType.
-        virtual void OnUnknownPaste([[maybe_unused]] const QPointF& scenePos) {}
+        virtual void OnUnknownPaste(const QPointF& /*scenePos*/) {}
 
         //! Sent when a duplicate command begins
         virtual void OnDuplicateBegin() {}
@@ -497,7 +518,14 @@ namespace GraphCanvas
         virtual void OnViewRegistered() {}
 
         virtual void OnGraphLoadBegin() {}
+
+        // Signaled once the load is complete.
         virtual void OnGraphLoadComplete() {}
+
+        // Signaled once the load is complete, but after the LoadComplete signal.
+        // Used right now to let Groups remap their internals on load. Then deal with collapsing
+        // in the finalize.
+        virtual void PostOnGraphLoadComplete() {}
     };
 
     using SceneNotificationBus = AZ::EBus<SceneNotifications>;
@@ -526,11 +554,6 @@ namespace GraphCanvas
 
         //! Get the scene that the entity belongs to (directly or indirectly), if any.
         virtual AZ::EntityId GetScene() const = 0;
-
-        //! Locks the node to be moved by an external source. The SceneMemberId is the Id of the SceneMember
-        //! that is locking this element in order to move it.
-        virtual bool LockForExternalMovement(const AZ::EntityId& /*sceneMemberId*/) = 0;
-        virtual void UnlockForExternalMovement(const AZ::EntityId& /*sceneMemberId*/) = 0;
     };
 
     using SceneMemberRequestBus = AZ::EBus<SceneMemberRequests>;
@@ -560,16 +583,16 @@ namespace GraphCanvas
         
         virtual void OnSceneMemberShown() {}
 
-        virtual void OnSceneMemberExpandedFromGroup([[maybe_unused]] const AZ::EntityId& groupId) {}
+        virtual void OnSceneMemberExpandedFromGroup(const AZ::EntityId& /*groupId*/) {}
 
-        virtual void OnSceneMemberCollapsedInGroup([[maybe_unused]] const AZ::EntityId& groupId) {}
+        virtual void OnSceneMemberCollapsedInGroup(const AZ::EntityId& /*groupId*/) {}
         
-        virtual void OnSceneMemberAboutToSerialize([[maybe_unused]] GraphSerialization& serializationTarget) {}
+        virtual void OnSceneMemberAboutToSerialize(GraphSerialization& /*serializationTarget*/) {}
 
         //! Signals that a SceneMember was deserialized into a particular graph.
         //! Note: The graphId is being passed in order to ask questions about the graph.
         //!       and is not a signal that the element has been added to the particular graph yet.
-        virtual void OnSceneMemberDeserialized([[maybe_unused]] const AZ::EntityId& graphId, [[maybe_unused]] const GraphSerialization& serializationTarget) {}
+        virtual void OnSceneMemberDeserialized(const AZ::EntityId& /*graphId*/, const GraphSerialization& /*serializationTarget*/) {}
     };
 
     using SceneMemberNotificationBus = AZ::EBus<SceneMemberNotifications>;    

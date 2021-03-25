@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/fixed_string.h>
 
@@ -45,6 +46,11 @@ namespace AZ
         }
 
         AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath()
+        {
+            return AZStd::nullopt;
+        }
+
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
         {
             return AZStd::nullopt;
         }

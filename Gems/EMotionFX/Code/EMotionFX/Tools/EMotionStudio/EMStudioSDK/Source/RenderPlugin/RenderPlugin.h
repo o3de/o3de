@@ -41,6 +41,7 @@ namespace EMStudio
     class EMSTUDIO_API RenderPlugin
         : public DockWidgetPlugin
         , private EMotionFX::SkeletonOutlinerNotificationBus::Handler
+        , private EMotionFX::ActorNotificationBus::Handler
     {
         MCORE_MEMORYOBJECTCATEGORY(RenderPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE)
         Q_OBJECT // AUTOMOC
@@ -99,6 +100,9 @@ namespace EMStudio
 
         // SkeletonOutlinerNotificationBus
         void ZoomToJoints(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<EMotionFX::Node*>& joints);
+
+        // ActorNotificationBus
+        void OnActorReady(EMotionFX::Actor* actor) override;
 
         EMStudioPlugin::EPluginType GetPluginType() const override              { return EMStudioPlugin::PLUGINTYPE_RENDERING; }
         uint32 GetProcessFramePriority() const override                         { return 100; }

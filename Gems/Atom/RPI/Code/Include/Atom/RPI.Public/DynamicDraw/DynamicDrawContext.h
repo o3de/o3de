@@ -61,8 +61,8 @@ namespace AZ
 
             // Required initialization functions
             //! Initialize this context with the input shader/shader asset.
-            void InitShader(Data::Asset<ShaderAsset> shaderAsset);
-            void InitShader(Data::Instance<Shader> shader);
+            void InitShader(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues = nullptr);
+            void InitShader(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues = nullptr);
 
             // Optional initialization functions
             //! Initialize input stream layout with vertex channel information
@@ -120,10 +120,14 @@ namespace AZ
             //! The per draw srg need to be provided if it's required by shader. 
             void DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg = nullptr);
 
+            //! Draw linear indexed primitives with vertex data and per draw srg
+            //! The per draw srg need to be provided if it's required by shader. 
+            void DrawLinear(void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg);
+
             //! Get per vertex size. The size was evaluated when vertex format was set
             uint32_t GetPerVertexDataSize();
 
-            //! Get DrawListTag of this DyanmicDrawContext
+            //! Get DrawListTag of this DynamicDrawContext
             RHI::DrawListTag GetDrawListTag();
 
             //! Create a draw srg
@@ -184,6 +188,7 @@ namespace AZ
             RHI::ShaderResourceGroup* m_srgGroups[1]; // array for draw item's srg groups
             uint32_t m_perVertexDataSize = 0;
             Data::Asset<ShaderResourceGroupAsset> m_drawSrgAsset;
+            bool m_hasShaderVariantKeyFallbackEntry = false;
 
             // Draw variations allowed in this DynamicDrawContext
             DrawStateOptions m_drawStateOptions;

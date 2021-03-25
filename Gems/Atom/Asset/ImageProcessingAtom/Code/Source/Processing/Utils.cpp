@@ -345,17 +345,10 @@ namespace ImageProcessingAtom
             RPI::StreamingImageAssetHandler* imageAssetHandler = static_cast<RPI::StreamingImageAssetHandler*>(
                 Data::AssetManager::Instance().GetHandler(RPI::StreamingImageAsset::RTTI_Type()));
 
-            // Enable load mipchain assets
-            bool savedLoadMipEnabled = imageAssetHandler->GetLoadMipChainsEnabled();
-            imageAssetHandler->SetLoadMipChainsEnabled(true);
-
             // Blocking loading streaming image asset with its mipchain assets
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(imageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 
             imageAsset.BlockUntilLoadComplete();
-
-            // Recover the load option
-            imageAssetHandler->SetLoadMipChainsEnabled(savedLoadMipEnabled);
 
             return imageAsset;
         }

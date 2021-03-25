@@ -74,6 +74,20 @@ namespace AZ
                     ->Field("m_nameReflectionForValues", &ShaderOptionDescriptor::m_nameReflectionForValues)
                     ;
             }
+
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ShaderOptionDescriptor>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Shader")
+                    ->Attribute(AZ::Script::Attributes::Module, "shader")
+                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
+                    ->Method("GetName", &ShaderOptionDescriptor::GetName)
+                    ->Method("GetDefaultValue", &ShaderOptionDescriptor::GetDefaultValue)
+                    ->Method("GetValueName", &ShaderOptionDescriptor::GetValueName)
+                    ->Method("FindValue", &ShaderOptionDescriptor::FindValue)
+                    ;
+            }   
         }
 
         ShaderOptionDescriptor::ShaderOptionDescriptor(const Name& name,            
@@ -380,6 +394,16 @@ namespace AZ
                     ->Field("m_hash", &ShaderOptionGroupLayout::m_hash)
                     ;
             }
+
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ShaderOptionGroupLayout>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Shader")
+                    ->Attribute(AZ::Script::Attributes::Module, "shader")
+                    ->Method("GetShaderOptions", &ShaderOptionGroupLayout::GetShaderOptions)
+                    ;
+            }   
         }
 
         Ptr<ShaderOptionGroupLayout> ShaderOptionGroupLayout::Create()

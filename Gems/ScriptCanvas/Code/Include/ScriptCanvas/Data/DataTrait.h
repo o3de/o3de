@@ -15,8 +15,8 @@
 #include <Data/BehaviorContextObjectPtr.h>
 #include <Data/Data.h>
 
-#include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Slice/SliceInstantiationTicket.h>
+//#include <AzFramework/Entity/EntityContextBus.h>
+//#include <AzFramework/Slice/SliceInstantiationTicket.h>
 
 namespace ScriptCanvas
 {
@@ -397,7 +397,7 @@ namespace ScriptCanvas
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
         };
 
-        template<>
+        /*template<>
         struct Traits<AzFramework::SliceInstantiationTicket> : public TraitsBase<AzFramework::SliceInstantiationTicket>
         {
             using Type = AzFramework::SliceInstantiationTicket;
@@ -411,7 +411,7 @@ namespace ScriptCanvas
             static AZStd::string GetName(const Data::Type& = {}) { return "SliceInstantiationTicket"; }
             static Type GetDefault(const Data::Type& = {}) { return AzFramework::SliceInstantiationTicket(); }
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
-        };
+        };*/
 
         /**
         * Special Case Traits specialization for the string_view type
@@ -472,7 +472,7 @@ namespace ScriptCanvas
         struct eTraits<eType::EntityID> : Traits<EntityIDType> {};
 
         template<>
-        struct eTraits<eType::NamedEntityID> : Traits<EntityIDType> {};
+        struct eTraits<eType::NamedEntityID> : Traits<NamedEntityIDType> {};
 
         template<>
         struct eTraits<eType::Matrix3x3> : Traits<Matrix3x3Type> {};
@@ -507,5 +507,5 @@ namespace ScriptCanvas
         template<>
         struct eTraits<eType::Vector4> : Traits<Vector4Type> {};
 
-    } // namespace Data
-} // namespace ScriptCanvas
+    } 
+} 

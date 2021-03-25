@@ -32,6 +32,7 @@ namespace ScriptCanvasEditor
     */
     class ScriptCanvasAssetHolder
         : AssetTrackerNotificationBus::Handler
+        , AZ::Data::AssetBus::Handler
     {
     public:
         AZ_RTTI(ScriptCanvasAssetHolder, "{3E80CEE3-2932-4DC1-AADF-398FDDC6DEFE}");
@@ -59,6 +60,26 @@ namespace ScriptCanvasEditor
 
         void SetScriptChangedCB(const ScriptChangedCB&);
         void Load(AZ::Data::AssetId fileAssetId);
+        void LoadMemoryAsset(AZ::Data::AssetId fileAssetId);
+
+        //! AZ::Data::AssetBus
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        ////
+
+        const AZStd::string_view GetAssetHint() const
+        {
+            if (m_scriptCanvasAsset)
+            {
+                return m_scriptCanvasAsset.GetHint().c_str();
+            }
+
+            if (m_memoryScriptCanvasAsset)
+            {
+                return m_memoryScriptCanvasAsset.GetHint().c_str();
+            }
+
+            return "";
+        }
 
     protected:
 
@@ -75,6 +96,8 @@ namespace ScriptCanvasEditor
 
         TypeDefs::EntityComponentId m_ownerId; // Id of Entity which stores this AssetHolder object
         ScriptChangedCB m_scriptNotifyCallback;
+
+        bool m_triggeredLoad = false;
     };
 
 }

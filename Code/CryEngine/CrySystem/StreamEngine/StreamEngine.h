@@ -213,11 +213,9 @@ private:
     TExtensionInfoMap m_PerExtensionInfo;
 
     //////////////////////////////////////////////////////////////////////////
-    // Used to calculate unzip/decrypt/verify bandwidth for statistics.
+    // Used to calculate unzip/verify bandwidth for statistics.
     uint32 m_nUnzipBandwidth;
     uint32 m_nUnzipBandwidthAverage;
-    uint32 m_nDecryptBandwidth;
-    uint32 m_nDecryptBandwidthAverage;
     uint32 m_nVerifyBandwidth;
     uint32 m_nVerifyBandwidthAverage;
     CTimeValue m_nLastBandwidthUpdateTime;

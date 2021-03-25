@@ -28,74 +28,71 @@
 namespace ScriptCanvas
 {
     //=========================================================================
-    // RuntimeFunctionAssetHandler
+    // SubgraphInterfaceAssetHandler
     //=========================================================================
-    RuntimeFunctionAssetHandler::RuntimeFunctionAssetHandler(AZ::SerializeContext* context)
+    SubgraphInterfaceAssetHandler::SubgraphInterfaceAssetHandler(AZ::SerializeContext* context)
     {
         SetSerializeContext(context);
 
-        AZ::AssetTypeInfoBus::MultiHandler::BusConnect(AZ::AzTypeInfo<ScriptCanvas::RuntimeFunctionAsset>::Uuid());
+        AZ::AssetTypeInfoBus::MultiHandler::BusConnect(AZ::AzTypeInfo<ScriptCanvas::SubgraphInterfaceAsset>::Uuid());
     }
 
-    RuntimeFunctionAssetHandler::~RuntimeFunctionAssetHandler()
+    SubgraphInterfaceAssetHandler::~SubgraphInterfaceAssetHandler()
     {
         AZ::AssetTypeInfoBus::MultiHandler::BusDisconnect();
     }
 
-    AZ::Data::AssetType RuntimeFunctionAssetHandler::GetAssetType() const
+    AZ::Data::AssetType SubgraphInterfaceAssetHandler::GetAssetType() const
     {
-        return AZ::AzTypeInfo<RuntimeFunctionAsset>::Uuid();
+        return AZ::AzTypeInfo<SubgraphInterfaceAsset>::Uuid();
     }
 
-    const char* RuntimeFunctionAssetHandler::GetAssetTypeDisplayName() const
+    const char* SubgraphInterfaceAssetHandler::GetAssetTypeDisplayName() const
     {
         return "Script Canvas Runtime Function Graph";
     }
 
-    const char* RuntimeFunctionAssetHandler::GetGroup() const
+    const char* SubgraphInterfaceAssetHandler::GetGroup() const
     {
-        return "Script";
+        return "Script Canvas";
     }
 
-    const char* RuntimeFunctionAssetHandler::GetBrowserIcon() const
+    const char* SubgraphInterfaceAssetHandler::GetBrowserIcon() const
     {
         return "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png";
     }
 
-    AZ::Uuid RuntimeFunctionAssetHandler::GetComponentTypeId() const
+    AZ::Uuid SubgraphInterfaceAssetHandler::GetComponentTypeId() const
     {
         return azrtti_typeid<RuntimeComponent>();
     }
 
-    void RuntimeFunctionAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
+    void SubgraphInterfaceAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         const AZ::Uuid& assetType = *AZ::AssetTypeInfoBus::GetCurrentBusId();
-        if (assetType == AZ::AzTypeInfo<ScriptCanvas::RuntimeFunctionAsset>::Uuid())
+        if (assetType == AZ::AzTypeInfo<ScriptCanvas::SubgraphInterfaceAsset>::Uuid())
         {
-            extensions.push_back(ScriptCanvas::RuntimeFunctionAsset::GetFileExtension());
+            extensions.push_back(ScriptCanvas::SubgraphInterfaceAsset::GetFileExtension());
         }
     }
 
-    bool RuntimeFunctionAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+    bool SubgraphInterfaceAssetHandler::CanCreateComponent(const AZ::Data::AssetId&) const
     {
         // This is a runtime component so we shouldn't be making components at edit time for this
         return false;
     }
 
-    AZ::Data::AssetPtr RuntimeFunctionAssetHandler::CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
+    AZ::Data::AssetPtr SubgraphInterfaceAssetHandler::CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
     {
         (void)type;
-        AZ_Assert(type == AZ::AzTypeInfo<ScriptCanvas::RuntimeFunctionAsset>::Uuid(), "This handler deals only with the Script Canvas Runtime Asset type!");
+        AZ_Assert(type == AZ::AzTypeInfo<ScriptCanvas::SubgraphInterfaceAsset>::Uuid(), "This handler deals only with the Script Canvas Runtime Asset type!");
 
-        return aznew ScriptCanvas::RuntimeFunctionAsset(id);
+        return aznew ScriptCanvas::SubgraphInterfaceAsset(id);
     }
 
-    AZ::Data::AssetHandler::LoadResult RuntimeFunctionAssetHandler::LoadAssetData(
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-        const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+    AZ::Data::AssetHandler::LoadResult SubgraphInterfaceAssetHandler::LoadAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZStd::shared_ptr<AZ::Data::AssetDataStream> stream, const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        ScriptCanvas::RuntimeFunctionAsset* runtimeFunctionAsset = asset.GetAs<ScriptCanvas::RuntimeFunctionAsset>();
+        ScriptCanvas::SubgraphInterfaceAsset* runtimeFunctionAsset = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
         AZ_Assert(runtimeFunctionAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
         if (runtimeFunctionAsset && m_serializeContext)
         {
@@ -106,9 +103,9 @@ namespace ScriptCanvas
         return AZ::Data::AssetHandler::LoadResult::Error;
     }
 
-    bool RuntimeFunctionAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
+    bool SubgraphInterfaceAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
     {
-        ScriptCanvas::RuntimeFunctionAsset* runtimeFunctionAsset = asset.GetAs<ScriptCanvas::RuntimeFunctionAsset>();
+        ScriptCanvas::SubgraphInterfaceAsset* runtimeFunctionAsset = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
         AZ_Assert(runtimeFunctionAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
         if (runtimeFunctionAsset && m_serializeContext)
         {
@@ -121,22 +118,22 @@ namespace ScriptCanvas
         return false;
     }
 
-    void RuntimeFunctionAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
+    void SubgraphInterfaceAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
         delete ptr;
     }
 
-    void RuntimeFunctionAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    void SubgraphInterfaceAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
-        assetTypes.push_back(AZ::AzTypeInfo<ScriptCanvas::RuntimeFunctionAsset>::Uuid());
+        assetTypes.push_back(AZ::AzTypeInfo<ScriptCanvas::SubgraphInterfaceAsset>::Uuid());
     }
 
-    AZ::SerializeContext* RuntimeFunctionAssetHandler::GetSerializeContext() const
+    AZ::SerializeContext* SubgraphInterfaceAssetHandler::GetSerializeContext() const
     {
         return m_serializeContext;
     }
     
-    void RuntimeFunctionAssetHandler::SetSerializeContext(AZ::SerializeContext* context)
+    void SubgraphInterfaceAssetHandler::SetSerializeContext(AZ::SerializeContext* context)
     {
         m_serializeContext = context;
 
@@ -146,8 +143,8 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             if (!m_serializeContext)
             {
-                AZ_Error("Script Canvas", false, "RuntimeFunctionAssetHandler: No serialize context provided! We will not be able to process the Script Canvas Runtime Asset type");
+                AZ_Error("Script Canvas", false, "SubgraphInterfaceAssetHandler: No serialize context provided! We will not be able to process the Script Canvas Runtime Asset type");
             }
         }
     }
-} // namespace AZ
+}

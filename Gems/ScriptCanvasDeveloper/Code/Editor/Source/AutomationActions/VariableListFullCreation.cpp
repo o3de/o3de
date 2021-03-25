@@ -11,6 +11,8 @@
 */
 #include "precompiled.h"
 
+#include <QMenu>
+
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
@@ -84,19 +86,18 @@ namespace ScriptCanvasDeveloperEditor
             ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationEnd);
         }
 
-        QAction* CreateVariablePaletteFullCreationAction(QWidget* mainWindow)
+        QAction* CreateVariablePaletteFullCreationAction(QMenu* mainMenu)
         {
             QAction* createVariablePaletteAction = nullptr;
 
-            if (mainWindow)
+            if (mainMenu)
             {
-                createVariablePaletteAction = new QAction(QAction::tr("Create Node Palette"), mainWindow);
+                createVariablePaletteAction = mainMenu->addAction(QAction::tr("Create All Variables"));
                 createVariablePaletteAction->setAutoRepeat(false);
                 createVariablePaletteAction->setToolTip("Tries to create every variable in the variable palette. All of them. At once.");
                 createVariablePaletteAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Shift+j", "Debug|Create Variable Palette")));
 
-                mainWindow->addAction(createVariablePaletteAction);
-                mainWindow->connect(createVariablePaletteAction, &QAction::triggered, &VariablePaletteFullCreationAction);
+                QObject::connect(createVariablePaletteAction, &QAction::triggered, &VariablePaletteFullCreationAction);
             }
 
             return createVariablePaletteAction;

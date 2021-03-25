@@ -38,6 +38,7 @@ namespace AzNetworking
     class UdpConnection
     :   public IConnection
     {
+        friend class UdpFragmentQueue;
         friend class UdpNetworkInterface;
 
     public:
@@ -50,9 +51,10 @@ namespace AzNetworking
         UdpConnection(ConnectionId connectionId, const IpAddress& remoteAddress, UdpNetworkInterface& networkInterface, ConnectionRole connectionRole);
         ~UdpConnection() override;
 
-        //! Helper to complete dtls handshake logic on a newly established connection
+        //! Helper to exchange dtls handshake data during connection handshake
+        //! @param dtlsData    data buffer containing dtls handshake packet
         //! @return the current result code for the dtls handshake operation, failed, pending, or complete
-        DtlsEndpoint::ConnectResult CompleteHandshake();
+        DtlsEndpoint::ConnectResult ProcessHandshakeData(const UdpPacketEncodingBuffer& dtlsData);
 
         //! Updates the connection heartbeat if active.
         //! @param currentTimeMs current wall clock time in milliseconds

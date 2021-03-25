@@ -19,8 +19,8 @@
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
 
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
 

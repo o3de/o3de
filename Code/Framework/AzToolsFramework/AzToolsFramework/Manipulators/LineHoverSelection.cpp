@@ -75,6 +75,7 @@ namespace AzToolsFramework
             lineSegmentManipulator->Register(managerId);
             lineSegmentManipulator->AddEntityComponentIdPair(entityComponentIdPair);
             lineSegmentManipulator->SetSpace(WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId()));
+            lineSegmentManipulator->SetNonUniformScale(GetNonUniformScale(entityComponentIdPair.GetEntityId()));
 
             UpdateLineSegmentPosition<Vertex>(vertIndex, entityComponentIdPair.GetEntityId(), *lineSegmentManipulator);
 
@@ -171,6 +172,15 @@ namespace AzToolsFramework
         for (auto& lineSegmentManipulator : m_lineSegmentManipulators)
         {
             lineSegmentManipulator->SetSpace(worldFromLocal);
+        }
+    }
+
+    template<typename Vertex>
+    void LineSegmentHoverSelection<Vertex>::SetNonUniformScale(const AZ::Vector3& nonUniformScale)
+    {
+        for (auto& lineSegmentManipulator : m_lineSegmentManipulators)
+        {
+            lineSegmentManipulator->SetNonUniformScale(nonUniformScale);
         }
     }
 

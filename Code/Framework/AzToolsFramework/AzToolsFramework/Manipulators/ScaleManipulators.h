@@ -37,10 +37,10 @@ namespace AzToolsFramework
         void InstallUniformMouseMoveCallback(const LinearManipulator::MouseActionCallback& onMouseMoveCallback);
         void InstallUniformLeftMouseUpCallback(const LinearManipulator::MouseActionCallback& onMouseUpCallback);
 
-        void SetSpace(const AZ::Transform& worldFromLocal) override;
-        void SetLocalTransform(const AZ::Transform& localTransform) override;
-        void SetLocalPosition(const AZ::Vector3& localPosition) override;
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation) override;
+        void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
+        void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
+        void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;
+        void SetLocalOrientationImpl(const AZ::Quaternion& localOrientation) override;
 
         void SetAxes(
             const AZ::Vector3& axis1,

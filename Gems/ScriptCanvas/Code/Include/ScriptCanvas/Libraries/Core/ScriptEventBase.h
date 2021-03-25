@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Core/ScriptEventBase.generated.h>
 
 #include <AzCore/std/containers/map.h>
@@ -40,8 +38,6 @@ namespace ScriptCanvas
         {
             namespace Internal
             {
-                bool ScriptEventBaseVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
-
                 struct ScriptEventEntry
                 {
                     AZ_TYPE_INFO(ScriptEventEntry, "{28231E8C-6F56-4A28-A19A-2931D99FB1C9}");
@@ -49,6 +45,19 @@ namespace ScriptCanvas
                     bool IsExpectingResult() const
                     {
                         return m_resultSlotId.IsValid();
+                    }
+
+                    bool ContainsSlot(SlotId slotId) const
+                    {
+                        if (m_eventSlotId == slotId || m_resultSlotId == slotId)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return m_parameterSlotIds.end()
+                                != AZStd::find_if(m_parameterSlotIds.begin(), m_parameterSlotIds.end(), [&slotId](const SlotId& candidate) { return slotId == candidate; });
+                        }
                     }
 
                     AZ::Data::AssetId m_scriptEventAssetId;
@@ -65,6 +74,7 @@ namespace ScriptCanvas
                     static void Reflect(AZ::ReflectContext* context);
                 };
 
+                //! Provides a base class for nodes that handle Script Events
                 class ScriptEventBase
                     : public Node
                     , public AZ::Data::AssetBus::Handler
@@ -72,30 +82,26 @@ namespace ScriptCanvas
                 {
                 public:
 
+                    SCRIPTCANVAS_NODE(ScriptEventBase);
+
                     using Events = AZStd::vector<ScriptEventEntry>;
                     using EventMap = AZStd::map<AZ::Crc32, ScriptEventEntry>;
                     using SlotIdMapping = AZStd::unordered_map<AZ::Uuid, ScriptCanvas::SlotId>;
 
-                    ScriptCanvas_Node(ScriptEventBase,
-                        ScriptCanvas_Node::Name("Script Event", "Base class for Script Events.")
-                        ScriptCanvas_Node::Category("Internal")
-                        ScriptCanvas_Node::Uuid("{B6614CEC-4788-476C-A19A-BA0A8B490C73}")
-                        ScriptCanvas_Node::Version(6, ScriptEventBaseVersionConverter)
-                        ScriptCanvas_Node::EditAttributes(AZ::Script::Attributes::ExcludeFrom(AZ::Script::Attributes::ExcludeFlags::All))
-                    );
-
-                    ScriptCanvas_SerializeProperty(AZ::u32, m_version);
-                    ScriptCanvas_SerializeProperty(EventMap, m_eventMap);
-                    ScriptCanvas_SerializeProperty(SlotIdMapping, m_eventSlotMapping)
-                    ScriptCanvas_SerializeProperty(AZ::Data::AssetId, m_scriptEventAssetId);
-                    ScriptCanvas_SerializeProperty(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>, m_asset);
+                    AZ::u32 m_version;
+                    EventMap m_eventMap;
+                    SlotIdMapping m_eventSlotMapping;
+                    AZ::Data::AssetId m_scriptEventAssetId;
+                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_asset;
 
                     ScriptEventBase();
                     ~ScriptEventBase() override;
 
                     void OnInit() override;
+                    void OnActivate() override;
                     void OnDeactivate() override;
 
+                    AZ::Outcome<DependencyReport, void> GetDependencies() const override;
                     AZ::u32 GetVersion() const { return m_version; }
                     const EventMap& GetEvents() const { return m_eventMap; }
                     const AZ::Data::AssetId GetAssetId() const { return m_scriptEventAssetId; }
@@ -103,19 +109,22 @@ namespace ScriptCanvas
                     const ScriptEvents::ScriptEvent& GetScriptEvent() const { return m_definition; }
                     ScriptEvents::ScriptEventsAssetPtr GetAsset() const { return m_asset; }
 
+                    AZStd::pair<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>, bool> IsAssetOutOfDate() const;
+
                     virtual void Initialize(const AZ::Data::AssetId assetId);
+
+                    bool IsSupportedByNewBackend() const override { return true; }
 
                 protected:
 
-                    // AZ::Data::AssetBus::Handler
+                    // AZ::Data::AssetBus::Handler...
                     void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
                     void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-                    //
 
                     virtual void OnScriptEventReady(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>&) {}
                     static void OnAssetChanged(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>&, void* userData);
 
-                    AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent> m_scriptEvent;
+                    AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration> m_scriptEvent;
                     ScriptEvents::ScriptEventsAssetRef m_scriptEventAsset;
 
                     ScriptEvents::ScriptEvent m_definition; // Don't serialize.
@@ -123,7 +132,7 @@ namespace ScriptCanvas
                     AZ::BehaviorEBus* m_ebus = nullptr;
                 };
 
-            } // namespace Internal
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            }
+        }
+    }
+}

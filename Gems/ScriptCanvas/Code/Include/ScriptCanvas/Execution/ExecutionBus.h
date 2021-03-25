@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -14,37 +14,104 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/Event.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 
 #include <ScriptCanvas/Core/Core.h>
 
+#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
+// the markers are defined in test, but the system that listens for calls won't always be enabled
+#define SCRIPT_CANVAS_PERFORMANCE_TRACKING_ENABLED
+#endif
+
+#if defined(SCRIPT_CANVAS_PERFORMANCE_TRACKING_ENABLED)
+#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(scriptCanvasId, assetId) ScriptCanvas::Execution::FinalizePerformanceReport(scriptCanvasId, assetId);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeInitialization initializationScope(scriptCanvasId, assetId);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeExecution executionScope(scriptCanvasId, assetId);
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(scriptCanvasId, assetId) ScriptCanvas::Execution::PerformanceScopeLatent latentScope(scriptCanvasId, assetId);
+#else
+#define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(scriptCanvasId, assetId)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(scriptCanvasId, assetId)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(scriptCanvasId, assetId)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(scriptCanvasId, assetId)
+#endif
+
 namespace ScriptCanvas
-{
-    class Node;
-    struct SlotId;
-    
+{    
     GraphInfo CreateGraphInfo(ScriptCanvasId executionId, const GraphIdentifier& graphIdentifier);
-    DatumValue CreateVariableDatumValue(ScriptCanvasId scriptCanvasId, const GraphVariable& graphVariable);
-    DatumValue CreateVariableDatumValue(ScriptCanvasId scriptCanvasId, const Datum& variableDatum, const VariableId& variableId);
 
-    //! Execution Request Bus that triggers graph Execution and supports adding nodes
-    //! to the execution stack
-    class ExecutionRequests : public AZ::EBusTraits
+    namespace Execution
     {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        //! BusIdType represents a unique id for the execution component
-        //! Because multiple Script Canvas graphs can execute on the same entity
-        //! this is not an "EntityId" in the sense that it uniquely identifies an entity.
-        using BusIdType = ScriptCanvasId;
+        using PerformanceKey = AZ::EntityId; // ScriptCanvasId
 
-        // Adds the node to the Execution stack where the slotId represents the slot that triggered the execution
-        virtual void AddToExecutionStack(Node& node, const SlotId& slotId) = 0;
-        // Starts or resumes execution of the graph
-        virtual void Execute() = 0;
-        virtual void ExecuteUntilNodeIsTopOfStack(Node&) = 0;
-        virtual bool IsExecuting() const = 0;
-    };
+        struct PerformanceTimingReport
+        {
+            AZ_TYPE_INFO(PerformanceTimingReport, "{AEBF259D-D51F-40F6-B78E-160C9B9FC5B4}");
+            AZ_CLASS_ALLOCATOR(PerformanceTimingReport, AZ::SystemAllocator, 0);
 
-    using ExecutionRequestBus = AZ::EBus<ExecutionRequests>;
+            AZStd::sys_time_t initializationTime = 0;
+            AZStd::sys_time_t executionTime = 0;
+            AZStd::sys_time_t latentTime = 0;
+            AZ::u32 latentExecutions = 0;
+            AZStd::sys_time_t totalTime = 0;
+
+            PerformanceTimingReport& operator+=(const PerformanceTimingReport& rhs);
+        };
+
+        struct PerformanceTrackingReport
+        {
+            AZ_TYPE_INFO(PerformanceTrackingReport, "{48CD6F7A-CB3D-466A-9291-567DA9E0E961}");
+            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator, 0);
+
+            PerformanceTimingReport timing;
+            AZ::u32 activationCount = 0;
+
+            PerformanceTrackingReport& operator+=(const PerformanceTrackingReport& rhs);
+        };
+
+        using PerformanceReportByAsset = AZStd::unordered_map<AZ::Data::AssetId, PerformanceTrackingReport>;
+
+        struct PerformanceReport
+        {
+            AZ_TYPE_INFO(PerformanceReport, "{D0FFBFFA-6662-44D4-A25E-65C65D4B422A}");
+            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator, 0);
+
+            PerformanceTrackingReport tracking;
+            PerformanceReportByAsset byAsset;
+        };
+
+        void FinalizePerformanceReport(PerformanceKey key, const AZ::Data::AssetId& assetId);
+
+        class PerformanceScope
+        {
+        public:
+            PerformanceScope(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+
+        protected:
+            PerformanceKey m_key;
+            AZ::Data::AssetId m_assetId;
+            AZStd::chrono::system_clock::time_point m_startTime;
+        };
+
+        class PerformanceScopeExecution : public PerformanceScope
+        {
+        public:
+            PerformanceScopeExecution(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            ~PerformanceScopeExecution();
+        };
+
+        class PerformanceScopeInitialization : public PerformanceScope
+        {
+        public:
+            PerformanceScopeInitialization(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            ~PerformanceScopeInitialization();
+        };
+
+        class PerformanceScopeLatent : public PerformanceScope
+        {
+        public:
+            PerformanceScopeLatent(const PerformanceKey& key, const AZ::Data::AssetId& assetId);
+            ~PerformanceScopeLatent();
+        };
+    }
 }

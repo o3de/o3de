@@ -583,7 +583,8 @@ namespace LmbrCentral
         pathfinderRequest.agentTypeID = m_agentTypeId;
 
         // 4. Set the callback
-        pathfinderRequest.resultCallback = functor(*this, &NavigationComponent::OnPathResult);
+        pathfinderRequest.resultCallback = AZStd::bind(&NavigationComponent::OnPathResult, this,
+                                                        AZStd::placeholders::_1, AZStd::placeholders::_2);
 
         // 5. Request the path.
         IMNMPathfinder* pathFinder = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)

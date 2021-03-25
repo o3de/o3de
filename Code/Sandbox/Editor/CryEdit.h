@@ -168,7 +168,7 @@ public:
     //! \param args Space separated list of arguments to pass to the process on start.
     void StartProcessDetached(const char* process, const char* args);
 
-    //! Launches the Lua Editor/Debugger (Woodpecker)
+    //! Launches the Lua Editor/Debugger
     //! \param files A space separated list of aliased paths
     void OpenLUAEditor(const char* files);
 
@@ -600,5 +600,8 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env);
+extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
 
 #endif // CRYINCLUDE_EDITOR_CRYEDIT_H

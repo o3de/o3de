@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
 
@@ -81,6 +82,7 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
         azrtti_typeid<AzToolsFramework::Components::EditorEntitySearchComponent>(),
         azrtti_typeid<AzToolsFramework::Components::EditorEntityModelComponent>(),
         azrtti_typeid<AzToolsFramework::EditorEntityContextComponent>(),
+        azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>(),
         });
 
     return components;

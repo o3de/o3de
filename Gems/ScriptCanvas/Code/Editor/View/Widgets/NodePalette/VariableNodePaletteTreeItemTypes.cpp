@@ -26,7 +26,7 @@
 
 #include "Editor/Components/IconComponent.h"
 
-#include "Editor/Nodes/NodeUtils.h"
+#include "Editor/Nodes/NodeCreateUtils.h"
 #include "Editor/Translation/TranslationHelper.h"
 
 #include "ScriptCanvas/Bus/RequestBus.h"
@@ -313,7 +313,7 @@ namespace ScriptCanvasEditor
 
                             for (auto forwarderEvent : events)
                             {
-                                if (strcmp(forwarderEvent.m_name, "OnVariableValueChanged") == 0)
+                                if (strcmp(forwarderEvent.m_name, ScriptCanvas::k_OnVariableWriteEventName) == 0)
                                 {
                                     ConfigureEvent(busIter->second->m_name, forwarderEvent.m_name, forwarderEvent.m_eventId);
                                 }
@@ -487,7 +487,7 @@ namespace ScriptCanvasEditor
 
             if (nodeIdPair.m_graphCanvasId.IsValid() && nodeIdPair.m_scriptCanvasId.IsValid())
             {
-                GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition);
+                GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition, false);
                 GraphCanvas::SceneMemberUIRequestBus::Event(nodeIdPair.m_graphCanvasId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
             }
         }

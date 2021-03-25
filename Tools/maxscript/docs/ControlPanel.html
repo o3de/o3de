@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>cryTools: Control Panel</title>
+</head>
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: Control Panel </h1>
+<span style="font-family: Arial;"></span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;">
+<img alt="Control Panel Rollout" src="images/controlpanel.png" style="border: 0px solid ; margin-right: 1em; width: 356px; height: 625px; float: left;">&nbsp;General Overview<br>
+</h2>
+<span style="font-family: Arial;">The control panel is a place where
+you can set personal preferences specific to your workflow. It is
+broken up into four main sections Art, Animation, Misc, and Debug Info.<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Art</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Check for Crytek shader at export [Default: ON]</span><br>
+With this enabled, when the export button is pressed in the cryExport
+utility rollout, cryTools will loop through all objects that are in the
+current export list and check all of their materials and submaterials.
+cryTools will generate a warning if it finds any non 'Crytek' materials
+or any object with no defined material.<br>
+<br>
+<span style="font-weight: bold;">Re-parent biped twist bones at export [Default: ON]</span><br>
+Biped forearm twist bones are parented to the upper arm for some weird
+reason. They still work if you reparent them to the lower arm, but on
+load they are always reparented to the upper arm. With this enabled,
+the twist bones will be re-parented to the lower arm on character
+export. This way they do not receive weird double transforms ingame.<br>
+<span style="font-weight: bold; color: rgb(255, 0, 0);">Update:</span> This also reparents upper arm twists now<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Animation</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Load Old Animation tools</span><br>
+When checked, the original <span style="font-weight: bold;">CryAnimTools</span> will load when <span style="font-weight: bold;">'CryAnimation'</span> is slected from the drop down.</span><br>
+<span style="font-family: Arial;"><span style="font-weight: bold;"><br>
+Do not unparent $weapon_bone children at export [Default: OFF]</span><br>
+I merged our 'animation rigs' into the main character Max file, because
+any time the main character was updated, then the animation rig would
+need to be updated. Now we animate on the actual character Max file.
+Because of this, there are guns parented to the arms that you can cycle
+through from within the Animation Tools. It is important that these
+guns not export in the hierarchy. With this option checked, the weapon
+objects will be exported, as skeletal nodes.<br>
+<br>
+<span style="font-weight: bold; color: rgb(255, 0, 0);">Update:</span> The following have been removed, but the commented code exists<br>
+<span style="font-weight: bold; color: rgb(153, 153, 153);">Auto-update pose collections on max file open [Default: OFF]</span><br style="color: rgb(153, 153, 153);">
+<span style="color: rgb(153, 153, 153);">With this enabled, cryTools
+will auto-update pose collections when you load a file. This is useful
+when an animation team has a pose collection file somewhere on the
+network or in P4. You can also click 'Get Latest P4' to manually sync
+to the latest pose collections from the control panel without
+restarting.</span><br style="color: rgb(153, 153, 153);">
+<br style="color: rgb(153, 153, 153);">
+<span style="font-weight: bold; color: rgb(153, 153, 153);">Sync pose collections at p4 start [Default: OFF]</span><br style="color: rgb(153, 153, 153);">
+<span style="color: rgb(153, 153, 153);">In addition to the above, each
+animator can have their pose collections updated from a P4 location
+every time he opens a maxfile.</span><br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Misc</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Suppress all export warnings [Default: OFF]</span><br>
+This is for advanced users. It disabled all warnings for shader
+problems, hierarchy issues; everything. You really shouldn't enable
+this unless working on some test items and getting annoyed with export
+warnings.<br>
+<br>
+<span style="font-weight: bold;">Show splash screen [Default: ON]</span><br>
+You can disable the splash screen here. It is a good idea to leave the
+splash screen up as it has some information like your local
+build/latest build and the version number, it is also up only during
+the time it takes to load/initialize the tools. The cryTools splash
+screen can be closed immediately by clicking anywhere on the screen,
+you can also click menu items and things while it is up.<br>
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Update/Uninstall/Rollback</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Reload/Install Updates From Your Local Build</span><br>
+This will reload cryTools, this is useful if you have copied over new
+scripts, or updated your scripts via PerForce, AlienBrain, etc...<br>
+<br>
+<span style="font-weight: bold;">Retreive Latest Tools/Sync</span><br>
+When this is pressed, it uses the selected option to look for tools
+updates. You need to set up the script to work with your P4 or
+AlienBrain servers.<br>
+<br>
+<span style="font-weight: bold;">Rollback Exporter</span><br>
+This rolls back to the last version of the exporter<br>
+<br>
+<span style="font-weight: bold;">Uninstall Crytools</span><br>
+This uninstalls the scripts<br>
+<br>
+<span style="font-weight: bold;">LOCAL/LATEST Build</span><br>
+This shows the local and latest builds. The latest build is queried
+from a build server, you will have to point it at your server.<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Debug Info</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">dump/remove callbacks</span><br>
+If you click 'dump callbacks', all the callbacks cryTools has
+registered will be echoed to the Maxscript Listener. If you click
+'remove callbacks' nothing will happen, you have to right click it to
+remove all callbacks cryTools has set. To reload the callbacks, you
+must restart max, click 'Check/Install updates from your latest build'
+in updateTools, or open the tools that registered the callback (like
+riggingTools or animationTools)<br>
+<br>
+<span style="font-weight: bold;">dump crytek global vars</span><br>
+This will dump any global variables set by cryTools. Crytools uses a global struct now and does not set as many global vars<br>
+<br>
+<span style="font-weight: bold;">Various debug info</span><br>
+Here you can check for problems. I echo out a lot of the vars that,
+when missing or improperly set, can cause cryTools not to work or load.
+I will quickly go through them:<br>
+<br>
+<span style="font-weight: bold;">MAX VERSION:</span> Self explanatory<br>
+<br>
+<span style="font-weight: bold;">MAX PATH:</span> The 3D Studio Max install path<br>
+<br>
+<span style="font-weight: bold;">PROJECT:</span> Internally, this is
+taken from your P4 root folder name. At Crytek, we use a naming scheme
+like "Game02", "Game04", etc. This allows cryTools to be largely
+project independent when syncing tools and things on P4.<br>
+<br>
+<span style="font-weight: bold;">DOMAIN:</span> This is returned from a
+cryTools function that returns the domain of the network the cryTools
+users machine is on. This is useful when creating internal tools, it is
+not secure, but it keeps debug stuff and hacks out of the UI.<br>
+<br>
+<span style="font-weight: bold;">BUILD PATH: </span>This is the location of the build on the users local machine.<br>
+<br>
+<span style="font-weight: bold;">CRYEXPORT.INI PATH: </span>The location of the cryexport.ini file<br>
+<br>
+<span style="font-weight: bold;">CRYTOOLS.INI PATH: </span>The location of the crytools.ini file where the control panel settings and various other things are stored.<br>
+<br>
+<span style="font-weight: bold;">EDITOR PATH:</span> The local path to the editor.<br>
+<br>
+<span style="font-weight: bold;">ROLLBACK STATUS:</span> If 'true',
+cryTools is currently operating in a 'rolled back' state, and will not
+attempt to get latest versions of the exporter and tools at max start.
+'False' indicates normal operation.<br>
+<br>
+<span style="font-weight: bold;">LOCAL BUILD #: </span>This is the number of the local build on the users HD.<br>
+<br>
+<span style="font-weight: bold;">LATEST BUILD #: </span>This is the latest build number on the server (procedural builds)<br>
+<br>
+<span style="font-weight: bold;">LATEST BUILD ON SERVER: </span>This is the filename of the latest build on the server. <br>
+<br>
+<br>
+</span>
+</body>
+</html>

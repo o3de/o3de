@@ -1,0 +1,51 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+//! Data record of geometry export nodes. 
+global string $g_geometryExportNodes[];
+
+//! Retrieve all lumberyard export nodes by Maya plugin, and save them in the backend data record.
+/*!
+ \note This function is costly as it will traverse through the scene hierarchy to search for nodes. Only use when necessary.
+  Use LumberyardToolGetGeometryExportNodes instead when you just want to get the record of the nodes.
+*/
+global proc LumberyardToolLoadGeometryExportNodes()
+{
+    global string $g_geometryExportNodes[];
+    $g_geometryExportNodes = `cryMayaSupportPlugin gatherExportNodes`;
+}
+
+//! Get export nodes from backend data record.
+global proc string[] LumberyardToolGetGeometryExportNodes()
+{
+    global string $g_geometryExportNodes[];
+    return $g_geometryExportNodes;
+}
+
+//! Get the number of export nodes from backend data record.
+global proc int LumberyardToolGetGeometryExportNodeCount()
+{
+    global string $g_geometryExportNodes[];
+    return size($g_geometryExportNodes);
+}
+
+//! Delete a export node record from backend data record.
+/*!
+ \param $node the node name to remove from the record.
+*/
+global proc LumberyardToolDeleteGeometryExportNode(string $node)
+{
+    global string $g_geometryExportNodes[];
+    string $removeNodes[];
+    $removeNodes[0] = $node;
+    $g_geometryExportNodes = stringArrayRemove($removeNodes, $g_geometryExportNodes);
+}

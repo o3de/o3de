@@ -127,7 +127,7 @@ namespace AZ
                 fp->Activate();
             }
 
-            m_dynamicDrawSystem = static_cast<DynamicDrawSystem *>(RPI::DynamicDrawSystemInterface2::Get());
+            m_dynamicDrawSystem = static_cast<DynamicDrawSystem*>(RPI::DynamicDrawInterface::Get());
         }
 
         void Scene::Deactivate()

@@ -33,12 +33,6 @@
                 "Name": "UserInterface_Lossless",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "R8G8B8X8"
-            },
-            "xenia": {
-                "UUID": "{83003128-F63E-422B-AEC2-68F0A947225F}",
-                "Name": "UserInterface_Lossless",
-                "SuppressEngineReduce": true,
-                "PixelFormat": "R8G8B8X8"
             }
         }
     }

@@ -151,13 +151,12 @@ namespace AssetBuilderSDK
         Platform_ES3        = 0x02,
         Platform_IOS        = 0x04,
         Platform_OSX        = 0x08,
-        Platform_XENIA      = 0x10,
         Platform_PROVO      = 0x20,
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
         //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
-        AllPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_XENIA | Platform_PROVO | Platform_SALEM | Platform_JASPER
+        AllPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
     //! Map data structure to holder parameters that are passed into a job for ProcessJob requests.

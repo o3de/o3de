@@ -54,11 +54,13 @@ namespace ScriptCanvas
         template<typename t_Value>
         AZ_INLINE const t_Value* CastConst() const;
 
+        BehaviorContextObjectPtr CloneObject(const AZ::BehaviorClass& behaviorClass);
+
         AZ_FORCE_INLINE const void* Get() const;
 
         AZ_FORCE_INLINE void* Mod();
 
-        BehaviorContextObjectPtr CloneObject(const AZ::BehaviorClass& behaviorClass);
+        AZ_INLINE const AZStd::any& ToAny() const;
 
     private:
         using AnyTypeHandlerFunction = AZStd::any::type_info::HandleFnT;
@@ -143,7 +145,7 @@ namespace ScriptCanvas
         {
             AZ_Assert(false, "no copying allowed, this is here to allow storage in of BehaviorContextObjectPtr AZStd::any, only");
         }
-    }; // class BehaviorContextObject
+    };
 
     AZ_FORCE_INLINE BehaviorContextObject::BehaviorContextObject(const void* value, const AnyTypeInfo& typeInfo, AZ::u32 flags)
         : m_referenceCount(0)
@@ -429,9 +431,14 @@ namespace ScriptCanvas
         return AZStd::any_cast<void>(&m_object);
     }
 
+    AZ_INLINE const AZStd::any& BehaviorContextObject::ToAny() const
+    {
+        return m_object;
+    }
+
     AZ_FORCE_INLINE void BehaviorContextObject::add_ref()
     {
         ++m_referenceCount;
     }
 
-} // namespace ScriptCanvas
+} 

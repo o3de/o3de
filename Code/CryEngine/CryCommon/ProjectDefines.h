@@ -118,8 +118,6 @@ typedef uint32 vtx_idx;
 #define AZ_LEGACY_CRYCOMMON_TRAIT_USE_PTHREADS 1
 #define AZ_LEGACY_CRYCOMMON_TRAIT_USE_UNIX_PATHS 1
 #endif
-#define SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION     //C3/Warface Style - By Timur Davidenko and integrated by Rob Jessop
-#define SUPPORT_RSA_PAK_SIGNING                                             //RSA signature verification
 #endif
 
 #define USE_GLOBAL_BUCKET_ALLOCATOR
@@ -302,46 +300,11 @@ typedef uint32 vtx_idx;
     #error "SoftCode currently relies on CryMemoryManager being enabled. Either build without SoftCode support, or enable CryMemoryManager."
 #endif
 
-//Encryption & security defines
-
-//Defines for various encryption methodologies that we support (or did support at some stage)
-#define SUPPORT_UNENCRYPTED_PAKS                                                //Enable during dev and on consoles to support paks that aren't encrypted in any way
-#if defined(_RELEASE) // Require signing (at least)
-#define SUPPORT_UNSIGNED_PAKS                                                       //Enabled during dev to test release builds easier (remove this to enforce signed paks in release builds)
-#endif
-
-//#define SUPPORT_XTEA_PAK_ENCRYPTION                                       //C2 Style. Compromised - do not use
-//#define SUPPORT_STREAMCIPHER_PAK_ENCRYPTION                       //C2 DLC Style - by Mark Tully
-#if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
-#define SUPPORT_UNSIGNED_PAKS                                                   //Enable to load paks that aren't RSA signed
-#endif //!_RELEASE || PERFORMANCE_BUILD
-
 #if PROJECTDEFINES_H_TRAIT_USE_GPU_PARTICLES && !defined(NULL_RENDERER)
     #define GPU_PARTICLES 1
 #else
     #define GPU_PARTICLES 0
 #endif
-
-#if defined(SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION) || defined(SUPPORT_RSA_PAK_SIGNING)
-//Use LibTomMath and LibTomCrypt for cryptography
-#define INCLUDE_LIBTOMCRYPT
-#endif
-
-//This enables checking of CRCs on archived files when they are loaded fully and synchronously in CryPak.
-//Computes a CRC of the decompressed data and compares it to the CRC stored in the archive CDR for that file.
-//Files with CRC mismatches will return Z_ERROR_CORRUPT.
-#define VERIFY_PAK_ENTRY_CRC
-
-//#define CHECK_CRC_ONLY_ONCE   //Do NOT enable this if using SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION - it will break subsequent decryption attempts for a file as it nulls the stored CRC32
-
-#if 0 // Enable when clear on which platforms we want this check
-//On consoles we can trust files that have been loaded from optical drives
-#define SKIP_CHECKSUM_FROM_OPTICAL_MEDIA
-#endif // 0
-
-//End of encryption & security defines
-
-#define EXPOSE_D3DDEVICE
 
 // The maximum number of joints in an animation
 #define MAX_JOINT_AMOUNT 1024

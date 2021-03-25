@@ -168,7 +168,7 @@ namespace AZ
             m_latestCaptureInfo.clear();
             m_state = State::Pending;
             m_result = FrameCaptureResult::None;
-            TickBus::Handler::BusConnect();
+            SystemTickBus::Handler::BusConnect();
             pass->ReadbackSwapChain(m_readback);
 
             return true;
@@ -228,7 +228,7 @@ namespace AZ
             {
                 m_state = State::Pending;
                 m_result = FrameCaptureResult::None;
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
             else
             {
@@ -288,7 +288,7 @@ namespace AZ
                 {
                     m_state = State::Pending;
                     m_result = FrameCaptureResult::None;
-                    TickBus::Handler::BusConnect();
+                    SystemTickBus::Handler::BusConnect();
                     renderPass->ReadbackAttachment(m_readback, attachment);
                 }
                 else
@@ -317,14 +317,14 @@ namespace AZ
             return result;
         }
 
-        void FrameCaptureSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+        void FrameCaptureSystemComponent::OnSystemTick()
         {
             if (m_state == State::WasSuccess || m_state == State::WasFailure)
             {
                 FrameCaptureNotificationBus::Broadcast(&FrameCaptureNotificationBus::Events::OnCaptureFinished, m_result, m_latestCaptureInfo.c_str());
                 m_state = State::Idle;
                 m_result = FrameCaptureResult::None;
-                TickBus::Handler::BusDisconnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
             else if (m_state != State::Pending)
             {

@@ -18,39 +18,38 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 
-namespace AZ
+namespace AZ::SceneAPI::DataTypes { class ISceneNodeSelectionList; }
+
+namespace AZ::SceneAPI::Utilities
 {
-    namespace SceneAPI
+    // SceneGraphSelector provides utilities including converting selected and unselected node lists
+    // in the MeshGroup into the final target node list.
+    class SceneGraphSelector
     {
-        namespace DataTypes
+    public:
+        using NodeFilterFunction = bool(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
+        using NodeRemapFunction = Containers::SceneGraph::NodeIndex(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index);
+
+        SCENE_CORE_API static AZStd::vector<AZStd::string> GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list,
+            NodeFilterFunction nodeFilter, NodeRemapFunction nodeRemap = NoRemap);
+        SCENE_CORE_API static void SelectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
+        SCENE_CORE_API static void UnselectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
+        SCENE_CORE_API static void UpdateNodeSelection(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
+        SCENE_CORE_API static void UpdateTargetNodes(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list,
+            const AZStd::unordered_set<AZStd::string>& targetNodes, NodeFilterFunction nodeFilter);
+
+        SCENE_CORE_API static bool IsTreeViewType(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
+        SCENE_CORE_API static bool IsMesh(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
+        SCENE_CORE_API static bool IsMeshObject(const AZStd::shared_ptr<const DataTypes::IGraphObject>& object);
+
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex NoRemap(const Containers::SceneGraph& /*graph*/, const Containers::SceneGraph::NodeIndex& index)
         {
-            class ISceneNodeSelectionList;
+            return index;
         }
-        namespace Utilities
-        {
-            // SceneGraphSelector provides utilities including converting selected and unselected node lists
-            // in the MeshGroup into the final target node list.
-            class SceneGraphSelector
-            {
-            public:
-                using NodeFilterFunction = AZStd::function<bool(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index)>;
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index);
 
-                SCENE_CORE_API static AZStd::vector<AZStd::string> GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list,
-                    NodeFilterFunction nodeFilter);
-                SCENE_CORE_API static void SelectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
-                SCENE_CORE_API static void UnselectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
-                SCENE_CORE_API static void UpdateNodeSelection(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
-                SCENE_CORE_API static void UpdateTargetNodes(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list,
-                    const AZStd::unordered_set<AZStd::string>& targetNodes, NodeFilterFunction nodeFilter);
-
-                SCENE_CORE_API static bool IsTreeViewType(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
-                SCENE_CORE_API static bool IsMesh(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
-                SCENE_CORE_API static bool IsMeshObject(const AZStd::shared_ptr<const DataTypes::IGraphObject>& object);
-
-            private:
-                static void CopySelectionToSet(AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected, const DataTypes::ISceneNodeSelectionList& list);
-                static void CorrectRootNode(const Containers::SceneGraph& graph, AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected);
-            };
-        }
-    }
+    private:
+        static void CopySelectionToSet(AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected, const DataTypes::ISceneNodeSelectionList& list);
+        static void CorrectRootNode(const Containers::SceneGraph& graph, AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected);
+    };
 }

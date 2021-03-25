@@ -9,17 +9,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# ly_add_bundle_resources(
-#     TARGET Editor
-#     FILES
-#         ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/xmlfilter.txt
-#         ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/rc.ini
-# )
+ly_add_bundle_resources(
+    TARGET Editor
+    FILES
+        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/xmlfilter.txt
+        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/rc.ini
+)
 
 # Set resources directory for app icons
-target_sources(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/res/Images.xcassets)
-# set_target_properties(Editor PROPERTIES
-#     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/gui_info.plist
-#     RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/res/Images.xcassets
-#     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME EditorAppIcon
-# )
+target_sources(Editor PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Images.xcassets)
+set_target_properties(Editor PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/gui_info.plist
+    RESOURCE ${CMAKE_CURRENT_LIST_DIR}/Images.xcassets
+    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME EditorAppIcon
+)

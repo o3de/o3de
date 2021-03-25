@@ -76,13 +76,29 @@ namespace AZ
 
             handleTexture("specularF0", SceneAPI::DataTypes::IMaterialData::TextureMapType::Specular);
             handleTexture("normal", SceneAPI::DataTypes::IMaterialData::TextureMapType::Normal);
-            handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::Diffuse);
+            handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
+
 
             auto toColor = [](const AZ::Vector3& v) { return AZ::Color::CreateFromVector3AndFloat(v, 1.0f); };
-            sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetDiffuseColor());
+            sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetBaseColor());
 
             sourceData.m_properties["opacity"]["factor"].m_value = materialData.GetOpacity();
 
+            handleTexture("metallic", SceneAPI::DataTypes::IMaterialData::TextureMapType::Metallic);
+            sourceData.m_properties["metallic"]["factor"].m_value = materialData.GetMetallicFactor();
+            sourceData.m_properties["metallic"]["useTexture"].m_value = materialData.GetUseMetallicMap();
+
+            handleTexture("roughness", SceneAPI::DataTypes::IMaterialData::TextureMapType::Roughness);
+            sourceData.m_properties["roughness"]["factor"].m_value = materialData.GetRoughnessFactor();
+            sourceData.m_properties["roughness"]["useTexture"].m_value = materialData.GetUseRoughnessMap();
+
+            handleTexture("emissive", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
+            sourceData.m_properties["emissive"]["intensity"].m_value = materialData.GetEmissiveIntensity();
+            sourceData.m_properties["emissive"]["color"].m_value = toColor(materialData.GetEmissiveColor());
+            sourceData.m_properties["emissive"]["useTexture"].m_value = materialData.GetUseEmissiveMap();
+
+            handleTexture("ambientOcclusion", SceneAPI::DataTypes::IMaterialData::TextureMapType::AmbientOcclusion);
+            sourceData.m_properties["ambientOcclusion"]["useTexture"].m_value = materialData.GetUseAOMap();
             return true;
         }
 

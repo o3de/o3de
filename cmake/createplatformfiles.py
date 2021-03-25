@@ -36,10 +36,10 @@ def getCopyright():
 """
 
 def getPlatforms():
-    return ['Android','iOS','Jasper','Linux','Mac','Provo','Salem','Windows','Xenia']
+    return ['Android','iOS','Jasper','Linux','Mac','Provo','Salem','Windows']
 
 def isRestricted(platform):
-    return platform in ['Jasper','Provo','Salem','Xenia']
+    return platform in ['Jasper','Provo','Salem']
 
 def createEmptyPlatformFile(platform, rel_path, filename, dev_root, restricted_root):
     full_platform_filename = filename.replace("<platform>", platform.lower())

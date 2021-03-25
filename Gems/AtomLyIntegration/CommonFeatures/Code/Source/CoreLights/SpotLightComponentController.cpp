@@ -28,7 +28,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SpotLightComponentController>()
-                    ->Version(1)
+                    ->Version(3)
                     ->Field("Configuration", &SpotLightComponentController::m_configuration);
             }
 
@@ -77,6 +77,8 @@ namespace AZ
                     ->Event("SetPredictionSampleCount", &SpotLightRequestBus::Events::SetPredictionSampleCount)
                     ->Event("GetFilteringSampleCount", &SpotLightRequestBus::Events::GetFilteringSampleCount)
                     ->Event("SetFilteringSampleCount", &SpotLightRequestBus::Events::SetFilteringSampleCount)
+                    ->Event("GetPcfMethod", &SpotLightRequestBus::Events::GetPcfMethod)
+                    ->Event("SetPcfMethod", &SpotLightRequestBus::Events::SetPcfMethod)
                     ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
                     ->VirtualProperty("AttenuationRadiusIsAutomatic", "GetAttenuationRadiusIsAutomatic", "SetAttenuationRadiusIsAutomatic")
                     ->VirtualProperty("Color", "GetColor", "SetColor")
@@ -89,8 +91,8 @@ namespace AZ
                     ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                     ->VirtualProperty("SofteningBoundaryWidthAngle", "GetSofteningBoundaryWidthAngle", "SetSofteningBoundaryWidthAngle")
                     ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
-                    ->VirtualProperty("FilteringSampelCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                    ;
+                    ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
+                    ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod");
             }
         }
 
@@ -177,6 +179,7 @@ namespace AZ
             SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
             SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
+            SetPcfMethod(m_configuration.m_pcfMethod);
         }
 
         void SpotLightComponentController::ColorIntensityChanged()
@@ -414,6 +417,18 @@ namespace AZ
 
             m_featureProcessor->SetFilteringSampleCount(m_lightHandle, count);
         }
+
+        PcfMethod SpotLightComponentController::GetPcfMethod() const
+        {
+            return m_configuration.m_pcfMethod;
+        }
+
+        void SpotLightComponentController::SetPcfMethod(PcfMethod method)
+        {
+            m_configuration.m_pcfMethod = method;
+            m_featureProcessor->SetPcfMethod(m_lightHandle, method);
+        }
+
 
     } // namespace Render
 } // namespace AZ

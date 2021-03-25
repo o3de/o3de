@@ -343,7 +343,6 @@ void CStreamingIOThread::Run()
                     break;
 
                 default:
-                    pFileRequest->SyncWithDecrypt();
                     pFileRequest->SyncWithDecompress();
                     pFileRequest->Failed(nError);
 

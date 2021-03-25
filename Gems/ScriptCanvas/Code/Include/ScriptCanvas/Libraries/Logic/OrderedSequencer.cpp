@@ -25,7 +25,33 @@ namespace ScriptCanvas
                 , m_numOutputs(0)
             {                
             }
-            
+
+            AZ::Outcome<DependencyReport, void> OrderedSequencer::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport());
+            }
+
+            SlotsOutcome OrderedSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            {
+                if (targetSlotType == CombinedSlotType::ExecutionOut)
+                {
+                    AZStd::vector<const Slot*> orderedOutputSlots;
+
+                    for (int i = 0; i < m_numOutputs; ++i)
+                    {
+                        if (auto slot = GetSlot(GetSlotId(GenerateOutputName(i).c_str())))
+                        {
+                            orderedOutputSlots.push_back(slot);
+                        }
+                    }
+                    return AZ::Success(orderedOutputSlots);
+                }
+                else
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
+            }
+
             void OrderedSequencer::OnInit()
             {
                 m_numOutputs = static_cast<int>(GetAllSlotsByDescriptor(SlotDescriptors::ExecutionOut()).size());
@@ -76,40 +102,12 @@ namespace ScriptCanvas
                 return AddSlot(executionConfiguration);
             }
 
-            void  OrderedSequencer::OnInputSignal(const SlotId& slot)
-            {
-                if (slot != OrderedSequencerProperty::GetInSlotId(this))
-                {
-                    return;
-                }
-                
-                if (m_orderedOutputSlots.empty())
-                {                
-                    m_orderedOutputSlots.resize(m_numOutputs);
-
-                    for (int i = 0; i < m_numOutputs; ++i)
-                    {
-                        AZStd::string slotName = GenerateOutputName(i);
-                        SlotId outSlotId = GetSlotId(slotName.c_str());
-
-                        // Order of the elements in this list needs to be backwards from the order we want to
-                        // execute in.
-                        m_orderedOutputSlots[m_numOutputs - (i + 1)] = outSlotId;
-                    }
-                }
-                
-                for (const SlotId& slotId : m_orderedOutputSlots)
-                {
-                    SignalOutput(slotId);
-                }
-            }
-            
             void OrderedSequencer::OnSlotRemoved([[maybe_unused]] const SlotId& slotId)
             {                
                 FixupStateNames();
             }
 
-            AZStd::string OrderedSequencer::GenerateOutputName(int counter)
+            AZStd::string OrderedSequencer::GenerateOutputName(int counter) const
             {
                 AZStd::string slotName = AZStd::string::format("Out %i", counter);
                 return AZStd::move(slotName);

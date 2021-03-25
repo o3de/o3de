@@ -47,6 +47,15 @@ namespace ScriptCanvas
                     }
                 }
 
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                bool IsLogicalAND() const override
+                {
+                    return true;
+                }
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
+
             protected:
                 Datum Evaluate(const Datum& lhs, const Datum& rhs) override
                 {
@@ -77,30 +86,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class AndGeneric
-                : public BinaryOperatorGeneric<AndGeneric, AZStd::logical_and<bool>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<AndGeneric, AZStd::logical_and<bool>>;
-                AZ_COMPONENT(AndGeneric, "{F7D80813-0276-43D9-BF8D-AC7F37E8C116}", BaseType);
-
-                static const char* GetOperatorName() { return "AndGeneric"; }
-                static const char* GetOperatorDesc() { return "Logical AND between two boolean values"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/AndGeneric.png"; }
-                static AZStd::vector<ContractDescriptor> GetFirstArgContractDesc()
-                {
-                    ContractDescriptor typeIdContractDesc;
-                    typeIdContractDesc.m_createFunc = []() -> ScriptCanvas::TypeContract* {return aznewScriptCanvas::TypeContract{ azrtti_typeid<bool>() }; };
-                    AZStd::vector<ContractDescriptor> contractDescs;
-                    contractDescs.push_back(AZStd::move(typeIdContractDesc));
-                    return contractDescs;
-                }
-                static AZStd::vector<ContractDescriptor> GetSecondArgContractDesc() { return GetFirstArgContractDesc(); }
-
-                
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

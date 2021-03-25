@@ -46,14 +46,14 @@ namespace AZ
         const AZStd::chrono::system_clock::time_point& Get() { return m_timePoint; }
 
         // Returns the time point in seconds
-        double GetSeconds()
+        double GetSeconds() const
         {
             typedef AZStd::chrono::duration<double> double_seconds;
             return AZStd::chrono::duration_cast<double_seconds>(m_timePoint.time_since_epoch()).count();
         }
 
         // Returns the time point in milliseconds
-        double GetMilliseconds()
+        double GetMilliseconds() const
         {
             typedef AZStd::chrono::duration<double, AZStd::milli> double_ms;
             return AZStd::chrono::duration_cast<double_ms>(m_timePoint.time_since_epoch()).count();

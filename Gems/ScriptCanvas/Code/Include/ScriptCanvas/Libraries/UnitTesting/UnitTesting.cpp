@@ -95,6 +95,6 @@ namespace ScriptCanvas
             return true;
         }
 
-    } // namespace UnitTesting
+    } 
 
-} // namespace ScriptCanvas
+} 

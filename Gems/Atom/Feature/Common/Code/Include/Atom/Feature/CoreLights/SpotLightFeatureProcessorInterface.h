@@ -78,6 +78,8 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapSize(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
+            //! Sets the shadowmap Pcf method.
+            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
 
             //! This specifies filter method of shadows.
             //! @param handle the light handle.

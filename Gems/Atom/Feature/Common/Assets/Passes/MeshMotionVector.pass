@@ -7,13 +7,25 @@
             "Name": "MeshMotionVectorPassTemplate",
             "PassClass": "RasterPass",
             "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                },
+                // Outputs...
                 {
                     "Name": "Output",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
                         "ClearValue": {
-                            "Value": [ 0.0, 0.0, 0.0, {} ]
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                {}
+                            ]
                         },
                         "LoadAction": "Clear"
                     }
@@ -31,11 +43,6 @@
                         "StoreAction": "DontCare",
                         "StoreActionStencil": "DontCare"
                     }
-                },
-		{
-                    "Name": "SkinnedMeshes",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "InputAssembly"
                 }
             ],
             "ImageAttachments": [

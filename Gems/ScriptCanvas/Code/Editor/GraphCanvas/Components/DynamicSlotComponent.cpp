@@ -19,7 +19,7 @@
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 
 #include <Editor/GraphCanvas/Components/DynamicSlotComponent.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeDisplayUtils.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h>
 
 namespace ScriptCanvasEditor
@@ -203,7 +203,7 @@ namespace ScriptCanvasEditor
         const ScriptCanvas::Slot* slot = nullptr;
         ScriptCanvas::NodeRequestBus::EventResult(slot, endpoint.GetNodeId(), &ScriptCanvas::NodeRequests::GetSlot, endpoint.GetSlotId());
 
-        if (slot != nullptr)
+        if (slot && slot->IsVisible())
         {
             AZ::EntityId graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*slot), m_slotGroup);
 

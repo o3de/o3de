@@ -14,6 +14,8 @@ set(FILES
     Tests/TestAssetCode/JackActor.h
     Tests/TestAssetCode/SimpleActors.cpp
     Tests/TestAssetCode/SimpleActors.h
+    Tests/TestAssetCode/MeshFactory.cpp
+    Tests/TestAssetCode/MeshFactory.h
     Tests/TestAssetCode/AnimGraphFactory.cpp
     Tests/TestAssetCode/AnimGraphFactory.h
     Tests/TestAssetCode/AnimGraphAssetFactory.h

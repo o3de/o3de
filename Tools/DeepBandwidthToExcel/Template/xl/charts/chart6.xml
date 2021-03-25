@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<c:chartSpace xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+              xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
+              xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <c:lang val="en-GB" />
+  <c:chart>
+    <c:title>
+      <c:tx>
+        <c:rich>
+          <a:bodyPr />
+          <a:lstStyle />
+          <a:p>
+            <a:pPr>
+              <a:defRPr />
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-GB" />
+              <a:t>Bandwidth Over Time</a:t>
+            </a:r>
+          </a:p>
+        </c:rich>
+      </c:tx>
+      <c:layout />
+    </c:title>
+    <c:plotArea>
+      <c:layout />
+      <c:areaChart>
+      <c:grouping val="standard" />###---SHEET6_CHART---###
+      <c:dLbls />
+      <c:axId val="201936256" />
+      <c:axId val="201974912" /></c:areaChart>
+      <c:catAx>
+        <c:axId val="201936256" />
+        <c:scaling>
+          <c:orientation val="minMax" />
+        </c:scaling>
+        <c:axPos val="b" />
+        <c:majorTickMark val="none" />
+        <c:tickLblPos val="nextTo" />
+        <c:crossAx val="201974912" />
+        <c:crosses val="autoZero" />
+        <c:auto val="1" />
+        <c:lblAlgn val="ctr" />
+        <c:lblOffset val="100" />
+      </c:catAx>
+      <c:valAx>
+        <c:axId val="201974912" />
+        <c:scaling>
+          <c:orientation val="minMax" />
+        </c:scaling>
+        <c:axPos val="l" />
+        <c:majorGridlines />
+        <c:numFmt formatCode="General"
+                  sourceLinked="1" />
+        <c:majorTickMark val="none" />
+        <c:tickLblPos val="nextTo" />
+        <c:crossAx val="201936256" />
+        <c:crosses val="autoZero" />
+        <c:crossBetween val="midCat" />
+      </c:valAx>
+    </c:plotArea>
+    <c:legend>
+      <c:legendPos val="b" />
+      <c:layout />
+    </c:legend>
+    <c:plotVisOnly val="1" />
+  </c:chart>
+  <c:printSettings>
+    <c:headerFooter />
+    <c:pageMargins b="0.75"
+                   footer="0.3"
+                   header="0.3"
+                   l="0.7"
+                   r="0.7"
+                   t="0.75" />
+    <c:pageSetup />
+  </c:printSettings>
+</c:chartSpace>

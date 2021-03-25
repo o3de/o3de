@@ -122,7 +122,7 @@ def scrub():
 def validate():
     # Run validator
     print 'Running validator'
-    validator_platforms = ["provo", "salem", "xenia"]
+    validator_platforms = ["provo", "salem", "jasper"]
     success = True
     for validator_platform in validator_platforms:
         validator_path = os.path.join(WORKSPACE, 'dev/Tools/build/JenkinsScripts/distribution/scrubbing/validator.py')

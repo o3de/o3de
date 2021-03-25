@@ -56,8 +56,8 @@ namespace AZ
         private:
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             void UpdateShaperSrg();
             void AcquireLutImage();

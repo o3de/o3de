@@ -23,6 +23,7 @@
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <assimp/scene.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
 
 namespace AZ
 {
@@ -45,16 +46,25 @@ namespace AZ
                     serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(1);
                 }
             }
-
+            
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
+                
+                if (currentNode == scene->mRootNode || IsPivotNode(currentNode->mName))
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
 
-                DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(context.m_sourceNode.GetAssImpNode()->mTransformation);
+                aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
+
+                DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
+                
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);
+
                 AZStd::shared_ptr<SceneData::GraphData::TransformData> transformData =
                     AZStd::make_shared<SceneData::GraphData::TransformData>(localTransform);
                 AZ_Error(SceneAPI::Utilities::ErrorWindow, transformData, "Failed to allocate transform data.");
@@ -62,7 +72,6 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Failure;
                 }
-
 
                 // If it is non-endpoint data populated node, add a transform attribute
                 if (context.m_scene.GetGraph().HasNodeContent(context.m_currentGraphPosition))

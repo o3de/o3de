@@ -838,22 +838,30 @@ namespace EMStudio
         {
             case TimeViewMode::Motion:
             {
-                const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                if (motionInstances.size() == 1)
+                double newCurrentTime = mCurTime;
+
+                if (!mMotion)
                 {
-                    if (!mTrackDataWidget->mDragging && !mTrackDataWidget->mResizing)
+                    // Use the start time when either no motion is selected.
+                    newCurrentTime = 0.0f;
+                }
+                else
+                {
+                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
+                    if (motionInstances.size() == 1 &&
+                        motionInstances[0]->GetMotion() == mMotion)
                     {
                         EMotionFX::MotionInstance* motionInstance = motionInstances[0];
                         if (!AZ::IsClose(aznumeric_cast<float>(mCurTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
                         {
-                            SetCurrentTime(motionInstance->GetCurrentTime());
+                            newCurrentTime = motionInstance->GetCurrentTime();
                         }
                     }
                 }
-                else
+
+                if (!mTrackDataWidget->mDragging && !mTrackDataWidget->mResizing)
                 {
-                    // Either no motion is selected or multiple actor instances play the motion.
-                    SetCurrentTime(0.0f);
+                    SetCurrentTime(newCurrentTime);
                 }
 
                 break;

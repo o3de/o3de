@@ -65,6 +65,19 @@ namespace AZ
             return m_assImpNode->mNumMeshes != 0;
         }
 
+        bool AssImpNodeWrapper::ContainsBones(const aiScene& scene) const
+        {
+            for (unsigned meshIndex = 0; meshIndex < m_assImpNode->mNumMeshes; ++meshIndex)
+            {
+                if (scene.mMeshes[m_assImpNode->mMeshes[meshIndex]]->HasBones())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         int AssImpNodeWrapper::GetMaterialCount() const
         {
             // one mesh uses only a single material

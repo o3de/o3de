@@ -11,9 +11,13 @@
 */
 
 #include <ScriptCanvas/Libraries/Core/Repeater.h>
+#include <ScriptCanvas/Libraries/Core/RepeaterNodeable.h>
 
 #include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/SerializationUtils.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
+
+#include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 
 namespace ScriptCanvas
 {
@@ -21,78 +25,37 @@ namespace ScriptCanvas
     {
         namespace Core
         {
-            AZStd::string StringifyUnits(ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits timeUnits)
-            {
-                switch (timeUnits)
-                {
-                case ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits::Seconds:
-                    return "Seconds";
-                case ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits::Ticks:
-                    return "Ticks";
-                default:
-                    break;
-                }
-
-                return "???";
-            }
-
             /////////////
             // Repeater
             /////////////
-
-            bool Repeater::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode & classElement)
+            void Repeater::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
             {
-                /*
-                // Old units enum. Here for reference in version conversion
-                enum DelayUnits
+                if (auto nodeableNode = azrtti_cast<const Nodes::RepeaterNodeableNode*>(replacementNode))
                 {
-                    Unknown = -1,
-                    Seconds,
-                    Ticks
-                };
-                */
-
-                bool convertedElement = true;
-
-                if (classElement.GetVersion() < 2)
-                {
-                    if (SerializationUtils::InsertNewBaseClass<ScriptCanvas::Nodes::Internal::BaseTimerNode>(context, classElement))
+                    if (auto nodeable = azrtti_cast<Nodeables::Core::RepeaterNodeable*>(nodeableNode->GetMutableNodeable()))
                     {
-                        int delayUnits = 0;
-                        classElement.GetChildData(AZ_CRC("m_delayUnits", 0x41accf72), delayUnits);
-
-                        ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits timeUnit = ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits::Unknown;
-
-                        if (delayUnits == 0)
-                        {
-                            timeUnit = ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits::Seconds;
-                        }
-                        else
-                        {
-                            timeUnit = ScriptCanvas::Nodes::Internal::BaseTimerNode::TimeUnits::Ticks;
-                        }
-
-                        AZ::SerializeContext::DataElementNode* baseTimerNode = classElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
-
-                        if (baseTimerNode)
-                        {
-                            baseTimerNode->AddElementWithData<int>(context, "m_timeUnits", static_cast<int>(timeUnit));
-                        }
-
-                        classElement.RemoveElementByName(AZ_CRC("m_delayUnits", 0x41accf72));
-                    }
-                    else
-                    {
-                        convertedElement = false;
+                        nodeable->SetTimeUnits(static_cast<int>(GetTimeUnits()));
                     }
                 }
 
-                return convertedElement;
+                auto newSlotIds = replacementNode->GetSlotIds(GetBaseTimeSlotName());
+                auto oldSlots = GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                if (newSlotIds.size() == 1 && oldSlots.size() == 2)
+                {
+                    for (auto& oldSlot : oldSlots)
+                    {
+                        if (oldSlot->GetName() == GetBaseTimeSlotName())
+                        {
+                            outSlotIdMap.emplace(oldSlot->GetId(), AZStd::vector<SlotId>{ newSlotIds[0] });
+                            break;
+                        }
+                    }
+                }
             }
 
             void Repeater::OnInit()
             {
-                ScriptCanvas::Nodes::Internal::BaseTimerNode::OnInit();
+                BaseTimerNode::OnInit();
 
                 AZStd::string slotName = GetTimeSlotName();
 
@@ -101,9 +64,9 @@ namespace ScriptCanvas
                 if (slot == nullptr)
                 {
                     // Handle older versions and improperly updated names
-                    for (auto testUnit : { ScriptCanvas::Nodes::Internal::BaseTimerNode::Seconds, ScriptCanvas::Nodes::Internal::BaseTimerNode::Ticks})
+                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks})
                     {
-                        AZStd::string legacyName = StringifyUnits(testUnit);
+                        AZStd::string legacyName = BaseTimerNode::s_timeUnitNames[static_cast<int>(testUnit)];
 
                         slot = GetSlotByName(legacyName);
 
@@ -117,7 +80,7 @@ namespace ScriptCanvas
                 }
             }
 
-            void Repeater::OnInputSignal([[maybe_unused]] const SlotId& slotId)
+            void Repeater::OnInputSignal(const SlotId&)
             {
                 m_repetionCount = aznumeric_cast<int>(RepeaterProperty::GetRepetitions(this));
 

@@ -1713,15 +1713,23 @@ namespace AzToolsFramework
             return;
         }
 
+        QByteArray entityNameByteArray = m_gui->m_entityNameEditor->text().toUtf8();
+
+        const AZStd::string entityName(entityNameByteArray.data());
+
+        if (entityName.size() == 0)
+        {
+            // Do not allow them to set an entity name to an empty string
+            // If they try to, just refresh the properties to get the correct name back into the field
+            QueuePropertyRefresh();
+            return;
+        }
+
         EntityIdList selectedEntityIds;
         GetSelectedEntities(selectedEntityIds);
 
         if (selectedEntityIds.size() == 1)
         {
-            QByteArray entityNameByteArray = m_gui->m_entityNameEditor->text().toUtf8();
-
-            const AZStd::string entityName(entityNameByteArray.data());
-
             AZStd::vector<AZ::Entity*> entityList;
 
             for (AZ::EntityId entityId : selectedEntityIds)

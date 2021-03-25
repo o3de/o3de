@@ -32,9 +32,9 @@ namespace ImageProcessingAtom
         ~CImageObject();
 
         //virtual functions from IImageObject
-        IImageObject* AllocateImage(EPixelFormat pixelFormat, uint32_t maxMipCount = (std::numeric_limits<uint32>::max)()) const override;
-        IImageObject* AllocateImage(uint32_t maxMipCount = (std::numeric_limits<uint32>::max)()) const override;
-        IImageObject* Clone(uint32_t maxMipCount = (std::numeric_limits<uint32>::max)()) const override;
+        IImageObject* AllocateImage(EPixelFormat pixelFormat, uint32_t maxMipCount = (std::numeric_limits<uint32_t>::max)()) const override;
+        IImageObject* AllocateImage(uint32_t maxMipCount = (std::numeric_limits<uint32_t>::max)()) const override;
+        IImageObject* Clone(uint32_t maxMipCount = (std::numeric_limits<uint32_t>::max)()) const override;
         EPixelFormat GetPixelFormat() const override;
         AZ::u32 GetPixelCount(AZ::u32 mip) const override;
         AZ::u32 GetWidth(AZ::u32 mip) const override;

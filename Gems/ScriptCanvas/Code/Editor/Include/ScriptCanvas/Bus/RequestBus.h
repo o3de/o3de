@@ -26,12 +26,19 @@
 
 #include <ScriptCanvas/Data/Data.h>
 
+class QLineEdit;
+class QPushButton;
+class QTableView;
+class QToolButton;
+
 namespace GraphCanvas
 {
     struct Endpoint;
 
     class GraphCanvasMimeEvent;
     class GraphCanvasTreeItem;
+
+    class NodePaletteDockWidget;
 }
 
 namespace ScriptCanvas
@@ -186,6 +193,8 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         virtual void RegisterVariableType(const ScriptCanvas::Data::Type& variabletype) = 0;
+
+        virtual bool IsValidVariableType(const ScriptCanvas::Data::Type& variableType) const = 0;
     };
 
     using VariablePaletteRequestBus = AZ::EBus<VariablePaletteRequests>;
@@ -218,6 +227,16 @@ namespace ScriptCanvasEditor
 
             return dataTypes;
         }
+
+        virtual bool IsShowingVariablePalette() const = 0;
+        virtual bool IsShowingGraphVariables() const = 0;
+
+        virtual QPushButton* GetCreateVariableButton() const = 0;
+        virtual QTableView* GetGraphPaletteTableView() const = 0;
+        virtual QTableView* GetVariablePaletteTableView() const = 0;
+
+        virtual QLineEdit* GetVariablePaletteFilter() const = 0;
+        virtual QLineEdit* GetGraphVariablesFilter() const = 0;
     };
 
     using VariableAutomationRequestBus = AZ::EBus<VariableAutomationRequests>;
@@ -232,6 +251,8 @@ namespace ScriptCanvasEditor
 
         virtual void SignalAutomationBegin() = 0;
         virtual void SignalAutomationEnd() = 0;
+
+        virtual void ForceCloseActiveAsset() = 0;
     };
 
     using AutomationRequestBus = AZ::EBus<AutomationRequests>;

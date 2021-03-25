@@ -171,7 +171,7 @@ namespace LensFlareUtil
         return true;
     }
 
-    void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBlockPtr& pRootVar, std::vector<IVariable::OnSetCallback>& funcs)
+    void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBlockPtr& pRootVar, std::vector<IVariable::OnSetCallback*>& funcs)
     {
         if (pOptics == NULL)
         {

@@ -44,16 +44,12 @@ namespace ScriptCanvas
                 }
             }
 
+            //! Base class for arithmetic operation nodes
             class OperatorArithmetic : public Node
             {
             public:
-                ScriptCanvas_Node(OperatorArithmetic,
-                    ScriptCanvas_Node::Name("OperatorArithmetic")
-                    ScriptCanvas_Node::Uuid("{FE0589B0-F835-4CD5-BBD3-86510CBB985B}")
-                    ScriptCanvas_Node::Description("")
-                    ScriptCanvas_Node::Version(1, OperatorArithmeticVersionConverter)
-                    ScriptCanvas_Node::Category("Operators")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorArithmetic);
 
                 // Need to update code gen to deal with enums.
                 // Will do that in a separate pass for now still want to track versions using enums
@@ -74,7 +70,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC("AddnewValueExtension", 0xea20301c); }
                 AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC("ArithmeticGroup", 0x4271e41f); }
                 AZStd::string GetArithmeticDisplayGroup() const { return "ArithmeticGroup"; }
-
+                bool IsSupportedByNewBackend() const override { return true; }
                 virtual AZStd::string_view OperatorFunction() const { return ""; }
                 virtual AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const
                 {
@@ -92,6 +88,7 @@ namespace ScriptCanvas
                 }
                 
                 // Node
+                void OnSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType) override final;
                 void OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) override final;
                 void OnInputSignal(const SlotId& slotId) override;
                 
@@ -111,8 +108,11 @@ namespace ScriptCanvas
                 virtual void InitializeSlot(const SlotId& slotId, const Data::Type& dataType);
                 virtual void InvokeOperator();
 
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
 
             protected:
 
@@ -136,18 +136,12 @@ namespace ScriptCanvas
                 SlotId m_outSlot;
             };
             
-            // Deprecated class. Only here for version conversion. Do not use.
+            //! Deprecated: kept here for version conversion
             class OperatorArithmeticUnary : public OperatorArithmetic
             {
             public:
 
-                ScriptCanvas_Node(OperatorArithmeticUnary,
-                    ScriptCanvas_Node::Name("OperatorArithmeticUnary")
-                    ScriptCanvas_Node::Uuid("{4B68DF49-35DE-48CF-BCE3-F892CCF2639D}")
-                    ScriptCanvas_Node::Description("")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Operators/Math")
-                );
+                SCRIPTCANVAS_NODE(OperatorArithmeticUnary);
 
                 OperatorArithmeticUnary()
                     : OperatorArithmetic()

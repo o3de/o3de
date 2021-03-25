@@ -20,6 +20,7 @@ namespace GraphCanvas
     class ConnectionLayerControllerComponent
         : public LayerControllerComponent
         , public ConnectionNotificationBus::Handler
+        , public LayerControllerNotificationBus::MultiHandler
     {
     public:
         static void Reflect(AZ::ReflectContext* context);
@@ -29,9 +30,27 @@ namespace GraphCanvas
 
         void Activate() override;
 
+        // SceneMemberNotificationBus
+        void OnSceneSet(const AZ::EntityId& sceneId) override;
+        ////
+
         // ConnecitonNotificationBus
         void OnMoveBegin() override;
         void OnMoveFinalized(bool isValidConnection) override;
+
+        void OnSourceSlotIdChanged(const AZ::EntityId&, const AZ::EntityId&) override;
+        void OnTargetSlotIdChanged(const AZ::EntityId&, const AZ::EntityId&) override;
         ////
+
+        // LayerControllerNotificationBus
+        void OnOffsetsChanged(int selectionOffset, int groupOffset);
+        ////
+
+    private:
+
+        void UpdateEndpoints();
+        
+        LayerControllerRequests* m_sourceLayerController;
+        LayerControllerRequests* m_targetLayerController;
     };
 }

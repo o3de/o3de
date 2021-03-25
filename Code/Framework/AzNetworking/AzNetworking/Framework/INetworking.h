@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzNetworking/Framework/ICompressor.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
@@ -45,5 +46,19 @@ namespace AzNetworking
         //! @param name the name of the network interface to destroy
         //! @return boolean true on success or false on failure
         virtual bool DestroyNetworkInterface(AZ::Name name) = 0;
+
+        //! Registers a Compressor Factory that can be used to create compressors for INetworkInterfaces
+        //! @param factory The ICompressorFactory to register
+        virtual void RegisterCompressorFactory(ICompressorFactory* factory) = 0;
+
+        //! Creates a compressor using a registered factory looked up by name
+        //! @param name The name of the Compressor Factory to use, must match result of factory->GetFactoryName()
+        //! @return A unique_ptr to the new compressor
+        virtual AZStd::unique_ptr<ICompressor> CreateCompressor(AZ::Name name) = 0;
+
+        //! Unregisters the compressor factory
+        //! @param name The name of the Compressor factory to unregister, must match result of factory->GetFactoryName()
+        //! @return Whether the factory was found and unregistered
+        virtual bool UnregisterCompressorFactory(AZ::Name name) = 0;
     };
 }

@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 namespace ShaderManagementConsole
@@ -31,8 +31,6 @@ namespace ShaderManagementConsole
 
         //! Destroys main window
         virtual void DestroyShaderManagementConsoleWindow() = 0;
-
-        virtual void GenerateShaderVariantListForShaderMaterials(const char* shaderFileName) = 0;
     };
     using ShaderManagementConsoleWindowRequestBus = AZ::EBus<ShaderManagementConsoleWindowRequests>;
 

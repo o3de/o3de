@@ -15,6 +15,7 @@
 
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <QAction>
+#include <QMenu>
 #include <QMessageBox>
 
 #include <QDebug>
@@ -29,6 +30,15 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     QAction* action2 = new QAction(QIcon(":/stylesheet/img/table_error.png"), "Action 2", this);
     QAction* action3 = new QAction(QIcon(":/stylesheet/img/table_error.png"), "Action 3", this);
     QAction* actionAddTab = new QAction(QIcon(QStringLiteral(":/stylesheet/img/logging/add-filter.svg")), "", this);
+    QAction* actionMenu = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), "Action Menu", this);
+
+    // Menu for the action button, including a no-op action to show without icon as well
+    QMenu * menu = new QMenu(this);
+    menu->addAction(action1);
+    menu->addAction(action2);
+    menu->addAction(action3);
+    menu->addAction("Action 4 (No-op)");
+    actionMenu->setMenu(menu);
 
     connect(action1, &QAction::triggered, this, [this]() {
         QMessageBox messageBox({}, "Action 1 triggered", "Action 1 has been triggered", QMessageBox::Ok);
@@ -59,14 +69,17 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     ui->tabWidget->addAction(action1);
     ui->tabWidget->addAction(action2);
     ui->tabWidget->addAction(action3);
+    ui->tabWidget->addAction(actionMenu);
 
     ui->tabWidget_2->addAction(action1);
     ui->tabWidget_2->addAction(action2);
     ui->tabWidget_2->addAction(action3);
+    ui->tabWidget_2->addAction(actionMenu);
 
     ui->tabWidget_3->addAction(action1);
     ui->tabWidget_3->addAction(action2);
     ui->tabWidget_3->addAction(action3);
+    ui->tabWidget_3->addAction(actionMenu);
 
     ui->tabWidgetBig->addAction(actionAddTab);
 
@@ -74,12 +87,14 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     ui->tabWidgetSecondary->addAction(action1);
     ui->tabWidgetSecondary->addAction(action2);
     ui->tabWidgetSecondary->addAction(action3);
+    ui->tabWidgetSecondary->addAction(actionMenu);
 
     AzQtComponents::TabWidget::applySecondaryStyle(ui->tabWidgetSecondaryBorderless, false);
     connect(ui->tabWidgetSecondaryBorderless, &QTabWidget::tabCloseRequested, ui->tabWidgetSecondaryBorderless, &QTabWidget::removeTab);
     ui->tabWidgetSecondaryBorderless->addAction(action1);
     ui->tabWidgetSecondaryBorderless->addAction(action2);
     ui->tabWidgetSecondaryBorderless->addAction(action3);
+    ui->tabWidgetSecondaryBorderless->addAction(actionMenu);
 
     auto* removeFirstAction = new QPushButton("Remove first action");
     auto* removeLastAction = new QPushButton("Remove last action");
@@ -245,10 +260,19 @@ connect(action3, &QAction::triggered, this, [this]() {
     messageBox.exec();
 });
 
+// You can also add actions that will trigger drop-down context menus
+QAction* actionMenu = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), "Action Menu", this);
+QMenu* menu = new QMenu(this);
+menu->addAction(action1);
+menu->addAction(action2);
+menu->addAction(action3);
+actionMenu->setMenu(menu);
+
 // Adding the actions to the TabWidget
 tabWidget->addAction(action1);
 tabWidget->addAction(action2);
 tabWidget->addAction(action3);
+tabWidget->addAction(actionMenu);
 
 // Removing actions from the TabWidget
 tabWidget->removeAction(action1);

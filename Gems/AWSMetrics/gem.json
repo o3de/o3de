@@ -1,0 +1,16 @@
+{
+    "gem_name": "AWSMetrics",
+    "GemFormatVersion": 4,
+    "Uuid": "cc6fc7a18fc047039a369a26100fcbbe",
+    "Name": "AWSMetrics",
+    "DisplayName": "AWS Metrics",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "AWS Metrics provides metrics submission and analytics solution.",
+    "Tags": [
+        "AWS",
+        "AWSMetrics",
+        "Cloud"
+    ],
+    "IconPath": "preview.png"
+}

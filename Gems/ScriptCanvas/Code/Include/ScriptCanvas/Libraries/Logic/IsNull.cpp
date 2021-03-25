@@ -25,9 +25,23 @@ namespace ScriptCanvas
                 : Node()
             {}
 
+            AZ::Outcome<DependencyReport, void> IsNull::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport());
+            }
+
+            bool IsNull::IsIfBranch() const
+            {
+                return true;
+            }
+
+            bool IsNull::IsIfBranchPrefacedWithBooleanExpression() const
+            {
+                return true;
+            }
+
             void IsNull::OnInit()
             {
-
                 {
                     auto func = []() { return aznew IsReferenceTypeContract(); };
                     ContractDescriptor descriptor{ AZStd::move(func) };                    

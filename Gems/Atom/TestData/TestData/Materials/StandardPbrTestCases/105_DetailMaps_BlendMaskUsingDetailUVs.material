@@ -1,0 +1,37 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/EnhancedPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Objects/Lucy/Lucy_brass_baseColor.tif",
+            "textureMapUv": "Packed"
+        },
+        "detailLayerGroup": {
+            "baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+            "blendDetailMask": "TestData/Textures/checker2x2_128.png",
+            "enableBaseColor": true,
+            "enableDetailLayer": true,
+            "enableNormals": true,
+            "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
+            "normalDetailStrength": 1.5
+        },
+        "detailUV": {
+            "scale": 10.0
+        },
+        "metallic": {
+            "textureMap": "Objects/Lucy/Lucy_brass_metalness.tif",
+            "textureMapUv": "Packed"
+        },
+        "normal": {
+            "flipY": true,
+            "textureMap": "Objects/Lucy/Lucy_normal.tif",
+            "textureMapUv": "Packed"
+        },
+        "roughness": {
+            "textureMap": "Objects/Lucy/Lucy_brass_roughness.tif",
+            "textureMapUv": "Packed"
+        }
+    }
+}

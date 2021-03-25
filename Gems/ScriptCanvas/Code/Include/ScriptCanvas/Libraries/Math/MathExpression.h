@@ -11,7 +11,6 @@
 */
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <ScriptCanvas/Internal/Nodes/ExpressionNodeBase.h>
@@ -29,28 +28,19 @@ namespace ScriptCanvas
 
         namespace Math
         {
+            //! Provides a node that can take in a mathematical expression and convert it into a single node.
             class MathExpression
                 : public Internal::ExpressionNodeBase
-            {        
-                ScriptCanvas_Node(MathExpression,
-                    ScriptCanvas_Node::Name("Math Expression", "Will evaluate a series of math operations, allowing users to specify inputs using {}.")
-                    ScriptCanvas_Node::Uuid("{A5841DE8-CA11-4364-9C34-5ECE8B9623D7}")
-                    ScriptCanvas_Node::Category("Math")
-                    ScriptCanvas_Node::EditAttributes(AZ::Edit::Attributes::CategoryStyle(".math"), ScriptCanvas::Attributes::Node::TitlePaletteOverride("MathNodeTitlePalette"))
-                    ScriptCanvas_Node::DynamicSlotOrdering(true)
-                    ScriptCanvas_Node::Version(0)
-                );
-            public:
+            {
 
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Output signal"));
-
-                ScriptCanvas_Property(double,
-                    ScriptCanvas_Property::Name("Result", "The resulting string.")
-                    ScriptCanvas_Property::Output
-                    ScriptCanvas_Property::DisplayGroup("ExpressionDisplayGroup")
-                );
+                SCRIPTCANVAS_NODE(MathExpression);
 
             protected:
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                {
+                    return AZ::Success(GetSlotsByType(targetSlotType));
+                }
 
                 void OnResult(const ExpressionEvaluation::ExpressionResult& result) override;
                 ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString) override;

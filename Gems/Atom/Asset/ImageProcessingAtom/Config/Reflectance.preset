@@ -144,34 +144,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-                "Name": "Reflectance",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_spec",
-                    "_refl",
-                    "_ref",
-                    "_rf",
-                    "_gloss",
-                    "_g",
-                    "_f0",
-                    "_specf0",
-                    "_metal",
-                    "_mtl",
-                    "_m",
-                    "_mt",
-                    "_metalness",
-                    "_metallic",
-                    "_roughness"
-                ],
-                "PixelFormat": "BC1",
-                "IsPowerOf2": true,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

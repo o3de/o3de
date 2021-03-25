@@ -10,9 +10,19 @@
 #
 
 set(FILES
+    Source/ScriptCanvasTestBus.h
+    Source/ScriptCanvasTestBus.cpp
     Source/ScriptCanvasTestingSystemComponent.cpp
     Source/ScriptCanvasTestingSystemComponent.h
     Source/Framework/ScriptCanvasTestVerify.cpp
     Source/Framework/ScriptCanvasTestVerify.h
     Source/Nodes/BehaviorContextObjectTestNode.h
+    Source/Nodes/Nodeables/NodeableTestingLibrary.h
+    Source/Nodes/Nodeables/NodeableTestingLibrary.cpp
+    Source/Nodes/Nodeables/SharedDataSlotExample.h
+    Source/Nodes/Nodeables/SharedDataSlotExample.cpp
+    Source/Nodes/Nodeables/SharedDataSlotExample.ScriptCanvasNodeable.xml
+    Source/Nodes/Nodeables/ValuePointerReferenceExample.h
+    Source/Nodes/Nodeables/ValuePointerReferenceExample.cpp
+    Source/Nodes/Nodeables/ValuePointerReferenceExample.ScriptCanvasNodeable.xml
 )

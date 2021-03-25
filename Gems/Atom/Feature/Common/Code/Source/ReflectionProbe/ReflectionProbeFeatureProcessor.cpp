@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -143,7 +144,7 @@ namespace AZ
                 m_bufferPool.reset();
             }
 
-            Data::AssetBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void ReflectionProbeFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
@@ -178,7 +179,7 @@ namespace AZ
 
                 if (assetId.IsValid())
                 {
-                    Data::AssetBus::Handler::BusConnect(assetId);
+                    Data::AssetBus::MultiHandler::BusConnect(assetId);
                     notificationEntry.m_assetId = assetId;
                     notificationEntry.m_asset.Create(assetId, true);
                 }
@@ -202,30 +203,19 @@ namespace AZ
 
                 AZStd::sort(m_reflectionProbes.begin(), m_reflectionProbes.end(), sortFn);
                 m_probeSortRequired = false;
+
+                // notify the MeshFeatureProcessor that the reflection probes changed
+                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+                meshFeatureProcessor->UpdateMeshReflectionProbes();
             }
 
             // call Simulate on all reflection probes
             for (uint32_t probeIndex = 0; probeIndex < m_reflectionProbes.size(); ++probeIndex)
             {
                 AZStd::shared_ptr<ReflectionProbe>& reflectionProbe = m_reflectionProbes[probeIndex];
-                reflectionProbe->Simulate(GetParentScene(), this, probeIndex);
-            }
-        }
+                AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
-        void ReflectionProbeFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
-        {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("ReflectionProbe", "ReflectionProbeFeatureProcessor: Render");
-
-            for (auto& reflectionProbe : m_reflectionProbes)
-            {
-                for (auto& view : packet.m_views)
-                {
-                    AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
-
-                    // render the probe reflections in the area covered by the probe
-                    reflectionProbe->RenderReflections(view);
-                }
+                reflectionProbe->Simulate(probeIndex);
             }
         }
 
@@ -284,7 +274,7 @@ namespace AZ
         void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback)
         {
             AZ_Assert(probe.get(), "BakeProbe called with an invalid handle");
-            probe->BuildCubeMap(GetParentScene(), callback);
+            probe->BuildCubeMap(callback);
         }
 
         void ReflectionProbeFeatureProcessor::NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback)
@@ -298,11 +288,12 @@ namespace AZ
                 azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
                 false);
 
-            m_notifyCubeMapAssets.push_back({ relativePath, assetId, callback });
+            bool existingAsset = assetId.IsValid();
+            m_notifyCubeMapAssets.push_back({ relativePath, assetId, existingAsset, callback });
 
-            if (assetId.IsValid())
+            if (existingAsset)
             {
-                Data::AssetBus::Handler::BusConnect(assetId);
+                Data::AssetBus::MultiHandler::BusConnect(assetId);
             }
         }
 
@@ -513,17 +504,26 @@ namespace AZ
             m_reflectionRenderData.m_renderInnerPipelineState->Finalize();
         }
 
-        void ReflectionProbeFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset)
+        void ReflectionProbeFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationType)
         {
             for (NotifyCubeMapAssetVector::iterator itNotification = m_notifyCubeMapAssets.begin(); itNotification != m_notifyCubeMapAssets.end(); ++itNotification)
             {
                 if (itNotification->m_assetId == asset.GetId())
                 {
+                    if (itNotification->m_existingAsset && notificationType == CubeMapAssetNotificationType::Ready)
+                    {
+                        // existing cubemap assets only notify on reload or error
+                        break;
+                    }
+
                     // notify
-                    itNotification->m_callback(Data::static_pointer_cast<RPI::StreamingImageAsset>(asset));
+                    itNotification->m_callback(Data::static_pointer_cast<RPI::StreamingImageAsset>(asset), notificationType);
 
                     // remove the entry from the list
                     m_notifyCubeMapAssets.erase(itNotification);
+
+                    // stop notifications on this asset
+                    Data::AssetBus::MultiHandler::BusDisconnect(itNotification->m_assetId);
 
                     break;
                 }
@@ -532,19 +532,19 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            HandleAssetNotification(asset);
+            HandleAssetNotification(asset, CubeMapAssetNotificationType::Ready);
         }
 
         void ReflectionProbeFeatureProcessor::OnAssetError(Data::Asset<Data::AssetData> asset)
         {
             AZ_Error("ReflectionProbeFeatureProcessor", false, "Failed to load cubemap [%s]", asset.GetHint().c_str());
 
-            HandleAssetNotification(asset);
+            HandleAssetNotification(asset, CubeMapAssetNotificationType::Error);
         }
 
         void ReflectionProbeFeatureProcessor::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            HandleAssetNotification(asset);
+            HandleAssetNotification(asset, CubeMapAssetNotificationType::Reloaded);
         }
 
     } // namespace Render

@@ -187,7 +187,7 @@ namespace GraphCanvas
         }
     }
 
-    void ExtenderSlotComponent::OnSourceSlotIdChanged(const SlotId& oldSlotId, [[maybe_unused]] const SlotId& newSlotId)
+    void ExtenderSlotComponent::OnSourceSlotIdChanged(const SlotId& oldSlotId, const SlotId& /*newSlotId*/)
     {
         if (m_proposedSlot)
         {
@@ -198,7 +198,7 @@ namespace GraphCanvas
         }
     }
 
-    void ExtenderSlotComponent::OnTargetSlotIdChanged(const SlotId& oldSlotId, [[maybe_unused]] const SlotId& newSlotId)
+    void ExtenderSlotComponent::OnTargetSlotIdChanged(const SlotId& oldSlotId, const SlotId& /*newSlotId*/)
     {
         if (m_proposedSlot)
         {

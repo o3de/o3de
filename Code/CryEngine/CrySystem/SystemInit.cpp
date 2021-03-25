@@ -87,7 +87,6 @@
 
 #endif //WIN32
 
-#include <INetwork.h>
 #include <I3DEngine.h>
 #include <IRenderer.h>
 #include <AzCore/IO/FileIO.h>
@@ -134,7 +133,6 @@
 #include "RemoteCommand.h"
 #include "LevelSystem/LevelSystem.h"
 #include "ViewSystem/ViewSystem.h"
-#include <Cryptography/Crypto.h>
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -247,27 +245,24 @@ CUNIXConsole* pUnixConsole;
 #define CRYENGINE_DEFAULT_LOCALIZATION_LANG "en-US"
 
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
+
+#define LOAD_LEGACY_RENDERER_FOR_EDITOR true // If you set this to false you must for now also set 'ed_useAtomNativeViewport' to true (see /Code/Sandbox/Editor/ViewManager.cpp)
+#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER true
+
 //////////////////////////////////////////////////////////////////////////
 // Where possible, these are defaults used to initialize cvars
 // System.cfg can then be used to override them
 // This includes the Game DLL, although it is loaded elsewhere
 
-#define DLL_NETWORK         "CryNetwork"
-#define DLL_ONLINE          "CryOnline"
-
-#define DLL_MOVIE                 "CryMovie"
-#define DLL_FONT                    "CryFont"
-#define DLL_3DENGINE            "Cry3DEngine"
-#define DLL_RENDERER_DX9  "CryRenderD3D9"
-#define DLL_RENDERER_DX11 "CryRenderD3D11"
-#define DLL_RENDERER_DX12 "CryRenderD3D12"
-#define DLL_RENDERER_METAL  "CryRenderMetal"
-#define DLL_RENDERER_GL   "CryRenderGL"
-#define DLL_RENDERER_NULL "CryRenderNULL"
-#define DLL_GAME                    "GameDLL"
-#define DLL_UNITTESTS       "CryUnitTests"
-#define DLL_SHINE           "LyShine"
-#define DLL_LMBRAWS         "LmbrAWS"
+#define DLL_FONT           "CryFont"
+#define DLL_3DENGINE       "Cry3DEngine"
+#define DLL_RENDERER_DX9   "CryRenderD3D9"
+#define DLL_RENDERER_DX11  "CryRenderD3D11"
+#define DLL_RENDERER_DX12  "CryRenderD3D12"
+#define DLL_RENDERER_METAL "CryRenderMetal"
+#define DLL_RENDERER_GL    "CryRenderGL"
+#define DLL_RENDERER_NULL  "CryRenderNULL"
+#define DLL_SHINE          "LyShine"
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
@@ -547,10 +542,6 @@ static void GetSpecConfigFileToLoad(ICVar* pVar, AZStd::string& cfgFile, ESystem
     case CONFIG_IOS:
         cfgFile = "ios";
         break;
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_3
-#include AZ_RESTRICTED_FILE_EXPLICIT(SystemInit_cpp, xenia)
-#endif
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_3
 #include AZ_RESTRICTED_FILE_EXPLICIT(SystemInit_cpp, jasper)
@@ -736,10 +727,6 @@ static void LoadDetectedSpec(ICVar* pVar)
 #endif
             break;
         }
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_5
-#include AZ_RESTRICTED_FILE_EXPLICIT(SystemInit_cpp, xenia)
-#endif
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_5
 #include AZ_RESTRICTED_FILE_EXPLICIT(SystemInit_cpp, jasper)
@@ -1368,25 +1355,6 @@ bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
     return true;
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitNetwork(const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    if (!InitializeEngineModule(DLL_NETWORK, "EngineModule_CryNetwork", initParams))
-    {
-        return false;
-    }
-
-    if (!m_env.pNetwork)
-    {
-        AZ_Assert(false, "Network System did not initialize correctly; it was not found in the system environment.");
-        return false;
-    }
-    return true;
-}
-
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
@@ -1990,9 +1958,13 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 {
     LOADING_TIME_PROFILE_SECTION(GetISystem());
 
-    // Initialize UI system if one exists
     EBUS_EVENT(UiSystemBus, InitializeSystem);
 
+    if (!m_env.pLyShine)
+    {
+        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in ProjectConfigurator.");
+        return false;
+    }
     return true;
 }
 
@@ -3029,7 +3001,10 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // RENDERER
         //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipRenderer)
+        const bool loadLegacyRenderer = gEnv->IsEditor() ?
+                                        LOAD_LEGACY_RENDERER_FOR_EDITOR :
+                                        LOAD_LEGACY_RENDERER_FOR_LAUNCHER;
+        if (loadLegacyRenderer && !startupParams.bSkipRenderer)
         {
             AZ_Assert(CryMemory::IsHeapValid(), "CryMemory must be valid before initializing renderer.");
             AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Renderer initialization");
@@ -3048,22 +3023,20 @@ AZ_POP_DISABLE_WARNING
                     LoadConfiguration("mgpu.cfg");
                 }
             }
-        }
 
-        InlineInitializationProcessing("CSystem::Init InitRenderer");
+            InlineInitializationProcessing("CSystem::Init InitRenderer");
+
+            if (m_env.pCryFont)
+            {
+                m_env.pCryFont->SetRendererProperties(m_env.pRenderer);
+            }
+
+            AZ_Assert(m_env.pRenderer || startupParams.bSkipRenderer, "The renderer did not initialize correctly.");
+        }
 
 #if !defined(AZ_RELEASE_BUILD) && defined(AZ_PLATFORM_ANDROID)
         m_thermalInfoHandler = AZStd::make_unique<ThermalInfoAndroidHandler>();
 #endif
-
-        if (m_env.pCryFont)
-        {
-            m_env.pCryFont->SetRendererProperties(m_env.pRenderer);
-        }
-
-        InlineInitializationProcessing("CSystem::Init m_pResourceManager->UnloadFastLoadPaks");
-
-        AZ_Assert(m_env.pRenderer || startupParams.bSkipRenderer, "The renderer did not initialize correctly.");
 
         if (g_cvars.sys_rendersplashscreen && !startupParams.bEditor && !startupParams.bShaderCacheGen)
         {
@@ -3283,7 +3256,7 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // Init 3d engine
         //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipRenderer && !startupParams.bShaderCacheGen)
+        if (loadLegacyRenderer && !startupParams.bSkipRenderer && !startupParams.bShaderCacheGen)
         {
             AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing 3D Engine");
             INDENT_LOG_DURING_SCOPE();
@@ -3298,27 +3271,9 @@ AZ_POP_DISABLE_WARNING
             {
                 m_env.pRenderer->TryFlush();
             }
+
+            InlineInitializationProcessing("CSystem::Init Init3DEngine");
         }
-
-        InlineInitializationProcessing("CSystem::Init Init3DEngine");
-
-        m_crypto = new Crypto();
-
-        //////////////////////////////////////////////////////////////////////////
-        // NETWORK
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipNetwork && !startupParams.bPreview && !startupParams.bShaderCacheGen)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Network initialization");
-            INDENT_LOG_DURING_SCOPE();
-            InitNetwork(startupParams);
-
-            if (gEnv->IsDedicated())
-            {
-                m_pServerThrottle.reset(new CServerThrottle(this, m_pCpu->GetCPUCount()));
-            }
-        }
-        InlineInitializationProcessing("CSystem::Init InitNetwork");
 
         //////////////////////////////////////////////////////////////////////////
         // SERVICE NETWORK
@@ -3335,7 +3290,6 @@ AZ_POP_DISABLE_WARNING
         {
             m_env.pRemoteCommandManager = new CRemoteCommandManager();
         }
-
 
         //////////////////////////////////////////////////////////////////////////
 
@@ -4913,19 +4867,6 @@ void CSystem::CreateSystemVars()
 #elif defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_13
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-
-#if defined(WIN32)
-    static const int default_sys_usePlatformSavingAPI = 0;
-    static const int default_sys_usePlatformSavingAPIDefault = 0;
-#else
-    static const int default_sys_usePlatformSavingAPI = 1;
-    static const int default_sys_usePlatformSavingAPIDefault = 1;
-#endif
-
-    REGISTER_CVAR2("sys_usePlatformSavingAPI", &g_cvars.sys_usePlatformSavingAPI, default_sys_usePlatformSavingAPI, VF_CHEAT, "Use the platform APIs for saving and loading (complies with TRCs, but allocates lots of memory)");
-#ifndef _RELEASE
-    REGISTER_CVAR2("sys_usePlatformSavingAPIEncryption", &g_cvars.sys_usePlatformSavingAPIEncryption, default_sys_usePlatformSavingAPIDefault, VF_CHEAT, "Use encryption cipher when using the platform APIs for saving and loading");
 #endif
 
     // adding CVAR to toggle assert verbosity level

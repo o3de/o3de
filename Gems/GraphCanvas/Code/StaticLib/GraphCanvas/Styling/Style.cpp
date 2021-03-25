@@ -36,7 +36,7 @@ namespace AZ
 
 namespace
 {
-    static bool StyleVersionConverter([[maybe_unused]] AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement)
+    static bool StyleVersionConverter(AZ::SerializeContext& /*serializeContext*/, AZ::SerializeContext::DataElementNode& classElement)
     {
         if (classElement.GetVersion() <= 3)
         {

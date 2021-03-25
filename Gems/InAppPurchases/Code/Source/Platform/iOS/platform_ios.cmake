@@ -10,7 +10,7 @@
 #
 
 # this gem uses the ASN1 package on IOS.
-ly_associate_package(asn1-0.9.27-rev2-ios ASN1)
+ly_associate_package(PACKAGE_NAME asn1-0.9.27-rev2-ios TARGETS ASN1 PACKAGE_HASH 314e4113930283f88fc65239470daa2aca776f0a11b67d3f09164ac72cb82c56)
 
 find_library(STOREKIT_FRAMEWORK StoreKit)
 

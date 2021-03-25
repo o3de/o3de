@@ -16,6 +16,7 @@
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Importer/ActorFileFormat.h>
+#include <MCore/Source/LogManager.h>
 
 
 namespace ExporterLib
@@ -45,7 +46,7 @@ namespace ExporterLib
             uint32 v;
             for (v = 0; v < numOrgVerts; ++v)
             {
-                numTotalInfluences += skinLayer->GetNumInfluences(v);
+                numTotalInfluences += aznumeric_cast<uint32>(skinLayer->GetNumInfluences(v));
             }
 
             // skip meshes which don't contain any influences
@@ -94,32 +95,8 @@ namespace ExporterLib
             skinningInfoChunk.mLOD                  = lodLevel;
             skinningInfoChunk.mNumTotalInfluences   = numTotalInfluences;
 
-            MCore::Array<uint32> bones;
-            bones.Reserve(200);
-
-            // find out what bones this mesh uses
-            for (uint32 i = 0; i < numOrgVerts; i++)
-            {
-                // now we have located the skinning information for this vertex, we can see if our bones array
-                // already contains the bone it uses by traversing all influences for this vertex, and checking
-                // if the bone of that influence already is in the array with used bones
-                const uint32 numInfluences = skinLayer->GetNumInfluences(i);
-                for (uint32 a = 0; a < numInfluences; ++a)
-                {
-                    EMotionFX::SkinInfluence* influence = skinLayer->GetInfluence(i, a);
-
-                    // get the bone index in the array
-                    uint32 nodeNr = influence->GetNodeNr();
-
-                    // if the bone is not found in our array
-                    if (bones.Find(nodeNr) == MCORE_INVALIDINDEX32)
-                    {
-                        bones.Add(nodeNr);
-                    }
-                }
-            }
-
-            skinningInfoChunk.mNumLocalBones        = bones.GetLength();
+            AZStd::set<AZ::u32> localJointIndices = skinLayer->CalcLocalJointIndices(numOrgVerts);
+            skinningInfoChunk.mNumLocalBones = static_cast<AZ::u32>(localJointIndices.size());
 
             ConvertUnsignedInt(&skinningInfoChunk.mNodeIndex, targetEndianType);
             ConvertUnsignedInt(&skinningInfoChunk.mLOD, targetEndianType);
@@ -130,7 +107,7 @@ namespace ExporterLib
 
             for (v = 0; v < numOrgVerts; ++v)
             {
-                const uint32 weightCount = skinLayer->GetNumInfluences(v);
+                const uint32 weightCount = aznumeric_cast<uint32>(skinLayer->GetNumInfluences(v));
 
                 //LogDebug(" - Vertex#%i: NumWeights='%i'", v, weightCount);
 
@@ -153,7 +130,7 @@ namespace ExporterLib
             uint32 currentInfluence = 0;
             for (v = 0; v < numOrgVerts; ++v)
             {
-                const uint32 weightCount = skinLayer->GetNumInfluences(v);
+                const uint32 weightCount = aznumeric_cast<uint32>(skinLayer->GetNumInfluences(v));
 
                 EMotionFX::FileFormat::Actor_SkinningInfoTableEntry skinningTableEntryChunk;
                 skinningTableEntryChunk.mNumElements    = weightCount;

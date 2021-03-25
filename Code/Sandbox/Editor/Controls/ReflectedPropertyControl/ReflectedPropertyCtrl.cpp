@@ -1,12 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or 
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
 * a third party where indicated.
 *
 * For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,  
+* distribution (the "License"). All use of this software is governed by the License,
 * or, if provided, by the license below or the license accompanying this file. Do not
 * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
 
@@ -15,7 +15,7 @@
 #include "ReflectedPropertyCtrl.h"
 
 // Qt
-#include <QScopedValueRollback>         
+#include <QScopedValueRollback>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -27,7 +27,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditorHeader.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
-#include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>    
+#include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 // Editor
@@ -98,7 +98,7 @@ QSize ReflectedPropertyControl::sizeHint() const
 ReflectedPropertyItem* ReflectedPropertyControl::AddVarBlock(CVarBlock *varBlock, const char *szCategory /*= nullptr*/)
 {
     AZ_Assert(m_initialized, "ReflectedPropertyControl not initialized. Setup must be called first.");
-    
+
     if (!varBlock)
         return nullptr;
 
@@ -112,7 +112,7 @@ ReflectedPropertyItem* ReflectedPropertyControl::AddVarBlock(CVarBlock *varBlock
         m_editor->AddInstance(m_rootContainer.get());
     }
 
-    
+
     AZStd::vector<IVariable*> variables(varBlock->GetNumVariables());
 
     //Copy variables into vector
@@ -171,7 +171,7 @@ ReflectedPropertyItem* ReflectedPropertyControl::AddVarBlock(CVarBlock *varBlock
 }
 
 //////////////////////////////////////////////////////////////////////////
-static void AddVariable(CVariableBase& varArray, CVariableBase& var, const char* varName, const char* humanVarName, const char* description, IVariable::OnSetCallback func, void* pUserData, char dataType = IVariable::DT_SIMPLE)
+static void AddVariable(CVariableBase& varArray, CVariableBase& var, const char* varName, const char* humanVarName, const char* description, IVariable::OnSetCallback* func, void* pUserData, char dataType = IVariable::DT_SIMPLE)
 {
     if (varName)
     {
@@ -200,7 +200,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node)
     CreateItems(node, out, nullptr);
 }
 
-void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlockPtr, IVariable::OnSetCallback func, bool splitCamelCaseIntoWords)
+void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlockPtr, IVariable::OnSetCallback* func, bool splitCamelCaseIntoWords)
 {
     SelectItem(0);
 
@@ -456,7 +456,7 @@ int ReflectedPropertyControl::GetContentHeight() const
 }
 
 
-void ReflectedPropertyControl::AddCustomPopupMenuPopup(const QString& text, const Functor1<int>& handler, const QStringList& items)
+void ReflectedPropertyControl::AddCustomPopupMenuPopup(const QString& text, const AZStd::function<void(int)>& handler, const QStringList& items)
 {
     m_customPopupMenuPopups.push_back(SCustomPopupMenu(text, handler, items));
 }
@@ -709,7 +709,7 @@ void ReflectedPropertyControl::OnItemChange(ReflectedPropertyItem *item, bool de
     }
     if (m_updateObjectFunc != 0 && m_bEnableCallback)
     {
-        // KDAB: This callback has same signature as DoUpdateCallback. I think the only reason there are 2 is because some 
+        // KDAB: This callback has same signature as DoUpdateCallback. I think the only reason there are 2 is because some
         // EntityObject registers callback and some derived objects want to register their own callback. the normal UpdateCallback
         // can only be registered for item at a time so the original authors added a 2nd callback function, so we ported it this way.
         // This can probably get cleaned up to only on callback function with multiple receivers.
@@ -949,7 +949,7 @@ void ReflectedPropertyControl::EnableUpdateCallback(bool bEnable)
 void ReflectedPropertyControl::SetGrayed([[maybe_unused]] bool grayed)
 {
     //KDAB_PROPERTYCTRL_PORT_TODO
-    //control should be grayed out but not disabled? 
+    //control should be grayed out but not disabled?
 }
 
 void ReflectedPropertyControl::SetReadOnly(bool readonly)

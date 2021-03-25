@@ -17,7 +17,7 @@ ly_add_pytest(
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
 )
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_NAME)
     # Integration tests.
 #    ly_add_pytest(
 #        NAME RemoteConsole_IntegTests_periodic_no_gpu

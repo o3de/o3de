@@ -41,6 +41,8 @@ class SANDBOX_API CViewManager
 {
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
+    static bool IsMultiViewportEnabled();
+
     void ReleaseView(CViewport* pViewport);
 
     CViewport* GetViewport(EViewportType type) const;

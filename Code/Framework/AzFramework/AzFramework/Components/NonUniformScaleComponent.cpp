@@ -12,6 +12,8 @@
 
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Math/ToString.h>
+#include <AzCore/Component/Entity.h>
 
 namespace AzFramework
 {
@@ -33,7 +35,6 @@ namespace AzFramework
 
     void NonUniformScaleComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("SkyCloudService"));
         incompatible.push_back(AZ_CRC_CE("DebugDrawObbService"));
         incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
         incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));
@@ -49,8 +50,6 @@ namespace AzFramework
         incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
         incompatible.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
         incompatible.push_back(AZ_CRC_CE("PhysXRagdollService"));
-        incompatible.push_back(AZ_CRC_CE("TouchBendingPhysicsService"));
-        incompatible.push_back(AZ_CRC_CE("WaterVolumeService"));
         incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
         incompatible.push_back(AZ_CRC_CE("NavigationAreaService"));
         incompatible.push_back(AZ_CRC_CE("GeometryService"));
@@ -58,12 +57,9 @@ namespace AzFramework
         incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
         incompatible.push_back(AZ_CRC_CE("CylinderShapeService"));
         incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
-        incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
-        incompatible.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
         incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
         incompatible.push_back(AZ_CRC_CE("SplineService"));
         incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
-        incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
     }
 
     void NonUniformScaleComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -88,7 +84,17 @@ namespace AzFramework
 
     void NonUniformScaleComponent::SetScale(const AZ::Vector3& scale)
     {
-        m_scale = scale;
+        if (scale.GetMinElement() >= AZ::MinNonUniformScale)
+        {
+            m_scale = scale;
+        }
+        else
+        {
+            AZ::Vector3 clampedScale = scale.GetMax(AZ::Vector3(AZ::MinNonUniformScale));
+            AZ_Warning("Non-uniform Scale Component", false, "SetScale value was clamped from %s to %s for entity %s",
+                AZ::ToString(scale).c_str(), AZ::ToString(clampedScale).c_str(), GetEntity()->GetName().c_str());
+            m_scale = clampedScale;
+        }
         m_scaleChangedEvent.Signal(m_scale);
     }
 

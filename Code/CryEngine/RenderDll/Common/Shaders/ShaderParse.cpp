@@ -229,11 +229,6 @@ SShaderGenBit* CShaderMan::mfCompileShaderGenProperty(char* scr)
                     shgm->m_nDependencySet |= SHGD_USER_ENABLED;
                 }
                 else
-                if (!azstricmp(data, "$HW_DURANGO"))
-                {
-                    shgm->m_nDependencySet |= SHGD_HW_DURANGO;
-                }
-                else
                 if (!azstricmp(data, "$HW_ORBIS"))
                 {
                     shgm->m_nDependencySet |= SHGD_HW_ORBIS;
@@ -403,11 +398,6 @@ SShaderGenBit* CShaderMan::mfCompileShaderGenProperty(char* scr)
                 if (!azstricmp(data, "$HW_METAL"))
                 {
                     shgm->m_nDependencyReset |= SHGD_HW_METAL;
-                }
-                else
-                if (!azstricmp(data, "$HW_DURANGO"))
-                {
-                    shgm->m_nDependencyReset |= SHGD_HW_DURANGO;
                 }
                 else
                 if (!azstricmp(data, "$HW_ORBIS"))

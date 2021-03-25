@@ -20,8 +20,10 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 
-#include <Win/d3dx12.h>
+#include <d3dx12.h>
 
+// This define is enabled if winpixeventruntime SDK is downloaded and it's path is hooked up to Environment var ATOM_PIX_PATH.
+// Enabling this define will allow the runtime code to add PIX markers which will hel pwith pix and renderdoc gpu captures
 #ifdef USE_PIX
     #include <WinPixEventRuntime/pix3.h>
 #else
@@ -39,6 +41,15 @@
 // is explicitly flushed through the GPU before the next scope is processed.
 // Use it to debug TDR's when you need to know which scope is causing the problem.
 //#define AZ_DX12_FORCE_FLUSH_SCOPES
+
+
+// This define is enabled if Aftermath SDK is downloaded and the path is hooked up to Env var ATOM_AFTERMATH_PATH.
+// Enabling this define will allow AfterMath SDK to do a dump in case of GPU crash/TDR.
+// The dump is outputted in the same folder as the executable.
+// Windows DX12 back-end will also try to output the last executing pass if that information is available.
+#if defined(USE_NSIGHT_AFTERMATH)
+#include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
+#endif
 
 // This define controls whether DXR ray tracing support is available on the platform.
 #define AZ_DX12_DXR_SUPPORT
@@ -95,3 +106,5 @@ AZ_DX12_REFCOUNTED(IDXGISwapChain1)
 AZ_DX12_REFCOUNTED(IDXGISwapChain2)
 AZ_DX12_REFCOUNTED(IDXGISwapChain3)
 AZ_DX12_REFCOUNTED(IDXGISwapChain4)
+
+

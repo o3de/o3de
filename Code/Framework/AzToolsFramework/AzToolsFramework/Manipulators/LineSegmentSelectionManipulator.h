@@ -23,6 +23,7 @@ namespace AzToolsFramework
     /// A manipulator to expose where on a line a user is moving their mouse.
     class LineSegmentSelectionManipulator
         : public BaseManipulator
+        , public ManipulatorSpace
     {
         /// Private constructor.
         LineSegmentSelectionManipulator();
@@ -56,7 +57,6 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        void SetSpace(const AZ::Transform& worldFromLocal) { m_worldFromLocal = worldFromLocal; }
         void SetStart(const AZ::Vector3& startLocal) { m_localStart = startLocal; }
         void SetEnd(const AZ::Vector3& endLocal) { m_localEnd = endLocal; }
         const AZ::Vector3& GetStart() const { return m_localStart; }
@@ -73,7 +73,6 @@ namespace AzToolsFramework
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
 
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
         AZ::Vector3 m_localStart = AZ::Vector3::CreateZero();
         AZ::Vector3 m_localEnd = AZ::Vector3::CreateZero();
 
@@ -86,6 +85,6 @@ namespace AzToolsFramework
     };
 
     LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection,
-        float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd);
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection, float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd);
 } // namespace AzToolsFramework

@@ -31,6 +31,8 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
@@ -97,6 +99,8 @@ namespace AZ
             m_assetHandlers.emplace_back(MakeAssetHandler<PassAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantTreeAssetHandler>());
+            m_assetHandlers.emplace_back(MakeAssetHandler<SkinMetaAssetHandler>());
+            m_assetHandlers.emplace_back(MakeAssetHandler<MorphTargetMetaAssetHandler>());
 
             RPI::MaterialFunctorSourceDataRegistration* materialFunctorRegistration = RPI::MaterialFunctorSourceDataRegistration::Get();
             AZ_Assert(materialFunctorRegistration,

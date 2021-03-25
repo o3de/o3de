@@ -28,7 +28,10 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModelBus.h>
 
 #include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Core.h>
+
+#include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 
 namespace ScriptCanvasEditor
@@ -36,14 +39,14 @@ namespace ScriptCanvasEditor
     // Move these down into GraphCanvas for more general re-use
     struct NodePaletteModelInformation
     {
-        AZ_RTTI(NodeModelInformation, "{CC031806-7610-4C29-909D-9527F265E014}");
+        AZ_RTTI(NodePaletteModelInformation, "{CC031806-7610-4C29-909D-9527F265E014}");
         AZ_CLASS_ALLOCATOR(NodePaletteModelInformation, AZ::SystemAllocator, 0);
 
         virtual ~NodePaletteModelInformation() = default;
 
         void PopulateTreeItem(GraphCanvas::NodePaletteTreeItem& treeItem) const;
 
-        ScriptCanvas::NodeTypeIdentifier m_nodeIdentifier;
+        ScriptCanvas::NodeTypeIdentifier m_nodeIdentifier{};
 
         AZStd::string                    m_displayName;
         AZStd::string                    m_toolTip;
@@ -63,6 +66,7 @@ namespace ScriptCanvasEditor
 
     class NodePaletteModel
         : public GraphCanvas::CategorizerInterface
+        , UpgradeNotifications::Bus::Handler
     {
     public:
         typedef AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, NodePaletteModelInformation* > NodePaletteRegistry;
@@ -79,14 +83,15 @@ namespace ScriptCanvasEditor
         void RepopulateModel();
 
         void RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData);
-        void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, AZ::BehaviorMethod* behaviorMethod, AZ::BehaviorContext* behaviorContext);
+        void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, bool isOverload);
+        void RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
 
         void RegisterEBusHandlerNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const AZ::BehaviorEBusHandler::BusForwarderEvent& forwardEvent);
-        void RegisterEBusSenderNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId, const AZ::BehaviorEBusEventSender& eventSender);
+        void RegisterEBusSenderNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId, const AZ::BehaviorEBusEventSender& eventSender, bool isOverload);
 
         // Asset Based Registrations
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterScriptEvent(ScriptEvents::ScriptEventsAsset* scriptEventAsset);
-        AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterFunctionInformation(ScriptCanvas::ScriptCanvasFunctionAsset* functionAsset);
+        AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterFunctionInformation(ScriptCanvasFunctionAsset* functionAsset);
 
         void RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation);
         const CategoryInformation* FindCategoryInformation(const AZStd::string& categoryStyle) const;
@@ -99,6 +104,15 @@ namespace ScriptCanvasEditor
         // GraphCanvas::CategorizerInterface
         GraphCanvas::GraphCanvasTreeItem* CreateCategoryNode(AZStd::string_view categoryPath, AZStd::string_view categoryName, GraphCanvas::GraphCanvasTreeItem* treeItem) const override;
         ////
+
+        void OnUpgradeStart() override
+        {
+            DisconnectLambdas();
+        }
+        void OnUpgradeComplete() override
+        {
+            ConnectLambdas();
+        }
 
         // Asset Node Support
         void OnRowsInserted(const QModelIndex& parentIndex, int first, int last);
@@ -114,7 +128,10 @@ namespace ScriptCanvasEditor
 
         void ClearRegistry();
 
-        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel =  nullptr;
+        void ConnectLambdas();
+        void DisconnectLambdas();
+
+        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel = nullptr;
         AZStd::vector< QMetaObject::Connection > m_lambdaConnections;
 
         AZStd::unordered_map< AZStd::string, CategoryInformation > m_categoryInformation;
@@ -123,6 +140,8 @@ namespace ScriptCanvasEditor
         AZStd::unordered_multimap<AZ::Data::AssetId, ScriptCanvas::NodeTypeIdentifier> m_assetMapping;
 
         NodePaletteId m_paletteId;
+
+        AZStd::recursive_mutex m_mutex;
     };
 
     // Concrete Sub Classes with whatever extra data is required [ScriptCanvas Only]
@@ -132,27 +151,38 @@ namespace ScriptCanvasEditor
         AZ_RTTI(CustomNodeModelInformation, "{481FB8AE-8683-4E50-95C1-B4B1C1B6806C}", NodePaletteModelInformation);
         AZ_CLASS_ALLOCATOR(CustomNodeModelInformation, AZ::SystemAllocator, 0);
 
-        AZ::Uuid m_typeId;
+        AZ::Uuid m_typeId = AZ::Uuid::CreateNull();
     };
 
     struct MethodNodeModelInformation
         : public NodePaletteModelInformation
     {
-        AZ_RTTI(CustomNodeModelInformation, "{9B6337F9-B8D0-4B63-9EE7-91079FE386B9}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(CustomNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_RTTI(MethodNodeModelInformation, "{9B6337F9-B8D0-4B63-9EE7-91079FE386B9}", NodePaletteModelInformation);
+        AZ_CLASS_ALLOCATOR(MethodNodeModelInformation, AZ::SystemAllocator, 0);
 
+        bool m_isOverload{};
         AZStd::string m_classMethod;
-        AZStd::string m_metehodName;        
+        AZStd::string m_methodName;
+    };
+
+    struct GlobalMethodNodeModelInformation
+        : public NodePaletteModelInformation
+    {
+        AZ_RTTI(GlobalMethodNodeModelInformation, "{AB98D0F1-BB6D-49D5-ACEB-3E991C365DF5}", NodePaletteModelInformation);
+        AZ_CLASS_ALLOCATOR(GlobalMethodNodeModelInformation, AZ::SystemAllocator, 0);
+
+        AZStd::string m_methodName;
     };
 
     struct EBusHandlerNodeModelInformation
         : public NodePaletteModelInformation
     {
-        AZ_RTTI(EBusNodeModelInformation, "{D1438D14-0CE9-4202-A1C5-9F5F13DFC0C4}", NodePaletteModelInformation);
+        AZ_RTTI(EBusHandlerNodeModelInformation, "{D1438D14-0CE9-4202-A1C5-9F5F13DFC0C4}", NodePaletteModelInformation);
         AZ_CLASS_ALLOCATOR(EBusHandlerNodeModelInformation, AZ::SystemAllocator, 0);
 
         AZStd::string m_busName;
         AZStd::string m_eventName;
+        bool m_isOverload{};
 
         ScriptCanvas::EBusBusId m_busId;
         ScriptCanvas::EBusEventId m_eventId;
@@ -162,14 +192,16 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(EBusSenderNodeModelInformation, "{EE0F0385-3596-4D4E-9DC7-BE147EBB3C15}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(EBusHandlerNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusSenderNodeModelInformation, AZ::SystemAllocator, 0);
+
+        bool m_isOverload{};
 
         AZStd::string m_busName;
         AZStd::string m_eventName;
 
         ScriptCanvas::EBusBusId m_busId;
         ScriptCanvas::EBusEventId m_eventId;
-    };    
+    };
 
     struct ScriptEventHandlerNodeModelInformation
         : public EBusHandlerNodeModelInformation

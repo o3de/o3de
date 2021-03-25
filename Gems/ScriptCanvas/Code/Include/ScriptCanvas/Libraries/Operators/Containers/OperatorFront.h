@@ -23,16 +23,13 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Get First Element"
             class OperatorFront : public OperatorBase
             {
             public:
-                ScriptCanvas_Node(OperatorFront,
-                    ScriptCanvas_Node::Name("Get First Element")
-                    ScriptCanvas_Node::Uuid("{B0E10176-5DFE-4D34-BEF8-7EB575929CE7}")
-                    ScriptCanvas_Node::Description("Retrieves the first element in the container")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorFront);
+
 
                 OperatorFront()
                     : OperatorBase(DefaultContainerInquiryOperatorConfiguration())

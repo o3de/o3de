@@ -259,6 +259,12 @@ namespace AZ
             // callback from the EnvironmentCubeMapPass when the cubemap render is complete
             BuildCubeMapCallback buildCubeMapCallback = [this](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
             {
+                if (!m_bakeInProgress)
+                {
+                    // user canceled the bake
+                    return;
+                }
+
                 char projectPath[AZ_MAX_PATH_LEN];
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
 
@@ -286,7 +292,7 @@ namespace AZ
                     // the file name is a combination of the entity name, a UUID, and the filemask
                     Entity* entity = GetEntity();
                     AZ_Assert(entity, "ReflectionProbe entity is null");
-                   
+
                     AZ::Uuid uuid = AZ::Uuid::CreateRandom();
                     AZStd::string uuidString;
                     uuid.ToString(uuidString);
@@ -339,16 +345,21 @@ namespace AZ
                 m_bakedCubeMapRelativePath = cubeMapRelativePath;
 
                 // call the feature processor to notify when the asset is created and ready
-                NotifyCubeMapAssetReadyCallback notifyCubeMapAssetReadyCallback = [this](const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset)
+                NotifyCubeMapAssetReadyCallback notifyCubeMapAssetReadyCallback = [this](const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset, CubeMapAssetNotificationType notificationType)
                 {
-                    // update configuration with the new baked cubemap asset
-                    m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                    // we only need to store the cubemap asset and update the cubemap image on the first bake of the probe,
+                    // otherwise it is a hot-reload of an existing cubemap asset which is handled by the RPI
+                    if (notificationType == CubeMapAssetNotificationType::Ready)
+                    {
+                        // update configuration with the new baked cubemap asset
+                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 
-                    // refresh the currently rendered cubemap
-                    m_controller.UpdateCubeMap();
+                        // refresh the currently rendered cubemap
+                        m_controller.UpdateCubeMap();
 
-                    // update the UI
-                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                        // update the UI
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                    }
 
                     // signal completion
                     m_bakeInProgress = false;
@@ -376,8 +387,14 @@ namespace AZ
             bakeDialog.show();
 
             // display until finished or canceled
-            while (m_bakeInProgress && !bakeDialog.wasCanceled())
+            while (m_bakeInProgress)
             {
+                if (bakeDialog.wasCanceled())
+                {
+                    m_bakeInProgress = false;
+                    break;
+                }
+
                 QApplication::processEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             }

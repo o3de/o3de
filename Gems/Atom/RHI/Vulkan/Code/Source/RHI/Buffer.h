@@ -66,6 +66,10 @@ namespace AZ
             void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
             const RHI::AsyncWorkHandle& GetUploadHandle() const;
 
+            /// Only valid for buffers with the RayTracingAccelerationStructure bind flag
+            VkAccelerationStructureKHR GetNativeAccelerationStructure() const;
+            void SetNativeAccelerationStructure(const VkAccelerationStructureKHR& accelerationStructure);
+
         private:
             Buffer() = default;
             RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, BufferMemoryView& memmoryView);
@@ -89,6 +93,10 @@ namespace AZ
             mutable AZStd::mutex m_ownerQueueMutex;
 
             RHI::AsyncWorkHandle m_uploadHandle;
+
+            // native raytracing acceleration structure handle, necessary to bind the descriptor for
+            // this buffer if it is of type VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
+            VkAccelerationStructureKHR m_nativeAccelerationStructure = VK_NULL_HANDLE;
         };
     }
 }

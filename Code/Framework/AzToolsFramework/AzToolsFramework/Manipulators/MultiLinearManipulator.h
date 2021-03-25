@@ -26,6 +26,7 @@ namespace AzToolsFramework
     //! in one or more dimensions on axes defined in 3D space.
     class MultiLinearManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalTransform
     {
         //! Private constructor.
         explicit MultiLinearManipulator(const AZ::Transform& worldFromLocal);
@@ -70,15 +71,6 @@ namespace AzToolsFramework
         void AddAxes(const AZStd::vector<AZ::Vector3>& axes);
         void ClearAxes();
 
-        void SetSpace(const AZ::Transform& worldFromLocal);
-        void SetLocalTransform(const AZ::Transform& localTransform);
-        void SetLocalPosition(const AZ::Vector3& localPosition);
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation);
-
-        AZ::Vector3 GetLocalPosition() const;
-        const AZ::Transform& GetSpace() const;
-        const AZ::Transform& GetLocalTransform() const;
-
         using ConstFixedIterator = AZStd::vector<LinearManipulator::Fixed>::const_iterator;
         ConstFixedIterator FixedBegin() const;
         ConstFixedIterator FixedEnd() const;
@@ -100,9 +92,6 @@ namespace AzToolsFramework
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
 
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); //!< Local transform of the manipulator.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); //!< Space the manipulator is in (identity is world space).
-
         AZStd::vector<LinearManipulator::Fixed> m_fixedAxes; //!< A collection of LinearManipulator fixed states.
         AZStd::vector<LinearManipulator::Starter> m_starters; //!< A collection of LinearManipulator starter states.
 
@@ -112,21 +101,6 @@ namespace AzToolsFramework
 
         ManipulatorViews m_manipulatorViews; //!< Look of manipulator.
     };
-
-    inline AZ::Vector3 MultiLinearManipulator::GetLocalPosition() const
-    {
-        return m_localTransform.GetTranslation();
-    }
-
-    inline const AZ::Transform& MultiLinearManipulator::GetSpace() const
-    {
-        return m_localTransform;
-    }
-
-    inline const AZ::Transform& MultiLinearManipulator::GetLocalTransform() const
-    {
-        return m_localTransform;
-    }
 
     inline MultiLinearManipulator::ConstFixedIterator MultiLinearManipulator::FixedBegin() const
     {

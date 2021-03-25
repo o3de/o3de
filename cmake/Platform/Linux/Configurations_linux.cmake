@@ -24,20 +24,20 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         LINK_NON_STATIC
             -Wl,--no-undefined
     )
-    set(CMAKE_CXX_EXTENSIONS OFF)
+    ly_set(CMAKE_CXX_EXTENSIONS OFF)
 else()
 
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
 
 endif()
 
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
+ly_set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+ly_set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+ly_set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
     if(LY_PARALLEL_LINK_JOBS)
         set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
-        set(CMAKE_JOB_POOL_LINK link_job_pool)
+        ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
     endif()
 endif()

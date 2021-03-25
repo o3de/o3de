@@ -5584,12 +5584,18 @@ extern "C"
 #pragma comment(lib, "Shell32.lib")
 #endif
 
-int SANDBOX_API CryEditMain(int argc, char* argv[])
+extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
     AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
     AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
     AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
     AZ::AllocatorInstance<CryStringAllocator>::Create();
+
+    // ensure the EditorEventsBus context gets created inside EditorLib
+    [[maybe_unused]] const auto& editorEventsContext = AzToolsFramework::EditorEvents::Bus::GetOrCreateContext();
+
+    // connect relevant buses to global settings
+    gSettings.Connect();
 
     CCryEditApp* theApp = new CCryEditApp();
     // this does some magic to set the current directory...
@@ -5680,7 +5686,19 @@ int SANDBOX_API CryEditMain(int argc, char* argv[])
 
     delete theApp;
 
+    gSettings.Disconnect();
+
     return ret;
+}
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+{
+    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+}
+
+extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
+{
+    AZ::Environment::Detach();
 }
 
 #include <moc_CryEdit.cpp>

@@ -45,6 +45,15 @@ namespace ScriptCanvas
                     }
                 }
 
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                bool IsLogicalOR() const override
+                {
+                    return true;
+                }
+                // Translation
+                //////////////////////////////////////////////////////////////////////////
+
             protected:
                 Datum Evaluate(const Datum& lhs, const Datum& rhs) override
                 {
@@ -75,30 +84,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class Or
-                : public BinaryOperatorGeneric<Or, AZStd::logical_or<bool>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<Or, AZStd::logical_or<bool>>;
-                AZ_COMPONENT(Or, "{B892B000-22BB-41FC-BE5C-A8B8798BCB01}", BaseType);
-
-                static const char* GetOperatorName() { return "Or"; }
-                static const char* GetOperatorDesc() { return "Logical OR between two boolean values"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Or.png"; }
-                static AZStd::vector<ContractDescriptor> GetFirstArgContractDesc()
-                {
-                    ContractDescriptor typeIdContractDesc;
-                    typeIdContractDesc.m_createFunc = []() -> ScriptCanvas::TypeContract* {return aznewScriptCanvas::TypeContract{ azrtti_typeid<bool>() }; };
-                    AZStd::vector<ContractDescriptor> contractDescs;
-                    contractDescs.push_back(AZStd::move(typeIdContractDesc));
-                    return contractDescs;
-                }
-                static AZStd::vector<ContractDescriptor> GetSecondArgContractDesc() { return GetFirstArgContractDesc(); }
-
-                
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

@@ -469,7 +469,7 @@ def test_create_template(tmpdir,
         assert result == 0
         new_template_folder = f'{template_folder}/Default'
         assert os.path.isdir(new_template_folder)
-        new_template_json = f'{new_template_folder}/Template.json'
+        new_template_json = f'{new_template_folder}/template.json'
         assert os.path.isfile(new_template_json)
         with open(new_template_json, 'r') as s:
             s_data = s.read()
@@ -488,7 +488,7 @@ def test_create_template(tmpdir,
 
         new_restricted_template_folder = f'{restricted_template_folder}/Default'
         assert os.path.isdir(new_restricted_template_folder)
-        new_restricted_template_json = f'{new_restricted_template_folder}/Template.json'
+        new_restricted_template_json = f'{new_restricted_template_folder}/template.json'
         assert os.path.isfile(new_restricted_template_json)
         with open(new_restricted_template_json, 'r') as s:
             s_data = s.read()
@@ -527,7 +527,7 @@ def test_create_from_template(tmpdir,
     template_default_folder = f'{dev_root}/Templates/Default'
     os.makedirs(template_default_folder, exist_ok=True)
 
-    template_json = f'{template_default_folder}/Template.json'
+    template_json = f'{template_default_folder}/template.json'
     if os.path.isfile(template_json):
         os.unlink(template_json)
     with open(template_json, 'w') as s:
@@ -545,7 +545,7 @@ def test_create_from_template(tmpdir,
     restricted_template_default_folder = f'{dev_root}/restricted/Salem/Templates/Default'
     os.makedirs(restricted_template_default_folder, exist_ok=True)
 
-    restricted_template_json = f'{restricted_template_default_folder}/Template.json'
+    restricted_template_json = f'{restricted_template_default_folder}/template.json'
     if os.path.isfile(restricted_template_json):
         os.unlink(restricted_template_json)
     with open(restricted_template_json, 'w') as s:
@@ -608,7 +608,7 @@ def test_create_project(tmpdir,
     template_default_folder = f'{dev_root}/Templates/DefaultProject'
     os.makedirs(template_default_folder, exist_ok=True)
 
-    template_json = f'{template_default_folder}/Template.json'
+    template_json = f'{template_default_folder}/template.json'
     if os.path.isfile(template_json):
         os.unlink(template_json)
     with open(template_json, 'w') as s:
@@ -626,7 +626,7 @@ def test_create_project(tmpdir,
     restricted_template_default_folder = f'{dev_root}/restricted/Salem/Templates/DefaultProject'
     os.makedirs(restricted_template_default_folder, exist_ok=True)
 
-    restricted_template_json = f'{restricted_template_default_folder}/Template.json'
+    restricted_template_json = f'{restricted_template_default_folder}/template.json'
     if os.path.isfile(restricted_template_json):
         os.unlink(restricted_template_json)
     with open(restricted_template_json, 'w') as s:
@@ -689,7 +689,7 @@ def test_create_gem(tmpdir,
     template_default_folder = f'{dev_root}/Templates/DefaultGem'
     os.makedirs(template_default_folder, exist_ok=True)
 
-    template_json = f'{template_default_folder}/Template.json'
+    template_json = f'{template_default_folder}/template.json'
     if os.path.isfile(template_json):
         os.unlink(template_json)
     with open(template_json, 'w') as s:
@@ -707,7 +707,7 @@ def test_create_gem(tmpdir,
     restricted_template_default_folder = f'{dev_root}/restricted/Salem/Templates/DefaultGem'
     os.makedirs(restricted_template_default_folder, exist_ok=True)
 
-    restricted_template_json = f'{restricted_template_default_folder}/Template.json'
+    restricted_template_json = f'{restricted_template_default_folder}/template.json'
     if os.path.isfile(restricted_template_json):
         os.unlink(restricted_template_json)
     with open(restricted_template_json, 'w') as s:

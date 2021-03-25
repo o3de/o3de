@@ -135,6 +135,16 @@ namespace ScriptCanvasEditor
         AZStd::vector< ScriptCanvas::Data::Type > GetBehaviorContextObjectTypes() const override;
         AZStd::vector< ScriptCanvas::Data::Type > GetMapTypes() const override;
         AZStd::vector< ScriptCanvas::Data::Type > GetArrayTypes() const override;
+
+        bool IsShowingVariablePalette() const override;
+        bool IsShowingGraphVariables() const override;
+
+        QPushButton* GetCreateVariableButton() const override;
+        QTableView* GetGraphPaletteTableView() const override;
+        QTableView* GetVariablePaletteTableView() const override;
+
+        QLineEdit* GetVariablePaletteFilter() const override;
+        QLineEdit* GetGraphVariablesFilter() const override;
         ////
 
         // AzToolsFramework::EditorEvents::Bus
@@ -146,6 +156,8 @@ namespace ScriptCanvasEditor
         ////
 
         const ScriptCanvas::ScriptCanvasId& GetActiveScriptCanvasId() const;
+
+        bool IsValidVariableType(const ScriptCanvas::Data::Type& dataType) const;
 
     public slots:
         void OnCreateVariable(ScriptCanvas::Data::Type varType);
@@ -162,10 +174,8 @@ namespace ScriptCanvasEditor
 
     private:
 
-        bool IsShowingVariablePalette() const;
+        
         void ShowVariablePalette();
-
-        bool IsShowingGraphVariables() const;
         void ShowGraphVariables();
 
         void FocusOnSearchFilter();

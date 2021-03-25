@@ -14,12 +14,15 @@
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
+#include <SceneAPI/SceneCore/Utilities/CoordinateSystemConverter.h>
 
 namespace AZ
 {
@@ -54,8 +57,11 @@ namespace AZ
             ModelAssetBuilderContext(
                 const AZ::SceneAPI::Containers::Scene& scene,
                 const AZ::SceneAPI::DataTypes::IMeshGroup& group,
+                const AZ::SceneAPI::CoordinateSystemConverter coordSysConverter,
                 const MaterialAssetsByUid& materialsByUid,
-                Data::Asset<ModelAsset>& outputModelAsset);
+                Data::Asset<ModelAsset>& outputModelAsset,
+                Data::Asset<SkinMetaAsset>& outputSkinMetaAsset,
+                Data::Asset<MorphTargetMetaAsset>& outputMorphTargetMetaAsset);
             ~ModelAssetBuilderContext() override = default;
 
             ModelAssetBuilderContext& operator=(const ModelAssetBuilderContext& other) = delete;
@@ -63,7 +69,10 @@ namespace AZ
             const AZ::SceneAPI::Containers::Scene& m_scene;
             const AZ::SceneAPI::DataTypes::IMeshGroup& m_group;
             const MaterialAssetsByUid& m_materialsByUid;
+            AZ::SceneAPI::CoordinateSystemConverter m_coordSysConverter;
             Data::Asset<ModelAsset>& m_outputModelAsset;
+            Data::Asset<SkinMetaAsset>& m_outputSkinMetaAsset;
+            Data::Asset<MorphTargetMetaAsset>& m_outputMorphTargetMetaAsset;
         };
 
         struct MaterialAssetBuilderContext : public AZ::SceneAPI::Events::ICallContext

@@ -12,6 +12,5 @@
 add_subdirectory(Cry3DEngine)
 add_subdirectory(CryCommon)
 add_subdirectory(CryFont)
-add_subdirectory(CryNetwork)
 add_subdirectory(CrySystem)
 add_subdirectory(RenderDll)

@@ -216,6 +216,7 @@ namespace AZ
                 Method("SetElement", &Quaternion::SetElement)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
                 Method("GetLength", &Quaternion::GetLength)->
+                    Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Length", "Math"))->
                 Method("GetLengthSq", &Quaternion::GetLengthSq)->
                 Method("GetLengthReciprocal", &Quaternion::GetLengthReciprocal)->
                 Method("GetNormalized", &Quaternion::GetNormalized)->

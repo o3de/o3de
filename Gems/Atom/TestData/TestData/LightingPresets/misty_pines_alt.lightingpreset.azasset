@@ -1,0 +1,54 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "autoSelect": false,
+        "displayName": "Misty Pines (Alt)",
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{2DF63061-F85C-5F41-A6DC-0CF52C63B63B}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/misty_pines_2k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{2DF63061-F85C-5F41-A6DC-0CF52C63B63B}",
+                "subId": 2000
+            },
+            "assetHint": "testdata/lightingpresets/misty_pines_2k_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{2DF63061-F85C-5F41-A6DC-0CF52C63B63B}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/misty_pines_2k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblExposure": 0.0,
+        "skyboxExposure": 0.0,
+        "lights": [
+            {
+                "direction": [
+                    -0.15000000596046449,
+                    0.15000000596046449,
+                    -1.0
+                ],
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowFarClipDistance": 20.0,
+                "shadowmapSize": "Size2048",
+                "enableShadowDebugColoring": false
+            }
+        ],
+        "shadowCatcherOpacity": 0.20000000298023225
+    }
+}

@@ -15,15 +15,15 @@
 # each platform include them
 
 # Clear all
-set(CMAKE_C_FLAGS "")
-set(CMAKE_CXX_FLAGS "")
-set(LINK_OPTIONS "")
+ly_set(CMAKE_C_FLAGS "")
+ly_set(CMAKE_CXX_FLAGS "")
+ly_set(LINK_OPTIONS "")
 foreach(conf ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${conf} UCONF)
-    set(CMAKE_C_FLAGS_${UCONF} "")
-    set(CMAKE_CXX_FLAGS_${UCONF} "")
-    set(LINK_OPTIONS_${UCONF} "")
-    set(LY_BUILD_CONFIGURATION_TYPE_${UCONF} ${conf})
+    ly_set(CMAKE_C_FLAGS_${UCONF} "")
+    ly_set(CMAKE_CXX_FLAGS_${UCONF} "")
+    ly_set(LINK_OPTIONS_${UCONF} "")
+    ly_set(LY_BUILD_CONFIGURATION_TYPE_${UCONF} ${conf})
 endforeach()
 
 # Common configurations

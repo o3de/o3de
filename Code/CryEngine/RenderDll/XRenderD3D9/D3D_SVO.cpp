@@ -1695,8 +1695,6 @@ void CSvoRenderer::CheckCreateUpdateRT(CTexture*& pTex, int nWidth, int nHeight,
 
         SD3DPostEffectsUtils::CreateRenderTarget(szNameEx, pTex, nWidth, nHeight, Clr_Unknown, false, false, eTF);
 
-        pTex->DisableMgpuSync();
-
         //iLog->Log("Realloc RT %dx%d, %s, %s", nWidth, nHeight, CTexture::NameForTextureFormat(eTF), szName);
     }
 }

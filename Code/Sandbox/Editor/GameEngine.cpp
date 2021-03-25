@@ -639,14 +639,13 @@ bool CGameEngine::LoadLevel(
         if (physicsEntityGridSize <= 0)
         {
             ICVar* pCvar = m_pISystem->GetIConsole()->GetCVar("e_PhysEntityGridSizeDefault");
-            AZ_Assert(pCvar, "The CVAR e_PhysEntityGridSizeDefault is not defined");
-            physicsEntityGridSize = pCvar->GetIVal();
+            physicsEntityGridSize = pCvar ? pCvar->GetIVal() : 4096;
         }
 
     }
 
     // Load level in 3d engine.
-    if (!gEnv->p3DEngine->InitLevelForEditor(m_levelPath.toUtf8().data(), m_missionName.toUtf8().data()))
+    if (gEnv->p3DEngine && !gEnv->p3DEngine->InitLevelForEditor(m_levelPath.toUtf8().data(), m_missionName.toUtf8().data()))
     {
         CLogFile::WriteLine("ERROR: Can't load level !");
         QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("ERROR: Can't load level !"));
@@ -761,7 +760,10 @@ void CGameEngine::SwitchToInGame()
         pRuler->SetActive(false);
     }
 
-    gEnv->p3DEngine->GetTimeOfDay()->EndEditMode();
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->GetTimeOfDay()->EndEditMode();
+    }
     gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
     // Disable accelerators.
@@ -808,10 +810,13 @@ void CGameEngine::SwitchToInEditor()
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
-    gEnv->p3DEngine->GetTimeOfDay()->BeginEditMode();
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->GetTimeOfDay()->BeginEditMode();
 
-    // this has to be done before the RemoveSink() call, or else some entities may not be removed
-    gEnv->p3DEngine->GetDeferredPhysicsEventManager()->ClearDeferredEvents();
+        // this has to be done before the RemoveSink() call, or else some entities may not be removed
+        gEnv->p3DEngine->GetDeferredPhysicsEventManager()->ClearDeferredEvents();
+    }
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
@@ -1097,40 +1102,6 @@ void CGameEngine::Update()
 
     if (m_bInGameMode)
     {
-        CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-
-        // if we're in editor mode, match the width, height and Fov, but alter no other parameters
-        if (pRenderViewport)
-        {
-            int width = 640;
-            int height = 480;
-            pRenderViewport->GetDimensions(&width, &height);
-
-            // Check for custom width and height cvars in use by Track View.
-            // The backbuffer size maybe have been changed, so we need to make sure the viewport
-            // is setup with the correct aspect ratio here so the captured output will look correct.
-            ICVar* cVar = gEnv->pConsole->GetCVar("TrackViewRenderOutputCapturing");
-            if (cVar && cVar->GetIVal() != 0)
-            {
-                const int customWidth = gEnv->pConsole->GetCVar("r_CustomResWidth")->GetIVal();
-                const int customHeight = gEnv->pConsole->GetCVar("r_CustomResHeight")->GetIVal();
-                if (customWidth != 0 && customHeight != 0)
-                {
-                    IEditor* editor = GetIEditor();
-                    AZ_Assert(editor, "Expected valid Editor");
-                    IRenderer* renderer = editor->GetRenderer();
-                    AZ_Assert(renderer, "Expected valid Renderer");
-
-                    int maxRes = renderer->GetMaxSquareRasterDimension();
-                    width = clamp_tpl(customWidth, 32, maxRes);
-                    height = clamp_tpl(customHeight, 32, maxRes);
-                }
-            }
-
-            CCamera& cam = gEnv->pSystem->GetViewCamera();
-            cam.SetFrustum(width, height, pRenderViewport->GetFOV(), cam.GetNearPlane(), cam.GetFarPlane(), cam.GetPixelAspectRatio());
-        }
-
         if (gEnv->pSystem)
         {
             gEnv->pSystem->UpdatePreTickBus();
@@ -1138,10 +1109,8 @@ void CGameEngine::Update()
             gEnv->pSystem->UpdatePostTickBus();
         }
 
-        // TODO: still necessary after AVI recording removal?
-        if (pRenderViewport)
+        if (CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport())
         {
-            // Make sure we at least try to update game viewport (Needed for AVI recording).
             pRenderViewport->Update();
         }
     }
@@ -1208,12 +1177,18 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CGameEngine::LockResources()
 {
-    gEnv->p3DEngine->LockCGFResources();
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->LockCGFResources();
+    }
 }
 
 void CGameEngine::UnlockResources()
 {
-    gEnv->p3DEngine->UnlockCGFResources();
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->UnlockCGFResources();
+    }
 }
 
 void CGameEngine::OnTerrainModified(const Vec2& modPosition, float modAreaRadius, bool fullTerrain)

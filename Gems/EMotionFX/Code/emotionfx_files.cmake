@@ -18,11 +18,4 @@ set(FILES
     Source/Integration/System/SystemComponent.h
     Source/Integration/System/PipelineComponent.cpp
     Source/Integration/System/PipelineComponent.h
-    Source/Integration/Rendering/Cry/CryRenderBackend.h
-    Source/Integration/Rendering/Cry/CryRenderBackend.cpp
-    Source/Integration/Rendering/Cry/CryRenderActor.h
-    Source/Integration/Rendering/Cry/CryRenderActor.cpp
-    Source/Integration/Rendering/Cry/CryRenderActorInstance.h
-    Source/Integration/Rendering/Cry/CryRenderActorInstance.cpp
-    Source/Integration/Rendering/Cry/CryRenderBackendCommon.h
 )

@@ -15,7 +15,6 @@
 
 #include "CryRenderOther_precompiled.h"
 #include "AtomShim_Renderer.h"
-#include "AtomShim_DynamicDraw.h"
 #include <IColorGradingController.h>
 #include "IStereoRenderer.h"
 #include "../Common/Textures/TextureManager.h"
@@ -33,12 +32,13 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Scene.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -53,6 +53,11 @@ CCryNameTSCRC CHWShader::s_sClassNamePS = CCryNameTSCRC("CHWShader_PS");
 CCryNameTSCRC CShader::s_sClassName = CCryNameTSCRC("CShader");
 
 CAtomShimRenderer* gcpAtomShim = NULL;
+
+ #ifdef _DEBUG
+// static array used to check that calls to Set2DMode and Unset2DMode are matched. (static array initialized to zeros automatically).
+int s_isIn2DMode[RT_COMMAND_BUF_COUNT];
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
@@ -175,7 +180,30 @@ void CAtomShimRenderer::BeginFrame()
             m_rendererDescription = AZStd::string::format("Atom using %s RHI", apiName.GetCStr());
         }
 
-        m_pAtomShimDynamicDraw = AZStd::make_unique<CAtomShimDynamicDraw>();
+        // Initialize dynamic draw which is used for 2d drawing
+        const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+        m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(
+            AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get());
+        AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
+        AZ::RPI::ShaderOptionList shaderOptions;
+        shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        m_dynamicDraw->InitShader(shader, &shaderOptions);
+        m_dynamicDraw->InitVertexFormat(
+            {{"POSITION", AZ::RHI::Format::R32G32B32_FLOAT},
+             {"COLOR", AZ::RHI::Format::R8G8B8A8_UNORM},
+             {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT}});
+        // enable the ability to change cull mode, blend mode, the depth state
+        m_dynamicDraw->AddDrawStateOptions( AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
+            | AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
+            | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState
+            | AZ::RPI::DynamicDrawContext::DrawStateOptions::FaceCullMode);
+        m_dynamicDraw->EndInit();
+
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+        const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+        m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name("m_texture"));
+        m_samplerInputIndex = layout->FindShaderInputSamplerIndex(AZ::Name("m_sampler"));
+        m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_worldToProj"));
 
         m_isFinalInitializationDone = true;
     }
@@ -196,8 +224,6 @@ void CAtomShimRenderer::BeginFrame()
     m_RP.m_TI[m_RP.m_nFillThreadID].m_matProj.SetIdentity();
 
     m_pAtomShimRenderAuxGeom->BeginFrame();
-
-    m_pAtomShimDynamicDraw->BeginFrame();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -258,8 +284,6 @@ void CAtomShimRenderer::EndFrame()
     m_pAtomShimRenderAuxGeom->EndFrame();
 
     EF_RenderTextMessages();
-
-    m_pAtomShimDynamicDraw->EndFrame();
 
     // Hack: Assume we're just rendering to the default ViewContext
     // Proper multi viewport support will be handled after this shim is removed
@@ -409,8 +433,19 @@ void CRenderMesh::DrawImmediately()
 }
 
 ///////////////////////////////////////////
-void CAtomShimRenderer::SetCullMode([[maybe_unused]] int mode)
+void CAtomShimRenderer::SetCullMode(int mode)
 {
+    AZ::RHI::CullMode cullMode = AZ::RHI::CullMode::None;
+    switch (mode)
+    {
+    case R_CULL_FRONT:
+        cullMode = AZ::RHI::CullMode::Front;
+        break;
+    case R_CULL_BACK:
+        cullMode = AZ::RHI::CullMode::Back;
+        break;
+    }
+    m_dynamicDraw->SetCullMode(cullMode);
 }
 
 ///////////////////////////////////////////
@@ -612,8 +647,9 @@ void CAtomShimRenderer::SetViewport(int x, int y, int width, int height, [[maybe
     m_height = height;
 }
 
-void CAtomShimRenderer::SetScissor([[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] int width, [[maybe_unused]] int height)
+void CAtomShimRenderer::SetScissor(int x, int y, int width, int height)
 {
+    m_dynamicDraw->SetScissor(AZ::RHI::Scissor(x, y, x + width, y + height));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1485,4 +1521,161 @@ void CAtomShimRenderer::CacheCameraConfiguration(const CCamera& camera)
     config.m_farClipDistance = camera.GetFarPlane();
     config.m_frustumHeight = config.m_farClipDistance * tanf(config.m_fovRadians / 2) * 2;
     config.m_frustumWidth = config.m_frustumHeight * camera.GetViewSurfaceX() / camera.GetViewSurfaceZ();
+}
+
+void CAtomShimRenderer::DrawStringU(
+    [[maybe_unused]] IFFont_RenderProxy* pFont, [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z,
+    [[maybe_unused]] const char* pStr, [[maybe_unused]] const bool asciiMultiLine, [[maybe_unused]] const STextDrawContext& ctx) const
+{
+    // RenderCallback disabled, ICryFont has been directly implemented on Atom by Gems/AtomLyIntegration/AtomFont.
+}
+
+void CAtomShimRenderer::DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, const PublicRenderPrimitiveType nPrimType)
+{
+    using namespace AZ;
+
+    // if nothing to draw then return
+    if (!pBuf || !nVerts || (pInds && !nInds) || (nInds && !pInds))
+    {
+        return;
+    }
+
+    // get view proj materix
+    Matrix44A matView, matProj;
+    GetModelViewMatrix(matView.GetData());
+    GetProjectionMatrix(matProj.GetData());
+    Matrix44A matViewProj = matView * matProj;
+    Matrix4x4 azMatViewProj = Matrix4x4::CreateFromColumnMajorFloat16(matViewProj.GetData());
+
+    Data::Instance<RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    drawSrg->SetConstant(m_viewProjInputIndex, azMatViewProj);
+
+    AtomShimTexture* atomTexture = m_currentTextureForUnit[0];
+    drawSrg->SetImageView(m_imageInputIndex, atomTexture->m_imageView.get());
+
+    AZ::RHI::SamplerState samplerState;
+    samplerState.m_anisotropyEnable = true;
+    samplerState.m_anisotropyMax = 16;
+    bool isClamp = m_clampFlagPerTextureUnit[0];
+    RHI::AddressMode addressMode = isClamp ? RHI::AddressMode::Clamp : RHI::AddressMode::Wrap;
+    samplerState.m_addressU = addressMode;
+    samplerState.m_addressV = addressMode;
+    samplerState.m_addressW = addressMode;
+    drawSrg->SetSampler(m_samplerInputIndex, samplerState);
+    drawSrg->Compile();
+
+    RHI::PrimitiveTopology primitiveType = RHI::PrimitiveTopology::TriangleList;
+
+    switch (nPrimType)
+    {
+    case prtTriangleList:
+        primitiveType = RHI::PrimitiveTopology::TriangleList;
+        break;
+    case prtTriangleStrip:
+        primitiveType = RHI::PrimitiveTopology::TriangleStrip;
+        break;
+    case prtLineList:
+        primitiveType = RHI::PrimitiveTopology::LineList;
+        break;
+    case prtLineStrip:
+        primitiveType = RHI::PrimitiveTopology::LineStrip;
+        break;
+    }
+
+    m_dynamicDraw->SetPrimitiveType(primitiveType);
+
+    if (pInds)
+    {
+        m_dynamicDraw->DrawIndexed(pBuf, nVerts, pInds, nInds, RHI::IndexFormat::Uint16, drawSrg);
+    }
+    else
+    {
+        m_dynamicDraw->DrawLinear(pBuf, nVerts, drawSrg);
+    }
+}
+
+void CAtomShimRenderer::DrawDynUiPrimitiveList(
+    [[maybe_unused]] DynUiPrimitiveList& primitives, [[maybe_unused]] int totalNumVertices, [[maybe_unused]] int totalNumIndices)
+{
+    // This function was only used by LyShine and LyShine is moving to Atom implementation.
+    return;
+}
+
+void CAtomShimRenderer::Set2DMode(uint32 orthoWidth, uint32 orthoHeight, TransformationMatrices& backupMatrices, float znear, float zfar)
+{
+    Set2DModeNonZeroTopLeft(0.0f, 0.0f, static_cast<float>(orthoWidth), static_cast<float>(orthoHeight), backupMatrices, znear, zfar);
+}
+
+void CAtomShimRenderer::Unset2DMode(const TransformationMatrices& restoringMatrices)
+{
+    int nThreadID = m_pRT->GetThreadList();
+
+#ifdef _DEBUG
+    // Check that we are already in 2D mode on this thread and decrement the counter used for this check.
+    AZ_Assert(s_isIn2DMode[nThreadID]-- > 0, "Calls to Set2DMode and Unset2DMode appear mismatched");
+#endif
+
+    m_RP.m_TI[nThreadID].m_matView = restoringMatrices.m_viewMatrix;
+    m_RP.m_TI[nThreadID].m_matProj = restoringMatrices.m_projectMatrix;
+
+    // The legacy renderer supports nested Set2dMode/Unset2dMode so we use a counter to support that also.
+    m_isIn2dModeCounter--;
+    if (m_isIn2dModeCounter > 0)
+    {
+        // We're still in 2d mode, so set the viewProjOverride to the current matrix
+        // For 2d drawing, the view matrix is an identity matrix, so viewProj == proj
+        AZ::Matrix4x4 viewProj = AZ::Matrix4x4::CreateFromColumnMajorFloat16(m_RP.m_TI[nThreadID].m_matProj.GetData());
+        m_pAtomShimRenderAuxGeom->SetViewProjOverride(viewProj);
+    }
+    else
+    {
+        m_pAtomShimRenderAuxGeom->UnsetViewProjOverride();
+    }
+}
+
+void CAtomShimRenderer::Set2DModeNonZeroTopLeft(
+    float orthoLeft, float orthoTop, float orthoWidth, float orthoHeight, TransformationMatrices& backupMatrices, float znear, float zfar)
+{
+    int nThreadID = m_pRT->GetThreadList();
+
+#ifdef _DEBUG
+    // Increment the counter used to check that Set2DMode and Unset2DMode are balanced.
+    // It should never be negative before the increment.
+    AZ_Assert(s_isIn2DMode[nThreadID]++ >= 0, "Calls to Set2DMode and Unset2DMode appear mismatched");
+#endif
+
+    backupMatrices.m_projectMatrix = m_RP.m_TI[nThreadID].m_matProj;
+
+    // Move the zfar a bit away from the znear if they're the same.
+    if (AZ::IsClose(znear, zfar, .001f))
+    {
+        zfar += .01f;
+    }
+
+    float left = orthoLeft;
+    float right = left + orthoWidth;
+    float top = orthoTop;
+    float bottom = top + orthoHeight;
+
+    mathMatrixOrthoOffCenterLH(&m_RP.m_TI[nThreadID].m_matProj, left, right, bottom, top, znear, zfar);
+
+    if (m_RP.m_TI[nThreadID].m_PersFlags & RBPF_REVERSE_DEPTH)
+    {
+        // [GFX TODO] [ATOM-661] may need to reverse the depth here (though for 2D it may not be necessary)
+    }
+
+    backupMatrices.m_viewMatrix = m_RP.m_TI[nThreadID].m_matView;
+    m_RP.m_TI[nThreadID].m_matView.SetIdentity();
+
+    m_isIn2dModeCounter++;
+
+    // For 2d drawing, the view matrix is an identity matrix, so viewProj == proj
+    AZ::Matrix4x4 viewProj = AZ::Matrix4x4::CreateFromColumnMajorFloat16(m_RP.m_TI[nThreadID].m_matProj.GetData());
+    m_pAtomShimRenderAuxGeom->SetViewProjOverride(viewProj);
+}
+
+void CAtomShimRenderer::SetColorOp(
+    [[maybe_unused]] byte eCo, [[maybe_unused]] byte eAo, [[maybe_unused]] byte eCa, [[maybe_unused]] byte eAa)
+{
+    // this is only used by LY ImGui gem
 }

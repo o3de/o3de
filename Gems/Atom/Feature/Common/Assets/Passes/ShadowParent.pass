@@ -1,0 +1,142 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ShadowParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input"
+                },
+                // Outputs...
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "SpotLightShadowmap",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "SpotLightESM",
+                    "SlotType": "Output"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DirectionalShadowmap",
+                    "AttachmentRef": {
+                        "Pass": "CascadedShadowmapsPass",
+                        "Attachment": "Shadowmap"
+                    }
+                },
+                {
+                    "LocalSlot": "DirectionalESM",
+                    "AttachmentRef": {
+                        "Pass": "EsmShadowmapsPassDirectional",
+                        "Attachment": "EsmShadowmaps"
+                    }
+                },
+                {
+                    "LocalSlot": "SpotLightShadowmap",
+                    "AttachmentRef": {
+                        "Pass": "SpotLightShadowmapsPass",
+                        "Attachment": "Shadowmap"
+                    }
+                },
+                {
+                    "LocalSlot": "SpotLightESM",
+                    "AttachmentRef": {
+                        "Pass": "EsmShadowmapsPassSpot",
+                        "Attachment": "EsmShadowmaps"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "CascadedShadowmapsPass",
+                    "TemplateName": "CascadedShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "DirectionalLightView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SpotLightShadowmapsPass",
+                    "TemplateName": "SpotLightShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "SpotLightView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "EsmShadowmapsPassDirectional",
+                    "TemplateName": "EsmShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "EsmShadowmapsPassData",
+                        "LightType": "directional"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "EsmShadowmapsPassSpot",
+                    "TemplateName": "EsmShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "EsmShadowmapsPassData",
+                        "LightType": "spot"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "SpotLightShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

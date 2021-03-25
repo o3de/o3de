@@ -88,6 +88,7 @@ namespace GraphCanvas
         AZ::Outcome<DragDropState> OnDragEnterEvent(QGraphicsSceneDragDropEvent* dragDropEvent) override;
         void OnDragLeaveEvent(QGraphicsSceneDragDropEvent* dragDropEvent) override;
         void OnDropEvent(QGraphicsSceneDragDropEvent* dragDropEvent) override;
+        void OnDropCancelled() override;
         ////
 
         // DataSlotNotifications

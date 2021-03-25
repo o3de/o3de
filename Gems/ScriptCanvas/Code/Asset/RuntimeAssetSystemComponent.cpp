@@ -27,7 +27,7 @@ namespace ScriptCanvas
     void RuntimeAssetSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         ScriptCanvas::RuntimeData::Reflect(context);
-        ScriptCanvas::FunctionRuntimeData::Reflect(context);
+        ScriptCanvas::SubgraphInterfaceData::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeAssetSystemComponent, AZ::Component>()
@@ -59,7 +59,7 @@ namespace ScriptCanvas
     void RuntimeAssetSystemComponent::Activate()
     {
         m_runtimeAssetRegistry.Register<ScriptCanvas::RuntimeAsset, ScriptCanvas::RuntimeAssetHandler, ScriptCanvas::RuntimeAssetDescription>();
-        m_runtimeAssetRegistry.Register<ScriptCanvas::RuntimeFunctionAsset, ScriptCanvas::RuntimeFunctionAssetHandler, ScriptCanvas::RuntimeFunctionAssetDescription>();
+        m_runtimeAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::RuntimeFunctionAssetDescription>();
     }
 
     void RuntimeAssetSystemComponent::Deactivate()

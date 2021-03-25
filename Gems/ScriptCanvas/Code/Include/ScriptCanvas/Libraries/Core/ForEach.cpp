@@ -12,6 +12,7 @@
 
 #include <ScriptCanvas/Libraries/Core/ForEach.h>
 #include <ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
 
 #include <Libraries/Core/MethodUtility.h>
 
@@ -25,20 +26,70 @@ namespace ScriptCanvas
             const size_t ForEach::k_keySlotIndex = 0;
             const size_t ForEach::k_valueSlotIndex = 1;
 
-            bool ForEach::VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
+            AZ::Outcome<DependencyReport, void> ForEach::GetDependencies() const
             {
-                if (rootElement.GetVersion() <= 1)
-                {
-                    SlotMetadata metaData;
+                return AZ::Success(DependencyReport{});
+            }
 
-                    if (rootElement.FindSubElementAndGetData(AZ_CRC("m_sourceSlot", 0x7575d6c1), metaData))
-                    {
-                        rootElement.RemoveElementByName(AZ_CRC("m_sourceSlot", 0x7575d6c1));
-                        rootElement.AddElementWithData(serializeContext, "m_sourceSlot", metaData.m_slotId);
-                    }
-                }
+            SlotId ForEach::GetLoopBreakSlotId() const
+            {
+                return ForEachProperty::GetBreakSlotId(const_cast<ForEach*>(this));
+            }
 
+            SlotId ForEach::GetLoopFinishSlotId() const
+            {
+                return ForEachProperty::GetFinishedSlotId(const_cast<ForEach*>(this));
+            }
+
+            SlotId ForEach::GetLoopSlotId() const
+            {
+                return ForEachProperty::GetEachSlotId(const_cast<ForEach*>(this));
+            }
+
+            Data::Type ForEach::GetKeySlotDataType() const
+            {
+                return m_propertySlots[k_keySlotIndex].m_propertyType;
+            }
+
+            SlotId ForEach::GetKeySlotId() const
+            {
+                AZ_Error("ScriptCanvas", m_propertySlots.size() == 2, "not enough property slots for a key slot");
+                return m_propertySlots.size() == 2 ? m_propertySlots[k_keySlotIndex].m_propertySlotId : SlotId();
+            }
+
+            ExecutionNameMap ForEach::GetExecutionNameMap() const
+            {
+                return { { "In", "Each" }, { "In", "Finished" },  { "Break", "Finished" } };
+            }
+
+            Data::Type ForEach::GetValueSlotDataType() const
+            {
+                return m_propertySlots.size() == 2 ? m_propertySlots[k_valueSlotIndex].m_propertyType : m_propertySlots[k_keySlotIndex].m_propertyType;
+            }
+
+            SlotId ForEach::GetValueSlotId() const
+            {
+                return m_propertySlots.size() == 2 ? m_propertySlots[k_valueSlotIndex].m_propertySlotId : m_propertySlots[k_keySlotIndex].m_propertySlotId;
+            }
+
+            bool ForEach::IsFormalLoop() const
+            {
                 return true;
+            }
+
+            bool ForEach::IsBreakSlot(const SlotId& checkSlotId) const
+            {
+                auto breakSlot = this->GetSlotByName("Break");
+                return breakSlot ? breakSlot->GetId() == checkSlotId : false;
+            }
+
+            bool ForEach::IsOutOfDate(const VersionData& /*graphVersion*/) const
+            {
+                if (GetSlotByNameAndType("Continue", CombinedSlotType::ExecutionIn))
+                {
+                    return true;
+                }
+                return false;
             }
 
             void ForEach::OnInit()
@@ -104,6 +155,16 @@ namespace ScriptCanvas
                     m_breakCalled = true;
                     SignalOutput(ForEachProperty::GetFinishedSlotId(this));
                 }
+            }
+
+            UpdateResult ForEach::OnUpdateNode()
+            {
+                if (auto continueSlot = GetSlotByNameAndType("Continue", CombinedSlotType::ExecutionIn))
+                {
+                    RemoveSlot(continueSlot->GetId());
+                }
+
+                return UpdateResult::DirtyGraph;
             }
 
             bool ForEach::InitializeLoop()
@@ -227,7 +288,7 @@ namespace ScriptCanvas
                 }
 
                 ++m_index;
-                GetExecutionBus()->AddToExecutionStack((*this), SlotId());
+
                 SignalOutput(ForEachProperty::GetEachSlotId(this));
             }
 
@@ -286,11 +347,30 @@ namespace ScriptCanvas
 
                     if (newType != m_previousTypeId)
                     {
+                        AZStd::vector<Data::Type> types = Data::GetContainedTypes(dataType);
+
+                        if (types.size() == m_propertySlots.size())
+                        {
+                            bool allTypesMatch = true;
+                            for (size_t slotIndex = 0; slotIndex < m_propertySlots.size(); ++slotIndex)
+                            {
+                                if (m_propertySlots[slotIndex].m_propertyType != types[slotIndex])
+                                {
+                                    allTypesMatch = false;
+                                    break;
+                                }
+                            }
+
+                            if (allTypesMatch)
+                            {
+                                return;
+                            }
+                        }
+
                         ClearPropertySlots();
 
                         m_previousTypeId = newType;
 
-                        AZStd::vector<Data::Type> types = Data::GetContainedTypes(dataType);
                         for (size_t i = 0; i < types.size(); ++i)
                         {
                             Data::PropertyMetadata propertyAccount;

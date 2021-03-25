@@ -18,6 +18,8 @@
 
 #include "SequenceBatchRenderDialog.h"
 
+#include <AzFramework/Windowing/WindowBus.h>
+
 // Qt
 #include <QAction>
 #include <QFileDialog>
@@ -628,8 +630,9 @@ void CSequenceBatchRenderDialog::OnFPSEditChange()
     CheckForEnableUpdateButton();
 }
 
-void CSequenceBatchRenderDialog::OnFPSChange()
+void CSequenceBatchRenderDialog::OnFPSChange(int itemIndex)
 {
+    m_customFPS = fps[itemIndex].fps;
     CheckForEnableUpdateButton();
 }
 
@@ -871,6 +874,8 @@ void CSequenceBatchRenderDialog::InitializeContext()
 
 void CSequenceBatchRenderDialog::CaptureItemStart()
 {
+    AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+
     // Disable most of the UI in group chunks.
     // (Leave the start/cancel button and feedback elements).
     m_ui->BATCH_RENDER_LIST_GROUP_BOX->setEnabled(false);
@@ -896,6 +901,8 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     // once the game mode kicks in with the specified range.
     nextSequence->SetFlags(m_renderContext.flagBU | IAnimSequence::eSeqFlags_PlayOnReset);
 
+    m_renderContext.captureOptions.timeStep = 1.0f / renderItem.fps;
+
     Range newRange = renderItem.frameRange;
     newRange.start -= m_renderContext.captureOptions.timeStep;
     renderItem.pSequence->SetTimeRange(newRange);
@@ -907,7 +914,6 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     }
 
     // Set specific capture options for this item.
-    m_renderContext.captureOptions.timeStep = 1.0f / renderItem.fps;
     m_renderContext.captureOptions.captureBufferIndex = renderItem.bufferIndex;
     m_renderContext.captureOptions.prefix = renderItem.prefix.toUtf8().data();
     switch (renderItem.formatIndex)
@@ -955,6 +961,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         finalFolder += suffix;
         ++i;
     }
+
     m_renderContext.captureOptions.folder = finalFolder.toUtf8().data();
 
     // Change the resolution.
@@ -969,6 +976,14 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         m_renderContext.cvarCustomResHeightBU = pCVarCustomResHeight->GetIVal();
         pCVarCustomResWidth->Set(renderWidth);
         pCVarCustomResHeight->Set(renderHeight);
+
+        // awaiting ATOM-14859
+        // AzFramework::NativeWindowHandle windowHandle = nullptr;
+        // AzFramework::WindowSystemRequestBus::BroadcastResult(
+        //     windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+        // AzFramework::WindowRequestBus::Event(
+        //     windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea,
+        //     AzFramework::WindowSize(renderWidth, renderHeight));
     }
     else
     {
@@ -1187,6 +1202,11 @@ void CSequenceBatchRenderDialog::OnUpdateFinalize()
     m_ui->BATCH_RENDER_INPUT_GROUP_BOX->setEnabled(true);
     m_ui->BATCH_RENDER_OUTPUT_GROUP_BOX->setEnabled(true);
 
+    m_renderContext.frameNumber = 0;
+    m_renderContext.capturingFrame = false;
+
+    AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+
     // Check to see if there is more items to process
     bool done = m_renderContext.currentItemIndex == m_renderItems.size() - 1;
     if (done)
@@ -1279,31 +1299,56 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
     if (GetIEditor()->IsInGameMode())
     {
-        bool capturing = m_renderContext.captureState == CaptureState::Capturing;
-
-        // The lags behind by one frame since we are capturing the back buffer, so dont bother enabling the capture
-        // on the first frame.
-        if (m_renderContext.framesSpentInCurrentPhase == 0)
+        // note: the internal state may change by calling GetGameEngine()->Update() so
+        // we must not cache this value
+        const auto capturing = [this]
         {
-            capturing = false;
-        }
+            return m_renderContext.captureState == CaptureState::Capturing
+                // this lags behind by one frame since we are capturing the back buffer,
+                // so don't bother enabling the capture on the first frame.
+                && m_renderContext.framesSpentInCurrentPhase != 0;
+        };
 
-        if (capturing)
+        // if we're currently trying to capture and aren't waiting for a frame
+        // capture to complete, it's possible to start the next capture
+        const auto canBeginFrameCapture = [capturing, this]
         {
-            // Update the time so the frame number can be calculated in StartCapture()
+            return capturing() && !m_renderContext.capturingFrame;
+        };
+
+        if (canBeginFrameCapture())
+        {
+            // update the time so the frame number can be calculated in StartCapture()
             IAnimSequence* sequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
             m_renderContext.captureOptions.time = GetIEditor()->GetMovieSystem()->GetPlayingTime(sequence);
 
-            GetIEditor()->GetMovieSystem()->StartCapture(m_renderContext.captureOptions, m_renderContext.framesSpentInCurrentPhase);
+            GetIEditor()->GetMovieSystem()->StartCapture(m_renderContext.captureOptions, ++m_renderContext.frameNumber);
             GetIEditor()->GetMovieSystem()->ControlCapture();
         }
 
-        GetIEditor()->GetGameEngine()->Update();
-
-        if (capturing)
+        // if we're not capturing or we're not currently waiting for the current frame to finish
+        // being captured, it's safe to move to the next step of the main update
+        if (!capturing() || !m_renderContext.capturingFrame)
         {
-            GetIEditor()->GetMovieSystem()->EndCapture();
-            GetIEditor()->GetMovieSystem()->ControlCapture();
+            GetIEditor()->GetGameEngine()->Update(); // step update (original frame capture)
+        }
+
+        if (canBeginFrameCapture())
+        {
+            AZStd::string filePath;
+            AZStd::string fileName = AZStd::string::format("Frame_%06d.dds", m_renderContext.frameNumber);
+            AzFramework::StringFunc::Path::Join(
+                m_renderContext.captureOptions.folder.c_str(), fileName.c_str(), filePath, /*caseInsensitive=*/true,
+                /*normalize=*/false);
+
+            bool capturedScreenshot = false;
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                capturedScreenshot, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
+
+            if (capturedScreenshot)
+            {
+                m_renderContext.capturingFrame = true;
+            }
         }
     }
     else
@@ -1311,6 +1356,14 @@ void CSequenceBatchRenderDialog::OnKickIdle()
         // Post events, this will cause an Update tick.
         qApp->sendPostedEvents();
     }
+}
+
+void CSequenceBatchRenderDialog::OnCaptureFinished(
+    [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+{
+    m_renderContext.capturingFrame = false;
+    GetIEditor()->GetMovieSystem()->EndCapture();
+    GetIEditor()->GetMovieSystem()->ControlCapture();
 }
 
 void CSequenceBatchRenderDialog::OnCancelRender()

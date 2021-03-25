@@ -28,8 +28,8 @@ namespace AZ
         AZ_RTTI(JsonRegistrationContext, "{5A763774-CA8B-4245-A897-A03C503DCD60}", ReflectContext);
 
         class SerializerBuilder;
-        using SerializerMap = AZStd::unordered_map<const Uuid&, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;
-        using HandledTypesMap = AZStd::unordered_map<const Uuid&, BaseJsonSerializer*, AZStd::hash<Uuid>>;
+        using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;
+        using HandledTypesMap = AZStd::unordered_map<Uuid, BaseJsonSerializer*, AZStd::hash<Uuid>>;
 
         ~JsonRegistrationContext() override;
 

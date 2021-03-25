@@ -71,7 +71,7 @@ namespace GraphCanvas
     private:
     
         void ClearLayout();
-        void UpdateLayout();
+        void UpdateLayout(bool forceUpdate = false);
         void UpdateGeometry();
     
         NodePropertyConfiguration   m_propertyConfiguration;

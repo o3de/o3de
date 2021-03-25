@@ -80,7 +80,6 @@
 #include <Editor/Nodes/AreaModifiers/ScaleModifierNode.h>
 #include <Editor/Nodes/AreaModifiers/SlopeAlignmentModifierNode.h>
 #include <Editor/Nodes/AreaSelectors/AssetWeightSelectorNode.h>
-#include <Editor/Nodes/Areas/StaticVegetationBlockerAreaNode.h>
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
@@ -117,6 +116,14 @@ namespace LandscapeCanvasEditor
     static const char* GradientIdElementName = "GradientId";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
     static const char* VegetationAreaEntityIdElementName = "element";
+
+    static IEditor* GetLegacyEditor()
+    {
+        IEditor* editor = nullptr;
+        AzToolsFramework::EditorRequestBus::BroadcastResult(
+            editor, &AzToolsFramework::EditorRequestBus::Events::GetEditor);
+        return editor;
+    }
 
     struct NodePoint
     {
@@ -307,7 +314,6 @@ namespace LandscapeCanvasEditor
         REGISTER_NODE_PALETTE_ITEM(areaCategory, BlockerAreaNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(areaCategory, MeshBlockerAreaNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(areaCategory, SpawnerAreaNode, editorId);
-        REGISTER_NODE_PALETTE_ITEM(areaCategory, StaticVegetationBlockerAreaNode, editorId);
 
         // Gradients
         GraphCanvas::IconDecoratedNodePaletteTreeItem* gradientCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Gradients", editorId);
@@ -789,10 +795,11 @@ namespace LandscapeCanvasEditor
         // Flag the level as dirty if anything in the graph changes, since some graph actions
         // (e.g. moving nodes around, creating bookmarks, etc...) don't trigger actual Entity/Component
         // changes that would flag the level as dirty.
-        if (!GetIEditor()->IsModified())
+        if (const auto editor = GetLegacyEditor();
+            !editor->IsModified())
         {
-            GetIEditor()->SetModifiedFlag();
-            GetIEditor()->SetModifiedModule(eModifiedEntities);
+            editor->SetModifiedFlag();
+            editor->SetModifiedModule(eModifiedEntities);
         }
     }
 
@@ -903,7 +910,7 @@ namespace LandscapeCanvasEditor
         m_fileNewAction = GraphModelIntegration::EditorMainWindow::AddFileNewAction(menu);
 
         // Disable our file menu action for creating a new graph if a level isn't loaded
-        m_fileNewAction->setEnabled(GetIEditor()->IsLevelLoaded());
+        m_fileNewAction->setEnabled(GetLegacyEditor()->IsLevelLoaded());
 
         return m_fileNewAction;
     }
@@ -942,14 +949,14 @@ namespace LandscapeCanvasEditor
             auto redoAction = new QAction(QObject::tr("&Redo"), this);
             redoAction->setShortcut(AzQtComponents::RedoKeySequence);
             QObject::connect(redoAction, &QAction::triggered, [this] {
-                GetIEditor()->Redo();
+                GetLegacyEditor()->Redo();
             });
             menu->insertAction(separatorAction, redoAction);
 
             auto undoAction = new QAction(QObject::tr("&Undo"), this);
             undoAction->setShortcut(QKeySequence::Undo);
             QObject::connect(undoAction, &QAction::triggered, [this] {
-                GetIEditor()->Undo();
+                GetLegacyEditor()->Undo();
             });
             menu->insertAction(redoAction, undoAction);
         }
@@ -2498,7 +2505,7 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::UpdateGraphEnabled()
     {
-        bool isLevelLoaded = GetIEditor()->IsLevelLoaded();
+        bool isLevelLoaded = GetLegacyEditor()->IsLevelLoaded();
 
         // Disable being able to drag from the node palette to the empty dock window
         // to create a new graph when a level isn't loaded

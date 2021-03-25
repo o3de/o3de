@@ -68,7 +68,6 @@ namespace GridMate
     enum ServiceType : int
     {
         ST_LAN,
-        ST_XENIA,
         ST_PROVO,
         ST_SALEM,
         ST_STEAM,

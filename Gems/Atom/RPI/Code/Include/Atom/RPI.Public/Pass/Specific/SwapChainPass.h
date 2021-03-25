@@ -17,6 +17,7 @@
 #include <Atom/RHI/ScopeProducerFunction.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
 
+#include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
@@ -58,6 +59,8 @@ namespace AZ
 
             AzFramework::NativeWindowHandle GetWindowHandle() const;
 
+            RHI::Format GetSwapChainFormat() const;
+
         protected:
             // Pass behavior overrides
             void CreateChildPassesInternal() override final;
@@ -85,7 +88,7 @@ namespace AZ
 
             bool m_postProcess = false;
 
-            // The master child pass used to drive rendering for this swapchain
+            // The child pass used to drive rendering for this swapchain
             Ptr<Pass> m_childPass = nullptr;
 
             // Name of the template used to create the child pass. Needed for Recreate()

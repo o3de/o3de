@@ -96,6 +96,8 @@ namespace AZ
             DisplayMapperConfigurationDescriptor m_displayMapperConfigurationDescriptor;
             bool m_needToRebuildChildren = false;
 
+            const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;
+
             AZ::Render::DisplayMapperParameters m_displayMapperParameters = {};
 
             AZStd::shared_ptr<RPI::PassTemplate> m_acesOutputTransformTemplate;

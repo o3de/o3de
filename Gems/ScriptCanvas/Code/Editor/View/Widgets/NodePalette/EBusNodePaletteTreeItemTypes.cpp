@@ -23,7 +23,8 @@
 
 #include "Editor/Components/IconComponent.h"
 
-#include "Editor/Nodes/NodeUtils.h"
+#include "Editor/Nodes/NodeCreateUtils.h"
+#include "Editor/Nodes/NodeDisplayUtils.h"
 #include "Editor/Translation/TranslationHelper.h"
 
 #include "ScriptCanvas/Bus/RequestBus.h"
@@ -32,7 +33,7 @@
 
 #include <Core/Attributes.h>
 #include <Libraries/Core/EBusEventHandler.h>
-#include <Libraries/Core/Method.h>
+#include <Libraries/Core/MethodOverloaded.h>
 
 namespace ScriptCanvasEditor
 {
@@ -50,19 +51,28 @@ namespace ScriptCanvasEditor
                 ->Version(0)
                 ->Field("BusName", &CreateEBusSenderMimeEvent::m_busName)
                 ->Field("EventName", &CreateEBusSenderMimeEvent::m_eventName)
+                ->Field("IsOverload", &CreateEBusSenderMimeEvent::m_isOverload)
                 ;
         }
     }
 
-    CreateEBusSenderMimeEvent::CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName)
+    CreateEBusSenderMimeEvent::CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload)
         : m_busName(busName.data())
         , m_eventName(eventName.data())
+        , m_isOverload(isOverload)
     {
     }
 
     ScriptCanvasEditor::NodeIdPair CreateEBusSenderMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
     {
-        return Nodes::CreateObjectMethodNode(m_busName, m_eventName, scriptCanvasId);
+        if (m_isOverload)
+        {
+            return Nodes::CreateObjectMethodOverloadNode(m_busName, m_eventName, scriptCanvasId);
+        }
+        else
+        {
+            return Nodes::CreateObjectMethodNode(m_busName, m_eventName, scriptCanvasId);
+        }
     }
 
     /////////////////////////////////
@@ -81,12 +91,13 @@ namespace ScriptCanvasEditor
         return defaultIcon;
     }
 
-    EBusSendEventPaletteTreeItem::EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busIdentifier, const ScriptCanvas::EBusEventId& eventIdentifier)
+    EBusSendEventPaletteTreeItem::EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busIdentifier, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload)
         : DraggableNodePaletteTreeItem(eventName, ScriptCanvasEditor::AssetEditorId)
         , m_busName(busName.data())
         , m_eventName(eventName.data())
         , m_busId(busIdentifier)
         , m_eventId(eventIdentifier)
+        , m_isOverload(isOverload)
     {
         AZStd::string displayEventName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusSender, m_busName.toUtf8().data(), m_eventName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Name);
 
@@ -111,7 +122,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::GraphCanvasMimeEvent* EBusSendEventPaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateEBusSenderMimeEvent(m_busName.toUtf8().data(), m_eventName.toUtf8().data());
+        return aznew CreateEBusSenderMimeEvent(m_busName.toUtf8().data(), m_eventName.toUtf8().data(), m_isOverload);
     }
 
     AZStd::string EBusSendEventPaletteTreeItem::GetBusName() const
@@ -132,6 +143,11 @@ namespace ScriptCanvasEditor
     ScriptCanvas::EBusEventId EBusSendEventPaletteTreeItem::GetEventId() const
     {
         return m_eventId;
+    }
+
+    bool EBusSendEventPaletteTreeItem::IsOverload() const 
+    {
+        return m_isOverload;
     }
 
     ///////////////////////////////
@@ -222,7 +238,7 @@ namespace ScriptCanvasEditor
 
         if (nodeIdPair.m_graphCanvasId.IsValid())
         {
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodeIdPair.m_graphCanvasId, scenePosition, false);
         }
 
         return nodeIdPair;

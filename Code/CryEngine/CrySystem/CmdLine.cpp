@@ -29,6 +29,12 @@ void CCmdLine::PushCommand(const string& sCommand, const string& sParameter)
     {
         type = eCLAT_Pre;
         ++szCommand;
+
+        // Handle cmd line parameters that use -- properly
+        if (szCommand[0] == '-')
+        {
+            ++szCommand;
+        }
     }
     else if (sCommand[0] == '+')
     {

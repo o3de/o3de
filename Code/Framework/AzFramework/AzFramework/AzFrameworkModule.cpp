@@ -28,6 +28,7 @@
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
+#include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
@@ -63,6 +64,7 @@ namespace AzFramework
             AzFramework::AzFrameworkConfigurationSystemComponent::CreateDescriptor(),
 
             AzFramework::OctreeSystemComponent::CreateDescriptor(),
+            AzFramework::SpawnableSystemComponent::CreateDescriptor(),
         });
     }
 

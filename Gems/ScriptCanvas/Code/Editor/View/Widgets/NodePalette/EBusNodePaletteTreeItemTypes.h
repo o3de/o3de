@@ -28,14 +28,14 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateEBusSenderMimeEvent() = default;
-        CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName);
+        CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload);
         ~CreateEBusSenderMimeEvent() = default;
 
     protected:
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
         
     private:
-
+        bool m_isOverload;
         AZStd::string m_busName;
         AZStd::string m_eventName;
     };
@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(EBusSendEventPaletteTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(EBusSendEventPaletteTreeItem, "{26258B0A-8E2C-434D-ACAD-3DE85E64A4F8}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventIdentifier);
+        EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload);
         ~EBusSendEventPaletteTreeItem() = default;
         
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
@@ -61,8 +61,10 @@ namespace ScriptCanvasEditor
         ScriptCanvas::EBusBusId GetBusId() const;
         ScriptCanvas::EBusEventId GetEventId() const;
 
+        bool IsOverload() const;
+
     private:
-    
+        bool m_isOverload;
         QString m_busName;
         QString m_eventName;
 

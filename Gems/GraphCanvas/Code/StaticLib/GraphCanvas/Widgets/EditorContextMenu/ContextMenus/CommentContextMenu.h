@@ -39,5 +39,6 @@ namespace GraphCanvas
         AlignmentActionsMenuGroup m_alignmentActionGroup;
 
         ContextMenuAction* m_createPresetFrom;
+        ApplyCommentPresetMenuActionGroup m_applyCommentPresets;
     };
 }

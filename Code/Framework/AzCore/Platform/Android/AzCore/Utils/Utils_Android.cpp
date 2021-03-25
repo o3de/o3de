@@ -17,6 +17,9 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/fixed_string.h>
 
+#include <AzCore/Android/JNI/Internal/ClassName.h>
+#include <AzCore/Android/Utils.h>
+
 namespace AZ
 {
     namespace Utils
@@ -53,6 +56,12 @@ namespace AZ
         {
             const char* appRoot = AZ::Android::Utils::FindAssetsDirectory();
             return appRoot ? AZStd::make_optional<AZStd::fixed_string<MaxPathLength>>(appRoot) : AZStd::nullopt;
+        }
+
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+        {
+            const char* writeStorage = AZ::Android::Utils::GetAppPublicStoragePath();
+            return writeStorage ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(writeStorage) : AZStd::nullopt;
         }
 
         AZStd::optional<AZStd::fixed_string<MaxPathLength>> ConvertToAbsolutePath(AZStd::string_view path)

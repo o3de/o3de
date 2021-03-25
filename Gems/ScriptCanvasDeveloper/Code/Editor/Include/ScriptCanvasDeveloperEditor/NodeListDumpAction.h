@@ -13,12 +13,12 @@
 #pragma once
 
 class QAction;
-class QWidget;
+class QMenu;
 
 namespace ScriptCanvasDeveloperEditor
 {
     namespace NodeListDumpAction
     {
-        QAction* CreateNodeListDumpAction(QWidget* mainWindow);
+        QAction* CreateNodeListDumpAction(QMenu* mainWindow);
     };
 }

@@ -13,17 +13,10 @@
 
 // Description : Console implementation for iOS, reports back to the main interface
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_IOSCONSOLE_H
-#define CRYINCLUDE_CRYSYSTEM_IOSCONSOLE_H
 #pragma once
-
 
 #include <IConsole.h>
 #include <ITextModeConsole.h>
-#include <INetwork.h>
-
-
 
 class CIOSConsole
     : public ISystemUserCallback
@@ -59,5 +52,3 @@ public:
     virtual void PutText(int x, int y, const char* msg);
     virtual void EndDraw();
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_IOSCONSOLE_H

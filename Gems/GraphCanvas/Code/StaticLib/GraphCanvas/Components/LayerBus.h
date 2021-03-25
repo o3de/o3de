@@ -27,7 +27,22 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
         
         virtual StateController< AZStd::string >* GetLayerModifierController() = 0;
+
+        virtual int GetSelectionOffset() const = 0;
+        virtual int GetGroupLayerOffset() const = 0;
     };
 
     using LayerControllerRequestBus = AZ::EBus<LayerControllerRequests>;
+
+    class LayerControllerNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
+
+        virtual void OnOffsetsChanged(int selectionOffset, int groupOffset) = 0;
+    };
+
+    using LayerControllerNotificationBus = AZ::EBus<LayerControllerNotifications>;
 }

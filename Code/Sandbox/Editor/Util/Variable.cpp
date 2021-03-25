@@ -293,7 +293,7 @@ void CVarBlock::Unwire(CVarBlock* toVarBlock)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CVarBlock::AddOnSetCallback(IVariable::OnSetCallback func)
+void CVarBlock::AddOnSetCallback(IVariable::OnSetCallback* func)
 {
     for (Variables::iterator it = m_vars.begin(); it != m_vars.end(); ++it)
     {
@@ -303,7 +303,7 @@ void CVarBlock::AddOnSetCallback(IVariable::OnSetCallback func)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CVarBlock::RemoveOnSetCallback(IVariable::OnSetCallback func)
+void CVarBlock::RemoveOnSetCallback(IVariable::OnSetCallback* func)
 {
     for (Variables::iterator it = m_vars.begin(); it != m_vars.end(); ++it)
     {
@@ -313,7 +313,7 @@ void CVarBlock::RemoveOnSetCallback(IVariable::OnSetCallback func)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CVarBlock::SetCallbackToVar(IVariable::OnSetCallback func, IVariable* pVar, bool bAdd)
+void CVarBlock::SetCallbackToVar(IVariable::OnSetCallback* func, IVariable* pVar, bool bAdd)
 {
     if (bAdd)
     {
@@ -396,7 +396,7 @@ CVarObject::~CVarObject()
 {}
 
 //////////////////////////////////////////////////////////////////////////
-void CVarObject::AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback cb, unsigned char dataType)
+void CVarObject::AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb, unsigned char dataType)
 {
     if (!m_vars)
     {
@@ -413,7 +413,7 @@ void CVarObject::AddVariable(CVariableBase& var, const QString& varName, VarOnSe
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CVarObject::AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback cb, unsigned char dataType)
+void CVarObject::AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb, unsigned char dataType)
 {
     if (!m_vars)
     {
@@ -431,7 +431,7 @@ void CVarObject::AddVariable(CVariableBase& var, const QString& varName, const Q
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CVarObject::AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback cb, unsigned char dataType)
+void CVarObject::AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb, unsigned char dataType)
 {
     if (!m_vars)
     {

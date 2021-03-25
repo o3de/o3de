@@ -34,6 +34,8 @@ namespace AZ
     //! An entity has an ID and, optionally, a name.  
     class Entity
     {
+        friend class JsonEntitySerializer;
+
     public:
 
         //! Specifies that this class should use AZ::SystemAllocator for memory management by default.
@@ -84,16 +86,20 @@ namespace AZ
             DSR_CYCLIC_DEPENDENCY = HasCyclicDependency,
         };
 
-        //! Constructs an entity and automatically generates an entity ID. 
-        //! @param name (Optional) A name for the entity. The entity ID is used for addressing and identification, 
-        //! but a name is useful for debugging.
-        Entity(const char* name = nullptr);
+        /**
+         * Constructs an entity and automatically generates an entity ID. 
+         * @param name (Optional) A name for the entity. The entity ID is used for addressing and identification, 
+         * but a name is useful for debugging.
+         */
+        explicit Entity(AZStd::string name = {});
 
-        //! Constructs an entity with the entity ID that you specify.
-        //! @param id An ID for the entity.
-        //! @param name (Optional) A name for the entity. The entity ID is used for addressing and identification, 
-        //! but a name is useful for debugging.
-        Entity(const EntityId& id, const char* name = nullptr);
+        /**
+         * Constructs an entity with the entity ID that you specify.
+         * @param id An ID for the entity.
+         * @param name (Optional) A name for the entity. The entity ID is used for addressing and identification, 
+         * but a name is useful for debugging.
+         */
+        explicit Entity(const EntityId& id, AZStd::string name = {});
 
         // Delete the copy constructor, because this contains vector of pointers and other pointers that
         // are supposed to be unique, this would be a mistake.  Its safer to cause code that tries to

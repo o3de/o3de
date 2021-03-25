@@ -107,7 +107,6 @@ namespace ScriptCanvas
             void Visit(Message::GraphDeactivated& notification) override;
             void Visit(Message::SignaledInput& notification) override;
             void Visit(Message::SignaledOutput& notification) override;
-            void Visit(Message::SignaledDataOutput& notification) override;
             void Visit(Message::VariableChanged& notification) override;
             //////////////////////////////////////////////////////////////////////////
 

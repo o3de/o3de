@@ -20,6 +20,7 @@
 
 #include <Components/Nodes/Group/CollapsedNodeGroupComponent.h>
 
+#include <Components/LayerControllerComponent.h>
 #include <Components/Nodes/General/GeneralNodeLayoutComponent.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
@@ -32,16 +33,100 @@
 
 namespace GraphCanvas
 {
+    //////////////////////////
+    // RedirectedSlotWatcher
+    //////////////////////////
+
+    RedirectedSlotWatcher::~RedirectedSlotWatcher()
+    {
+        NodeNotificationBus::MultiHandler::BusDisconnect();
+    }
+
+    void RedirectedSlotWatcher::ConfigureWatcher(const AZ::EntityId& collapsedGroupId)
+    {
+        m_collapsedGroupId = collapsedGroupId;
+
+        NodeNotificationBus::MultiHandler::BusDisconnect();
+    }
+
+    void RedirectedSlotWatcher::RegisterEndpoint(const Endpoint& sourceEndpoint, const Endpoint& remappedEndpoint)
+    {
+        m_endpointMapping[sourceEndpoint] = remappedEndpoint;
+        NodeNotificationBus::MultiHandler::BusConnect(sourceEndpoint.GetNodeId());
+    }
+
+    void RedirectedSlotWatcher::OnNodeAboutToBeDeleted()
+    {
+        const AZ::EntityId* nodeRemoved = NodeNotificationBus::GetCurrentBusId();
+
+        if (nodeRemoved)
+        {
+            auto mapIter = m_endpointMapping.begin();
+
+            while (mapIter != m_endpointMapping.end())
+            {
+                if (mapIter->first.GetNodeId() == (*nodeRemoved))
+                {
+                    NodeRequestBus::Event(m_collapsedGroupId, &NodeRequests::RemoveSlot, mapIter->second.GetSlotId());
+                    mapIter = m_endpointMapping.erase(mapIter);
+                }
+                else
+                {
+                    ++mapIter;
+                }
+            }
+
+            NodeNotificationBus::MultiHandler::BusDisconnect((*nodeRemoved));
+        }
+    }
+
+    void RedirectedSlotWatcher::OnSlotRemovedFromNode(const AZ::EntityId& slotId)
+    {
+        const AZ::EntityId* nodeSource = NodeNotificationBus::GetCurrentBusId();
+
+        if (nodeSource)
+        {
+            Endpoint sourceEndpoint((*nodeSource), slotId);
+
+            auto endpointIter = m_endpointMapping.find(sourceEndpoint);
+
+            if (endpointIter != m_endpointMapping.end())
+            {
+                NodeRequestBus::Event(m_collapsedGroupId, &NodeRequests::RemoveSlot, endpointIter->second.GetSlotId());
+                m_endpointMapping.erase(endpointIter);
+
+                bool maintainConnection = false;
+
+                for (const auto& mapPair : m_endpointMapping)
+                {
+                    if (mapPair.first.GetNodeId() == (*nodeSource))
+                    {
+                        maintainConnection = true;
+                        break;
+                    }
+                }
+
+                if (!maintainConnection)
+                {
+                    NodeNotificationBus::MultiHandler::BusDisconnect((*nodeSource));
+                }
+            }
+        }
+    }
 
     ////////////////////////////////
     // CollapsedNodeGroupComponent
     ////////////////////////////////
 
     constexpr int k_collapsingAnimationTimeMS = 175;
-    constexpr int k_fadeInTimeMS = 50;
+    constexpr int k_fadeInTimeMS = 50;    
 
     // 0.9f found through the scientific process of it looking right.
     constexpr float k_endpointanimationTimeSec = (k_collapsingAnimationTimeMS/1000.0f) * 0.9f;
+
+    // General frame delay to ensure that qt has updated and refreshed its display so that everything looks right.
+    // 3 is just a magic number found through visual testing.
+    constexpr int k_qtFrameDelay = 3;
     
     void CollapsedNodeGroupComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -52,6 +137,7 @@ namespace GraphCanvas
             serializeContext->Class<SlotRedirectionConfiguration>()
                 ->Version(1)
                 ->Field("Name", &SlotRedirectionConfiguration::m_name)
+                ->Field("TargetId", &SlotRedirectionConfiguration::m_targetEndpoint)
             ;
 
             serializeContext->Class<CollapsedNodeGroupComponent, GraphCanvasPropertyComponent>()
@@ -71,6 +157,9 @@ namespace GraphCanvas
     
     CollapsedNodeGroupComponent::CollapsedNodeGroupComponent()
         : GraphCanvasPropertyComponent()
+        , m_animationDelayCounter(0)
+        , m_isExpandingOccluderAnimation(false)
+        , m_occluderDestructionCounter(0)        
         , m_unhideOnAnimationComplete(false)
         , m_deleteObjects(true)
         , m_positionDirty(false)
@@ -125,29 +214,82 @@ namespace GraphCanvas
     void CollapsedNodeGroupComponent::Init()
     {
         GraphCanvasPropertyComponent::Init();
+
+        m_memberHiddenStateSetter.AddStateController(&m_ignorePositionChanges);
+        m_memberDraggedStateSetter.AddStateController(&m_ignorePositionChanges);
     }
     
     void CollapsedNodeGroupComponent::Activate()
     {
         GraphCanvasPropertyComponent::Activate();
+
+        AZ::EntityId entityId = GetEntityId();
+
+        m_redirectedSlotWatcher.ConfigureWatcher(entityId);
         
-        CollapsedNodeGroupRequestBus::Handler::BusConnect(GetEntityId());
-        VisualNotificationBus::Handler::BusConnect(GetEntityId());
-        NodeNotificationBus::Handler::BusConnect(GetEntityId());
-        SceneMemberNotificationBus::Handler::BusConnect(GetEntityId());
-        GeometryNotificationBus::Handler::BusConnect(GetEntityId());
+        CollapsedNodeGroupRequestBus::Handler::BusConnect(entityId);
+        VisualNotificationBus::Handler::BusConnect(entityId);
+        NodeNotificationBus::Handler::BusConnect(entityId);
+        SceneMemberNotificationBus::Handler::BusConnect(entityId);
+        GeometryNotificationBus::Handler::BusConnect(entityId);
     }
     
     void CollapsedNodeGroupComponent::Deactivate()
     {
         GraphCanvasPropertyComponent::Deactivate();
 
+        GroupableSceneMemberNotificationBus::Handler::BusDisconnect();
         CommentNotificationBus::Handler::BusDisconnect();
         GeometryNotificationBus::Handler::BusDisconnect();
         SceneMemberNotificationBus::Handler::BusDisconnect();
         NodeNotificationBus::Handler::BusDisconnect();
         VisualNotificationBus::Handler::BusDisconnect();
         CollapsedNodeGroupRequestBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
+    }
+
+    void CollapsedNodeGroupComponent::OnSystemTick()
+    {
+        // Delay count for Qt to catch up with the visuals so I can animate in a visually pleasing way.
+        if (m_animationDelayCounter > 0)
+        {
+            m_animationDelayCounter--;
+            
+            if (m_animationDelayCounter <= 0)
+            {
+                AnimateOccluder(m_isExpandingOccluderAnimation);
+
+                m_isExpandingOccluderAnimation = false;
+                m_animationDelayCounter = 0;
+
+                UpdateSystemTickBus();
+            }
+        }
+
+        if (m_occluderDestructionCounter > 0)
+        {
+            m_occluderDestructionCounter--;
+
+            if (m_occluderDestructionCounter <= 0)
+            {
+                AZ::EntityId graphId;
+                SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &SceneMemberRequests::GetScene);
+
+                if (m_effectId.IsValid())
+                {
+                    SceneRequestBus::Event(graphId, &SceneRequests::CancelGraphicsEffect, m_effectId);
+                    m_effectId.SetInvalid();
+                }
+
+                m_occluderDestructionCounter = 0;
+                UpdateSystemTickBus();
+
+                CollapsedNodeGroupNotificationBus::Event(GetEntityId(), &CollapsedNodeGroupNotifications::OnExpansionComplete);
+
+                AZStd::unordered_set<NodeId> deleteIds = { GetEntityId() };
+                SceneRequestBus::Event(graphId, &SceneRequests::Delete, deleteIds);
+            }
+        }
     }
     
     void CollapsedNodeGroupComponent::OnAddedToScene(const GraphId& graphId)
@@ -170,45 +312,54 @@ namespace GraphCanvas
         AZStd::vector< NodeId > groupedElements;
         NodeGroupRequestBus::Event(m_nodeGroupId, &NodeGroupRequests::FindGroupedElements, groupedElements);
 
+        AZStd::vector< NodeId > elementsToManage;
+        elementsToManage.reserve(groupedElements.size());
+
+        AZStd::vector< NodeId > elementsToSearch = groupedElements;
+
+        SceneRequests* requests = SceneRequestBus::FindFirstHandler(graphId);
+
+        while (!elementsToSearch.empty())
+        {
+            AZ::EntityId searchedElement = elementsToSearch.front();
+            elementsToSearch.erase(elementsToSearch.begin());
+
+            if (GraphUtils::IsNodeGroup(searchedElement))
+            {
+                QGraphicsItem* graphicsItem = nullptr;
+                SceneMemberUIRequestBus::EventResult(graphicsItem, searchedElement, &SceneMemberUIRequests::GetRootGraphicsItem);
+
+                if (graphicsItem->isVisible())
+                {
+                    elementsToManage.emplace_back(searchedElement);
+
+                    AZStd::vector<NodeId> subGroupedElements;
+                    NodeGroupRequestBus::Event(searchedElement, &NodeGroupRequests::FindGroupedElements, subGroupedElements);
+
+                    if (!subGroupedElements.empty())
+                    {
+                        elementsToSearch.insert(elementsToSearch.end(), subGroupedElements.begin(), subGroupedElements.end());
+                        elementsToManage.reserve(elementsToManage.size() + subGroupedElements.size());
+                    }
+                }
+            }
+            else
+            {
+                elementsToManage.emplace_back(searchedElement);
+            }
+        }
+
         SubGraphParsingConfig config;
         config.m_ignoredGraphMembers.insert(GetEntityId());
         config.m_createNonConnectableSubGraph = true;
 
-        m_containedSubGraphs = GraphUtils::ParseSceneMembersIntoSubGraphs(groupedElements, config);
+        m_containedSubGraphs = GraphUtils::ParseSceneMembersIntoSubGraphs(elementsToManage, config);
         
         ConstructGrouping(graphId);
 
-        // Want to adjust the position of the node to make it a little more centered.
-        // But the scene component will re-position it to the passed in location
-        // before it attempts this part(and the node needs a frame to adjust it's sizing to be correct)
-        //
-        // So, fire off a single shot timer and hope we never create/delete this thing.
-        QGraphicsItem* graphicsItem = nullptr;
-        SceneMemberUIRequestBus::EventResult(graphicsItem, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
+        SetupGroupPosition(graphId);
 
-        NodeUIRequestBus::Event(GetEntityId(), &NodeUIRequests::AdjustSize);
-        
-        QRectF boundingRect = graphicsItem->sceneBoundingRect();
-
-        qreal width = boundingRect.width();
-        qreal height = boundingRect.height();
-
-        // Want the Collapsed Node Group to appear centered over top of the Node Group.
-        AZ::Vector2 offset(aznumeric_cast<float>(width * 0.5f), aznumeric_cast<float>(height * 0.5f));
-
-        m_previousPosition = ConversionUtils::QPointToVector(boundingRect.topLeft());;
-        m_previousPosition -= offset;
-        graphicsItem->setPos(ConversionUtils::AZToQPoint(m_previousPosition));
-
-        GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetPosition, m_previousPosition);
-
-        // Reget the position we set since we might have snapped to a grid.
-        GeometryRequestBus::EventResult(m_previousPosition, GetEntityId(), &GeometryRequests::GetPosition);
-
-        m_ignorePositionChanges = false;
-        m_positionDirty = false;
-
-        CommentNotificationBus::Handler::BusConnect(m_nodeGroupId);        
+        CommentNotificationBus::Handler::BusConnect(m_nodeGroupId);
 
         bool isLoading = false;
         SceneRequestBus::EventResult(isLoading, graphId, &SceneRequests::IsLoading);
@@ -216,10 +367,14 @@ namespace GraphCanvas
         bool isPasting = false;
         SceneRequestBus::EventResult(isPasting, graphId, &SceneRequests::IsPasting);
 
+        GroupableSceneMemberNotificationBus::Handler::BusConnect(GetEntityId());
+
         if (!isLoading && !isPasting)
         {
-            const bool isExpanding = false;
-            CreateOccluder(graphId, isExpanding);
+            CreateOccluder(graphId, m_nodeGroupId);
+
+            // Node won't be the correct size right away, need to wait for Qt to tick an update.
+            TriggerCollapseAnimation();
         }
     }
     
@@ -249,11 +404,28 @@ namespace GraphCanvas
         }
 
         SceneNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void CollapsedNodeGroupComponent::OnPositionChanged([[maybe_unused]] const AZ::EntityId& targetEntity, const AZ::Vector2& position)
+    void CollapsedNodeGroupComponent::OnBoundsChanged()
     {
-        if (!m_ignorePositionChanges)
+        if (AZ::SystemTickBus::Handler::BusIsConnected())
+        {
+            AZ::EntityId graphId;
+            SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &SceneMemberRequests::GetScene);
+
+            SetupGroupPosition(graphId);
+
+            if (m_animationDelayCounter != 0)
+            {
+                m_animationDelayCounter = k_qtFrameDelay;
+            }
+        }
+    }
+
+    void CollapsedNodeGroupComponent::OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& position)
+    {
+        if (!m_ignorePositionChanges.GetState())
         {
             MoveGroupedElementsBy(position - m_previousPosition);
             m_previousPosition = position;
@@ -266,12 +438,12 @@ namespace GraphCanvas
 
     void CollapsedNodeGroupComponent::OnSceneMemberDragBegin()
     {
-        m_ignorePositionChanges = true;
+        m_memberDraggedStateSetter.SetState(true);
     }
 
     void CollapsedNodeGroupComponent::OnSceneMemberDragComplete()
     {
-        m_ignorePositionChanges = false;
+        m_memberDraggedStateSetter.ReleaseState();
 
         // This is a quick implementation of this. Really this shouldn't be necessary as I can just
         // calculate the offset when the group is broken and just apply the changes then.
@@ -302,7 +474,7 @@ namespace GraphCanvas
         NodeTitleRequestBus::Event(GetEntityId(), &NodeTitleRequests::SetColorPaletteOverride, titleColor);
     }
 
-    bool CollapsedNodeGroupComponent::OnMouseDoubleClick([[maybe_unused]] const QGraphicsSceneMouseEvent* mouseEvent)
+    bool CollapsedNodeGroupComponent::OnMouseDoubleClick(const QGraphicsSceneMouseEvent* /*mouseEvent*/)
     {
         ExpandGroup();
         return true;
@@ -321,9 +493,145 @@ namespace GraphCanvas
         return m_nodeGroupId;
     }
 
-    void CollapsedNodeGroupComponent::CreateOccluder(const GraphId& graphId, bool isExpanding)
+    AZStd::vector< Endpoint > CollapsedNodeGroupComponent::GetRedirectedEndpoints() const
+    {
+        AZStd::vector< Endpoint > redirectedEndpoints;
+
+        for (const auto& redirectionConfigurations : m_redirections)
+        {
+            AZStd::unordered_set< Endpoint > remappedEndpoints = GraphUtils::RemapEndpointForModel(redirectionConfigurations.m_targetEndpoint);
+
+            redirectedEndpoints.insert(redirectedEndpoints.begin(), remappedEndpoints.begin(), remappedEndpoints.end());
+        }
+
+        return redirectedEndpoints;
+    }
+
+    void CollapsedNodeGroupComponent::ForceEndpointRedirection(const AZStd::vector<Endpoint>& endpoints)
+    {
+        m_forcedRedirections.insert(endpoints.begin(), endpoints.end());
+    }
+
+    void CollapsedNodeGroupComponent::OnGroupChanged()
+    {
+        AZ::EntityId groupId;
+        GroupableSceneMemberRequestBus::EventResult(groupId, GetEntityId(), &GroupableSceneMemberRequests::GetGroupId);
+
+        if (groupId.IsValid())
+        {
+            NodeGroupRequestBus::Event(groupId, &NodeGroupRequests::AddElementToGroup, m_nodeGroupId);
+        }
+        else
+        {
+            GroupableSceneMemberRequestBus::Event(m_nodeGroupId, &GroupableSceneMemberRequests::RemoveFromGroup);
+        }
+    }
+
+    void CollapsedNodeGroupComponent::OnSceneMemberHidden()
+    {
+        m_memberHiddenStateSetter.SetState(true);
+    }
+
+    void CollapsedNodeGroupComponent::OnSceneMemberShown()
+    {
+        m_memberHiddenStateSetter.ReleaseState();
+    }
+
+    void CollapsedNodeGroupComponent::SetupGroupPosition(const GraphId& /*graphId*/)
+    {
+        StateSetter<bool> ignorePositionSetter;
+        ignorePositionSetter.AddStateController(&m_ignorePositionChanges);
+        ignorePositionSetter.SetState(true);
+
+        QPointF centerPoint;
+
+        QGraphicsItem* blockItem = nullptr;
+        SceneMemberUIRequestBus::EventResult(blockItem, m_nodeGroupId, &SceneMemberUIRequests::GetRootGraphicsItem);
+
+        if (blockItem)
+        {
+            centerPoint = blockItem->sceneBoundingRect().center();
+        }
+
+        // Want to adjust the position of the node to make it a little more centered.
+        // But the scene component will re-position it to the passed in location
+        // before it attempts this part(and the node needs a frame to adjust it's sizing to be correct)
+        //
+        // So, fire off a single shot timer and hope we never create/delete this thing.
+        QGraphicsItem* graphicsItem = nullptr;
+        SceneMemberUIRequestBus::EventResult(graphicsItem, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
+
+        QRectF boundingRect = graphicsItem->sceneBoundingRect();
+
+        qreal width = boundingRect.width();
+        qreal height = boundingRect.height();
+
+        // Want the Collapsed Node Group to appear centered over top of the Node Group.
+        AZ::Vector2 offset(aznumeric_cast<float>(width * 0.5f), aznumeric_cast<float>(height * 0.5f));
+
+        m_previousPosition = ConversionUtils::QPointToVector(centerPoint);
+        m_previousPosition -= offset;
+        graphicsItem->setPos(ConversionUtils::AZToQPoint(m_previousPosition));
+
+        GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetPosition, m_previousPosition);
+
+        // Reget the position we set since we might have snapped to a grid.
+        GeometryRequestBus::EventResult(m_previousPosition, GetEntityId(), &GeometryRequests::GetPosition);
+        
+        m_positionDirty = false;
+    }
+
+    void CollapsedNodeGroupComponent::CreateOccluder(const GraphId& graphId, const AZ::EntityId& initialElement)
+    {
+        if (m_effectId.IsValid())
+        {
+            GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::CancelGraphicsEffect, m_effectId);
+        }
+
+        QGraphicsItem* graphicsItem = nullptr;
+        VisualRequestBus::EventResult(graphicsItem, initialElement, &VisualRequests::AsGraphicsItem);
+
+        if (graphicsItem == nullptr)
+        {
+            return;
+        }
+
+        AZ::Color groupColor;
+        NodeGroupRequestBus::EventResult(groupColor, m_nodeGroupId, &NodeGroupRequests::GetGroupColor);
+
+        OccluderConfiguration configuration;
+
+        configuration.m_renderColor = ConversionUtils::AZToQColor(groupColor);
+        configuration.m_bounds = graphicsItem->sceneBoundingRect();
+
+        configuration.m_zValue = LayerUtils::AlwaysOnTopZValue();
+
+        SceneRequestBus::EventResult(m_effectId, graphId, &SceneRequests::CreateOccluder, configuration);
+    }
+
+    void CollapsedNodeGroupComponent::AnimateOccluder(bool isExpanding)
     {
         m_unhideOnAnimationComplete = isExpanding;
+
+        AZ::EntityId graphId;
+        SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &SceneMemberRequests::GetScene);
+
+        if (!m_effectId.IsValid())
+        {
+            if (isExpanding)
+            {
+                CreateOccluder(graphId, GetEntityId());
+            }
+            else
+            {
+                CreateOccluder(graphId, m_nodeGroupId);
+            }
+        }
+
+        if (!m_effectId.IsValid())
+        {
+            OnAnimationFinished();
+        }
 
         QGraphicsItem* blockItem = nullptr;
         VisualRequestBus::EventResult(blockItem, m_nodeGroupId, &VisualRequests::AsGraphicsItem);
@@ -335,7 +643,6 @@ namespace GraphCanvas
         }
 
         QGraphicsItem* graphicsItem = nullptr;
-        NodeUIRequestBus::Event(GetEntityId(), &NodeUIRequests::AdjustSize);
         SceneMemberUIRequestBus::EventResult(graphicsItem, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
 
         if (graphicsItem == nullptr)
@@ -344,33 +651,14 @@ namespace GraphCanvas
             return;
         }
 
-        AZ::Color groupColor;
-        NodeGroupRequestBus::EventResult(groupColor, m_nodeGroupId, &NodeGroupRequests::GetGroupColor);
-
-        OccluderConfiguration configuration;
-
-        configuration.m_renderColor = ConversionUtils::AZToQColor(groupColor);        
-
-        if (isExpanding)
-        {
-            configuration.m_bounds = graphicsItem->sceneBoundingRect();
-        }
-        else
-        {
-            configuration.m_bounds = blockItem->sceneBoundingRect();
-        }
-
-        configuration.m_zValue = aznumeric_cast<int>(graphicsItem->zValue() + 10);
-
-        SceneRequestBus::EventResult(m_effectId, graphId, &SceneRequests::CreateOccluder, configuration);
-
         QGraphicsItem* occluderItem = nullptr;
         GraphicsEffectRequestBus::EventResult(occluderItem, m_effectId, &GraphicsEffectRequests::AsQGraphicsItem);
 
         if (occluderItem)
         {
+            QRectF startRect = occluderItem->sceneBoundingRect();
             QRectF targetRect;
-            
+
             if (isExpanding)
             {
                 targetRect = blockItem->sceneBoundingRect();
@@ -383,11 +671,11 @@ namespace GraphCanvas
             QGraphicsObject* occluderObject = static_cast<QGraphicsObject*>(occluderItem);
 
             m_sizeAnimation->setTargetObject(occluderObject);
-            m_sizeAnimation->setStartValue(configuration.m_bounds.size());
+            m_sizeAnimation->setStartValue(startRect.size());
             m_sizeAnimation->setEndValue(targetRect.size());
 
             m_positionAnimation->setTargetObject(occluderObject);
-            m_positionAnimation->setStartValue(configuration.m_bounds.topLeft());
+            m_positionAnimation->setStartValue(startRect.topLeft());
             m_positionAnimation->setEndValue(targetRect.topLeft());
 
             m_opacityAnimation->setTargetObject(occluderObject);
@@ -416,6 +704,21 @@ namespace GraphCanvas
         for (const NodeId& nodeId : m_containedSubGraphs.m_nonConnectableGraph.m_containedNodes)
         {
             SceneRequestBus::Event(graphId, &SceneRequests::Hide, nodeId);
+        }
+
+        for (const Endpoint& forcedEndpoint : m_forcedRedirections)
+        {
+            ConnectionType connectionType = ConnectionType::CT_Invalid;
+            SlotRequestBus::EventResult(connectionType, forcedEndpoint.GetSlotId(), &SlotRequests::GetConnectionType);
+
+            if (connectionType == ConnectionType::CT_Input)
+            {
+                targetEndpointOrdering.insert(EndpointOrderingStruct::ConstructOrderingInformation(forcedEndpoint));
+            }
+            else if (connectionType == ConnectionType::CT_Output)
+            {
+                sourceEndpointOrdering.insert(EndpointOrderingStruct::ConstructOrderingInformation(forcedEndpoint));
+            }
         }
 
         for (const GraphSubGraph& subGraph : m_containedSubGraphs.m_subGraphs)
@@ -569,10 +872,26 @@ namespace GraphCanvas
             }
         }
 
-        const bool isExpanding = true;
-        CreateOccluder(graphId, isExpanding);
+        CreateOccluder(graphId, GetEntityId());
+        TriggerExpandAnimation();
 
         SceneRequestBus::Event(graphId, &SceneRequests::Hide, GetEntityId());
+    }
+
+    void CollapsedNodeGroupComponent::TriggerExpandAnimation()
+    {
+        m_animationDelayCounter = k_qtFrameDelay;
+        m_isExpandingOccluderAnimation = true;
+        VisualRequestBus::Event(GetEntityId(), &VisualRequests::SetVisible, false);
+        UpdateSystemTickBus();
+    }
+
+    void CollapsedNodeGroupComponent::TriggerCollapseAnimation()
+    {
+        m_animationDelayCounter = k_qtFrameDelay;
+        m_isExpandingOccluderAnimation = false;
+        VisualRequestBus::Event(GetEntityId(), &VisualRequests::SetVisible, false);
+        UpdateSystemTickBus();
     }
 
     void CollapsedNodeGroupComponent::MoveGroupedElementsBy(const AZ::Vector2& offset)
@@ -582,13 +901,6 @@ namespace GraphCanvas
 
         GraphModelRequestBus::Event(graphId, &GraphModelRequests::RequestPushPreventUndoStateUpdate);
 
-        MoveSubGraphBy(m_containedSubGraphs.m_nonConnectableGraph, offset);
-
-        for (const GraphSubGraph& subGraph : m_containedSubGraphs.m_subGraphs)
-        {
-            MoveSubGraphBy(subGraph, offset);
-        }
-
         // Update the NodeGroup
         {
             AZ::Vector2 position;
@@ -596,14 +908,7 @@ namespace GraphCanvas
 
             position += offset;
 
-            StateSetter<bool> externallyControlledStateSetter;
-
-            StateController<bool>* stateController = nullptr;
-            NodeGroupRequestBus::EventResult(stateController, m_nodeGroupId, &NodeGroupRequests::GetExternallyControlledStateController);
-
-            externallyControlledStateSetter.AddStateController(stateController);
-            externallyControlledStateSetter.SetState(true);
-
+            // TODO: Potentially fix the collapsed node groups
             GeometryRequestBus::Event(m_nodeGroupId, &GeometryRequests::SetPosition, position);
         }
 
@@ -614,19 +919,12 @@ namespace GraphCanvas
     {
         for (const NodeId& nodeId : subGraph.m_containedNodes)
         {
-            bool lockedForExternalMovement = false;
-            SceneMemberRequestBus::EventResult(lockedForExternalMovement, nodeId, &SceneMemberRequests::LockForExternalMovement, GetEntityId());
+            AZ::Vector2 position;
+            GeometryRequestBus::EventResult(position, nodeId, &GeometryRequests::GetPosition);
 
-            if (lockedForExternalMovement)
-            {
-                AZ::Vector2 position;
-                GeometryRequestBus::EventResult(position, nodeId, &GeometryRequests::GetPosition);
+            position += offset;
 
-                position += offset;
-
-                GeometryRequestBus::Event(nodeId, &GeometryRequests::SetPosition, position);
-                SceneMemberRequestBus::Event(nodeId, &SceneMemberRequests::UnlockForExternalMovement, GetEntityId());
-            }
+            GeometryRequestBus::Event(nodeId, &GeometryRequests::SetPosition, position);
         }
     }
 
@@ -634,12 +932,6 @@ namespace GraphCanvas
     {
         GraphId graphId;
         SceneMemberRequestBus::EventResult(graphId, GetEntityId(), &SceneMemberRequests::GetScene);
-
-        if (m_effectId.IsValid())
-        {
-            SceneRequestBus::Event(graphId, &SceneRequests::CancelGraphicsEffect, m_effectId);
-            m_effectId.SetInvalid();
-        }
 
         if (m_unhideOnAnimationComplete)
         {
@@ -665,17 +957,43 @@ namespace GraphCanvas
                     }
                 }
 
+                AZ::EntityId groupId;
+                GroupableSceneMemberRequestBus::EventResult(groupId, m_nodeGroupId, &GroupableSceneMemberRequests::GetGroupId);
+
+                if (groupId.IsValid())
+                {
+                    const bool growOnly = true;
+                    NodeGroupRequestBus::Event(groupId, &NodeGroupRequests::ResizeGroupToElements, growOnly);
+                }
+
                 m_deleteObjects = false;
 
-                AZStd::unordered_set<NodeId> deleteIds = { GetEntityId() };
-                SceneRequestBus::Event(graphId, &SceneRequests::Delete, deleteIds);
+                GroupableSceneMemberNotificationBus::Handler::BusDisconnect();
+
+                // Want to delay removing the occluder, because the wrapper nodes sometime deform slightly and need a tick to visually
+                // update.
+                m_occluderDestructionCounter = k_qtFrameDelay;
+                UpdateSystemTickBus();
             }
 
             GraphModelRequestBus::Event(graphId, &GraphModelRequests::RequestUndoPoint);
         }
+        else
+        {
+            if (m_effectId.IsValid())
+            {
+                SceneRequestBus::Event(graphId, &SceneRequests::CancelGraphicsEffect, m_effectId);
+                m_effectId.SetInvalid();
+            }
+
+            VisualRequestBus::Event(GetEntityId(), &VisualRequests::SetVisible, true);
+            SceneMemberUIRequestBus::Event(GetEntityId(), &SceneMemberUIRequests::SetSelected, true);
+
+            GraphUtils::SanityCheckEnabledState(GetEntityId());
+        }
     }
 
-    SlotId CollapsedNodeGroupComponent::CreateSlotRedirection([[maybe_unused]] const GraphId& graphId, const Endpoint& endpoint)
+    SlotId CollapsedNodeGroupComponent::CreateSlotRedirection(const GraphId& /*graphId*/, const Endpoint& endpoint)
     {
         m_redirections.emplace_back();
         SlotRedirectionConfiguration& configuration = m_redirections.back();
@@ -728,6 +1046,25 @@ namespace GraphCanvas
             delete cloneConfiguration;
         }
 
+        Endpoint redirectedSlot(GetEntityId(), retVal);
+
+        if (redirectedSlot.IsValid())
+        {
+            m_redirectedSlotWatcher.RegisterEndpoint(configuration.m_targetEndpoint, redirectedSlot);
+        }
+
         return retVal;
+    }
+
+    void CollapsedNodeGroupComponent::UpdateSystemTickBus()
+    {
+        if (m_animationDelayCounter > 0 || m_occluderDestructionCounter > 0)
+        {
+            AZ::SystemTickBus::Handler::BusConnect();
+        }
+        else
+        {
+            AZ::SystemTickBus::Handler::BusDisconnect();
+        }
     }
 }

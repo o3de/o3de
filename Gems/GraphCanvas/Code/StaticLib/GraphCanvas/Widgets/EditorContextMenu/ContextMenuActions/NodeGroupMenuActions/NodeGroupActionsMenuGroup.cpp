@@ -24,7 +24,6 @@ namespace GraphCanvas
         , m_collapseAction(nullptr)
         , m_expandAction(nullptr)
     {
-
     }
     
     NodeGroupActionsMenuGroup::~NodeGroupActionsMenuGroup()
@@ -36,7 +35,7 @@ namespace GraphCanvas
         contextMenu->AddActionGroup(ConstructContextMenuAction::GetConstructContextMenuActionGroupId());
         contextMenu->AddActionGroup(NodeGroupContextMenuAction::GetNodeGroupContextMenuActionGroupId());        
 
-        m_nodeGroupPresets.PopulateMenu(contextMenu);
+        m_createNodeGroupPreset.PopulateMenu(contextMenu);
 
         m_ungroupAction = aznew UngroupNodeGroupMenuAction(contextMenu);
         contextMenu->AddMenuAction(m_ungroupAction);
@@ -50,7 +49,7 @@ namespace GraphCanvas
 
     void NodeGroupActionsMenuGroup::RefreshPresets()
     {
-        m_nodeGroupPresets.RefreshPresets();
+        m_createNodeGroupPreset.RefreshPresets();
     }
 
     void NodeGroupActionsMenuGroup::SetUngroupNodesEnabled(bool enabled)

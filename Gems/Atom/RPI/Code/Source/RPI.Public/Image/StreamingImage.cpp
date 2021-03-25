@@ -254,11 +254,6 @@ namespace AZ
             return m_image->GetResidentMipLevel();
         }
 
-        uint16_t StreamingImage::GetMipLevelCount()
-        {
-            return m_image->GetDescriptor().m_mipLevels;
-        }
-
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");
@@ -500,9 +495,17 @@ namespace AZ
             {
                 StreamingImageAsset* imageAsset = azrtti_cast<StreamingImageAsset*>(asset.GetData());
 
+                // Release the loaded mipchain assets from both current asset and new asset since they are coming from old asset
+                // This is due to we have to use PreLoad dependecy load behavior for streaming image asset
+                // before we can switch load behavior at runtime.
+                // [GFX TODO] [ATOM-14467] Remove unnecessary code in StreamingImage::OnAssetReloaded when runtime switching dependency load behavior is supported
+                m_imageAsset->ReleaseMipChainAssets();
+                imageAsset->ReleaseMipChainAssets();
+
                 // Re-initialize the image.
                 Shutdown();
                 RHI::ResultCode resultCode = Init(*imageAsset);
+
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to re-initialize streaming image");
             }
             else
@@ -522,9 +525,5 @@ namespace AZ
             return (RHI::CheckBitsAny(m_imageAsset->GetFlags(), StreamingImageFlags::NotStreamable) == false);
         }
 
-        Data::AssetId StreamingImage::GetMipAssetId(size_t mipChainIndex)
-        {
-            return m_mipChains[mipChainIndex].GetId();
-        }
     }
 }

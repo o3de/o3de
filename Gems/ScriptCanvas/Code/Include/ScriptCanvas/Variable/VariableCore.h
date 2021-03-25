@@ -33,7 +33,7 @@ namespace ScriptCanvas
 
         VariableId(const VariableId&) = default;
 
-        explicit VariableId(const AZ::Uuid& uniqueId)
+        AZ_INLINE explicit VariableId(const AZ::Uuid& uniqueId)
             : m_id(uniqueId)
         {}
 
@@ -45,28 +45,38 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* context);
         static VariableId MakeVariableId();
 
-        const AZ::Uuid& GetDatumId() const { return m_id; }
+        AZ_INLINE const AZ::Uuid& GetDatumId() const { return m_id; }
 
-        bool IsValid() const
+        AZ_INLINE bool IsValid() const
         {
             return !m_id.IsNull();
         }
 
-        AZStd::string ToString() const
+        AZ_INLINE AZStd::string ToString() const
         {
             return m_id.ToString<AZStd::string>();
         }
 
-        bool operator==(const VariableId& rhs) const
+        AZ_INLINE bool operator==(const VariableId& rhs) const
         {
             return m_id == rhs.m_id;
         }
 
-        bool operator!=(const VariableId& rhs) const
+        AZ_INLINE bool operator!=(const VariableId& rhs) const
         {
             return !operator==(rhs);
         }
+
+        AZ_INLINE bool operator<(const VariableId& rhs) const
+        {
+            return m_id < rhs.m_id;
+        }
         
+        AZ_INLINE bool operator>(const VariableId& rhs) const
+        {
+            return m_id > rhs.m_id;
+        }
+
         AZ::Uuid m_id{ AZ::Uuid::CreateNull() };
     };
 

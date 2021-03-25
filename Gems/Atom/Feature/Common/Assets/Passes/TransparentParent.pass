@@ -1,0 +1,123 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TransparentParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "SpotLightShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "SpotLightESM",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input"
+                },
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "TransparentPass",
+                    "TemplateName": "TransparentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        // Inputs...
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpotLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpotLightShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpotLightESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "transparent",
+                        "DrawListSortType": "KeyThenReverseDepth",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgAsset": {
+                            "FilePath": "shaderlib/atom/features/pbr/transparentpasssrg.azsli:PassSrg"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

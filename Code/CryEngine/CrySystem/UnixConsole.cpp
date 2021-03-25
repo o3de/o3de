@@ -22,10 +22,6 @@
 
 #if defined(USE_UNIXCONSOLE)
 
-#if defined(_MSC_VER)
-__pragma(comment(lib, "pdcurses.lib"))
-#endif // _MSC_VER
-
 #if !defined(WIN32)
 #include <sys/types.h>
 #include <sys/select.h>

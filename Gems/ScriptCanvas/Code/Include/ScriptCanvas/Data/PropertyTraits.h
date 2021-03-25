@@ -436,7 +436,7 @@ namespace ScriptCanvas
                     AZ::BehaviorMethod* getterMethod = behaviorProperty->m_getter;
                     if (getterMethod && getterMethod->HasResult() && getterMethod->GetNumArguments() == 1)
                     {
-                        GetterFunction getterFunction = [getterMethod](const Datum& thisDatum) -> AZ::Outcome<Datum, AZStd::string>
+                        GetterFunction getterFunction = [&behaviorProperty, getterMethod](const Datum& thisDatum) -> AZ::Outcome<Datum, AZStd::string>
                         {
                             const size_t maxGetterArguments = 1;
                             AZStd::array<AZ::BehaviorValueParameter, maxGetterArguments> getterParams;
@@ -450,7 +450,7 @@ namespace ScriptCanvas
                             }
                             getterParams[0].Set(thisObjectParam.TakeValue());
                             auto behaviorMethodInvokeOutcome = Datum::CallBehaviorContextMethodResult(getterMethod, getterMethod->GetResult(), getterParams.begin(),
-                                static_cast<AZ::u32>(getterMethod->GetNumArguments()));
+                                static_cast<AZ::u32>(getterMethod->GetNumArguments()), behaviorProperty->m_name);
                             if (!behaviorMethodInvokeOutcome)
                             {
                                 return AZ::Failure(AZStd::string::format("Attempting to invoke getter method %s failed: %s", getterMethod->m_name.data(), behaviorMethodInvokeOutcome.GetError().data()));
@@ -569,5 +569,5 @@ namespace ScriptCanvas
                 return TypeErasedPropertyTraits(PropertyTraits<scTypeValue>{});
             }
         }
-    } // namespace Data
-} // namespace ScriptCanvas
+    } 
+} 

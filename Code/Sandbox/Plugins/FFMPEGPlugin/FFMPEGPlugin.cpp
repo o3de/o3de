@@ -132,10 +132,12 @@ bool CFFMPEGPlugin::RuntimeTest()
 
 void CFFMPEGPlugin::RegisterTheCommand()
 {
-    CommandManagerHelper::RegisterCommand(GetIEditor()->GetICommandManager(),
+    using namespace AZStd::placeholders;
+    CommandManagerHelper::RegisterCommand<const char*, const char*, const char*, int, int, const char*>(
+        GetIEditor()->GetICommandManager(),
         COMMAND_MODULE, COMMAND_NAME, "Encodes a video using ffmpeg.",
         "plugin.ffmpeg_encode 'input.avi' 'result.mov' 'libx264' 200 30",
-        functor(Command_FFMPEGEncode));
+        AZStd::bind(Command_FFMPEGEncode, _1, _2, _3, _4, _5, _6));
 }
 
 void CFFMPEGPlugin::OnEditorNotify([[maybe_unused]] EEditorNotifyEvent aEventId)

@@ -319,16 +319,16 @@ namespace EMStudio
             item->setWhatsThis(0, QString::number(actorInstance->GetID()));
 
             // set the correct icon and the type
-            if (isBone)
-            {
-                item->setIcon(0, *mBoneIcon);
-                item->setText(1, "Bone");
-            }
-            else if (isMeshNode)
+            if (isMeshNode)
             {
                 item->setIcon(0, *mMeshIcon);
                 item->setText(1, "Mesh");
                 item->setText(3, QString::number(mesh->GetNumIndices() / 3));
+            }
+            else if (isBone)
+            {
+                item->setIcon(0, *mBoneIcon);
+                item->setText(1, "Bone");
             }
             else if (isNode)
             {

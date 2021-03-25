@@ -14,7 +14,6 @@
     <Platform atl_name="appletv" atl_config_group_name="default"/>
     <Platform atl_name="salem" atl_config_group_name="default" />
     <Platform atl_name="provo" atl_config_group_name="default" />
-    <Platform atl_name="xenia" atl_config_group_name="default" />
    </ATLPlatforms>
    <ATLConfigGroup atl_name="default">
     <WwiseFile wwise_name="bank1.bnk"/>
@@ -31,7 +30,6 @@
     <Platform atl_name="appletv" atl_config_group_name="default"/>
     <Platform atl_name="salem" atl_config_group_name="default" />
     <Platform atl_name="provo" atl_config_group_name="default" />
-    <Platform atl_name="xenia" atl_config_group_name="default" />
    </ATLPlatforms>
    <ATLConfigGroup atl_name="default">
     <WwiseFile wwise_name="bank3.bnk"/>

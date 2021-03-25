@@ -46,15 +46,12 @@ namespace AZ
 
             protected:
                 bool ConvertFbxSceneContext(Containers::Scene& scene) const;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
                 bool ConvertFbxScene(Containers::Scene& scene) const;
-#endif
+                void SanitizeNodeName(AZStd::string& nodeName) const;
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
                 AZStd::shared_ptr<FbxSceneSystem> m_sceneSystem;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
                 bool m_useAssetImporterSDK = false;
-#endif
             };
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI

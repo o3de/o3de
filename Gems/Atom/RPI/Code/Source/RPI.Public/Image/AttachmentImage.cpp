@@ -121,11 +121,6 @@ namespace AZ
             return resultCode;
         }
         
-        RHI::ResultCode AttachmentImage::UpdateImageContents(const RHI::ImageUpdateRequest& request)
-        {
-            return m_imagePool->GetRHIPool()->UpdateImageContents(request);
-        }
-
         const RHI::AttachmentId& AttachmentImage::GetAttachmentId()
         {
             return m_attachmentId;

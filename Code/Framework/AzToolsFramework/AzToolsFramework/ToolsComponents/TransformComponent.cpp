@@ -27,6 +27,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
+#include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -163,7 +164,6 @@ namespace AzToolsFramework
             , m_parentActivationTransformMode(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform)
             , m_cachedWorldTransform(AZ::Transform::Identity())
             , m_suppressTransformChangedEvent(false)
-            , m_netSyncEnabled(false)
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
         {
@@ -221,6 +221,26 @@ namespace AzToolsFramework
             EditorComponentBase::Deactivate();
         }
 
+        void TransformComponent::BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_transformChangedEvent);
+        }
+
+        void TransformComponent::BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_parentChangedEvent);
+        }
+
+        void TransformComponent::BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_childChangedEvent);
+        }
+
+        void TransformComponent::NotifyChildChangedEvent(AZ::ChildChangeType changeType, AZ::EntityId entityId)
+        {
+            m_childChangedEvent.Signal(changeType, entityId);
+        }
+
         // This is called when our transform changes directly, or our parent's has changed.
         void TransformComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
         {
@@ -276,16 +296,6 @@ namespace AzToolsFramework
         {
             m_cachedWorldTransform = AZ::Transform::Identity();
             m_cachedWorldTransformParent = AZ::EntityId();
-        }
-
-        bool TransformComponent::IsPositionInterpolated()
-        {
-            return m_interpolatePosition != AZ::InterpolationMode::NoInterpolation;
-        }
-
-        bool TransformComponent::IsRotationInterpolated()
-        {
-            return m_interpolateRotation != AZ::InterpolationMode::NoInterpolation;
         }
 
         void TransformComponent::CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld)
@@ -835,6 +845,7 @@ namespace AzToolsFramework
             // This is for Create Entity as child / Drag+drop parent update / add component
             EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, EntityParentChanged, GetEntityId(), parentId, oldParentId);
             EBUS_EVENT_ID(GetEntityId(), AZ::TransformNotificationBus, OnParentChanged, oldParentId, parentId);
+            m_parentChangedEvent.Signal(oldParentId, parentId);
 
             TransformChanged();
         }
@@ -1136,7 +1147,6 @@ namespace AzToolsFramework
         {
             AZ::TransformConfig configuration;
             configuration.m_parentId = m_parentEntityId;
-            configuration.m_netSyncEnabled = m_netSyncEnabled;
             configuration.m_worldTransform = GetWorldTM();
             configuration.m_localTransform = GetLocalTM();
             configuration.m_parentActivationTransformMode = m_parentActivationTransformMode;
@@ -1241,7 +1251,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::Suffix, " deg")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_scale, "Scale", "Local Scale")->
+                        DataElement(TransformScaleHandler, &EditorTransform::m_scale, "Scale", "Local Scale")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
                             Attribute(AZ::Edit::Attributes::Min, 0.01f)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)

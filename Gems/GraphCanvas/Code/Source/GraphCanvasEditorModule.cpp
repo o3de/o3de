@@ -174,4 +174,15 @@ namespace GraphCanvas
     
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_GraphCanvas, GraphCanvas::GraphCanvasModule)
+// Qt resources are defined in the GraphCanvas static library, so we must
+// initialize them manually
+extern int qInitResources_GraphCanvasEditorResources();
+extern int qCleanupResources_GraphCanvasEditorResources();
+namespace {
+    struct initializer {
+        initializer() { qInitResources_GraphCanvasEditorResources(); }
+        ~initializer() { qCleanupResources_GraphCanvasEditorResources(); }
+    } dummy;
+}
+
+AZ_DECLARE_MODULE_CLASS(GraphCanvas_875b6fcbdeea44deaae7984ad9bb6cdc, GraphCanvas::GraphCanvasModule)

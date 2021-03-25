@@ -12,7 +12,6 @@
 
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/Config.h>
-#include "GLInclude.h"
 
 #include "VertexBuffer.h"
 
@@ -52,6 +51,8 @@ namespace RenderGL
     // initialize vertex buffer
     bool VertexBuffer::Init(uint32 numBytesPerVertex, uint32 numVertices, EUsageMode usage, void* vertexData)
     {
+        initializeOpenGLFunctions();
+        resolve(QOpenGLContext::currentContext());
         if (numVertices == 0 || numBytesPerVertex == 0)
         {
             return true;
@@ -151,12 +152,12 @@ namespace RenderGL
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    bool VertexBuffer::GetIsSuccess() const
+    bool VertexBuffer::GetIsSuccess()
     {
         return (glGetError() == GL_NO_ERROR);
     }
 
-    bool VertexBuffer::GetHasError() const
+    bool VertexBuffer::GetHasError()
     {
         return (glGetError() != GL_NO_ERROR);
     }

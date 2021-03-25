@@ -1,0 +1,54 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "autoSelect": false,
+        "displayName": "Blau River (Alt)",
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
+                "subId": 2000
+            },
+            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblExposure": 0.0,
+        "skyboxExposure": 0.0,
+        "lights": [
+            {
+                "direction": [
+                    0.4000000059604645,
+                    0.4000000059604645,
+                    -1.0
+                ],
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowFarClipDistance": 20.0,
+                "shadowmapSize": "Size2048",
+                "enableShadowDebugColoring": false
+            }
+        ],
+        "shadowCatcherOpacity": 0.15000000596046449
+    }
+}

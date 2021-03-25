@@ -18,6 +18,9 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/EBus/IEventScheduler.h>
+#include <AzCore/EBus/ScheduledEvent.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace AzNetworking
 {
@@ -41,13 +44,8 @@ namespace AzNetworking
         return DtlsEndpoint::ConnectResult::Complete;
     }
 
-    DtlsEndpoint::ConnectResult UdpSocket::AcceptDtlsEndpoint(DtlsEndpoint&, const IpAddress&, const UdpPacketEncodingBuffer& dtlsData) const
+    DtlsEndpoint::ConnectResult UdpSocket::AcceptDtlsEndpoint(DtlsEndpoint&, const IpAddress&) const
     {
-        if (dtlsData.GetSize() > 0)
-        {
-            AZLOG_WARN("Encryption is disabled on accepting endpoint, but connector provided a DTLS handshake blob.  Check that encryption is properly disabled on *BOTH* endpoints");
-            return DtlsEndpoint::ConnectResult::Failed;
-        }
         // No-op, no encryption wrapper required
         return DtlsEndpoint::ConnectResult::Complete;
     }
@@ -108,28 +106,6 @@ namespace AzNetworking
         m_socketFd = InvalidSocketFd;
     }
 
-#ifdef ENABLE_LATENCY_DEBUG
-    //! Checks packets deferred by latency debug and sends any that have passed their latency threshold
-    void UdpSocket::ProcessDeferredPackets()
-    {
-        const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
-        while (m_sendBuffer.size() > 0)
-        {
-            const DeferredData& sendData = m_sendBuffer.front();
-            if (sendData.m_timeDeferredMs >= currTimeMs)
-            {
-                SendInternal(sendData.m_address, sendData.m_dataBuffer.GetBuffer(), sendData.m_dataBuffer.GetSize(), sendData.m_encrypt, *sendData.m_dtlsEndpoint);
-                m_sendBuffer.pop_front();
-            }
-            else
-            {
-                // Send buffer is sorted on append so all subsequent elements should also have time remaining
-                break;
-            }
-        }
-    }
-#endif
-
     int32_t UdpSocket::Send
     (
         const IpAddress& address,
@@ -145,17 +121,6 @@ namespace AzNetworking
 
         AZ_Assert(address.GetAddress(ByteOrder::Host) != 0, "Invalid address");
         AZ_Assert(address.GetPort(ByteOrder::Host) != 0, "Invalid address");
-
-#ifdef ENABLE_LATENCY_DEBUG
-        if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
-        {
-            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs / aznumeric_cast<AZ::TimeMs>(2));
-            const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
-            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs / aznumeric_cast<AZ::TimeMs>(2)) + jitterMs;
-            m_sendBuffer.push_back(DeferredData(currTimeMs + deferTimeMs, address, data, size, encrypt, dtlsEndpoint));
-            std::sort(m_sendBuffer.begin(), m_sendBuffer.end());
-        }
-#endif
 
         if (!IsOpen())
         {
@@ -193,6 +158,18 @@ namespace AzNetworking
                 AZLOG_ERROR("Failed to write to socket (%d:%s)", error, GetNetworkErrorDesc(error));
             }
         }
+#ifdef ENABLE_LATENCY_DEBUG
+        else if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
+        {
+            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs / aznumeric_cast<AZ::TimeMs>(2));
+            const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
+            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs / aznumeric_cast<AZ::TimeMs>(2)) + jitterMs;
+
+            DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
+            AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([&, deferredData = deferred]
+                    { SendInternalDeferred(deferredData); }, AZ::Name("Deferred packet"), deferTimeMs);
+        }
+#endif
 
         m_sentPackets++;
         m_sentBytes += sentBytes;
@@ -253,7 +230,7 @@ namespace AzNetworking
     }
 
     int32_t UdpSocket::SendInternal(const IpAddress& address, const uint8_t* data, uint32_t size,
-        [[maybe_unused]] bool dontEncypt, [[maybe_unused]] DtlsEndpoint& dtlsEndpoint) const
+        [[maybe_unused]] bool encrypt, [[maybe_unused]] DtlsEndpoint& dtlsEndpoint) const
     {
         sockaddr_in destAddr;
         memset(&destAddr, 0, sizeof(destAddr));
@@ -262,4 +239,11 @@ namespace AzNetworking
         destAddr.sin_port = address.GetPort(ByteOrder::Network);
         return sendto(static_cast<int32_t>(m_socketFd), reinterpret_cast<const char*>(data), size, 0, (sockaddr*)&destAddr, sizeof(destAddr));
     }
+
+#ifdef ENABLE_LATENCY_DEBUG
+    int32_t UdpSocket::SendInternalDeferred(const DeferredData& data) const
+    {
+        return SendInternal(data.m_address, data.m_dataBuffer.GetBuffer(), data.m_dataBuffer.GetSize(), data.m_encrypt, *data.m_dtlsEndpoint);
+    }
+#endif
 }

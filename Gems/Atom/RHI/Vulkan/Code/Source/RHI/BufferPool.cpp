@@ -102,7 +102,15 @@ namespace AZ
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
 
-            BufferMemoryView memoryView = m_memoryAllocator.Allocate(bufferDescriptor.m_byteCount, 1);
+            // Note that InputAssembly, RayTracingAccelerationStructure, and RayTracingShaderBindingTable buffers must be unique allocations.
+            // This is necessary since the alignment on a paged memory allocation is not compatible with the required raytracing alignment.
+            bool forceUnique = RHI::CheckBitsAny(
+                bufferDescriptor.m_bindFlags,
+                RHI::BufferBindFlags::InputAssembly |
+                RHI::BufferBindFlags::RayTracingAccelerationStructure |
+                RHI::BufferBindFlags::RayTracingShaderTable);
+
+            BufferMemoryView memoryView = m_memoryAllocator.Allocate(bufferDescriptor.m_byteCount, 1, forceUnique);
             if (!memoryView.IsValid())
             {
                 return RHI::ResultCode::OutOfMemory;

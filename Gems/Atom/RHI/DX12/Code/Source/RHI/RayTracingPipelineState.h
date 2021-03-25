@@ -36,12 +36,6 @@ namespace AZ
         private:
             RayTracingPipelineState() = default;
 
-            // creates a ID3D12RootSignature object from a RayTracingRootSignature
-            void CreateRootSignature(RHI::Device& deviceBase,
-                                     const RHI::RayTracingRootSignature& rayTracingRootSignature,
-                                     bool isLocalRootSignature,
-                                     Microsoft::WRL::ComPtr<ID3D12RootSignature>& rootSignatureComPtr);
-
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineState
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor) override;
@@ -49,7 +43,6 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             RHI::Ptr<ID3D12RootSignature> m_globalRootSignature;
-            AZStd::vector<RHI::Ptr<ID3D12RootSignature>> m_localRootSignatures;
 #ifdef AZ_DX12_DXR_SUPPORT
             RHI::Ptr<ID3D12StateObject> m_rayTracingPipelineState;
 #endif

@@ -38,7 +38,8 @@ namespace AZ
             AZStd::string GetLabel() const;
             bool HasSourceData() const;
             void OpenMaterialEditor() const;
-            void Reset();
+            void SetDefaultAsset();
+            void Clear();
             void OpenMaterialExporter();
             void OpenMaterialInspector();
             void OpenUvNameMapInspector();
@@ -56,7 +57,6 @@ namespace AZ
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
             void OnMaterialChanged() const;
             void OnPropertyChanged() const;
-            void AutoAssignMaterial();
         };
 
         // Vector of slots for assignable or overridable material data.

@@ -124,7 +124,7 @@ namespace AZ
                 }
 
                 AZ_Assert(materialAsset.GetPropertyValues().size() <= Limits::Material::PropertyCountMax,
-                    "Too man material properties. Max is %d.", Limits::Material::PropertyCountMax);
+                    "Too many material properties. Max is %d.", Limits::Material::PropertyCountMax);
             }
 
             // Clear all override flags because we just loaded properties from the asset

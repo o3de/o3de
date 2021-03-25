@@ -38,12 +38,12 @@ namespace GraphCanvas
         AssetEditorSettingsNotificationBus::Handler::BusConnect(m_editorId);
     }
 
-    int ConstructPresetsTableModel::columnCount([[maybe_unused]] const QModelIndex &parent) const
+    int ConstructPresetsTableModel::columnCount(const QModelIndex &/*parent*/) const
     {
         return ColumnIndex::Count;
     }
 
-    int ConstructPresetsTableModel::rowCount([[maybe_unused]] const QModelIndex &parent) const
+    int ConstructPresetsTableModel::rowCount(const QModelIndex &/*parent*/) const
     {
         return aznumeric_cast<int>(m_activePresets.size());
     }
@@ -417,7 +417,7 @@ namespace GraphCanvas
         }
     }
 
-    void ConstructPresetDialog::showEvent([[maybe_unused]] QShowEvent* showEvent)
+    void ConstructPresetDialog::showEvent(QShowEvent* /*showEvent*/)
     {        
         m_presetsModel->RefreshDisplay();
     }

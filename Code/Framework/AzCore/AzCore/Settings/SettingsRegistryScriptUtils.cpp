@@ -18,15 +18,38 @@
 
 namespace AZ::SettingsRegistryScriptUtils::Internal
 {
+    static void RegisterScriptProxyForNotify(SettingsRegistryScriptProxy& settingsRegistryProxy)
+    {
+        if (settingsRegistryProxy.IsValid())
+        {
+            auto ForwardSettingsUpdateToProxyEvent = [&settingsRegistryProxy](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+            {
+                if (settingsRegistryProxy.m_notifyEventProxy)
+                {
+                    settingsRegistryProxy.m_notifyEventProxy->m_scriptNotifyEvent.Signal(path);
+                }
+            };
+            // Register the forwarding function with the BehaviorContext
+            settingsRegistryProxy.m_notifyEventProxy->m_settingsUpdatedHandler =
+                settingsRegistryProxy.m_settingsRegistry->RegisterNotifier(ForwardSettingsUpdateToProxyEvent);
+        }
+    }
+
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy() = default;
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
         : m_settingsRegistry(AZStd::move(settingsRegistry))
-    {}
+        , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())
+    {
+        RegisterScriptProxyForNotify(*this);
+    }
 
     // Raw AZ::SettingsRegistryInterface pointer is not owned by the proxy, so it's deleter is a no-op
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZ::SettingsRegistryInterface* const settingsRegistry)
         : m_settingsRegistry(settingsRegistry, [](AZ::SettingsRegistryInterface*) {})
-    {}
+        , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())
+    {
+        RegisterScriptProxyForNotify(*this);
+    }
 
     // SettingsRegistryScriptProxy function that determines if the SettingsRegistry object is valid
     bool SettingsRegistryScriptProxy::IsValid() const
@@ -69,23 +92,23 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         // Reflect Specializations structure
         auto SpecializationsAppend = [](SpecializationsProxy* tagInst, AZStd::string_view specialization)
         {
-            return tagInst->m_specializations->Append(specialization);
+            return tagInst && tagInst->m_specializations->Append(specialization);
         };
         auto SpecializationsContains = [](SpecializationsProxy* tagInst, AZStd::string_view specialization)
         {
-            return tagInst->m_specializations->Contains(specialization);
+            return tagInst && tagInst->m_specializations->Contains(specialization);
         };
         auto SpecializationsGetPriority = [](SpecializationsProxy* tagInst, AZStd::string_view specialization)
         {
-            return tagInst->m_specializations->GetPriority(specialization);
+            return tagInst ? tagInst->m_specializations->GetPriority(specialization) : 0U;
         };
         auto SpecializationsGetCount = [](SpecializationsProxy* tagInst)
         {
-            return tagInst->m_specializations->GetCount();
+            return tagInst ? tagInst->m_specializations->GetCount() : 0U;
         };
         auto SpecializationsGetSpecialization = [](SpecializationsProxy* tagInst, size_t index)
         {
-            return tagInst->m_specializations->GetSpecialization(index);
+            return tagInst ? tagInst->m_specializations->GetSpecialization(index) : AZStd::string_view{};
         };
         behaviorContext.Class<SpecializationsProxy>("Specializations")
             ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -121,7 +144,8 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto MergeSettings = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonData,
             AZ::SettingsRegistryInterface::Format format) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->MergeSettings(jsonData, format);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->MergeSettings(jsonData, format);
         };
         // Set a default value for the Setting Registry Merge Format parameter
         // This allows the function to be called from the BehaviorContext using only the json data parameter
@@ -132,7 +156,7 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto MergeSettingsFile = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view filePath,
             AZStd::string_view jsonRootKey, AZ::SettingsRegistryInterface::Format format) -> bool
         {
-            return settingsRegistryProxy->IsValid()
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
                 && settingsRegistryProxy->m_settingsRegistry->MergeSettingsFile(filePath, format, jsonRootKey);
         };
         using MergeSettingsFileFunctionTraits = AZStd::function_traits<decltype(MergeSettingsFile)>;
@@ -153,7 +177,7 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto MergeSettingsFolder = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view folderPath,
             const Internal::SpecializationsProxy& specProxy, AZStd::string_view platform) -> bool
         {
-            return settingsRegistryProxy->IsValid()
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
                 && settingsRegistryProxy->m_settingsRegistry->MergeSettingsFolder(folderPath, *specProxy.m_specializations, platform);
         };
         using MergeSettingsFolderFunctionTraits = AZStd::function_traits<decltype(MergeSettingsFolder)>;
@@ -173,24 +197,29 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
 
         auto SetBool = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath, bool boolValue) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, boolValue);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, boolValue);
         };
         auto SetInt = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath, AZ::s64 intValue) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, intValue);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, intValue);
         };
         auto SetUint = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath, AZ::u64 uintValue) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, uintValue);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, uintValue);
         };
         auto SetFloat = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath, double floatValue) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, floatValue);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, floatValue);
         };
         auto SetString = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath, AZStd::string_view stringValue)
             -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, stringValue);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Set(jsonPath, stringValue);
         };
 
         // Query functors
@@ -200,8 +229,9 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
             AZStd::string outputString;
             AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings{ true };
             AZ::IO::ByteContainerStream outputStream(&outputString);
-            if (settingsRegistryProxy->IsValid() && AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(
-                *settingsRegistryProxy->m_settingsRegistry, jsonPath, outputStream, dumperSettings))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid() &&
+                AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*settingsRegistryProxy->m_settingsRegistry,
+                    jsonPath, outputStream, dumperSettings))
             {
                 return outputString;
             }
@@ -212,7 +242,8 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto GetBool = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> AZStd::optional<bool>
         {
             bool boolValue{};
-            if (settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(boolValue, jsonPath))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Get(boolValue, jsonPath))
             {
                 return boolValue;
             }
@@ -222,7 +253,8 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto GetInt = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> AZStd::optional<s64>
         {
             AZ::s64 intValue{};
-            if (settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(intValue, jsonPath))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Get(intValue, jsonPath))
             {
                 return intValue;
             }
@@ -232,7 +264,8 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto GetUint = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> AZStd::optional<u64>
         {
             AZ::u64 uintValue{};
-            if (settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(uintValue, jsonPath))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Get(uintValue, jsonPath))
             {
                 return uintValue;
             }
@@ -242,7 +275,8 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto GetFloat = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> AZStd::optional<double>
         {
             double floatValue{};
-            if (settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(floatValue, jsonPath))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Get(floatValue, jsonPath))
             {
                 return floatValue;
             }
@@ -252,7 +286,7 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         auto GetString = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> AZStd::optional<AZStd::string>
         {
             AZStd::string stringValue;
-            if (settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(stringValue, jsonPath))
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Get(stringValue, jsonPath))
             {
                 return stringValue;
             }
@@ -263,7 +297,23 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         // SettingsRegistry::Remove wrapper
         auto RemoveKey = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy, AZStd::string_view jsonPath) -> bool
         {
-            return settingsRegistryProxy->IsValid() && settingsRegistryProxy->m_settingsRegistry->Remove(jsonPath);
+            return settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_settingsRegistry->Remove(jsonPath);
+        };
+
+        // Reflect function which returns the ScriptNotifyEvent from the SettingsRegistryScriptProxy
+        // in order to trigger the ScriptCanvas feature of allowing creation of an AZ EventHandler
+        // from a BehaviorMethod node which returns an AZ::Event pointer
+        auto GetScriptNotifyEvent = [](Internal::SettingsRegistryScriptProxy* settingsRegistryProxy)
+            -> Internal::SettingsRegistryScriptProxy::ScriptNotifyEvent*
+        {
+            if (settingsRegistryProxy && settingsRegistryProxy->IsValid()
+                && settingsRegistryProxy->m_notifyEventProxy)
+            {
+                return &settingsRegistryProxy->m_notifyEventProxy->m_scriptNotifyEvent;
+            }
+
+            return nullptr;
         };
 
         auto settingsRegistryClassBuilder = behaviorContext.Class<Internal::SettingsRegistryScriptProxy>(InterfaceClassName);
@@ -286,6 +336,16 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
             ->Method("GetFloat", GetFloat)
             ->Method("GetString", GetString)
             ->Method("RemoveKey", RemoveKey)
+            ;
+
+        // Create the BehaviorAzEventDescription needed to reflect the
+        // GetNotifyEvent method to the BehaviorContext without errors
+        AZ::BehaviorAzEventDescription scriptNotifyEventDesc;
+        scriptNotifyEventDesc.m_eventName = "SettingsRegistry Notify Event";
+        scriptNotifyEventDesc.m_parameterNames.push_back("Json Path");
+
+        settingsRegistryClassBuilder->Method("GetNotifyEvent", GetScriptNotifyEvent)
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move(scriptNotifyEventDesc))
             ;
     }
 

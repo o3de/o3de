@@ -59,6 +59,8 @@ namespace EMotionFX
 
             void SetData(AZStd::shared_ptr<Actor> actor);
 
+            void InitRenderActor();
+
         private:
             AutoRegisteredActor m_emfxActor; ///< Pointer to shared EMotionFX actor
             AZStd::unique_ptr<RenderActor> m_renderActor;

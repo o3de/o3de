@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
 
@@ -24,53 +23,18 @@ namespace ScriptCanvas
     {
         namespace String
         {
-            //! A String formatting class that produces a data output based on the specified string format and
-            //! input values.
+            //! Deprecated: see String class reflection of "Replace String"
             class Replace
                 : public Node
             {
             public:
-                ScriptCanvas_Node(Replace,
-                    ScriptCanvas_Node::Name("Replace String", "Allows replacing a substring from a given string.")
-                    ScriptCanvas_Node::Uuid("{197D0BAA-FCAF-4922-872B-3A95BEA574B2}")
-                    ScriptCanvas_Node::Category("String")
-                    ScriptCanvas_Node::Version(0)
-                );
+
+                SCRIPTCANVAS_NODE(Replace);
+
+                void OnInit() override;
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
             protected:
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Source", "The string to search in.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Replace", "The substring to search for.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("With", "The string to replace the substring with.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_PropertyWithDefaults(bool, true,
-                    ScriptCanvas_Property::Name("Case Sensitive", "Take into account the case of the string when searching.")
-                    ScriptCanvas_Property::Input
-                );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Result", "The resulting string.")
-                    ScriptCanvas_Property::Output
-                    ScriptCanvas_Property::OutputStorageSpec
-                );
-
 
                 void OnInputSignal(const SlotId& slotId) override;
 

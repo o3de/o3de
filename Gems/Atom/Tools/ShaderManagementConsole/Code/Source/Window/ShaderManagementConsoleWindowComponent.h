@@ -13,10 +13,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 #include <Atom/Window/ShaderManagementConsoleWindowRequestBus.h>
+#include <Atom/Core/ShaderManagementConsoleRequestBus.h>
 #include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
 #include <Source/Window/ShaderManagementConsoleWindow.h>
 
@@ -27,6 +29,8 @@ namespace ShaderManagementConsole
     class ShaderManagementConsoleWindowComponent
         : public AZ::Component
         , private ShaderManagementConsoleWindowRequestBus::Handler
+        , private ShaderManagementConsoleRequestBus::Handler
+        , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
         AZ_COMPONENT(ShaderManagementConsoleWindowComponent, "{03976F19-3C74-49FE-A15F-7D3CADBA616C}");
@@ -45,11 +49,22 @@ namespace ShaderManagementConsole
             AZStd::vector<AZ::RPI::ShaderCollection::Item> m_shaderItems;
         };
 
+        //////////////////////////////////////////////////////////////////////////
+        // AzToolsFramework::EditorWindowRequests::Bus::Handler
+        QWidget* GetAppMainWindow() override;
+        //////////////////////////////////////////////////////////////////////////
+
         ////////////////////////////////////////////////////////////////////////
         // ShaderManagementConsoleWindowRequestBus::Handler overrides...
         void CreateShaderManagementConsoleWindow() override;
         void DestroyShaderManagementConsoleWindow() override;
-        void GenerateShaderVariantListForShaderMaterials(const char* shaderFileName) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ShaderManagementConsoleRequestBus::Handler overrides...
+        AZ::Data::AssetInfo GetSourceAssetInfo(const AZStd::string& sourceAssetFileName) override;
+        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath) override;
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -58,8 +73,6 @@ namespace ShaderManagementConsole
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-        void GenerateShaderVariantForMaterials(AZStd::string_view destFilePath, AZStd::string_view shaderFilePath, const AZStd::vector<ShaderVariantListInfo>& shaderVariantListInfoList);
 
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;
         AZStd::unique_ptr<ShaderManagementConsoleBrowserInteractions> m_assetBrowserInteractions;

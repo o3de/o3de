@@ -24,12 +24,9 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(MeshInfo, EMStudio::UIAllocator, 0)
 
-    MeshInfo::MeshInfo(EMotionFX::Actor* actor, EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh)
+    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh)
         : m_lod(lodLevel)
     {
-        // is deformable flag
-        m_isDeformable = actor->CheckIfHasDeformableMesh(lodLevel, node->GetNodeIndex());
-            
         // vertices, indices and polygons etc.
         m_verticesCount = mesh->GetNumVertices();
         m_indicesCount = mesh->GetNumIndices();
@@ -48,15 +45,7 @@ namespace EMStudio
         }
 
         // skinning influences
-        {
-            AZStd::vector<uint32> vertexCounts;
-            const uint32 maxNumInfluences = mesh->CalcMaxNumInfluences(vertexCounts);
-            for (uint32 i = 0; i < maxNumInfluences; ++i)
-            {
-                m_verticesByInfluences.emplace_back(vertexCounts[i]);
-            }
-                
-        }
+        mesh->CalcMaxNumInfluences(m_verticesByInfluences);
         
         // sub meshes
         const uint32 numSubMeshes = mesh->GetNumSubMeshes();
@@ -152,7 +141,6 @@ namespace EMStudio
         serializeContext->Class<MeshInfo>()
             ->Version(1)
             ->Field("lod", &MeshInfo::m_lod)
-            ->Field("isDeformable", &MeshInfo::m_isDeformable)
             ->Field("verticesCount", &MeshInfo::m_verticesCount)
             ->Field("indicesCount", &MeshInfo::m_indicesCount)
             ->Field("polygonsCount", &MeshInfo::m_polygonsCount)
@@ -178,8 +166,6 @@ namespace EMStudio
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshInfo::m_lod, "LOD level", "")
-                ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshInfo::m_isDeformable, "Deformable", "")
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshInfo::m_verticesCount, "Vertices", "")
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)

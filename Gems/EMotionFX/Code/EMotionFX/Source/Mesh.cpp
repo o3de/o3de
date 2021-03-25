@@ -11,8 +11,6 @@
 */
 
 #include <AzCore/Math/Vector2.h>
-#include <EMotionFX/Source/MeshBuilderSubMesh.h>
-#include <EMotionFX/Source/MeshBuilderSkinningInfo.h>
 #include "EMotionFXConfig.h"
 #include "Mesh.h"
 #include "SubMesh.h"
@@ -23,7 +21,9 @@
 #include "SoftSkinDeformer.h"
 #include "MeshDeformerStack.h"
 #include <EMotionFX/Source/Allocators.h>
+#include <MCore/Source/LogManager.h>
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace EMotionFX
 {
@@ -88,6 +88,223 @@ namespace EMotionFX
     Mesh* Mesh::Create(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
     {
         return aznew Mesh(numVerts, numIndices, numPolygons, numOrgVerts, isCollisionMesh);
+    }
+
+
+    Mesh* Mesh::CreateFromModelLod(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap)
+    {
+        AZ::u32 numVertex = 0;
+        AZ::u32 numIndices = 0;
+        for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
+        {
+            numVertex += mesh.GetVertexCount();
+            numIndices += mesh.GetIndexCount();
+        }
+        // IndicesPerFace defined in atom is 3.
+        const AZ::u32 numPolygons = numIndices / 3;
+        Mesh* mesh = Create(numVertex, numIndices, numPolygons, numVertex, false);
+
+        // The lod has shared buffers that combine the data from each submesh.
+        // These buffers can be accessed through the first submesh in their entirety
+        // by using the BufferViewDescriptor from the Buffer instead of the one from the submesh's BufferAssetView
+        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
+
+        // Copy the index buffer for the entire lod
+        AZStd::array_view<uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
+        AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
+        const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
+        const size_t indexBufferOffsetInBytes = indexBufferViewDescriptor.m_elementOffset * indexBufferViewDescriptor.m_elementSize;
+        memcpy(mesh->mIndices, indexBuffer.begin() + indexBufferOffsetInBytes, indexBufferCountsInBytes);
+
+        // Set the polygon buffer
+        AZStd::fill(mesh->mPolyVertexCounts, mesh->mPolyVertexCounts + mesh->mNumPolygons, 3);
+
+        // Skinning data from atom are stored in two separate buffer layer.
+        AZ::u8 maxSkinInfluences = 255; // Later we will calculate this value from skinning data.
+        const AZ::u16* skinJointIndices = nullptr;
+        const float* skinWeights = nullptr;
+
+        // Copy the vertex buffers
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+        {
+            const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBufferViewDescriptor();
+            const AZ::u32 elementSize = bufferAssetViewDescriptor.m_elementSize;
+            const size_t elementCountInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementCount;
+            const size_t elementOffsetInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementOffset;
+            const void* bufferData = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBuffer().data();
+            const AZ::Name& name = streamBufferInfo.m_semantic.m_name;
+
+            if (name == AZ::Name("POSITION"))
+            {
+                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_POSITIONS, sizeof(AZ::Vector3), true);
+                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
+                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
+                {
+                    AZ::PackedVector3f sourceVector = sourceData[vertexIndex];
+                    targetData[vertexIndex] = AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ());
+                }
+                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
+                mesh->AddVertexAttributeLayer(targetDataLayer);
+            }
+            else if (name == AZ::Name("NORMAL"))
+            {
+                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_NORMALS, sizeof(AZ::Vector3), true);
+                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
+                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
+                {
+                    const AZ::PackedVector3f& sourceVector = sourceData[vertexIndex];
+                    targetData[vertexIndex] = AZStd::move(AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ()));
+                }
+                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
+                mesh->AddVertexAttributeLayer(targetDataLayer);
+            }
+            else if (name == AZ::Name("UV"))
+            {
+                VertexAttributeLayerAbstractData* uvData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_UVCOORDS, sizeof(AZ::Vector2), false);
+                const float* sourceData = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset * 2;
+                AZ::Vector2* targetData = static_cast<AZ::Vector2*>(uvData->GetData());
+                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
+                {
+                    targetData[vertexIndex] = AZStd::move(AZ::Vector2(sourceData[2 * vertexIndex], sourceData[2 * vertexIndex + 1]));
+                }
+                mesh->AddVertexAttributeLayer(uvData);
+            }
+            else if (name == AZ::Name("TANGENT"))
+            {
+                VertexAttributeLayerAbstractData* tangentData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_TANGENTS, sizeof(AZ::Vector4), true);
+                const AZ::Vector4* sourceData = static_cast<const AZ::Vector4*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+                memcpy(tangentData->GetData(), sourceData, elementCountInBytes);
+                memcpy((uint8*)tangentData->GetData() + elementCountInBytes, bufferData, elementCountInBytes);
+                mesh->AddVertexAttributeLayer(tangentData);
+            }
+            else if (name == AZ::Name("BITANGENT"))
+            {
+                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_BITANGENTS, sizeof(AZ::Vector3), true);
+                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
+                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
+                {
+                    const AZ::PackedVector3f& sourceVector = sourceData[vertexIndex];
+                    targetData[vertexIndex] = AZStd::move(AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ()));
+                }
+                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
+                mesh->AddVertexAttributeLayer(targetDataLayer);
+            }
+            else if (name == AZ::Name("COLOR"))
+            {
+                VertexAttributeLayerAbstractData* colorData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_COLORS128, sizeof(AZ::Vector4), false);
+                const AZ::Vector4* sourceData = static_cast<const AZ::Vector4*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+                memcpy(colorData->GetData(), sourceData, elementCountInBytes);
+                mesh->AddVertexAttributeLayer(colorData);
+            }
+            else if (name == AZ::Name("SKIN_JOINTINDICES"))
+            {
+                // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
+                size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
+                maxSkinInfluences = influenceCount / numVertex;
+                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+                AZ_Assert(influenceCount % numVertex == 0, "Expect an equal number of influences for each vertex.");
+                AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
+
+                // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
+                // and the pointer we're offsetting is pointing to 16-bit data
+                skinJointIndices = static_cast<const AZ::u16*>(bufferData) + (bufferAssetViewDescriptor.m_elementOffset * 2);
+            }
+            else if (name == AZ::Name("SKIN_WEIGHTS"))
+            {
+                // Atom stores joint weights as float (range 0 - 1)
+                size_t influenceCount = elementCountInBytes / sizeof(float);
+                maxSkinInfluences = influenceCount / numVertex;
+                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+                skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
+            }
+            else if (name == AZ::Name("MORPHTARGET_VERTEXINDICES") ||
+                name == AZ::Name("MORPHTARGET_POSITIONDELTAS") ||
+                name == AZ::Name("MORPHTARGET_NORMALDELTAS"))
+            {
+                // Nothing to do here.
+            }
+            else
+            {
+                AZ_Assert(false, "Unknown stream buffer %s found when converting from atom mesh to emotionfx mesh", name.GetCStr());
+            }
+        }
+
+        // Add the original vertex layer
+        VertexAttributeLayerAbstractData* originalVertexData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_ORGVTXNUMBERS, sizeof(AZ::u32), false);
+        AZ::u32* originalVertexDataRaw = static_cast<AZ::u32*>(originalVertexData->GetData());
+        for (AZ::u32 i = 0; i < numVertex; ++i)
+        {
+            originalVertexDataRaw[i] = i;
+        }
+        mesh->AddVertexAttributeLayer(originalVertexData);
+
+        // Add skinning layer
+        if (skinJointIndices && skinWeights)
+        {
+            // Create the skinning layer
+            SkinningInfoVertexAttributeLayer* skinningLayer = SkinningInfoVertexAttributeLayer::Create(numVertex, /*allocData=*/false);
+            mesh->AddSharedVertexAttributeLayer(skinningLayer);
+            MCore::Array2D<SkinInfluence>& skin2dArray = skinningLayer->GetArray2D();
+            skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
+            skin2dArray.Resize(numVertex);
+
+            // Fill in skinning data from atom buffer
+            for (uint32 v = 0; v < numVertex; ++v)
+            {
+                for (uint32 i = 0; i < maxSkinInfluences; ++i)
+                {
+                    const float weight = skinWeights[v * maxSkinInfluences + i];
+                    if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
+                    {
+                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i];
+                        if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                        {
+                            AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
+                            continue;
+                        }
+
+                        const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                        skinningLayer->AddInfluence(v, skeltonJointIndex, weight, 0);
+                    }
+                }
+            }
+        }
+
+        AZ::u32 vertexOffset = 0;
+        AZ::u32 indexOffset = 0;
+        AZ::u32 startPolygon = 0;
+        AZ::u32 subMeshIndex = 0;
+
+        // One ModelLodAsset::Mesh corresponds to one EMotionFX::SubMesh
+        for (const AZ::RPI::ModelLodAsset::Mesh& sourceSubMesh : sourceModelLod->GetMeshes())
+        {
+            AZ::u32 subMeshVertexCount = sourceSubMesh.GetVertexCount();
+            AZ::u32 subMeshIndexCount = sourceSubMesh.GetIndexCount();
+            AZ::u32 subMeshPolygonCount = subMeshIndexCount / 3;
+            // Create sub mesh
+            SubMesh* subMesh = SubMesh::Create(mesh,
+                vertexOffset,
+                indexOffset,
+                startPolygon,
+                subMeshVertexCount,
+                subMeshIndexCount,
+                subMeshPolygonCount,
+                /*materialIndex*/ 0,
+                /*numJoints*/ 0);
+            
+            mesh->InsertSubMesh(subMeshIndex, subMesh);
+
+            vertexOffset += subMeshVertexCount;
+            indexOffset += subMeshIndexCount;
+            startPolygon += subMeshPolygonCount;
+            subMeshIndex++;
+        }
+
+        return mesh;
     }
 
 
@@ -427,8 +644,8 @@ namespace EMotionFX
             uint32 originalVertex = orgVerts[ indices[startIndexOfFace + i] ];
 
             // traverse all influences for this vertex
-            const uint32 numInfluences = skinningLayer->GetNumInfluences(originalVertex);
-            for (uint32 n = 0; n < numInfluences; ++n)
+            const size_t numInfluences = skinningLayer->GetNumInfluences(originalVertex);
+            for (size_t n = 0; n < numInfluences; ++n)
             {
                 // get the bone of the influence
                 Node* bone = skeleton->GetNode(skinningLayer->GetInfluence(originalVertex, n)->GetNodeNr());
@@ -460,7 +677,7 @@ namespace EMotionFX
         uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
 
         // get the skinning info for all three vertices
-        uint32 maxInfluences = 0;
+        size_t maxInfluences = 0;
         for (uint32 i = 0; i < 3; ++i)
         {
             // get the original vertex number
@@ -468,7 +685,7 @@ namespace EMotionFX
             uint32 originalVertex = orgVerts[ indices[startIndexOfFace + i] ];
 
             // check if the number of influences is higher as the highest recorded value
-            uint32 numInfluences = skinningLayer->GetNumInfluences(originalVertex);
+            size_t numInfluences = skinningLayer->GetNumInfluences(originalVertex);
             if (maxInfluences < numInfluences)
             {
                 maxInfluences = numInfluences;
@@ -476,15 +693,13 @@ namespace EMotionFX
         }
 
         // return the maximum number of influences for this triangle
-        return maxInfluences;
+        return aznumeric_cast<uint32>(maxInfluences);
     }
 
 
     // returns the maximum number of weights/influences for this mesh
     uint32 Mesh::CalcMaxNumInfluences() const
     {
-        uint32 maxInfluences = 0;
-
         // try to locate the skinning attribute information
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
 
@@ -494,22 +709,23 @@ namespace EMotionFX
             return 0;
         }
 
-        const uint32 numOrgVerts = GetNumOrgVertices();
-        for (uint32 i = 0; i < numOrgVerts; ++i)
+        size_t maxInfluences = 0;
+        const size_t numOrgVerts = GetNumOrgVertices();
+        for (size_t i = 0; i < numOrgVerts; ++i)
         {
             // set the number of max influences
-            maxInfluences = MCore::Max<uint32>(maxInfluences, skinningLayer->GetNumInfluences(i));
+            maxInfluences = AZStd::max(maxInfluences, skinningLayer->GetNumInfluences(i));
         }
 
         // return the maximum number of influences
-        return maxInfluences;
+        return aznumeric_cast<uint32>(maxInfluences);
     }
 
 
     // returns the maximum number of weights/influences for this mesh plus some extra information
     uint32 Mesh::CalcMaxNumInfluences(AZStd::vector<uint32>& outVertexCounts) const
     {
-        uint32 maxInfluences = 0;
+        size_t maxInfluences = 0;
 
         // Reset values.
         outVertexCounts.resize(CalcMaxNumInfluences() + 1);
@@ -523,7 +739,7 @@ namespace EMotionFX
         if (!skinningLayer)
         {
             outVertexCounts[0] = GetNumVertices();
-            return maxInfluences;
+            return aznumeric_cast<uint32>(maxInfluences);
         }
 
         uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
@@ -535,13 +751,14 @@ namespace EMotionFX
             uint32 orgVertex = orgVerts[i];
 
             // Increase the number of vertices for the given influence value.
-            outVertexCounts[ skinningLayer->GetNumInfluences(orgVertex) ]++;
+            const size_t numInfluences = skinningLayer->GetNumInfluences(orgVertex);
+            outVertexCounts[numInfluences]++;
 
             // Update the number of max influences.
-            maxInfluences = MCore::Max<uint32>(maxInfluences, skinningLayer->GetNumInfluences(orgVertex));
+            maxInfluences = AZStd::max(maxInfluences, numInfluences);
         }
 
-        return maxInfluences;
+        return aznumeric_cast<uint32>(maxInfluences);
     }
 
 
@@ -1827,125 +2044,5 @@ namespace EMotionFX
         }
 
         return MCORE_INVALIDINDEX32;
-    }
-
-    Mesh* Mesh::CreateFromMeshBuilder(MeshBuilder* meshBuilder)
-    {
-        // multi threaded vertex order generation for all sub meshes in advance
-        meshBuilder->GenerateSubMeshVertexOrders();
-
-        // create the emfx mesh object
-        const uint32 numVerts = static_cast<uint32>(meshBuilder->CalcNumVertices());
-        const uint32 numIndices = static_cast<uint32>(meshBuilder->CalcNumIndices());
-        const uint32 numOrgVerts = static_cast<uint32>(meshBuilder->GetNumOrgVerts());
-        const uint32 numPolygons = static_cast<uint32>(meshBuilder->GetNumPolygons());
-        const bool isCollisionMesh = false;
-        Mesh* result = Mesh::Create(numVerts, numIndices, numPolygons, numOrgVerts, isCollisionMesh);
-
-        // convert all layers
-        const size_t numLayers = meshBuilder->GetNumLayers();
-        result->ReserveVertexAttributeLayerSpace(static_cast<uint32>(numLayers));
-        for (size_t layerNr = 0; layerNr < numLayers; ++layerNr)
-        {
-            // create the layer
-            MeshBuilderVertexAttributeLayer* builderLayer = meshBuilder->GetLayer(static_cast<uint32>(layerNr));
-            VertexAttributeLayerAbstractData* layer = VertexAttributeLayerAbstractData::Create(numVerts, builderLayer->GetTypeID(), builderLayer->GetAttributeSizeInBytes(), builderLayer->GetIsDeformable());
-            layer->SetName(builderLayer->GetName());
-            result->AddVertexAttributeLayer(layer);
-
-            // read the data from disk into the layer
-            MCORE_ASSERT(layer->CalcTotalDataSizeInBytes(false) == (builderLayer->GetAttributeSizeInBytes() * numVerts));
-
-            uint32 vertexIndex = 0;
-            const size_t numSubMeshes = meshBuilder->GetNumSubMeshes();
-            for (size_t s = 0; s < numSubMeshes; ++s)
-            {
-                MeshBuilderSubMesh* subMesh = meshBuilder->GetSubMesh(s);
-                const size_t numSubVerts = subMesh->GetNumVertices();
-                for (size_t v = 0; v < numSubVerts; ++v)
-                {
-                    MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(v);
-                    MCore::MemCopy(layer->GetOriginalData(vertexIndex++), builderLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr), builderLayer->GetAttributeSizeInBytes());
-                }
-            }
-
-            // copy the original data over the current data values
-            layer->ResetToOriginalData();
-        }
-
-        // submesh offsets
-        size_t indexOffset = 0;
-        size_t vertexOffset = 0;
-        size_t startPolygon = 0;
-        uint32* indices = result->GetIndices();
-        uint8* polyVertexCounts = result->GetPolygonVertexCounts();
-
-        // convert submeshes
-        const uint32 numSubMeshes = static_cast<uint32>(meshBuilder->GetNumSubMeshes());
-        result->SetNumSubMeshes(numSubMeshes);
-        for (uint32 s = 0; s < numSubMeshes; ++s)
-        {
-            // create the submesh
-            MeshBuilderSubMesh* builderSubMesh = meshBuilder->GetSubMesh(s);
-            SubMesh* subMesh = SubMesh::Create(result,
-                static_cast<uint32>(vertexOffset),
-                static_cast<uint32>(indexOffset),
-                static_cast<uint32>(startPolygon),
-                static_cast<uint32>(builderSubMesh->GetNumVertices()),
-                static_cast<uint32>(builderSubMesh->GetNumIndices()),
-                static_cast<uint32>(builderSubMesh->GetNumPolygons()),
-                static_cast<uint32>(builderSubMesh->GetMaterialIndex()),
-                static_cast<uint32>(builderSubMesh->GetNumJoints()));
-            result->SetSubMesh(s, subMesh);
-
-            // convert the indices
-            const size_t numSubMeshIndices = builderSubMesh->GetNumIndices();
-            for (size_t i = 0; i < numSubMeshIndices; ++i)
-            {
-                indices[indexOffset + i] = static_cast<uint32>(builderSubMesh->GetIndex(i) + vertexOffset);
-            }
-
-            // convert the poly vertex counts
-            const size_t numSubMeshPolygons = builderSubMesh->GetNumPolygons();
-            for (size_t i = 0; i < numSubMeshPolygons; ++i)
-            {
-                polyVertexCounts[startPolygon + i] = builderSubMesh->GetPolygonVertexCount(i);
-            }
-
-            // read the joint/node numbers
-            const size_t numSubMeshBones = builderSubMesh->GetNumJoints();
-            for (uint32 i = 0; i < numSubMeshBones; ++i)
-            {
-                subMesh->SetBone(i, static_cast<uint32>(builderSubMesh->GetJoint(i)));
-            }
-
-            // increase the offsets
-            indexOffset += builderSubMesh->GetNumIndices();
-            vertexOffset += builderSubMesh->GetNumVertices();
-            startPolygon += builderSubMesh->GetNumPolygons();
-        }
-
-        //-------------------
-
-        MeshBuilderSkinningInfo* meshBuilderSkinningInfo = meshBuilder->GetSkinningInfo();
-        if (meshBuilderSkinningInfo)
-        {
-            // add the skinning info to the mesh
-            SkinningInfoVertexAttributeLayer* skinningLayer = SkinningInfoVertexAttributeLayer::Create(numOrgVerts);
-            result->AddSharedVertexAttributeLayer(skinningLayer);
-
-            // get the Array2D from the skinning layer
-            for (uint32 v = 0; v < numOrgVerts; ++v)
-            {
-                const uint32 numInfluences = meshBuilderSkinningInfo->GetNumInfluences(v);
-                for (uint32 i = 0; i < numInfluences; ++i)
-                {
-                    const MeshBuilderSkinningInfo::Influence& influence = meshBuilderSkinningInfo->GetInfluence(v, i);
-                    skinningLayer->AddInfluence(v, influence.mNodeNr, influence.mWeight, 0);
-                }
-            }
-        }
-
-        return result;
     }
 } // namespace EMotionFX

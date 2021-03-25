@@ -2,12 +2,13 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/Timer.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Timer"
-	       QualifiedName="ScriptCanvas::Nodes::Time::Timer"
-	       PreferredClassName="Timer"
+           QualifiedName="ScriptCanvas::Nodes::Time::Timer"
+           PreferredClassName="Timer"
            Uuid="{60CF8540-E51A-434D-A32C-461C41D68AF9}"
            Base="ScriptCanvas::Node"
            Version="2"
            GeneratePropertyFriend="True"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
            Description="Provides a time value.">
         <In Name="Start" Description="Starts the timer."/>
         <In Name="Stop" Description="Stops the timer."/>

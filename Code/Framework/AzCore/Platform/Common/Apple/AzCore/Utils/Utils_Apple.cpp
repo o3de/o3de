@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/PlatformIncl.h>
 #include <mach-o/dyld.h>
 

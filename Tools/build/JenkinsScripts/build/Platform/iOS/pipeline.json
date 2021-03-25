@@ -1,8 +1,14 @@
 {
-    "JOB_NAME": "IOS",
-    "LABEL": "mac",
-    "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
-    "TIMEOUT": 30,
-    "WORKSPACE": "/Users/lybuilder/workspace",
-    "MOUNT_VOLUME": false
+    "ENV": {
+        "NODE_LABEL": "mac",
+        "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
+        "TIMEOUT": 30,
+        "WORKSPACE": "/Users/lybuilder/workspace",
+        "MOUNT_VOLUME": false
+    },
+    "PIPELINE_ENV_OVERRIDE": {
+        "daily-pipeline-metrics": {
+            "CLEAN_WORKSPACE": true
+        }
+    }
 }

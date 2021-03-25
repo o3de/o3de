@@ -70,7 +70,7 @@ namespace AZ
         }
     }
 
-    void PolygonPrism::OnChangeHeight() const
+    void PolygonPrism::OnChangeHeight()
     {
         if (m_onChangeHeightCallback)
         {
@@ -78,10 +78,30 @@ namespace AZ
         }
     }
 
+    void PolygonPrism::SetNonUniformScale(const AZ::Vector3& nonUniformScale)
+    {
+        m_nonUniformScale = nonUniformScale;
+        OnChangeNonUniformScale();
+    }
+
+    void PolygonPrism::OnChangeNonUniformScale()
+    {
+        if (m_onChangeNonUniformScaleCallback)
+        {
+            m_onChangeNonUniformScaleCallback();
+        }
+    }
+
+    AZ::Vector3 PolygonPrism::GetNonUniformScale() const
+    {
+        return m_nonUniformScale;
+    }
+
     void PolygonPrism::SetCallbacks(
         const VoidFunction& onChangeElement,
         const VoidFunction& onChangeContainer,
-        const VoidFunction& onChangeHeight)
+        const VoidFunction& onChangeHeight,
+        const VoidFunction& onChangeNonUniformScale)
     {
         m_vertexContainer.SetCallbacks(
             [onChangeContainer](size_t) { onChangeContainer(); },
@@ -91,12 +111,14 @@ namespace AZ
             onChangeContainer);
 
         m_onChangeHeightCallback = onChangeHeight;
+        m_onChangeNonUniformScaleCallback = onChangeNonUniformScale;
     }
 
     void PolygonPrism::SetCallbacks(
         const IndexFunction& onAddVertex, const IndexFunction& onRemoveVertex,
         const IndexFunction& onUpdateVertex, const VoidFunction& onSetVertices,
-        const VoidFunction& onClearVertices, const VoidFunction& onChangeHeight)
+        const VoidFunction& onClearVertices, const VoidFunction& onChangeHeight,
+        const VoidFunction& onChangeNonUniformScale)
     {
         m_vertexContainer.SetCallbacks(
             onAddVertex,
@@ -106,6 +128,7 @@ namespace AZ
             onClearVertices);
 
         m_onChangeHeightCallback = onChangeHeight;
+        m_onChangeNonUniformScaleCallback = onChangeNonUniformScale;
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(PolygonPrism, SystemAllocator, 0)

@@ -124,7 +124,7 @@ float3 GetWorldSpaceNormal(float2 normalMapSample, float3 normalWS, float3 tange
 //! float3 t = tex2D(texBase,   uv).xyz*float3( 2,  2, 2) + float3(-1, -1,  0);
 //! float3 u = tex2D(texDetail, uv).xyz*float3(-2, -2, 2) + float3( 1,  1, -1);
 //! float3 r = normalize(t*dot(t, u) - u*t.z);
-float3 ReorientTangentSpaceDetailNormal(float3 surfaceNormalTS, float3 detailNormalTS)
+float3 ReorientTangentSpaceNormal(float3 surfaceNormalTS, float3 detailNormalTS)
 {
     surfaceNormalTS.z = surfaceNormalTS.z + 1.0;
     detailNormalTS.xy = -detailNormalTS.xy;

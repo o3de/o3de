@@ -301,6 +301,10 @@ namespace AZ
                     Attribute(Script::Attributes::Ignore, 0)-> // ignore for script since we already got the generic multiply above
                 Method<Matrix4x4(Matrix4x4::*)(const Matrix4x4&) const>("MultiplyMatrix4x4", &Matrix4x4::operator*)->
                     Attribute(Script::Attributes::Ignore, 0)-> // ignore for script since we already got the generic multiply above
+                Method<Matrix4x4(Matrix4x4::*)(const Matrix4x4&) const>("Add", &Matrix4x4::operator+)->
+                    Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Add)->
+                Method<Matrix4x4(Matrix4x4::*)(const Matrix4x4&) const>("Subtract", &Matrix4x4::operator-)->
+                    Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Sub)->
                 Method("Equal", &Matrix4x4::operator==)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Equal)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->

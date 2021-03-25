@@ -23,15 +23,51 @@ set(FILES
     Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
+    Materials/Types/StandardMultilayerPBR.materialtype
+    Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
+    Materials/Types/StandardMultilayerPBR_Common.azsli
+    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.azsl
+    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.shader
+    Materials/Types/StandardMultilayerPBR_ForwardPass.azsl
+    Materials/Types/StandardMultilayerPBR_ForwardPass.shader
+    Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
+    Materials/Types/StandardMultilayerPBR_Parallax.lua
+    Materials/Types/StandardMultilayerPBR_ParallaxPerLayer.lua
+    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
+    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
+    Materials/Types/StandardPBR_AoState.lua
+    Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
+    Materials/Types/StandardPBR_ClearCoatState.lua
     Materials/Types/StandardPBR_Common.azsli
     Materials/Types/StandardPBR_DepthPass_WithPS.azsl
     Materials/Types/StandardPBR_DepthPass_WithPS.shader
+    Materials/Types/StandardPBR_EmissiveState.lua
     Materials/Types/StandardPBR_ForwardPass.azsl
     Materials/Types/StandardPBR_ForwardPass.shader
     Materials/Types/StandardPBR_ForwardPass_EDS.shader
+    Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
+    Materials/Types/StandardPBR_HandleOpacityMode.lua
+    Materials/Types/StandardPBR_ParallaxState.lua
+    Materials/Types/StandardPBR_Roughness.lua
+    Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardPBR_Shadowmap_WithPS.shader
+    Materials/Types/StandardPBR_SubsurfaceState.lua
+    Materials/Types/MaterialInputs/AlphaInput.azsli
+    Materials/Types/MaterialInputs/BaseColorInput.azsli
+    Materials/Types/MaterialInputs/ClearCoatInput.azsli
+    Materials/Types/MaterialInputs/DetailMapsInput.azsli
+    Materials/Types/MaterialInputs/EmissiveInput.azsli
+    Materials/Types/MaterialInputs/MetallicInput.azsli
+    Materials/Types/MaterialInputs/NormalInput.azsli
+    Materials/Types/MaterialInputs/OcclusionInput.azsli
+    Materials/Types/MaterialInputs/ParallaxInput.azsli
+    Materials/Types/MaterialInputs/RoughnessInput.azsli
+    Materials/Types/MaterialInputs/SpecularInput.azsli
+    Materials/Types/MaterialInputs/SubsurfaceInput.azsli
+    Materials/Types/MaterialInputs/TransmissionInput.azsli
+    Materials/Types/MaterialInputs/UvSetCount.azsli
     Passes/AuxGeom.pass
     Passes/BlendColorGradingLuts.pass
     Passes/Bloom.pass
@@ -45,6 +81,7 @@ set(FILES
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
     Passes/ConvertToAcescg.pass
+    Passes/DebugOverlayParent.pass
     Passes/DeferredFog.pass
     Passes/Depth.pass
     Passes/DepthCheckerboard.pass
@@ -55,6 +92,7 @@ set(FILES
     Passes/DepthMSAA2x.pass
     Passes/DepthMSAA4x.pass
     Passes/DepthMSAA8x.pass
+    Passes/DepthMSAAParent.pass
     Passes/DepthOfField.pass
     Passes/DepthOfFieldBlurBokeh.pass
     Passes/DepthOfFieldComposite.pass
@@ -101,6 +139,7 @@ set(FILES
     Passes/ImGui.pass
     Passes/LightCulling.pass
     Passes/LightCullingHeatmap.pass
+    Passes/LightCullingParent.pass
     Passes/LightCullingRemap.pass
     Passes/LightCullingTilePrepare.pass
     Passes/LightCullingTilePrepareMSAA.pass
@@ -113,9 +152,12 @@ set(FILES
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
+    Passes/MotionVectorParent.pass
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
     Passes/MSAAResolveDepth.pass
+    Passes/OpaqueParent.pass
+    Passes/PostProcessParent.pass
     Passes/RayTracingAccelerationStructure.pass
     Passes/ReflectionComposite.pass
     Passes/ReflectionCopyFrameBuffer.pass
@@ -131,6 +173,7 @@ set(FILES
     Passes/ReflectionScreenSpaceBlurVertical.pass
     Passes/ReflectionScreenSpaceComposite.pass
     Passes/ReflectionScreenSpaceTrace.pass
+    Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
@@ -145,7 +188,9 @@ set(FILES
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
     Passes/Transparent.pass
+    Passes/TransparentParent.pass
     Passes/UI.pass
+    Passes/UIParent.pass
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
     ShaderLib/Atom/Features/ParallaxMapping.azsli

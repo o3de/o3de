@@ -21,7 +21,6 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
@@ -243,13 +242,27 @@ namespace AZ
             return ShaderOptionGroup(m_asset->GetShaderOptionGroupLayout());
         }
 
+        const ShaderVariant& Shader::GetVariant(const ShaderVariantId& shaderVariantId)
+        {
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            Data::Asset<ShaderVariantAsset> shaderVariantAsset = m_asset->GetVariant(shaderVariantId);
+            if (!shaderVariantAsset || shaderVariantAsset->IsRootVariant())
+            {
+                return m_rootVariant;
+            }
+
+            return GetVariant(shaderVariantAsset->GetStableId());
+        }
+
+        const ShaderVariant& Shader::GetRootVariant()
+        {
+            return m_rootVariant;
+        }
 
         ShaderVariantSearchResult Shader::FindVariantStableId(const ShaderVariantId& shaderVariantId) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             ShaderVariantSearchResult variantSearchResult = m_asset->FindVariantStableId(shaderVariantId);
-            //Record the request for metrics.
-            ShaderMetricsSystem::Get()->RequestShaderVariant(m_asset.Get(), shaderVariantId, variantSearchResult);
             return variantSearchResult;
         }
 
@@ -268,9 +281,10 @@ namespace AZ
                 auto findIt = m_shaderVariants.find(shaderVariantStableId);
                 if (findIt != m_shaderVariants.end())
                 {
-                    // When rebuilding shaders we may be in a state where the ShaderAsset and root ShaderVariantAsset have been rebuilt and reloaded, but some (or all)
-                    // shader variants haven't been built yet. Since we want to use the latest version of the shader code, ignore the old variants and fall back to the newer root variant instead.
-                    // There's no need to report a warning here because m_asset->GetVariant below will report one.
+                    // When rebuilding shaders we may be in a state where the ShaderAsset and root ShaderVariantAsset have been rebuilt and
+                    // reloaded, but some (or all) shader variants haven't been built yet. Since we want to use the latest version of the
+                    // shader code, ignore the old variants and fall back to the newer root variant instead. There's no need to report a
+                    // warning here because m_asset->GetVariant below will report one.
                     if (findIt->second.GetShaderAssetBuildTimestamp() == m_asset->GetShaderAssetBuildTimestamp())
                     {
                         return findIt->second;
@@ -283,7 +297,7 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = m_asset->GetVariant(shaderVariantStableId);
             if (!shaderVariantAsset || shaderVariantAsset == m_asset->GetRootVariant())
             {
-                //Return the root variant when the requested variant is not ready.
+                // Return the root variant when the requested variant is not ready.
                 return m_rootVariant;
             }
 
@@ -303,11 +317,13 @@ namespace AZ
                     // This is probably very rare, but if the variant was loaded on another thread and it's out of date
                     // we just return the root variant. Otherwise we could end up replacing the variant in the map below while
                     // it's being used for rendering.
-                    AZ_Warning("Shader", false, "Detected an uncommon state during shader reload. Returning the root variant instead of replacing the old one.");
+                    AZ_Warning(
+                        "Shader", false,
+                        "Detected an uncommon state during shader reload. Returning the root variant instead of replacing the old one.");
                     return m_rootVariant;
                 }
             }
-            
+
             ShaderVariant newVariant;
             newVariant.Init(*m_asset, shaderVariantAsset);
             m_shaderVariants.emplace(shaderVariantStableId, newVariant);

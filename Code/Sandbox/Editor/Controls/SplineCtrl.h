@@ -70,7 +70,7 @@ public:
     void SetTimelineCtrl(TimelineWidget* pTimelineCtrl);
     void UpdateToolTip();
 
-    typedef Functor1<CSplineCtrl*> UpdateCallback;
+    typedef AZStd::function<void(CSplineCtrl*)> UpdateCallback;
     void SetUpdateCallback(UpdateCallback cb) { m_updateCallback = cb; };
 
 Q_SIGNALS:

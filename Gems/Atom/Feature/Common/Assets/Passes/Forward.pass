@@ -7,6 +7,7 @@
             "Name": "ForwardPassTemplate",
             "PassClass": "RasterPass",
             "Slots": [
+                // Inputs...
                 {
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
@@ -50,11 +51,6 @@
                     }
                 },
                 {
-                    "Name": "DepthStencilInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
-                },
-                {
                     "Name": "TileLightData",
                     "SlotType": "Input",
                     "ShaderInputName": "m_tileLightData",
@@ -66,6 +62,13 @@
                     "ShaderInputName": "m_lightListRemapped",
                     "ScopeAttachmentUsage": "Shader"
                 },
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                // Outputs...
                 {
                     "Name": "DiffuseOutput",
                     "SlotType": "Output",

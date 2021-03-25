@@ -81,15 +81,8 @@ namespace CommandSystem
         EMotionFX::Importer::ActorSettings settings;
 
         // extract default values from the command syntax automatically, if they aren't specified explicitly
-        settings.mLoadMeshes                    = parameters.GetValueAsBool("loadMeshes",           this);
-        settings.mLoadTangents                  = parameters.GetValueAsBool("loadTangents",         this);
-        settings.mAutoGenTangents               = parameters.GetValueAsBool("autoGenTangents",      this);
         settings.mLoadLimits                    = parameters.GetValueAsBool("loadLimits",           this);
-        settings.mLoadGeometryLODs              = parameters.GetValueAsBool("loadGeomLods",         this);
         settings.mLoadMorphTargets              = parameters.GetValueAsBool("loadMorphTargets",     this);
-        settings.mLoadCollisionMeshes           = parameters.GetValueAsBool("loadCollisionMeshes",  this);
-        settings.mLoadStandardMaterialLayers    = parameters.GetValueAsBool("loadMaterialLayers",   this);
-        settings.mLoadSkinningInfo              = parameters.GetValueAsBool("loadSkinningInfo",     this);
         settings.mLoadSkeletalLODs              = parameters.GetValueAsBool("loadSkeletalLODs",     this);
         settings.mDualQuatSkinning              = parameters.GetValueAsBool("dualQuatSkinning",     this);
 
@@ -100,6 +93,9 @@ namespace CommandSystem
             outResult = AZStd::string::format("Failed to load actor from '%s'. File may not exist at this path or may have incorrect permissions", filename.c_str());
             return false;
         }
+
+        actor->LoadRemainingAssets();
+        actor->CheckFinalizeActor();
 
         // set the actor id in case we have specified it as parameter
         if (actorID != MCORE_INVALIDINDEX32)
@@ -120,8 +116,6 @@ namespace CommandSystem
             GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorID %i", actor->GetID()).c_str(), outResult);
         }
 
-        // update our render actors
-        GetCommandManager()->ExecuteCommandInsideCommand("UpdateRenderActors", outResult);
 
         // mark the workspace as dirty
         mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();

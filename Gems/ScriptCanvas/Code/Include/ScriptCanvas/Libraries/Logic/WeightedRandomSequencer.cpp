@@ -29,6 +29,17 @@ namespace ScriptCanvas
             // WeightedRandomSequencer
             ////////////////////////////
 
+
+            AZ::Outcome<DependencyReport, void> WeightedRandomSequencer::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport());
+            }
+
+            SlotsOutcome WeightedRandomSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot& , CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            {
+                return AZ::Success(GetSlotsByType(targetSlotType));
+            }
+
             void WeightedRandomSequencer::ReflectDataTypes(AZ::ReflectContext* reflectContext)
             {
                 if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))

@@ -1,4 +1,5 @@
 {
+    "gem_name": "CameraFramework",
     "Dependencies": [
         {
             "Uuid": "f910686b6725452fbfc4671f95f733c6", 

@@ -29,7 +29,7 @@
 #include <Core/Node.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/QtMetaTypes.h>
 
 #include <ScriptCanvas/Bus/RequestBus.h>
@@ -95,7 +95,7 @@ namespace
             ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
 
             NodeIdPair nodePair = ScriptCanvasEditor::Nodes::CreateNode(type, scriptCanvasId, styleConfiguration);
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, pos);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, pos, false);
 
             // The next position to create a node at.
             // IMPORTANT: This SHOULD be using GraphCanvas::GeometryRequests::GetWidth, but

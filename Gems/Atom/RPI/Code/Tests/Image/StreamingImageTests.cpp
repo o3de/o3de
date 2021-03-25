@@ -45,8 +45,7 @@ namespace AZ
         public:
             StreamingImageAssetTester()
             {
-                // enable load referenced mip chains  
-                static_cast<RPI::StreamingImageAssetHandler*> (m_assetHandler)->SetLoadMipChainsEnabled(true);
+
             }
             void SetAssetReady(Data::Asset<StreamingImageAsset>& asset) override
             {

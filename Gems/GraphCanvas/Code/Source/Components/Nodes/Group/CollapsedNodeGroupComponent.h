@@ -25,11 +25,38 @@
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/Utils/GraphUtils.h>
+#include <GraphCanvas/Utils/StateControllers/StackStateController.h>
 
 #include <GraphCanvas/Editor/EditorTypes.h>
 
 namespace GraphCanvas
 {
+    class RedirectedSlotWatcher
+        : public NodeNotificationBus::MultiHandler
+    {
+    public:
+        RedirectedSlotWatcher() = default;
+        ~RedirectedSlotWatcher();
+
+        void ConfigureWatcher(const AZ::EntityId& collapsedGroupId);
+
+        void RegisterEndpoint(const Endpoint& sourceEndpoint, const Endpoint& remappedEndpoint);
+
+        // NodeNotificationBus
+        void OnNodeAboutToBeDeleted() override;
+
+        void OnSlotRemovedFromNode(const AZ::EntityId& slotId) override;
+        ////
+
+    private:
+
+        void OnEndpointRemoved(Endpoint endpoint);
+
+        AZStd::unordered_map<Endpoint, Endpoint> m_endpointMapping;
+
+        AZ::EntityId m_collapsedGroupId;
+    };
+
     // Node that represents a Node Group that has been collapsed.
     //
     // Will handle generating remapping the connections that cross over the visual border.
@@ -42,6 +69,8 @@ namespace GraphCanvas
         , public SceneNotificationBus::Handler
         , public VisualNotificationBus::Handler
         , public CollapsedNodeGroupRequestBus::Handler
+        , public GroupableSceneMemberNotificationBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_COMPONENT(CollapsedNodeGroupComponent, "{FFA874A1-0D14-4BF9-932D-FE1A285506E6}", GraphCanvasPropertyComponent);
@@ -58,6 +87,10 @@ namespace GraphCanvas
         void Activate() override;
         void Deactivate() override;
         ////
+
+        // SystemTickBus
+        void OnSystemTick() override;
+        ////
         
         // NodeNotifications
         void OnAddedToScene(const GraphId& graphId) override;
@@ -65,6 +98,7 @@ namespace GraphCanvas
         ////
 
         // GeometryNotifications
+        void OnBoundsChanged();
         void OnPositionChanged(const AZ::EntityId& targetEntity, const AZ::Vector2& position) override;
         ////
 
@@ -86,11 +120,30 @@ namespace GraphCanvas
         void ExpandGroup() override;
 
         AZ::EntityId GetSourceGroup() const override;
+
+        AZStd::vector< Endpoint > GetRedirectedEndpoints() const;
+        void ForceEndpointRedirection(const AZStd::vector< Endpoint >& endpoints) override;
+        ////
+
+        // GroupableSceneMemberNotifications
+        void OnGroupChanged() override;
+        ////
+
+        // SceneMemberNotifications
+        void OnSceneMemberHidden() override;
+        void OnSceneMemberShown() override;
         ////
         
     private:
 
-        void CreateOccluder(const GraphId& graphId, bool isExpanding);
+        void SetupGroupPosition(const GraphId& graphId);
+
+        void CreateOccluder(const GraphId& graphId, const AZ::EntityId& initialElement);
+
+        void TriggerExpandAnimation();
+        void TriggerCollapseAnimation();
+
+        void AnimateOccluder(bool isExpanding);
 
         void ConstructGrouping(const GraphId& graphId);
         void ReverseGrouping(const GraphId& graphId);
@@ -98,21 +151,39 @@ namespace GraphCanvas
         void MoveGroupedElementsBy(const AZ::Vector2& offset);
         void MoveSubGraphBy(const GraphSubGraph& subGraph, const AZ::Vector2& offset);
 
-        void OnAnimationFinished();        
+        void OnAnimationFinished();
 
         SlotId CreateSlotRedirection(const GraphId& graphId, const Endpoint& slotId);
         SlotId InitializeRedirectionSlot(const SlotRedirectionConfiguration& configuration);
 
+        void UpdateSystemTickBus();
+
+        AZStd::unordered_set< Endpoint > m_forcedRedirections;
         AZStd::vector< SlotRedirectionConfiguration > m_redirections;
         SubGraphParsingResult m_containedSubGraphs;
     
         AZ::EntityId m_nodeGroupId;
 
+        // Counter for how many frames to delay before beginning animations
+        int m_animationDelayCounter;
+
+        // Indicates if we are expanding in our animation or not.
+        bool m_isExpandingOccluderAnimation;
+
+        // Counter for how many frames to delay before destroying the occluder after the expansion animation.
+        int m_occluderDestructionCounter;
+
         bool         m_unhideOnAnimationComplete;
         bool         m_deleteObjects;
 
         bool         m_positionDirty;
-        bool         m_ignorePositionChanges;
+
+        RedirectedSlotWatcher m_redirectedSlotWatcher;
+
+        StackStateController<bool> m_ignorePositionChanges;
+        StateSetter<bool> m_memberHiddenStateSetter;
+        StateSetter<bool> m_memberDraggedStateSetter;
+
         AZ::Vector2  m_previousPosition;
 
         GraphicsEffectId m_effectId;

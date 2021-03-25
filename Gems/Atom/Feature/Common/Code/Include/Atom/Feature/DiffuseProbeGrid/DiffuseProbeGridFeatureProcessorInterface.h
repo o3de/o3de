@@ -43,6 +43,7 @@ namespace AZ
             virtual void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) = 0;
             virtual void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) = 0;
             virtual void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) = 0;
+            virtual void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) = 0;
         };
     } // namespace Render
 } // namespace AZ

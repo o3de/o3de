@@ -199,7 +199,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
@@ -218,10 +218,10 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto jointRootIndex = actor->AddJoint(JointRootName);
-            actor->SetMesh(LodLevel, jointRootIndex, CreateEMotionFXMesh(jointRootIndex, MeshVertices, MeshIndices, {}, MeshUVs));
+            actor->SetMesh(LodLevel, jointRootIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs));
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
@@ -241,10 +241,10 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
@@ -272,10 +272,10 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, {}, MeshUVs, meshClothDataNoBackstop));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, meshClothDataNoBackstop));
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         const auto& meshNodesWithBackstopData = editorClothComponent->GetMeshNodesWithBackstopData();
@@ -294,10 +294,10 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         const auto& meshNodesWithBackstopData = editorClothComponent->GetMeshNodesWithBackstopData();
@@ -317,10 +317,10 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(meshNodeIndex, MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
             actor->FinishSetup();
 
-            editorActorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         editorClothComponent->OnMeshDestroyed();

@@ -32,7 +32,9 @@ def build_ios_test(build_dir, configuration):
     command_line_arguments = ['build-for-testing',
                               '-project', 'Lumberyard.xcodeproj',
                               '-scheme', SCHEME_NAME,
-                              '-configuration', configuration]
+                              '-configuration', configuration,
+                              '-allowProvisioningUpdates',
+                              '-allowProvisioningDeviceRegistration']
                               
     xcode_out = xcode_build.popen(command_line_arguments, cwd=build_path, shell=False)
     while xcode_out.poll() is None:

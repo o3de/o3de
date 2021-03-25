@@ -662,7 +662,7 @@ void CDatabaseFrameWnd::DoesItemExist(const QString& itemName, bool& bOutExist) 
     bOutExist = false;
 }
 
-QString CDatabaseFrameWnd::MakeValidName(const QString& candidateName, Functor2<const QString&, bool&> FuncForCheck) const
+QString CDatabaseFrameWnd::MakeValidName(const QString& candidateName, AZStd::function<void(const QString&, bool&)> FuncForCheck) const
 {
     bool bCheck = false;
     FuncForCheck(candidateName, bCheck);

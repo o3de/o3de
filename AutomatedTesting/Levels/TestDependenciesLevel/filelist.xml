@@ -1,0 +1,6 @@
+<download name="TestDependenciesLevel" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="43382" md5="052a5c022ddb134f88f24182a978ad2d"/>
+ </files>
+</download>

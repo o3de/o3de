@@ -36,6 +36,9 @@ namespace AZ
             /// Only available if the underlaying buffer bind flags is ShaderRead or ShaderWrite
             VkBufferView GetNativeTexelBufferView() const;
 
+            /// Only valid for buffers with the RayTracingAccelerationStructure bind flag
+            VkAccelerationStructureKHR GetNativeAccelerationStructure() const;
+
         private:
             BufferView() = default;
 
@@ -54,6 +57,7 @@ namespace AZ
             RHI::ResultCode BuildNativeBufferView(Device& device, const Buffer& buffer, const RHI::BufferViewDescriptor& descriptor);
 
             VkBufferView m_nativeBufferView = VK_NULL_HANDLE;
+            VkAccelerationStructureKHR m_nativeAccelerationStructure = VK_NULL_HANDLE;
         };
 
     }

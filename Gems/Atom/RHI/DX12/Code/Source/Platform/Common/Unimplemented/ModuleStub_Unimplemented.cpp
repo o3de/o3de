@@ -20,7 +20,7 @@ namespace AZ
             : public AZ::Module
         {
         public:
-            AZ_RTTI(PlatformModule, "{A5C04CF5-715E-4456-ABF3-A8DB30868D77}", AZ::Module);
+            AZ_RTTI(PlatformModule, "{6AA25C53-C451-42DD-B2CA-08623869EBDD}", AZ::Module);
 
             PlatformModule() = default;
             ~PlatformModule() override = default;

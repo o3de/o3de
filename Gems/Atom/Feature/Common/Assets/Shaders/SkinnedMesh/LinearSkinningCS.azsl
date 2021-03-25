@@ -10,6 +10,7 @@
 *
 */
 #include "LinearSkinningPassSRG.azsli"
+#include <Atom/Features/MorphTargets/MorphTargetCompression.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/RPI/Math.azsli>
 
@@ -17,9 +18,25 @@
 option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
 
-float DecodeIntToFloat(int i)
+void ApplyMorphTargetDelta(uint streamOffset, uint vertexIndex, inout float3 modifiedValue)
 {
-    return float(i) / InstanceSrg::m_morphTargetDeltaIntegerEncoding;
+    // Get the start of the current delta
+    uint offset = streamOffset + vertexIndex * 3;
+
+    // Read in the encoded deltas
+    uint3 encodedInts;
+    encodedInts.x = asint(PassSrg::m_skinnedMeshOutputStream[offset]);
+    encodedInts.y = asint(PassSrg::m_skinnedMeshOutputStream[offset + 1]);
+    encodedInts.z = asint(PassSrg::m_skinnedMeshOutputStream[offset + 2]);
+
+    // Since we're done reading, re-set the accumulation to 0 for the next frame
+    PassSrg::m_skinnedMeshOutputStream[offset] = asfloat(0);
+    PassSrg::m_skinnedMeshOutputStream[offset + 1] = asfloat(0);
+    PassSrg::m_skinnedMeshOutputStream[offset + 2] = asfloat(0);
+    
+    // Now decode and apply the delta
+    float3 decodedFloats = DecodeIntsToFloats(encodedInts, InstanceSrg::m_morphTargetDeltaInverseIntegerEncoding);
+    modifiedValue += decodedFloats;
 }
 
 //! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space based on MikkT conventions.
@@ -121,32 +138,24 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             return;
         }
 
-        float3 position;
-        position.x = InstanceSrg::m_sourcePositions[i * 3];
-        position.y = InstanceSrg::m_sourcePositions[i * 3 + 1];
-        position.z = InstanceSrg::m_sourcePositions[i * 3 + 2];
+        float3 position = InstanceSrg::m_sourcePositions[i];
+        float3 normal = InstanceSrg::m_sourceNormals[i];        
+        float4 tangent = InstanceSrg::m_sourceTangents[i];        
+        float3 bitangent = InstanceSrg::m_sourceBiTangents[i];
         
-        int4 blendIndices;
-        blendIndices.x = InstanceSrg::m_sourceBlendIndices[i * 4];
-        blendIndices.y = InstanceSrg::m_sourceBlendIndices[i * 4 + 1];
-        blendIndices.z = InstanceSrg::m_sourceBlendIndices[i * 4 + 2];
-        blendIndices.w = InstanceSrg::m_sourceBlendIndices[i * 4 + 3];
+        // Four indices, 16-bits each, stored in 2 32-bit uints
+        uint2 rawIndices = InstanceSrg::m_sourceBlendIndices.Load2(i * 8);
+
+        uint4 blendIndices;
+        // Although the first index in each 32-bit pair is in the most significant bits in the cpu buffer,
+        // the indices get swapped within the 32-bit uint when they are loaded so we treat them
+        // as if the first index is in the least significant bits
+        blendIndices.x = rawIndices.x >> 16;
+        blendIndices.y = rawIndices.x & 0x0000FFFF;
+        blendIndices.z = rawIndices.y >> 16;
+        blendIndices.w = rawIndices.y & 0x0000FFFF;
         
-        float3 normal;
-        normal.x = InstanceSrg::m_sourceNormals[i * 3];
-        normal.y = InstanceSrg::m_sourceNormals[i * 3 + 1];
-        normal.z = InstanceSrg::m_sourceNormals[i * 3 + 2];
-        
-        float4 tangent;
-        tangent.x = InstanceSrg::m_sourceTangents[i * 4];
-        tangent.y = InstanceSrg::m_sourceTangents[i * 4 + 1];
-        tangent.z = InstanceSrg::m_sourceTangents[i * 4 + 2];
-        tangent.w = InstanceSrg::m_sourceTangents[i * 4 + 4];
-        
-        float3 bitangent;
-        bitangent.x = InstanceSrg::m_sourceBiTangents[i * 3];
-        bitangent.y = InstanceSrg::m_sourceBiTangents[i * 3 + 1];
-        bitangent.z = InstanceSrg::m_sourceBiTangents[i * 3 + 2];
+
         // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
         PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
         PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
@@ -154,14 +163,10 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
 
         if(o_applyMorphTargets)
         {
-            position.x += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3]));
-            position.y += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 1]));
-            position.z += DecodeIntToFloat(asint(PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 2]));
-
-            // Since we're done reading, re-set the accumulation to 0 for the next frame
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3] = asfloat(0);
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 1] = asfloat(0);
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_morphTargetDeltaOffset + i * 3 + 2] = asfloat(0);
+            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetPositionDeltaOffset, i, position);
+            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetNormalDeltaOffset, i, normal);
+            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetTangentDeltaOffset, i, tangent.xyz);
+            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetBitangentDeltaOffset, i, bitangent);
         }
         
         switch(o_skinningMethod)

@@ -75,6 +75,7 @@ namespace AZ
                 AZStd::vector<VkDescriptorBufferInfo> m_bufferViewsInfo;
                 AZStd::vector<VkDescriptorImageInfo> m_imageViewsInfo;
                 AZStd::vector<VkBufferView> m_texelBufferViews;
+                AZStd::vector<VkAccelerationStructureKHR> m_accelerationStructures;
             };
 
             DescriptorSet() = default;

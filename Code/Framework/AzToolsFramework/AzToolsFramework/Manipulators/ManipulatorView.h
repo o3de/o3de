@@ -36,8 +36,16 @@ namespace AzToolsFramework
     struct ManipulatorState
     {
         AZ::Transform m_worldFromLocal;
+        AZ::Vector3 m_nonUniformScale;
         AZ::Vector3 m_localPosition;
         bool m_mouseOver;
+
+        /// Transforms a point, taking non-uniform scale into account.
+        AZ::Vector3 TransformPoint(const AZ::Vector3& point) const;
+
+        /// Rotates a direction into the space of the manipulator and normalizes it.
+        /// Non-uniform scaling and translation are not applied.
+        AZ::Vector3 TransformDirectionNoScaling(const AZ::Vector3& direction) const;
     };
 
     /// The base interface for the visual representation of manipulators.
@@ -347,6 +355,9 @@ namespace AzToolsFramework
     /// @brief Return the world transform of the entity with uniform scale - choose
     /// the largest element.
     AZ::Transform WorldFromLocalWithUniformScale(AZ::EntityId entityId);
+
+    /// Get the non-uniform scale for this entity id.
+    AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId);
 
     // Helpers to create various manipulator views.
 

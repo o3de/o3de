@@ -23,7 +23,7 @@ class TestTerminalReport(object):
 
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.build_rerun_commands')
     def test_AddCommands_MockCommands_CommandsAdded(self, mock_build_commands):
-        mock_build_commands.side_effect = lambda path, nodes: nodes
+        mock_build_commands.side_effect = lambda path, nodes, dir: nodes
         mock_reporter = mock.MagicMock()
         header = 'This is a header'
         test_path = 'Foo'
@@ -55,8 +55,9 @@ class TestTerminalReport(object):
     def test_TerminalSummary_NoErrorsNoFailures_EmptyReport(self, mock_add_commands):
         mock_report = mock.MagicMock()
         mock_report.stats.get.return_value = []
+        mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, 0)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_add_commands.assert_not_called()
         mock_report.config.getoption.assert_not_called()
@@ -68,8 +69,9 @@ class TestTerminalReport(object):
         mock_node = mock.MagicMock()
         mock_node.nodeid = 'something'
         mock_report.stats.get.return_value = [mock_node, mock_node]
+        mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, 0)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         assert len(mock_add_commands.mock_calls) == 2
         mock_report.config.getoption.assert_called()
@@ -84,8 +86,9 @@ class TestTerminalReport(object):
         node_id = os.path.join('C:', mock_base)
         mock_node.nodeid = node_id
         mock_report.stats.get.side_effect = [[mock_node], []]  # first item is failure list
+        mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, 0)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_basename.assert_called_with(node_id)
 
@@ -98,8 +101,9 @@ class TestTerminalReport(object):
         node_id = os.path.join('C:', mock_base)
         mock_node.nodeid = node_id
         mock_report.stats.get.side_effect = [[], [mock_node]]  # second item is error list
+        mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, 0)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_basename.assert_called_with(node_id)
 

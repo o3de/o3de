@@ -30,7 +30,7 @@ namespace AzToolsFramework
             virtual bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) = 0;
 
             //! Generates a prefabdom for the instance in its current state and places the result in generatedDom
-            virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) = 0;
+            virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Instance& instance) = 0;
 
             //! Generates a patch using serialization system and places the result in generatedPatch
             virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) = 0;
@@ -41,6 +41,8 @@ namespace AzToolsFramework
 
             //! Updates the affected template for a given entityId using the providedPatch
             virtual void PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId) = 0;
+
+            virtual void PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId) = 0;
 
             //! Updates the template links (updating instances) for the given templateId using the providedPatch
             virtual void PatchTemplate(PrefabDomValue& providedPatch, const AzToolsFramework::Prefab::TemplateId& templateId) = 0;

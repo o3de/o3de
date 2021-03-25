@@ -1,0 +1,675 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+  
+  
+  <title>cryTools: CryRiggingTools</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: CryRiggingTools </h1>
+
+
+<span style="font-family: Arial;"></span>
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; margin-right: 1em; width: 204px; height: 1495px; float: left;" src="images/riggingTools.png" alt="CryRiggingTools Rollout">
+</p>
+
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);">Internal Tools <small>(some deprecated)</small></h2>
+
+
+<span style="font-family: Arial;">This tools rollout only shows up if the <span style="font-weight: bold;">DOMAIN</span> is set as <span style="font-weight: bold;">INTERN.CRYTEK.DE</span>
+(in the cryTools Control Panel you can see your DOMAIN). These tools
+are not secret in any way, they are just quick hacks to make it easier
+for artists, animators and TDs to fix issues more easily, and deal with
+certain project-specific rigs. </span><span style="font-family: Arial;">Even if you are not in the Crytek offices you can easily enable this code or learn from it, </span><span style="font-family: Arial;">or you can just check out how we patched different problems.<br>
+<br>
+<span style="font-weight: bold; color: rgb(255, 0, 0);">TechNote:</span> Arrrr, these be untested waters with monsters abound! Wear a helmet.<br style="font-family: Arial;">
+</span>
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial; font-weight: bold;">Helper Joints</span></h3>
+
+
+<span style="font-family: Arial;">This primarily deals with the Crysis
+NanoSuit helper joints, but also covers knees, breasts, and others.
+Hide/Show Helper Joints will hide and unhide the joints. Select Helper
+Joints will select them and Unselect Helper Joints will deselect them.</span><br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial; font-weight: bold;">File Fixes/Cleanup</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">Mirror Weapon Bone</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This mirrors and correctly orients
+the right weapon bone to the left and renames the new one
+alt_weapon_bone01. At the start of Crysis characters only had one
+weapon bone (in the right hand), mid way through we decided that we
+would add another weapon bone in the left hand.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Select New Attachment Points</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">When pressed with nothing checked,
+this simply selects the new weapon attachment points. With delete\add
+checked, it either adds the new attachment points, or if they are
+present, deletes them. With hide\show checked it will hide them, or
+show them if they are hidden. After a year and a half of Crysis
+development, we decided to add many weapon attachment points to every
+human character in the game, that's why this tool was written, the
+attachment points added are:</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Courier;">weaponPos_hurricane</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_law</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_rifle01</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_rifle02</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_pistol_L_leg</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_pistol_R_leg</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_pistol_L_hip</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_pistol_R_hip</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_grenade_L_hip</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">weaponPos_grenade_R_hip</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold; color: rgb(255, 0, 0);">TechNote: </span>The weapon positions are loaded from the following max file: <span style="font-weight: bold;">Tools\maxscript\ref\weapon_positions.max</span></span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial; font-weight: bold;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Wire FP Hands Twist Bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This wires up and procedurally drives
+twist bones on the Crysis first person arms. When we were pretty far
+into development we decided twist bones were needed for correct
+pronation/supination of the first person arms. The wiring allowed the
+current animation assets to drive the twist bones.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Comment out Nub Bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">We have many 'nub' bones in our rigs,
+these are old holdovers from the Physique era. A nub bone was used to
+create a physique link, the same way some rigs have 'end' bones. When
+you press this button, the tool will search your scene for the
+following named nodes and replace them thusly:</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Courier;">Bip01 HeadNub - _Bip01 HeadNub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Finger0Nub - _Bip01 R Finger0Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Finger1Nub - _Bip01 R Finger1Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Finger2Nub - _Bip01 R Finger2Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Finger3Nub - _Bip01 R Finger3Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Finger4Nub - _Bip01 R Finger4Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Finger0Nub - _Bip01 L Finger0Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Finger1Nub - _Bip01 L Finger1Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Finger2Nub - _Bip01 L Finger2Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Finger3Nub - _Bip01 L Finger3Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Finger4Nub - _Bip01 L Finger4Nub</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 L Heel - _Bip01 L Heel</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01 R Heel - _Bip01 R Heel</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01LToeHelper - _Bip01LToeHelper</span><br style="font-family: Courier;">
+
+
+<span style="font-family: Courier;">Bip01RToeHelper - _Bip01RToeHelper</span><br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Locomotion Manager</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">Extract Data to LocoMan Node</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">When pressed, this steps through all
+the frames of the current biped animation and adds a spedcial 'locoMan'
+node that the engine uses to get data about the characters movement and
+look direction. The node itself looks like a circle around the hips of
+the character (or on the ground) with an arrow breaking through it. The
+following check boxes effect how the node is created:</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Lock to X/Y </span>- This will lock the node to the X or Y axis.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Ignore Root Rotation</span> - This will disable Use Head for Direction and Use Root for Direction, and the locoman node will not rotate at all.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial; font-weight: bold;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Restrict to Ground Plane</span> - This will restrict the locoMan node to a Z height of 0, or stick it to the flat ground plane during the animation.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Use Head for Direction</span>
+- This will use the head of the character to point the locoMan node
+(you assume that the character is looking the direction you want him to
+be facing (useful for most instances the root would mess up (like
+prone))</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Use Root for Direction </span>- This will use the pelvis orientation to generate a locoMan node direction.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Freeze and Lock </span>- When checked this will freeze and lock the locator, if you want to refine it's motion by hand, do not leave this checked.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Remove Unwanted Bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">When you press this button it will
+either remove bones from the Skin modifier of the currently selected
+node, or delete them, depending on which checkbox is selected. The
+bones removed or deleted are any bones commented out of export ('_'
+prefix) and *nub bones.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Rigging Tools</span></h2>
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">General Tools</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">matchPivot</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Select two objects. When you press this button it will snap the pivot of the second object to that of the first.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">zeroOut Rots</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This is a bread and butter tool for
+TDs. When you press this, it inserts a point helper in the hierarchy
+between the currently selected node and it's parent effectively zeroing
+out the selected node's rotations. The new node created has the current
+node's name + 'ZERO', example: Bip01 R Hand Phys would have a helper
+inserted called Bip01 R Hand PhysZERO. This works for any number of
+selected objects.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Clamp Timeline at Current/Last</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This clamps the timeline at the
+current key, if you click 'At Last Key' it will clamp the timeline at
+the last keyframe of the currently selected object.</span><br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Biped Tools</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">Figure Mode / Hide Biped [Toggles]</span><span style="font-family: Arial;"><br>
+
+
+These two checkbuttons are toggles, meaning that when you press 'Figure
+Mode' it stays hilighted for the duration that the characte is in
+figure mode. 'Hide Biped is one of the most used buttons in the entire
+Aniamtion toolset; it just hides the entire skeleton.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Bip Motion Menu</span><span style="font-family: Arial;"><br>
+
+
+This takes you to the motion menu tab for the current biped loaded in the tools.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Select Biped Bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Selects the original biped skeleton,
+and ignores any extra helper bones that have been added. Useful when
+you want to load up a pose or do some motion panel operation to all the
+original biped bones. (motion panel biped options will not load if a
+single non-original biped bone is in the current selection)</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Toggle In Place Mode [Toggle]</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Clikcing the 'In place Mode' toggle
+will turn on In Place Mode, which constrains the motion on X and Y,
+however, pressing 'X or Y will constrain the motion to only the
+selected axis.<br>
+</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Convert Biped to Bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This will essentially snapshot out the biped to normal nodes that are no longer Biped related, yet keeping the hierarchy.</span><br>
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Rotate Bind Pose</span></h3>
+
+
+<span style="font-family: Arial;">This will rotate <span style="font-weight: bold;">Skinned</span>
+characters an arbitrary rotation, updating the initial skeletal
+positions. It does this by saving the weights, removing skin, rotating
+the character and the skel, reset xforming the char, then reapplying
+skin and the weights.</span><br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Bone Tools</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">Adjust Bones</span><span style="font-family: Arial;"><br>
+</span><span style="font-family: Arial;">This allows you to change the Taper, Width, and Height of any selected bones; great for bone chains, ropes, and tentacles!</span><br style="font-family: Arial;">
+
+
+<br>
+<span style="font-family: Arial; font-weight: bold;">Convert hierarchy to Bones</span><span style="font-family: Arial;"><br>
+</span><span style="font-family: Arial;">This will convert a node hierarchy to max bones matching their orientations, positions and hierarchy. '<span style="font-weight: bold;">fromSelected</span>' will generate a hierarchy from the selected node down through all it's children. '<span style="font-weight: bold;">fromRoot</span>' will find the root of the selected node and then convert all it's children to max bones.</span><br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Vertex Tools</span></h3>
+
+
+<span style="font-family: Arial;">This is very much a work in progress.
+The exporter cannot currently export arbitrary channels of vertex
+colors, but when we can, you can use this to create multiple vertex
+color channels per object. ChannelInfo brings up the channel info
+spreadsheet so that you can see all the vertex channels. vertexColors
+is a toggle that enables/disables vertex color shaded mode. Add
+cryChannel to Selected will add a channel named 'cry' to the selected
+object, you can store various data here for export.</span><br style="font-family: Arial;">
+
+
+<br>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Physics Setup</span></h2>
+
+
+
+
+<span style="font-family: Arial; font-weight: bold;">Create Phys Skeleton</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This will create a Phys skeleton from a currently selected skeleton. Just select one node in the skeleton, and press the button.<br>
+<br>
+</span><span style="font-family: Arial; font-weight: bold;">Create Parent Frame</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This will generate a ParentFrame for
+the currently selected node, set it above the node in the hierarchy,
+name it appropriately, and hide it.<br>
+<br style="font-family: Arial;">
+</span>
+
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Diagnostic Tools</span></h2>
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">General Diagnostics</span></h3>
+
+
+<span style="font-family: Arial; font-weight: bold;">selectRoot/selectChildren</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">With an object selected selectRoot
+will traverse the hierarchy and select the root of the object's
+hierarchy, whereas selectChildren will select all children of the
+current object.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">numChildren [print]</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">When pressed, this will echo out the
+number of children of a currently selected node. When 'print' is
+checked, it will export the names of all children nodes in an
+excel-friendly format. This is very useful for comparing and
+troubleshooting two character hierarchies.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Compare Two Hierarchies</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Select a root object, then press
+'Hierarchy1, then select another root who's hierarchy you would like to
+compare and press 'Hierarchy2', any differences in the hierarchies will
+be printed to the Listener. The hierarchies are stored as global vars,
+so you can click one hierarchy and even load another max file or
+character to compare. 'Check Consistency' will check the hierarchy
+structure and report any inconsistencies.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Physique Diagnostics <small>(removed, exist but commented)</small></span></h3>
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold; color: rgb(255, 0, 0);">TechNote:</span> This requires the Iphysique (IPhysique.gup) maxscript exposure from the Autodesk Sparks website</span><span style="font-family: Arial; font-weight: bold;"><br>
+
+
+<br>
+
+
+Select Verts that use X bones</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This will select vertices in the selected node that use the input number of bones.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Get Bone Count</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This returns the number of bones that
+are effecting the selected object's mesh. Not to be confused with the
+number of bones a character has. With Character Studio, you need to
+have a lot of terminator bones that are often not exported, and have no
+weights. This returns all bones weighted to the mesh.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Initial Pose</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">This shows the initial pose stored by
+Physique at the time the physique modifier is applied. Very useful when
+troubleshooting exporter issues.</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial; font-weight: bold;">Select Verts with 0.0 weight</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Selects vertices where the sum of their weights is 0.0</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Animation Diganostics <small>(removed, exist but commented)</small></span></h3>
+
+
+<span style="font-family: Arial;">Sometimes you will need to output
+character position data or translation data. For instance, AI may want
+to know how far a character moves out from behind cover in an
+animation, or how high the root is when he is in prone or behind cover.
+When you press ?Get Weapon\Root Info? the POS and TRANS boxes will
+refresh with data. The POS values are the world Z position (how high)
+in cm of the main weapon bone weapon_bone and the root. The TRANS data
+is the world translation of the weapon_bone and root during the
+animation. You can log this data to a file or to the listener, the
+logged info is a bit more detailed. (alt weapon bones or arbitrary
+objects) Here is an example of the logged data:</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">combat_peekIdle_rifle_rightReverse_01</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">POSITION</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Frame: 0f (hiding)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">root 88.846977</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">weapon_bone 101.276</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">alt_weapon_bone01 101.601</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">Frame: 13f (firing)</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">root 88.846977</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">weapon_bone 105.406</span><br style="font-family: Arial;">
+
+
+<span style="font-family: Arial;">alt_weapon_bone01 110.632</span><br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<h3 style="background-color: rgb(225, 225, 225);"><span style="font-family: Arial;">Attachment\Game Diagnostics <small>(deprecated, you should now use Character Editor for creating attachments)</small></span></h3>
+
+
+<span style="font-family: Arial;">allows us to align Bone Attachments
+in Max and export them to Character Editor (which can be extremely
+useful for eyes, and constantly changing aliens). Select an object to
+be added to the CDF, enter a name for it (this will be the name of the
+bone attachment in Character Editor). Press <span style="font-weight: bold;">'Generate CDF Attachment Data'</span> and it will open a dialogue asking <span style="font-weight: bold;">"Is this the bone the CDF is attached to?"</span>. If it is the bone the you want associated in the CDF, click<span style="font-weight: bold;"> 'Yes'</span>, if not, click <span style="font-weight: bold;">'No, Pick Bone'</span>, then click the correct bone in the Max viewport. Example:</span><br style="font-family: Arial;">
+
+
+
+<p style="font-family: Arial;">
+<img style="width: 306px; height: 75px;" alt="riggind dialog 1" src="images/rigging_dia01.png">
+</p>
+
+
+<p style="font-family: Arial;">
+This will bring you to this next dialogue:
+</p>
+
+
+<p style="font-family: Arial;">
+<img style="width: 606px; height: 90px;" alt="rigging dialog 2" src="images/rigging_dia02.png">
+</p>
+
+
+<span style="font-family: Arial;">f this is the name of the exported
+CDF file, then click 'Yes', if it is not, click ?No, let me choose.?
+And a file dialogue will open. Find the CDF and click ok. The script
+will now pop open a window with a generated line of XML that you can
+paste into your CDF file. Here is an example:<br>
+
+
+<br>
+<span style="font-family: Courier New,Courier,monospace;">
+
+&lt;Attachment AName="Gun"
+Binding="J:\Game02\Game\Objects\Characters\Alien\Hunter\face_gun_geo.cdf"
+BoneName="face_connector" Position="-0.000635176,-2386.97,643.324"
+Rotation="-1,0,0,1.87841" Type="CA_BONE" /&gt;</span><br>
+
+
+<br>
+<span style="font-weight: bold; color: rgb(255, 0, 0);">
+
+TechNote:</span> The bone associated with the CDF is taken from the parent
+bone (as it should be). The name and directory are taken from the
+geometry name and the max save path used by the exporter. Also, the
+quaternion values CharEdit needs are WXYZ. Also keep in mind that the
+CDF XML format may change, check to see what this exports vs the
+current CDF standards before checking assets with XML generated from
+this tool into a build.<br>
+
+
+<br>
+
+
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Smart Object Tools</span></h2>
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Template Generator\Exporter</span><br>
+
+
+Select the geometry that you will export as the Smart Object CGF, then click <span style="font-weight: bold;">Get Smart Obj Geometry</span>. The button text will now change to reflect the object's name, and <span style="font-weight: bold;">Add Start\Stop Locations</span> will not be enabled. When you click <span style="font-weight: bold;">Add Start\Stop Locations</span>,
+two circles will appear, one red and one green, these denote the start
+and stop locations. They are named sequentially following the format '<span style="font-weight: bold;">so_start#</span>' and '<span style="font-weight: bold;">so_end#</span>'. If '<span style="font-weight: bold;">Project on Ground</span>' is checked, in the Editor the two start/stop locations will be projected onto the ground.</span><br>
+<br>
+
+<span style="font-family: Arial;">
+<span style="font-weight: bold;">Exporting Smart Object Data</span><br>
+
+
+When you click <span style="font-weight: bold;">'Export Smart Object Data'</span>
+is pressed, a window will pop up asking you where you would like to
+save the XML file. The file will be named with the name of the Smart
+Object (printed in the save dialog). If Flip Around Z Axis is checked,
+the XML data exported will be rotated 180 degrees on export. This is
+done because all out animations are in -Y yet the engine requires
+things in +Y<br>
+
+
+<br>
+
+</span><span style="font-family: Arial;"></span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Reactor Tools</span></h2>
+
+
+<span style="font-family: Arial;"><span style="font-weight: bold;">Add Objs to Rigid Body </span>- Adds all selected objects to a picked rigid body node<br>
+
+
+<span style="font-weight: bold;">Add Objs to Fracture </span>- Adds all selected objects to a picked fracture node<br>
+
+
+<br>
+</span>
+<h2 style="background-color: rgb(192, 192, 192);"><span style="font-family: Arial;">Bake to Bones</span></h2>
+<span style="font-family: Arial;"><span style="font-weight: bold;">Bake Deformation to Bones</span><br>
+If you select verts in a deforming mesh, this will step through the
+timeline and add small bones to every vert and animate them throughout
+the timeline.<br>
+<br>
+</span><span style="font-family: Arial;"><span style="font-weight: bold;">Blend All Bones</span><br>
+This will step through all bones in the <span style="font-weight: bold;">Skin</span> modifier and do the '<span style="font-weight: bold;">blend</span>' function. This is used for smothing out baked deformation, such as a flag or cloth.</span><br>
+<span style="font-family: Arial;">
+
+<br>
+
+
+<br>
+
+
+<br style="font-family: Arial;">
+
+
+</span><span style="font-family: Arial;"></span>
+</body>
+</html>

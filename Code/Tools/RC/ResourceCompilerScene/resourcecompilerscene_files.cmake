@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    ResourceCompilerScene_precompiled.h
     TraceDrillerHook.h
     TraceDrillerHook.cpp
     ISceneConfig.h
@@ -33,8 +32,6 @@ set(FILES
     Common/MeshExporter.cpp
     Common/MaterialExporter.h
     Common/MaterialExporter.cpp
-    Common/WorldMatrixExporter.h
-    Common/WorldMatrixExporter.cpp
     Common/ColorStreamExporter.h
     Common/ColorStreamExporter.cpp
     Common/UVStreamExporter.h
@@ -45,8 +42,6 @@ set(FILES
     Common/SkinWeightExporter.cpp
     Common/BlendShapeExporter.h
     Common/BlendShapeExporter.cpp
-    Common/TouchBendingExporter.h
-    Common/TouchBendingExporter.cpp
     Cgf/CgfExportContexts.h
     Cgf/CgfExportContexts.cpp
     Cgf/CgfGroupExporter.h

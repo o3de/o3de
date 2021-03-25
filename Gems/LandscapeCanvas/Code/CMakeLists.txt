@@ -34,7 +34,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Legacy::CryCommon
                 Legacy::Editor.Headers
-                Legacy::EditorLib
+                Legacy::EditorCommon
                 Gem::LmbrCentral
                 Gem::GraphCanvasWidgets
                 Gem::GraphModel.Editor.Static

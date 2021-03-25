@@ -16,6 +16,9 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
@@ -34,11 +37,12 @@
 #include <Viewport/MaterialViewportWidget.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/MaterialEditorWindow.h>
-#include <Window/MaterialTypesLibrary.h>
 #include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
+#include <Window/HelpDialog/HelpDialog.h>
 #include <Window/MaterialBrowserWidget.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QCloseEvent>
@@ -53,6 +57,8 @@ namespace MaterialEditor
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
         : AzQtComponents::DockMainWindow(parent)
     {
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
+
         QApplication::setWindowIcon(QIcon(":/Icons/materialtype.svg"));
 
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -245,7 +251,7 @@ namespace MaterialEditor
         const bool hasTabs = m_tabWidget->count() > 0;
 
         // Update menu options
-        m_actionNewFromOther->setEnabled(true);
+        m_actionNew->setEnabled(true);
         m_actionOpen->setEnabled(true);
         m_actionOpenRecent->setEnabled(false);
         m_actionClose->setEnabled(hasTabs);
@@ -272,7 +278,6 @@ namespace MaterialEditor
         m_actionPreviousTab->setEnabled(m_tabWidget->count() > 1);
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
 
-        m_actionHelp->setEnabled(false);
         m_actionAbout->setEnabled(false);
 
         activateWindow();
@@ -324,7 +329,19 @@ namespace MaterialEditor
         // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
         m_menuFile = m_menuBar->addMenu("&File");
 
-        SetupMenu_New();
+        m_actionNew = m_menuFile->addAction("&New...", [this]() {
+            CreateMaterialDialog createDialog(this);
+            createDialog.adjustSize();
+
+            if (createDialog.exec() == QDialog::Accepted &&
+                !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
+                !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+            {
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                    createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
+                    createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
+            }
+        }, QKeySequence::New);
 
         m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = { azrtti_typeid<AZ::RPI::MaterialAsset>() };
@@ -534,98 +551,12 @@ namespace MaterialEditor
         m_menuHelp = m_menuBar->addMenu("&Help");
 
         m_actionHelp = m_menuHelp->addAction("&Help...", [this]() {
+            HelpDialog dlg(this);
+            dlg.exec();
         });
 
         m_actionAbout = m_menuHelp->addAction("&About...", [this]() {
         });
-    }
-
-    void MaterialEditorWindow::SetupMenu_New()
-    {
-        m_menuNew = m_menuFile->addMenu("&New");
-
-        // Enumerate and load all the relevant config files in the project.
-        // (The files are stored in a temporary list instead of processed in the callback because deep operations inside
-        // AssetCatalogRequestBus::EnumerateAssets can lead to deadlocked)
-        AZStd::list<AZ::Data::AssetInfo> materialTypeAssetInfoList;
-        AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB = [&materialTypeAssetInfoList]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
-        {
-            if (AzFramework::StringFunc::EndsWith(info.m_relativePath.c_str(), ".materialtypes.json"))
-            {
-                materialTypeAssetInfoList.push_front(info);
-            }
-        };
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
-        AZStd::vector<MaterialTypeEntry> materialTypeEntries;
-        for (const auto& info : materialTypeAssetInfoList)
-        {
-            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(info.m_assetId);
-            if (!sourcePath.empty())
-            {
-                MaterialTypesLibrary library;
-                if (AZ::RPI::JsonUtils::LoadObjectFromFile(sourcePath, library))
-                {
-                    for (const auto& entry : library.m_entries)
-                    {
-                        materialTypeEntries.push_back(entry);
-                    }
-                    AZ_TracePrintf("Material Editor", "Loaded materialType library: %s.\n", info.m_relativePath.c_str());
-                }
-            }
-        }
-
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot, "Engine Root not initialized");
-
-        // Generate the menu actions for creating new materials from types
-        for (const auto& materialTypeEntry : materialTypeEntries)
-        {
-            AZStd::string absoluteMaterialTypePath;
-            AZ::StringFunc::Path::Join(engineRoot, materialTypeEntry.m_filePath.c_str(), absoluteMaterialTypePath);
-
-            m_menuNew->addAction(materialTypeEntry.m_displayName.c_str(), [this, absoluteMaterialTypePath]() {
-                const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
-                    AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
-
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
-                    absoluteMaterialTypePath, AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
-            });
-        }
-
-        m_menuNew->addSeparator();
-
-        // Add the final entry that allows selection of any source file
-        m_actionNewFromOther = m_menuNew->addAction("Other &Type...", [this]() {
-            // [GFX TODO] This is functional but UI is not as designed
-            // This will open the parent material or type then save it as a child material
-            // if the operation fails the material document is closed/destroyed
-            const AZStd::vector<AZ::Data::AssetType> assetTypes = {
-                azrtti_typeid<AZ::RPI::MaterialTypeAsset>(),
-            };
-
-            const QString& sourcePath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath();
-            if (!sourcePath.isEmpty())
-            {
-                const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
-                    AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
-
-                const QString& targetPath = AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath();
-                if (!targetPath.isEmpty())
-                {
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
-                        sourcePath.toUtf8().constData(), targetPath.toUtf8().constData());
-                }
-            }
-        }, QKeySequence::New);
     }
 
     void MaterialEditorWindow::SetupTabs()

@@ -110,13 +110,11 @@ void CTrackViewKeyPropertiesDlg::CreateAllVars()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::PopulateVariables()
 {
-    //SetVarBlock( m_pVarBlock,functor(*this,&CTrackViewKeyPropertiesDlg::OnVarChange) );
-
     // Must first clear any selection in properties window.
     m_wndProps->RemoveAllItems();
     m_wndProps->AddVarBlock(m_pVarBlock);
 
-    m_wndProps->SetUpdateCallback(functor(*this, &CTrackViewKeyPropertiesDlg::OnVarChange));
+    m_wndProps->SetUpdateCallback(AZStd::bind(&CTrackViewKeyPropertiesDlg::OnVarChange, this, AZStd::placeholders::_1));
     //m_wndProps->m_props.ExpandAll();
 
 
@@ -180,7 +178,7 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
             && selectedKeys.GetKey(0).GetTrack() == m_pLastTrackSelected;
 
     // Every Key in an Asset Blend track can have different min/max values on the float sliders
-    // because it's based on the duration of the motion that is set. So don't try to 
+    // because it's based on the duration of the motion that is set. So don't try to
     // reuse the controls when the selection changes, otherwise the tooltips may be wrong.
     bool reuseControls = bSelectChangedInSameTrack && m_pLastTrackSelected && (m_pLastTrackSelected->GetValueType() != AnimValueType::AssetBlend);
 
@@ -370,13 +368,13 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
 
                 CTrackViewKeyHandle existingKey = track->GetKeyByTime(time);
 
-                // If there is an existing key at this time, remove it so the 
+                // If there is an existing key at this time, remove it so the
                 // new key at this time is the only one here. Make sure it's actually a different
                 // key, because time can "change" but then be quantized (or snapped) to the same time by track->GetKeyByTime(time).
                 if (existingKey.IsValid() && (existingKey.GetIndex() != m_keyHandle.GetIndex()))
                 {
                     // Save the old time before we set the new time so we
-                    // can reselect the m_keyHandle after the Delete. 
+                    // can reselect the m_keyHandle after the Delete.
                     float currentTime = m_keyHandle.GetTime();
 
                     // There is a bug in QT where editingFinished will get fired a second time if we show a QMessageBox

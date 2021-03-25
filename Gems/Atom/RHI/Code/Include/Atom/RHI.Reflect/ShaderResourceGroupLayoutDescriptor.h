@@ -60,7 +60,8 @@ namespace AZ
             Constant,
             Structured,
             Typed,
-            Raw
+            Raw,
+            AccelerationStructure
         };
 
         static const uint32_t UndefinedRegisterSlot = static_cast<uint32_t>(-1);

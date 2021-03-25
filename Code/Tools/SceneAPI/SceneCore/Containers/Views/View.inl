@@ -62,6 +62,12 @@ namespace AZ
                 {
                     return m_end;
                 }
+
+                template<typename Iterator>
+                [[nodiscard]] bool View<Iterator>::empty() const
+                {
+                    return m_begin == m_end;
+                }
             }; // Views
         } // Containers
     } // SceneAPI

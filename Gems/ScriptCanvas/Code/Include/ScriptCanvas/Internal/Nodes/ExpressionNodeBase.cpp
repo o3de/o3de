@@ -36,6 +36,21 @@ namespace ScriptCanvas
 
             }
 
+            AZ::Outcome<DependencyReport, void> ExpressionNodeBase::GetDependencies() const
+            {
+                return AZ::Success(DependencyReport{});
+            }
+
+            AZStd::string ExpressionNodeBase::GetRawFormat() const
+            {
+                return m_format;
+            }
+
+            const AZStd::unordered_map<AZStd::string, SlotId>& ExpressionNodeBase::GetSlotsByName() const
+            {
+                return m_slotsByVariables;
+            }
+
             void ExpressionNodeBase::OnInit()
             {
                 m_stringInterface.SetPropertyReference(&m_format);
@@ -50,6 +65,7 @@ namespace ScriptCanvas
                     if (variableSlot)
                     {
                         m_slotToVariableMap[variableSlot->GetId()] = variableName;
+                        m_slotsByVariables[variableName] = variableSlot->GetId();
                     }
                 }
             }
@@ -139,7 +155,7 @@ namespace ScriptCanvas
 
             SlotId ExpressionNodeBase::HandleExtension(AZ::Crc32 extensionId)
             {
-                if (extensionId == GetExtensionId())
+                if (extensionId == GetExtensionId() && !m_isInError)
                 {
                     int value = 0;
                     AZStd::string name = "Value";
@@ -257,7 +273,7 @@ namespace ScriptCanvas
             }
 
             void ExpressionNodeBase::ParseFormat(bool signalError)
-            {                
+            {
                 ExpressionEvaluation::ParseOutcome parseOutcome = ParseExpression(m_format);
 
                 if (!parseOutcome.IsSuccess())
@@ -265,7 +281,7 @@ namespace ScriptCanvas
                     m_isInError = true;
                     m_parseError = parseOutcome.GetError();
 
-                    if (GetExecutionType() == ExecutionType::Editor && signalError)
+                    if (signalError)
                     {
                         AZStd::string parseError = m_parseError.m_errorString;
                         GetGraph()->ReportError((*this), "Parsing Error", parseError);
@@ -280,7 +296,6 @@ namespace ScriptCanvas
 
                     m_parsingFormat = true;
 
-                    AZStd::vector< AZStd::string > eraseVariables = m_expressionTree.GetVariables();
                     AZStd::unordered_map< AZStd::string, SlotCacheSetup > variableSlotMapping;
 
                     m_expressionTree = parseOutcome.GetValue();
@@ -293,6 +308,37 @@ namespace ScriptCanvas
 
                         if (slot)
                         {
+                            if (slot->IsExecution() || slot->IsOutput())
+                            {
+                                m_isInError = true;
+                                m_parseError = ExpressionEvaluation::ParsingError();
+                                m_parseError.m_offsetIndex = m_format.find_first_of(variableString);
+
+                                const auto& totalSlots = GetSlots();
+
+                                AZStd::string reservedNames;
+
+                                for (const auto& slot2 : totalSlots)
+                                {
+                                    if (slot2.IsExecution() || slot2.IsOutput())
+                                    {
+                                        if (!reservedNames.empty())
+                                        {
+                                            reservedNames.append(", ");
+                                        }
+
+                                        reservedNames.append(slot2.GetName());
+                                    }
+                                }
+
+                                m_parseError.m_errorString = AZStd::string::format("Using one of the reserved slot names \"%s\" in expression at position %zu", reservedNames.c_str(), m_parseError.m_offsetIndex);
+
+                                AZStd::string parseError = m_parseError.m_errorString;
+                                GetGraph()->ReportError((*this), "Parsing Error", parseError);
+
+                                return;
+                            }
+
                             SlotCacheSetup& cacheSetup = variableSlotMapping[variableString];
 
                             cacheSetup.m_previousId = slot->GetId();
@@ -308,18 +354,22 @@ namespace ScriptCanvas
                         }
                     }
 
-                    for (const AZStd::string& eraseName : eraseVariables)
+                    AZStd::vector<const Slot*> eraseSlots = GetAllSlotsByDescriptor(SlotDescriptors::DataIn());
+
+                    for (const Slot* eraseSlot : eraseSlots)
                     {
-                        Slot* slot = GetSlotByName(eraseName);
+                        // If we have the name in our mapping. We want to keep its connections since we're going to
+                        // recreate it.
+                        size_t newMapping = variableSlotMapping.count(eraseSlot->GetName());
+                        bool signalRemoval = newMapping == 0;
 
-                        if (slot)
+                        SlotId slotId = eraseSlot->GetId();
+
+                        RemoveSlot(slotId, signalRemoval);
+
+                        if (signalRemoval)
                         {
-                            // If we have the name in our mapping. We want to keep its connections since we're going to
-                            // recreate it.
-                            size_t newMapping = variableSlotMapping.count(eraseName);
-                            bool signalRemoval = newMapping == 0;
-
-                            RemoveSlot(slot->GetId(), signalRemoval);
+                            m_slotToVariableMap.erase(slotId);
                         }
                     }
 

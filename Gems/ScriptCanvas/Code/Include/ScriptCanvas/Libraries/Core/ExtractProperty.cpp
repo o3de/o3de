@@ -109,9 +109,14 @@ namespace ScriptCanvas
                 m_propertyAccounts.clear();
             }
 
-            AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>> ExtractProperty::GetPropertyFields() const
+            AZ::Outcome<DependencyReport, void> ExtractProperty::GetDependencies() const
             {
-                AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>> propertyFields;
+                return AZ::Success(DependencyReport::NativeLibrary(Data::GetName(m_dataType)));
+            }
+            
+            PropertyFields ExtractProperty::GetPropertyFields() const
+            {
+                PropertyFields propertyFields;
                 for (auto&& propertyAccount : m_propertyAccounts)
                 {
                     propertyFields.emplace_back(propertyAccount.m_propertyName, propertyAccount.m_propertySlotId);
@@ -120,8 +125,10 @@ namespace ScriptCanvas
                 return propertyFields;
             }
 
-            bool ExtractProperty::IsOutOfDate() const
+            bool ExtractProperty::IsOutOfDate(const VersionData& graphVersion) const
             {
+                AZ_UNUSED(graphVersion);
+
                 bool isOutOfDate = false;
                 for (auto propertyAccount : m_propertyAccounts)
                 {
@@ -169,17 +176,14 @@ namespace ScriptCanvas
                         }
                         else
                         {
-                            AZ_Error("Script Canvas", GetExecutionType() == ExecutionType::Editor, "Property (%s : %s) getter method could not be found in Data::PropertyTraits or the property type has changed."
+                            AZ_Error("Script Canvas", true, "Property (%s : %s) getter method could not be found in Data::PropertyTraits or the property type has changed."
                                 " Output will not be pushed on the property's slot.",
                                 propertyAccount.m_propertyName.c_str(), Data::GetName(propertyAccount.m_propertyType).data());
                         }
                     }
                 }
 
-                if (GetExecutionType() == ExecutionType::Editor)
-                {
-                    UpdatePropertyVersion();
-                }
+                UpdatePropertyVersion();
             }
 
             void ExtractProperty::UpdatePropertyVersion()

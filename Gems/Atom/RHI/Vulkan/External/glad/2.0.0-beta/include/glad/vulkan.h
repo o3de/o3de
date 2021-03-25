@@ -415,12 +415,8 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 #define VK_KHR_CREATE_RENDERPASS_2_SPEC_VERSION 1
 #define VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME "VK_KHR_dedicated_allocation"
 #define VK_KHR_DEDICATED_ALLOCATION_SPEC_VERSION 3
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 #define VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME "VK_KHR_deferred_host_operations"
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 #define VK_KHR_DEFERRED_HOST_OPERATIONS_SPEC_VERSION 3
-#endif
 #define VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME "VK_KHR_depth_stencil_resolve"
 #define VK_KHR_DEPTH_STENCIL_RESOLVE_SPEC_VERSION 1
 #define VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME "VK_KHR_descriptor_update_template"
@@ -507,12 +503,9 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 #endif
 #define VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME "VK_KHR_push_descriptor"
 #define VK_KHR_PUSH_DESCRIPTOR_SPEC_VERSION 2
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-#define VK_KHR_RAY_TRACING_EXTENSION_NAME "VK_KHR_ray_tracing"
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-#define VK_KHR_RAY_TRACING_SPEC_VERSION 8
-#endif
+#define VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME "VK_KHR_acceleration_structure"
+#define VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME "VK_KHR_ray_tracing_pipeline"
+#define VK_KHR_RAY_QUERY_EXTENSION_NAME "VK_KHR_ray_query"
 #define VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME "VK_KHR_relaxed_block_layout"
 #define VK_KHR_RELAXED_BLOCK_LAYOUT_SPEC_VERSION 1
 #define VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME "VK_KHR_sampler_mirror_clamp_to_edge"
@@ -1018,9 +1011,7 @@ VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkAccelerationStructureKHR)
 
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPerformanceConfigurationINTEL)
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDeferredOperationKHR)
-#endif
 
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPrivateDataSlotEXT)
 
@@ -1196,8 +1187,10 @@ typedef enum VkBufferUsageFlagBits {
     VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT = 2048,
     VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT = 4096,
     VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT = 512,
-    VK_BUFFER_USAGE_RAY_TRACING_BIT_KHR = 1024,
-    VK_BUFFER_USAGE_RAY_TRACING_BIT_NV = VK_BUFFER_USAGE_RAY_TRACING_BIT_KHR,
+    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR = 0x00080000,
+    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR = 0x00100000,
+    VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR = 0x00000400,
+    VK_BUFFER_USAGE_RAY_TRACING_BIT_NV = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
     VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
     VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_KHR = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
 } VkBufferUsageFlagBits;
@@ -1275,8 +1268,9 @@ typedef enum VkDescriptorType {
     VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
     VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
     VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = 1000138000,
-    VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000165000,
-    VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
+    VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000150000,
+    VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = 1000165000,
+    VK_DESCRIPTOR_TYPE_MUTABLE_VALVE = 1000351000
 } VkDescriptorType;
 
 typedef enum VkDynamicState {
@@ -2394,26 +2388,27 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT = 1000148001,
     VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT = 1000148002,
     VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV = 1000149000,
-    VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_KHR = 1000165006,
-    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR = 1000165007,
+    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR = 1000150007,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR = 1000150000,
-    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_GEOMETRY_TYPE_INFO_KHR = 1000150001,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR = 1000150002,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR = 1000150003,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR = 1000150004,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR = 1000150005,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR = 1000150006,
-    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_KHR = 1000150008,
-    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_VERSION_KHR = 1000150009,
+    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_VERSION_INFO_KHR = 1000150009,
     VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR = 1000150010,
     VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_INFO_KHR = 1000150011,
     VK_STRUCTURE_TYPE_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_INFO_KHR = 1000150012,
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_FEATURES_KHR = 1000150013,
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_KHR = 1000150014,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR = 1000150013,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR = 1000150014,
+    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR = 1000150017,
+    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR = 1000150020,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR = 1000347000,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR = 1000347001,
     VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR = 1000150015,
     VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR = 1000150016,
-    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR = 1000150017,
     VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR = 1000150018,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR = 1000348013,
     VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV = 1000152000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV = 1000154000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV = 1000154001,
@@ -2447,8 +2442,8 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_GEOMETRY_NV = 1000165003,
     VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV = 1000165004,
     VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV = 1000165005,
-    VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_NV = VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_KHR,
-    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
+    VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_NV = 1000165006,
+    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV = 1000165007,
     VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_NV = 1000165008,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV = 1000165009,
     VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_NV = 1000165011,
@@ -2942,16 +2937,22 @@ typedef enum VkCopyAccelerationStructureModeKHR VkCopyAccelerationStructureModeN
 typedef enum VkAccelerationStructureTypeKHR {
     VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR = 0,
     VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR = 1,
+    VK_ACCELERATION_STRUCTURE_TYPE_GENERIC_KHR = 2,
     VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NV = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR,
     VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
 } VkAccelerationStructureTypeKHR;
 
 typedef enum VkAccelerationStructureTypeKHR VkAccelerationStructureTypeNV;
 
+typedef enum VkBuildAccelerationStructureModeKHR {
+    VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR = 0,
+    VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR = 1,
+} VkBuildAccelerationStructureModeKHR;
+
 typedef enum VkGeometryTypeKHR {
     VK_GEOMETRY_TYPE_TRIANGLES_KHR = 0,
     VK_GEOMETRY_TYPE_AABBS_KHR = 1,
-    VK_GEOMETRY_TYPE_INSTANCES_KHR = 1000150000,
+    VK_GEOMETRY_TYPE_INSTANCES_KHR = 2,
     VK_GEOMETRY_TYPE_TRIANGLES_NV = VK_GEOMETRY_TYPE_TRIANGLES_KHR,
     VK_GEOMETRY_TYPE_AABBS_NV = VK_GEOMETRY_TYPE_AABBS_KHR
 } VkGeometryTypeKHR;
@@ -2980,13 +2981,11 @@ typedef enum VkAccelerationStructureMemoryRequirementsTypeKHR {
 
 typedef enum VkAccelerationStructureMemoryRequirementsTypeKHR VkAccelerationStructureMemoryRequirementsTypeNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef enum VkAccelerationStructureBuildTypeKHR {
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_HOST_KHR = 0,
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR = 1,
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_HOST_OR_DEVICE_KHR = 2
 } VkAccelerationStructureBuildTypeKHR;
-#endif
 
 typedef enum VkMemoryOverallocationBehaviorAMD {
     VK_MEMORY_OVERALLOCATION_BEHAVIOR_DEFAULT_AMD = 0,
@@ -4854,7 +4853,6 @@ typedef struct VkRayTracingShaderGroupCreateInfoNV {
     uint32_t                 intersectionShader;
 } VkRayTracingShaderGroupCreateInfoNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkRayTracingShaderGroupCreateInfoKHR {
     VkStructureType   sType;
     const  void *             pNext;
@@ -4865,7 +4863,6 @@ typedef struct VkRayTracingShaderGroupCreateInfoKHR {
     uint32_t                 intersectionShader;
     const  void *  pShaderGroupCaptureReplayHandle;
 } VkRayTracingShaderGroupCreateInfoKHR;
-#endif
 
 typedef struct VkWriteDescriptorSetAccelerationStructureKHR {
     VkStructureType   sType;
@@ -4876,7 +4873,6 @@ typedef struct VkWriteDescriptorSetAccelerationStructureKHR {
 
 typedef struct VkWriteDescriptorSetAccelerationStructureKHR  VkWriteDescriptorSetAccelerationStructureNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureMemoryRequirementsInfoKHR {
     VkStructureType   sType;
     const  void *                                                           pNext;
@@ -4884,7 +4880,6 @@ typedef struct VkAccelerationStructureMemoryRequirementsInfoKHR {
     VkAccelerationStructureBuildTypeKHR                                    buildType;
     VkAccelerationStructureKHR                                             accelerationStructure;
 } VkAccelerationStructureMemoryRequirementsInfoKHR;
-#endif
 
 typedef struct VkAccelerationStructureMemoryRequirementsInfoNV {
     VkStructureType   sType;
@@ -4893,21 +4888,31 @@ typedef struct VkAccelerationStructureMemoryRequirementsInfoNV {
     VkAccelerationStructureNV                                             accelerationStructure;
 } VkAccelerationStructureMemoryRequirementsInfoNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef struct VkPhysicalDeviceRayTracingPropertiesKHR {
-    VkStructureType   sType;
-    void *                             pNext;
-    uint32_t                           shaderGroupHandleSize;
-    uint32_t                           maxRecursionDepth;
-    uint32_t                           maxShaderGroupStride;
-    uint32_t                           shaderGroupBaseAlignment;
-    uint64_t                           maxGeometryCount;
-    uint64_t                           maxInstanceCount;
-    uint64_t                           maxPrimitiveCount;
-    uint32_t                           maxDescriptorSetAccelerationStructures;
-    uint32_t                           shaderGroupHandleCaptureReplaySize;
-} VkPhysicalDeviceRayTracingPropertiesKHR;
-#endif
+typedef struct VkPhysicalDeviceRayTracingPipelinePropertiesKHR {
+    VkStructureType     sType;
+    void*               pNext;
+    uint32_t            shaderGroupHandleSize;
+    uint32_t            maxRayRecursionDepth;
+    uint32_t            maxShaderGroupStride;
+    uint32_t            shaderGroupBaseAlignment;
+    uint32_t            shaderGroupHandleCaptureReplaySize;
+    uint32_t            maxRayDispatchInvocationCount;
+    uint32_t            shaderGroupHandleAlignment;
+    uint32_t            maxRayHitAttributeSize;
+} VkPhysicalDeviceRayTracingPipelinePropertiesKHR;
+
+typedef struct VkPhysicalDeviceAccelerationStructurePropertiesKHR {
+    VkStructureType     sType;
+    void*               pNext;
+    uint64_t            maxGeometryCount;
+    uint64_t            maxInstanceCount;
+    uint64_t            maxPrimitiveCount;
+    uint32_t            maxPerStageDescriptorAccelerationStructures;
+    uint32_t            maxPerStateDescriptorUpdateAfterBindAccelerationStructures;
+    uint32_t            maxDescriptorSetAccelerationStructures;
+    uint32_t            maxDescriptorSetUpdateAfterBindAccelerationStructures;
+    uint32_t            minAccelerationStructureScratchOffsetAlignment;
+} VkPhysicalDeviceAccelerationStructurePropertiesKHR;
 
 typedef struct VkPhysicalDeviceRayTracingPropertiesNV {
     VkStructureType   sType;
@@ -4922,13 +4927,11 @@ typedef struct VkPhysicalDeviceRayTracingPropertiesNV {
     uint32_t                           maxDescriptorSetAccelerationStructures;
 } VkPhysicalDeviceRayTracingPropertiesNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkTraceRaysIndirectCommandKHR {
     uint32_t                 width;
     uint32_t                 height;
     uint32_t                 depth;
 } VkTraceRaysIndirectCommandKHR;
-#endif
 
 typedef struct VkPhysicalDeviceImageDrmFormatModifierInfoEXT {
     VkStructureType   sType;
@@ -5190,14 +5193,12 @@ typedef struct VkPhysicalDeviceCustomBorderColorPropertiesEXT {
     uint32_t                                                                                        maxCustomBorderColorSamplers;
 } VkPhysicalDeviceCustomBorderColorPropertiesEXT;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef struct VkAccelerationStructureBuildOffsetInfoKHR {
-    uint32_t                                                  primitiveCount;
-    uint32_t                                                  primitiveOffset;
-    uint32_t                                  firstVertex;
-    uint32_t                                  transformOffset;
-} VkAccelerationStructureBuildOffsetInfoKHR;
-#endif
+typedef struct VkAccelerationStructureBuildRangeInfoKHR {
+    uint32_t    primitiveCount;
+    uint32_t    primitiveOffset;
+    uint32_t    firstVertex;
+    uint32_t    transformOffset;
+} VkAccelerationStructureBuildRangeInfoKHR;
 
 typedef struct VkAabbPositionsKHR {
     float                                                     minX;
@@ -5216,23 +5217,18 @@ typedef struct VkTransformMatrixKHR {
 
 typedef struct VkTransformMatrixKHR  VkTransformMatrixNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureDeviceAddressInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
     VkAccelerationStructureKHR                               accelerationStructure;
 } VkAccelerationStructureDeviceAddressInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureVersionKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
     const  uint8_t *                     versionData;
 } VkAccelerationStructureVersionKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkCopyAccelerationStructureInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
@@ -5240,34 +5236,26 @@ typedef struct VkCopyAccelerationStructureInfoKHR {
     VkAccelerationStructureKHR                               dst;
     VkCopyAccelerationStructureModeKHR                       mode;
 } VkCopyAccelerationStructureInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkRayTracingPipelineInterfaceCreateInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
-    uint32_t                                                 maxPayloadSize;
-    uint32_t                                                 maxAttributeSize;
-    uint32_t                                                 maxCallableSize;
+    uint32_t                                                 maxPipelineRayPayloadSize;
+    uint32_t                                                 maxPipelineRayHitAttributeSize;
 } VkRayTracingPipelineInterfaceCreateInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkDeferredOperationInfoKHR {
     VkStructureType   sType;
     const  void *                    pNext;
     VkDeferredOperationKHR          operationHandle;
 } VkDeferredOperationInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS) || defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkPipelineLibraryCreateInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
     uint32_t                                 libraryCount;
     const  VkPipeline *                    pLibraries;
 } VkPipelineLibraryCreateInfoKHR;
-#endif
 
 typedef struct VkRenderPassTransformBeginInfoQCOM {
     VkStructureType   sType;
@@ -7956,23 +7944,22 @@ typedef struct VkRayTracingPipelineCreateInfoNV {
     int32_t                  basePipelineIndex;
 } VkRayTracingPipelineCreateInfoNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkRayTracingPipelineCreateInfoKHR {
-    VkStructureType   sType;
-    const  void *             pNext;
-    VkPipelineCreateFlags    flags;
-    uint32_t   stageCount;
-    const  VkPipelineShaderStageCreateInfo *  pStages;
-    uint32_t   groupCount;
-    const  VkRayTracingShaderGroupCreateInfoKHR *  pGroups;
-    uint32_t                 maxRecursionDepth;
-    VkPipelineLibraryCreateInfoKHR   libraries;
-    const  VkRayTracingPipelineInterfaceCreateInfoKHR *  pLibraryInterface;
-    VkPipelineLayout         layout;
-    VkPipeline        basePipelineHandle;
-    int32_t                  basePipelineIndex;
+    VkStructureType                                     sType;
+    const void*                                         pNext;
+    VkPipelineCreateFlags                               flags;
+    uint32_t                                            stageCount;
+    const VkPipelineShaderStageCreateInfo*              pStages;
+    uint32_t                                            groupCount;
+    const VkRayTracingShaderGroupCreateInfoKHR*         pGroups;
+    uint32_t                                            maxPipelineRayRecursionDepth;
+    const VkPipelineLibraryCreateInfoKHR*               pLibraryInfo;
+    const VkRayTracingPipelineInterfaceCreateInfoKHR*   pLibraryInterface;
+    const VkPipelineDynamicStateCreateInfo*             pDynamicState;
+    VkPipelineLayout                                    layout;
+    VkPipeline                                          basePipelineHandle;
+    int32_t                                             basePipelineIndex;
 } VkRayTracingPipelineCreateInfoKHR;
-#endif
 
 typedef struct VkGeometryTrianglesNV {
     VkStructureType   sType;
@@ -8041,7 +8028,6 @@ typedef struct VkBindAccelerationStructureMemoryInfoKHR {
 
 typedef struct VkBindAccelerationStructureMemoryInfoKHR  VkBindAccelerationStructureMemoryInfoNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkPhysicalDeviceRayTracingFeaturesKHR {
     VkStructureType   sType;
     void *                             pNext;
@@ -8055,16 +8041,20 @@ typedef struct VkPhysicalDeviceRayTracingFeaturesKHR {
     VkBool32                           rayQuery;
     VkBool32                           rayTracingPrimitiveCulling;
 } VkPhysicalDeviceRayTracingFeaturesKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkStridedBufferRegionKHR {
     VkBuffer           buffer;
     VkDeviceSize                       offset;
     VkDeviceSize                       stride;
     VkDeviceSize                       size;
 } VkStridedBufferRegionKHR;
-#endif
+
+typedef struct VkStridedDeviceAddressRegionKHR
+{
+    VkDeviceAddress deviceAddress;
+    VkDeviceSize    stride;
+    VkDeviceSize    size;
+} VkStridedDeviceAddressRegionKHR;
 
 typedef struct VkDrmFormatModifierPropertiesEXT {
     uint64_t   drmFormatModifier;
@@ -8673,60 +8663,48 @@ typedef struct VkPhysicalDeviceCustomBorderColorFeaturesEXT {
     VkBool32                             customBorderColorWithoutFormat;
 } VkPhysicalDeviceCustomBorderColorFeaturesEXT;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef union VkDeviceOrHostAddressKHR {
     VkDeviceAddress              deviceAddress;
     void *                       hostAddress;
 } VkDeviceOrHostAddressKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef union VkDeviceOrHostAddressConstKHR {
     VkDeviceAddress              deviceAddress;
     const  void *                 hostAddress;
 } VkDeviceOrHostAddressConstKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureGeometryTrianglesDataKHR {
     VkStructureType   sType;
     const  void *                                    pNext;
     VkFormat                                        vertexFormat;
     VkDeviceOrHostAddressConstKHR                   vertexData;
     VkDeviceSize                                    vertexStride;
+    uint32_t                                        maxVertex;
     VkIndexType                                     indexType;
     VkDeviceOrHostAddressConstKHR   indexData;
     VkDeviceOrHostAddressConstKHR   transformData;
 } VkAccelerationStructureGeometryTrianglesDataKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureGeometryAabbsDataKHR {
     VkStructureType   sType;
     const  void *                            pNext;
     VkDeviceOrHostAddressConstKHR           data;
     VkDeviceSize                            stride;
 } VkAccelerationStructureGeometryAabbsDataKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureGeometryInstancesDataKHR {
     VkStructureType   sType;
     const  void *                            pNext;
     VkBool32                                arrayOfPointers;
     VkDeviceOrHostAddressConstKHR           data;
 } VkAccelerationStructureGeometryInstancesDataKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef union VkAccelerationStructureGeometryDataKHR {
     VkAccelerationStructureGeometryTrianglesDataKHR   triangles;
     VkAccelerationStructureGeometryAabbsDataKHR           aabbs;
     VkAccelerationStructureGeometryInstancesDataKHR   instances;
 } VkAccelerationStructureGeometryDataKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureGeometryKHR {
     VkStructureType   sType;
     const  void *                             pNext;
@@ -8734,25 +8712,29 @@ typedef struct VkAccelerationStructureGeometryKHR {
     VkAccelerationStructureGeometryDataKHR   geometry;
     VkGeometryFlagsKHR       flags;
 } VkAccelerationStructureGeometryKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkAccelerationStructureBuildGeometryInfoKHR {
-    VkStructureType   sType;
-    const  void *                                                         pNext;
-    VkAccelerationStructureTypeKHR                                       type;
-    VkBuildAccelerationStructureFlagsKHR                 flags;
-    VkBool32                                                             update;
-    VkAccelerationStructureKHR                           srcAccelerationStructure;
-    VkAccelerationStructureKHR                                           dstAccelerationStructure;
-    VkBool32                                                             geometryArrayOfPointers;
-    uint32_t                                             geometryCount;
-    const  VkAccelerationStructureGeometryKHR * const*    ppGeometries;
-    VkDeviceOrHostAddressKHR                                             scratchData;
+    VkStructureType                                         sType;
+    const  void *                                           pNext;
+    VkAccelerationStructureTypeKHR                          type;
+    VkBuildAccelerationStructureFlagsKHR                    flags;
+    VkBuildAccelerationStructureModeKHR                     mode;
+    VkAccelerationStructureKHR                              srcAccelerationStructure;
+    VkAccelerationStructureKHR                              dstAccelerationStructure;
+    uint32_t                                                geometryCount;
+    const VkAccelerationStructureGeometryKHR*               pGeometries;
+    const VkAccelerationStructureGeometryKHR* const*        ppGeometries;
+    VkDeviceOrHostAddressKHR                                scratchData;
 } VkAccelerationStructureBuildGeometryInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
+typedef struct VkAccelerationStructureBuildSizesInfoKHR {
+    VkStructureType   sType;
+    const void* pNext;
+    VkDeviceSize      accelerationStructureSize;
+    VkDeviceSize      updateScratchSize;
+    VkDeviceSize      buildScratchSize;
+} VkAccelerationStructureBuildSizesInfoKHR;
+
 typedef struct VkAccelerationStructureCreateGeometryTypeInfoKHR {
     VkStructureType   sType;
     const  void *                                              pNext;
@@ -8763,20 +8745,23 @@ typedef struct VkAccelerationStructureCreateGeometryTypeInfoKHR {
     VkFormat                                  vertexFormat;
     VkBool32                                  allowsTransforms;
 } VkAccelerationStructureCreateGeometryTypeInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
+typedef enum VkAccelerationStructureCreateFlagsBitsKHR {
+    VK_ACCELERATION_STRUCTURE_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR = 0x00000001,
+} VkAccelerationStructureCreateFlagBitsKHR;
+
+typedef VkFlags VkAccelerationStructureCreateFlagsKHR;
+
 typedef struct VkAccelerationStructureCreateInfoKHR {
-    VkStructureType   sType;
-    const  void *                                              pNext;
-    VkDeviceSize                                              compactedSize;
-    VkAccelerationStructureTypeKHR                            type;
-    VkBuildAccelerationStructureFlagsKHR      flags;
-    uint32_t                                  maxGeometryCount;
-    const  VkAccelerationStructureCreateGeometryTypeInfoKHR *  pGeometryInfos;
-    VkDeviceAddress                           deviceAddress;
+    VkStructureType                                             sType;
+    const void* pNext;
+    VkAccelerationStructureCreateFlagsKHR                       createFlags;
+    VkBuffer                                                    buffer;
+    VkDeviceSize                                                offset;
+    VkDeviceSize                                                size;
+    VkAccelerationStructureTypeKHR                              type;
+    VkDeviceAddress                                             deviceAddress;
 } VkAccelerationStructureCreateInfoKHR;
-#endif
 
 typedef struct VkAccelerationStructureInstanceKHR {
     VkTransformMatrixKHR                                      transform;
@@ -8789,7 +8774,6 @@ typedef struct VkAccelerationStructureInstanceKHR {
 
 typedef struct VkAccelerationStructureInstanceKHR  VkAccelerationStructureInstanceNV;
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkCopyAccelerationStructureToMemoryInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
@@ -8797,9 +8781,7 @@ typedef struct VkCopyAccelerationStructureToMemoryInfoKHR {
     VkDeviceOrHostAddressKHR                                 dst;
     VkCopyAccelerationStructureModeKHR                       mode;
 } VkCopyAccelerationStructureToMemoryInfoKHR;
-#endif
 
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef struct VkCopyMemoryToAccelerationStructureInfoKHR {
     VkStructureType   sType;
     const  void *                                             pNext;
@@ -8807,7 +8789,6 @@ typedef struct VkCopyMemoryToAccelerationStructureInfoKHR {
     VkAccelerationStructureKHR                               dst;
     VkCopyAccelerationStructureModeKHR                       mode;
 } VkCopyMemoryToAccelerationStructureInfoKHR;
-#endif
 
 typedef struct VkPhysicalDeviceExtendedDynamicStateFeaturesEXT {
     VkStructureType   sType;
@@ -9184,10 +9165,8 @@ GLAD_API_CALL int GLAD_VK_KHR_buffer_device_address;
 GLAD_API_CALL int GLAD_VK_KHR_create_renderpass2;
 #define VK_KHR_dedicated_allocation 1
 GLAD_API_CALL int GLAD_VK_KHR_dedicated_allocation;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 #define VK_KHR_deferred_host_operations 1
 GLAD_API_CALL int GLAD_VK_KHR_deferred_host_operations;
-#endif
 #define VK_KHR_depth_stencil_resolve 1
 GLAD_API_CALL int GLAD_VK_KHR_depth_stencil_resolve;
 #define VK_KHR_descriptor_update_template 1
@@ -9266,10 +9245,8 @@ GLAD_API_CALL int GLAD_VK_KHR_pipeline_library;
 #endif
 #define VK_KHR_push_descriptor 1
 GLAD_API_CALL int GLAD_VK_KHR_push_descriptor;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 #define VK_KHR_ray_tracing 1
 GLAD_API_CALL int GLAD_VK_KHR_ray_tracing;
-#endif
 #define VK_KHR_relaxed_block_layout 1
 GLAD_API_CALL int GLAD_VK_KHR_relaxed_block_layout;
 #define VK_KHR_sampler_mirror_clamp_to_edge 1
@@ -9438,9 +9415,6 @@ typedef VkResult (GLAD_API_PTR *PFN_vkAllocateCommandBuffers)(VkDevice device, c
 typedef VkResult (GLAD_API_PTR *PFN_vkAllocateDescriptorSets)(VkDevice device, const VkDescriptorSetAllocateInfo * pAllocateInfo, VkDescriptorSet * pDescriptorSets);
 typedef VkResult (GLAD_API_PTR *PFN_vkAllocateMemory)(VkDevice device, const VkMemoryAllocateInfo * pAllocateInfo, const VkAllocationCallbacks * pAllocator, VkDeviceMemory * pMemory);
 typedef VkResult (GLAD_API_PTR *PFN_vkBeginCommandBuffer)(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo * pBeginInfo);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef VkResult (GLAD_API_PTR *PFN_vkBindAccelerationStructureMemoryKHR)(VkDevice device, uint32_t bindInfoCount, const VkBindAccelerationStructureMemoryInfoKHR * pBindInfos);
-#endif
 typedef VkResult (GLAD_API_PTR *PFN_vkBindAccelerationStructureMemoryNV)(VkDevice device, uint32_t bindInfoCount, const VkBindAccelerationStructureMemoryInfoKHR * pBindInfos);
 typedef VkResult (GLAD_API_PTR *PFN_vkBindBufferMemory)(VkDevice device, VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset);
 typedef VkResult (GLAD_API_PTR *PFN_vkBindBufferMemory2)(VkDevice device, uint32_t bindInfoCount, const VkBindBufferMemoryInfo * pBindInfos);
@@ -9448,9 +9422,7 @@ typedef VkResult (GLAD_API_PTR *PFN_vkBindBufferMemory2KHR)(VkDevice device, uin
 typedef VkResult (GLAD_API_PTR *PFN_vkBindImageMemory)(VkDevice device, VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset);
 typedef VkResult (GLAD_API_PTR *PFN_vkBindImageMemory2)(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo * pBindInfos);
 typedef VkResult (GLAD_API_PTR *PFN_vkBindImageMemory2KHR)(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo * pBindInfos);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef VkResult (GLAD_API_PTR *PFN_vkBuildAccelerationStructureKHR)(VkDevice device, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR * pInfos, const VkAccelerationStructureBuildOffsetInfoKHR * const* ppOffsetInfos);
-#endif
+typedef VkResult (GLAD_API_PTR *PFN_vkBuildAccelerationStructuresKHR)(VkDevice device, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR * pInfos, const VkAccelerationStructureBuildRangeInfoKHR * const* ppOffsetInfos);
 typedef void (GLAD_API_PTR *PFN_vkCmdBeginConditionalRenderingEXT)(VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT * pConditionalRenderingBegin);
 typedef void (GLAD_API_PTR *PFN_vkCmdBeginDebugUtilsLabelEXT)(VkCommandBuffer commandBuffer, const VkDebugUtilsLabelEXT * pLabelInfo);
 typedef void (GLAD_API_PTR *PFN_vkCmdBeginQuery)(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags);
@@ -9468,30 +9440,20 @@ typedef void (GLAD_API_PTR *PFN_vkCmdBindTransformFeedbackBuffersEXT)(VkCommandB
 typedef void (GLAD_API_PTR *PFN_vkCmdBindVertexBuffers)(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer * pBuffers, const VkDeviceSize * pOffsets);
 typedef void (GLAD_API_PTR *PFN_vkCmdBindVertexBuffers2EXT)(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer * pBuffers, const VkDeviceSize * pOffsets, const VkDeviceSize * pSizes, const VkDeviceSize * pStrides);
 typedef void (GLAD_API_PTR *PFN_vkCmdBlitImage)(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageBlit * pRegions, VkFilter filter);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef void (GLAD_API_PTR *PFN_vkCmdBuildAccelerationStructureIndirectKHR)(VkCommandBuffer commandBuffer, const VkAccelerationStructureBuildGeometryInfoKHR * pInfo, VkBuffer indirectBuffer, VkDeviceSize indirectOffset, uint32_t indirectStride);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef void (GLAD_API_PTR *PFN_vkCmdBuildAccelerationStructureKHR)(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR * pInfos, const VkAccelerationStructureBuildOffsetInfoKHR * const* ppOffsetInfos);
-#endif
+typedef void (GLAD_API_PTR *PFN_vkCmdBuildAccelerationStructuresIndirectKHR)(VkCommandBuffer commandBuffer, const VkAccelerationStructureBuildGeometryInfoKHR * pInfo, VkBuffer indirectBuffer, VkDeviceSize indirectOffset, uint32_t indirectStride);
+typedef void (GLAD_API_PTR *PFN_vkCmdBuildAccelerationStructuresKHR)(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR * pInfos, const VkAccelerationStructureBuildRangeInfoKHR * const* ppOffsetInfos);
 typedef void (GLAD_API_PTR *PFN_vkCmdBuildAccelerationStructureNV)(VkCommandBuffer commandBuffer, const VkAccelerationStructureInfoNV * pInfo, VkBuffer instanceData, VkDeviceSize instanceOffset, VkBool32 update, VkAccelerationStructureKHR dst, VkAccelerationStructureKHR src, VkBuffer scratch, VkDeviceSize scratchOffset);
 typedef void (GLAD_API_PTR *PFN_vkCmdClearAttachments)(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment * pAttachments, uint32_t rectCount, const VkClearRect * pRects);
 typedef void (GLAD_API_PTR *PFN_vkCmdClearColorImage)(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearColorValue * pColor, uint32_t rangeCount, const VkImageSubresourceRange * pRanges);
 typedef void (GLAD_API_PTR *PFN_vkCmdClearDepthStencilImage)(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearDepthStencilValue * pDepthStencil, uint32_t rangeCount, const VkImageSubresourceRange * pRanges);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyAccelerationStructureKHR)(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureInfoKHR * pInfo);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyAccelerationStructureNV)(VkCommandBuffer commandBuffer, VkAccelerationStructureKHR dst, VkAccelerationStructureKHR src, VkCopyAccelerationStructureModeKHR mode);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyAccelerationStructureToMemoryKHR)(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureToMemoryInfoKHR * pInfo);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyBuffer)(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy * pRegions);
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyBufferToImage)(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkBufferImageCopy * pRegions);
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyImage)(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageCopy * pRegions);
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyImageToBuffer)(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy * pRegions);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyMemoryToAccelerationStructureKHR)(VkCommandBuffer commandBuffer, const VkCopyMemoryToAccelerationStructureInfoKHR * pInfo);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkCmdCopyQueryPoolResults)(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags);
 typedef void (GLAD_API_PTR *PFN_vkCmdDebugMarkerBeginEXT)(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT * pMarkerInfo);
 typedef void (GLAD_API_PTR *PFN_vkCmdDebugMarkerEndEXT)(VkCommandBuffer commandBuffer);
@@ -9571,35 +9533,22 @@ typedef void (GLAD_API_PTR *PFN_vkCmdSetViewport)(VkCommandBuffer commandBuffer,
 typedef void (GLAD_API_PTR *PFN_vkCmdSetViewportShadingRatePaletteNV)(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkShadingRatePaletteNV * pShadingRatePalettes);
 typedef void (GLAD_API_PTR *PFN_vkCmdSetViewportWScalingNV)(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportWScalingNV * pViewportWScalings);
 typedef void (GLAD_API_PTR *PFN_vkCmdSetViewportWithCountEXT)(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport * pViewports);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef void (GLAD_API_PTR *PFN_vkCmdTraceRaysIndirectKHR)(VkCommandBuffer commandBuffer, const VkStridedBufferRegionKHR * pRaygenShaderBindingTable, const VkStridedBufferRegionKHR * pMissShaderBindingTable, const VkStridedBufferRegionKHR * pHitShaderBindingTable, const VkStridedBufferRegionKHR * pCallableShaderBindingTable, VkBuffer buffer, VkDeviceSize offset);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef void (GLAD_API_PTR *PFN_vkCmdTraceRaysKHR)(VkCommandBuffer commandBuffer, const VkStridedBufferRegionKHR * pRaygenShaderBindingTable, const VkStridedBufferRegionKHR * pMissShaderBindingTable, const VkStridedBufferRegionKHR * pHitShaderBindingTable, const VkStridedBufferRegionKHR * pCallableShaderBindingTable, uint32_t width, uint32_t height, uint32_t depth);
-#endif
+typedef void (GLAD_API_PTR *PFN_vkCmdTraceRaysIndirectKHR)(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, VkBuffer buffer, VkDeviceSize offset);
+typedef void (GLAD_API_PTR *PFN_vkCmdTraceRaysKHR)(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, uint32_t width, uint32_t height, uint32_t depth);
 typedef void (GLAD_API_PTR *PFN_vkCmdTraceRaysNV)(VkCommandBuffer commandBuffer, VkBuffer raygenShaderBindingTableBuffer, VkDeviceSize raygenShaderBindingOffset, VkBuffer missShaderBindingTableBuffer, VkDeviceSize missShaderBindingOffset, VkDeviceSize missShaderBindingStride, VkBuffer hitShaderBindingTableBuffer, VkDeviceSize hitShaderBindingOffset, VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer, VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride, uint32_t width, uint32_t height, uint32_t depth);
 typedef void (GLAD_API_PTR *PFN_vkCmdUpdateBuffer)(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void * pData);
 typedef void (GLAD_API_PTR *PFN_vkCmdWaitEvents)(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent * pEvents, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const VkMemoryBarrier * pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier * pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier * pImageMemoryBarriers);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkCmdWriteAccelerationStructuresPropertiesKHR)(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR * pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkCmdWriteAccelerationStructuresPropertiesNV)(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR * pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery);
 typedef void (GLAD_API_PTR *PFN_vkCmdWriteBufferMarkerAMD)(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker);
 typedef void (GLAD_API_PTR *PFN_vkCmdWriteTimestamp)(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query);
 typedef VkResult (GLAD_API_PTR *PFN_vkCompileDeferredNV)(VkDevice device, VkPipeline pipeline, uint32_t shader);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkCopyAccelerationStructureKHR)(VkDevice device, const VkCopyAccelerationStructureInfoKHR * pInfo);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkCopyAccelerationStructureToMemoryKHR)(VkDevice device, const VkCopyAccelerationStructureToMemoryInfoKHR * pInfo);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkCopyMemoryToAccelerationStructureKHR)(VkDevice device, const VkCopyMemoryToAccelerationStructureInfoKHR * pInfo);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateAccelerationStructureKHR)(VkDevice device, const VkAccelerationStructureCreateInfoKHR * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkAccelerationStructureKHR * pAccelerationStructure);
-#endif
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateAccelerationStructureNV)(VkDevice device, const VkAccelerationStructureCreateInfoNV * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkAccelerationStructureNV * pAccelerationStructure);
+typedef VkResult (GLAD_API_PTR *PFN_vkGetAccelerationStructureBuildSizesKHR)(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkAccelerationStructureBuildGeometryInfoKHR* pBuildInfo, const uint32_t* pMaxPrimitiveCounts, VkAccelerationStructureBuildSizesInfoKHR* pSizeInfo);
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateAndroidSurfaceKHR)(VkInstance instance, const VkAndroidSurfaceCreateInfoKHR * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkSurfaceKHR * pSurface);
 #endif
@@ -9609,9 +9558,7 @@ typedef VkResult (GLAD_API_PTR *PFN_vkCreateCommandPool)(VkDevice device, const 
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateComputePipelines)(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkComputePipelineCreateInfo * pCreateInfos, const VkAllocationCallbacks * pAllocator, VkPipeline * pPipelines);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDebugReportCallbackEXT)(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDebugReportCallbackEXT * pCallback);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDebugUtilsMessengerEXT)(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDebugUtilsMessengerEXT * pMessenger);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDeferredOperationKHR)(VkDevice device, const VkAllocationCallbacks * pAllocator, VkDeferredOperationKHR * pDeferredOperation);
-#endif
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDescriptorPool)(VkDevice device, const VkDescriptorPoolCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDescriptorPool * pDescriptorPool);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDescriptorSetLayout)(VkDevice device, const VkDescriptorSetLayoutCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDescriptorSetLayout * pSetLayout);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateDescriptorUpdateTemplate)(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDescriptorUpdateTemplate * pDescriptorUpdateTemplate);
@@ -9647,9 +9594,7 @@ typedef VkResult (GLAD_API_PTR *PFN_vkCreatePipelineCache)(VkDevice device, cons
 typedef VkResult (GLAD_API_PTR *PFN_vkCreatePipelineLayout)(VkDevice device, const VkPipelineLayoutCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkPipelineLayout * pPipelineLayout);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreatePrivateDataSlotEXT)(VkDevice device, const VkPrivateDataSlotCreateInfoEXT * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkPrivateDataSlotEXT * pPrivateDataSlot);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateQueryPool)(VkDevice device, const VkQueryPoolCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkQueryPool * pQueryPool);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-typedef VkResult (GLAD_API_PTR *PFN_vkCreateRayTracingPipelinesKHR)(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR * pCreateInfos, const VkAllocationCallbacks * pAllocator, VkPipeline * pPipelines);
-#endif
+typedef VkResult (GLAD_API_PTR *PFN_vkCreateRayTracingPipelinesKHR)(VkDevice device, VkDeferredOperationKHR deferredOperation, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR * pCreateInfos, const VkAllocationCallbacks * pAllocator, VkPipeline * pPipelines);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateRayTracingPipelinesNV)(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoNV * pCreateInfos, const VkAllocationCallbacks * pAllocator, VkPipeline * pPipelines);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateRenderPass)(VkDevice device, const VkRenderPassCreateInfo * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkRenderPass * pRenderPass);
 typedef VkResult (GLAD_API_PTR *PFN_vkCreateRenderPass2)(VkDevice device, const VkRenderPassCreateInfo2 * pCreateInfo, const VkAllocationCallbacks * pAllocator, VkRenderPass * pRenderPass);
@@ -9683,21 +9628,15 @@ typedef VkResult (GLAD_API_PTR *PFN_vkCreateXlibSurfaceKHR)(VkInstance instance,
 typedef VkResult (GLAD_API_PTR *PFN_vkDebugMarkerSetObjectNameEXT)(VkDevice device, const VkDebugMarkerObjectNameInfoEXT * pNameInfo);
 typedef VkResult (GLAD_API_PTR *PFN_vkDebugMarkerSetObjectTagEXT)(VkDevice device, const VkDebugMarkerObjectTagInfoEXT * pTagInfo);
 typedef void (GLAD_API_PTR *PFN_vkDebugReportMessageEXT)(VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char * pLayerPrefix, const char * pMessage);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkDeferredOperationJoinKHR)(VkDevice device, VkDeferredOperationKHR operation);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkDestroyAccelerationStructureKHR)(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks * pAllocator);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkDestroyAccelerationStructureNV)(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyBuffer)(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyBufferView)(VkDevice device, VkBufferView bufferView, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyCommandPool)(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyDebugReportCallbackEXT)(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyDebugUtilsMessengerEXT)(VkInstance instance, VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks * pAllocator);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkDestroyDeferredOperationKHR)(VkDevice device, VkDeferredOperationKHR operation, const VkAllocationCallbacks * pAllocator);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkDestroyDescriptorPool)(VkDevice device, VkDescriptorPool descriptorPool, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyDescriptorSetLayout)(VkDevice device, VkDescriptorSetLayout descriptorSetLayout, const VkAllocationCallbacks * pAllocator);
 typedef void (GLAD_API_PTR *PFN_vkDestroyDescriptorUpdateTemplate)(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const VkAllocationCallbacks * pAllocator);
@@ -9740,13 +9679,9 @@ typedef VkResult (GLAD_API_PTR *PFN_vkFlushMappedMemoryRanges)(VkDevice device, 
 typedef void (GLAD_API_PTR *PFN_vkFreeCommandBuffers)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer * pCommandBuffers);
 typedef VkResult (GLAD_API_PTR *PFN_vkFreeDescriptorSets)(VkDevice device, VkDescriptorPool descriptorPool, uint32_t descriptorSetCount, const VkDescriptorSet * pDescriptorSets);
 typedef void (GLAD_API_PTR *PFN_vkFreeMemory)(VkDevice device, VkDeviceMemory memory, const VkAllocationCallbacks * pAllocator);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkDeviceAddress (GLAD_API_PTR *PFN_vkGetAccelerationStructureDeviceAddressKHR)(VkDevice device, const VkAccelerationStructureDeviceAddressInfoKHR * pInfo);
-#endif
 typedef VkResult (GLAD_API_PTR *PFN_vkGetAccelerationStructureHandleNV)(VkDevice device, VkAccelerationStructureKHR accelerationStructure, size_t dataSize, void * pData);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef void (GLAD_API_PTR *PFN_vkGetAccelerationStructureMemoryRequirementsKHR)(VkDevice device, const VkAccelerationStructureMemoryRequirementsInfoKHR * pInfo, VkMemoryRequirements2 * pMemoryRequirements);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkGetAccelerationStructureMemoryRequirementsNV)(VkDevice device, const VkAccelerationStructureMemoryRequirementsInfoNV * pInfo, VkMemoryRequirements2KHR * pMemoryRequirements);
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetAndroidHardwareBufferPropertiesANDROID)(VkDevice device, const struct AHardwareBuffer * buffer, VkAndroidHardwareBufferPropertiesANDROID * pProperties);
@@ -9760,17 +9695,11 @@ typedef void (GLAD_API_PTR *PFN_vkGetBufferMemoryRequirements2KHR)(VkDevice devi
 typedef uint64_t (GLAD_API_PTR *PFN_vkGetBufferOpaqueCaptureAddress)(VkDevice device, const VkBufferDeviceAddressInfo * pInfo);
 typedef uint64_t (GLAD_API_PTR *PFN_vkGetBufferOpaqueCaptureAddressKHR)(VkDevice device, const VkBufferDeviceAddressInfo * pInfo);
 typedef VkResult (GLAD_API_PTR *PFN_vkGetCalibratedTimestampsEXT)(VkDevice device, uint32_t timestampCount, const VkCalibratedTimestampInfoEXT * pTimestampInfos, uint64_t * pTimestamps, uint64_t * pMaxDeviation);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef uint32_t (GLAD_API_PTR *PFN_vkGetDeferredOperationMaxConcurrencyKHR)(VkDevice device, VkDeferredOperationKHR operation);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetDeferredOperationResultKHR)(VkDevice device, VkDeferredOperationKHR operation);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkGetDescriptorSetLayoutSupport)(VkDevice device, const VkDescriptorSetLayoutCreateInfo * pCreateInfo, VkDescriptorSetLayoutSupport * pSupport);
 typedef void (GLAD_API_PTR *PFN_vkGetDescriptorSetLayoutSupportKHR)(VkDevice device, const VkDescriptorSetLayoutCreateInfo * pCreateInfo, VkDescriptorSetLayoutSupport * pSupport);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetDeviceAccelerationStructureCompatibilityKHR)(VkDevice device, const VkAccelerationStructureVersionKHR * version);
-#endif
 typedef void (GLAD_API_PTR *PFN_vkGetDeviceGroupPeerMemoryFeatures)(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags * pPeerMemoryFeatures);
 typedef void (GLAD_API_PTR *PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR)(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags * pPeerMemoryFeatures);
 typedef VkResult (GLAD_API_PTR *PFN_vkGetDeviceGroupPresentCapabilitiesKHR)(VkDevice device, VkDeviceGroupPresentCapabilitiesKHR * pDeviceGroupPresentCapabilities);
@@ -9898,12 +9827,8 @@ typedef void (GLAD_API_PTR *PFN_vkGetQueueCheckpointDataNV)(VkQueue queue, uint3
 #if defined(VK_USE_PLATFORM_XLIB_XRANDR_EXT)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetRandROutputDisplayEXT)(VkPhysicalDevice physicalDevice, Display * dpy, RROutput rrOutput, VkDisplayKHR * pDisplay);
 #endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR)(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void * pData);
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkGetRayTracingShaderGroupHandlesKHR)(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void * pData);
-#endif
 typedef VkResult (GLAD_API_PTR *PFN_vkGetRayTracingShaderGroupHandlesNV)(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void * pData);
 typedef VkResult (GLAD_API_PTR *PFN_vkGetRefreshCycleDurationGOOGLE)(VkDevice device, VkSwapchainKHR swapchain, VkRefreshCycleDurationGOOGLE * pDisplayTimingProperties);
 typedef void (GLAD_API_PTR *PFN_vkGetRenderAreaGranularity)(VkDevice device, VkRenderPass renderPass, VkExtent2D * pGranularity);
@@ -9973,9 +9898,7 @@ typedef void (GLAD_API_PTR *PFN_vkUpdateDescriptorSets)(VkDevice device, uint32_
 typedef VkResult (GLAD_API_PTR *PFN_vkWaitForFences)(VkDevice device, uint32_t fenceCount, const VkFence * pFences, VkBool32 waitAll, uint64_t timeout);
 typedef VkResult (GLAD_API_PTR *PFN_vkWaitSemaphores)(VkDevice device, const VkSemaphoreWaitInfo * pWaitInfo, uint64_t timeout);
 typedef VkResult (GLAD_API_PTR *PFN_vkWaitSemaphoresKHR)(VkDevice device, const VkSemaphoreWaitInfo * pWaitInfo, uint64_t timeout);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 typedef VkResult (GLAD_API_PTR *PFN_vkWriteAccelerationStructuresPropertiesKHR)(VkDevice device, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR * pAccelerationStructures, VkQueryType queryType, size_t dataSize, void * pData, size_t stride);
-#endif
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 GLAD_API_CALL PFN_vkAcquireFullScreenExclusiveModeEXT glad_vkAcquireFullScreenExclusiveModeEXT;
@@ -10001,10 +9924,6 @@ GLAD_API_CALL PFN_vkAllocateMemory glad_vkAllocateMemory;
 #define vkAllocateMemory glad_vkAllocateMemory
 GLAD_API_CALL PFN_vkBeginCommandBuffer glad_vkBeginCommandBuffer;
 #define vkBeginCommandBuffer glad_vkBeginCommandBuffer
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-GLAD_API_CALL PFN_vkBindAccelerationStructureMemoryKHR glad_vkBindAccelerationStructureMemoryKHR;
-#define vkBindAccelerationStructureMemoryKHR glad_vkBindAccelerationStructureMemoryKHR
-#endif
 GLAD_API_CALL PFN_vkBindAccelerationStructureMemoryNV glad_vkBindAccelerationStructureMemoryNV;
 #define vkBindAccelerationStructureMemoryNV glad_vkBindAccelerationStructureMemoryNV
 GLAD_API_CALL PFN_vkBindBufferMemory glad_vkBindBufferMemory;
@@ -10019,10 +9938,8 @@ GLAD_API_CALL PFN_vkBindImageMemory2 glad_vkBindImageMemory2;
 #define vkBindImageMemory2 glad_vkBindImageMemory2
 GLAD_API_CALL PFN_vkBindImageMemory2KHR glad_vkBindImageMemory2KHR;
 #define vkBindImageMemory2KHR glad_vkBindImageMemory2KHR
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-GLAD_API_CALL PFN_vkBuildAccelerationStructureKHR glad_vkBuildAccelerationStructureKHR;
-#define vkBuildAccelerationStructureKHR glad_vkBuildAccelerationStructureKHR
-#endif
+GLAD_API_CALL PFN_vkBuildAccelerationStructuresKHR glad_vkBuildAccelerationStructuresKHR;
+#define vkBuildAccelerationStructuresKHR glad_vkBuildAccelerationStructuresKHR
 GLAD_API_CALL PFN_vkCmdBeginConditionalRenderingEXT glad_vkCmdBeginConditionalRenderingEXT;
 #define vkCmdBeginConditionalRenderingEXT glad_vkCmdBeginConditionalRenderingEXT
 GLAD_API_CALL PFN_vkCmdBeginDebugUtilsLabelEXT glad_vkCmdBeginDebugUtilsLabelEXT;
@@ -10057,14 +9974,10 @@ GLAD_API_CALL PFN_vkCmdBindVertexBuffers2EXT glad_vkCmdBindVertexBuffers2EXT;
 #define vkCmdBindVertexBuffers2EXT glad_vkCmdBindVertexBuffers2EXT
 GLAD_API_CALL PFN_vkCmdBlitImage glad_vkCmdBlitImage;
 #define vkCmdBlitImage glad_vkCmdBlitImage
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-GLAD_API_CALL PFN_vkCmdBuildAccelerationStructureIndirectKHR glad_vkCmdBuildAccelerationStructureIndirectKHR;
-#define vkCmdBuildAccelerationStructureIndirectKHR glad_vkCmdBuildAccelerationStructureIndirectKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-GLAD_API_CALL PFN_vkCmdBuildAccelerationStructureKHR glad_vkCmdBuildAccelerationStructureKHR;
-#define vkCmdBuildAccelerationStructureKHR glad_vkCmdBuildAccelerationStructureKHR
-#endif
+GLAD_API_CALL PFN_vkCmdBuildAccelerationStructuresIndirectKHR glad_vkCmdBuildAccelerationStructuresIndirectKHR;
+#define vkCmdBuildAccelerationStructuresIndirectKHR glad_vkCmdBuildAccelerationStructuresIndirectKHR
+GLAD_API_CALL PFN_vkCmdBuildAccelerationStructuresKHR glad_vkCmdBuildAccelerationStructuresKHR;
+#define vkCmdBuildAccelerationStructuresKHR glad_vkCmdBuildAccelerationStructuresKHR
 GLAD_API_CALL PFN_vkCmdBuildAccelerationStructureNV glad_vkCmdBuildAccelerationStructureNV;
 #define vkCmdBuildAccelerationStructureNV glad_vkCmdBuildAccelerationStructureNV
 GLAD_API_CALL PFN_vkCmdClearAttachments glad_vkCmdClearAttachments;
@@ -10073,16 +9986,12 @@ GLAD_API_CALL PFN_vkCmdClearColorImage glad_vkCmdClearColorImage;
 #define vkCmdClearColorImage glad_vkCmdClearColorImage
 GLAD_API_CALL PFN_vkCmdClearDepthStencilImage glad_vkCmdClearDepthStencilImage;
 #define vkCmdClearDepthStencilImage glad_vkCmdClearDepthStencilImage
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdCopyAccelerationStructureKHR glad_vkCmdCopyAccelerationStructureKHR;
 #define vkCmdCopyAccelerationStructureKHR glad_vkCmdCopyAccelerationStructureKHR
-#endif
 GLAD_API_CALL PFN_vkCmdCopyAccelerationStructureNV glad_vkCmdCopyAccelerationStructureNV;
 #define vkCmdCopyAccelerationStructureNV glad_vkCmdCopyAccelerationStructureNV
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdCopyAccelerationStructureToMemoryKHR glad_vkCmdCopyAccelerationStructureToMemoryKHR;
 #define vkCmdCopyAccelerationStructureToMemoryKHR glad_vkCmdCopyAccelerationStructureToMemoryKHR
-#endif
 GLAD_API_CALL PFN_vkCmdCopyBuffer glad_vkCmdCopyBuffer;
 #define vkCmdCopyBuffer glad_vkCmdCopyBuffer
 GLAD_API_CALL PFN_vkCmdCopyBufferToImage glad_vkCmdCopyBufferToImage;
@@ -10091,10 +10000,8 @@ GLAD_API_CALL PFN_vkCmdCopyImage glad_vkCmdCopyImage;
 #define vkCmdCopyImage glad_vkCmdCopyImage
 GLAD_API_CALL PFN_vkCmdCopyImageToBuffer glad_vkCmdCopyImageToBuffer;
 #define vkCmdCopyImageToBuffer glad_vkCmdCopyImageToBuffer
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdCopyMemoryToAccelerationStructureKHR glad_vkCmdCopyMemoryToAccelerationStructureKHR;
 #define vkCmdCopyMemoryToAccelerationStructureKHR glad_vkCmdCopyMemoryToAccelerationStructureKHR
-#endif
 GLAD_API_CALL PFN_vkCmdCopyQueryPoolResults glad_vkCmdCopyQueryPoolResults;
 #define vkCmdCopyQueryPoolResults glad_vkCmdCopyQueryPoolResults
 GLAD_API_CALL PFN_vkCmdDebugMarkerBeginEXT glad_vkCmdDebugMarkerBeginEXT;
@@ -10253,24 +10160,18 @@ GLAD_API_CALL PFN_vkCmdSetViewportWScalingNV glad_vkCmdSetViewportWScalingNV;
 #define vkCmdSetViewportWScalingNV glad_vkCmdSetViewportWScalingNV
 GLAD_API_CALL PFN_vkCmdSetViewportWithCountEXT glad_vkCmdSetViewportWithCountEXT;
 #define vkCmdSetViewportWithCountEXT glad_vkCmdSetViewportWithCountEXT
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdTraceRaysIndirectKHR glad_vkCmdTraceRaysIndirectKHR;
 #define vkCmdTraceRaysIndirectKHR glad_vkCmdTraceRaysIndirectKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdTraceRaysKHR glad_vkCmdTraceRaysKHR;
 #define vkCmdTraceRaysKHR glad_vkCmdTraceRaysKHR
-#endif
 GLAD_API_CALL PFN_vkCmdTraceRaysNV glad_vkCmdTraceRaysNV;
 #define vkCmdTraceRaysNV glad_vkCmdTraceRaysNV
 GLAD_API_CALL PFN_vkCmdUpdateBuffer glad_vkCmdUpdateBuffer;
 #define vkCmdUpdateBuffer glad_vkCmdUpdateBuffer
 GLAD_API_CALL PFN_vkCmdWaitEvents glad_vkCmdWaitEvents;
 #define vkCmdWaitEvents glad_vkCmdWaitEvents
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCmdWriteAccelerationStructuresPropertiesKHR glad_vkCmdWriteAccelerationStructuresPropertiesKHR;
 #define vkCmdWriteAccelerationStructuresPropertiesKHR glad_vkCmdWriteAccelerationStructuresPropertiesKHR
-#endif
 GLAD_API_CALL PFN_vkCmdWriteAccelerationStructuresPropertiesNV glad_vkCmdWriteAccelerationStructuresPropertiesNV;
 #define vkCmdWriteAccelerationStructuresPropertiesNV glad_vkCmdWriteAccelerationStructuresPropertiesNV
 GLAD_API_CALL PFN_vkCmdWriteBufferMarkerAMD glad_vkCmdWriteBufferMarkerAMD;
@@ -10279,24 +10180,18 @@ GLAD_API_CALL PFN_vkCmdWriteTimestamp glad_vkCmdWriteTimestamp;
 #define vkCmdWriteTimestamp glad_vkCmdWriteTimestamp
 GLAD_API_CALL PFN_vkCompileDeferredNV glad_vkCompileDeferredNV;
 #define vkCompileDeferredNV glad_vkCompileDeferredNV
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCopyAccelerationStructureKHR glad_vkCopyAccelerationStructureKHR;
 #define vkCopyAccelerationStructureKHR glad_vkCopyAccelerationStructureKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCopyAccelerationStructureToMemoryKHR glad_vkCopyAccelerationStructureToMemoryKHR;
 #define vkCopyAccelerationStructureToMemoryKHR glad_vkCopyAccelerationStructureToMemoryKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCopyMemoryToAccelerationStructureKHR glad_vkCopyMemoryToAccelerationStructureKHR;
 #define vkCopyMemoryToAccelerationStructureKHR glad_vkCopyMemoryToAccelerationStructureKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCreateAccelerationStructureKHR glad_vkCreateAccelerationStructureKHR;
 #define vkCreateAccelerationStructureKHR glad_vkCreateAccelerationStructureKHR
-#endif
 GLAD_API_CALL PFN_vkCreateAccelerationStructureNV glad_vkCreateAccelerationStructureNV;
 #define vkCreateAccelerationStructureNV glad_vkCreateAccelerationStructureNV
+GLAD_API_CALL PFN_vkGetAccelerationStructureBuildSizesKHR glad_vkGetAccelerationStructureBuildSizesKHR;
+#define vkGetAccelerationStructureBuildSizesKHR glad_vkGetAccelerationStructureBuildSizesKHR
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 GLAD_API_CALL PFN_vkCreateAndroidSurfaceKHR glad_vkCreateAndroidSurfaceKHR;
 #define vkCreateAndroidSurfaceKHR glad_vkCreateAndroidSurfaceKHR
@@ -10313,10 +10208,8 @@ GLAD_API_CALL PFN_vkCreateDebugReportCallbackEXT glad_vkCreateDebugReportCallbac
 #define vkCreateDebugReportCallbackEXT glad_vkCreateDebugReportCallbackEXT
 GLAD_API_CALL PFN_vkCreateDebugUtilsMessengerEXT glad_vkCreateDebugUtilsMessengerEXT;
 #define vkCreateDebugUtilsMessengerEXT glad_vkCreateDebugUtilsMessengerEXT
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCreateDeferredOperationKHR glad_vkCreateDeferredOperationKHR;
 #define vkCreateDeferredOperationKHR glad_vkCreateDeferredOperationKHR
-#endif
 GLAD_API_CALL PFN_vkCreateDescriptorPool glad_vkCreateDescriptorPool;
 #define vkCreateDescriptorPool glad_vkCreateDescriptorPool
 GLAD_API_CALL PFN_vkCreateDescriptorSetLayout glad_vkCreateDescriptorSetLayout;
@@ -10377,10 +10270,8 @@ GLAD_API_CALL PFN_vkCreatePrivateDataSlotEXT glad_vkCreatePrivateDataSlotEXT;
 #define vkCreatePrivateDataSlotEXT glad_vkCreatePrivateDataSlotEXT
 GLAD_API_CALL PFN_vkCreateQueryPool glad_vkCreateQueryPool;
 #define vkCreateQueryPool glad_vkCreateQueryPool
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkCreateRayTracingPipelinesKHR glad_vkCreateRayTracingPipelinesKHR;
 #define vkCreateRayTracingPipelinesKHR glad_vkCreateRayTracingPipelinesKHR
-#endif
 GLAD_API_CALL PFN_vkCreateRayTracingPipelinesNV glad_vkCreateRayTracingPipelinesNV;
 #define vkCreateRayTracingPipelinesNV glad_vkCreateRayTracingPipelinesNV
 GLAD_API_CALL PFN_vkCreateRenderPass glad_vkCreateRenderPass;
@@ -10435,14 +10326,10 @@ GLAD_API_CALL PFN_vkDebugMarkerSetObjectTagEXT glad_vkDebugMarkerSetObjectTagEXT
 #define vkDebugMarkerSetObjectTagEXT glad_vkDebugMarkerSetObjectTagEXT
 GLAD_API_CALL PFN_vkDebugReportMessageEXT glad_vkDebugReportMessageEXT;
 #define vkDebugReportMessageEXT glad_vkDebugReportMessageEXT
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkDeferredOperationJoinKHR glad_vkDeferredOperationJoinKHR;
 #define vkDeferredOperationJoinKHR glad_vkDeferredOperationJoinKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkDestroyAccelerationStructureKHR glad_vkDestroyAccelerationStructureKHR;
 #define vkDestroyAccelerationStructureKHR glad_vkDestroyAccelerationStructureKHR
-#endif
 GLAD_API_CALL PFN_vkDestroyAccelerationStructureNV glad_vkDestroyAccelerationStructureNV;
 #define vkDestroyAccelerationStructureNV glad_vkDestroyAccelerationStructureNV
 GLAD_API_CALL PFN_vkDestroyBuffer glad_vkDestroyBuffer;
@@ -10455,10 +10342,8 @@ GLAD_API_CALL PFN_vkDestroyDebugReportCallbackEXT glad_vkDestroyDebugReportCallb
 #define vkDestroyDebugReportCallbackEXT glad_vkDestroyDebugReportCallbackEXT
 GLAD_API_CALL PFN_vkDestroyDebugUtilsMessengerEXT glad_vkDestroyDebugUtilsMessengerEXT;
 #define vkDestroyDebugUtilsMessengerEXT glad_vkDestroyDebugUtilsMessengerEXT
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkDestroyDeferredOperationKHR glad_vkDestroyDeferredOperationKHR;
 #define vkDestroyDeferredOperationKHR glad_vkDestroyDeferredOperationKHR
-#endif
 GLAD_API_CALL PFN_vkDestroyDescriptorPool glad_vkDestroyDescriptorPool;
 #define vkDestroyDescriptorPool glad_vkDestroyDescriptorPool
 GLAD_API_CALL PFN_vkDestroyDescriptorSetLayout glad_vkDestroyDescriptorSetLayout;
@@ -10543,16 +10428,10 @@ GLAD_API_CALL PFN_vkFreeDescriptorSets glad_vkFreeDescriptorSets;
 #define vkFreeDescriptorSets glad_vkFreeDescriptorSets
 GLAD_API_CALL PFN_vkFreeMemory glad_vkFreeMemory;
 #define vkFreeMemory glad_vkFreeMemory
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetAccelerationStructureDeviceAddressKHR glad_vkGetAccelerationStructureDeviceAddressKHR;
 #define vkGetAccelerationStructureDeviceAddressKHR glad_vkGetAccelerationStructureDeviceAddressKHR
-#endif
 GLAD_API_CALL PFN_vkGetAccelerationStructureHandleNV glad_vkGetAccelerationStructureHandleNV;
 #define vkGetAccelerationStructureHandleNV glad_vkGetAccelerationStructureHandleNV
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-GLAD_API_CALL PFN_vkGetAccelerationStructureMemoryRequirementsKHR glad_vkGetAccelerationStructureMemoryRequirementsKHR;
-#define vkGetAccelerationStructureMemoryRequirementsKHR glad_vkGetAccelerationStructureMemoryRequirementsKHR
-#endif
 GLAD_API_CALL PFN_vkGetAccelerationStructureMemoryRequirementsNV glad_vkGetAccelerationStructureMemoryRequirementsNV;
 #define vkGetAccelerationStructureMemoryRequirementsNV glad_vkGetAccelerationStructureMemoryRequirementsNV
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -10577,22 +10456,16 @@ GLAD_API_CALL PFN_vkGetBufferOpaqueCaptureAddressKHR glad_vkGetBufferOpaqueCaptu
 #define vkGetBufferOpaqueCaptureAddressKHR glad_vkGetBufferOpaqueCaptureAddressKHR
 GLAD_API_CALL PFN_vkGetCalibratedTimestampsEXT glad_vkGetCalibratedTimestampsEXT;
 #define vkGetCalibratedTimestampsEXT glad_vkGetCalibratedTimestampsEXT
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetDeferredOperationMaxConcurrencyKHR glad_vkGetDeferredOperationMaxConcurrencyKHR;
 #define vkGetDeferredOperationMaxConcurrencyKHR glad_vkGetDeferredOperationMaxConcurrencyKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetDeferredOperationResultKHR glad_vkGetDeferredOperationResultKHR;
 #define vkGetDeferredOperationResultKHR glad_vkGetDeferredOperationResultKHR
-#endif
 GLAD_API_CALL PFN_vkGetDescriptorSetLayoutSupport glad_vkGetDescriptorSetLayoutSupport;
 #define vkGetDescriptorSetLayoutSupport glad_vkGetDescriptorSetLayoutSupport
 GLAD_API_CALL PFN_vkGetDescriptorSetLayoutSupportKHR glad_vkGetDescriptorSetLayoutSupportKHR;
 #define vkGetDescriptorSetLayoutSupportKHR glad_vkGetDescriptorSetLayoutSupportKHR
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetDeviceAccelerationStructureCompatibilityKHR glad_vkGetDeviceAccelerationStructureCompatibilityKHR;
 #define vkGetDeviceAccelerationStructureCompatibilityKHR glad_vkGetDeviceAccelerationStructureCompatibilityKHR
-#endif
 GLAD_API_CALL PFN_vkGetDeviceGroupPeerMemoryFeatures glad_vkGetDeviceGroupPeerMemoryFeatures;
 #define vkGetDeviceGroupPeerMemoryFeatures glad_vkGetDeviceGroupPeerMemoryFeatures
 GLAD_API_CALL PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR glad_vkGetDeviceGroupPeerMemoryFeaturesKHR;
@@ -10821,14 +10694,10 @@ GLAD_API_CALL PFN_vkGetQueueCheckpointDataNV glad_vkGetQueueCheckpointDataNV;
 GLAD_API_CALL PFN_vkGetRandROutputDisplayEXT glad_vkGetRandROutputDisplayEXT;
 #define vkGetRandROutputDisplayEXT glad_vkGetRandROutputDisplayEXT
 #endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR;
 #define vkGetRayTracingCaptureReplayShaderGroupHandlesKHR glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkGetRayTracingShaderGroupHandlesKHR glad_vkGetRayTracingShaderGroupHandlesKHR;
 #define vkGetRayTracingShaderGroupHandlesKHR glad_vkGetRayTracingShaderGroupHandlesKHR
-#endif
 GLAD_API_CALL PFN_vkGetRayTracingShaderGroupHandlesNV glad_vkGetRayTracingShaderGroupHandlesNV;
 #define vkGetRayTracingShaderGroupHandlesNV glad_vkGetRayTracingShaderGroupHandlesNV
 GLAD_API_CALL PFN_vkGetRefreshCycleDurationGOOGLE glad_vkGetRefreshCycleDurationGOOGLE;
@@ -10959,10 +10828,8 @@ GLAD_API_CALL PFN_vkWaitSemaphores glad_vkWaitSemaphores;
 #define vkWaitSemaphores glad_vkWaitSemaphores
 GLAD_API_CALL PFN_vkWaitSemaphoresKHR glad_vkWaitSemaphoresKHR;
 #define vkWaitSemaphoresKHR glad_vkWaitSemaphoresKHR
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 GLAD_API_CALL PFN_vkWriteAccelerationStructuresPropertiesKHR glad_vkWriteAccelerationStructuresPropertiesKHR;
 #define vkWriteAccelerationStructuresPropertiesKHR glad_vkWriteAccelerationStructuresPropertiesKHR
-#endif
 
 
 
@@ -11138,9 +11005,7 @@ int GLAD_VK_KHR_bind_memory2 = 0;
 int GLAD_VK_KHR_buffer_device_address = 0;
 int GLAD_VK_KHR_create_renderpass2 = 0;
 int GLAD_VK_KHR_dedicated_allocation = 0;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 int GLAD_VK_KHR_deferred_host_operations = 0;
-#endif
 int GLAD_VK_KHR_depth_stencil_resolve = 0;
 int GLAD_VK_KHR_descriptor_update_template = 0;
 int GLAD_VK_KHR_device_group = 0;
@@ -11184,9 +11049,7 @@ int GLAD_VK_KHR_pipeline_executable_properties = 0;
 int GLAD_VK_KHR_pipeline_library = 0;
 #endif
 int GLAD_VK_KHR_push_descriptor = 0;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 int GLAD_VK_KHR_ray_tracing = 0;
-#endif
 int GLAD_VK_KHR_relaxed_block_layout = 0;
 int GLAD_VK_KHR_sampler_mirror_clamp_to_edge = 0;
 int GLAD_VK_KHR_sampler_ycbcr_conversion = 0;
@@ -11290,9 +11153,6 @@ PFN_vkAllocateCommandBuffers glad_vkAllocateCommandBuffers = NULL;
 PFN_vkAllocateDescriptorSets glad_vkAllocateDescriptorSets = NULL;
 PFN_vkAllocateMemory glad_vkAllocateMemory = NULL;
 PFN_vkBeginCommandBuffer glad_vkBeginCommandBuffer = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-PFN_vkBindAccelerationStructureMemoryKHR glad_vkBindAccelerationStructureMemoryKHR = NULL;
-#endif
 PFN_vkBindAccelerationStructureMemoryNV glad_vkBindAccelerationStructureMemoryNV = NULL;
 PFN_vkBindBufferMemory glad_vkBindBufferMemory = NULL;
 PFN_vkBindBufferMemory2 glad_vkBindBufferMemory2 = NULL;
@@ -11300,9 +11160,7 @@ PFN_vkBindBufferMemory2KHR glad_vkBindBufferMemory2KHR = NULL;
 PFN_vkBindImageMemory glad_vkBindImageMemory = NULL;
 PFN_vkBindImageMemory2 glad_vkBindImageMemory2 = NULL;
 PFN_vkBindImageMemory2KHR glad_vkBindImageMemory2KHR = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-PFN_vkBuildAccelerationStructureKHR glad_vkBuildAccelerationStructureKHR = NULL;
-#endif
+PFN_vkBuildAccelerationStructuresKHR glad_vkBuildAccelerationStructuresKHR = NULL;
 PFN_vkCmdBeginConditionalRenderingEXT glad_vkCmdBeginConditionalRenderingEXT = NULL;
 PFN_vkCmdBeginDebugUtilsLabelEXT glad_vkCmdBeginDebugUtilsLabelEXT = NULL;
 PFN_vkCmdBeginQuery glad_vkCmdBeginQuery = NULL;
@@ -11320,30 +11178,20 @@ PFN_vkCmdBindTransformFeedbackBuffersEXT glad_vkCmdBindTransformFeedbackBuffersE
 PFN_vkCmdBindVertexBuffers glad_vkCmdBindVertexBuffers = NULL;
 PFN_vkCmdBindVertexBuffers2EXT glad_vkCmdBindVertexBuffers2EXT = NULL;
 PFN_vkCmdBlitImage glad_vkCmdBlitImage = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-PFN_vkCmdBuildAccelerationStructureIndirectKHR glad_vkCmdBuildAccelerationStructureIndirectKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-PFN_vkCmdBuildAccelerationStructureKHR glad_vkCmdBuildAccelerationStructureKHR = NULL;
-#endif
+PFN_vkCmdBuildAccelerationStructuresIndirectKHR glad_vkCmdBuildAccelerationStructuresIndirectKHR = NULL;
+PFN_vkCmdBuildAccelerationStructuresKHR glad_vkCmdBuildAccelerationStructuresKHR = NULL;
 PFN_vkCmdBuildAccelerationStructureNV glad_vkCmdBuildAccelerationStructureNV = NULL;
 PFN_vkCmdClearAttachments glad_vkCmdClearAttachments = NULL;
 PFN_vkCmdClearColorImage glad_vkCmdClearColorImage = NULL;
 PFN_vkCmdClearDepthStencilImage glad_vkCmdClearDepthStencilImage = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdCopyAccelerationStructureKHR glad_vkCmdCopyAccelerationStructureKHR = NULL;
-#endif
 PFN_vkCmdCopyAccelerationStructureNV glad_vkCmdCopyAccelerationStructureNV = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdCopyAccelerationStructureToMemoryKHR glad_vkCmdCopyAccelerationStructureToMemoryKHR = NULL;
-#endif
 PFN_vkCmdCopyBuffer glad_vkCmdCopyBuffer = NULL;
 PFN_vkCmdCopyBufferToImage glad_vkCmdCopyBufferToImage = NULL;
 PFN_vkCmdCopyImage glad_vkCmdCopyImage = NULL;
 PFN_vkCmdCopyImageToBuffer glad_vkCmdCopyImageToBuffer = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdCopyMemoryToAccelerationStructureKHR glad_vkCmdCopyMemoryToAccelerationStructureKHR = NULL;
-#endif
 PFN_vkCmdCopyQueryPoolResults glad_vkCmdCopyQueryPoolResults = NULL;
 PFN_vkCmdDebugMarkerBeginEXT glad_vkCmdDebugMarkerBeginEXT = NULL;
 PFN_vkCmdDebugMarkerEndEXT glad_vkCmdDebugMarkerEndEXT = NULL;
@@ -11423,35 +11271,22 @@ PFN_vkCmdSetViewport glad_vkCmdSetViewport = NULL;
 PFN_vkCmdSetViewportShadingRatePaletteNV glad_vkCmdSetViewportShadingRatePaletteNV = NULL;
 PFN_vkCmdSetViewportWScalingNV glad_vkCmdSetViewportWScalingNV = NULL;
 PFN_vkCmdSetViewportWithCountEXT glad_vkCmdSetViewportWithCountEXT = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdTraceRaysIndirectKHR glad_vkCmdTraceRaysIndirectKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdTraceRaysKHR glad_vkCmdTraceRaysKHR = NULL;
-#endif
 PFN_vkCmdTraceRaysNV glad_vkCmdTraceRaysNV = NULL;
 PFN_vkCmdUpdateBuffer glad_vkCmdUpdateBuffer = NULL;
 PFN_vkCmdWaitEvents glad_vkCmdWaitEvents = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCmdWriteAccelerationStructuresPropertiesKHR glad_vkCmdWriteAccelerationStructuresPropertiesKHR = NULL;
-#endif
 PFN_vkCmdWriteAccelerationStructuresPropertiesNV glad_vkCmdWriteAccelerationStructuresPropertiesNV = NULL;
 PFN_vkCmdWriteBufferMarkerAMD glad_vkCmdWriteBufferMarkerAMD = NULL;
 PFN_vkCmdWriteTimestamp glad_vkCmdWriteTimestamp = NULL;
 PFN_vkCompileDeferredNV glad_vkCompileDeferredNV = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCopyAccelerationStructureKHR glad_vkCopyAccelerationStructureKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCopyAccelerationStructureToMemoryKHR glad_vkCopyAccelerationStructureToMemoryKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCopyMemoryToAccelerationStructureKHR glad_vkCopyMemoryToAccelerationStructureKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCreateAccelerationStructureKHR glad_vkCreateAccelerationStructureKHR = NULL;
-#endif
 PFN_vkCreateAccelerationStructureNV glad_vkCreateAccelerationStructureNV = NULL;
+PFN_vkGetAccelerationStructureBuildSizesKHR glad_vkGetAccelerationStructureBuildSizesKHR = NULL;
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 PFN_vkCreateAndroidSurfaceKHR glad_vkCreateAndroidSurfaceKHR = NULL;
 #endif
@@ -11461,9 +11296,7 @@ PFN_vkCreateCommandPool glad_vkCreateCommandPool = NULL;
 PFN_vkCreateComputePipelines glad_vkCreateComputePipelines = NULL;
 PFN_vkCreateDebugReportCallbackEXT glad_vkCreateDebugReportCallbackEXT = NULL;
 PFN_vkCreateDebugUtilsMessengerEXT glad_vkCreateDebugUtilsMessengerEXT = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCreateDeferredOperationKHR glad_vkCreateDeferredOperationKHR = NULL;
-#endif
 PFN_vkCreateDescriptorPool glad_vkCreateDescriptorPool = NULL;
 PFN_vkCreateDescriptorSetLayout glad_vkCreateDescriptorSetLayout = NULL;
 PFN_vkCreateDescriptorUpdateTemplate glad_vkCreateDescriptorUpdateTemplate = NULL;
@@ -11499,9 +11332,7 @@ PFN_vkCreatePipelineCache glad_vkCreatePipelineCache = NULL;
 PFN_vkCreatePipelineLayout glad_vkCreatePipelineLayout = NULL;
 PFN_vkCreatePrivateDataSlotEXT glad_vkCreatePrivateDataSlotEXT = NULL;
 PFN_vkCreateQueryPool glad_vkCreateQueryPool = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkCreateRayTracingPipelinesKHR glad_vkCreateRayTracingPipelinesKHR = NULL;
-#endif
 PFN_vkCreateRayTracingPipelinesNV glad_vkCreateRayTracingPipelinesNV = NULL;
 PFN_vkCreateRenderPass glad_vkCreateRenderPass = NULL;
 PFN_vkCreateRenderPass2 glad_vkCreateRenderPass2 = NULL;
@@ -11535,21 +11366,15 @@ PFN_vkCreateXlibSurfaceKHR glad_vkCreateXlibSurfaceKHR = NULL;
 PFN_vkDebugMarkerSetObjectNameEXT glad_vkDebugMarkerSetObjectNameEXT = NULL;
 PFN_vkDebugMarkerSetObjectTagEXT glad_vkDebugMarkerSetObjectTagEXT = NULL;
 PFN_vkDebugReportMessageEXT glad_vkDebugReportMessageEXT = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkDeferredOperationJoinKHR glad_vkDeferredOperationJoinKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkDestroyAccelerationStructureKHR glad_vkDestroyAccelerationStructureKHR = NULL;
-#endif
 PFN_vkDestroyAccelerationStructureNV glad_vkDestroyAccelerationStructureNV = NULL;
 PFN_vkDestroyBuffer glad_vkDestroyBuffer = NULL;
 PFN_vkDestroyBufferView glad_vkDestroyBufferView = NULL;
 PFN_vkDestroyCommandPool glad_vkDestroyCommandPool = NULL;
 PFN_vkDestroyDebugReportCallbackEXT glad_vkDestroyDebugReportCallbackEXT = NULL;
 PFN_vkDestroyDebugUtilsMessengerEXT glad_vkDestroyDebugUtilsMessengerEXT = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkDestroyDeferredOperationKHR glad_vkDestroyDeferredOperationKHR = NULL;
-#endif
 PFN_vkDestroyDescriptorPool glad_vkDestroyDescriptorPool = NULL;
 PFN_vkDestroyDescriptorSetLayout glad_vkDestroyDescriptorSetLayout = NULL;
 PFN_vkDestroyDescriptorUpdateTemplate glad_vkDestroyDescriptorUpdateTemplate = NULL;
@@ -11592,13 +11417,8 @@ PFN_vkFlushMappedMemoryRanges glad_vkFlushMappedMemoryRanges = NULL;
 PFN_vkFreeCommandBuffers glad_vkFreeCommandBuffers = NULL;
 PFN_vkFreeDescriptorSets glad_vkFreeDescriptorSets = NULL;
 PFN_vkFreeMemory glad_vkFreeMemory = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetAccelerationStructureDeviceAddressKHR glad_vkGetAccelerationStructureDeviceAddressKHR = NULL;
-#endif
 PFN_vkGetAccelerationStructureHandleNV glad_vkGetAccelerationStructureHandleNV = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-PFN_vkGetAccelerationStructureMemoryRequirementsKHR glad_vkGetAccelerationStructureMemoryRequirementsKHR = NULL;
-#endif
 PFN_vkGetAccelerationStructureMemoryRequirementsNV glad_vkGetAccelerationStructureMemoryRequirementsNV = NULL;
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 PFN_vkGetAndroidHardwareBufferPropertiesANDROID glad_vkGetAndroidHardwareBufferPropertiesANDROID = NULL;
@@ -11612,17 +11432,11 @@ PFN_vkGetBufferMemoryRequirements2KHR glad_vkGetBufferMemoryRequirements2KHR = N
 PFN_vkGetBufferOpaqueCaptureAddress glad_vkGetBufferOpaqueCaptureAddress = NULL;
 PFN_vkGetBufferOpaqueCaptureAddressKHR glad_vkGetBufferOpaqueCaptureAddressKHR = NULL;
 PFN_vkGetCalibratedTimestampsEXT glad_vkGetCalibratedTimestampsEXT = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetDeferredOperationMaxConcurrencyKHR glad_vkGetDeferredOperationMaxConcurrencyKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetDeferredOperationResultKHR glad_vkGetDeferredOperationResultKHR = NULL;
-#endif
 PFN_vkGetDescriptorSetLayoutSupport glad_vkGetDescriptorSetLayoutSupport = NULL;
 PFN_vkGetDescriptorSetLayoutSupportKHR glad_vkGetDescriptorSetLayoutSupportKHR = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetDeviceAccelerationStructureCompatibilityKHR glad_vkGetDeviceAccelerationStructureCompatibilityKHR = NULL;
-#endif
 PFN_vkGetDeviceGroupPeerMemoryFeatures glad_vkGetDeviceGroupPeerMemoryFeatures = NULL;
 PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR glad_vkGetDeviceGroupPeerMemoryFeaturesKHR = NULL;
 PFN_vkGetDeviceGroupPresentCapabilitiesKHR glad_vkGetDeviceGroupPresentCapabilitiesKHR = NULL;
@@ -11750,12 +11564,8 @@ PFN_vkGetQueueCheckpointDataNV glad_vkGetQueueCheckpointDataNV = NULL;
 #if defined(VK_USE_PLATFORM_XLIB_XRANDR_EXT)
 PFN_vkGetRandROutputDisplayEXT glad_vkGetRandROutputDisplayEXT = NULL;
 #endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = NULL;
-#endif
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkGetRayTracingShaderGroupHandlesKHR glad_vkGetRayTracingShaderGroupHandlesKHR = NULL;
-#endif
 PFN_vkGetRayTracingShaderGroupHandlesNV glad_vkGetRayTracingShaderGroupHandlesNV = NULL;
 PFN_vkGetRefreshCycleDurationGOOGLE glad_vkGetRefreshCycleDurationGOOGLE = NULL;
 PFN_vkGetRenderAreaGranularity glad_vkGetRenderAreaGranularity = NULL;
@@ -11825,9 +11635,7 @@ PFN_vkUpdateDescriptorSets glad_vkUpdateDescriptorSets = NULL;
 PFN_vkWaitForFences glad_vkWaitForFences = NULL;
 PFN_vkWaitSemaphores glad_vkWaitSemaphores = NULL;
 PFN_vkWaitSemaphoresKHR glad_vkWaitSemaphoresKHR = NULL;
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 PFN_vkWriteAccelerationStructuresPropertiesKHR glad_vkWriteAccelerationStructuresPropertiesKHR = NULL;
-#endif
 
 
 static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr) {
@@ -12255,7 +12063,6 @@ static void glad_vk_load_VK_KHR_create_renderpass2( GLADuserptrloadfunc load, vo
     glad_vkCmdNextSubpass2KHR = (PFN_vkCmdNextSubpass2KHR) load(userptr, "vkCmdNextSubpass2KHR");
     glad_vkCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR) load(userptr, "vkCreateRenderPass2KHR");
 }
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 static void glad_vk_load_VK_KHR_deferred_host_operations( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_VK_KHR_deferred_host_operations) return;
     glad_vkCreateDeferredOperationKHR = (PFN_vkCreateDeferredOperationKHR) load(userptr, "vkCreateDeferredOperationKHR");
@@ -12264,7 +12071,6 @@ static void glad_vk_load_VK_KHR_deferred_host_operations( GLADuserptrloadfunc lo
     glad_vkGetDeferredOperationMaxConcurrencyKHR = (PFN_vkGetDeferredOperationMaxConcurrencyKHR) load(userptr, "vkGetDeferredOperationMaxConcurrencyKHR");
     glad_vkGetDeferredOperationResultKHR = (PFN_vkGetDeferredOperationResultKHR) load(userptr, "vkGetDeferredOperationResultKHR");
 }
-#endif
 static void glad_vk_load_VK_KHR_descriptor_update_template( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_VK_KHR_descriptor_update_template) return;
     glad_vkCmdPushDescriptorSetWithTemplateKHR = (PFN_vkCmdPushDescriptorSetWithTemplateKHR) load(userptr, "vkCmdPushDescriptorSetWithTemplateKHR");
@@ -12407,13 +12213,11 @@ static void glad_vk_load_VK_KHR_push_descriptor( GLADuserptrloadfunc load, void*
     glad_vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR) load(userptr, "vkCmdPushDescriptorSetKHR");
     glad_vkCmdPushDescriptorSetWithTemplateKHR = (PFN_vkCmdPushDescriptorSetWithTemplateKHR) load(userptr, "vkCmdPushDescriptorSetWithTemplateKHR");
 }
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
 static void glad_vk_load_VK_KHR_ray_tracing( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_VK_KHR_ray_tracing) return;
-    glad_vkBindAccelerationStructureMemoryKHR = (PFN_vkBindAccelerationStructureMemoryKHR) load(userptr, "vkBindAccelerationStructureMemoryKHR");
-    glad_vkBuildAccelerationStructureKHR = (PFN_vkBuildAccelerationStructureKHR) load(userptr, "vkBuildAccelerationStructureKHR");
-    glad_vkCmdBuildAccelerationStructureIndirectKHR = (PFN_vkCmdBuildAccelerationStructureIndirectKHR) load(userptr, "vkCmdBuildAccelerationStructureIndirectKHR");
-    glad_vkCmdBuildAccelerationStructureKHR = (PFN_vkCmdBuildAccelerationStructureKHR) load(userptr, "vkCmdBuildAccelerationStructureKHR");
+    glad_vkBuildAccelerationStructuresKHR = (PFN_vkBuildAccelerationStructuresKHR) load(userptr, "vkBuildAccelerationStructuresKHR");
+    glad_vkCmdBuildAccelerationStructuresIndirectKHR = (PFN_vkCmdBuildAccelerationStructuresIndirectKHR) load(userptr, "vkCmdBuildAccelerationStructuresIndirectKHR");
+    glad_vkCmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR) load(userptr, "vkCmdBuildAccelerationStructuresKHR");
     glad_vkCmdCopyAccelerationStructureKHR = (PFN_vkCmdCopyAccelerationStructureKHR) load(userptr, "vkCmdCopyAccelerationStructureKHR");
     glad_vkCmdCopyAccelerationStructureToMemoryKHR = (PFN_vkCmdCopyAccelerationStructureToMemoryKHR) load(userptr, "vkCmdCopyAccelerationStructureToMemoryKHR");
     glad_vkCmdCopyMemoryToAccelerationStructureKHR = (PFN_vkCmdCopyMemoryToAccelerationStructureKHR) load(userptr, "vkCmdCopyMemoryToAccelerationStructureKHR");
@@ -12423,17 +12227,16 @@ static void glad_vk_load_VK_KHR_ray_tracing( GLADuserptrloadfunc load, void* use
     glad_vkCopyAccelerationStructureKHR = (PFN_vkCopyAccelerationStructureKHR) load(userptr, "vkCopyAccelerationStructureKHR");
     glad_vkCopyAccelerationStructureToMemoryKHR = (PFN_vkCopyAccelerationStructureToMemoryKHR) load(userptr, "vkCopyAccelerationStructureToMemoryKHR");
     glad_vkCopyMemoryToAccelerationStructureKHR = (PFN_vkCopyMemoryToAccelerationStructureKHR) load(userptr, "vkCopyMemoryToAccelerationStructureKHR");
-    glad_vkCreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR) load(userptr, "vkCreateAccelerationStructureKHR");
+    glad_vkCreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)load(userptr, "vkCreateAccelerationStructureKHR");
+    glad_vkGetAccelerationStructureBuildSizesKHR = (PFN_vkGetAccelerationStructureBuildSizesKHR)load(userptr, "vkGetAccelerationStructureBuildSizesKHR");
     glad_vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR) load(userptr, "vkCreateRayTracingPipelinesKHR");
     glad_vkDestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR) load(userptr, "vkDestroyAccelerationStructureKHR");
     glad_vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR) load(userptr, "vkGetAccelerationStructureDeviceAddressKHR");
-    glad_vkGetAccelerationStructureMemoryRequirementsKHR = (PFN_vkGetAccelerationStructureMemoryRequirementsKHR) load(userptr, "vkGetAccelerationStructureMemoryRequirementsKHR");
     glad_vkGetDeviceAccelerationStructureCompatibilityKHR = (PFN_vkGetDeviceAccelerationStructureCompatibilityKHR) load(userptr, "vkGetDeviceAccelerationStructureCompatibilityKHR");
     glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = (PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR) load(userptr, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR");
     glad_vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR) load(userptr, "vkGetRayTracingShaderGroupHandlesKHR");
     glad_vkWriteAccelerationStructuresPropertiesKHR = (PFN_vkWriteAccelerationStructuresPropertiesKHR) load(userptr, "vkWriteAccelerationStructuresPropertiesKHR");
 }
-#endif
 static void glad_vk_load_VK_KHR_sampler_ycbcr_conversion( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_VK_KHR_sampler_ycbcr_conversion) return;
     glad_vkCreateSamplerYcbcrConversionKHR = (PFN_vkCreateSamplerYcbcrConversionKHR) load(userptr, "vkCreateSamplerYcbcrConversionKHR");
@@ -12843,9 +12646,7 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
     GLAD_VK_KHR_buffer_device_address = glad_vk_has_extension("VK_KHR_buffer_device_address", extension_count, extensions);
     GLAD_VK_KHR_create_renderpass2 = glad_vk_has_extension("VK_KHR_create_renderpass2", extension_count, extensions);
     GLAD_VK_KHR_dedicated_allocation = glad_vk_has_extension("VK_KHR_dedicated_allocation", extension_count, extensions);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
     GLAD_VK_KHR_deferred_host_operations = glad_vk_has_extension("VK_KHR_deferred_host_operations", extension_count, extensions);
-#endif
     GLAD_VK_KHR_depth_stencil_resolve = glad_vk_has_extension("VK_KHR_depth_stencil_resolve", extension_count, extensions);
     GLAD_VK_KHR_descriptor_update_template = glad_vk_has_extension("VK_KHR_descriptor_update_template", extension_count, extensions);
     GLAD_VK_KHR_device_group = glad_vk_has_extension("VK_KHR_device_group", extension_count, extensions);
@@ -12889,9 +12690,9 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
     GLAD_VK_KHR_pipeline_library = glad_vk_has_extension("VK_KHR_pipeline_library", extension_count, extensions);
 #endif
     GLAD_VK_KHR_push_descriptor = glad_vk_has_extension("VK_KHR_push_descriptor", extension_count, extensions);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
-    GLAD_VK_KHR_ray_tracing = glad_vk_has_extension("VK_KHR_ray_tracing", extension_count, extensions);
-#endif
+    GLAD_VK_KHR_ray_tracing = (glad_vk_has_extension("VK_KHR_acceleration_structure", extension_count, extensions)
+        && glad_vk_has_extension("VK_KHR_ray_tracing_pipeline", extension_count, extensions)
+        && glad_vk_has_extension("VK_KHR_ray_query", extension_count, extensions));
     GLAD_VK_KHR_relaxed_block_layout = glad_vk_has_extension("VK_KHR_relaxed_block_layout", extension_count, extensions);
     GLAD_VK_KHR_sampler_mirror_clamp_to_edge = glad_vk_has_extension("VK_KHR_sampler_mirror_clamp_to_edge", extension_count, extensions);
     GLAD_VK_KHR_sampler_ycbcr_conversion = glad_vk_has_extension("VK_KHR_sampler_ycbcr_conversion", extension_count, extensions);
@@ -13087,9 +12888,7 @@ int gladLoadVulkanUserPtr( VkPhysicalDevice physical_device, GLADuserptrloadfunc
     glad_vk_load_VK_KHR_bind_memory2(load, userptr);
     glad_vk_load_VK_KHR_buffer_device_address(load, userptr);
     glad_vk_load_VK_KHR_create_renderpass2(load, userptr);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
     glad_vk_load_VK_KHR_deferred_host_operations(load, userptr);
-#endif
     glad_vk_load_VK_KHR_descriptor_update_template(load, userptr);
     glad_vk_load_VK_KHR_device_group(load, userptr);
     glad_vk_load_VK_KHR_device_group_creation(load, userptr);
@@ -13120,9 +12919,7 @@ int gladLoadVulkanUserPtr( VkPhysicalDevice physical_device, GLADuserptrloadfunc
     glad_vk_load_VK_KHR_performance_query(load, userptr);
     glad_vk_load_VK_KHR_pipeline_executable_properties(load, userptr);
     glad_vk_load_VK_KHR_push_descriptor(load, userptr);
-#if defined(VK_ENABLE_BETA_EXTENSIONS)
     glad_vk_load_VK_KHR_ray_tracing(load, userptr);
-#endif
     glad_vk_load_VK_KHR_sampler_ycbcr_conversion(load, userptr);
     glad_vk_load_VK_KHR_shared_presentable_image(load, userptr);
     glad_vk_load_VK_KHR_surface(load, userptr);
@@ -13257,7 +13054,6 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkAllocateDescriptorSets",
     "vkAllocateMemory",
     "vkBeginCommandBuffer",
-    "vkBindAccelerationStructureMemoryKHR",
     "vkBindAccelerationStructureMemoryNV",
     "vkBindBufferMemory",
     "vkBindBufferMemory2",
@@ -13265,7 +13061,7 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkBindImageMemory",
     "vkBindImageMemory2",
     "vkBindImageMemory2KHR",
-    "vkBuildAccelerationStructureKHR",
+    "vkBuildAccelerationStructuresKHR",
     "vkCmdBeginConditionalRenderingEXT",
     "vkCmdBeginDebugUtilsLabelEXT",
     "vkCmdBeginQuery",
@@ -13283,8 +13079,8 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkCmdBindVertexBuffers",
     "vkCmdBindVertexBuffers2EXT",
     "vkCmdBlitImage",
-    "vkCmdBuildAccelerationStructureIndirectKHR",
-    "vkCmdBuildAccelerationStructureKHR",
+    "vkCmdBuildAccelerationStructuresIndirectKHR",
+    "vkCmdBuildAccelerationStructuresKHR",
     "vkCmdBuildAccelerationStructureNV",
     "vkCmdClearAttachments",
     "vkCmdClearColorImage",

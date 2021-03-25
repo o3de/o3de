@@ -337,6 +337,17 @@ class Test(unittest.TestCase):
         mock_wait.assert_called()
         mock_log_warn.assert_called()
 
+    @mock.patch('psutil.wait_procs')
+    @mock.patch('logging.Logger.warning')
+    def test_SafeKillProcList_RaisesError_NoRaiseAndLogsError(self, mock_log_warn, mock_wait_procs):
+        mock_wait_procs.side_effect = psutil.PermissionError()
+        proc_mock = mock.MagicMock()
+
+        process_utils._safe_kill_process_list(proc_mock)
+
+        mock_wait_procs.assert_called()
+        mock_log_warn.assert_called()
+
     @mock.patch('psutil.process_iter')
     @mock.patch('logging.Logger.debug')
     def test_SafeGetProc_CannotAccess_LogAndReturnNone(self, mock_log_debug, mock_psiter):

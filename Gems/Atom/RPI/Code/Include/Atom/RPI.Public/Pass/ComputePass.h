@@ -54,9 +54,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions...
-            virtual void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer);
-            virtual void CompileResources(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer);
-            virtual void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const PassScopeProducer& producer);
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // Calculates the group counts for the dispatch item using the target image dimensions
             // and the number of threads per group (group size)

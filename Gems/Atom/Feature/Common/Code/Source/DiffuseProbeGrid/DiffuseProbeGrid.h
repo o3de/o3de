@@ -11,12 +11,12 @@
 */
 #pragma once
 
+#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Aabb.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
 
 namespace AZ
 {
@@ -26,6 +26,11 @@ namespace AZ
 
         struct DiffuseProbeGridRenderData
         {
+            static const RHI::Format RayTraceImageFormat = RHI::Format::R32G32B32A32_FLOAT;
+            static const RHI::Format IrradianceImageFormat = RHI::Format::R16G16B16A16_UNORM;
+            static const RHI::Format DistanceImageFormat = RHI::Format::R32G32_FLOAT;
+            static const RHI::Format RelocationImageFormat = RHI::Format::R16G16B16A16_FLOAT;
+
             // image pool
             RHI::Ptr<RHI::ImagePool> m_imagePool;
 
@@ -58,8 +63,7 @@ namespace AZ
             ~DiffuseProbeGrid();
 
             void Init(RPI::Scene* scene, DiffuseProbeGridRenderData* diffuseProbeGridRenderData);
-            void Simulate(RPI::Scene* scene, uint32_t probeIndex);
-            void Render(RPI::ViewPtr view);
+            void Simulate(uint32_t probeIndex);
 
             void SetTransform(const AZ::Transform& transform);
 
@@ -87,10 +91,13 @@ namespace AZ
             bool GetGIShadows() const { return m_giShadows; }
             void SetGIShadows(bool giShadows) { m_giShadows = giShadows; }
 
+            bool GetUseDiffuseIbl() const { return m_useDiffuseIbl; }
+            void SetUseDiffuseIbl(bool useDiffuseIbl) { m_useDiffuseIbl = useDiffuseIbl; }
+
             uint32_t GetNumRaysPerProbe() const { return m_numRaysPerProbe; }
 
-            uint32_t GetRemainingRelocationIterations() const { return m_remainingRelocationIterations; }
-            void DecrementRemainingRelocationIterations() { --m_remainingRelocationIterations; }
+            uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
+            void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
             void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
 
             // compute total number of probes in the grid
@@ -103,17 +110,18 @@ namespace AZ
             void SetGridConstants(Data::Instance<RPI::ShaderResourceGroup>& srg);            
 
             // Srgs
-            const Data::Instance<RPI::ShaderResourceGroup>& GetRayTraceSrg() { return m_rayTraceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBlendIrradianceSrg() { return m_blendIrradianceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBlendDistanceSrg() { return m_blendDistanceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowIrradianceSrg() { return m_borderUpdateRowIrradianceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnIrradianceSrg() { return m_borderUpdateColumnIrradianceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowDistanceSrg() { return m_borderUpdateRowDistanceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnDistanceSrg() { return m_borderUpdateColumnDistanceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() { return m_relocationSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetRayTraceSrg() const { return m_rayTraceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBlendIrradianceSrg() const { return m_blendIrradianceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBlendDistanceSrg() const { return m_blendDistanceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowIrradianceSrg() const { return m_borderUpdateRowIrradianceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnIrradianceSrg() const { return m_borderUpdateColumnIrradianceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowDistanceSrg() const { return m_borderUpdateRowDistanceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnDistanceSrg() const { return m_borderUpdateColumnDistanceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() const { return m_relocationSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
 
             // Srg updates
-            void UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset, const RPI::Scene* scene);
+            void UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
             void UpdateBlendIrradianceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
             void UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
             void UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset, const Data::Asset<RPI::ShaderResourceGroupAsset>& columnSrgAsset);
@@ -134,20 +142,23 @@ namespace AZ
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
+            // the irradiance image needs to be manually cleared after it is resized in the editor
+            bool GetIrradianceClearRequired() const { return m_irradianceClearRequired; }
+            void ResetIrradianceClearRequired() { m_irradianceClearRequired = false; }
+
             static constexpr uint32_t DefaultNumIrradianceTexels = 6;
             static constexpr uint32_t DefaultNumDistanceTexels = 14;
-            static constexpr uint32_t DefaultNumRelocationIterations = 100;
+            static constexpr int32_t DefaultNumRelocationIterations = 100;
 
         private:
             void UpdateTextures();
             void ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ);
             bool ValidateProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing);
             void UpdateProbeCount();
-            Matrix4x4 ComputeRandomRotation();
+            void UpdateCulling();
 
-            // transform service
-            TransformServiceFeatureProcessor::ObjectId m_objectId;
-            TransformServiceFeatureProcessor* m_transformService = nullptr;
+            // scene
+            RPI::Scene* m_scene = nullptr;
 
             // probe grid position
             AZ::Vector3 m_position = AZ::Vector3(0.0f, 0.0f, 0.0f);
@@ -171,7 +182,7 @@ namespace AZ
             float    m_normalBias = 0.6f;
             float    m_viewBias = 0.01f;
             uint32_t m_numRaysPerProbe = 288;
-            float    m_probeMaxRayDistance = 10.0f;
+            float    m_probeMaxRayDistance = 30.0f;
             float    m_probeDistanceExponent = 50.0f;
             float    m_probeHysteresis = 0.95f;
             float    m_probeChangeThreshold = 0.2f;
@@ -182,13 +193,14 @@ namespace AZ
             float    m_probeBackfaceThreshold = 0.25f;
             float    m_ambientMultiplier = 1.0f;
             bool     m_giShadows = true;
+            bool     m_useDiffuseIbl = true;
 
             // rotation transform applied to probe rays
             AZ::Matrix4x4 m_probeRayRotationTransform;
             AZ::SimpleLcgRandom m_random;
 
             // probe relocation settings
-            uint32_t m_remainingRelocationIterations = DefaultNumRelocationIterations;
+            int32_t m_remainingRelocationIterations = DefaultNumRelocationIterations;
 
             // render data
             DiffuseProbeGridRenderData* m_renderData = nullptr;
@@ -200,6 +212,9 @@ namespace AZ
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
             RHI::DrawItemSortKey m_sortKey = InvalidSortKey;
 
+            // culling
+            RPI::Cullable m_cullable;
+
             // textures
             static const uint32_t MaxTextureDimension = 8192;
             static const uint32_t ImageFrameCount = 3;
@@ -209,6 +224,7 @@ namespace AZ
             RHI::Ptr<RHI::Image> m_relocationImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
+            bool m_irradianceClearRequired = true;
 
             // Srgs
             Data::Instance<RPI::ShaderResourceGroup> m_rayTraceSrg;

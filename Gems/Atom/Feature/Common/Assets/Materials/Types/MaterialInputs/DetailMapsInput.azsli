@@ -1,0 +1,144 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+// This file provides utilities for common handling of inputs for a detail layer of PBR materials.
+// This layer includes alternate base color, roughness, normal, etc maps that are tiled on top of the materialtype's main maps.
+
+#include "BaseColorInput.azsli"
+#include "NormalInput.azsli"
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_DETAIL_MAPS(prefix) \
+float m_detail_blendFactor;                   \
+Texture2D m_detail_blendMask_texture;         \
+uint m_detail_blendMask_uvIndex;              \
+                                              \
+uint m_detail_allMapsUvIndex;                 \
+                                              \
+Texture2D m_detail_baseColor_texture;         \
+float m_detail_baseColor_factor;              \
+                                              \
+float m_detail_normal_factor;                 \
+Texture2D m_detail_normal_texture;            \
+bool m_detail_normal_flipX;                   \
+bool m_detail_normal_flipY;                   \
+                                              \
+float3x3 m_detailUvMatrix;                    \
+float3x3 m_detailUvMatrixInverse;
+
+
+#define COMMON_OPTIONS_DETAIL_MAPS(prefix)   \
+option bool o_detail_blendMask_useTexture;   \
+option bool o_detail_baseColor_useTexture;   \
+option bool o_detail_normal_useTexture;
+
+
+float GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLayerBlendMaskSampler, float2 detailLayerBlendMaskUv, bool useDetailLayerBlendMask, float detailLayerBlendFactor)
+{
+    if (useDetailLayerBlendMask)
+    {
+        detailLayerBlendFactor *= detailLayerBlendMask.Sample(detailLayerBlendMaskSampler, detailLayerBlendMaskUv).r;
+    }
+
+    return detailLayerBlendFactor;
+}
+
+float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 mainNormalTS, Texture2D overlayNormalMap, sampler mapSampler, float2 uv, bool flipNormalX, bool flipNormalY, float3x3 normalUvMatrix, float factor)
+{
+    if(applyOverlay)
+    {
+        // Get overlay normal in tangent space
+        float3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, mapSampler, uv, flipNormalX, flipNormalY, normalUvMatrix, true, factor);
+        
+        // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
+        // Often the main map will be in an unwrapped UV space and the detail map will be in a tiled UV space.
+
+        // Combine normals in tangent space
+        float3 normal = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalTS);
+
+        return normal;
+    }
+    else
+    {
+        return mainNormalTS;
+    }
+}
+
+float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormal, float3 tangent, float3 bitangent, float3 mainNormalTS, Texture2D overlayNormalMap, sampler mapSampler, float2 uv, float factor, bool flipNormalX, bool flipNormalY, float3x3 normalUvMatrix)
+{
+    if(applyOverlay)
+    {
+        float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, mainNormalTS, overlayNormalMap, mapSampler, uv, flipNormalX, flipNormalY, normalUvMatrix, factor);
+        float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormal, tangent, bitangent) );
+        return normalWS;
+    }
+    else
+    {
+        return normalize( TangentSpaceToWorld(mainNormalTS, vertexNormal, tangent, bitangent) );
+    }
+}
+
+float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormal,
+                                float3 mainTangent,   float3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   float mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   float3x3 mainNormalUvMatrix,   bool useMainNormalMap,
+                                float3 detailTangent, float3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, float detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, float3x3 detailNormalUvMatrix, bool useDetailNormalMap)
+{
+    float3 normal;
+    
+    if(useDetailNormalMap)
+    {
+        // Get normal in tangent space
+        float3 normalTS = GetNormalInputTS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, 
+                                            mainNormalUvMatrix, useMainNormalMap, mainNormalFactor);
+        
+        bool applyOverlay = true;
+        normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, detailTangent, detailBitangent, 
+            normalTS, detailNormalMap, detailSampler, detailUv, detailNormalFactor, flipDetailNormalX, flipDetailNormalY, detailNormalUvMatrix);
+
+        AdjustBackFaceNormal(normal, isFrontFace);
+    }
+    else
+    {
+        // TODO: Re-order these parameters to match GetDetailedNormalInputWS
+        normal = GetNormalInputWS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, isFrontFace, vertexNormal,
+                                  mainTangent, mainBitangent, mainNormalUvMatrix, useMainNormalMap, mainNormalFactor);
+    }
+
+    return normal;
+}
+
+float3 ApplyTextureOverlay(bool applyOverlay, float3 baseColor, Texture2D map, sampler mapSampler, float2 uv, float factor)
+{
+    if (applyOverlay)
+    {
+        float3 sampledColor = map.Sample(mapSampler, uv).rgb;
+        sampledColor = TransformColor(sampledColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        return ApplyTextureBlend(baseColor, sampledColor, factor, TextureBlendMode::Overlay);
+    }
+    else
+    {
+        return baseColor;
+    }
+}
+
+float3 GetDetailedBaseColorInput(Texture2D mainBaseColorMap,     sampler mainBaseColorMapSampler,     float2 mainBaseColorUv,        bool useMainBaseColorMap,     float3 mainBaseColor, float mainBaseColorFactor, TextureBlendMode mainBaseColorBlendMode,
+                                 Texture2D detailBaseColorMap,   sampler detailBaseColorMapSampler,   float2 detailBaseColorUv,      bool useDetailBaseColorMap,   float detailBaseColorBlendFactor)
+{
+    float3 color = GetBaseColorInput(mainBaseColorMap, mainBaseColorMapSampler, mainBaseColorUv, mainBaseColor, useMainBaseColorMap);
+    color = BlendBaseColor(color, mainBaseColor, mainBaseColorFactor, mainBaseColorBlendMode, useMainBaseColorMap);
+    color = ApplyTextureOverlay(useDetailBaseColorMap, color, detailBaseColorMap, detailBaseColorMapSampler, detailBaseColorUv, detailBaseColorBlendFactor);
+    return color;
+}

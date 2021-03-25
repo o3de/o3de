@@ -46,7 +46,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("ShowNews", &GeneralSettings::m_bShowNews)
         ->Field("EnableSceneInspector", &GeneralSettings::m_enableSceneInspector)
         ->Field("RestoreViewportCamera", &GeneralSettings::m_restoreViewportCamera)
-        ;
+        ->Field("PrefabSystem", &GeneralSettings::m_enablePrefabSystem);
 
     serialize.Class<Messaging>()
         ->Version(2)
@@ -101,7 +101,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_stylusMode, "Stylus Mode", "Stylus Mode for tablets and other pointing devices")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_restoreViewportCamera, EditorPreferencesGeneralRestoreViewportCameraSettingName, "Keep the original editor viewport transform when exiting game mode.")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSceneInspector, "Enable Scene Inspector (EXPERIMENTAL)", "Enable the option to inspect the internal data loaded from scene files like .fbx. This is an experimental feature. Restart the Scene Settings if the option is not visible under the Help menu.")
-            ;
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enablePrefabSystem, "Enable Prefab System (EXPERIMENTAL)", "Enable this option to preview Lumberyard's new prefab system. Enabling this setting removes slice support for level entities; you will need to restart the Editor for the change to take effect.");
 
         editContext->Class<Messaging>("Messaging", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Lumberyard at startup", "Show Welcome to Lumberyard at startup")
@@ -172,6 +172,8 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.restoreViewportCamera = m_generalSettings.m_restoreViewportCamera;
     gSettings.enableSceneInspector = m_generalSettings.m_enableSceneInspector;
 
+    gSettings.prefabSystem = m_generalSettings.m_enablePrefabSystem;
+
     if (static_cast<int>(m_generalSettings.m_toolbarIconSize) != gSettings.gui.nToolbarIconSize)
     {
         gSettings.gui.nToolbarIconSize = static_cast<int>(m_generalSettings.m_toolbarIconSize);
@@ -193,6 +195,16 @@ void CEditorPreferencesPage_General::OnApply()
 
     //slices
     gSettings.sliceSettings.dynamicByDefault = m_sliceSettings.m_slicesDynamicByDefault;
+
+    // if the user enabled/disabled the prefab context - notify them that a restart
+    // is required in order to see the effect of the change
+    if (gSettings.prefabSystem != m_generalSettings.m_enablePrefabSystemInitialValue)
+    {
+        QMessageBox::warning(
+            AzToolsFramework::GetActiveWindow(), QObject::tr("Restart required"),
+            QObject::tr("Restart the Editor in order for the Prefab/Slice system changes to take effect.")
+        );
+    }
 }
 
 void CEditorPreferencesPage_General::InitializeSettings()
@@ -207,6 +219,8 @@ void CEditorPreferencesPage_General::InitializeSettings()
     m_generalSettings.m_stylusMode = gSettings.stylusMode;
     m_generalSettings.m_restoreViewportCamera = gSettings.restoreViewportCamera;
     m_generalSettings.m_enableSceneInspector = gSettings.enableSceneInspector;
+    m_generalSettings.m_enablePrefabSystem = gSettings.prefabSystem;
+    m_generalSettings.m_enablePrefabSystemInitialValue = gSettings.prefabSystem;
 
     m_generalSettings.m_toolbarIconSize = static_cast<AzQtComponents::ToolBar::ToolBarIconSize>(gSettings.gui.nToolbarIconSize);
 

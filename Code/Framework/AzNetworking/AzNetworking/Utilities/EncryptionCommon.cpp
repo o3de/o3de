@@ -1,14 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #include <AzNetworking/Utilities/EncryptionCommon.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
@@ -35,7 +35,7 @@
 
 namespace AzNetworking
 {
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "testing.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format (default is for debugging purposes)");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "testcert.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format (default is for debugging purposes)");
     AZ_CVAR(AZ::CVarFixedString, net_SslExternalPrivateKeyFile,  "testkey.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) private key file in PEM format (default is for debugging purposes)");
     AZ_CVAR(AZ::CVarFixedString, net_SslExternalContextPassword,       "12345", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the EXTERNAL (server to client) private certificate (default is for debugging purposes)");
 
@@ -54,52 +54,53 @@ namespace AzNetworking
     void PrintSslErrorStack()
     {
 #if AZ_TRAIT_USE_OPENSSL
-        const int32_t errorCode = ERR_get_error();
-        const int32_t systemError = GetLastNetworkError();
 
-        switch (errorCode)
-        {
-        case SSL_ERROR_NONE:
-            AZLOG_ERROR("%X - SSL_ERROR_NONE: last system error is (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
-            break;
-        case SSL_ERROR_ZERO_RETURN:
-            AZLOG_ERROR("%X - SSL_ERROR_ZERO_RETURN: connection has been closed", errorCode);
-            break;
-        case SSL_ERROR_WANT_READ:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_READ: socket is non-blocking, read buffer is empty", errorCode);
-            break;
-        case SSL_ERROR_WANT_WRITE:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_WRITE: socket is non-blocking, write buffer is full", errorCode);
-            break;
-        case SSL_ERROR_WANT_CONNECT:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_CONNECT: socket is non-blocking, connect failed and should be retried", errorCode);
-            break;
-        case SSL_ERROR_WANT_ACCEPT:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_ACCEPT: socket is non-blocking, accept failed and should be retried", errorCode);
-            break;
-        case SSL_ERROR_WANT_X509_LOOKUP:
+        const int32_t errorCode = ERR_get_error();
+            const int32_t systemError = GetLastNetworkError();
+
+            switch (errorCode)
+            {
+            case SSL_ERROR_NONE:
+                AZLOG_ERROR("%X - SSL_ERROR_NONE: last system error is (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                AZLOG_ERROR("%X - SSL_ERROR_ZERO_RETURN: connection has been closed", errorCode);
+                break;
+            case SSL_ERROR_WANT_READ:
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_READ: socket is non-blocking, read buffer is empty", errorCode);
+                break;
+            case SSL_ERROR_WANT_WRITE:
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_WRITE: socket is non-blocking, write buffer is full", errorCode);
+                break;
+            case SSL_ERROR_WANT_CONNECT:
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_CONNECT: socket is non-blocking, connect failed and should be retried", errorCode);
+                break;
+            case SSL_ERROR_WANT_ACCEPT:
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_ACCEPT: socket is non-blocking, accept failed and should be retried", errorCode);
+                break;
+            case SSL_ERROR_WANT_X509_LOOKUP:
             AZLOG_ERROR("%X - SSL_ERROR_WANT_X509_LOOKUP: operation did not complete, SSL_CTX_set_client_cert_cb() has asked to be called again, operation should be retried", errorCode);
-            break;
-        case SSL_ERROR_SYSCALL:
+                break;
+            case SSL_ERROR_SYSCALL:
             AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
-            break;
-        case SSL_ERROR_SSL:
+                break;
+            case SSL_ERROR_SSL:
             AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
-            break;
-        default:
+                break;
+            default:
             AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
-            break;
+                break;
         }
 #endif
     }
 
 #if AZ_TRAIT_USE_OPENSSL
     static const uint32_t MaxCookieHistory = 8;
-    static bool       g_encryptionInitialized = false;
-    static int32_t    g_azNetworkingTrustDataIndex = 0;
-    static AZ::TimeMs g_lastCookieTimestamp = AZ::TimeMs{ 0 };
-    static uint64_t   g_validCookieArray[MaxCookieHistory];
-    static uint32_t   g_cookieReplaceIndex = 0;
+    static bool g_encryptionInitialized = false;
+    static int32_t g_azNetworkingTrustDataIndex = 0;
+    static AZ::TimeMs g_lastCookieTimestamp = AZ::TimeMs{0};
+    static uint64_t g_validCookieArray[MaxCookieHistory];
+    static uint32_t g_cookieReplaceIndex = 0;
 
     static void GetCertificatePaths(TrustZone trustZone, AZStd::string& certificatePath, AZStd::string& privateKeyPath)
     {
@@ -150,7 +151,7 @@ namespace AzNetworking
             AZStd::string unusedPrivateKeyPath;
             GetCertificatePaths(trustZone, certificatePath, unusedPrivateKeyPath);
 
-            AZ::IO::FileIOStream stream(certificatePath.c_str(), AZ::IO::OpenMode::ModeWrite);
+            AZ::IO::FileIOStream stream(certificatePath.c_str(), AZ::IO::OpenMode::ModeRead);
             const AZ::IO::SizeType publicCertLength = stream.GetLength();
             if (publicCertLength <= 0)
             {
@@ -245,7 +246,8 @@ namespace AzNetworking
 
         // Catch a too long certificate chain. The depth limit set using SSL_CTX_set_verify_depth() is by purpose set to "limit+1" so that
         // whenever the "depth>verify_depth" condition is met, we have violated the limit and want to log this error condition.
-        // We must do it here, because the CHAIN_TOO_LONG error would not be found explicitly; only errors introduced by cutting off the additional certificates would be logged.
+        // We must do it here, because the CHAIN_TOO_LONG error would not be found explicitly; only errors introduced by cutting off the
+        // additional certificates would be logged.
         const int32_t depth = X509_STORE_CTX_get_error_depth(context);
         if (depth > net_SslMaxCertDepth)
         {
@@ -256,7 +258,7 @@ namespace AzNetworking
         // Validate certificate before and after times
         if (net_SslValidateExpiry)
         {
-            const ASN1_TIME *notBeforeTime = X509_get_notBefore(err_cert);
+            const ASN1_TIME* notBeforeTime = X509_get_notBefore(err_cert);
             const int32_t beforeTimeResult = X509_cmp_current_time(notBeforeTime);
 
             if (beforeTimeResult >= 0)
@@ -266,7 +268,7 @@ namespace AzNetworking
                 result = OpenSslResultFailure;
             }
 
-            const ASN1_TIME *notAfterTime = X509_get_notAfter(err_cert);
+            const ASN1_TIME* notAfterTime = X509_get_notAfter(err_cert);
             const int32_t afterTimeResult = X509_cmp_current_time(notAfterTime);
 
             if (afterTimeResult <= 0)
@@ -280,7 +282,7 @@ namespace AzNetworking
         if (net_SslEnablePinning)
         {
             SSL* sslSocket = reinterpret_cast<SSL*>(X509_STORE_CTX_get_ex_data(context, SSL_get_ex_data_X509_STORE_CTX_idx()));
-            SSL_CTX* sslContext = SSL_get_SSL_CTX(sslSocket);;
+            SSL_CTX* sslContext = SSL_get_SSL_CTX(sslSocket);
             TrustZone trustZone = static_cast<TrustZone>(reinterpret_cast<uintptr_t>(SSL_CTX_get_ex_data(sslContext, g_azNetworkingTrustDataIndex)));
             if (!ValidatePinnedCertificate(err_cert, trustZone))
             {
@@ -369,7 +371,6 @@ namespace AzNetworking
         {
             ERR_free_strings();
             EVP_cleanup();
-            sk_SSL_COMP_free(SSL_COMP_get_compression_methods());
             CRYPTO_cleanup_all_ex_data();
 
             g_encryptionInitialized = false;
@@ -486,10 +487,16 @@ namespace AzNetworking
             }
         }
 
-        // Validate the clients certificate
+        // Validate the clients certificate only on handshake
         SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, ValidateCertificateCallback);
 
-        // Set up ciphers using DH key exchange
+        // Only support a single cipher suite in OpenSSL that supports:
+        //
+        //  ECDHE       Primary key exchange using ephemeral elliptic curve diffie-hellman.
+        //  RSA         Authentication (public and private key) used to sign ECDHE parameters and can be checked against a CA.
+        //  AES256      AES cipher for symmetric key encryption using a 256-bit key.
+        //  GCM         Mode of operation for symmetric key encryption.
+        //  SHA384      SHA-2 hashing algorithm.
         const AZ::CVarFixedString ciphers = net_SslCertCiphers;
         if (SSL_CTX_set_cipher_list(context, ciphers.c_str()) != OpenSslResultSuccess)
         {
@@ -501,6 +508,7 @@ namespace AzNetworking
         SSL_CTX_set_cookie_generate_cb(context, GenerateCookieCallback);
         SSL_CTX_set_cookie_verify_cb(context, VerifyCookieCallback);
 
+        // Automatically generate parameters for elliptic-curve diffie-hellman (i.e. curve type and coefficients).
         SSL_CTX_set_ecdh_auto(context, 1);
 
         scopedFree.ReleaseSslContextWithoutFree();
@@ -585,9 +593,9 @@ namespace AzNetworking
 
         // SSL_shutdown can do very bad things if the SSL context is in a bad state
         // Further, the documentation around safely using SSL_shutdown is extremely confusing and doesn't provide a functional example
-        // We never terminate encryption on a connection to send further data in plain-text, we explicitly close TCP sockets and UDP virtual connections are deleted
-        // Therefore just removing the call to SSL_shutdown for now
-        //SSL_shutdown(sslSocket);
+        // We never terminate encryption on a connection to send further data in plain-text, we explicitly close TCP sockets and UDP virtual
+        // connections are deleted Therefore just removing the call to SSL_shutdown for now
+        // SSL_shutdown(sslSocket);
         SSL_free(sslSocket);
         sslSocket = nullptr;
 #endif
@@ -620,4 +628,4 @@ namespace AzNetworking
         return 0;
 #endif
     }
-}
+} // namespace AzNetworking

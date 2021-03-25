@@ -507,20 +507,7 @@ bool CResFile::mfPrepareDir()
     {
         assert(!m_Dir.size());
         pFileDir = new SDirEntry[m_nNumFilesUnique];
-        if (m_version == RESVERSION_LZSS)
-        {
-            if (!Decodem(m_pCompressedDir, (byte*)pFileDir, m_nComprDirSize, sizeof(SDirEntry) * m_nNumFilesUnique))
-            {
-                CryFatalError("Compressed res file directory corrupt!");
-            }
-        }
-        else if (m_version == RESVERSION_LZMA)
-        {
-            SizeT size = sizeof(SDirEntry) * m_nNumFilesUnique;
-            SizeT inSize = m_nComprDirSize;
-            int res = Lzma86_Decode((byte*)pFileDir, &size, m_pCompressedDir, &inSize);
-        }
-        else if (m_version == RESVERSION_DEBUG)
+        if (m_version == RESVERSION_DEBUG)
         {
             memcpy(pFileDir, m_pCompressedDir, sizeof(SDirEntry) * m_nNumFilesUnique);
         }
@@ -699,7 +686,7 @@ int CResFile::mfOpen(int type, CResFileLookupDataMan* pMan, SResStreamInfo* pStr
                 mfSetError("Open - Wrong header MagicID");
                 return 0;
             }
-            if (frh.ver != RESVERSION_LZSS && frh.ver != RESVERSION_LZMA && frh.ver != RESVERSION_DEBUG)
+            if (frh.ver != RESVERSION_DEBUG)
             {
                 mfSetError("Open - Wrong version number");
                 return 0;
@@ -1011,24 +998,6 @@ void CResStreamCallback::StreamAsyncOnComplete(IReadStream* pStream, unsigned nE
     byte* pData = NULL;
 
     int32 size;
-    if (pDE->flags & RF_COMPRESS)
-    {
-        assert(pRes->m_version == RESVERSION_LZSS);
-        size = *(int32*)pBuf;
-        if (size < 10000000)
-        {
-            pData = new byte[size];
-            if (!pData)
-            {
-                pRes->mfSetError("FileRead - Allocation fault");
-            }
-            else if (!Decodem(&pBuf[4], (byte*)pData, pDE->size - 4, size))
-            {
-                pRes->mfSetError("FileRead - Decode fault");
-            }
-        }
-    }
-    else
     {
         size = pDE->size;
         pData = new byte[size];
@@ -1167,68 +1136,7 @@ int CResFile::mfFileRead(SDirEntry* de)
             mfSetError("FileRead - Allocation fault");
             return 0;
         }
-        if (m_version == RESVERSION_LZSS)
-        {
-            gEnv->pCryPak->FReadRaw(buf, de->size, 1, m_fileHandle);
-            size = *(int32*)buf;
-            if (m_bSwapEndianRead)
-            {
-                SwapEndian(size, eBigEndian);
-            }
-            if (size >= 10000000)
-            {
-                SAFE_DELETE_ARRAY(buf);
-                return 0;
-            }
-            pOE->pData = new byte[size];
-            de->flags |= RF_TEMPDATA;
-            if (!pOE->pData)
-            {
-                SAFE_DELETE_ARRAY(buf);
-                mfSetError("FileRead - Allocation fault");
-                return 0;
-            }
-            if (!Decodem(&buf[4], (byte*)pOE->pData, de->size - 4, size))
-            {
-                SAFE_DELETE_ARRAY(buf);
-                mfSetError("FileRead - Decodem fault");
-                return 0;
-            }
-        }
-        else if (m_version == RESVERSION_LZMA)
-        {
-            SizeT inSize = de->size;
-            gEnv->pCryPak->FReadRaw(buf, inSize, 1, m_fileHandle);
-            uint64 outSize64;
-            if (Lzma86_GetUnpackSize(buf, inSize, &outSize64) != 0)
-            {
-                delete[] buf;
-                mfSetError("FileRead - data error");
-                return 0;
-            }
-            SizeT outSize = (uint32)outSize64;
-            if (outSize != 0)
-            {
-                uint8* outBuffer = (uint8*)MyAlloc(outSize);
-                if (outBuffer == 0)
-                {
-                    delete[] buf;
-                    mfSetError("FileRead - can't allocate");
-                    return 0;
-                }
-                SRes res = Lzma86_Decode(outBuffer, &outSize, buf, &inSize);
-                if (res != 0)
-                {
-                    delete[] buf;
-                    mfSetError("FileRead - LzmaDecoder error");
-                    return 0;
-                }
-                size = outSize;
-                pOE->pData = outBuffer;
-                de->flags |= RF_TEMPDATA;
-            }
-        }
-        else if (m_version == RESVERSION_DEBUG)
+        if (m_version == RESVERSION_DEBUG)
         {
             gEnv->pCryPak->FReadRaw(buf, de->size, 1, m_fileHandle);
             pOE->pData = new byte[de->size - 20];
@@ -1322,38 +1230,7 @@ byte* CResFile::mfFileReadCompressed(SDirEntry* de, uint32& nSizeDecomp, uint32&
             mfSetError("FileRead - Allocation fault");
             return 0;
         }
-        if (m_version == RESVERSION_LZSS)
-        {
-            int nSize = -1;
-            gEnv->pCryPak->FReadRaw(&nSize, 1, sizeof(int), m_fileHandle);
-            if (m_bSwapEndianRead)
-            {
-                SwapEndian(nSize, eBigEndian);
-            }
-            if (nSize <= 0)
-            {
-                assert(0);
-                SAFE_DELETE_ARRAY(buf);
-                return NULL;
-            }
-            nSizeDecomp = nSize;
-            nSizeComp = de->size - 4;
-            gEnv->pCryPak->FReadRaw(buf, nSizeComp, 1, m_fileHandle);
-        }
-        else if (m_version == RESVERSION_LZMA)
-        {
-            uint32 inSize = de->size;
-            gEnv->pCryPak->FReadRaw(buf, inSize, 1, m_fileHandle);
-            uint64 outSize64;
-            if (Lzma86_GetUnpackSize(buf, inSize, &outSize64) != 0)
-            {
-                mfSetError("FileRead - data error");
-                return 0;
-            }
-            nSizeDecomp = (uint32)outSize64;
-            nSizeComp = inSize;
-        }
-        else if (m_version == RESVERSION_DEBUG)
+        if (m_version == RESVERSION_DEBUG)
         {
             gEnv->pCryPak->FReadRaw(buf, 10, 1, m_fileHandle);
             gEnv->pCryPak->FReadRaw(buf, de->size - 20, 1, m_fileHandle);
@@ -1696,32 +1573,7 @@ int CResFile::mfFlushDir(long nOffset, [[maybe_unused]] bool bOptimise)
     byte* buf = NULL;
     if (m_bDirCompressed)
     {
-#if RES_COMPRESSION == RESVERSION_LZSS
-        buf = new byte[sizeUn * 2 + 128];
-        if (!buf)
-        {
-            mfSetError("FlushDir - Allocation fault");
-            return false;
-        }
-        sizeUn = Encodem((byte*)&FDir[0], buf, sizeUn);
-#elif RES_COMPRESSION == RESVERSION_LZMA
-        // we allocate 105% of original size for output buffer
-        uint32 outSize = sizeUn / 20 * 21 + (1 << 16);
-        buf = (byte*)MyAlloc(outSize);
-        if (!buf)
-        {
-            mfSetError("FlushDir - Allocation fault");
-            return false;
-        }
-        uint32 dict = 1 << 23;
-        int res = Lzma86_Encode(buf, &outSize, (byte*)&FDir[0], sizeUn, 5, dict, SZ_FILTER_AUTO);
-        if (res != 0)
-        {
-            mfSetError("FlushDir - Encoder error = %d", res);
-            return 1;
-        }
-        sizeUn = outSize;
-#elif RES_COMPRESSION == RESVERSION_DEBUG
+#if RES_COMPRESSION == RESVERSION_DEBUG
         buf = new byte [sizeUn];
         memcpy(buf, (byte*)&FDir[0], sizeUn);
 #else
@@ -1887,59 +1739,7 @@ int CResFile::mfFlush(bool bOptimise)
                 if (de->flags & RF_COMPRESS)
                 {
                     byte* buf = NULL;
-#if RES_COMPRESSION == RESVERSION_LZSS
-                    if (!(de->flags & RF_COMPRESSED))
-                    {
-                        buf = new byte[de->size * 2 + 128];
-                        if (!buf)
-                        {
-                            mfSetError("Flush - Allocation fault");
-                            return nSizeDir;
-                        }
-                        int sizeEnc = Encodem((byte*)pOE->pData, &buf[4], de->size);
-                        int nS = de->size;
-                        if (m_bSwapEndianWrite)
-                        {
-                            SwapEndian(nS, eBigEndian);
-                        }
-                        *(int*)buf = nS;
-                        de->size = sizeEnc + 4;
-                    }
-                    else
-                    {
-                        buf = (byte*)pOE->pData;
-                        if (m_bSwapEndianWrite)
-                        {
-                            int nS = *(int*)buf;
-                            SwapEndian(nS, eBigEndian);
-                            *(int*)buf = nS;
-                        }
-                    }
-#elif RES_COMPRESSION == RESVERSION_LZMA
-                    // we allocate 105% of original size for output buffer
-                    if (!(de->flags & RF_COMPRESSED))
-                    {
-                        uint32 outSize = de->size / 20 * 21 + (1 << 16);
-                        buf = (byte*)MyAlloc(outSize);
-                        if (!buf)
-                        {
-                            mfSetError("Flush - Allocation fault");
-                            return nSizeDir;
-                        }
-                        uint32 dict = 1 << 23;
-                        int res = Lzma86_Encode(buf, &outSize, (byte*)pOE->pData, de->size, 5, dict, SZ_FILTER_AUTO);
-                        if (res != 0)
-                        {
-                            mfSetError("Flush - Encoder error = %d", res);
-                            return nSizeDir;
-                        }
-                        de->size = outSize;
-                    }
-                    else
-                    {
-                        buf = (byte*)pOE->pData;
-                    }
-#elif RES_COMPRESSION == RESVERSION_DEBUG
+#if RES_COMPRESSION == RESVERSION_DEBUG
                     buf = new byte [de->size + 20];
                     memcpy(buf, ">>rawbuf>>", 10);
                     memcpy(buf + 10, (byte*)pOE->pData, de->size);

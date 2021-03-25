@@ -14,81 +14,101 @@
 
 #include <AzCore/Component/Entity.h>
 
+namespace ScriptCanvasRuntimeAssetCpp
+{
+    enum class RuntimeDataVersion
+    {
+        AddDependencies = 3,
+        ChangeScriptRequirementToAsset,
+        // add your entry above
+        Current
+    };
+
+    enum class FunctionRuntimeDataVersion
+    {
+        MergeBackEnd2dotZero,
+        AddSubgraphInterface,
+        RemoveLegacyData,
+        RemoveConnectionToRuntimeData,
+        // add your entry above
+        Current
+    };
+}
+
 namespace ScriptCanvas
 {
-    void RuntimeData::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
-        {
-            serializeContext->Class<RuntimeData>()
-                ->Version(0)
-                ->Field("m_graphData", &RuntimeData::m_graphData)
-                ->Field("m_variableData", &RuntimeData::m_variableData)
-                ;
-        }
-    }
-
     RuntimeData::RuntimeData(RuntimeData&& other)
-        : m_graphData(AZStd::move(other.m_graphData))
-        , m_variableData(AZStd::move(other.m_variableData))
     {
+        *this = AZStd::move(other);
     }
 
     RuntimeData& RuntimeData::operator=(RuntimeData&& other)
     {
         if (this != &other)
         {
-            m_graphData = AZStd::move(other.m_graphData);
-            m_variableData = AZStd::move(other.m_variableData);
+            m_input = AZStd::move(other.m_input);
+            m_debugMap = AZStd::move(other.m_debugMap);
+            m_script = AZStd::move(other.m_script);
+            m_requiredAssets = AZStd::move(other.m_requiredAssets);
+            m_requiredScriptEvents = AZStd::move(other.m_requiredScriptEvents);
         }
 
         return *this;
     }
 
-    ////////////////////////
-    // FunctionRuntimeData
-    ////////////////////////
-
-    void FunctionRuntimeData::Reflect(AZ::ReflectContext* reflectContext)
+    void RuntimeData::Reflect(AZ::ReflectContext* reflectContext)
     {
+        Translation::RuntimeInputs::Reflect(reflectContext);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
-            serializeContext->Class<FunctionRuntimeData, RuntimeData>()
-                ->Version(3)
-                ->Field("m_name", &FunctionRuntimeData::m_name)
-                ->Field("m_version", &FunctionRuntimeData::m_version)
-                ->Field("m_executionNodeOrder", &FunctionRuntimeData::m_executionNodeOrder)
-                ->Field("m_variableOrder", &FunctionRuntimeData::m_variableOrder)
+            serializeContext->Class<RuntimeData>()
+                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataVersion::Current))
+                ->Field("input", &RuntimeData::m_input)
+                ->Field("debugMap", &RuntimeData::m_debugMap)
+                ->Field("script", &RuntimeData::m_script)
+                ->Field("requiredAssets", &RuntimeData::m_requiredAssets)
+                ->Field("requiredScriptEvents", &RuntimeData::m_requiredScriptEvents)
                 ;
         }
     }
 
-    FunctionRuntimeData::FunctionRuntimeData(FunctionRuntimeData&& other)
-        : RuntimeData(other)
-        , m_name(AZStd::move(other.m_name))
-        , m_version(AZStd::move(other.m_version))
-        , m_executionNodeOrder(AZStd::move(other.m_executionNodeOrder))
-        , m_variableOrder(AZStd::move(other.m_variableOrder))
+    bool RuntimeData::RequiresStaticInitialization() const
     {
+        return !m_cloneSources.empty();
     }
 
-    FunctionRuntimeData& FunctionRuntimeData::operator=(FunctionRuntimeData&& other)
+    ////////////////////////
+    // SubgraphInterfaceData
+    ////////////////////////
+
+    void SubgraphInterfaceData::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+        {
+            serializeContext->Class<SubgraphInterfaceData>()
+                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::FunctionRuntimeDataVersion::Current))
+                ->Field("m_name", &SubgraphInterfaceData::m_name)
+                ->Field("m_version", &SubgraphInterfaceData::m_version)
+                ->Field("interface", &SubgraphInterfaceData::m_interface)
+                ;
+        }
+    }
+
+    SubgraphInterfaceData::SubgraphInterfaceData(SubgraphInterfaceData&& other)
+    {
+        *this = AZStd::move(other);
+    }
+    
+    SubgraphInterfaceData& SubgraphInterfaceData::operator=(SubgraphInterfaceData&& other)
     {
         if (this != &other)
         {
             m_name = AZStd::move(other.m_name);
             m_version = AZStd::move(other.m_version);
-            m_graphData = AZStd::move(other.m_graphData);
-            m_variableData = AZStd::move(other.m_variableData);
-            m_executionNodeOrder = AZStd::move(other.m_executionNodeOrder);
-            m_variableOrder = AZStd::move(other.m_variableOrder);
+            m_interface = AZStd::move(other.m_interface);
         }
 
         return *this;
     }
-
-
-    ///////
-
-
 }

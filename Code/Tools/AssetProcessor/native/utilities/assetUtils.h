@@ -104,14 +104,14 @@ namespace AssetUtilities
     //! force=true is supplied
     QString ComputeGameName(QString gameNameOverride = QString(), bool force = false);
 
-    //! Reads the white list directly from the bootstrap file
-    QString ReadWhitelistFromSettingsRegistry(QString initialFolder = QString());
+    //! Reads the allowed list directly from the bootstrap file
+    QString ReadAllowedlistFromSettingsRegistry(QString initialFolder = QString());
 
-    //! Reads the white list directly from the bootstrap file
+    //! Reads the allowed list directly from the bootstrap file
     QString ReadRemoteIpFromSettingsRegistry(QString initialFolder = QString());
 
-    //! Writes the white list directly to the bootstrap file
-    bool WriteWhitelistToBootstrap(QStringList whiteList);
+    //! Writes the allowed list directly to the bootstrap file
+    bool WriteAllowedlistToBootstrap(QStringList allowedList);
     
     //! Writes the remote ip directly to the bootstrap file
     bool WriteRemoteIpToBootstrap(QString remoteIp);

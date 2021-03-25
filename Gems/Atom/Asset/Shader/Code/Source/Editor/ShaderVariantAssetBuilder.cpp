@@ -469,9 +469,19 @@ namespace AZ
             AZStd::string previousLoopApiName;
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
+                if (shaderSourceDescriptor.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()))
+                {
+                    // Gracefully do nothing and continue with the next shaderPlatformInterface.
+                    AZ_TracePrintf(
+                        ShaderVariantAssetBuilderName, "Skipping shader variant tree compilation of [%s] for API [%s]\n",
+                        shaderFullPath.c_str(),
+                        shaderPlatformInterface->GetAPIName().GetCStr());
+                    continue;
+                }
+
                 auto thisLoopApiName = shaderPlatformInterface->GetAPIName().GetStringView();
                 auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(
-                    ShaderVariantAssetBuilderName, azslSources->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType());
+                    ShaderVariantAssetBuilderName, azslSources->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType(), request.m_platformInfo.m_identifier);
                 if (!azslArtifactsOutcome.IsSuccess())
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -637,6 +647,15 @@ namespace AZ
             {
                 AZ_TraceContext("ShaderPlatformInterface", shaderPlatformInterface->GetAPIName().GetCStr());
 
+                if (shaderSourceDescriptor.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()))
+                {
+                    // Gracefully do nothing and continue with the next shaderPlatformInterface.
+                    AZ_TracePrintf(
+                        ShaderVariantAssetBuilderName, "Skipping shader variant compilation of [%s] with StableId [%u] for API [%s]\n",
+                        shaderFullPath.c_str(), variantInfo.m_stableId, shaderPlatformInterface->GetAPIName().GetCStr());
+                    continue;
+                }
+
                 if (!shaderPlatformInterface)
                 {
                     AZ_Error(ShaderVariantAssetBuilderName, false, "ShaderPlatformInterface for [%s] is not registered, can't compile [%s]", request.m_platformInfo.m_identifier.c_str(), shaderFullPath.c_str());
@@ -663,7 +682,7 @@ namespace AZ
 
                 // Load shader reflections
                 auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(
-                    ShaderVariantAssetBuilderName, azslData.m_sources->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType());
+                    ShaderVariantAssetBuilderName, azslData.m_sources->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType(), request.m_platformInfo.m_identifier);
                 if (!azslArtifactsOutcome.IsSuccess())
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;

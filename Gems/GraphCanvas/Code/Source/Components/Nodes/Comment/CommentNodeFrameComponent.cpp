@@ -80,7 +80,7 @@ namespace GraphCanvas
         update();
     }
 
-    void CommentNodeFrameGraphicsWidget::mouseDoubleClickEvent([[maybe_unused]] QGraphicsSceneMouseEvent* mouseEvent)
+    void CommentNodeFrameGraphicsWidget::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* /*mouseEvent*/)
     {
         CommentUIRequestBus::Event(GetEntityId(), &CommentUIRequests::SetEditable, true);
     }

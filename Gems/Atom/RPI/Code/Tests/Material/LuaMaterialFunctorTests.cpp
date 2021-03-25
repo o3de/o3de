@@ -973,6 +973,10 @@ namespace UnitTest
                     return {"general.MyBool"}
                 end
 
+                function GetShaderOptionDependencies()
+                    return {}
+                end
+
                 function Process(context)
                     local boolValue = context:GetMaterialPropertyValue_bool("general.MyBool")
                     if(boolValue) then
@@ -1003,6 +1007,10 @@ namespace UnitTest
             R"(
                 function GetMaterialPropertyDependencies()
                     return {"general.MyBool"}
+                end
+
+                function GetShaderOptionDependencies()
+                    return {}
                 end
 
                 function Process(context)
@@ -1038,6 +1046,10 @@ namespace UnitTest
             R"(
                 function GetMaterialPropertyDependencies()
                     return {"general.MyBool"}
+                end
+
+                function GetShaderOptionDependencies()
+                    return {}
                 end
 
                 function Process(context)

@@ -33,7 +33,7 @@ namespace GraphCanvas
             virtual bool Matches([[maybe_unused]] const AZ::EntityId& object) const { return{}; }
             virtual AZStd::string ToString() const { return{}; }
 
-            virtual bool operator==([[maybe_unused]] const SelectorImplementation& other) const { return{}; }
+            virtual bool operator==(const SelectorImplementation&) const { return{}; }
 
             virtual SelectorImplementation* Clone() const { return{}; }
         };

@@ -382,6 +382,7 @@ namespace AZ
             AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces;
             ShaderPlatformInterfaceRequestBus::BroadcastResult(platformInterfaces, &ShaderPlatformInterfaceRequest::GetShaderPlatformInterface, request.m_platformInfo);
             // Generate shaders for each of those ShaderPlatformInterfaces.
+            uint32_t countOfCompiledPlatformInterfaces = 0;
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 ShaderResourceGroupAssets srgAssets;
@@ -392,6 +393,15 @@ namespace AZ
                     AZ_Error(ShaderAssetBuilderName, false, "ShaderPlatformInterface for [%s] is not registered, can't compile [%s]", request.m_platformInfo.m_identifier.c_str(), request.m_sourceFile.c_str());
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
+                }
+
+                if (shaderAssetSource.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()))
+                {
+                    // Gracefully do nothing and continue with the next shaderPlatformInterface.
+                    AZ_TracePrintf(
+                        ShaderAssetBuilderName, "Skipping shader compilation [%s] for API [%s]\n", inputFiles->m_shaderFileName.c_str(),
+                        shaderPlatformInterface->GetAPIName().GetCStr());
+                    continue;
                 }
 
                 AZStd::sys_time_t shaderAssetBuildTimestamp = 0;
@@ -420,13 +430,13 @@ namespace AZ
                 }
 
                 // obtain the build artifacts from the azsl builder:
-                auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(ShaderAssetBuilderName, fullSourcePath, shaderPlatformInterface->GetAPIType());
+                auto azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(ShaderAssetBuilderName, fullSourcePath, shaderPlatformInterface->GetAPIType(), request.m_platformInfo.m_identifier);
                 if (!azslArtifactsOutcome.IsSuccess())
                 {
                     // If it failed, it may be because the .shader source file created no products! (this happens when the build options are similar)
                     // (the .azsl file *always* produces AzslBuilder artifacts. The.shader file *sometimes* produces AzslBuilder artifacts, when it has build options that have to be accounted for)
                     // If there are no artifacts from the .shader, then we fall back to the ones from the .azsl:
-                    azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(ShaderAssetBuilderName, inputFiles->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType());
+                    azslArtifactsOutcome = ShaderBuilderUtility::ObtainBuildArtifactsFromAzslBuilder(ShaderAssetBuilderName, inputFiles->m_azslSourceFullPath, shaderPlatformInterface->GetAPIType(), request.m_platformInfo.m_identifier);
                     if (!azslArtifactsOutcome.IsSuccess())
                     {
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -495,7 +505,16 @@ namespace AZ
                     response.m_resultCode = compileResult;
                     return;
                 }
+                ++countOfCompiledPlatformInterfaces;
             } // end for all platforms
+
+            if (!countOfCompiledPlatformInterfaces)
+            {
+                AZ_TracePrintf(
+                    ShaderAssetBuilderName, "No azshader is produced on behalf of %s because all valid RHI backends were disabled for this shader.\n", request.m_sourceFile.c_str());
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+                return;
+            }
 
             Data::Asset<RPI::ShaderAsset> shaderAsset;
             if (!shaderAssetCreator.End(shaderAsset))

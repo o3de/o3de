@@ -19,9 +19,24 @@ ShaderResourceGroup MorphTargetPassSrg : SRG_PerPass
     RWBuffer<int> m_accumulatedDeltas;    
 }
 
+struct MorphTargetDelta
+{
+    // The index of the vertex being modified by this delta
+    uint m_morphedVertexIndex;
+    // 16 bits per component for position deltas
+    uint m_compressedPositionDeltaXY;
+    // Position z plus 8 bits per component for normal deltas
+    uint m_compressedPositionDeltaZNormalDeltaXY;
+    // Normal z plus 8 bits per component for tangent deltas
+    uint m_compressedNormalDeltaZTangentDelta;
+    // 8 bit padding plus 8 bits per component for bitangent deltas
+    uint m_compressedPadBitangentDeltaXYZ;
+    // Extra padding so the struct is 16 byte aligned for structured buffers
+    uint3 m_pad;
+};
+
 // Input to the morph target compute shader
 ShaderResourceGroup MorphTargetInstanceSrg : SRG_PerDraw
 {
-    Buffer<uint> m_vertexIndices;
-    ByteAddressBuffer m_vertexDeltas;
+    StructuredBuffer<MorphTargetDelta> m_vertexDeltas;
 }

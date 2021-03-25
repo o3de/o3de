@@ -10,11 +10,37 @@
  *
  */
 
-#include <Include/SandboxAPI.h>
-
-int SANDBOX_API CryEditMain(int argc, char* argv[]);
+#include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 int main(int argc, char* argv[])
 {
-    return CryEditMain(argc, argv);
+    // Verify a project path can be found, launch the project manager and shut down otherwise
+    if (AzFramework::ProjectManager::CheckProjectPathProvided(argc, argv) == AzFramework::ProjectManager::ProjectPathCheckResult::ProjectManagerLaunched)
+    {
+        return 2;
+    }
+    using CryEditMain = int (*)(int, char*[]);
+    constexpr const char CryEditMainName[] = "CryEditMain";
+
+    AZ::Environment::Attach(AZ::Environment::GetInstance());
+    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
+
+    auto handle = AZ::DynamicModuleHandle::Create("EditorLib");
+    [[maybe_unused]] const bool loaded = handle->Load(true);
+    AZ_Assert(loaded, "EditorLib could not be loaded");
+
+    if (auto fn = handle->GetFunction<CryEditMain>(CryEditMainName); fn != nullptr)
+    {
+        const int ret = AZStd::invoke(fn, argc, argv);
+
+        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+        AZ::Environment::Detach();
+
+        return ret;
+    }
+
+    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+    AZ::Environment::Detach();
+    return 1;
 }

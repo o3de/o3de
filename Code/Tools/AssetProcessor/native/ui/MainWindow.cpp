@@ -187,31 +187,31 @@ void MainWindow::Activate()
     ui->connectionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->connectionTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::OnConnectionContextMenu);
 
-    //white list connections
+    //allowed list connections
     connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::FirstTimeAddedToRejctedList, this, &MainWindow::FirstTimeAddedToRejctedList);
-    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::SyncWhiteListAndRejectedList, this, &MainWindow::SyncWhiteListAndRejectedList);
-    connect(ui->whiteListWhiteListedConnectionsListView, &QListView::clicked, this, &MainWindow::OnWhiteListedConnectionsListViewClicked);
-    ui->whiteListWhiteListedConnectionsListView->setModel(&m_whitelistedAddresses);
-    connect(ui->whiteListRejectedConnectionsListView, &QListView::clicked, this, &MainWindow::OnRejectedConnectionsListViewClicked);
-    ui->whiteListRejectedConnectionsListView->setModel(&m_rejectedAddresses);
+    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::SyncAllowedListAndRejectedList, this, &MainWindow::SyncAllowedListAndRejectedList);
+    connect(ui->allowListAllowedListConnectionsListView, &QListView::clicked, this, &MainWindow::OnAllowedListConnectionsListViewClicked);
+    ui->allowListAllowedListConnectionsListView->setModel(&m_allowedListAddresses);
+    connect(ui->allowedListRejectedConnectionsListView, &QListView::clicked, this, &MainWindow::OnRejectedConnectionsListViewClicked);
+    ui->allowedListRejectedConnectionsListView->setModel(&m_rejectedAddresses);
     
-    connect(ui->whiteListEnableCheckBox, &QCheckBox::toggled, this, &MainWindow::OnWhiteListCheckBoxToggled);
+    connect(ui->allowedListEnableCheckBox, &QCheckBox::toggled, this, &MainWindow::OnAllowedListCheckBoxToggled);
     
-    connect(ui->whiteListAddHostNameToolButton, &QToolButton::clicked, this, &MainWindow::OnAddHostNameWhiteListButtonClicked);
-    connect(ui->whiteListAddIPToolButton, &QPushButton::clicked, this, &MainWindow::OnAddIPWhiteListButtonClicked);
+    connect(ui->allowedListAddHostNameToolButton, &QToolButton::clicked, this, &MainWindow::OnAddHostNameAllowedListButtonClicked);
+    connect(ui->allowedListAddIPToolButton, &QPushButton::clicked, this, &MainWindow::OnAddIPAllowedListButtonClicked);
     
-    connect(ui->whiteListToWhiteListToolButton, &QPushButton::clicked, this, &MainWindow::OnToWhiteListButtonClicked);
-    connect(ui->whiteListToRejectedListToolButton, &QToolButton::clicked, this, &MainWindow::OnToRejectedListButtonClicked);
+    connect(ui->allowedListToAllowedListToolButton, &QPushButton::clicked, this, &MainWindow::OnToAllowedListButtonClicked);
+    connect(ui->allowedListToRejectedListToolButton, &QToolButton::clicked, this, &MainWindow::OnToRejectedListButtonClicked);
 
     //set the input validator for ip addresses on the add address line edit
     QRegExp validHostName("^((?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?)$");
     QRegExp validIP("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?$|^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$");
 
     QRegExpValidator* hostNameValidator = new QRegExpValidator(validHostName, this);
-    ui->whiteListAddHostNameLineEdit->setValidator(hostNameValidator);
+    ui->allowedListAddHostNameLineEdit->setValidator(hostNameValidator);
     
     QRegExpValidator* ipValidator = new QRegExpValidator(validIP, this);
-    ui->whiteListAddIPLineEdit->setValidator(ipValidator);
+    ui->allowedListAddIPLineEdit->setValidator(ipValidator);
 
     //Job view
     m_jobSortFilterProxy->setSourceModel(m_jobsModel);
@@ -555,65 +555,65 @@ void MainWindow::OnAddConnection(bool /*checked*/)
     m_guiApplicationManager->GetConnectionManager()->addUserConnection();
 }
 
-void MainWindow::OnWhiteListedConnectionsListViewClicked() 
+void MainWindow::OnAllowedListConnectionsListViewClicked() 
 {
-    ui->whiteListRejectedConnectionsListView->clearSelection();
+    ui->allowedListRejectedConnectionsListView->clearSelection();
 }
 
 void MainWindow::OnRejectedConnectionsListViewClicked()
 {
-    ui->whiteListWhiteListedConnectionsListView->clearSelection();
+    ui->allowListAllowedListConnectionsListView->clearSelection();
 }
 
-void MainWindow::OnWhiteListCheckBoxToggled() 
+void MainWindow::OnAllowedListCheckBoxToggled() 
 {
-    if (!ui->whiteListEnableCheckBox->isChecked())
+    if (!ui->allowedListEnableCheckBox->isChecked())
     {
         //warn this is not safe
-        if(QMessageBox::Ok == QMessageBox::warning(this, tr("!!!WARNING!!!"), tr("Turning off white listing poses a significant security risk as it would allow any device to connect to your asset processor and that device will have READ/WRITE access to the Asset Processors file system. Only do this if you sure you know what you are doing and accept the risks."),
+        if(QMessageBox::Ok == QMessageBox::warning(this, tr("!!!WARNING!!!"), tr("Turning off allowed listing poses a significant security risk as it would allow any device to connect to your asset processor and that device will have READ/WRITE access to the Asset Processors file system. Only do this if you sure you know what you are doing and accept the risks."),
             QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
-            ui->whiteListRejectedConnectionsListView->clearSelection();
-            ui->whiteListWhiteListedConnectionsListView->clearSelection();
-            ui->whiteListAddHostNameLineEdit->setEnabled(false);
-            ui->whiteListAddHostNameToolButton->setEnabled(false);
-            ui->whiteListAddIPLineEdit->setEnabled(false);
-            ui->whiteListAddIPToolButton->setEnabled(false);
-            ui->whiteListWhiteListedConnectionsListView->setEnabled(false);
-            ui->whiteListRejectedConnectionsListView->setEnabled(false);
-            ui->whiteListToWhiteListToolButton->setEnabled(false);
-            ui->whiteListToRejectedListToolButton->setEnabled(false);
+            ui->allowedListRejectedConnectionsListView->clearSelection();
+            ui->allowListAllowedListConnectionsListView->clearSelection();
+            ui->allowedListAddHostNameLineEdit->setEnabled(false);
+            ui->allowedListAddHostNameToolButton->setEnabled(false);
+            ui->allowedListAddIPLineEdit->setEnabled(false);
+            ui->allowedListAddIPToolButton->setEnabled(false);
+            ui->allowListAllowedListConnectionsListView->setEnabled(false);
+            ui->allowedListRejectedConnectionsListView->setEnabled(false);
+            ui->allowedListToAllowedListToolButton->setEnabled(false);
+            ui->allowedListToRejectedListToolButton->setEnabled(false);
         }
         else
         {
-            ui->whiteListEnableCheckBox->setChecked(true);
+            ui->allowedListEnableCheckBox->setChecked(true);
         }
     }
     else
     {
-        ui->whiteListAddHostNameLineEdit->setEnabled(true);
-        ui->whiteListAddHostNameToolButton->setEnabled(true);
-        ui->whiteListAddIPLineEdit->setEnabled(true);
-        ui->whiteListAddIPToolButton->setEnabled(true);
-        ui->whiteListWhiteListedConnectionsListView->setEnabled(true);
-        ui->whiteListRejectedConnectionsListView->setEnabled(true);
-        ui->whiteListToWhiteListToolButton->setEnabled(true);
-        ui->whiteListToRejectedListToolButton->setEnabled(true);
+        ui->allowedListAddHostNameLineEdit->setEnabled(true);
+        ui->allowedListAddHostNameToolButton->setEnabled(true);
+        ui->allowedListAddIPLineEdit->setEnabled(true);
+        ui->allowedListAddIPToolButton->setEnabled(true);
+        ui->allowListAllowedListConnectionsListView->setEnabled(true);
+        ui->allowedListRejectedConnectionsListView->setEnabled(true);
+        ui->allowedListToAllowedListToolButton->setEnabled(true);
+        ui->allowedListToRejectedListToolButton->setEnabled(true);
     }
     
-    m_guiApplicationManager->GetConnectionManager()->WhiteListingEnabled(ui->whiteListEnableCheckBox->isChecked());
+    m_guiApplicationManager->GetConnectionManager()->AllowedListingEnabled(ui->allowedListEnableCheckBox->isChecked());
 }
 
-void MainWindow::OnAddHostNameWhiteListButtonClicked()
+void MainWindow::OnAddHostNameAllowedListButtonClicked()
 {
-    QString text = ui->whiteListAddHostNameLineEdit->text();
-    const QRegExpValidator *hostnameValidator = static_cast<const QRegExpValidator *>(ui->whiteListAddHostNameLineEdit->validator());
+    QString text = ui->allowedListAddHostNameLineEdit->text();
+    const QRegExpValidator *hostnameValidator = static_cast<const QRegExpValidator *>(ui->allowedListAddHostNameLineEdit->validator());
     int pos;
     QValidator::State state = hostnameValidator->validate(text, pos);
     if (state == QValidator::Acceptable)
     {
-        auto lineEdit = ui->whiteListAddHostNameLineEdit;
-        m_guiApplicationManager->GetConnectionManager()->AddWhiteListedAddress(text);
+        auto lineEdit = ui->allowedListAddHostNameLineEdit;
+        m_guiApplicationManager->GetConnectionManager()->AddAddressToAllowedList(text);
         lineEdit->clear();
         // Clear error state set in LineEdit.
         lineEdit->setProperty(AzQtComponents::HasError, false);
@@ -625,16 +625,16 @@ void MainWindow::OnAddHostNameWhiteListButtonClicked()
     }
 }
 
-void MainWindow::OnAddIPWhiteListButtonClicked()
+void MainWindow::OnAddIPAllowedListButtonClicked()
 {
-    QString text = ui->whiteListAddIPLineEdit->text();
-    const QRegExpValidator *ipValidator = static_cast<const QRegExpValidator *>(ui->whiteListAddIPLineEdit->validator());
+    QString text = ui->allowedListAddIPLineEdit->text();
+    const QRegExpValidator *ipValidator = static_cast<const QRegExpValidator *>(ui->allowedListAddIPLineEdit->validator());
     int pos;
     QValidator::State state = ipValidator->validate(text, pos);
     if (state== QValidator::Acceptable)
     {
-        auto lineEdit = ui->whiteListAddIPLineEdit;
-        m_guiApplicationManager->GetConnectionManager()->AddWhiteListedAddress(text);
+        auto lineEdit = ui->allowedListAddIPLineEdit;
+        m_guiApplicationManager->GetConnectionManager()->AddAddressToAllowedList(text);
         lineEdit->clear();
         // Clear error state set in LineEdit.
         lineEdit->setProperty(AzQtComponents::HasError, false);
@@ -648,23 +648,23 @@ void MainWindow::OnAddIPWhiteListButtonClicked()
 
 void MainWindow::OnToRejectedListButtonClicked()
 {
-    QModelIndexList indices = ui->whiteListWhiteListedConnectionsListView->selectionModel()->selectedIndexes();
+    QModelIndexList indices = ui->allowListAllowedListConnectionsListView->selectionModel()->selectedIndexes();
     if(!indices.isEmpty() && indices.first().isValid())
     {
         QString itemText = indices.first().data(Qt::DisplayRole).toString();
-        m_guiApplicationManager->GetConnectionManager()->RemoveWhiteListedAddress(itemText);
+        m_guiApplicationManager->GetConnectionManager()->RemoveAddressFromAllowedList(itemText);
         m_guiApplicationManager->GetConnectionManager()->AddRejectedAddress(itemText, true);
     }
 }
 
-void MainWindow::OnToWhiteListButtonClicked()
+void MainWindow::OnToAllowedListButtonClicked()
 {
-    QModelIndexList indices = ui->whiteListRejectedConnectionsListView->selectionModel()->selectedIndexes();
+    QModelIndexList indices = ui->allowedListRejectedConnectionsListView->selectionModel()->selectedIndexes();
     if (!indices.isEmpty() && indices.first().isValid())
     {
         QString itemText = indices.front().data(Qt::DisplayRole).toString();
         m_guiApplicationManager->GetConnectionManager()->RemoveRejectedAddress(itemText);
-        m_guiApplicationManager->GetConnectionManager()->AddWhiteListedAddress(itemText);
+        m_guiApplicationManager->GetConnectionManager()->AddAddressToAllowedList(itemText);
     }
 }
 
@@ -715,9 +715,9 @@ void MainWindow::ShowWindow()
 }
 
 
-void MainWindow::SyncWhiteListAndRejectedList(QStringList whiteList, QStringList rejectedList)
+void MainWindow::SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList)
 {
-    m_whitelistedAddresses.setStringList(whiteList);
+    m_allowedListAddresses.setStringList(allowedList);
     m_rejectedAddresses.setStringList(rejectedList);
 }
 
@@ -725,7 +725,7 @@ void MainWindow::FirstTimeAddedToRejctedList(QString ipAddress)
 {
     QMessageBox* msgBox = new QMessageBox(this);
     msgBox->setText(tr("!!!Rejected Connection!!!"));
-    msgBox->setInformativeText(ipAddress + tr(" tried to connect and was rejected because it was not on the white list. If you want this connection to be allowed go to connections tab and add it to white list."));
+    msgBox->setInformativeText(ipAddress + tr(" tried to connect and was rejected because it was not on the allowed list. If you want this connection to be allowed go to connections tab and add it to allowed list."));
     msgBox->setStandardButtons(QMessageBox::Ok);
     msgBox->setDefaultButton(QMessageBox::Ok);
     msgBox->setWindowModality(Qt::NonModal);

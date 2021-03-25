@@ -36,8 +36,8 @@
                     "Name": "FilteredOutput",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Pass": "This",
+                            "Attachment": "InputDiffuse"
                         }
                     },
                      "FormatSource": {

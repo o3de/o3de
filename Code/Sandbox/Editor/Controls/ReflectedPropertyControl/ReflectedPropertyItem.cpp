@@ -1,12 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or 
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
 * a third party where indicated.
 *
 * For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,  
+* distribution (the "License"). All use of this software is governed by the License,
 * or, if provided, by the license below or the license accompanying this file. Do not
 * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
 
@@ -28,10 +28,10 @@ const float ReflectedPropertyItem::s_DefaultNumStepIncrements = 500.0f;
 
 //A ReflectedVarAdapter for holding IVariableContainers
 
-//The extra ReflectedVarAdapter is the extra case of a container (has children) but also has a value itself. 
-//An example is an IVariable array whose type is forced to IVariable::DT_TEXTURE. The base Ivariable has a texture, 
+//The extra ReflectedVarAdapter is the extra case of a container (has children) but also has a value itself.
+//An example is an IVariable array whose type is forced to IVariable::DT_TEXTURE. The base Ivariable has a texture,
 //but it also has children that are parameters of the texture. The ReflectedPropertyEditor does not support this case
-//so we work around by adding the base property to the list of children and showing the value of the base property 
+//so we work around by adding the base property to the list of children and showing the value of the base property
 //in the container value space instead of "X Elements"
 
 static ColorF StringToColor(const QString &value)
@@ -92,7 +92,7 @@ public:
         UpdateCommon(m_item->GetVariable(), varBlock);
     }
 
-    void SyncReflectedVarToIVar(IVariable *pVariable) override 
+    void SyncReflectedVarToIVar(IVariable *pVariable) override
     {
         if (m_extraVariableAdapter)
         {
@@ -102,7 +102,7 @@ public:
         }
     };
 
-    void SyncIVarToReflectedVar(IVariable *pVariable) override 
+    void SyncIVarToReflectedVar(IVariable *pVariable) override
     {
         if (m_extraVariableAdapter)
         {
@@ -175,6 +175,9 @@ ReflectedPropertyItem::ReflectedPropertyItem(ReflectedPropertyControl *control, 
     m_modified = false;
     if (parent)
         parent->AddChild(this);
+
+    m_onSetCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableChange, this, AZStd::placeholders::_1);
+    m_onSetEnumCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableEnumChange, this, AZStd::placeholders::_1);
 }
 
 ReflectedPropertyItem::~ReflectedPropertyItem()
@@ -193,7 +196,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     if (var == m_pVariable)
     {
         // Early exit optimization if setting the same var as the current var.
-        // A common use case, in Track View for example, is to re-use the save var for a property when switching to a new 
+        // A common use case, in Track View for example, is to re-use the save var for a property when switching to a new
         // instance of the same variable. The visible display of the value is often handled by invalidating the property,
         // but the non-visible attributes, i.e. the range values, are usually set using this method. Thus we reset the ranges
         // explicitly here when the Ivariable var is the same
@@ -210,8 +213,8 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     m_pVariable = pInputVar;
     assert(m_pVariable != NULL);
 
-    m_pVariable->AddOnSetCallback(functor(*this, &ReflectedPropertyItem::OnVariableChange));
-    m_pVariable->AddOnSetEnumCallback(functor(*this, &ReflectedPropertyItem::OnVariableEnumChange));
+    m_pVariable->AddOnSetCallback(&m_onSetCallback);
+    m_pVariable->AddOnSetEnumCallback(&m_onSetEnumCallback);
 
     // Fetch base parameter description
     Prop::Description desc(m_pVariable);
@@ -230,14 +233,14 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         break;
     case ePropertyFloat:
     case ePropertyAngle:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal float editor 
+        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal float editor
         if (desc.m_pEnumDBItem)
             m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
         else
             m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
         break;
     case ePropertyInt:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal int editor 
+        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal int editor
         if (desc.m_pEnumDBItem)
             m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
         else
@@ -247,7 +250,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         m_reflectedVarAdapter = new ReflectedVarBoolAdapter;
         break;
     case ePropertyString:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal string editor 
+        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal string editor
         if (desc.m_pEnumDBItem)
             m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
         else
@@ -301,7 +304,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     default:
         break;
     }
-    
+
     const bool hasChildren = (m_pVariable->GetNumVariables() > 0 || desc.m_type == ePropertyTable || m_pVariable->GetType() == IVariable::ARRAY);
     //const bool isNotContainerType = (m_pVariable->GetType() != IVariable::ARRAY && desc.m_type != ePropertyTable  && desc.m_type != ePropertyInvalid);
     if (hasChildren )
@@ -309,7 +312,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         m_reflectedVarContainerAdapter = new ReflectedVarContainerAdapter(this, m_propertyCtrl, m_reflectedVarAdapter);
         m_reflectedVarAdapter = m_reflectedVarContainerAdapter;
     }
-    
+
     if (m_reflectedVarAdapter)
     {
         m_reflectedVarAdapter->SetVariable(m_pVariable);
@@ -474,8 +477,8 @@ void ReflectedPropertyItem::ReleaseVariable()
     if (m_pVariable)
     {
         // Unwire all from variable.
-        m_pVariable->RemoveOnSetCallback(functor(*this, &ReflectedPropertyItem::OnVariableChange));
-        m_pVariable->RemoveOnSetEnumCallback(functor(*this, &ReflectedPropertyItem::OnVariableEnumChange));
+        m_pVariable->RemoveOnSetCallback(&m_onSetCallback);
+        m_pVariable->RemoveOnSetEnumCallback(&m_onSetEnumCallback);
     }
     m_pVariable = 0;
     delete m_reflectedVarAdapter;
@@ -619,7 +622,7 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
             {
                 m_pVariable->SetForceModified(true);
             }
-            
+
             switch (m_type)
             {
             case ePropertyColor:

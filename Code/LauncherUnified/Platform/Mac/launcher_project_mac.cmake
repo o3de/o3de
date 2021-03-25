@@ -20,12 +20,12 @@ else()
 endif()
 
 # Add resources and app icons to launchers
-get_target_property(${project}_GEM_DIR ${project} SOURCE_DIR)
-get_filename_component(${project}_GEM_DIR ${${project}_GEM_DIR} DIRECTORY)
+get_target_property(${project}_SOURCE_DIR ${project} SOURCE_DIR)
+get_filename_component(${project}_SOURCE_PARENT_DIR ${${project}_SOURCE_DIR} DIRECTORY)
 
-set(ly_game_resource_folder ${${project}_GEM_DIR}/Resources/Platform/Mac)
+set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/Platform/Mac)
 if (NOT EXISTS ${ly_game_resource_folder})
-    set(ly_game_resource_folder ${${project}_GEM_DIR}/Resources/MacLauncher)
+    set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/MacLauncher)
     if (NOT EXISTS ${ly_game_resource_folder})
         message(FATAL_ERROR "Missing expected resources folder")
     endif()

@@ -1,0 +1,8 @@
+<Material MtlFlags="524544" >
+   <SubMaterials>
+      <Material Name="dummyPlane_mat" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" MatTemplate="" Diffuse="0.500000,0.500000,0.500000" Specular="0.000000,0.000000,0.000000" Emissive="0.000000,0.000000,0.000000" Shininess="10" Opacity="1" >
+         <Textures>
+         </Textures>
+      </Material>
+   </SubMaterials>
+</Material>

@@ -15,7 +15,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/regex.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <Include/ScriptCanvas/Internal/Nodes/StringFormatted.generated.h>
@@ -33,43 +32,46 @@ namespace ScriptCanvas
                 , public NodePropertyInterfaceListener
             {
             public:
-                ScriptCanvas_Node(StringFormatted,
-                    ScriptCanvas_Node::Name("StringFormatted", "Base class for any nodes that use string formatting capabilities.")
-                    ScriptCanvas_Node::Uuid("{0B1577E0-339D-4573-93D1-6C311AD12A13}")
-                    ScriptCanvas_Node::Category("Internal")
-                    ScriptCanvas_Node::DynamicSlotOrdering(true)
-                    ScriptCanvas_Node::Version(1)
+
+                SCRIPTCANVAS_NODE(StringFormatted
                 );
+
+                using ArrayBindingMap = AZStd::map<AZ::u64, SlotId>;
+                using NamedSlotIdMap = AZStd::map<AZStd::string, SlotId>;
+
+                bool ConvertsInputToStrings() const override
+                {
+                    return true;
+                }
+
+                AZ::Outcome<DependencyReport, void> GetDependencies() const
+                {
+                    return AZ::Success(DependencyReport{});
+                }
+
+                AZ_INLINE Data::StringType GetRawString() const { return *m_stringInterface.GetPropertyData(); }
+                AZ_INLINE const NamedSlotIdMap& GetNamedSlotIdMap() const { return m_formatSlotMap; }
+                AZ_INLINE const int GetPostDecimalPrecision() const { return m_numericPrecision; }
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
             protected:
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-                ScriptCanvas_EditPropertyWithDefaults(AZStd::string, m_format, "{Value}",
-                    EditProperty::Name("String", "The format string; any word within {} will create a data pin on the node.")
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::StringLineEditingCompleteNotify(&StringFormatted::OnFormatChanged))
-                );
-
-                ScriptCanvas_EditPropertyWithDefaults(int, m_numericPrecision, 4,
-                    EditProperty::Name("Precision", "The precision with which to print any numeric values.")
-                    EditProperty::EditAttributes(AZ::Edit::Attributes::Min(0) AZ::Edit::Attributes::Max(24))
-                );
-
                 // This is a map that binds the index into m_unresolvedString to the SlotId that needs to be checked for a valid datum.
-                using ArrayBindingMap = AZStd::map<AZ::u64, SlotId>;
-                ScriptCanvas_SerializeProperty(ArrayBindingMap, m_arrayBindingMap);
+                ArrayBindingMap m_arrayBindingMap;
 
                 // A vector of strings that holds all the parts of the string and reserves empty strings for those parts of the string whose
                 // values come from slots.
-                ScriptCanvas_SerializeProperty(AZStd::vector<AZStd::string>, m_unresolvedString);
+                AZStd::vector<AZStd::string> m_unresolvedString;
 
                 // Maps the slot name to the created SlotId for that slot
-                using NamedSlotIdMap = AZStd::map<AZStd::string, SlotId>;
-                ScriptCanvas_SerializeProperty(NamedSlotIdMap, m_formatSlotMap);
+                NamedSlotIdMap m_formatSlotMap;
+
+                // Number of precision elements to display
+                int m_numericPrecision = 4;
+
+                // The string formatting string used on the node, any value within brackets creates an input slot
+                AZStd::string m_format = "{Value}";
 
                 // Node
                 void OnInit() override;
@@ -111,12 +113,14 @@ namespace ScriptCanvas
 
             private:
 
-                // NodePropertyInterface
+                // NodePropertyInterface...
                 void OnPropertyChanged() override;
                 ////
 
                 TypedNodePropertyInterface<ScriptCanvas::Data::StringType> m_stringInterface;
                 bool m_parsingFormat = false;
+
+                bool m_isHandlingExtension = false;
             };
         }
     }

@@ -27,11 +27,13 @@ namespace ScriptCanvas
                 AZ_COMPONENT(Error, "{C6928F30-87BA-4FFE-A3C0-B6096C161DD0}", Node);
                 
                 static void Reflect(AZ::ReflectContext* reflection);
-              
+
+                bool IsDeprecated() const override { return true; }
+
             protected:
                 void OnInit() override;
                 void OnInputSignal(const SlotId&) override;
             };
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        } 
+    } 
+} 

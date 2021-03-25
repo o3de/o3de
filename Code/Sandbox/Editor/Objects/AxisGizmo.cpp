@@ -43,7 +43,7 @@ CAxisGizmo::CAxisGizmo(CBaseObject* object)
     SetFlags(EGIZMO_SELECTABLE | EGIZMO_TRANSFORM_MANIPULATOR);
 
     m_axisGizmoCount++;
-    m_object->AddEventListener(functor(*this, &CAxisGizmo::OnObjectEvent));
+    m_object->AddEventListener(this);
 
     m_localTM.SetIdentity();
     m_parentTM.SetIdentity();
@@ -72,7 +72,7 @@ CAxisGizmo::~CAxisGizmo()
 {
     if (m_object)
     {
-        m_object->RemoveEventListener(functor(*this, &CAxisGizmo::OnObjectEvent));
+        m_object->RemoveEventListener(this);
     }
     m_axisGizmoCount--;
 }

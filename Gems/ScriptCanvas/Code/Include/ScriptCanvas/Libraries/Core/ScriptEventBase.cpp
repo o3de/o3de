@@ -28,17 +28,7 @@ namespace ScriptCanvas
         {
             namespace Internal
             {
-                bool ScriptEventBaseVersionConverter([[maybe_unused]] AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    if (rootElement.GetVersion() < 6)
-                    {
-                        rootElement.RemoveElementByName(AZ_CRC_CE("m_asset"));
-                    }
-
-                    return true;
-                }
-
-                void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
+                 void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
                 {
                     if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
                     {
@@ -83,9 +73,22 @@ namespace ScriptCanvas
                     }
                 }
 
+                AZ::Outcome<DependencyReport, void> ScriptEventBase::GetDependencies() const
+                {
+                    if (!m_asset.GetId().IsValid())
+                    {
+                        return AZ::Failure();
+                    }
+
+                    DependencyReport report;
+                    report.scriptEventsAssetIds.insert({ m_asset.GetId() });
+                    return AZ::Success(AZStd::move(report));
+                }
+
                 void ScriptEventBase::Initialize(const AZ::Data::AssetId assetId)
                 {
-                    m_asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<ScriptEvents::ScriptEventsAsset>(assetId, m_asset.GetAutoLoadBehavior());
+                    m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                    m_asset.BlockUntilLoadComplete();
 
                     if (assetId.IsValid())
                     {
@@ -97,9 +100,46 @@ namespace ScriptCanvas
                     }
                 }
 
+                AZStd::pair<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>, bool> ScriptEventBase::IsAssetOutOfDate() const
+                {
+                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(GetAssetId(), AZ::Data::AssetLoadBehavior::PreLoad);
+                    assetData.BlockUntilLoadComplete();
+
+                    // #conversion_diagnostic
+                    if (assetData)
+                    {
+                        ScriptEvents::ScriptEvent& definition = assetData.Get()->m_definition;
+                        if (GetVersion() != definition.GetVersion())
+                        {
+                            AZ_TracePrintf("ScriptCanvas", "ScriptEvent Node %s version has updated. This node will be considered out of date.", GetDebugName().data());
+                            return { assetData, true };
+                        }
+                        else
+                        {
+                            return { assetData, false };
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("ScriptCanvas", false, "ScriptEvent Node %s failed to load latest interface from the source asset. This node will be disabled in the graph, and the graph will not parse", GetDebugName().data());
+                        return  { assetData, true };
+                    }
+                }
+
+                void ScriptEventBase::OnActivate()
+                {
+                    if (!m_asset || m_asset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+                    {
+                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                        m_asset.BlockUntilLoadComplete();
+                    }
+                }
+
                 void ScriptEventBase::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
                 {
-                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(asset.GetId(), AZ::Data::AssetLoadBehavior::Default);
+                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(asset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
+                    assetData.BlockUntilLoadComplete();
+
                     m_definition = assetData.Get()->m_definition;
                     OnScriptEventReady(asset);
                 }
@@ -112,7 +152,7 @@ namespace ScriptCanvas
 
                 void ScriptEventBase::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
                 {
-                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(asset.GetId(), AZ::Data::AssetLoadBehavior::Default);
+                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(asset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
                     ScriptEvents::ScriptEvent& definition = assetData.Get()->m_definition;
                     if (definition.GetVersion() > m_version)
                     {
@@ -128,7 +168,7 @@ namespace ScriptCanvas
                     ScriptCanvas::ScriptEventNodeRequestBus::Handler::BusDisconnect();
                     AZ::Data::AssetBus::Handler::BusDisconnect();
                 }
-            } // namespace Internal
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            }
+        }
+    }
+}

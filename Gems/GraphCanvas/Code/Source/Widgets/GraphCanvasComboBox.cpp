@@ -29,7 +29,7 @@ namespace GraphCanvas
     // GraphCanvasComboBoxFilterProxyModel
     ////////////////////////////////////////    
 
-    GraphCanvasComboBoxFilterProxyModel::GraphCanvasComboBoxFilterProxyModel([[maybe_unused]] QObject* parent)
+    GraphCanvasComboBoxFilterProxyModel::GraphCanvasComboBoxFilterProxyModel(QObject*)
     {
     }
 
@@ -149,11 +149,11 @@ namespace GraphCanvas
     {
         clearFocus();
         m_tableView.clearFocus();
+        m_tableView.selectionModel()->clearSelection();
 
-        m_filterProxyModel.layoutAboutToBeChanged();
+        m_filterProxyModel.BeginModelReset();
         m_modelInterface->OnDropDownAboutToShow();
-        m_filterProxyModel.layoutChanged();
-        m_filterProxyModel.invalidate();
+        m_filterProxyModel.EndModelReset();
 
         show();
 
@@ -174,14 +174,14 @@ namespace GraphCanvas
         m_disableHidingStateSetter.ReleaseState();
 
         m_tableView.clearFocus();
+        m_tableView.selectionModel()->clearSelection();
+
         clearFocus();
         reject();
 
-        m_filterProxyModel.layoutAboutToBeChanged();
+        m_filterProxyModel.BeginModelReset();
         m_modelInterface->OnDropDownHidden();
-        m_filterProxyModel.layoutChanged();
-        
-        m_filterProxyModel.invalidate();
+        m_filterProxyModel.EndModelReset();
     }
 
     void GraphCanvasComboBoxMenu::reject()
@@ -252,6 +252,7 @@ namespace GraphCanvas
 
         Q_EMIT VisibilityChanged(false);
         m_tableView.selectionModel()->clearSelection();
+        m_filterProxyModel.invalidate();
     }
 
     GraphCanvas::StateController<bool>* GraphCanvasComboBoxMenu::GetDisableHidingStateController()
@@ -664,9 +665,8 @@ namespace GraphCanvas
         ResetComboBox();
     }
 
-    void GraphCanvasComboBox::OnZoomChanged([[maybe_unused]] qreal zoomLevel)
+    void GraphCanvasComboBox::OnZoomChanged(qreal /*zoomLevel*/)
     {
-
     }
 
     void GraphCanvasComboBox::UserSelectedIndex(const QModelIndex& selectedIndex)

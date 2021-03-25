@@ -24,7 +24,26 @@ namespace ScriptCanvas
         const char* BinaryOperator::k_lhsName = "Value A";
         const char* BinaryOperator::k_rhsName = "Value B";
         const char* BinaryOperator::k_resultName = "Result";
-        
+
+        void ArithmeticExpression::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+        {
+            auto slotIds = replacementNode->GetSlotIds("Value");
+            if (slotIds.size() >= 2)
+            {
+                outSlotIdMap.emplace(this->GetSlotId(k_lhsName), AZStd::vector<SlotId>{ slotIds[0] });
+                outSlotIdMap.emplace(this->GetSlotId(k_rhsName), AZStd::vector<SlotId>{ slotIds[1] });
+            }
+        }
+
+        AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> ArithmeticExpression::GetReplacementSlotsMap() const
+        {
+            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotsMap;
+            slotsMap.emplace(k_evaluateName, AZStd::vector<AZStd::string>{ "In" });
+            slotsMap.emplace(k_outName, AZStd::vector<AZStd::string>{ "Out" });
+            slotsMap.emplace(k_resultName, AZStd::vector<AZStd::string>{ "Result" });
+            return slotsMap;
+        }
+
         void ArithmeticExpression::OnInit()
         {
             {

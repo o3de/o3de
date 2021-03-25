@@ -60,11 +60,14 @@ namespace ScriptCanvasEditor
         void Activate(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
         {
             m_scriptCanvasId = scriptCanvasId;
-            GeneralEditorNotificationBus::Handler::BusConnect(m_scriptCanvasId);
-
-            if (!IsInUndo())
+            if (m_scriptCanvasId.IsValid())
             {
-                FinalizeActivation();
+                GeneralEditorNotificationBus::Handler::BusConnect(m_scriptCanvasId);
+
+                if (!IsInUndo())
+                {
+                    FinalizeActivation();
+                }
             }
         }
 
@@ -117,18 +120,21 @@ namespace ScriptCanvasEditor
 
         void FinalizeActivation()
         {
-            ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusConnect(m_scriptCanvasId);
-
-            const ScriptCanvas::GraphVariableMapping* graphVariables = nullptr;
-            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariables, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariables);            
-
-            if (graphVariables)
+            if (m_scriptCanvasId.IsValid())
             {
-                ClearElements();
+                ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusConnect(m_scriptCanvasId);
 
-                for (auto variablePair : (*graphVariables))
+                const ScriptCanvas::GraphVariableMapping* graphVariables = nullptr;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariables, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariables);            
+
+                if (graphVariables)
                 {
-                    OnVariableAddedToGraph(variablePair.first, variablePair.second.GetVariableName());
+                    ClearElements();
+
+                    for (auto variablePair : (*graphVariables))
+                    {
+                        OnVariableAddedToGraph(variablePair.first, variablePair.second.GetVariableName());
+                    }
                 }
             }
         }
@@ -165,7 +171,7 @@ namespace ScriptCanvasEditor
 
                 if (sourceModel())
                 {
-                    invalidateFilter();
+                    QSortFilterProxyModel::invalidateFilter();
                 }
             }
         }
@@ -174,7 +180,7 @@ namespace ScriptCanvasEditor
         {
             if (sourceModel())
             {
-                invalidateFilter();
+                QSortFilterProxyModel::invalidateFilter();
             }
         }
 
@@ -192,7 +198,7 @@ namespace ScriptCanvasEditor
             {
                 auto dataType = variable->GetDatum()->GetType();
 
-                return m_slotFilter->IsTypeMatchFor(dataType).IsSuccess();                
+                return m_slotFilter->GetNode()->IsValidTypeForSlot(m_slotFilter->GetId(), dataType).IsSuccess();
             }
 
             return false;
@@ -270,14 +276,14 @@ namespace ScriptCanvasEditor
         ////
 
         // ScriptCanvas::NodeNotificationsBus::Handler
-        void OnInputChanged(const ScriptCanvas::SlotId& slotId)
+        void OnSlotInputChanged(const ScriptCanvas::SlotId& slotId) override
         {
             if (slotId == GetSlotId())
             {
                 RegisterBus();
             }
 
-            ScriptCanvasDataInterface<GraphCanvas::ComboBoxDataInterface>::OnInputChanged(slotId);
+            ScriptCanvasDataInterface<GraphCanvas::ComboBoxDataInterface>::OnSlotInputChanged(slotId);
         }
         ////
 
@@ -314,7 +320,7 @@ namespace ScriptCanvasEditor
         }
 
         // Returns the string used to display the currently selected value[Used in the non-editable format]
-        const QString& GetDisplayString() const override
+        QString GetDisplayString() const override
         {
             const ScriptCanvas::Datum* datum = GetSlotObject();
 
@@ -404,6 +410,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasDataInterface<GraphCanvas::ComboBoxDataInterface>
         , public ScriptCanvas::VariableNotificationBus::Handler
         , public ScriptCanvas::EndpointNotificationBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptCanvasVariableReferenceDataInterface, AZ::SystemAllocator, 0);
@@ -436,6 +443,15 @@ namespace ScriptCanvasEditor
             ScriptCanvas::EndpointNotificationBus::Handler::BusDisconnect();
         }
 
+        // SystemTickBus
+        void OnSystemTick()
+        {
+            AZ::SystemTickBus::Handler::BusDisconnect();
+            AssignIndex(m_variableTypeModel.GetDefaultIndex());
+            SignalValueChanged();
+        }
+        ////
+
         // NodeNotificationBus
         void OnSlotDisplayTypeChanged(const ScriptCanvas::SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& slotType)
         {
@@ -444,12 +460,28 @@ namespace ScriptCanvasEditor
                 m_variableTypeModel.RefreshFilter();
             }
         }
+
+        void OnSlotInputChanged(const ScriptCanvas::SlotId& slotId) override
+        {
+            if (slotId == GetSlotId())
+            {
+                RegisterBus();
+            }
+
+            ScriptCanvasDataInterface<GraphCanvas::ComboBoxDataInterface>::OnSlotInputChanged(slotId);
+        }
         ////
 
         // VariableNotificationBus
         void OnVariableRenamed([[maybe_unused]] AZStd::string_view newName) override
         {
             SignalValueChanged();
+        }
+
+        void OnVariableRemoved() override
+        {
+            // Delay this since its possible the model hasn't updated yet
+            AZ::SystemTickBus::Handler::BusConnect();
         }
         ////
 
@@ -512,7 +544,7 @@ namespace ScriptCanvasEditor
         }
 
         // Returns the string used to display the currently selected value[Used in the non-editable format]
-        const QString& GetDisplayString() const override
+        QString GetDisplayString() const override
         {
             ScriptCanvas::Slot* slot = GetSlot();
 
@@ -533,6 +565,26 @@ namespace ScriptCanvasEditor
         }
 
     private:
+
+        void RegisterBus()
+        {
+            ScriptCanvas::Slot* slot = GetSlot();
+
+            if (slot)
+            {
+                ScriptCanvas::VariableId variableId = slot->GetVariableReference();
+
+                if (ScriptCanvas::VariableNotificationBus::Handler::BusIsConnected())
+                {
+                    ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();
+                }
+
+                if (variableId.IsValid())
+                {
+                    ScriptCanvas::VariableNotificationBus::Handler::BusConnect(ScriptCanvas::GraphScopedVariableId(m_scriptCanvasGraphId, variableId));
+                }                
+            }
+        }
 
         ScriptCanvas::Slot* GetSlot() const
         {

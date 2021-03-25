@@ -50,8 +50,11 @@ set(FILES
     Prefab/Benchmark/PrefabInstantiateBenchmarks.cpp
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
+    Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
+    Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
@@ -65,11 +68,22 @@ set(FILES
     Prefab/PrefabTestDomUtils.h
     Prefab/PrefabTestFixture.cpp
     Prefab/PrefabTestFixture.h
+    Prefab/PrefabTestUndoFixture.cpp
+    Prefab/PrefabTestUndoFixture.h
+    Prefab/PrefabUndoLinkTests.cpp
+    Prefab/PrefabUndoTests.cpp
     Prefab/PrefabTestUtils.h
     Prefab/PrefabUpdateInstancesTests.cpp
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
     Prefab/PrefabInstantiateTests.cpp
+    Prefab/SpawnableCreateTests.cpp
+    Prefab/SpawnableRemoveEditorInfoTests.cpp
+    Prefab/SpawnableRemoveEditorInfoTestFixture.cpp
+    Prefab/SpawnableRemoveEditorInfoTestFixture.h
+    Prefab/SpawnableSortEntitiesTests.cpp
+    Prefab/SpawnableSortEntitiesTestFixture.cpp
+    Prefab/SpawnableSortEntitiesTestFixture.h
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
     SliceStabilityTests/SliceStabilityTestFramework.h

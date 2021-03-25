@@ -27,6 +27,7 @@ namespace AzToolsFramework
     /// in two dimension in a plane defined two non-collinear axes in 3D space.
     class PlanarManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalTransform
     {
         /// Private constructor.
         explicit PlanarManipulator(const AZ::Transform& worldFromLocal);
@@ -93,14 +94,9 @@ namespace AzToolsFramework
 
         /// Ensure @param axis1 and @param axis2 are not collinear.
         void SetAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2);
-        void SetSpace(const AZ::Transform& worldFromLocal);
-        void SetLocalTransform(const AZ::Transform& localTransform);
-        void SetLocalPosition(const AZ::Vector3& localPosition);
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation);
 
         const AZ::Vector3& GetAxis1() const { return m_fixed.m_axis1; }
         const AZ::Vector3& GetAxis2() const { return m_fixed.m_axis2; }
-        AZ::Vector3 GetPosition() const { return m_localTransform.GetTranslation(); }
 
         template<typename Views>
         void SetViews(Views&& views)
@@ -127,9 +123,6 @@ namespace AzToolsFramework
             AZ::Vector3 m_snapOffset; ///< The snap offset amount to ensure manipulator is aligned to the grid.
         };
 
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); ///< Local transform of the manipulator.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
-
         Fixed m_fixed;
         StartInternal m_startInternal;
 
@@ -140,13 +133,13 @@ namespace AzToolsFramework
         ManipulatorViews m_manipulatorViews; ///< Look of manipulator.
 
         static StartInternal CalculateManipulationDataStart(
-            const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform,
-            const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction,
-            float intersectionDistance);
+            const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+            const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
+            const ViewportInteraction::MouseInteraction& interaction, float intersectionDistance);
 
         static Action CalculateManipulationDataAction(
             const Fixed& fixed, const StartInternal& startInternal, const AZ::Transform& worldFromLocal,
-            const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
-            const ViewportInteraction::MouseInteraction& interaction);
+            const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
+            const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction);
     };
 } // namespace AzToolsFramework

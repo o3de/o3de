@@ -1067,16 +1067,6 @@ void CHWShader_D3D::mfSetDefaultRT(uint64& nAndMask, uint64& nOrMask)
         nBitsPlatform |= SHGD_HW_ORBIS;
     }
     else
-    if (CParserBin::m_nPlatform == SF_DURANGO)
-    {
-        nBitsPlatform |= SHGD_HW_DURANGO;
-    }
-    else
-    if (CParserBin::m_nPlatform == SF_JASPER) 
-    {
-        nBitsPlatform |= SHGD_HW_DURANGO;
-    }
-    else
     if (CParserBin::m_nPlatform == SF_D3D11)
     {
         nBitsPlatform |= SHGD_HW_DX11;
@@ -1630,7 +1620,7 @@ bool CHWShader_D3D::mfGenerateScript(CShader* pSH, SHWSInstance*& pInst, std::ve
                 CParserBin::AddDefineToken(eT__FT_SKIN_STREAM, NewTokens);
             }
 #if ENABLE_NORMALSTREAM_SUPPORT
-            if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4 ||  CParserBin::m_nPlatform == SF_GLES3)
+            if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_ORBIS || CParserBin::m_nPlatform == SF_GL4 ||  CParserBin::m_nPlatform == SF_GLES3)
             {
                 if (nStreams & VSM_NORMALS)
                 {
@@ -2300,8 +2290,6 @@ SShaderDevCache* CHWShader::mfInitDevCache(const char* name, [[maybe_unused]] CH
     return new SShaderDevCache(cryShaderName);
 }
 
-#include <LZSS.H>
-
 SShaderCacheHeaderItem* CHWShader_D3D::mfGetCompressedItem([[maybe_unused]] uint32 nFlags, int32& nSize)
 {
     SHWSInstance*   pInst = m_pCurInst;
@@ -2352,7 +2340,6 @@ SShaderCacheHeaderItem* CHWShader_D3D::mfGetCompressedItem([[maybe_unused]] uint
         return NULL;
     }
     pInst->m_DeviceObjectID = nDevID;
-    Decodem(CD.m_pCompressedShader, pData, CD.m_nSizeCompressedShader);
     SShaderCacheHeaderItem* pIt = (SShaderCacheHeaderItem*)pData;
     if (CParserBin::m_bEndians)
     {
@@ -4005,7 +3992,7 @@ bool CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, LPD3D10BLOB
         static bool s_logOnce_WrongPlatform = false;
 #   if !defined(OPENGL)
 #       if !defined(_RELEASE)
-        if (!s_logOnce_WrongPlatform && !(CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO))
+        if (!s_logOnce_WrongPlatform && !(CParserBin::m_nPlatform == SF_D3D11))
         {
             s_logOnce_WrongPlatform = true;
             iLog->LogError("Trying to build non DX11 shader via internal compiler which is not supported. Please use remote compiler instead!");
@@ -4110,7 +4097,7 @@ void CHWShader_D3D::mfPrepareShaderDebugInfo(SHWSInstance* pInst, CHWShader_D3D*
         }
     }
     // Confetti Nicholas Baldwin: adding metal shader language support
-    if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 ||  CParserBin::m_nPlatform == SF_METAL)
+    if (CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_JASPER || CParserBin::m_nPlatform == SF_GL4 || CParserBin::m_nPlatform == SF_GLES3 ||  CParserBin::m_nPlatform == SF_METAL)
     {
         ID3D11ShaderReflection* pShaderReflection = (ID3D11ShaderReflection*) pConstantTable;
 
@@ -4823,7 +4810,7 @@ bool CAsyncShaderTask::CompileAsyncShader(SShaderAsyncInfo* pAsync)
     {
         static bool s_logOnce_WrongPlatform = false;
 #       if !defined(_RELEASE)
-        if (!s_logOnce_WrongPlatform && !(CParserBin::m_nPlatform == SF_D3D11 || CParserBin::m_nPlatform == SF_DURANGO))
+        if (!s_logOnce_WrongPlatform && !(CParserBin::m_nPlatform == SF_D3D11))
         {
             s_logOnce_WrongPlatform = true;
             iLog->LogError("Trying to build non DX11 shader via internal compiler which is not supported. Please use remote compiler instead!");

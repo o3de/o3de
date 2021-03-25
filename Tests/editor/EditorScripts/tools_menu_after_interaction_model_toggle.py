@@ -1,0 +1,117 @@
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
+"""
+C1564077: The Tools menu options function normally - New view interaction Model enabled
+https://testrail.agscollab.com/index.php?/cases/view/1564077
+"""
+
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import azlmbr.legacy.general as general
+import Tests.ly_shared.pyside_utils as pyside_utils
+from PySide2 import QtWidgets
+from Tests.editor.editor_utils.editor_test_helper import EditorTestHelper
+
+
+class TestToolsMenuOptionsAfterInteractionModelToggle(EditorTestHelper):
+    def __init__(self):
+        EditorTestHelper.__init__(self, log_prefix="tools_menu_after_interaction_model_toggle: ", args=["level"])
+
+    def run_test(self):
+        """
+        Summary:
+        Interact with Tools Menu options and verify if all the options are working.
+
+        Expected Behavior:
+        The Tools menu functions normally.
+
+        Test Steps:
+         1) Open level
+         2) Interact with Tools Menu options
+
+        Note:
+        - This test file must be called from the Lumberyard Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
+        tools_menu_options = [
+            ("Animation Editor (PREVIEW)",),
+            ("Asset Browser",),
+            ("Asset Editor",),
+            ("Console",),
+            ("Entity Inspector",),
+            ("ImGui Editor",),
+            ("Landscape Canvas",),
+            ("Level Inspector",),
+            ("Lua Editor",),
+            ("Material Editor",),
+            ("Particle Editor",),
+            ("PhysX Configuration (PREVIEW)",),
+            ("Script Canvas",),
+            ("Slice Relationship View (PREVIEW)",),
+            ("UI Editor",),
+            ("Vegetation Editor",),
+            ("Other", "Audio Controls Editor"),
+            ("Other", "Console Variables"),
+            ("Other", "Lens Flare Editor"),
+            ("Other", "Measurement System Tool"),
+            ("Other", "Python Console"),
+            ("Other", "Python Scripts"),
+            ("Other", "Slice Favorites"),
+            ("Other", "Sun Trajectory Tool"),
+            ("Other", "Terrain Texture Layers"),
+            ("Other", "Time Of Day"),
+            ("Plug-Ins", "Substance Editor"),
+            ("Viewport", "Viewport Camera Selector"),
+        ]
+
+        # 1) Open level
+        self.test_success = self.create_level(
+            self.args["level"],
+            heightmap_resolution=1024,
+            heightmap_meters_per_pixel=1,
+            terrain_texture_resolution=4096,
+            use_terrain=True,
+        )
+        general.idle_wait(3.0)
+
+        def on_focus_changed(old, new):
+            print("Focus Changed")
+            QtWidgets.QApplication.activeModalWidget().close()
+
+        def on_action_triggered(action_name):
+            print(f"{action_name} Action triggered")
+            
+
+        # 2) Interact with File Menu options
+        try:
+            editor_window = pyside_utils.get_editor_main_window()
+            app = QtWidgets.QApplication.instance()
+            app.focusChanged.connect(on_focus_changed)
+            for option in tools_menu_options:
+                action = pyside_utils.get_action_for_menu_path(editor_window, "Tools", *option)
+                trig_func = lambda: on_action_triggered(action.iconText())
+                action.triggered.connect(trig_func)
+                action.trigger()
+                action.triggered.disconnect(trig_func)
+        except Exception as e:
+            print(e)
+        finally:
+            app.focusChanged.disconnect(on_focus_changed)
+            general.close_pane("Editor Settings Manager")
+        
+test = TestToolsMenuOptionsAfterInteractionModelToggle()
+test.run()

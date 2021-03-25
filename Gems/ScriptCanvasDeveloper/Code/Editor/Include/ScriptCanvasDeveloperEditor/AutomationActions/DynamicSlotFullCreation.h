@@ -12,12 +12,12 @@
 #pragma once
 
 class QAction;
-class QWidget;
+class QMenu;
 
 namespace ScriptCanvasDeveloperEditor
 {
     namespace DynamicSlotFullCreation
     {
-        QAction* CreateDynamicSlotFullCreationAction(QWidget* mainWindow);
+        QAction* CreateDynamicSlotFullCreationAction(QMenu* mainWindow);
     };
 }

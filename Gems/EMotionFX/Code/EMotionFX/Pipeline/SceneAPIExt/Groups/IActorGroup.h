@@ -13,7 +13,7 @@
 */
 
 #include <AzCore/RTTI/RTTI.h>
-#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 
 namespace EMotionFX
 {
@@ -22,20 +22,15 @@ namespace EMotionFX
         namespace Group
         {
             class IActorGroup
-                : public AZ::SceneAPI::DataTypes::ISceneNodeGroup
+                : public AZ::SceneAPI::DataTypes::IGroup
             {
             public:
-                AZ_RTTI(IActorGroup, "{C86945A8-AEE8-4CFC-8FBF-A20E9BC71348}", AZ::SceneAPI::DataTypes::ISceneNodeGroup);
+                AZ_RTTI(IActorGroup, "{C86945A8-AEE8-4CFC-8FBF-A20E9BC71348}", AZ::SceneAPI::DataTypes::IGroup);
 
                 ~IActorGroup() override = default;
 
                 virtual const AZStd::string& GetSelectedRootBone() const = 0;
-
                 virtual void SetSelectedRootBone(const AZStd::string& selectedRootBone) = 0;
-
-                // This list should contain the base meshe nodes (LOD0 meshes)
-                virtual AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& GetBaseNodeSelectionList() = 0;
-                virtual const AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& GetBaseNodeSelectionList() const = 0 ;
             };
         }
     }

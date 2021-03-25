@@ -30,6 +30,7 @@ namespace AZ
 
         ReflectionProbe::~ReflectionProbe()
         {
+            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
             m_meshFeatureProcessor->ReleaseMesh(m_visualizationMeshHandle);
         }
 
@@ -37,10 +38,11 @@ namespace AZ
         {
             AZ_Assert(scene, "ReflectionProbe::Init called with a null Scene pointer");
 
+            m_scene = scene;
             m_reflectionRenderData = reflectionRenderData;
 
             // load visualization sphere model and material
-            m_meshFeatureProcessor = scene->GetFeatureProcessor<Render::MeshFeatureProcessorInterface>();
+            m_meshFeatureProcessor = m_scene->GetFeatureProcessor<Render::MeshFeatureProcessorInterface>();
 
             m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
                 "Models/ReflectionProbeSphere.azmodel",
@@ -67,23 +69,28 @@ namespace AZ
 
             m_renderInnerSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_renderInnerSrgAsset);
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
+
+            // setup culling
+            m_cullable.m_cullData.m_scene = m_scene;
+            m_cullable.SetDebugName(AZ::Name("ReflectionProbe Volume"));
         }
 
-        void ReflectionProbe::Simulate(RPI::Scene* scene, [[maybe_unused]] ReflectionProbeFeatureProcessor* featureProcessor, uint32_t probeIndex)
+        void ReflectionProbe::Simulate(uint32_t probeIndex)
         {
-            AZ_Assert(scene, "ReflectionProbe::Simulate called with a null Scene pointer");
-
             if (m_buildingCubeMap && m_environmentCubeMapPass->IsFinished())
             {
                 // all faces of the cubemap have been rendered, invoke the callback
                 m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
 
                 // remove the pipeline
-                scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
+                m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
                 m_environmentCubeMapPass = nullptr;
 
                 m_buildingCubeMap = false;
             }
+
+            // track if we need to update culling based on changes to the draw packets or Srg
+            bool updateCulling = false;
 
             if (m_updateSrg)
             {
@@ -130,6 +137,7 @@ namespace AZ
                 m_renderInnerSrg->Compile();
 
                 m_updateSrg = false;
+                updateCulling = true;
             }
 
             // the list index passed in from the feature processor is the index of this probe in the sorted probe list.
@@ -150,44 +158,26 @@ namespace AZ
                     m_blendWeightSrg,
                     m_reflectionRenderData->m_blendWeightPipelineState,
                     m_reflectionRenderData->m_blendWeightDrawListTag,
-                    Render::StencilRefs::UseSpecularIBLPass);
+                    Render::StencilRefs::UseIBLSpecularPass);
 
                 m_renderOuterDrawPacket = BuildDrawPacket(
                     m_renderOuterSrg,
                     m_reflectionRenderData->m_renderOuterPipelineState,
                     m_reflectionRenderData->m_renderOuterDrawListTag,
-                    Render::StencilRefs::UseSpecularIBLPass);
+                    Render::StencilRefs::UseIBLSpecularPass);
 
                 m_renderInnerDrawPacket = BuildDrawPacket(
                     m_renderInnerSrg,
                     m_reflectionRenderData->m_renderInnerPipelineState,
                     m_reflectionRenderData->m_renderInnerDrawListTag,
-                    Render::StencilRefs::UseSpecularIBLPass);
-            }
-        }
+                    Render::StencilRefs::UseIBLSpecularPass);
 
-        void ReflectionProbe::RenderReflections(RPI::ViewPtr view)
-        {
-            // [GFX TODO][ATOM-4364] Add culling for reflection probe volumes
+                updateCulling = true;
+            }
 
-            if (view->HasDrawListTag(m_reflectionRenderData->m_stencilDrawListTag))
+            if (updateCulling)
             {
-                view->AddDrawPacket(m_stencilDrawPacket.get());
-            }
-            
-            if (view->HasDrawListTag(m_reflectionRenderData->m_blendWeightDrawListTag))
-            {
-                view->AddDrawPacket(m_blendWeightDrawPacket.get());
-            }
-            
-            if (view->HasDrawListTag(m_reflectionRenderData->m_renderOuterDrawListTag))
-            {
-                view->AddDrawPacket(m_renderOuterDrawPacket.get());
-            }
-            
-            if (view->HasDrawListTag(m_reflectionRenderData->m_renderInnerDrawListTag))
-            {
-                view->AddDrawPacket(m_renderInnerDrawPacket.get());
+                UpdateCulling();
             }
         }
 
@@ -220,7 +210,7 @@ namespace AZ
             m_updateSrg = true;
         }
 
-        void ReflectionProbe::BuildCubeMap(RPI::Scene* scene, BuildCubeMapCallback callback)
+        void ReflectionProbe::BuildCubeMap(BuildCubeMapCallback callback)
         {
             AZ_Assert(m_buildingCubeMap == false, "ReflectionProbe::BuildCubeMap called while a cubemap build was already in progress");
             if (m_buildingCubeMap)
@@ -254,7 +244,7 @@ namespace AZ
             const RPI::Ptr<RPI::ParentPass>& rootPass = environmentCubeMapPipeline->GetRootPass();
             rootPass->AddChild(m_environmentCubeMapPass);
 
-            scene->AddRenderPipeline(environmentCubeMapPipeline);
+            m_scene->AddRenderPipeline(environmentCubeMapPipeline);
         }
 
         void ReflectionProbe::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
@@ -307,6 +297,48 @@ namespace AZ
             drawPacketBuilder.AddDrawItem(drawRequest);
 
             return drawPacketBuilder.End();
+        }
+
+        void ReflectionProbe::UpdateCulling()
+        {
+            // set draw list mask
+            m_cullable.m_cullData.m_drawListMask.reset();
+            m_cullable.m_cullData.m_drawListMask =
+                m_stencilDrawPacket->GetDrawListMask() |
+                m_blendWeightDrawPacket->GetDrawListMask() |
+                m_renderOuterDrawPacket->GetDrawListMask() |
+                m_renderInnerDrawPacket->GetDrawListMask();
+
+            // setup the Lod entry, using one entry for all four draw packets
+            m_cullable.m_lodData.m_lods.clear();
+            m_cullable.m_lodData.m_lods.resize(1);
+            RPI::Cullable::LodData::Lod& lod = m_cullable.m_lodData.m_lods.back();
+
+            // add draw packets
+            lod.m_drawPackets.push_back(m_stencilDrawPacket.get());
+            lod.m_drawPackets.push_back(m_blendWeightDrawPacket.get());
+            lod.m_drawPackets.push_back(m_renderOuterDrawPacket.get());
+            lod.m_drawPackets.push_back(m_renderInnerDrawPacket.get());
+
+            // set screen coverage
+            // probe volume should cover at least a screen pixel at 1080p to be drawn
+            static const float MinimumScreenCoverage = 1.0f / 1080.0f;
+            lod.m_screenCoverageMin = MinimumScreenCoverage;
+            lod.m_screenCoverageMax = 1.0f;
+
+            // update cullable bounds
+            Vector3 center;
+            float radius;
+            m_outerAabbWs.GetAsSphere(center, radius);
+
+            m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
+            m_cullable.m_cullData.m_boundingObb = m_outerAabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
+            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = m_outerAabbWs;
+            m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
+            m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+
+            // register with culling system
+            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
         }
     } // namespace Render
 } // namespace AZ

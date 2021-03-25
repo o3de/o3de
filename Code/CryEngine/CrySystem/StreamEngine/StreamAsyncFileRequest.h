@@ -38,10 +38,6 @@ class CMTSafeHeap;
 class CAsyncIOFileRequest_TransferPtr;
 struct SStreamEngineTempMemStats;
 
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION  //Could check for INCLUDE_LIBTOMCRYPT here, but only decryption is implemented here, not signing
-#include "CryTomcrypt.h"
-#endif
-
 #if !defined(USE_EDGE_ZLIB)
 // Prevent compilation conflicts - zconf.h (included by zlib.h) defines WINDOWS and WIN32 - those
 // definitions conflict with CryEngine's definitions.
@@ -209,16 +205,8 @@ public:
     static void JobStart_Decompress(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState, int nSlot);
     void DecompressBlockEntry(SStreamJobEngineState engineState, int nJob);
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    uint32 PushDecryptPage(const SStreamJobEngineState& engineState, void* pSrc, SStreamPageHdr* pSrcHdr, uint32 nBytes, bool bLast);
-    uint32 PushDecryptBlock(const SStreamJobEngineState& engineState, void* pSrc, SStreamPageHdr* pSrcHdr, uint32 nOffs, uint32 nBytes, bool bLast);
-    static void JobStart_Decrypt(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState, int nSlot);
-    void DecryptBlockEntry(SStreamJobEngineState engineState, int nJob);
-#endif //STREAMENGINE_SUPPORT_DECRYPT
-
     void Cancel();
     bool TryCancel();
-    void SyncWithDecrypt();
     void SyncWithDecompress();
     void ComputeSortKey(uint64 nCurrentKeyInProgress);
     void SetPriority(EStreamTaskPriority estp);
@@ -237,7 +225,6 @@ private:
 
 private:
     static void JobFinalize_Decompress(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState);
-    static void JobFinalize_Decrypt(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState);
     static void JobFinalize_Transfer(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState);
 
 private:
@@ -264,23 +251,13 @@ public:
     // Cancel() must acquire both
     CryCriticalSection m_externalBufferLockRead;
     CryCriticalSection m_externalBufferLockDecompress;
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    CryCriticalSection m_externalBufferLockDecrypt;
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
 
     CryStringLocal m_strFileName;
     string m_pakFile;
 
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-    string m_decryptionCTRInitialisedAgainst;
-#endif  //SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-
     // If request come from stream, it will be not 0.
     IReadStreamPtr m_pReadStream;
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    AZStd::unique_ptr<AZ::LegacyJobExecutor> m_decryptJobExecutor;
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
     AZStd::unique_ptr<AZ::LegacyJobExecutor> m_decompJobExecutor;
 
     // Only POD data should exist beyond this point - will be memsetted to 0 on Reset !
@@ -311,7 +288,6 @@ public:
     uint32 m_nReadMemoryBufferSize;
 
     uint32 m_bCompressedBuffer : 1;
-    uint32 m_bEncryptedBuffer    : 1;
     uint32 m_bStatsUpdated     : 1;
     uint32 m_bStreamInPlace     : 1;
     uint32 m_bWriteOnlyExternal : 1;
@@ -338,7 +314,6 @@ public:
     uint32 m_nPageReadEnd;
 
     volatile uint32 m_nBytesDecompressed;
-    volatile uint32 m_nBytesDecrypted;
 
     uint32 m_crc32FromHeader;
 
@@ -347,19 +322,12 @@ public:
     z_stream_s* m_pZlibStream;
     AZ::IO::ZipDir::UncompressLookahead* m_pLookahead;
     SStreamJobQueue* m_pDecompQueue;
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    SStreamJobQueue* m_pDecryptQueue;
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-    symmetric_CTR* m_pDecryptionCTR;
-#endif  //SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
 
 #ifdef STREAMENGINE_ENABLE_STATS
     // Time that read operation took.
     CTimeValue m_readTime;
     CTimeValue m_unzipTime;
     CTimeValue m_verifyTime;
-    CTimeValue m_decryptTime;
     CTimeValue m_startTime;
     CTimeValue m_completionTime;
 
@@ -395,15 +363,11 @@ struct SStreamEngineDecompressStats
 {
     uint64 m_nTotalBytesUnziped;
     uint64 m_nTempBytesUnziped;
-    uint64 m_nTotalBytesDecrypted;
-    uint64 m_nTempBytesDecrypted;
     uint64 m_nTotalBytesVerified;
     uint64 m_nTempBytesVerified;
 
     CTimeValue m_totalUnzipTime;
     CTimeValue m_tempUnzipTime;
-    CTimeValue m_totalDecryptTime;
-    CTimeValue m_tempDecryptTime;
     CTimeValue m_totalVerifyTime;
     CTimeValue m_tempVerifyTime;
 };

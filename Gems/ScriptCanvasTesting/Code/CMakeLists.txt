@@ -18,10 +18,13 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvastestingeditor_files.cmake
+        scriptcanvastesting_autogen_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            .
             Source
+            .
+        PUBLIC
+            Include
     COMPILE_DEFINITIONS
         PRIVATE
             SCRIPTCANVAS_EDITOR
@@ -38,6 +41,11 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+        AUTOGEN_RULES
+            *.ScriptCanvasNode.xml,ScriptCanvasNode_Header.jinja,$path/$fileprefix.generated.h
+            *.ScriptCanvasNode.xml,ScriptCanvasNode_Source.jinja,$path/$fileprefix.generated.cpp
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 ly_add_target(
@@ -68,10 +76,12 @@ ly_add_target(
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ScriptCanvasTesting.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ScriptCanvasTesting.Editor.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvastestingeditor_tests_files.cmake
+        PLATFORM_INCLUDE_FILES
+            Platform/Common/${PAL_TRAIT_COMPILER_ID}/scriptcanvastesting_editor_tests_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -91,10 +101,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::ScriptCanvasTesting.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
-            Gem::ScriptCanvasGem.Editor
+            Gem::ScriptCanvas.Editor
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvasTesting.Editor.Tests
+        TEST_SUITE smoke
     )
 endif()
 

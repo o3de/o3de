@@ -69,7 +69,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ScriptEvents.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ScriptEvents.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             scriptevents_files.cmake

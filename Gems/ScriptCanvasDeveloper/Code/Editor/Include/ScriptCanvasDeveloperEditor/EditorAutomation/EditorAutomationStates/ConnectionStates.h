@@ -1,0 +1,68 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+#pragma once
+
+#include <GraphCanvas/Types/Endpoint.h>
+#include <GraphCanvas/Types/Types.h>
+
+#include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/ConnectionActions.h>
+
+namespace ScriptCanvasDeveloper
+{
+    /**
+        EditorAutomationState that will couple the two specified nodes together. The ordering of the coupling is decided by the specified connection type from the perspective of the 'nodeToPickUp'
+    */
+    class CoupleNodesState
+        : public NamedAutomationState
+    {
+    public:
+        CoupleNodesState(AutomationStateModelId firstNode, GraphCanvas::ConnectionType connectionType, AutomationStateModelId secondNode, AutomationStateModelId outputId = "");
+        ~CoupleNodesState() override = default;
+
+        void OnSetupStateActions(EditorAutomationActionRunner& actionRunner) override;
+        void OnStateActionsComplete() override;
+
+    private:
+
+        AutomationStateModelId m_pickUpNode;
+        AutomationStateModelId m_targetNode;
+
+        GraphCanvas::ConnectionType m_connectionType;
+
+        CoupleNodesAction* m_coupleNodesAction = nullptr;
+
+        AutomationStateModelId m_outputId;
+    };
+
+    /**
+        EditorAutomationState that will attempt to create a connection between the two specified endpoints
+    */
+    class ConnectEndpointsState
+        : public NamedAutomationState
+    {
+    public:
+        ConnectEndpointsState(AutomationStateModelId sourceEndpoint, AutomationStateModelId targetEndpoint, AutomationStateModelId outputId = "");
+        ~ConnectEndpointsState() override = default;
+
+        void OnSetupStateActions(EditorAutomationActionRunner& actionRunner) override;
+        void OnStateActionsComplete() override;
+
+    private:
+
+        AutomationStateModelId m_sourceEndpoint;
+        AutomationStateModelId m_targetEndpoint;
+
+        ConnectEndpointsAction* m_connectEndpointsAction = nullptr;
+
+        AutomationStateModelId m_outputId;
+    };
+}

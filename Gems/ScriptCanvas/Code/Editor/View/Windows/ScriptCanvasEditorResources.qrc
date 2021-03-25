@@ -46,6 +46,7 @@
       <file>Resources/valid_icon_grey.png</file>
       <file>Resources/validate_icon.png</file>
       <file>Resources/warning_symbol.png</file>
+      <file>Resources/warning_symbol_grey.png</file>
       <file>Resources/wrench_icon.png</file>
     </qresource>
 </RCC>

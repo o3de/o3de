@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Endpoint.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -28,28 +27,33 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            //! A node that takes a Behavior Context object and displays its data components as accessor slots
             class ExtractProperty
                 : public Node
             {
             public:
-                ScriptCanvas_Node(ExtractProperty,
-                    ScriptCanvas_Node::Name("Extract Properties", "Extracts property values from connected input")
-                    ScriptCanvas_Node::Uuid("{D4C9DA8E-838B-41C6-B870-C75294C323DC}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/Placeholder.png")
-                    ScriptCanvas_Node::Category("Utilities")
-                    ScriptCanvas_Node::Version(1, VersionConverter)
-                );
+
+                SCRIPTCANVAS_NODE(ExtractProperty);
 
                 static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
 
                 Data::Type GetSourceSlotDataType() const;
-                AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>> GetPropertyFields() const;
 
-                // Node
-                bool IsOutOfDate() const override;
+                //////////////////////////////////////////////////////////////////////////
+                // Translation
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                PropertyFields GetPropertyFields() const override;
+
+                // Node...
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
                 ////
 
+                bool IsSupportedByNewBackend() const override { return true; }
+
             protected:
+                bool IsPropertySlot(const SlotId& slotId) const;
+
                 void OnInit() override;
 
                 UpdateResult OnUpdateNode() override;
@@ -63,18 +67,8 @@ namespace ScriptCanvas
 
                 void RefreshGetterFunctions();
 
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "When signaled assigns property values using the supplied source input"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", "Signaled after all property haves have been pushed to the output slots"));
-
-                ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                    ScriptCanvas::ConnectionType::Input,
-                    ScriptCanvas_DynamicDataSlot::Name("Source", "The value on which to extract properties from.")
-                )
-
-                ScriptCanvas_SerializeProperty(Data::Type, m_dataType);
-                ScriptCanvas_SerializeProperty(AZStd::vector<Data::PropertyMetadata>, m_propertyAccounts);
+                Data::Type m_dataType;
+                AZStd::vector<Data::PropertyMetadata> m_propertyAccounts;
 
                 friend class ExtractPropertyEventHandler;
 

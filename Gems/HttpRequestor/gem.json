@@ -1,4 +1,5 @@
 {
+    "gem_name": "HttpRequestor",
     "GemFormatVersion": 3,
     "Uuid": "28479e255bde466e91fc34eec808d9c7",
     "Name": "HttpRequestor",

@@ -152,13 +152,13 @@ namespace AZ
 
         // Scope producer functions
 
-        void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer)
+        void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
             frameGraph.SetEstimatedItemCount(1);
         }
 
-        void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_shaderResourceGroup != nullptr)
             {
@@ -172,7 +172,7 @@ namespace AZ
             }
         }
 
-        void ComputePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void ComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

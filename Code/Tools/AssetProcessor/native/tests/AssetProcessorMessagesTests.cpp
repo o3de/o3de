@@ -85,6 +85,7 @@ namespace AssetProcessorMessagesTests
     public:
         void SetUp() override
         {
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
             AssetUtilities::ResetGameName();
 
             m_temporarySourceDir = QDir(m_temporaryDir.path());
@@ -165,10 +166,12 @@ namespace AssetProcessorMessagesTests
                 });
 
             
+#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
         }
 
         void TearDown() override
         {
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
             QEventLoop eventLoop;
 
             QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
@@ -179,6 +182,7 @@ namespace AssetProcessorMessagesTests
 
             m_assetSystemComponent->Deactivate();
             m_batchApplicationManager->Destroy();
+#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
         }
 
         void RunNetworkRequest(AZStd::function<void()> func) const
@@ -222,7 +226,11 @@ namespace AssetProcessorMessagesTests
         AZStd::unique_ptr<AzFramework::AssetSystem::BaseAssetProcessorMessage> m_response;
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+    TEST_F(AssetProcessorMessages, DISABLED_All)
+#else
     TEST_F(AssetProcessorMessages, All)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         // Test that we can successfully send network messages and have them arrive for processing
         // For messages that have a response, it also verifies the response comes back
@@ -300,7 +308,11 @@ namespace AssetProcessorMessagesTests
             });
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+    TEST_F(AssetProcessorMessages, DISABLED_GetUnresolvedProductReferences_Succeeds)
+#else
     TEST_F(AssetProcessorMessages, GetUnresolvedProductReferences_Succeeds)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         using namespace AzToolsFramework::AssetDatabase;
 

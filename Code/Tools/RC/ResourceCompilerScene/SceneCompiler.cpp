@@ -10,7 +10,6 @@
 *
 */
 
-#include "ResourceCompilerScene_precompiled.h"
 #include <IRCLog.h>
 #include <ISceneConfig.h>
 #include <ISystem.h>
@@ -43,13 +42,11 @@
 #include <RC/ResourceCompilerScene/Common/ContainerSettingsExporter.h>
 #include <RC/ResourceCompilerScene/Common/MeshExporter.h>
 #include <RC/ResourceCompilerScene/Common/MaterialExporter.h>
-#include <RC/ResourceCompilerScene/Common/WorldMatrixExporter.h>
 #include <RC/ResourceCompilerScene/Common/ColorStreamExporter.h>
 #include <RC/ResourceCompilerScene/Common/UVStreamExporter.h>
 #include <RC/ResourceCompilerScene/Common/SkeletonExporter.h>
 #include <RC/ResourceCompilerScene/Common/SkinWeightExporter.h>
 #include <RC/ResourceCompilerScene/Common/BlendShapeExporter.h>
-#include <RC/ResourceCompilerScene/Common/TouchBendingExporter.h>
 #include <RC/ResourceCompilerScene/SceneSerializationHandler.h>
 
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
@@ -96,8 +93,6 @@ namespace AZ
             RegisterComponentDescriptor(SkeletonExporter::CreateDescriptor());
             RegisterComponentDescriptor(SkinWeightExporter::CreateDescriptor());
             RegisterComponentDescriptor(UVStreamExporter::CreateDescriptor());
-            RegisterComponentDescriptor(WorldMatrixExporter::CreateDescriptor());
-            RegisterComponentDescriptor(TouchBendingExporter::CreateDescriptor());
         }
 
         AZ::ComponentTypeList RCToolApplication::GetRequiredSystemComponents() const
@@ -375,6 +370,12 @@ namespace AZ
             result += SceneEvents::Process<SceneEvents::PreGenerateEventContext>(scene, platformIdentifier);
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "Generating...\n");
             result += SceneEvents::Process<SceneEvents::GenerateEventContext>(scene, platformIdentifier);
+            AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "Generating LODs...\n");
+            result += SceneEvents::Process<SceneEvents::GenerateLODEventContext>(scene, platformIdentifier);
+            AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "Generating additions...\n");
+            result += SceneEvents::Process<SceneEvents::GenerateAdditionEventContext>(scene, platformIdentifier);
+            AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "Simplifing scene...\n");
+            result += SceneEvents::Process<SceneEvents::GenerateSimplificationEventContext>(scene, platformIdentifier);
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "Finalizing generation process.\n");
             result += SceneEvents::Process<SceneEvents::PostGenerateEventContext>(scene, platformIdentifier);
 

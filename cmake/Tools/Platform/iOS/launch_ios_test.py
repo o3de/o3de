@@ -120,7 +120,7 @@ def main(args):
                         default=[])
 
     parser.add_argument('--device-name',
-                        help='The name of the iOS device on which to launch. Defaults to first connected device found.',
+                        help='The name of the iOS device on which to launch.',
                         required=True)
 
     parser.add_argument('--timeout',

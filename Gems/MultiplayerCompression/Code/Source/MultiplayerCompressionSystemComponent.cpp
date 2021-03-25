@@ -10,9 +10,11 @@
 *
 */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzNetworking/Framework/INetworking.h>
 
 #include "MultiplayerCompressionSystemComponent.h"
 #include "LZ4Compressor.h"
@@ -49,35 +51,15 @@ namespace MultiplayerCompression
         incompatible.push_back(AZ_CRC("MultiplayerCompressionService"));
     }
 
-    void MultiplayerCompressionSystemComponent::Init()
+    MultiplayerCompressionSystemComponent::MultiplayerCompressionSystemComponent()
     {
-        m_multiplayerCompressionFactory = AZStd::make_shared<MultiplayerCompressionFactory>();
+        m_multiplayerCompressionFactory = new MultiplayerCompressionFactory();
+        AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(m_multiplayerCompressionFactory);
     }
 
-    void MultiplayerCompressionSystemComponent::Activate()
+    MultiplayerCompressionSystemComponent::~MultiplayerCompressionSystemComponent()
     {
-        MultiplayerCompressionRequestBus::Handler::BusConnect();
-    }
-
-    void MultiplayerCompressionSystemComponent::Deactivate()
-    {
-        MultiplayerCompressionRequestBus::Handler::BusDisconnect();
-
-        m_multiplayerCompressionFactory.reset();
-    }
-
-    AZStd::string MultiplayerCompressionSystemComponent::GetCompressorName()
-    {
-        return CompressorName;
-    }
-
-    AzNetworking::CompressorType MultiplayerCompressionSystemComponent::GetCompressorType()
-    {
-        return CompressorType;
-    }
-
-    AZStd::shared_ptr<AzNetworking::ICompressorFactory> MultiplayerCompressionSystemComponent::GetCompressionFactory()
-    {
-        return m_multiplayerCompressionFactory;
+        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactory->GetFactoryName());
+        delete m_multiplayerCompressionFactory;
     }
 }

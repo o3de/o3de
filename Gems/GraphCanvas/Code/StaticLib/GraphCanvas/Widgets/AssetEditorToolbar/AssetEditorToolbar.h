@@ -28,9 +28,9 @@ namespace Ui
 
 namespace GraphCanvas
 {    
-    class CommentPresetsMenuActionGroup;
+    class CreateCommentPresetMenuActionGroup;
+    class CreateNodeGroupPresetMenuActionGroup;
     class EditorContextMenu;
-    class NodeGroupPresetsMenuActionGroup;
 
     class AssetEditorToolbar
         : public QWidget
@@ -54,7 +54,7 @@ namespace GraphCanvas
         
         // SceneNotificationBus
         void OnSelectionChanged() override;
-        ////
+        ////        
 
         void OnViewDisabled();
         void OnViewEnabled();
@@ -93,10 +93,10 @@ namespace GraphCanvas
         void OnPresetActionTriggered(QAction* action);
 
         EditorContextMenu*              m_commentPresetsMenu;
-        CommentPresetsMenuActionGroup*  m_commentPresetActionGroup;
+        CreateCommentPresetMenuActionGroup*  m_commentPresetActionGroup;
 
         EditorContextMenu*                  m_nodeGroupPresetsMenu;
-        NodeGroupPresetsMenuActionGroup*    m_nodeGroupPresetActionGroup;
+        CreateNodeGroupPresetMenuActionGroup*    m_nodeGroupPresetActionGroup;
         
         EditorId m_editorId;
         GraphId m_activeGraphId;

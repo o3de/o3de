@@ -9,8 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#ifndef AZSTD_RED_BLACK_TREE_H
-#define AZSTD_RED_BLACK_TREE_H
+#pragma once
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
@@ -18,6 +17,7 @@
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/functional_basic.h>
 #include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 
 // Allow us to save up to 25% of the node overhead. And yes the code is faster too.
@@ -730,7 +730,7 @@ namespace AZStd
             }
             return result;
         }
-        iterator insert_equal(iterator insertPos, const value_type& value)
+        iterator insert_equal(const iterator insertPos, const value_type& value)
         {
             return insert_equal_node(insertPos, create_node(value));
         }
@@ -751,6 +751,18 @@ namespace AZStd
                 insert_unique(*first);
             }
         }
+
+        template <typename ComparableToKey, typename... Args>
+        AZStd::pair<iterator, bool> try_emplace_unique(ComparableToKey&& key, Args&&... arguments);
+
+        template <typename ComparableToKey, typename... Args>
+        iterator try_emplace_unique(const_iterator hint, ComparableToKey&& key, Args&&... arguments);
+
+        template <typename ComparableToKey, typename MappedType>
+        AZStd::pair<iterator, bool> insert_or_assign_unique(ComparableToKey&& key, MappedType&& value);
+
+        template <typename ComparableToKey, typename MappedType>
+        iterator insert_or_assign_unique(const_iterator hint, ComparableToKey&& key, MappedType&& value);
 
         //! Returns an insert_return_type with the members initialized as follows: if nodeHandle is empty, inserted is false, position is end(), and node is empty.
         //! Otherwise if the insertion took place, inserted is true, position points to the inserted element, and node is empty.
@@ -2077,8 +2089,71 @@ namespace AZStd
         return NodeHandle{ nodeToExtract, get_allocator() };
     }
 
-    
-}
+    template <class Traits>
+    template <typename ComparableToKey, typename... Args>
+    auto rbtree<Traits>::try_emplace_unique(ComparableToKey&& key, Args&&... arguments) -> AZStd::pair<iterator, bool>
+    {
+        // Check if the key has a corresponding node in the container
+        iterator insertIter = lower_bound(key);
+        if (insertIter.m_node != &m_head && !m_keyEq(key, insertIter->first))
+        {
+            return { insertIter, false };
+        }
 
-#endif // AZSTD_RED_BLACK_TREE_H
-#pragma once
+        base_node_ptr_type newNode = create_node(AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+            AZStd::forward_as_tuple(AZStd::forward<Args>(arguments)...));
+        return { insert_unique_node(insertIter, newNode), true };
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename... Args>
+    auto rbtree<Traits>::try_emplace_unique(const_iterator hint, ComparableToKey&& key, Args&&... arguments) -> iterator
+    {
+        // Check if the key has a corresponding node in the container
+        iterator insertIter = lower_bound(key);
+        if (insertIter.m_node != &m_head && !m_keyEq(key, insertIter->first))
+        {
+            return insertIter;
+        }
+
+        base_node_ptr_type newNode = create_node(AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+            AZStd::forward_as_tuple(AZStd::forward<Args>(arguments)...));
+        return insert_unique_node(hint, newNode);
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename MappedType>
+    auto rbtree<Traits>::insert_or_assign_unique(ComparableToKey&& key, MappedType&& value) -> AZStd::pair<iterator, bool>
+    {
+        // Check if the key has a corresponding node in the container
+        iterator insertIter = lower_bound(key);
+        if (insertIter.m_node != &m_head && !m_keyEq(key, insertIter->first))
+        {
+            // Update the mapped element if the key has been found
+            insertIter->second = AZStd::forward<MappedType>(value);
+            return { insertIter, false };
+        }
+
+        base_node_ptr_type newNode = create_node(AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+            AZStd::forward_as_tuple(AZStd::forward<MappedType>(value)));
+        return { insert_unique_node(insertIter, newNode), true };
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename MappedType>
+    auto rbtree<Traits>::insert_or_assign_unique(const_iterator hint, ComparableToKey&& key, MappedType&& value) -> iterator
+    {
+        // Check if the key has a corresponding node in the container
+        iterator insertIter = lower_bound(key);
+        if (insertIter.m_node != &m_head && !m_keyEq(key, insertIter->first))
+        {
+            // Update the mapped element if the key has been found
+            insertIter->second = AZStd::forward<MappedType>(value);
+            return insertIter;
+        }
+
+        base_node_ptr_type newNode = create_node(AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+            AZStd::forward_as_tuple(AZStd::forward<MappedType>(value)));
+        return insert_unique_node(hint, newNode);
+    }
+}

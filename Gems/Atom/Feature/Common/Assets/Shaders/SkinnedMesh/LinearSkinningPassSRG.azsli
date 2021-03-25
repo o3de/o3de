@@ -25,11 +25,11 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
     uint m_totalNumberOfThreadsX;
 
     // Per-model input
-    Buffer<float> m_sourcePositions; // POSITION 0
-    Buffer<float> m_sourceNormals; // NORMAL 0
-    Buffer<float> m_sourceTangents; // TANGENT 0
-    Buffer<float> m_sourceBiTangents; // BITANGENT 0
-    Buffer<int> m_sourceBlendIndices; // BLENDINDICES 0
+    Buffer<float3> m_sourcePositions; // POSITION 0
+    Buffer<float3> m_sourceNormals; // NORMAL 0
+    Buffer<float4> m_sourceTangents; // TANGENT 0
+    Buffer<float3> m_sourceBiTangents; // BITANGENT 0
+    ByteAddressBuffer m_sourceBlendIndices; // BLENDINDICES 0
     Buffer<float> m_sourceBlendWeights; // BLENDWEIGHTS 0
     
     // Per-instance input
@@ -37,8 +37,11 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
     StructuredBuffer<float2x4> m_boneTransformsDualQuaternion;
 
     // Per-instance morph target input
-    uint m_morphTargetDeltaOffset;
-    float m_morphTargetDeltaIntegerEncoding;
+    uint m_morphTargetPositionDeltaOffset;
+    uint m_morphTargetNormalDeltaOffset;
+    uint m_morphTargetTangentDeltaOffset;
+    uint m_morphTargetBitangentDeltaOffset;
+    float m_morphTargetDeltaInverseIntegerEncoding;
     
     // Per-instance output
     uint m_targetPositions;

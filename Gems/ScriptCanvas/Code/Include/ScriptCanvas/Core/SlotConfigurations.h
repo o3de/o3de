@@ -45,6 +45,12 @@ namespace ScriptCanvas
         Data
     };
 
+
+    constexpr bool IsExecutionOut(CombinedSlotType slotType)
+    {
+        return slotType == CombinedSlotType::ExecutionOut || slotType == CombinedSlotType::LatentOut;
+    }
+
     class SlotTypeUtils
     {
     public:
@@ -205,16 +211,18 @@ namespace ScriptCanvas
         virtual ~SlotConfiguration() = default;
 
         void SetConnectionType(ConnectionType connectionType);
+        ConnectionType GetConnectionType() const { return m_slotDescriptor.m_connectionType; }
 
         const SlotDescriptor& GetSlotDescriptor() const { return m_slotDescriptor; }
 
         AZStd::string m_name;
         AZStd::string m_toolTip;
 
-        bool           m_isLatent = false;
+        bool m_isVisible = true;
+        bool m_isLatent = false;
 
         AZStd::vector<ContractDescriptor> m_contractDescs;
-        bool m_addUniqueSlotByNameAndType = true; // Only adds a new slot if a slot with the supplied name and SlotType does not exist on the node
+        bool m_addUniqueSlotByNameAndType = true; // Only adds a new slot if a slot with the supplied name and CombinedSlotType does not exist on the node
 
         // Specifies the Id the slot will use. Generally necessary only in undo/redo case with dynamically added
         // slots to preserve data integrity
@@ -282,6 +290,8 @@ namespace ScriptCanvas
         {
             m_datum.ReconfigureDatumTo(AZStd::move(datum));
         }
+
+        void DeepCopyFrom(const Datum& source);
 
         const Datum& GetDatum() const
         {

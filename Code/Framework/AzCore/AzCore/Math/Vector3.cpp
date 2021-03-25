@@ -256,6 +256,7 @@ namespace AZ
                 Method("SetElement", &Vector3::SetElement)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("GetLength", &Vector3::GetLength)->
+                    Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Length", "Math"))->
                 Method("GetLengthSq", &Vector3::GetLengthSq)->
                 Method("GetLengthReciprocal", &Vector3::GetLengthReciprocal)->
                 Method("GetNormalized", &Vector3::GetNormalized)->
@@ -343,7 +344,10 @@ namespace AZ
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("CreateZero", &Vector3::CreateZero)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Method("ConstructFromValues", &ScriptCanvas::ConstructVector3)
+                Method("ConstructFromValues", &ScriptCanvas::ConstructVector3)->
+                Method<Vector3(Vector3::*)(float) const>("DivideFloatExplicit", &Vector3::operator/)->
+                    Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Divide By Number (/)", "Math"))->
+                    Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "DivideGroup", "" }, { "DivideGroup" }))
                 ;
         }
     }

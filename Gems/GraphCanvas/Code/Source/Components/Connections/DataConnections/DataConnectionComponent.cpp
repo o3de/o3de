@@ -70,14 +70,14 @@ namespace GraphCanvas
         return slotType == DataSlotType::Value;
     }
     
-    ConnectionComponent::ConnectionMoveResult DataConnectionComponent::OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos)
+    ConnectionComponent::ConnectionMoveResult DataConnectionComponent::OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget)
     {
         ConnectionMoveResult retVal = ConnectionMoveResult::DeleteConnection;
 
         // If we are missing an endpoint, default to the normal behavior
         if (!m_sourceEndpoint.IsValid() || !m_targetEndpoint.IsValid())
         {
-            retVal = ConnectionComponent::OnConnectionMoveComplete(scenePos, screenPos);
+            retVal = ConnectionComponent::OnConnectionMoveComplete(scenePos, screenPos, groupTarget);
         }
         else
         {
@@ -123,7 +123,7 @@ namespace GraphCanvas
 
                 if (targetSlotType2 == DataSlotType::Value)
                 {
-                    retVal = ConnectionComponent::OnConnectionMoveComplete(scenePos, screenPos);
+                    retVal = ConnectionComponent::OnConnectionMoveComplete(scenePos, screenPos, groupTarget);
                 }
                 else if (targetSlotType2 == DataSlotType::Reference)
                 {

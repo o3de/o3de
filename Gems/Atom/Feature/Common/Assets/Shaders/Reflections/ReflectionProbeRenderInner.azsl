@@ -85,6 +85,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         discard;
     }
 
+    // apply exposure setting
+    specular *= pow(2.0, SceneSrg::m_iblExposure);
+
     PSOutput OUT;
     OUT.m_color = float4(specular, 1.0f);
     return OUT;

@@ -54,7 +54,7 @@ function(ly_test_impact_rebase_file_to_repo_root INPUT_FILE OUTPUT_FILE RELATIVE
     endif()
     
     # Rebase absolute path to relative path from repo root
-    file(RELATIVE_PATH rebased_file ${CMAKE_SOURCE_DIR} ${rebased_file})
+    file(RELATIVE_PATH rebased_file ${LY_ROOT_FOLDER} ${rebased_file})
     set(${OUTPUT_FILE} ${rebased_file} PARENT_SCOPE)
 endfunction()
 
@@ -138,7 +138,7 @@ function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_QUALIFER TEST_NA
     ly_test_impact_rebase_file_to_repo_root(
         ${test_file}
         test_file
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
 
     set(${TEST_QUALIFER} ${test_qualifier} PARENT_SCOPE)
@@ -210,7 +210,7 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
         # Target name and path relative to root
         set(target_name ${target})
         get_target_property(target_path_abs ${target} SOURCE_DIR)
-        file(RELATIVE_PATH target_path ${CMAKE_SOURCE_DIR} ${target_path_abs})
+        file(RELATIVE_PATH target_path ${LY_ROOT_FOLDER} ${target_path_abs})
 
         # Output name
         get_target_property(target_output_name ${target} OUTPUT_NAME)
@@ -273,7 +273,7 @@ endfunction()
 # \arg:PERSISTENT_DATA_DIR path to the test impact framework persistent data directory
 # \arg:RUNTIME_BIN_DIR path to repo binary ourput directory
 function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR RUNTIME_BIN_DIR)
-    set(repo_dir ${CMAKE_SOURCE_DIR})
+    set(repo_dir ${LY_ROOT_FOLDER})
 
     # SparTIA instrumentation binary
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
@@ -285,49 +285,49 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     ly_test_impact_rebase_file_to_repo_root(
         ${LY_TEST_IMPACT_WORKING_DIR}
         working_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # test impact framework console binary dir
     ly_test_impact_rebase_file_to_repo_root(
         ${RUNTIME_BIN_DIR}
         runtime_bin_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
 
     # Test dir
     ly_test_impact_rebase_file_to_repo_root(
         "${PERSISTENT_DATA_DIR}/Tests"
         tests_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # Temp dir
     ly_test_impact_rebase_file_to_repo_root(
         "${LY_TEST_IMPACT_TEMP_DIR}"
         temp_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # Source to target mappings dir
     ly_test_impact_rebase_file_to_repo_root(
         "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}"
         source_target_mapping_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # Test type artifact dir
     ly_test_impact_rebase_file_to_repo_root(
         "${LY_TEST_IMPACT_TEST_TYPE_DIR}"
         test_type_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # Bild dependency artifact dir
     ly_test_impact_rebase_file_to_repo_root(
         "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}"
         target_dependency_dir
-        ${CMAKE_SOURCE_DIR}
+        ${LY_ROOT_FOLDER}
     )
     
     # Substitute config file template with above vars
@@ -350,7 +350,7 @@ function(ly_test_impact_post_step)
     endif()
 
     # Directory per build config for persistent test impact data (to be checked in)
-    set(persistent_data_dir "${CMAKE_SOURCE_DIR}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>")
+    set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>")
 
     # Directory for binaries built for this profile
     set(runtime_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")

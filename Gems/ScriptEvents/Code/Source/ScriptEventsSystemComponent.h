@@ -43,14 +43,14 @@ namespace ScriptEvents
     protected:
 
         ////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
         // Script Event Assets
-        AZStd::unordered_map<ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEvent>> m_scriptEvents;
+        AZStd::unordered_map<ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>> m_scriptEvents;
 
     };
 

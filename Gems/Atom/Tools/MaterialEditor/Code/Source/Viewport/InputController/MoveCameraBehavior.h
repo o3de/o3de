@@ -22,19 +22,15 @@ namespace MaterialEditor
     public:
         MoveCameraBehavior() = default;
         virtual ~MoveCameraBehavior() = default;
-
-        void Start() override;
         void End() override;
 
     protected:
-        void TickInternal(float x, float y) override;
+        void TickInternal(float x, float y, float z) override;
         float GetSensitivityX() override;
         float GetSensitivityY() override;
 
     private:
         static constexpr float SensitivityX = 0.01f;
         static constexpr float SensitivityY = 0.01f;
-
-        AZ::EntityId m_cameraEntityId;
     };
 } // namespace MaterialEditor

@@ -1,0 +1,1459 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/*!
+  Geometry Export.
+*/
+
+global int $s_cgfFileType = 0;
+global int $s_cgaFileType = 2;
+
+LumberyardGeometryLoadDependencies();
+
+//! Load geometry dependent source files.
+global proc LumberyardGeometryLoadDependencies()
+{
+    eval("source LumberyardGeometryUtilities.mel");
+}
+
+//! Get the control name for the export name textField corresponding to a geometry export node.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+proc string LumberyardToolGetGeometryListItemName(int $itemIndex)
+{
+    return ("geometryListItemName" + $itemIndex);
+}
+
+//! Get the control name for the file type optionMenu corresponding to a geometry export node.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+proc string LumberyardToolGetGeometryListItemFileType(int $itemIndex)
+{
+    return ("geometryListItemFileType" + $itemIndex);
+}
+
+//! Get the control name for the export selection checkBox corresponding to a geometry export node.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+proc string LumberyardToolGetGeometryListItemCheckBox(int $itemIndex)
+{
+    return ("geometryListItemCheck" + $itemIndex);
+}
+
+//! Get the control name for the list item row corresponding to a geometry export node.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+proc string LumberyardToolGetGeometryListItemRow(int $itemIndex)
+{
+    return ("geometryListItemRow" + $itemIndex);
+}
+
+//! Get the default type guess for a given geometry export node.
+/*!
+  \param $itemName Name of the export node.
+*/
+proc int LumberyardGetGeometryExportNodeDefaultFileType(string $itemName)
+{
+    // Type indices: CGF: 0; CHR: 1; CGA: 2; SKIN: 3.
+    if (`objExists $itemName`)
+    {
+        string $skinCluster = findRelatedSkinCluster($itemName);
+        if ($skinCluster == "")
+        {
+            if (`nodeType $itemName` == "joint")
+            {
+                // Type CHR.
+                return 1;
+            }
+            else
+            {
+                // Type CGF.
+                return 0; 
+            }
+        }
+        else
+        {
+            // Type SKIN.
+            return 3;
+        }
+    }
+    return 0;
+}
+
+//! Get the text for setting geometry export type option menu.
+proc string LumberyardExportGetFileTypeEnumString()
+{
+    return "Geometry (.CGF):Skeleton (.CHR):Skin (.SKIN)";
+}
+
+//! Convert attribute file type to UI enum index
+/*!
+  \param $fileType File type in node attribute.
+*/
+proc int LumberyardToolGetEnumIndexFromFileType(int $fileType)
+{
+    int $enumIndex = $fileType+1;
+    // Remap CGA to CGF
+    if($enumIndex == 3)
+    {
+        $enumIndex = 1;
+    }
+    // Remap SKIN to 3
+    else if($enumIndex == 4)
+    {
+        $enumIndex = 3;
+    }
+    
+    return $enumIndex;
+}
+
+//! Convert UI enum index to file type 
+/*!
+  \param $enumIndex Enum index in UI.
+*/
+proc int LumberyardToolGetFileTypeFromEnumIndex(int $enumIndex)
+{
+    int $fileType = $enumIndex-1;
+    // Real SKIN file type is 3
+    if($fileType == 2)
+    {
+        $fileType = 3;
+    }
+    
+    return $fileType;
+}
+
+//! Force change CGA type to CGF
+/*!
+  \param $itemName Export node to check.
+*/
+global proc LumberyardToolForceCGAToCGF(string $itemName)
+{
+    if(`attributeExists "fileType" $itemName`)
+    {
+        if(`getAttr ($itemName + ".fileType")` == 2)
+        {
+            setAttr ($itemName + ".fileType") 0;
+        }
+    }
+}
+    
+//! Get the current global geometry export path, which may be overridden by an export node
+/*
+ \param $resolveDefaultPath Boolean indicating whether the default path should be expanded to a logical path if found
+*/
+proc string LumberyardToolGetGlobalGeometryExportPath(int $resolveDefaultPath)
+{
+    global string $g_defaultPathString;
+    string $filePath = `cryExportGetExportSettingValue "customFilePath"`;
+    
+    // If the export setting contains empty or default path, use the scene file location if we are resolving the default path
+    if($resolveDefaultPath && $filePath == "")
+    {
+        string $sceneFullName = `file -query -sceneName`;
+        $filePath = `dirname $sceneFullName `;
+        $filePath = `cryExportFixupPath $filePath`;
+    }
+    else if($filePath == "")
+    {
+        return $g_defaultPathString;
+    }
+    
+    return $filePath;
+}
+
+//! Set custom file path of a geometry export node using folder browser.
+/*!
+  \param $itemIndex Index corresponding to the geometry export node item in the list box.
+  \todo
+   Check if we need to supply the mirror change on selected feature. See 
+   cryUtilMirrorChangeOnSelected in cryExportEditCustomNodeExportPath in cryExport.mel.
+*/
+global proc LumberyardToolSetGeometryExportNodeCustomPathFromBrowser(int $itemIndex)
+{
+    if ($itemIndex >= 0)
+    {
+        string $result[] = `LumberyardBrowseForPath "" "Set Custom Export Path"`;
+        if (`size($result)` == 1)
+        {
+            $folderPath =  $result[0];
+            textField -edit -text $folderPath LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD;
+            string $node = `LumberyardToolGetExportNodeNameForItemID $itemIndex`;
+            setAttr -type "string" ($node + ".NodeCustomExportPath") $folderPath;
+        }
+    }
+}
+
+//! Set custom file path of a geometry export node by entering in path text field.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolSetGeometryExportNodeCustomPathFromTextField(int $itemIndex)
+{
+    if ($itemIndex >= 0)
+    {
+        string $folderPath = `textField -query -text LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD`;
+        $folderPath = `cryExportFixupPath $folderPath`;
+        string $node = `LumberyardToolGetExportNodeNameForItemID $itemIndex`;
+        setAttr -type "string" ($node + ".NodeCustomExportPath") $folderPath;
+        textField -edit -text $folderPath LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD;
+    }
+}
+
+//! Get custom file path of a geometry export node from saved data.
+/*!
+  \param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc string LumberyardToolUpdateGeometryListItemCustomPath(int $itemIndex)
+{
+    if ($itemIndex >= 0)
+    {
+        string $node = `LumberyardToolGetExportNodeNameForItemID $itemIndex`;
+        if (`attributeExists "NodeCustomExportPath" $node`)
+        {
+            string $filePath = `getAttr -asString ($node + ".NodeCustomExportPath")`;
+            return $filePath;
+        }
+    }
+    return "";
+}
+
+proc int LumberyardToolHasValidExportTarget(string $itemName)
+{
+    if(`attributeExists "exportTarget" $itemName`)
+    {
+        string $exportTarget = `getAttr ($itemName + ".exportTarget")`;
+        // the value of exportTarget should always be non-empty, otherwise there is error occurring elsewhere that we need to fix
+        if(`objExists $exportTarget`)
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+
+//! Create header for Geometry export List and add it
+global proc LumberyardToolAddHeaderToGeometryListbox()
+{
+    global int $g_rowItemHeight;
+    global int $g_checkColumnWidth;
+    global int $g_nodeNameColumnWidth;
+    global int $g_exportNameColumnWidth;
+    global int $g_exportTypeColumnWidth;
+    global int $g_deleteExportColumnWidth;
+    global int $g_boxWidth;
+    global int $g_listHeaderHeight;
+    int $fitWidth = $g_boxWidth - 4;
+    
+    setParent LUMBERYARDTOOL_GEOMETRY_LISTBOX;
+    
+    rowLayout -width $fitWidth -numberOfColumns 5 
+        -columnWidth5 $g_checkColumnWidth $g_nodeNameColumnWidth $g_exportNameColumnWidth $g_exportTypeColumnWidth $g_deleteExportColumnWidth 
+        -height $g_listHeaderHeight -columnAttach5 "left" "left" "left" "left" "left" 
+        -adjustableColumn 5 -columnOffset5 0 4 4 4 0 -backgroundColor 0.26 0.26 0.26 "header";
+    {
+        text -label "";
+        text -label "Node to Export";
+        text -label "Export Name";
+        text -label "Type";
+        text -label "";
+    }
+}
+
+//! Create instruction texts for Geometry export list and add it
+global proc LumberyardToolAddGeometryInstructionTexts()
+{
+    global int $g_instructionRowSpace;
+    
+    setParent LUMBERYARDTOOL_GEOMETRY_LISTBOX;
+    rowColumnLayout -numberOfRows 2 -rowOffset 1 "top" 27 -columnOffset 1 "both" 100 -rowSpacing 2 $g_instructionRowSpace;
+    text -label "To add geometry, select a group, mesh,";
+    text -label "or joint and click `Add Selected`";
+}
+
+//! Create a list item row of a geometry export node and add it to the list box.
+/*!
+  \param $itemName Name of the export node.
+  \param $itemIndex Index corresponding to the export node item in the list box.
+  \note This must be run an additional time to detect that an exportTarget has been added, and there is no good way to write a scriptJob that does not intercept every object creation.
+*/
+global proc LumberyardToolAddItemToGeometryListbox(string $itemName, int $itemIndex)
+{
+    global int $g_rowItemHeight;
+    global string $g_warningIconName;
+    global float $g_UIColor[];
+    global float $g_UIInvalidColor[];
+    
+    global int $g_checkColumnWidth;
+    global int $g_nodeNameColumnWidth;
+    global int $g_exportNameColumnWidth;
+    global int $g_exportTypeColumnWidth;
+    global int $g_deleteExportColumnWidth;
+    
+    int $hasValidTarget = `LumberyardToolHasValidExportTarget $itemName`;
+    
+    if(!`attributeExists "shouldExport" $itemName`)        
+    {
+        addAttr -defaultValue $hasValidTarget -longName "shouldExport" -attributeType "bool" $itemName;
+    }
+    
+    string $tooltip = "";
+    if(!$hasValidTarget)
+    {
+        $tooltip = "Export target is invalid, please remove this node!";
+    }
+    
+    setParent LUMBERYARDTOOL_GEOMETRY_LISTBOX;
+    string $rowName = `LumberyardToolGetGeometryListItemRow($itemIndex)`;
+    string $checkBoxControl = `LumberyardToolGetGeometryListItemCheckBox($itemIndex)`;
+    string $textFieldControl = `LumberyardToolGetGeometryListItemName($itemIndex)`;
+    
+    rowLayout -numberOfColumns 5 
+        -columnWidth5 $g_checkColumnWidth $g_nodeNameColumnWidth $g_exportNameColumnWidth $g_exportTypeColumnWidth $g_deleteExportColumnWidth 
+        -height $g_rowItemHeight -columnAttach5 "left" "left" "left" "left" "left" 
+        -columnOffset5 4 0 0 0 4 -annotation $tooltip
+        $rowName;
+    {
+        // Unfortunately, Maya exhibits unexpected behavior when *any* -noBackground command is given
+        // so we need this branch to remove this command when creating the "Error" case. It also will 
+        // reactivate UI elements that are attached to attributes so we initialize the checkbox connection 
+        // here
+        if($hasValidTarget)
+        {
+            $shouldExport = `getAttr ($itemName + ".shouldExport")`;
+    
+            checkBox -label "" -value $shouldExport -enable $hasValidTarget -backgroundColor 0.5 0.5 0.5 $checkBoxControl;
+            connectControl $checkBoxControl ($itemName + ".shouldExport");
+            
+            string $exportTarget = `getAttr ($itemName + ".exportTarget")`;
+            textField -text $exportTarget -width $g_nodeNameColumnWidth 
+                -noBackground true
+                -receiveFocusCommand ("LumberyardToolGeometryListItemOnFocus " + $itemIndex) 
+                -editable false;
+        }
+        else
+        {
+            iconTextButton -image $g_warningIconName -height $g_rowItemHeight;
+        
+            string $exportTarget = `getAttr ($itemName + ".exportTarget")`;
+            textField -text $exportTarget -width $g_nodeNameColumnWidth 
+                -backgroundColor $g_UIInvalidColor[0] $g_UIInvalidColor[1] $g_UIInvalidColor[2]
+                -receiveFocusCommand ("LumberyardToolGeometryListItemOnFocus " + $itemIndex) 
+                -editable false;
+        }
+        
+        textField -text `LumberyardToolRemoveLumberyardExportNodePrefix $itemName` -width $g_exportNameColumnWidth 
+                -changeCommand ("LumberyardToolSetExportNodeName " + $itemIndex) 
+                -noBackground true -alwaysInvokeEnterCommandOnReturn 1
+                -receiveFocusCommand ("LumberyardToolGeometryListItemOnFocus " + $itemIndex) 
+                $textFieldControl;
+        
+        optionMenu -label "" -width $g_exportTypeColumnWidth -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2] 
+            -changeCommand ("LumberyardToolSetGeometryExportNodeFileType " + $itemIndex) `LumberyardToolGetGeometryListItemFileType($itemIndex)`;
+        {
+            string $enumString = `LumberyardExportGetFileTypeEnumString`;
+            string $tokens[];
+            $numTokens = `tokenize $enumString ":" $tokens`;
+            for($i = 0; $i < $numTokens; $i++)
+            {
+                menuItem -label $tokens[$i];
+            }
+            LumberyardToolUpdateGeometryListItemFileType $itemIndex;
+        }
+        
+        button -label "X" -backgroundColor 0 0 0 -height 20 -command ("LumberyardToolRemoveGeometryListItem " + $itemIndex);
+    }
+    
+    scriptJob -replacePrevious -nodeDeleted $itemName ("LumberyardToolRefreshGeometryListBoxRemoveNode " + $itemName) -parent $textFieldControl;
+    scriptJob -attributeChange ($itemName + ".fileType") ("LumberyardToolForceCGAToCGF " + $itemName) -parent $rowName;
+    scriptJob -replacePrevious -attributeChange ($itemName + ".exportTarget") "LumberyardToolRefreshGeometryListBox" -parent $rowName;
+    if($hasValidTarget)
+    {
+        string $exportTarget = `getAttr ($itemName + ".exportTarget")`;
+        // the value of exportTarget should always be non-empty, otherwise there is error occurring elsewhere that we need to fix
+        scriptJob -replacePrevious -nodeDeleted $exportTarget "LumberyardToolRefreshGeometryListBox" -parent $checkBoxControl;
+    }
+}
+
+global string $g_geometryExtensions[];
+
+//! Determines selected geometry export in the UI list box and shows it in explorer if it exists
+global proc LumberyardToolViewGeometryInExplorer()
+{
+    global int $g_currentSelectedGeometryID;
+    global string $g_geometryExtensions[];
+    string $nodeName = LumberyardToolGetExportNodeNameForItemID($g_currentSelectedGeometryID);
+    
+    if(`objExists $nodeName` && `attributeExists "fileType" $nodeName`)
+    {
+        string $filePath = "";
+        
+        // If we have the NodeCustomExportPath, favor that
+        if(`attributeExists "NodeCustomExportPath" $nodeName`)
+        {
+            $filePath = `getAttr ($nodeName + ".NodeCustomExportPath")`;
+        }
+        
+        // If we don't, or it is not set, favor the scene export path value
+        if($filePath == "")
+        {
+            $filePath = `LumberyardToolGetGlobalGeometryExportPath 1`;
+        }
+        
+        int $extensionIndex = `getAttr ($nodeName + ".fileType")`;
+        string $fileExtension = $g_geometryExtensions[$extensionIndex];
+        string $lumberyardExportNodePrefix = LumberyardGetExportNodeNamePrefix();
+        $fileName = `substitute $lumberyardExportNodePrefix $nodeName ""`;
+        
+        cryExportShowInExplorer $filePath ($fileName + "." + $fileExtension);
+    }
+}
+
+//! Determines selected geometry export in the UI list box and shows it in explorer if it exists
+global proc LumberyardToolSelectMayaGeometry()
+{
+    global int $g_currentSelectedGeometryID;
+    string $nodeName = LumberyardToolGetExportNodeNameForItemID($g_currentSelectedGeometryID);
+    
+    if(`objExists $nodeName`)
+    {
+        string $exportTarget = `getAttr ($nodeName + ".exportTarget")`;
+        if(`objExists $exportTarget`)
+        {
+            select $exportTarget;
+        }
+    }
+}
+
+//! Create a new geometry export node based on the selection in the scene, and update the list box.
+global proc LumberyardToolAddNewGeometryExportNode()
+{    
+    int $fileType = 0;
+    // TODO: need further investigation: why anyone wants "no group selection"?
+    int $groupSelection = 1;
+    int $createGroupNode = 1;
+    
+    string $selection[];
+    if( $groupSelection )
+    {
+        $selection = `ls -selection`;
+    }
+    
+    string $referencedNodes[];
+    string $localNodes[];
+    // Check if there is any referenced node. Only local nodes will be exported.
+    for($item in $selection)
+    {        
+        if(`referenceQuery -isNodeReferenced $item`)
+        {
+            $referencedNodes[`size($referencedNodes)`] = $item;
+        }
+        else
+        {
+            $localNodes[`size($localNodes)`] = $item;
+        }
+    }
+    
+    if(size($referencedNodes) > 0)
+    {
+        string $warningMessage = "Could not add nodes: ";
+        for( $referencedNode in $referencedNodes)
+        {
+            $warningMessage += $referencedNode + " ";
+        }
+        $warningMessage += "to export because they are referenced.";
+        warning($warningMessage);
+    }
+     
+    // Check if any of the selected local nodes already exists under any LumberyardExportNode
+    string $exportNodes[] = `LumberyardToolGetGeometryExportNodes`;
+    for($item in $localNodes)
+    {        
+        // Check all parents to verify there is no LumberyardExportNode
+        string $currentItem = $item;
+        while ($currentItem != "")
+        {
+            if (`nodeType $currentItem` == "transform")
+            {
+                if (stringArrayContains($currentItem, $exportNodes))
+                {
+                    string $message = $item + " is already under geometry export node " + $currentItem +
+                        ". Please delete old node before creating a new one.";
+                    confirmDialog -title "Failed to create a geometry export node"
+                        -message $message -button "OK" -defaultButton "OK" -cancelButton "OK";
+                    return;
+                }
+            }
+            
+            string $parents[] = `listRelatives -parent $currentItem`;
+            $currentItem = "";
+            if (size($parents) > 0)
+            {
+                // One object should only find one parent.
+                $currentItem = $parents[0];
+            }
+        }
+    }
+    
+    string $newItem = "empty";
+    if (`size($localNodes)` > 0)
+    {
+        // Use the first item from the selected local nodes as the default name of the export node.
+        $newItem = $localNodes[0];
+        $fileType = `LumberyardGetGeometryExportNodeDefaultFileType $newItem`;
+        /* 
+          If it's type CHR, we will find the first attached skin mesh of the skeleton,
+          and name the CHR node after it with a postfix "_skel".
+        */
+        if ($fileType == 1)
+        {
+            string $skinClusters[] = `listConnections -type skinCluster $newItem`;
+            $newItem = ($newItem + "_skel");
+            if (size($skinClusters) > 0)
+            {
+                string $bindMeshs[] = `listConnections -type mesh $skinClusters[0]`;
+                if (size($bindMeshs) > 0)
+                {
+                    $newItem = ($bindMeshs[0] + "_skel");
+                }
+            }
+        }
+    
+        // Update Maya scene.
+        cryToolsCreateCryExportNodeCreateCore $newItem $fileType $localNodes;
+        
+        // Deselect all list items.
+        select -clear;
+    }
+}
+
+//! Remove a geometry export node.
+/*!
+  /param $nodeName Name of the geometry export node.
+*/
+global proc LumberyardToolRemoveGeometryExportNode(string $nodeName)
+{
+    string $groupNames[] = `listRelatives -children -fullPath $nodeName`;
+    if (size($groupNames) > 0)
+    {
+        string $contents[] = `listRelatives -children $groupNames[0]`;
+        for ($item in $contents)
+        {
+            // Unparent the mesh from geometry export node group.
+            parent -world $item;
+        }
+    }
+    // Remove the group node.
+    delete $nodeName;
+    // TODO: if we remove the export node from the scene silently, we should be able to update
+    // the list box automatically (when the window is focused).
+    select -clear;
+}
+
+//! Callback function to update geometry export list box when export node or target is deleted from the scene.
+global proc LumberyardToolRefreshGeometryListBox()
+{
+    global int $g_currentSelectedGeometryID;
+    
+    LumberyardToolUpdateGeometryListBox();
+}
+
+//! Callback function to update geometry export list box and remove node from backend data record.
+global proc LumberyardToolRefreshGeometryListBoxRemoveNode(string $removeNode)
+{
+    LumberyardToolDeleteGeometryExportNode $removeNode;
+    LumberyardToolRefreshGeometryListBox;
+}
+
+//! Callback function to update geometry export list box and reload node from Maya plugin to update record.
+global proc LumberyardToolRefreshGeometryListBoxReloadNodes()
+{
+    LumberyardToolLoadGeometryExportNodes;
+    LumberyardToolRefreshGeometryListBox;
+}
+
+//! Get the name of geometry export node associated with a list box index.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc string LumberyardToolGetExportNodeNameForItemID(int $itemIndex)
+{   
+    // TODO: consider about saving a local copy of current existing export nodes to reduce
+    // the cost of polling MayaCryExport for retrieving export nodes.
+    if ($itemIndex < 0)
+    {
+        return "";
+    }
+    string $geomItems[] = `LumberyardToolGetGeometryExportNodes`;
+    return $geomItems[$itemIndex];
+}
+
+// Get the index of geometry export node provided its name.
+/*!
+  /param $node Name of the geometry export node.
+*/
+global proc int LumberyardToolGetItemIDFromExportNodeName(string $node)
+{
+    if ($node == "")
+    {
+        return -1;
+    }
+    string $geomItems[] = `LumberyardToolGetGeometryExportNodes`;
+    for ($i = 0; $i < `size($geomItems)`; $i++)
+    {
+        if ($geomItems[$i] == $node)
+        {
+            return $i;
+        }
+    }
+    return -1;
+}
+
+//! Remove a specific geometry export node, and update the list box.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolRemoveGeometryListItem(int $itemIndex)
+{
+    global int $g_currentSelectedGeometryID;
+    
+    // Reset selected item index
+    $g_currentSelectedGeometryID = -1;
+    
+    // Update Maya scene.
+    LumberyardToolRemoveGeometryExportNode(LumberyardToolGetExportNodeNameForItemID($itemIndex));
+}
+
+//! Remove the export node prefix from the name.
+/*!
+  /param $name The name to remove prefix.
+*/
+global proc string LumberyardToolRemoveLumberyardExportNodePrefix(string $name)
+{
+    string $lumberyardExportNodePrefix = LumberyardGetExportNodeNamePrefix();
+    string $lumberyardExportNodePrefixLowerCase = `tolower $lumberyardExportNodePrefix`;
+    if (startsWith($name, $lumberyardExportNodePrefix))
+    {
+        return stringRemovePrefix($name, $lumberyardExportNodePrefix);
+    }
+    else if (startsWith($name, $lumberyardExportNodePrefixLowerCase))
+    {
+        return stringRemovePrefix($name, $lumberyardExportNodePrefixLowerCase);
+    }
+    return $name;
+}
+
+//! Remove the export node prefix from the name.
+/*!
+  /param $name The name to add prefix.
+*/
+global proc string LumberyardToolAddLumberyardExportNodePrefix(string $name)
+{
+    string $lumberyardExportNodePrefix = LumberyardGetExportNodeNamePrefix();
+    if (!startsWith($name, $lumberyardExportNodePrefix))
+    {
+        return stringAddPrefix($name, $lumberyardExportNodePrefix);
+    }
+    return $name;
+}
+
+//! Update the list box with the current geometry export nodes.
+global proc LumberyardToolUpdateGeometryListBox()
+{
+    global int $g_currentSelectedGeometryID;
+    
+    setParent LUMBERYARDTOOL_GEOMETRY_LISTBOX;
+    string $childItems[] = `layout -query -childArray LUMBERYARDTOOL_GEOMETRY_LISTBOX`;
+    for ($child in $childItems)
+    {
+        deleteUI $child;
+    }
+    
+    //Put in the header
+    LumberyardToolAddHeaderToGeometryListbox();
+    
+    // Get existing geometry export nodes from Maya scene.
+    string $geomItems[] = `LumberyardToolGetGeometryExportNodes`;
+    
+    // Add instruction texts if no geometry export nodes present
+    if (size($geomItems) == 0)
+    {
+        LumberyardToolAddGeometryInstructionTexts;
+        return;
+    }
+    
+    int $itemIndex = 0;
+    for ($item in $geomItems)
+    {
+        LumberyardToolAddItemToGeometryListbox $item $itemIndex;
+        $itemIndex++;
+    }
+    
+    //Restore focus highlight
+    int $currentSelectedItem = $g_currentSelectedGeometryID;
+    $g_currentSelectedGeometryID = -1;
+    LumberyardToolGeometryListItemOnFocus $currentSelectedItem;
+}
+
+//! Rename a geometry export node.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolSetExportNodeName(int $itemIndex)
+{
+    string $lumberyardExportNodePrefix = LumberyardGetExportNodeNamePrefix();
+    string $currentNodeName = `LumberyardToolGetExportNodeNameForItemID($itemIndex)`;
+    string $currentShortName = `LumberyardToolRemoveLumberyardExportNodePrefix $currentNodeName`;
+    string $newShortName = `textField -query -text (LumberyardToolGetGeometryListItemName($itemIndex))`;
+    $newShortName = `LumberyardVerifySceneObjectRequestNameWithPrefix $newShortName $currentShortName $lumberyardExportNodePrefix`;
+    string $newNodeName = `LumberyardToolAddLumberyardExportNodePrefix $newShortName`;
+    rename $currentNodeName $newNodeName;
+    // In case Maya adjusts the name for its own validity check (possible), update the widget to reflect the latest name.
+    $currentNodeName = `LumberyardToolGetExportNodeNameForItemID($itemIndex)`;
+    $newShortName = `LumberyardToolRemoveLumberyardExportNodePrefix $currentNodeName`;
+    textField -edit -text $newShortName (LumberyardToolGetGeometryListItemName($itemIndex));
+}
+
+//! Change the file type of a geometry export node.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolSetGeometryExportNodeFileType(int $itemIndex)
+{   
+    string $nodeName = `LumberyardToolGetExportNodeNameForItemID($itemIndex)`;
+    int $newType = LumberyardToolGetFileTypeFromEnumIndex(`optionMenu -query -select (LumberyardToolGetGeometryListItemFileType($itemIndex))`);
+    setAttr ($nodeName + ".fileType") $newType;
+}
+
+//! Update the selected type in file type menu of a geometry export node.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolUpdateGeometryListItemFileType(int $itemIndex)
+{   
+    string $nodeName = `LumberyardToolGetExportNodeNameForItemID($itemIndex)`;
+    if (`attributeExists "fileType" $nodeName`)
+    {
+        int $currentType = LumberyardToolGetEnumIndexFromFileType(`getAttr ($nodeName + ".fileType")`);
+        optionMenu -edit -select $currentType `LumberyardToolGetGeometryListItemFileType($itemIndex)`;
+    }
+}
+
+//! Update the merge nodes attribute of a geometry export node.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolSetGeometryExportNodeMergeNodes(string $itemIndex)
+{
+    int $value = (`checkBox -query -value LUMBERYARDTOOL_MERGENODES_CHECKBOX` == 0);
+    string $node = `LumberyardToolGetExportNodeNameForItemID($itemIndex)`;
+    setAttr ($node + ".DoNotMerge") $value;
+}
+
+//! Callback for change in the Do Not Merge attribute.
+/*!
+  /param $nodeDoNotMergeAttribute string reference to the originating node.attribute that changed.
+*/
+global proc LumberyardToolUpdateMergeData(string $nodeDoNotMergeAttribute)
+{
+    checkBox -edit -value (`getAttr ($nodeDoNotMergeAttribute)` == 0) LUMBERYARDTOOL_MERGENODES_CHECKBOX;
+}
+
+//! Rebuild advance option frame for the selected geometry export node.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolRebuildGeometryAdvancedOptionsFrame(int $itemIndex)
+{
+    global int $g_boxWidth;
+    global int $g_buttonSpace;
+    global float $g_UIColor[];
+    
+    string $childArray[];
+    $childArray = `frameLayout -query -childArray LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME`;
+    for ($child in $childArray)
+    {
+        deleteUI $child;
+    }
+
+    setParent LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME;
+    gridLayout -numberOfColumns 2 -cellWidthHeight ($g_boxWidth / 2 - 4) 20;
+    {
+        checkBox -value 0 -label "Merge Nodes" -changeCommand "" LUMBERYARDTOOL_MERGENODES_CHECKBOX;
+        checkBox -value 0 -label "Vertex Colors" -changeCommand "" LUMBERYARDTOOL_VERTEXCOLORS_CHECKBOX;
+        checkBox -value 0 -label "8 Weights (skin only)" -changeCommand "" LUMBERYARDTOOL_8WEIGHTS_CHECKBOX;
+        checkBox -value 0 -label "32 Bit Vertex Precision" -changeCommand ""
+            -annotation "Activating will add 32 bits of precision to position each vertex accurately when the mesh is located far from its pivot. Note that certain platforms only support 16-bit precision. For more details please see documentation."
+            LUMBERYARDTOOL_32BITVERTEX_CHECKBOX;
+    }
+    
+    setParent LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME;
+    rowColumnLayout -numberOfRows 1 -height 30 -rowOffset 1 "both" 4 -columnSpacing 3 $g_buttonSpace;
+    text -label "Custom Path" -width 70;
+    textField -width 190 -text `LumberyardToolUpdateGeometryListItemCustomPath $itemIndex`
+        -changeCommand ("LumberyardToolSetGeometryExportNodeCustomPathFromTextField " + $itemIndex)
+        LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD;
+    iconTextButton -image "icons/lumberyard_folder_icon.png" -width 20 -height 18 -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+        -command ("LumberyardToolSetGeometryExportNodeCustomPathFromBrowser " + $itemIndex)
+        LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_BUTTON;
+    
+       
+    if ($itemIndex != -1)
+    {
+        string $node = `LumberyardToolGetExportNodeNameForItemID $itemIndex`;
+        // TODO: eventually we should change the node attribute from ".DoNotMerge" to ".MergeNodes"
+        checkBox -edit -value (`getAttr ($node + ".DoNotMerge")` == 0) -changeCommand ("LumberyardToolSetGeometryExportNodeMergeNodes " + $itemIndex) LUMBERYARDTOOL_MERGENODES_CHECKBOX;
+        connectControl LUMBERYARDTOOL_VERTEXCOLORS_CHECKBOX ($node + ".WriteVertexColours");
+        connectControl LUMBERYARDTOOL_8WEIGHTS_CHECKBOX ($node + ".EightWeightsPerVertex");
+        connectControl LUMBERYARDTOOL_32BITVERTEX_CHECKBOX ($node + ".UseF32VertexFormat");
+        connectControl LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD ($node + ".NodeCustomExportPath");
+      
+        scriptJob -replacePrevious -attributeChange ($node + ".DoNotMerge") ("LumberyardToolUpdateMergeData " + $node + ".DoNotMerge") -parent LUMBERYARDTOOL_MERGENODES_CHECKBOX;
+        
+    }
+    else
+    {
+        checkBox -edit -enable false LUMBERYARDTOOL_MERGENODES_CHECKBOX;
+        checkBox -edit -enable false LUMBERYARDTOOL_VERTEXCOLORS_CHECKBOX;
+        checkBox -edit -enable false LUMBERYARDTOOL_8WEIGHTS_CHECKBOX;
+        checkBox -edit -enable false LUMBERYARDTOOL_32BITVERTEX_CHECKBOX;
+        textField -edit -enable false LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_TEXTFIELD;
+        iconTextButton -edit -enable false LUMBERYARDTOOL_GEOMETRYCUSTOMPATH_BUTTON;
+    }
+}
+
+// Index of the selected geometry export node.
+global int $g_currentSelectedGeometryID = -1;
+
+//! Update color and Advanced Option frameLayout when a list item is selected.
+/*!
+  /param $itemIndex Index corresponding to the export node item in the list box.
+*/
+global proc LumberyardToolGeometryListItemOnFocus(int $itemIndex)
+{
+    global float $g_highLightColor[];
+    global int $g_currentSelectedGeometryID;
+    
+    if ($g_currentSelectedGeometryID == $itemIndex)
+    {
+        return;
+    }
+    $g_currentSelectedGeometryID = $itemIndex;
+    LumberyardToolRebuildGeometryAdvancedOptionsFrame $itemIndex;
+    if ($itemIndex == -1)
+    {
+        button -edit -enable false LUMBERYARDTOOL_EXPLORERVIEW_BUTTON;
+        button -edit -enable false LUMBERYARDTOOL_SELECTGEOMETRY_BUTTON;
+        return;
+    }
+    
+    button -edit -enable true LUMBERYARDTOOL_EXPLORERVIEW_BUTTON;
+    button -edit -enable true LUMBERYARDTOOL_SELECTGEOMETRY_BUTTON;
+    
+    // TODO: this is currently disabled because it prevents the user from creating a new export 
+    // node after selecting any list item. Need to figure out a way to do the focus...
+    //select `LumberyardToolGetExportNodeNameForItemID $itemIndex`;
+    int $nodeCount = `LumberyardToolGetGeometryExportNodeCount`;
+    for ($i = 0; $i < $nodeCount; $i++)
+    {
+        if ($i == $itemIndex)
+        {
+            rowLayout -edit -backgroundColor $g_highLightColor[0] $g_highLightColor[1] $g_highLightColor[2] `LumberyardToolGetGeometryListItemRow($i)`;
+        }
+        else
+        {
+            rowLayout -edit -backgroundColor 0 0 0 `LumberyardToolGetGeometryListItemRow($i)`;
+        }
+    }
+}
+
+//! Get additional export options.
+global proc string LumberyardExportGetAdditionalExportOptions()
+{
+    string $options;
+    int $removeNamespaces = `LumberyardGetIntExportSetting "removeNamespaces"`;
+    // exportANMs is not supported as CGA/ANM support has been removed.  
+    // exportANMs should always be "0" as initialized in LumberyardGeometryOnLoad()
+    // UI elements that alter the value of exportANMs have been removed
+    int $exportANMs = `LumberyardGetIntExportSetting "exportANMs"`;
+
+    if ($exportANMs != 0)
+    {
+        warning ("ANM export is not supported. exportANMs being disabled.");
+        cryExportSetExportSettingValue "exportANMs" "0";
+        $exportANMS = 0;
+    }
+
+    $options += "cryExportRemoveNamespaces=" + $removeNamespaces + ";";
+    $options += "cryExportExportANMs=" + $exportANMs + ";";
+    return $options;
+}
+
+//! Export selected geometry export nodes.
+/*!
+  /param $blockOnWarnings A flag controls whether the export progress window will be automatically
+         closed if there is any warning.
+*/
+global proc LumberyardToolExportCheckedGeometryListItems(int $blockOnWarnings)
+{   
+    string $selectedNodes[];
+    int $selectId = 0;
+    
+    int $nodeCount = `LumberyardToolGetGeometryExportNodeCount`;
+    for($i = 0; $i < $nodeCount; $i++)
+    {
+        string $selectItemShortName = `textField -query -text (LumberyardToolGetGeometryListItemName($i))`;
+        $selectNode = `LumberyardToolAddLumberyardExportNodePrefix $selectItemShortName`;
+        if (`LumberyardToolHasValidExportTarget $selectNode` &&
+            `getAttr ($selectNode + ".shouldExport")`)
+        {
+            if (`objExists $selectNode`)
+            {
+                $selectedNodes[$selectId] = $selectNode;
+                $selectId++;
+            }
+        }
+    }
+    
+    cryExportGeometry $selectedNodes $blockOnWarnings `LumberyardExportGetAdditionalExportOptions`;
+}
+
+//! Sets the export path for exporting geometry
+/*!
+ \note This currently relies on the old CRYEXPORTSETTINGS base approach (using LUMBERYARD_EXPORT_SETTINGS) for setting default paths
+*/
+global proc LumberyardToolUpdateGeometryExportPath()
+{
+    global string $g_defaultPathString;
+    string $exportPath = `textField -query -text LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD`;
+    
+    // For empty path make sure UI is updated
+    if($exportPath == "")
+    {
+        LumberyardUtilitiesSetTextToDefaultPath("LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD");
+    }
+    // For default path, clear the custom path before passing it to the data backend
+    else if(`gmatch $exportPath $g_defaultPathString`)
+    {
+        $exportPath = "";
+    }
+    else
+    {
+        $exportPath = `cryExportFixupPath $exportPath`;
+        textField -edit -text $exportPath LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD;
+    }
+    cryExportSetExportSettingValue "customFilePath" $exportPath;
+}
+
+//! Set the text field of global geometry export path by browsing folder.
+global proc LumberyardToolSetGeometryExportPathFromFileBrowser()
+{
+    string $result[] = `LumberyardBrowseForPath "" "Set Export Path"`;
+    string $folderPath;
+    if (size($result) == 1)
+    {
+        $folderPath = $result[0];
+        textField -edit -text $folderPath LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD;
+        LumberyardToolUpdateGeometryExportPath;
+    }
+}
+
+//! Resize Lumberyard Tool window by collapsing or expanding the geometry frame.
+/*!
+  \param $collapse Whether collapse or expand the geometry frame.
+*/
+global proc LumberyardGeometryResizeWindow(int $collapse)
+{
+    global int $g_geometryHeightDiff;
+    global int $g_advanceOptionHeightDiff;
+    int $geometryHeightDiff = $g_geometryHeightDiff;
+    if (`frameLayout -query -collapse LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME`)
+    {
+        $geometryHeightDiff = $g_geometryHeightDiff - $g_advanceOptionHeightDiff;
+    }
+    if ($collapse)
+    {
+        $geometryHeightDiff = -$geometryHeightDiff;
+    }
+    LumberyardToolResizeWindow $geometryHeightDiff;
+}
+
+//! Collapse geometry advance option frame.
+global proc LumberyardGeometryCollapseAdvanceOptionsFrame()
+{
+    global int $g_advanceOptionHeightDiff;
+    if (!`frameLayout -query -collapse LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME`)
+    {
+    frameLayout -edit -collapse true LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME;
+    LumberyardToolResizeWindow (-$g_advanceOptionHeightDiff);
+}
+}
+
+//! Allow user optional upgrade/update path for old format data.  Don't allow Lumberyard Tools to work until updated.
+global proc int LumberyardToolAttemptDataUpdates()
+{
+    if( !`LumberyardToolFindAndUpgradeOldStyleExportNodes` )
+    {
+        // Close Lumberyard tools window if user choose not to upgrade.
+        if( `window -exists LUMBERYARDTOOL_MAIN_WINDOW` )
+        {
+            deleteUI LUMBERYARDTOOL_MAIN_WINDOW;
+        }
+        
+        return false;
+    }
+    
+    if ( !`LumberyardToolFindAndChangeCGAExportTags`)
+    {
+        // Close Lumberyard tools window if user choose not to upgrade.
+        if( `window -exists LUMBERYARDTOOL_MAIN_WINDOW` )
+        {
+            deleteUI LUMBERYARDTOOL_MAIN_WINDOW;
+        }
+        
+        return false;
+    }
+    return true;
+}
+
+//! Necessary setup when the Lumberyard Tool is loaded or the scene file is changed.
+global proc LumberyardGeometryOnLoad()
+{
+    global int $g_currentSelectedGeometryID;
+    $g_currentSelectedGeometryID = -1;
+    
+    LumberyardToolLoadGeometryExportNodes;
+    
+    if (!`LumberyardToolAttemptDataUpdates`)
+    {
+        return;
+    }
+    
+    // CGA/ANM export is not supported (disable)
+    cryExportSetExportSettingValue "exportANMs" "0";
+    
+    LumberyardToolUpdateGeometryListBox;
+    button -edit -enable false LUMBERYARDTOOL_EXPLORERVIEW_BUTTON;
+    button -edit -enable false LUMBERYARDTOOL_SELECTGEOMETRY_BUTTON;
+    textField -edit -text `LumberyardToolGetGlobalGeometryExportPath 0` LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD;
+    LumberyardToolRebuildGeometryAdvancedOptionsFrame $g_currentSelectedGeometryID;
+}
+
+//! Create geometry export main frame.
+global proc LumberyardToolCreateGeometryFrame()
+{
+    global int $g_boxWidth;
+    global int $g_buttonSpace;
+    global float $g_UIColor[];
+    global string $g_geometryExtensions[];
+    $g_geometryExtensions = {"cgf","chr","cga","skin"};
+    int $buttonWidth = ($g_boxWidth - ($g_buttonSpace * 2)) / 3;
+    global int $g_advanceOptionHeightDiff;
+    
+    // Create geometry export main frame layout.
+    frameLayout -collapsable true -marginHeight 5 -marginWidth 5 -label "Geometry Export" 
+        -collapseCommand ("LumberyardGeometryResizeWindow " + 1) -expandCommand ("LumberyardGeometryResizeWindow " + 0)
+        LUMBERYARDTOOL_GEOMETRY_FRAME;
+    {
+        columnLayout -adjustableColumn true LUMBERYARDTOOL_GEOMETRY_LAYOUT;
+        {
+            scrollLayout -height 120 -width $g_boxWidth -backgroundColor 0 0 0 -visible true LUMBERYARDTOOL_GEOMETRY_LISTBOX;
+            
+            setParent ..;
+            rowColumnLayout -numberOfRows 1 -width $g_boxWidth -columnSpacing 2 $g_buttonSpace;
+            button -label "Explorer View" -width $buttonWidth -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -enable false -command ("LumberyardToolViewGeometryInExplorer") LUMBERYARDTOOL_EXPLORERVIEW_BUTTON;
+            button -label "Select" -width $buttonWidth -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2] 
+                -enable false -command ("LumberyardToolSelectMayaGeometry") LUMBERYARDTOOL_SELECTGEOMETRY_BUTTON;
+            button -label "Add Selected" -width $buttonWidth -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -command ("LumberyardToolAddNewGeometryExportNode");
+            
+            setParent ..;
+            rowColumnLayout -numberOfRows 1 -height 30 -rowOffset 1 "both" 4 -columnSpacing 3 $g_buttonSpace;
+            text -label "Export Path" -width 70;
+            textField -text `LumberyardToolGetGlobalGeometryExportPath 0` -width 200 -changeCommand ("LumberyardToolUpdateGeometryExportPath") 
+                LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD;
+            popupMenu;
+            {
+                menuItem -label "Reset" -command ("LumberyardResetCustomString LUMBERYARDTOOL_GEOMETRYEXPORTPATH_TEXTFIELD");
+            }
+            iconTextButton -image "icons/lumberyard_folder_icon.png" -width 20 -height 18 -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -command ("LumberyardToolSetGeometryExportPathFromFileBrowser");
+            
+            setParent LUMBERYARDTOOL_GEOMETRY_LAYOUT;
+            frameLayout -collapsable true -collapse false -marginHeight 5 -marginWidth 5 -label "Advanced Options" 
+                -collapseCommand ("LumberyardToolResizeWindow " + (-$g_advanceOptionHeightDiff)) -expandCommand ("LumberyardToolResizeWindow " + $g_advanceOptionHeightDiff)
+                LUMBERYARDTOOL_GEOMETRYADVANCEDOPTIONS_FRAME;
+            LumberyardToolRebuildGeometryAdvancedOptionsFrame -1;
+            
+            setParent LUMBERYARDTOOL_GEOMETRY_LAYOUT;
+            button -label "Export Geometry" -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+                -command ("LumberyardToolExportCheckedGeometryListItems 1") LUMBERYARDTOOL_EXPORTGEOMETRY_BUTTON;
+        }
+    }
+    
+   
+    
+    scriptJob -event "NewSceneOpened" "LumberyardGeometryOnLoad" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    scriptJob -event "PostSceneRead" "LumberyardGeometryOnLoad" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    scriptJob -event "DagObjectCreated" "LumberyardToolRefreshGeometryListBoxReloadNodes" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    scriptJob -event "NameChanged" "LumberyardToolRefreshGeometryListBoxReloadNodes" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    
+     LumberyardGeometryOnLoad;
+}
+
+//! Gets the root of a joint chain given a joint in the hierarchy.
+/*!
+ \param $joint The starting joint used to check the hierarchy.
+*/
+proc string LumberyardToolGetRootJointForChild(string $joint)
+{
+    string $rootJoint = $joint;
+    string $parentJoints[];
+    while($joint != "")
+    {
+        $parentJoints = `listRelatives -type "joint" -parent $joint`;
+        $joint = "";
+        for($parentJoint in $parentJoints)
+        {
+            $rootJoint = $parentJoint;
+            $joint = $parentJoint;
+        }
+    }
+    
+    return $rootJoint;
+}
+
+//! Gets the single root joint associated with a skinCluster. If multiple root joints exists, returns an empty string
+/*!
+ \param $mesh The mesh corresponding to the skinCluster to determine the root joint for
+*/
+proc string LumberyardGetRootJointForSkin(string $mesh)
+{
+    string $skinCluster = findRelatedSkinCluster($mesh);
+    string $joints[] = `skinCluster -query -influence $skinCluster`;
+    
+    string $rootJoints[];
+    for($joint in $joints)
+    {
+        if(`nodeType $joint` == "joint")
+        {
+            string $rootJoint = `LumberyardToolGetRootJointForChild $joint`;
+            $rootJoints[size($rootJoints)] = $rootJoint;
+        }
+    }
+    
+    $rootJoints = `stringArrayRemoveDuplicates $rootJoints`;
+    if(size($rootJoints) == 1)
+    {
+        return $rootJoints[0];
+    }
+    
+    return "";
+}
+
+//! Determine if an item should be added using the Auto-Detect tool
+/*!
+  \param $item The item to check for adding
+  \param $currentExportList The list of all items currently being managed by the exporter of the same type as $item
+*/
+proc int LumberyardShouldAddItem(string $item, string $currentExportList[])
+{
+    // We ignore all non-joint items whose parents are joints, they are likely to be physics meshes
+    string $parents[] = `listRelatives -parent $item`;
+    if(`nodeType $item` != "joint" && size($parents) > 0 && `nodeType $parents[0]` == "joint")
+    {
+        return false;
+    }
+    
+    // We only add it if it is not already part of an existing export group
+    return !`stringArrayContains $item $currentExportList`;
+}
+
+//! Automatically detect meshes and skeletons in the scene and create geometry export items for each of them.
+/*!
+  /param $includeMaterial A flag decides whether to detect materials from meshes and create material groups.
+  /note Optionally, materials may also be detected and put into material groups based on the mesh they are assigned to.
+*/
+global proc LumberyardAutoDetectGeometry(int $includeMaterial)
+{
+    string $transforms[] = `ls -transforms`;
+    // Selection mask value is set as 12 as referring to polygon.
+    string $meshes[] = `filterExpand -selectionMask 12 $transforms`;
+    $meshes = stringArrayRemoveDuplicates($meshes);
+    
+    //allow cancel if existing Material Groups exist
+    if (`LumberyardToolMaterialGroupsExist` && $includeMaterial)
+    {
+        string $dialogMessage = "Detected existing Material Groups.  Automatic Detection is intended to be " + 
+            "performed on a clean export profile.  It may rename material groups, reassign materials, and reorder " + 
+            "materials within groups. Do you wish to proceed?";
+
+            if(`confirmDialog -title "Lumberyard Exporter" -message $dialogMessage
+            -button "Yes" -button "No" -defaultButton "Yes"
+            -cancelButton "No" -dismissString "No"` == "No")
+        {
+            return;
+        }
+    }
+    
+    string $exportNodes[] = `LumberyardToolGetGeometryExportNodes`;
+    string $exportTargets[];
+    string $exportSkeletonRoots[];
+    for($exportNode in $exportNodes)
+    {
+        if(`attributeExists "exportTarget" $exportNode`)
+        {
+            string $exportTarget = `getAttr ($exportNode + ".exportTarget")`;
+            if(`objExists $exportTarget`)
+            {
+                $exportTargets[size($exportTargets)] = $exportTarget;
+                if(`getAttr ($exportNode + ".fileType")` == 1)
+                {
+                    if(`nodeType $exportTarget` == "transform")
+                    {
+                        string $joints[] = `listRelatives -type "joint" -children $exportTarget`;
+                        $exportSkeletonRoots[size($exportSkeletonRoots)] = $joints[0];
+                    }
+                    else if(`nodeType $exportTarget` == "joint")
+                    {
+                        $exportSkeletonRoots[size($exportSkeletonRoots)] = $exportTarget;
+                    }
+                }
+            }
+        }
+    }
+    string $exportMeshes[] = `filterExpand -selectionMask 12 $exportTargets`;
+
+    for ($mesh in $meshes)
+    {
+            // If we have found a skin, try to add its skeleton as well
+            if(`LumberyardGetGeometryExportNodeDefaultFileType $mesh` == 3)
+            {
+                string $rootJoint = `LumberyardGetRootJointForSkin $mesh`;
+            if(LumberyardShouldAddItem($rootJoint, $exportSkeletonRoots))
+                {
+                    $exportSkeletonRoots[size($exportSkeletonRoots)] = $rootJoint;
+                    select $rootJoint;
+                    LumberyardToolAddNewGeometryExportNode;
+                }
+            }
+            
+        if(LumberyardShouldAddItem($mesh, $exportMeshes))
+        {
+            select $mesh;
+            LumberyardToolAddNewGeometryExportNode;
+            $exportMeshes[size($exportMeshes)] = $mesh;
+        }
+        
+        // Skip adding material groups for skeletons.
+        if (`LumberyardGetGeometryExportNodeDefaultFileType $mesh` != 1 && $includeMaterial)
+        {
+            select $mesh;
+            LumberyardToolAddMaterials( true );
+        }
+    }
+}
+
+//! Find all old style export nodes.
+proc string[] LumberyardToolFindOldStyleExportNodes()
+{
+    // Get existing geometry export nodes from Maya scene.
+    string $exportNodes[] = `LumberyardToolGetGeometryExportNodes`;
+    string $oldStyleExportNodes[];
+    
+    if(`size($exportNodes)`)
+    {
+        // Export node should be child of LUMBERYARD_GEOMETRYEXPORT_GROUP
+        for($exportNode in $exportNodes)
+        {
+            if(!`isParentOf LUMBERYARD_GEOMETRYEXPORT_GROUP $exportNode`)
+            {
+                $oldStyleExportNodes[`size($oldStyleExportNodes)`] = $exportNode;
+                continue;
+            }
+            // Export node should have exportTarget attribute.
+            if(!`attributeExists "exportTarget" $exportNode`)
+            {
+                $oldStyleExportNodes[`size($oldStyleExportNodes)`] = $exportNode;
+                continue;
+            }
+            
+            // Export node should have no children.
+            string $childList[] = `listRelatives -children $exportNode`;
+            if(`size($childList)`)
+            {
+                $oldStyleExportNodes[`size($oldStyleExportNodes)`] = $exportNode;
+                continue;
+            }
+        }
+    }
+    // Get existing old named geometry export nodes from Maya scene.
+    $exportNodes = `cryMayaSupportPlugin gatherOldFormatExportNodes`;
+    appendStringArray($oldStyleExportNodes, $exportNodes, size($exportNodes));
+
+    return $oldStyleExportNodes;
+}
+
+//! Upgrade old style export nodes.
+proc LumberyardToolUpgradeOldStyleExportNodes( string $oldStyleExportNodes[] )
+{
+    // There should be LUMBERYARD_GEOMETRYEXPORT_GROUP
+    if(!`objExists LUMBERYARD_GEOMETRYEXPORT_GROUP`)
+    {
+        // Create LUMBERYARD_EXPORT_GROUP and LUMBERYARD_GEOMETRYEXPORT_GROUP if needed.
+        if(!`objExists LUMBERYARD_EXPORT_GROUP`)
+        {
+            // Create LUMBERYARD_EXPORT_GROUP
+            group -empty -name LUMBERYARD_EXPORT_GROUP;        
+        }
+        // Create LUMBERYARD_GEOMETRYEXPORT_GROUP
+        group -empty -parent LUMBERYARD_EXPORT_GROUP -name LUMBERYARD_GEOMETRYEXPORT_GROUP;
+    }
+    
+    int $needReload = false;
+    for($exportNode in $oldStyleExportNodes)
+    {
+        // Export node should be child of LUMBERYARD_GEOMETRYEXPORT_GROUP
+        if(!`isParentOf LUMBERYARD_GEOMETRYEXPORT_GROUP $exportNode`)
+        {
+            parent $exportNode LUMBERYARD_GEOMETRYEXPORT_GROUP;
+        }
+
+        if( !`attributeExists "exportTarget" $exportNode` )
+        {
+            addAttr -longName exportTarget -dataType "string" -hidden true $exportNode;
+        }
+        
+        // Export node should have no children.
+        string $childList[] = `listRelatives -children $exportNode`;
+        int $childCount = `size($childList)`;
+        
+        if($childCount)
+        {
+            string $exportTargetName = $childList[0];
+            
+            // Group multiple child nodes into one.
+            if($childCount > 1)
+            {
+                // Get export name.
+                $exportTargetName = LumberyardToolRemoveLumberyardExportNodePrefix($exportNode);
+                
+                group -empty -name  $exportTargetName;
+                parent $childList $exportTargetName;
+            }
+            else
+            {
+                parent -world $exportTargetName;
+            }
+            
+            setAttr ($exportNode + ".exportTarget") -type "string" $exportTargetName;
+        }
+        string $oldNamefilter = LumberyardGetOldExportNodeNamePrefix();
+        $oldNamefilter += "*";
+        if( `gmatch ($exportNode) $oldNamefilter` )
+        {
+            //change name to Lumberyard node name
+            string $lumberyardExportNodePrefix= LumberyardGetExportNodeNamePrefix();
+            string $oldExportNodePrefix = LumberyardGetOldExportNodeNamePrefix();
+            string $newName = `substitute $oldExportNodePrefix $exportNode $lumberyardExportNodePrefix`;
+            rename $exportNode $newName;
+            $needReload = true;
+        }
+    }
+    if ($needReload)
+    {
+        // reload geometry export node from plugin to ensure correct records of export nodes after upgrade
+        LumberyardToolLoadGeometryExportNodes;
+    }
+}
+
+//! Find old style export node and show dialog to confirm upgrade.
+global proc int LumberyardToolFindAndUpgradeOldStyleExportNodes()
+{
+    string $oldStyleExportNodes[] = LumberyardToolFindOldStyleExportNodes();
+    
+    if(`size($oldStyleExportNodes)` == 0)
+    {
+        return true;
+    }
+    
+    if(`confirmDialog -title "Lumberyard Exporter" -message "Detected old export data. Do you wish to upgrade to the new tool format? (This operation will remove old data)"
+            -button "Yes" -button "No" -defaultButton "Yes"
+            -cancelButton "No" -dismissString "No"` == "No")
+    {
+        return false;
+    }
+    
+    LumberyardToolUpgradeOldStyleExportNodes( $oldStyleExportNodes );
+    
+    return true;
+}
+
+
+//! Find all CGA export nodes.
+proc string[] LumberyardToolFindCGAExportNodes()
+{
+    // Get existing geometry export nodes from Maya scene.
+    string $exportNodes[] = `LumberyardToolGetGeometryExportNodes`;
+    string $CGAExportNodes[];
+
+    if(`size($exportNodes)`)
+    {
+        global int $s_cgaFileType;
+        for($exportNode in $exportNodes)
+        {
+            if((int(getAttr ($exportNode + ".fileType"))) == $s_cgaFileType)
+            {
+                $CGAExportNodes[`size($CGAExportNodes)`] = $exportNode;
+            }
+        }
+    }
+    return $CGAExportNodes;
+}
+
+
+//! Find CGAs and show dialog to confirm conversion to CGF.
+global proc int LumberyardToolFindAndChangeCGAExportTags()
+{
+    string $cgaExportNodes[] = LumberyardToolFindCGAExportNodes();
+    
+    if(`size($cgaExportNodes)` == 0)
+    {
+        return true;
+    }
+    
+    string $dialogMessage = 
+        "CGA Export Nodes have been found but CGA format is no longer supported.  " + 
+        "Update from CGA to CGF is required to use Lumberyard Tools.  Do you wish to update now?";
+        
+    if(`confirmDialog -title "Lumberyard Tools- Invalid Data" -message $dialogMessage
+        -button "Yes" -button "Cancel" -defaultButton "Yes"
+        -cancelButton "Cancel" -dismissString "Cancel"` == "Cancel")
+    {
+        return false;
+    }
+    
+    global int $s_cgfFileType;
+    for ($exportNode in $cgaExportNodes)
+    {
+        setAttr ($exportNode + ".fileType") $s_cgfFileType;
+    }
+    
+    return true;
+}

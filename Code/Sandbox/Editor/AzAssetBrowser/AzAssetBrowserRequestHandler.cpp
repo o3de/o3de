@@ -28,6 +28,7 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
@@ -375,7 +376,12 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     }
 }
 
-bool AzAssetBrowserRequestHandler::CanAcceptDragAndDropEvent(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) const
+bool AzAssetBrowserRequestHandler::CanAcceptDragAndDropEvent(
+    QDropEvent* event,
+    AzQtComponents::DragAndDropContextBase& context,
+    AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>*> outSources,
+    AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> outProducts
+) const
 {
     using namespace AzQtComponents;
     using namespace AzToolsFramework;
@@ -389,19 +395,46 @@ bool AzAssetBrowserRequestHandler::CanAcceptDragAndDropEvent(QDropEvent* event, 
         return false;
     }
 
-    // is it something we know how to spawn?
-    bool canSpawn = false;
+    bool canAcceptEvent = false;
 
-    AzToolsFramework::AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<ProductAssetBrowserEntry>(event->mimeData(),
-        [&](const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* product)
-        {
-            if (CanSpawnEntityForProduct(product))
+    // Detects Source Asset Entries whose extensions are handled by a system
+    AzToolsFramework::AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<SourceAssetBrowserEntry>(
+        event->mimeData(), [&](const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* source) {
+            if (AssetBrowser::AssetBrowserSourceDropBus::HasHandlers(source->GetExtension()))
             {
-                canSpawn = true;
+                if (outSources.has_value())
+                {
+                    outSources.value()->push_back(source);
+                }
+                canAcceptEvent = true;
             }
         });
 
-    return canSpawn;
+    // Detects Product Assets that are dragged directly, or child Products of other entry types.
+    AzToolsFramework::AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<ProductAssetBrowserEntry>(
+        event->mimeData(), [&](const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* product)
+    {
+        // Skip if this product is a child of a source file that is handled
+        if (outSources.has_value() && !outSources.value()->empty())
+        {
+            auto parent = azrtti_cast<const SourceAssetBrowserEntry*>(product->GetParent());
+            if (parent != nullptr && AZStd::find(outSources.value()->begin(), outSources.value()->end(), parent) != outSources.value()->end())
+            {
+                return;
+            }
+        }
+
+        if (CanSpawnEntityForProduct(product))
+        {
+            if (outProducts.has_value())
+            {
+                outProducts.value()->push_back(product);
+            }
+            canAcceptEvent = true;
+        }
+    });
+
+    return canAcceptEvent;
 }
 
 void AzAssetBrowserRequestHandler::DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context)
@@ -434,11 +467,14 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     using namespace AzQtComponents;
     using namespace AzAssetBrowserRequestHandlerPrivate;
 
-    // ALWAYS CHECK - you are not the only one connected to this bus, and someone else may have already
-    // handled the event or accepted the drop - it might not contain types relevant to you.
-    // you still get informed about the drop event in case you did some stuff in your gui and need to clean it up.
-    if (!CanAcceptDragAndDropEvent(event, context))
+    AZStd::vector<const SourceAssetBrowserEntry*> sources;
+    AZStd::vector<const ProductAssetBrowserEntry*> products;
+
+    if (!CanAcceptDragAndDropEvent(event, context, &sources, &products))
     {
+        // ALWAYS CHECK - you are not the only one connected to this bus, and someone else may have already
+        // handled the event or accepted the drop - it might not contain types relevant to you.
+        // you still get informed about the drop event in case you did some stuff in your gui and need to clean it up.
         return;
     }
 
@@ -448,21 +484,32 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     event->setDropAction(Qt::CopyAction);
     event->setAccepted(true);
 
-    // spawn entities!
     EntityIdList spawnedEntities;
     AzFramework::SliceInstantiationTicket spawnTicket;
 
-    // make a scoped undo that covers the ENTIRE operation.
+    // Make a scoped undo that covers the ENTIRE operation.
     ScopedUndoBatch undo("Create entities from asset");
 
-    AssetBrowserEntry::ForEachEntryInMimeData<ProductAssetBrowserEntry>(event->mimeData(),
-        [&](const ProductAssetBrowserEntry* product)
+    // Handle sources
+    for (const SourceAssetBrowserEntry* source : sources)
+    {
+        AssetBrowser::AssetBrowserSourceDropBus::Event(
+            source->GetExtension(),
+            &AssetBrowser::AssetBrowserSourceDropEvents::HandleSourceFileType,
+            source->GetFullPath(),
+            AZ::EntityId(),
+            viewportDragContext->m_hitLocation
+        );
+    }
+
+    // Handle products
+    for (const ProductAssetBrowserEntry* product : products)
+    {
+        if (CanSpawnEntityForProduct(product))
         {
-            if (CanSpawnEntityForProduct(product))
-            {
-                SpawnEntityAtPoint(product, viewportDragContext, spawnedEntities, spawnTicket);
-            }
-        });
+            SpawnEntityAtPoint(product, viewportDragContext, spawnedEntities, spawnTicket);
+        }
+    }
 
     // Select the new entity (and deselect others).
     if (!spawnedEntities.empty())

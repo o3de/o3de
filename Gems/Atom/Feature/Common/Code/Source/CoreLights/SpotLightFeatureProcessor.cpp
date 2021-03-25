@@ -89,6 +89,7 @@ namespace AZ
             m_esmParameterBufferHandler = GpuBufferHandler(desc);
 
             m_shadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(Name("m_shadowmapAtlasSize"));
+            m_invShadowmapAtlasSize = viewSrgLayout->FindShaderInputConstantIndex(Name("m_invShadowmapAtlasSize"));
 
             CachePasses();
             EnableSceneNotification();
@@ -276,7 +277,10 @@ namespace AZ
                     if (view->GetUsageFlags() & RPI::View::UsageFlags::UsageCamera)
                     {
                         RPI::ShaderResourceGroup* srg = view->GetShaderResourceGroup().get();
-                        srg->SetConstant(m_shadowmapAtlasSizeIndex, pass->GetShadowmapAtlasSize());
+                        srg->SetConstant(m_shadowmapAtlasSizeIndex, static_cast<float>(pass->GetShadowmapAtlasSize()));
+                        const float invShadowmapSize = 1.0f / static_cast<float>(pass->GetShadowmapAtlasSize());
+                        srg->SetConstant(m_invShadowmapAtlasSize, invShadowmapSize);                        
+
                         m_lightBufferHandler.UpdateSrg(srg);
                         m_shadowBufferHandler.UpdateSrg(srg);
                         m_esmParameterBufferHandler.UpdateSrg(srg);
@@ -462,6 +466,16 @@ namespace AZ
             const auto& property = GetOrCreateShadowProperty(handle);
             const uint16_t shadowIndex = property.m_shadowHandle.GetIndex();
             m_shadowData.GetData(shadowIndex).m_predictionSampleCount = count;
+            
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SpotLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
+        {
+            const auto& property = GetOrCreateShadowProperty(handle);
+            const uint16_t shadowIndex = property.m_shadowHandle.GetIndex();
+            m_shadowData.GetData(shadowIndex).m_pcfMethod = method;
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -652,8 +666,6 @@ namespace AZ
                 const uint16_t shadowIndex = it.second.m_shadowHandle.GetIndex();
                 SpotLightShadowData& shadow = m_shadowData.GetData(shadowIndex);
                 
-                shadow.m_bias = (nearDist / farDist) * 0.1f;
-
                 EsmShadowmapsPass::FilterParameter& esmData = m_esmParameterData.GetData(shadowIndex);
                 if (shadow.m_shadowFilterMethod == aznumeric_cast<uint32_t>(ShadowFilterMethod::Esm) ||
                     shadow.m_shadowFilterMethod == aznumeric_cast<uint32_t>(ShadowFilterMethod::EsmPcf))

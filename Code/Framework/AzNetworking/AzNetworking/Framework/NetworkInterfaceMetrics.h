@@ -26,6 +26,8 @@ namespace AzNetworking
         AZ::TimeMs m_sendTimeMs = AZ::TimeMs{ 0 };
         //! Returns the total number of packets sent on this socket.
         uint64_t m_sendPackets = 0;
+        //! Returns the total number of encrypted packets sent on this socket.
+        uint64_t m_sendPacketsEncrypted = 0;
         //! Returns the total number of bytes sent on this socket after compression.
         uint64_t m_sendBytes = 0;
         //! Returns the total number of bytes sent on this socket before compression.
@@ -34,6 +36,8 @@ namespace AzNetworking
         uint64_t m_sendCompressedPacketsNoGain = 0;
         //! Returns the delta gain of bytes saved (+) or lost (-) due to compression.
         int64_t m_sendBytesCompressedDelta = 0;
+        //! Returns the numbers of bytes added by encryption.
+        uint64_t m_sendBytesEncryptionInflation = 0;
         //! Returns the total number of packets that had to be resent on this network interface due to packet loss.
         uint64_t m_resentPackets = 0;
         //! Returns the total number of milliseconds spent processing received data on this network interface.

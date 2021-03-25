@@ -109,7 +109,7 @@ function(ly_update_platform_settings)
 
 [settings]
 platform=${PAL_PLATFORM_NAME}
-game_projects=${LY_PROJECTS}
+game_projects=${LY_PROJECTS_NAME}
 asset_deploy_mode=${LY_ASSET_DEPLOY_MODE}
 asset_deploy_type=${LY_ASSET_DEPLOY_ASSET_TYPE}
 override_pak_root=${LY_OVERRIDE_PAK_FOLDER_ROOT}

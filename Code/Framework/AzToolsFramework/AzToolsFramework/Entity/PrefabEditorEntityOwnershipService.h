@@ -13,6 +13,10 @@
 #pragma once
 
 #include <AzFramework/Entity/PrefabEntityOwnershipService.h>
+#include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
+#include <AzFramework/Slice/SliceEntityBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 
 namespace AzToolsFramework
 {
@@ -20,16 +24,90 @@ namespace AzToolsFramework
     {
         class Instance;
         class PrefabSystemComponentInterface;
+        class PrefabLoaderInterface;
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Implementation with Assert(false), this will exist only during Slice->Prefab
+    // development to pinpoint and replace specific calls to Slice system
+
+    class UnimplementedSliceEntityOwnershipService
+        : public AzFramework::SliceEntityOwnershipServiceRequestBus::Handler
+    {
+    public:
+        bool m_shouldAssertForLegacySlicesUsage = false;
+    private:
+        AZ::Data::AssetId CurrentlyInstantiatingSlice() override;
+
+        bool HandleRootEntityReloadedFromStream(AZ::Entity* rootEntity, bool remapIds,
+            AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable = nullptr) override;
+
+        AZ::SliceComponent* GetRootSlice() override;
+
+        const AZ::SliceComponent::EntityIdToEntityIdMap& GetLoadedEntityIdMap() override;
+
+        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const override;
+
+        AzFramework::SliceInstantiationTicket InstantiateSlice(const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customIdMapper = nullptr,
+            const AZ::Data::AssetFilterCB& assetLoadFilter = nullptr) override;
+
+        AZ::SliceComponent::SliceInstanceAddress CloneSliceInstance(AZ::SliceComponent::SliceInstanceAddress sourceInstance,
+            AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
+
+        void CancelSliceInstantiation(const AzFramework::SliceInstantiationTicket& ticket) override;
+        AzFramework::SliceInstantiationTicket GenerateSliceInstantiationTicket() override;
+        void SetIsDynamic(bool isDynamic) override;
+        const AzFramework::RootSliceAsset& GetRootAsset() const override;
+    };
+
+    class UnimplementedSliceEditorEntityOwnershipService
+        : public AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Handler
+    {
+    public:
+        bool m_shouldAssertForLegacySlicesUsage = false;
+    private:
+        AzFramework::SliceInstantiationTicket InstantiateEditorSlice(
+            const AZ::Data::Asset<AZ::Data::AssetData>& sliceAsset, const AZ::Transform& worldTransform) override;
+
+        AZ::SliceComponent::SliceInstanceAddress CloneEditorSliceInstance(
+            AZ::SliceComponent::SliceInstanceAddress sourceInstance,
+            AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
+
+        AZ::SliceComponent::SliceInstanceAddress CloneSubSliceInstance(
+            const AZ::SliceComponent::SliceInstanceAddress& sourceSliceInstanceAddress,
+            const AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sourceSubSliceInstanceAncestry,
+            const AZ::SliceComponent::SliceInstanceAddress& sourceSubSliceInstanceAddress,
+            AZ::SliceComponent::EntityIdToEntityIdMap* out_sourceToCloneEntityIdMap) override;
+
+        AZ::SliceComponent::SliceInstanceAddress PromoteEditorEntitiesIntoSlice(
+            const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset, const AZ::SliceComponent::EntityIdToEntityIdMap& liveToAssetMap) override;
+
+        void DetachSliceEntities(const EntityIdList& entities) override;
+        void DetachSliceInstances(const AZ::SliceComponent::SliceInstanceAddressSet& instances) override;
+        void DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList) override;
+        void RestoreSliceEntity(
+            AZ::Entity* entity, const AZ::SliceComponent::EntityRestoreInfo& info, SliceEntityRestoreType restoreType) override;
+        void ResetEntitiesToSliceDefaults(EntityIdList entities) override;
+        AZ::SliceComponent* GetEditorRootSlice() override;
+    };
+    //////////////////////////////////////////////////////////////////////////
 
     class PrefabEditorEntityOwnershipService
         : public AzFramework::PrefabEntityOwnershipService
+        , private PrefabEditorEntityOwnershipInterface
+        , private AzFramework::SliceEntityRequestBus::MultiHandler
     {
     public:
         using EntityList = AzFramework::EntityList;
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
+
+        explicit PrefabEditorEntityOwnershipService(
+            const AzFramework::EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
+
+        ~PrefabEditorEntityOwnershipService();
 
         //! Initializes all assets/entities/components required for managing entities.
         void Initialize() override;
@@ -83,11 +161,33 @@ namespace AzToolsFramework
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
 
     protected:
+
+        AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
+
+    private:
+
+        //////////////////////////////////////////////////////////////////////////
+        // PrefabSystemComponentInterface interface implementation
+        Prefab::InstanceOptionalReference CreatePrefab(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
+            const AZStd::string& filePath, Prefab::Instance& instanceToParentUnder) override;
+
+        Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+        //////////////////////////////////////////////////////////////////////////
+
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
         ValidateEntitiesCallback m_validateEntitiesCallback;
 
+        UnimplementedSliceEntityOwnershipService m_sliceOwnershipService;
+        UnimplementedSliceEditorEntityOwnershipService m_editorSliceOwnershipService;
+
+        AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
+
+        Prefab::PrefabLoaderInterface* m_loaderInterface;
+        AzFramework::EntityContextId m_entityContextId;
+        AZ::SerializeContext m_serializeContext;
     };
 }

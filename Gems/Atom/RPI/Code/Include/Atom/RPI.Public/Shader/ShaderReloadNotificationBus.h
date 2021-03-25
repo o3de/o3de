@@ -21,6 +21,7 @@ namespace AZ
     namespace RPI
     {
         class Shader;
+        class ShaderAsset;
 
         /**
          * Connect to this EBus to get notifications whenever a Data::Instance<Shader> reloads its ShaderAsset.

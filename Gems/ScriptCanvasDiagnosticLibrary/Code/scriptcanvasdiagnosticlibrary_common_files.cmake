@@ -18,9 +18,6 @@ set(FILES
     Source/ScriptCanvasDiagnosticSystemComponent.cpp
     Source/DebugLibraryDefinition.h
     Source/DebugLibraryDefinition.cpp
-    Source/Log.h
-    Source/Log.cpp
-    Source/Log.ScriptCanvasNode.xml
     Source/DrawText.h
     Source/DrawText.cpp
     Source/DrawText.ScriptCanvasNode.xml

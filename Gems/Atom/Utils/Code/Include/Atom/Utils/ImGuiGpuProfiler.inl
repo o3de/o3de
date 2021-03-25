@@ -575,7 +575,7 @@ namespace AZ
                             // Draw the timestamp metric unit option.
                             ImGui::RadioButton("Timestamp in ms", reinterpret_cast<int32_t*>(&m_timestampMetricUnit), static_cast<int32_t>(TimestampMetricUnit::Milliseconds));
                             ImGui::SameLine();
-                            ImGui::RadioButton("Timestamp in us", reinterpret_cast<int32_t*>(&m_timestampMetricUnit), static_cast<int32_t>(TimestampMetricUnit::Nanoseconds));
+                            ImGui::RadioButton("Timestamp in ns", reinterpret_cast<int32_t*>(&m_timestampMetricUnit), static_cast<int32_t>(TimestampMetricUnit::Nanoseconds));
 
                             // Draw the frame load view option.
                             ImGui::RadioButton("Frame load in 30 FPS", reinterpret_cast<int32_t*>(&m_frameWorkloadView), static_cast<int32_t>(FrameWorkloadView::FpsView30));
@@ -593,7 +593,7 @@ namespace AZ
                     {
                         {
                             "ms",
-                            "us",
+                            "ns",
                         }
                     };
 
@@ -874,7 +874,7 @@ namespace AZ
             else if (m_timestampMetricUnit == TimestampMetricUnit::Nanoseconds)
             {
                 const char* timeFormat = "%llu %s";
-                const char* timeType = "us";
+                const char* timeType = "ns";
                 return AZStd::string::format(timeFormat, timestamp, timeType);
             }
             else

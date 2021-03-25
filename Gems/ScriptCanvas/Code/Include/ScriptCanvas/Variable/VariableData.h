@@ -129,4 +129,4 @@ namespace ScriptCanvas
         AZStd::string m_name;
         AZStd::list<EditableVariableConfiguration> m_variables;
     };
-} // namespace ScriptCanvas
+}

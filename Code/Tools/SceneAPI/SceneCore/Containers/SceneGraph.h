@@ -69,6 +69,7 @@ namespace AZ
                     // Type needs to be able to store an index in a NodeHeader (currently 21-bits).
                     using IndexType = uint32_t;
 
+                    NodeIndex() = default;
                     NodeIndex(const NodeIndex& rhs) = default;
                     NodeIndex& operator=(const NodeIndex& rhs) = default;
 
@@ -87,10 +88,9 @@ namespace AZ
                 private:
                     static const IndexType INVALID_INDEX = static_cast<IndexType>(-1);
 
-                    inline NodeIndex();
                     inline explicit NodeIndex(IndexType value);
 
-                    IndexType m_value;
+                    IndexType m_value = NodeIndex::INVALID_INDEX;
                 };
 
                 // NodeHeader contains the relationship a node has with its surrounding nodes and additional information about a node.

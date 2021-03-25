@@ -10,6 +10,8 @@
 *
 */
 
+#include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
+
 #include <PostProcessing/LookModificationTransformPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
@@ -34,27 +36,24 @@ namespace AZ
                 &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         }
 
-        LookModificationPass::~LookModificationPass()
-        {
-        }
-
         void LookModificationPass::BuildAttachmentsInternal()
         {
-            RPI::PassAttachmentRef passAttachmentRef;
-            passAttachmentRef.m_pass = "Parent";
-            passAttachmentRef.m_attachment = "SwapChainOutput";
-            m_swapChainAttachmentBinding = FindAdjacentBinding(passAttachmentRef);
-            AZ_Assert(m_swapChainAttachmentBinding->m_attachment->GetAttachmentType() == RHI::AttachmentType::Image, "Invalid attachment");
+            m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
             ParentPass::BuildAttachmentsInternal();
         }
 
-        void LookModificationPass::FrameBeginInternal(FramePrepareParams params)
+        void LookModificationPass::FrameBeginInternal([[maybe_unused]] FramePrepareParams params)
         {
-            AZ_UNUSED(params);
-            const RHI::TransientImageDescriptor imageDesc = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor();
-            if (imageDesc.m_imageDescriptor.m_format != m_displayBufferFormat)
+            // Get swap chain format
+            RHI::Format swapChainFormat = RHI::Format::Unknown;
+            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
             {
-                m_displayBufferFormat = imageDesc.m_imageDescriptor.m_format;
+                swapChainFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+            }
+
+            if (m_displayBufferFormat != swapChainFormat)
+            {
+                m_displayBufferFormat = swapChainFormat;
                 m_outputDeviceTransformType = AcesDisplayMapperFeatureProcessor::GetOutputDeviceTransformType(m_displayBufferFormat);
                 m_shaperParams = GetAcesShaperParameters(m_outputDeviceTransformType);
 

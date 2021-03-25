@@ -896,6 +896,8 @@ namespace UnitTest
 
         RPI::ShaderOptionGroup group(m_shaderOptionGroupLayoutForAsset);
 
+        EXPECT_TRUE(group.GetShaderVariantId().IsEmpty());
+
         group.SetValue(RPI::ShaderOptionIndex(0), RPI::ShaderOptionValue(7));
         group.SetValue(RPI::ShaderOptionIndex(1), RPI::ShaderOptionValue(6));
         group.SetValue(RPI::ShaderOptionIndex(2), RPI::ShaderOptionValue(5));
@@ -906,6 +908,7 @@ namespace UnitTest
         group.SetValue(group.FindShaderOptionIndex(m_bindings[2].GetName()), RPI::ShaderOptionValue(5));
         group.SetValue(group.FindShaderOptionIndex(m_bindings[3].GetName()), RPI::ShaderOptionValue(1));
 
+        EXPECT_FALSE(group.GetShaderVariantId().IsEmpty());
         EXPECT_EQ(group.GetValue(group.FindShaderOptionIndex(m_bindings[0].GetName())).GetIndex(), 7);
         EXPECT_EQ(group.GetValue(group.FindShaderOptionIndex(m_bindings[1].GetName())).GetIndex(), 6);
         EXPECT_EQ(group.GetValue(group.FindShaderOptionIndex(m_bindings[2].GetName())).GetIndex(), 5);

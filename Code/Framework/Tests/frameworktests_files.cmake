@@ -17,6 +17,7 @@ set(FILES
     BinToTextEncode.cpp
     ComponentAddRemove.cpp
     ComponentAdapterTests.cpp
+    EngineTests.cpp
     EntityContext.cpp
     EntityTestbed.h
     FileFunc.cpp
@@ -42,6 +43,7 @@ set(FILES
     InterestManagerComponentTests.cpp
     SQLiteConnectionTests.cpp
     ProcessLaunchParseTests.cpp
+    ProjectManagerTests.cpp
     Application.cpp
     PlatformHelper.cpp
     Scene.cpp

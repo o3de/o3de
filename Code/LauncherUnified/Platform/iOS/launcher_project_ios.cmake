@@ -22,21 +22,18 @@ else()
 endif()
 
 # Find the resource from the game gem
-get_target_property(${project}_GEM_DIR ${project} SOURCE_DIR) # Point to where the code is
-get_filename_component(${project}_GEM_DIR ${${project}_GEM_DIR} DIRECTORY) # Parent directory
+get_target_property(${project}_SOURCE_DIR ${project} SOURCE_DIR) # Point to where the code is
+get_filename_component(${project}_SOURCE_PARENT_DIR ${${project}_SOURCE_DIR} DIRECTORY) # Parent directory
 
-set(ly_game_resource_folder ${${project}_GEM_DIR}/Resources/Platform/iOS)
+set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/Platform/iOS)
 if (NOT EXISTS ${ly_game_resource_folder})
-    set(ly_game_resource_folder ${${project}_GEM_DIR}/Resources/IOSLauncher)
+    set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/IOSLauncher)
     if (NOT EXISTS ${ly_game_resource_folder})
         message(FATAL_ERROR "Missing expected resources folder")
     endif()
 endif()
 
 # Add resources and app icons to launchers
-get_target_property(${project}_GEM_DIR ${project} SOURCE_DIR)
-get_filename_component(${project}_GEM_DIR ${${project}_GEM_DIR} DIRECTORY)
-
 target_sources(${project}.GameLauncher PRIVATE ${ly_game_resource_folder}/Images.xcassets)
 set_target_properties(${project}.GameLauncher PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${ly_game_resource_folder}/Info.plist

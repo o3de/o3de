@@ -18,18 +18,6 @@
 
 namespace Platform
 {
-    void LoadPluginDependencies()
-    {
-        // Ensure that the QtForPython compatible version of python is loaded 
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot != nullptr, "AzFramework::ApplicationRequests::GetEngineRoot failed");
-
-        QString resolvedPythonPath(DEFAULT_LY_PYTHONHOME);
-        AZ_TracePrintf("LoadPluginDependencies", "Adding Python to DLL directories: %s\n", resolvedPythonPath.toUtf8().data());
-        SetDllDirectoryA(resolvedPythonPath.toUtf8().data());
-    }
-
     void ProcessInput(void* message)
     {
         MSG* msg = (MSG*)message;

@@ -37,7 +37,4 @@ ly_add_target(
             3rdParty::Qt::Widgets
             AZ::AzCore
             AZ::GridMate
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            GRIDMATE_FOR_TOOLS
 )

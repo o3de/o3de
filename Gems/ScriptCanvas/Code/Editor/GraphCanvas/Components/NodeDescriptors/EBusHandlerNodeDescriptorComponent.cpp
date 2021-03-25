@@ -26,7 +26,7 @@
 #include <Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerEventNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/PropertySlotIds.h>
 #include <Editor/Translation/TranslationHelper.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeDisplayUtils.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h>
 
 #include <Editor/View/Widgets/PropertyGridBus.h>
@@ -229,7 +229,7 @@ namespace ScriptCanvasEditor
 
                 if (internalNode.IsValid())
                 {
-                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, internalNode);
+                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, internalNode, false);
 
                     GraphCanvas::WrappedNodeConfiguration configuration = GetEventConfiguration(eventId);
                     GraphCanvas::WrapperNodeRequestBus::Event(GetEntityId(), &GraphCanvas::WrapperNodeRequests::WrapNode, internalNode, configuration);
@@ -557,18 +557,18 @@ namespace ScriptCanvasEditor
 
     void EBusHandlerNodeDescriptorComponent::OnDisplayConnectionsChanged()
     {
-        // If we are hiding the connections, we need to confirm that
-        // everything will be ok(i.e. no active connections)
-        if (!m_saveData.m_displayConnections)
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_scriptCanvasId);
+
+        if (entity)
         {
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_scriptCanvasId);
+            ScriptCanvas::Nodes::Core::EBusEventHandler* eventHandler = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Nodes::Core::EBusEventHandler>(entity);
 
-            if (entity)
+            if (eventHandler)
             {
-                ScriptCanvas::Nodes::Core::EBusEventHandler* eventHandler = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Nodes::Core::EBusEventHandler>(entity);
-
-                if (eventHandler)
+                // If we are hiding the connections, we need to confirm that
+                // everything will be ok(i.e. no active connections)
+                if (!m_saveData.m_displayConnections)
                 {
                     AZStd::vector< ScriptCanvas::SlotId > scriptCanvasSlots = eventHandler->GetNonEventSlotIds();
 
@@ -591,12 +591,9 @@ namespace ScriptCanvasEditor
                         m_saveData.m_displayConnections = true;
                         PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
                     }
-
-
-                    // If we are displaying the connection options, do not auto connect the graph as it's expected
-                    // that the user will manage it.
-                    eventHandler->SetAutoConnectToGraphOwner(!m_saveData.m_displayConnections);
                 }
+
+                eventHandler->SetAutoConnectToGraphOwner(!m_saveData.m_displayConnections);
             }
         }
 

@@ -136,16 +136,16 @@ namespace AZ
             m_initialized = true;
         }
 
-        void LightCullingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void LightCullingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             if (!m_initialized)
             {
                 Init();
             }
-            ComputePass::SetupFrameGraphDependencies(frameGraph, producer);
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
         }
 
-        void LightCullingPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void LightCullingPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "LightCullingPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 
@@ -160,7 +160,7 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void LightCullingPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void LightCullingPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 

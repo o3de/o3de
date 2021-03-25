@@ -807,7 +807,12 @@ namespace EMotionFX
     void AnimGraphMotionNode::RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)
     {
         AnimGraphNode::RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
-        ReloadAndInvalidateUniqueDatas();
+        UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+        if (uniqueData)
+        {
+            uniqueData->mReload = true;
+            uniqueData->Invalidate();
+        }
     }
 
     void AnimGraphMotionNode::OnMotionIdsChanged()

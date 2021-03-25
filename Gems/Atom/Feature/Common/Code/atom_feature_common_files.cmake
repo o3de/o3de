@@ -23,7 +23,6 @@ set(FILES
     Include/Atom/Feature/DisplayMapper/BakeAcesOutputTransformLutPass.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h
     Include/Atom/Feature/DisplayMapper/OutputTransformPass.h
-    Include/Atom/Feature/DynamicDraw/DynamicDrawFeatureProcessor.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
@@ -142,9 +141,6 @@ set(FILES
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.cpp
     Source/DisplayMapper/DisplayMapperConfigurationDescriptor.cpp
     Source/DisplayMapper/OutputTransformPass.cpp
-    Source/DynamicDraw/DynamicDrawFeatureProcessor.cpp
-    Source/DynamicDraw/DynamicDrawSystemComponent.cpp
-    Source/DynamicDraw/DynamicDrawSystemComponent.h
     Source/ImGui/ImGuiPass.cpp
     Source/ImGui/ImGuiPass.h
     Source/ImGui/ImGuiSystemComponent.cpp

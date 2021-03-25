@@ -62,7 +62,7 @@ namespace AZ
             }
         }
 
-        void AcesOutputTransformPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void AcesOutputTransformPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "AcesOutputTransformPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 

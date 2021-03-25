@@ -137,7 +137,7 @@ namespace EMotionFX
                 bitangent.Set(bitangents->GetX(), bitangents->GetY(), bitangents->GetZ());
 
                 // process the skin influences for this vertex
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
@@ -146,7 +146,7 @@ namespace EMotionFX
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
 
-                    for (uint32 i = 0; i < numInfluences; ++i)
+                    for (size_t i = 0; i < numInfluences; ++i)
                     {
                         // get the influence
                         influence   = layer->GetInfluence(orgVertex, i);
@@ -218,7 +218,7 @@ namespace EMotionFX
                 tangent.Set (tangents->GetX(),  tangents->GetY(),   tangents->GetZ());
 
                 // process the skin influences for this vertex
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
@@ -227,7 +227,7 @@ namespace EMotionFX
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
 
-                    for (uint32 i = 0; i < numInfluences; ++i)
+                    for (size_t i = 0; i < numInfluences; ++i)
                     {
                         // get the influence
                         influence   = layer->GetInfluence(orgVertex, i);
@@ -293,7 +293,7 @@ namespace EMotionFX
                 normal.Set(normals->GetX(), normals->GetY(), normals->GetZ());
 
                 // process the skin influences for this vertex
-                const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
+                const size_t numInfluences = layer->GetNumInfluences(orgVertex);
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
@@ -302,7 +302,7 @@ namespace EMotionFX
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
 
-                    for (uint32 i = 0; i < numInfluences; ++i)
+                    for (size_t i = 0; i < numInfluences; ++i)
                     {
                         // get the influence
                         influence   = layer->GetInfluence(orgVertex, i);
@@ -374,8 +374,8 @@ namespace EMotionFX
             // now we have located the skinning information for this vertex, we can see if our bones array
             // already contains the bone it uses by traversing all influences for this vertex, and checking
             // if the bone of that influence already is in the array with used bones
-            const uint32 numInfluences = skinningLayer->GetNumInfluences(i);
-            for (uint32 a = 0; a < numInfluences; ++a)
+            const size_t numInfluences = skinningLayer->GetNumInfluences(i);
+            for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
 

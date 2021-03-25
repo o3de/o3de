@@ -10,6 +10,7 @@
 *
 */
 #include "RCcontrollerUnitTests.h"
+#include <AzTest/AzTest.h>
 #include <QCoreApplication>
 
 #if defined(AZ_PLATFORM_LINUX)
@@ -770,7 +771,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     Q_EMIT UnitTestPassed();
 }
 
-
-
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 REGISTER_UNIT_TEST(RCcontrollerUnitTests)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 

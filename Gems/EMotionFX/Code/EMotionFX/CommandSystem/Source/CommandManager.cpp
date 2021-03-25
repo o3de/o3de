@@ -24,7 +24,6 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
-#include <EMotionFX/CommandSystem/Source/LODCommands.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/MorphTargetCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
@@ -65,8 +64,6 @@ namespace CommandSystem
         RegisterCommand(new CommandActorSetCollisionMeshes());
         RegisterCommand(new CommandReInitRenderActors());
         RegisterCommand(new CommandUpdateRenderActors());
-        RegisterCommand(new CommandAddLOD());
-        RegisterCommand(new CommandRemoveLOD());
         RegisterCommand(aznew EMotionFX::CommandAddCollider());
         RegisterCommand(aznew EMotionFX::CommandAdjustCollider());
         RegisterCommand(aznew EMotionFX::CommandRemoveCollider());

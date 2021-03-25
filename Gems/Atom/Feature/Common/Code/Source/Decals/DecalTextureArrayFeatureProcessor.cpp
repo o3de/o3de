@@ -67,8 +67,6 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::Activate()
         {
-            m_streamingImageHandlerPreviousSetting = SetStreamingImageHandlerToLoadAllMips();
-
             GpuBufferHandler::Descriptor desc;
             desc.m_bufferName = "DecalBuffer";
             desc.m_bufferSrgName = "m_decals";
@@ -84,8 +82,6 @@ namespace AZ
         void DecalTextureArrayFeatureProcessor::Deactivate()
         {
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
-
-            RestoreStreamingImageHandlerSettings(m_streamingImageHandlerPreviousSetting);
 
             m_decalData.Clear();
             m_decalBufferHandler.Release();
@@ -357,28 +353,6 @@ namespace AZ
             result.textureArrayIndex = textureArrayIndex;
             result.textureIndex = textureIndex;
             return result;
-        }
-
-        const bool DecalTextureArrayFeatureProcessor::SetStreamingImageHandlerToLoadAllMips()
-        {
-            // All mips need to be available upfront for packing into a texture array
-            // [GFX TODO[ATOM-13694] - Investigate if we can remove SetStreamingImageHandlerToLoadAllMips() from the Decal system
-            using namespace AZ;
-            RPI::StreamingImageAssetHandler* imageAssetHandler = static_cast<RPI::StreamingImageAssetHandler*>(
-                Data::AssetManager::Instance().GetHandler(RPI::StreamingImageAsset::RTTI_Type()));
-
-            bool savedLoadMipEnabled = imageAssetHandler->GetLoadMipChainsEnabled();
-            imageAssetHandler->SetLoadMipChainsEnabled(true);
-            return savedLoadMipEnabled;
-        }
-
-        void DecalTextureArrayFeatureProcessor::RestoreStreamingImageHandlerSettings(const bool oldValue)
-        {
-            using namespace AZ;
-            RPI::StreamingImageAssetHandler* imageAssetHandler = static_cast<RPI::StreamingImageAssetHandler*>(
-                Data::AssetManager::Instance().GetHandler(RPI::StreamingImageAsset::RTTI_Type()));
-
-            imageAssetHandler->SetLoadMipChainsEnabled(oldValue);
         }
 
         void DecalTextureArrayFeatureProcessor::OnAssetReady(const Data::Asset<Data::AssetData> asset)

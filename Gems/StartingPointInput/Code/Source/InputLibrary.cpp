@@ -17,6 +17,7 @@
 // script canvas
 #include <ScriptCanvas/Libraries/Libraries.h>
 
+#include <InputHandlerNodeable.h>
 #include <InputNode.h>
 
 
@@ -44,13 +45,15 @@ namespace StartingPointInput
 
     void InputLibrary::InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry)
     {
-        ScriptCanvas::Library::AddNodeToRegistry<InputLibrary, InputNode>(nodeRegistry);
+        ScriptCanvas::Library::AddNodeToRegistry<InputLibrary, StartingPointInput::InputNode>(nodeRegistry);
+        ScriptCanvas::Library::AddNodeToRegistry<InputLibrary, StartingPointInput::Nodes::InputHandlerNodeableNode>(nodeRegistry);
     }
 
     AZStd::vector<AZ::ComponentDescriptor*> InputLibrary::GetComponentDescriptors()
     {
         return AZStd::vector<AZ::ComponentDescriptor*>({
-            InputNode::CreateDescriptor(),
+            StartingPointInput::InputNode::CreateDescriptor(),
+            StartingPointInput::Nodes::InputHandlerNodeableNode::CreateDescriptor(),
         });
     }
 

@@ -12,12 +12,11 @@
 #pragma once
 
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/MeshBuilderSkinningInfo.h>
 #include <EMotionFX/Source/TransformData.h>
 
 namespace UnitTest
 {
-    using SkinInfluence = EMotionFX::MeshBuilderSkinningInfo::Influence;
+    using SkinInfluence = AZStd::tuple<size_t, float>;
     using VertexSkinInfluences = AZStd::vector<SkinInfluence>;
 
     //! Helper class to setup an actor.
@@ -60,7 +59,6 @@ namespace UnitTest
         const AZ::Transform& offset = AZ::Transform::CreateIdentity());
 
     EMotionFX::Mesh* CreateEMotionFXMesh(
-        AZ::u32 nodeIndex,
         const AZStd::vector<AZ::Vector3>& vertices,
         const AZStd::vector<AZ::u32>& indices,
         const AZStd::vector<VertexSkinInfluences>& skinningInfo = {},

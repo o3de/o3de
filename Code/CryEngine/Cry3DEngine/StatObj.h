@@ -76,11 +76,6 @@ struct SSpine
     int iAttachSeg;
 };
 
-namespace Physics
-{
-    struct TouchBendingSkeletonHandle;
-}
-
 struct SClothTangentVtx
 {
     int ivtxT; // for each vertex, specifies the iThisVtx->ivtxT edge, which is the closest to the vertex's tangent vector

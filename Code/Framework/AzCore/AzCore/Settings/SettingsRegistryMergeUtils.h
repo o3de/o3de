@@ -29,6 +29,7 @@ namespace AZ::IO
 namespace AZ::SettingsRegistryMergeUtils
 {
     inline static constexpr char OrganizationRootKey[] = "/Amazon";
+    inline static constexpr char BuildTargetNameKey[] = "/Amazon/AzCore/Settings/BuildTargetName";
     inline static constexpr char SpecializationsRootKey[] = "/Amazon/AzCore/Settings/Specializations";
     inline static constexpr char BootstrapSettingsRootKey[] = "/Amazon/AzCore/Bootstrap";
     inline static constexpr char GemListRootKey[] = "/Amazon/AzCore/Gems";
@@ -40,12 +41,14 @@ namespace AZ::SettingsRegistryMergeUtils
     inline static constexpr char FilePathKey_SourceGameFolder[] = "/Amazon/AzCore/Runtime/FilePaths/SourceGameFolder";
     //! Stores the filename of the Game Project Directory which is equivalent to the project name
     inline static constexpr char FilePathKey_SourceGameName[] = "/Amazon/AzCore/Runtime/FilePaths/SourceGameName";
+    //! Development write storage path may be considered temporary or cache storage on some platforms
+    inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
     //! Root key for where command line are stored at witin the settings registry
     inline static constexpr char CommandLineRootKey[] = "/Amazon/AzCore/Runtime/CommandLine";
     //! Root key for command line switches(arguments that start with "-" or "--")
     inline static constexpr char CommandLineSwitchRootKey[] = "/Amazon/AzCore/Runtime/CommandLine/Switches";
-    //! Root key for command line positional arguments 
+    //! Root key for command line positional arguments
     inline static constexpr char CommandLineMiscValuesRootKey[] = "/Amazon/AzCore/Runtime/CommandLine/MiscValues";
 
     //! Examines the Settings Registry for a "/Amazon/CommandLine/Switches/app-root" key
@@ -174,7 +177,7 @@ namespace AZ::SettingsRegistryMergeUtils
         //! Determines if a PrettyWriter should be used when dumping the Settings Registry
         bool m_prettifyOutput{};
         //! Include filter which is used to indicate which paths of the Settings Registry
-        //! should be traversed. 
+        //! should be traversed.
         //! If the include filter is empty then all paths underneath the JSON pointer path are included
         //! otherwise the include filter invoked and if it returns true does it proceed with traversal continues down the path
         AZStd::function<bool(AZStd::string_view path)> m_includeFilter;

@@ -1041,13 +1041,13 @@ void CMovieSystem::PreUpdate(float deltaTime)
     }
     m_newlyActivatedSequences.clear();
 
-    UpdateInternal(deltaTime, true);
+    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PostUpdate(float deltaTime)
 {
-    UpdateInternal(deltaTime, false);
+    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, false);
 }
 
 //////////////////////////////////////////////////////////////////////////

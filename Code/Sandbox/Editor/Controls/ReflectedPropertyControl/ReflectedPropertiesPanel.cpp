@@ -35,7 +35,7 @@ void ReflectedPropertiesPanel::DeleteVars()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void ReflectedPropertiesPanel::SetVarBlock(class CVarBlock* vb, const ReflectedPropertyControl::UpdateVarCallback& updCallback, const char* category)
+void ReflectedPropertiesPanel::SetVarBlock(class CVarBlock* vb, ReflectedPropertyControl::UpdateVarCallback* updCallback, const char* category)
 {
     assert(vb);
 
@@ -45,7 +45,7 @@ void ReflectedPropertiesPanel::SetVarBlock(class CVarBlock* vb, const ReflectedP
     m_varBlock = vb;
     AddVarBlock(m_varBlock, category);
 
-    SetUpdateCallback(functor(*this, &ReflectedPropertiesPanel::OnPropertyChanged));
+    SetUpdateCallback(AZStd::bind(&ReflectedPropertiesPanel::OnPropertyChanged, this, AZStd::placeholders::_1));
 
     // When new object set all previous callbacks freed.
     m_updateCallbacks.clear();
@@ -56,7 +56,7 @@ void ReflectedPropertiesPanel::SetVarBlock(class CVarBlock* vb, const ReflectedP
 }
 
 //////////////////////////////////////////////////////////////////////////
-void ReflectedPropertiesPanel::AddVars(CVarBlock* vb, const ReflectedPropertyControl::UpdateVarCallback& updCallback, const char* category)
+void ReflectedPropertiesPanel::AddVars(CVarBlock* vb, ReflectedPropertyControl::UpdateVarCallback* updCallback, const char* category)
 {
     assert(vb);
 
@@ -73,7 +73,7 @@ void ReflectedPropertiesPanel::AddVars(CVarBlock* vb, const ReflectedPropertyCon
 
     if (bNewBlock)
     {
-        SetUpdateCallback(functor(*this, &ReflectedPropertiesPanel::OnPropertyChanged));
+        SetUpdateCallback(AZStd::bind(&ReflectedPropertiesPanel::OnPropertyChanged, this, AZStd::placeholders::_1));
 
         // When new object set all previous callbacks freed.
         m_updateCallbacks.clear();
@@ -87,10 +87,10 @@ void ReflectedPropertiesPanel::AddVars(CVarBlock* vb, const ReflectedPropertyCon
 
 void ReflectedPropertiesPanel::OnPropertyChanged(IVariable* pVar)
 {
-    std::list<ReflectedPropertyControl::UpdateVarCallback>::iterator iter;
+    std::list<ReflectedPropertyControl::UpdateVarCallback*>::iterator iter;
     for (iter = m_updateCallbacks.begin(); iter != m_updateCallbacks.end(); ++iter)
     {
-        (*iter)(pVar);
+        (*iter)->operator()(pVar);
     }
 }
 

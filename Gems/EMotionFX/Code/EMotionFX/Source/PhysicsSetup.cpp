@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/PhysicsSetup.h>
 
 
@@ -248,54 +249,68 @@ namespace EMotionFX
             return;
         }
 
-        AZ::Vector3 extents = AZ::Vector3::CreateOne();
-        AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const Pose* pose = actor->GetBindPose();
+        const AZ::Transform nodeTransform = pose->GetModelSpaceTransform(joint->GetNodeIndex()).ToAZTransform();
+        const AZ::Transform nodeTransformInverse = nodeTransform.GetInverse();
 
-        const AZ::u32 jointIndex = joint->GetNodeIndex();
-        const MCore::OBB& nodeOBB = actor->GetNodeOBB(jointIndex);
-        if (nodeOBB.CheckIfIsValid())
+        const AZ::Vector3 boneDirection = GetBoneDirection(actor->GetSkeleton(), joint);
+        // set a minimum bone length to avoid any problems in the edge case where the bone direction is zero length
+        const float minBoneLength = 1e-2f;
+        const float boneLength = AZ::GetMax(minBoneLength, boneDirection.GetLength());
+
+        // constant to ensure capsule radius is slightly less than half the height to avoid malformed capsules
+        const float minRadiusRatio = 0.499f;
+
+        // get the mesh points for which this bone is the biggest influence
+        AZStd::vector<AZ::Vector3> meshPoints;
+        actor->FindMostInfluencedMeshPoints(joint, meshPoints);
+
+        // estimate of the radial extent of the mesh geometry connected to this bone
+        // initialize it to just under half the bone length to handle the edge case where no mesh points are found
+        float rootMeanSquareDistanceFromBone = minRadiusRatio * boneLength;
+
+        // translate each mesh point relative to the center of the bone, and remove the component parallel to the bone axis
+        const size_t numMeshPoints = meshPoints.size();
+        if (numMeshPoints > 0)
         {
-            position = nodeOBB.GetCenter();
-            extents = nodeOBB.GetExtents();
+            AZ::Vector3 boneCenter = nodeTransform.GetTranslation() + 0.5f * boneDirection;
+            float sumDistanceFromAxisSq = 0.0f;
+            float boneLengthSqReciprocal = 1.0f / boneDirection.GetLengthSq();
+            for (int i = 0; i < numMeshPoints; i++)
+            {
+                meshPoints[i] -= boneCenter;
+                AZ::Vector3 parallelComponent = boneLengthSqReciprocal * meshPoints[i].Dot(boneDirection) * boneDirection;
+                meshPoints[i] -= parallelComponent;
+                float distanceSq = meshPoints[i].GetLengthSq();
+                sumDistanceFromAxisSq += distanceSq;
+            }
+            rootMeanSquareDistanceFromBone = std::sqrt(sumDistanceFromAxisSq / numMeshPoints);
         }
 
-        if (extents.GetLength() < AZ::Constants::FloatEpsilon && joint->GetParentNode())
-        {
-            const Pose* bindPose = actor->GetBindPose();
-            const AZ::Vector3 jointPosition = bindPose->GetModelSpaceTransform(jointIndex).mPosition;
-            const AZ::Vector3 parentPosition = bindPose->GetModelSpaceTransform(joint->GetParentIndex()).mPosition;
-            const float boneLength = AZ::GetAbs((parentPosition - jointPosition).GetLength());
-
-            extents = AZ::Vector3(boneLength);
-        }
-
-        const float extent = extents.GetLength();
-        collider.first->m_position = position;
+        // set the position for the collider at the center of the bone
+        AZ::Vector3 localBoneDirection = nodeTransformInverse.TransformVector(boneDirection);
+        collider.first->m_position = 0.5f * localBoneDirection;
 
         const AZ::TypeId colliderType = collider.second->RTTI_GetType();
         if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
         {
             Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
-            sphere->m_radius = extent * 0.5f;
+            sphere->m_radius = AZ::GetMin(0.5f * boneLength, rootMeanSquareDistanceFromBone);
         }
         else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
-            capsule->m_height = static_cast<float>(extents.GetY());
-            capsule->m_radius = static_cast<float>(extents.GetX()) * 0.5f;
-
-            if (capsule->m_height <= 2.0f * capsule->m_radius)
-            {
-                // Small constant to make sure the radius is at least slightly smaller than half the height
-                // to prevent problems when creating the collider in the physics engine.
-                const float capsuleEpsilon = 1e-3f;
-                capsule->m_radius = capsule->m_height * (0.5f - capsuleEpsilon);
-            }
+            capsule->m_height = boneDirection.GetLength();
+            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            capsule->m_height = boneLength;
+            const float radius = AZ::GetMin(rootMeanSquareDistanceFromBone, minRadiusRatio * boneLength);
+            capsule->m_radius = radius;
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
+            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
             Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
-            box->m_dimensions = extents;
+            box->m_dimensions = AZ::Vector3(2.0f * rootMeanSquareDistanceFromBone, 2.0f * rootMeanSquareDistanceFromBone, boneLength);
         }
     }
 
@@ -464,5 +479,44 @@ namespace EMotionFX
         }
 
         return true;
+    }
+
+    AZ::Vector3 GetBoneDirection(const Skeleton* skeleton, const Node* node)
+    {
+        AZ::Vector3 boneDirection = AZ::Vector3::CreateAxisX();
+
+        const Pose* bindPose = skeleton->GetBindPose();
+        const Transform& nodeBindTransform = bindPose->GetModelSpaceTransform(node->GetNodeIndex());
+        const Transform& parentBindTransform = node->GetParentNode()
+            ? bindPose->GetModelSpaceTransform(node->GetParentIndex())
+            : Transform::CreateIdentity();
+
+        // if there are child nodes, point the bone direction to the average of their positions
+        const uint32 numChildNodes = node->GetNumChildNodes();
+        if (numChildNodes > 0)
+        {
+            AZ::Vector3 meanChildPosition = AZ::Vector3::CreateZero();
+
+            // weight by the number of descendants of each child node, so that things like jiggle bones and twist bones
+            // have little influence on the bone direction.
+            float totalSubChildren = 0.0f;
+            for (uint32 childNumber = 0; childNumber < numChildNodes; childNumber++)
+            {
+                const uint32 childIndex = node->GetChildIndex(childNumber);
+                const Node* childNode = skeleton->GetNode(childIndex);
+                const float numSubChildren = static_cast<float>(1 + childNode->GetNumChildNodesRecursive());
+                totalSubChildren += numSubChildren;
+                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).mPosition);
+            }
+
+            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.mPosition;
+        }
+        // otherwise, point the bone direction away from the parent
+        else
+        {
+            boneDirection = nodeBindTransform.mPosition - parentBindTransform.mPosition;
+        }
+
+        return boneDirection;
     }
 } // namespace EMotionFX

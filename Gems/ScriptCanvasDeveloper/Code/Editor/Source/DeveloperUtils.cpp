@@ -11,8 +11,9 @@
 */
 #include "precompiled.h"
 
-#include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Components/Nodes/NodeUIBus.h>
@@ -21,6 +22,7 @@
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 #include <ScriptCanvasDeveloperEditor/DeveloperUtils.h>
@@ -72,6 +74,74 @@ namespace ScriptCanvasDeveloperEditor
         }
     }
 
+    bool DeveloperUtils::CreateConnectedChain(const ScriptCanvasEditor::NodeIdPair& nodeIdPair, DeveloperUtils::CreateConnectedChainConfig& connectionConfig)
+    {
+        if (connectionConfig.m_connectionStyle == ConnectionStyle::NoConnections)
+        {
+            return true;
+        }
+
+        if (!nodeIdPair.m_graphCanvasId.IsValid())
+        {
+            return false;
+        }
+
+        // Crappy work around to ensure we know our 'seeded' element for a random connection
+        if (!connectionConfig.m_fallbackNode.m_graphCanvasId.IsValid())
+        {
+            connectionConfig.m_fallbackNode = nodeIdPair;
+        }
+
+        if (connectionConfig.m_skipHandlers)
+        {
+            AZ::EntityId outermostNode = GraphCanvas::GraphUtils::FindOutermostNode(nodeIdPair.m_graphCanvasId);
+
+            bool isHandler = false;
+            ScriptCanvasEditor::NodeDescriptorRequestBus::EventResult(isHandler, outermostNode, &ScriptCanvasEditor::NodeDescriptorRequests::IsType, ScriptCanvasEditor::NodeDescriptorType::EBusHandler);
+
+            if (isHandler)
+            {
+                return false;
+            }
+
+            // Hacky way to deal with finding the InputHandler node.
+            // And the On Graph Start node that we will stumble into in the middle of the node palette as well
+            AZStd::vector< GraphCanvas::SlotId > executionIns;
+            GraphCanvas::NodeRequestBus::EventResult(executionIns, outermostNode, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, GraphCanvas::CT_Input, GraphCanvas::SlotTypes::ExecutionSlot);
+
+            if (executionIns.empty() && connectionConfig.m_fallbackNode.m_graphCanvasId != outermostNode)
+            {
+                return false;
+            }
+        }
+
+        AZStd::vector< GraphCanvas::SlotId > executionIns;
+        GraphCanvas::NodeRequestBus::EventResult(executionIns, nodeIdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, GraphCanvas::CT_Input, GraphCanvas::SlotTypes::ExecutionSlot);
+
+        if (!executionIns.empty())
+        {
+            GraphCanvas::Endpoint executionIn = GraphCanvas::Endpoint(nodeIdPair.m_graphCanvasId, executionIns.front());
+
+            if (connectionConfig.m_previousEndpoint.IsValid())
+            {
+                if (connectionConfig.m_connectionStyle == ConnectionStyle::SingleExecutionConnection)
+                {
+                    GraphCanvas::SlotRequestBus::Event(executionIn.GetSlotId(), &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, connectionConfig.m_previousEndpoint);
+                }
+            }
+        }
+
+        AZStd::vector< GraphCanvas::SlotId > executionOuts;
+        GraphCanvas::NodeRequestBus::EventResult(executionOuts, nodeIdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, GraphCanvas::CT_Output, GraphCanvas::SlotTypes::ExecutionSlot);
+
+        if (!executionOuts.empty())
+        {
+            connectionConfig.m_previousEndpoint = GraphCanvas::Endpoint(nodeIdPair.m_graphCanvasId, executionOuts.front());
+        }
+
+        return true;
+    }
+
     void DeveloperUtils::ProcessNodePalette(ProcessNodePaletteInterface& processNodePaletteInterface)
     {   
         AZ::EntityId activeGraphCanvasGraphId;
@@ -120,6 +190,8 @@ namespace ScriptCanvasDeveloperEditor
                 }
             }
 
+            processNodePaletteInterface.OnProcessingComplete();
+
             ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::PopPreventUndoStateUpdate);
             ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::PostUndoPoint, activeScriptCanvasId);
         }
@@ -150,6 +222,8 @@ namespace ScriptCanvasDeveloperEditor
                     variablePaletteInterface.ProcessVariableType(variableType);
                 }
             }
+
+            variablePaletteInterface.OnProcessingComplete();
 
             ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::PopPreventUndoStateUpdate);
             ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::PostUndoPoint, activeScriptCanvasId);

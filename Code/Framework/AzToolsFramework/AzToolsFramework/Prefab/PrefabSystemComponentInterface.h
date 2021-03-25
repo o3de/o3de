@@ -40,6 +40,11 @@ namespace AzToolsFramework
 
             virtual LinkId AddLink(const TemplateId& sourceTemplateId, const TemplateId& targetTemplateId,
                 PrefabDomValue::MemberIterator& instanceIterator, InstanceOptionalReference instance) = 0;
+
+            //creates a new Link
+            virtual LinkId CreateLink(const TemplateId& linkTargetId, const TemplateId& linkSourceId,
+                const InstanceAlias& instanceAlias, const LinkId& linkId = InvalidLinkId) = 0;
+
             virtual void RemoveLink(const LinkId& linkId) = 0;
 
             virtual TemplateId GetTemplateIdFromFilePath(AZStd::string_view filePath) const = 0;

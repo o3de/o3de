@@ -11,6 +11,9 @@
 */
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
+AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 #include <QAction>
 #include <QApplication>
 #include <QKeyEvent>
@@ -21,6 +24,7 @@
 #include <QScopedValueRollback>
 #include <QTimer>
 #include <QWheelEvent>
+AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -49,6 +53,7 @@ namespace GraphCanvas
     private:
         const int KEYBOARD_MOVE = 50;
         const int WHEEL_ZOOM = 120;
+        const int WHEEL_ZOOM_ANGLE = 15;
 
         struct FocusQueue
         {

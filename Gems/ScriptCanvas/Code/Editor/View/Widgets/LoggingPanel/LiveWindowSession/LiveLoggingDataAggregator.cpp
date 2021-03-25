@@ -155,12 +155,6 @@ namespace ScriptCanvasEditor
         ProcessOutputSignal(outputSignal);
     }
 
-    void LiveLoggingDataAggregator::SignaledDataOutput(const ScriptCanvas::OutputDataSignal& outputDataSignal)
-    {
-        AZStd::lock(m_notificationMutex);
-        ProcessOutputDataSignal(outputDataSignal);
-    }
-
     void LiveLoggingDataAggregator::AnnotateNode(const ScriptCanvas::AnnotateNodeSignal& annotateNode)
     {
         AZStd::lock(m_notificationMutex);

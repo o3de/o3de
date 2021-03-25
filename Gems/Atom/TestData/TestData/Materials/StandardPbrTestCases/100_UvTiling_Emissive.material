@@ -1,0 +1,22 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        "emissive": {
+            "enable": true,
+            "intensity": 2.0,
+            "textureMap": "TestData/Objects/cube/cube_diff.tif",
+            "useTexture": true
+        }
+    }
+}

@@ -45,7 +45,6 @@ namespace ScriptCanvas
             virtual void NodeStateChanged(const NodeStateChange&) {}
             virtual void SignaledInput(const InputSignal&) {}
             virtual void SignaledOutput(const OutputSignal&) {}
-            virtual void SignaledDataOutput(const OutputDataSignal&) {}
             virtual void AnnotateNode(const AnnotateNodeSignal&) {}
             virtual void VariableChanged(const VariableChange&) {}
 

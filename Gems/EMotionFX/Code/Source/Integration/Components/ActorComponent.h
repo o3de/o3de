@@ -22,19 +22,14 @@
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
 #include <AzFramework/Physics/World.h>
+#include <AzFramework/API/AtomActiveInterface.h>
 
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 
+#include <EMotionFX/Source/ActorBus.h>
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
-
-#include <AzFramework/API/AtomActiveInterface.h>
-
-namespace LmbrCentral
-{
-    class MaterialOwnerRequestBusHandlerImpl;
-}
 
 namespace EMotionFX
 {
@@ -51,6 +46,7 @@ namespace EMotionFX
             , private AzFramework::CharacterPhysicsDataRequestBus::Handler
             , private AzFramework::RagdollPhysicsNotificationBus::Handler
             , protected Physics::WorldNotificationBus::Handler
+            , private EMotionFX::ActorNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
@@ -164,6 +160,9 @@ namespace EMotionFX
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
+            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset);
+            AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
+
             // Physics::WorldNotificationBus::Handler
             bool IsWorldNotificationBusConnected(AZ::Crc32 worldId) const;
 
@@ -178,6 +177,9 @@ namespace EMotionFX
             // Physics::WorldNotifications::Handler
             void OnPostPhysicsSubtick(float fixedDeltaTime) override;
             int GetPhysicsTickOrder() override;
+
+            // ActorNotificationBus::Handler
+            void OnActorReady(Actor* actor) override;
 
             void CheckActorCreation();
             void DestroyActor();

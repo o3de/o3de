@@ -1,0 +1,17 @@
+<Material MtlFlags="524544" vertModifType="0">
+ <SubMaterials>
+  <Material Name="AM_Rocks_Small_ShinyM" MtlFlags="524416" Shader="Illum" GenMask="12000020040002" StringGenMask="%ALLOW_SPECULAR_ANTIALIASING%EMITTANCE_MAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="0.39157251,0.3467041,0.31398875,1" Specular="0.65140575,0.5332765,0.49102089,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/natural/rocks/am_rocks_small_02_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/natural/rocks/am_rocks_small_shiny_ddna.dds"/>
+    <Texture Map="Specular" File="objects/natural/rocks/am_rocks_small_shiny_diff.dds" Filter="0" IsTileU="0" IsTileV="0" TexType="0"/>
+    <Texture Map="Smoothness" File="objects/natural/rocks/am_rocks_small_shiny_ddna.dds"/>
+    <Texture Map="Heightmap" File="textures/natural/terrain/am_rockground_displ.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="0.25" TileV="0.25"/>
+    </Texture>
+   </Textures>
+   <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

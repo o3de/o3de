@@ -63,10 +63,10 @@ namespace ImageProcessingAtom
         virtual ~IImageObject() {};
     public:
         //creating new image object outof this image object
-        virtual IImageObject* Clone(uint32_t maxMipCount = std::numeric_limits<uint32>::max()) const = 0;
+        virtual IImageObject* Clone(uint32_t maxMipCount = std::numeric_limits<uint32_t>::max()) const = 0;
         // allocate an empty image object with requested format and same properties with current image
-        virtual IImageObject* AllocateImage(EPixelFormat pixelFormat, uint32_t maxMipCount = std::numeric_limits<uint32>::max()) const = 0;
-        virtual IImageObject* AllocateImage(uint32_t maxMipCount = std::numeric_limits<uint32>::max()) const = 0;
+        virtual IImageObject* AllocateImage(EPixelFormat pixelFormat, uint32_t maxMipCount = std::numeric_limits<uint32_t>::max()) const = 0;
+        virtual IImageObject* AllocateImage(uint32_t maxMipCount = std::numeric_limits<uint32_t>::max()) const = 0;
 
         //get pixel format
         virtual EPixelFormat GetPixelFormat() const = 0;

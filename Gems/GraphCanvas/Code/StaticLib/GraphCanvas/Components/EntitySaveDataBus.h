@@ -34,6 +34,15 @@ namespace GraphCanvas
         // Signal that the Save Data should be read in from the specified container.
         // This should be signalled before the entity is added to the scene.
         virtual void ReadSaveData(const EntitySaveDataContainer& saveDataContainer) = 0;
+
+        // Signal to the object to read save data in the context of a 'preset'
+        //
+        // Which should consist of a series of visual changes, and nothing data based
+        // Optional since not all 'save data' request handles will need to do something with this.
+        virtual void ApplyPresetData(const EntitySaveDataContainer& saveDataContainer)
+        {
+            AZ_UNUSED(saveDataContainer);
+        }
     };
 
     using EntitySaveDataRequestBus = AZ::EBus<EntitySaveDataRequests>;

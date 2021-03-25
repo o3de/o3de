@@ -25,6 +25,7 @@ namespace ScriptCanvasEditor
     {
         m_busId = busId;
 
+        ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusConnect(m_busId);
 
         removeRows(0, static_cast<int>(m_variableIds.size()));
@@ -156,6 +157,8 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphVariableManagerComponent::ConfigureScriptCanvasId(executionId);
 
         m_variableModel.Activate(GetScriptCanvasId());
+
+        EditorSceneVariableManagerRequestBus::Handler::BusDisconnect();
         EditorSceneVariableManagerRequestBus::Handler::BusConnect(GetScriptCanvasId());
     }
 

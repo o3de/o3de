@@ -26,7 +26,7 @@
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Translation/TranslationHelper.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeDisplayUtils.h>
 #include <Editor/View/Widgets/NodePalette/ScriptEventsNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/PropertyGridBus.h>
 
@@ -168,49 +168,52 @@ namespace ScriptCanvasEditor
     {
         m_loadingEvents = true;
 
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::Default);
-        AZ_Assert(asset.IsReady(), "ScriptEventsAsset is not ready");
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        asset.BlockUntilLoadComplete();
 
-        AZ::EntityId graphCanvasGraphId;
-        GraphCanvas::SceneMemberRequestBus::EventResult(graphCanvasGraphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
-
-        ScriptEvents::ScriptEventsAsset* scriptEvent = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
-
-        m_busName = scriptEvent->m_definition.GetName();
-
-        for (const auto& eventId : m_saveData.m_enabledEvents)
+        if (asset.IsReady())
         {
-            if (m_eventTypeToId.find(eventId.first) == m_eventTypeToId.end())
-            {
-                AZ::EntityId internalNode;
+            AZ::EntityId graphCanvasGraphId;
+            GraphCanvas::SceneMemberRequestBus::EventResult(graphCanvasGraphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
 
-                for (auto& method : scriptEvent->m_definition.GetMethods())
+            ScriptEvents::ScriptEventsAsset* scriptEvent = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
+
+            m_busName = scriptEvent->m_definition.GetName();
+
+            for (const auto& eventId : m_saveData.m_enabledEvents)
+            {
+                if (m_eventTypeToId.find(eventId.first) == m_eventTypeToId.end())
                 {
-                    if (eventId.first == method.GetEventId())
+                    AZ::EntityId internalNode;
+
+                    for (auto& method : scriptEvent->m_definition.GetMethods())
                     {
-                        internalNode = Nodes::DisplayScriptEventNode(graphCanvasGraphId, m_scriptEventsAssetId, method);
-                        break;
+                        if (eventId.first == method.GetEventId())
+                        {
+                            internalNode = Nodes::DisplayScriptEventNode(graphCanvasGraphId, m_scriptEventsAssetId, method);
+                            break;
+                        }
+                    }
+
+                    if (internalNode.IsValid())
+                    {
+                        GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, internalNode, false);
+
+                        GraphCanvas::WrappedNodeConfiguration configuration = GetEventConfiguration(eventId.first);
+                        GraphCanvas::WrapperNodeRequestBus::Event(GetEntityId(), &GraphCanvas::WrapperNodeRequests::WrapNode, internalNode, configuration);
                     }
                 }
-
-                if (internalNode.IsValid())
-                {
-                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, internalNode);
-
-                    GraphCanvas::WrappedNodeConfiguration configuration = GetEventConfiguration(eventId.first);
-                    GraphCanvas::WrapperNodeRequestBus::Event(GetEntityId(), &GraphCanvas::WrapperNodeRequests::WrapNode, internalNode, configuration);
-                }
             }
-        }
-        m_loadingEvents = false;
+            m_loadingEvents = false;
 
-        m_saveData.RegisterIds(GetEntityId(), graphCanvasGraphId);
+            m_saveData.RegisterIds(GetEntityId(), graphCanvasGraphId);
+        }
     }
 
     void ScriptEventReceiverNodeDescriptorComponent::OnSceneMemberDeserialized(const AZ::EntityId&, const GraphCanvas::GraphSerialization&)
     {
         m_saveData.m_enabledEvents.clear();
-        AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::Default);
+        AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
     }
 
     void ScriptEventReceiverNodeDescriptorComponent::WriteSaveData(GraphCanvas::EntitySaveDataContainer& saveDataContainer) const
@@ -501,9 +504,8 @@ namespace ScriptCanvasEditor
         AZStd::vector<AZStd::pair<ScriptCanvas::EBusEventId, AZStd::string>> enabledEvents = m_saveData.m_enabledEvents;
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, deletedNodes);
         
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::Default);
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         asset.BlockUntilLoadComplete();
-        AZ_Error("ScriptCanvas", asset.IsReady(), "Trying to work on asset that isn't ready after a blocking load.");
 
         UpdateTitles(asset);
 
@@ -520,7 +522,7 @@ namespace ScriptCanvasEditor
 
                 if (graphCanvasNodeId.IsValid())
                 {
-                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, graphCanvasNodeId);
+                    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Add, graphCanvasNodeId, false);
 
                     GraphCanvas::WrappedNodeConfiguration configuration = GetWrappedNodeConfiguration(graphCanvasNodeId);
                     GraphCanvas::WrapperNodeRequestBus::Event(GetEntityId(), &GraphCanvas::WrapperNodeRequests::WrapNode, graphCanvasNodeId, configuration);
@@ -532,7 +534,7 @@ namespace ScriptCanvasEditor
         DynamicSlotRequestBus::Event(GetEntityId(), &DynamicSlotRequests::StopQueueSlotUpdates);
     }
 
-    void ScriptEventReceiverNodeDescriptorComponent::OnAddedToGraphCanvasGraph([[maybe_unused]] const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId)
+    void ScriptEventReceiverNodeDescriptorComponent::OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId&, const AZ::EntityId& scriptCanvasNodeId)
     {
         m_scriptCanvasId = scriptCanvasNodeId;
 
@@ -572,8 +574,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::Default);
-
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventsAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         asset.BlockUntilLoadComplete();
 
         if (asset.IsReady())

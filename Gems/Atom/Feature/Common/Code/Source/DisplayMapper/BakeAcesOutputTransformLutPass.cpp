@@ -70,9 +70,9 @@ namespace AZ
             m_flags.m_initialized = true;
         }
 
-        void BakeAcesOutputTransformLutPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer)
+        void BakeAcesOutputTransformLutPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            ComputePass::SetupFrameGraphDependencies(frameGraph, producer);
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
 
             if (m_displayMapperLut.m_lutImage == nullptr)
             {
@@ -93,7 +93,7 @@ namespace AZ
             frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
         }
 
-        void BakeAcesOutputTransformLutPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void BakeAcesOutputTransformLutPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "BakeAcesOutputTransformLutPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 
@@ -117,11 +117,11 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void BakeAcesOutputTransformLutPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer)
+        void BakeAcesOutputTransformLutPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             if (m_needToUpdateLut)
             {
-                ComputePass::BuildCommandList(context, producer);
+                ComputePass::BuildCommandListInternal(context);
 
                 m_needToUpdateLut = false;
             }

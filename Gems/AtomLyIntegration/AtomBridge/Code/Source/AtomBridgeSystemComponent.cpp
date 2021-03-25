@@ -163,11 +163,11 @@ namespace AZ
                 auto deprecatedEntry = list.find(componentUuid);
                 if (deprecatedEntry == list.end())
                 {
-                    list[componentUuid] = AzFramework::Components::DeprecatedInfo{ false, deprecatedString };
+                    list[componentUuid] = AzFramework::Components::DeprecatedInfo{ true, deprecatedString };
                 }
                 else
                 {
-                    // write to deprecatedEntry->second.m_hideComponent if component should be hidden.
+                    deprecatedEntry->second.m_hideComponent = true;
                     deprecatedEntry->second.m_deprecationString += deprecatedString;
                 }
             }

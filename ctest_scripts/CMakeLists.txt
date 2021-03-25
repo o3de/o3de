@@ -22,7 +22,7 @@ endif()
 ################################################################################
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-    foreach(project ${LY_PROJECTS})
+    foreach(project ${LY_PROJECTS_NAME})
         add_custom_target(${project}.Assets
             COMMENT "Processing ${project} assets..."
             COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> --zeroAnalysisMode --gamefolder=${project} --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
@@ -56,7 +56,7 @@ endforeach()
 
 
 # EPB Sanity test is being registered here to validate that the ly_add_editor_python_test function works.
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_NAME)
     ly_add_editor_python_test(
         NAME epb_sanity_smoke_no_gpu
         TEST_PROJECT AutomatedTesting

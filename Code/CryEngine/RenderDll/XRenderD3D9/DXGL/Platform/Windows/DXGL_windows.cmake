@@ -18,6 +18,4 @@ set(LY_BUILD_DEPENDENCIES
         wininet
         Shell32
         ws2_32
-        3rdParty::nvapi
-        3rdParty::AMD
 )

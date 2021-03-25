@@ -20,6 +20,12 @@
 
 #include <Editor/View/Widgets/PropertyGridBus.h>
 
+// ComboBoxDataInterface
+#include <GraphCanvas/Components/NodePropertyDisplay/ComboBoxDataInterface.h>
+#include <GraphCanvas/Widgets/ComboBox/ComboBoxItemModelInterface.h>
+#include <GraphCanvas/Widgets/ComboBox/ComboBoxItemModels.h>
+////
+
 namespace ScriptCanvasEditor
 {
     template<class InterfaceType, typename DataType>
@@ -28,7 +34,7 @@ namespace ScriptCanvasEditor
         , public InterfaceType
     {
     protected:
-        ScriptCanvasPropertyDataInterface(const AZ::EntityId& nodeId, ScriptCanvas::TypedNodePropertyInterface<DataType>* nodePropertyInterface)        
+        ScriptCanvasPropertyDataInterface(const AZ::EntityId& nodeId, ScriptCanvas::TypedNodePropertyInterface<DataType>* nodePropertyInterface)
             : m_nodeId(nodeId)
             , m_nodePropertyInterface(nodePropertyInterface)
         {
@@ -125,4 +131,68 @@ namespace ScriptCanvasEditor
     
         AZ::EntityId            m_nodeId;
     };
+
+    // ComboBoxDataInterface
+    template<typename DataType>
+    class ScriptCanvasComboBoxPropertyDataInterface
+        : public ScriptCanvasPropertyDataInterface<GraphCanvas::ComboBoxDataInterface, DataType>
+    {
+    public:
+
+        AZ_CLASS_ALLOCATOR(ScriptCanvasComboBoxPropertyDataInterface<DataType>, AZ::SystemAllocator, 0);
+
+        ScriptCanvasComboBoxPropertyDataInterface(AZ::EntityId scriptCanvasNodeId, ScriptCanvas::TypedComboBoxNodePropertyInterface<DataType>* propertyInterface)
+            : ScriptCanvasPropertyDataInterface<GraphCanvas::ComboBoxDataInterface, DataType>(scriptCanvasNodeId, propertyInterface)
+            , m_propertyInterface(propertyInterface)
+        {
+            const auto& displaySet = m_propertyInterface->GetValueSet();
+
+            for (const auto& displayPair : displaySet)
+            {
+                QString displayString = displayPair.first.c_str();
+                m_comboBoxModel.AddElement(displayPair.second, displayString);
+            }
+        }
+
+        ~ScriptCanvasComboBoxPropertyDataInterface() = default;
+
+        // GraphCanvas::ComboBoxDataInterface
+
+        // Necessary to deal with Clang invoking base methods from this templated class
+        using ScriptCanvasPropertyDataInterface<GraphCanvas::ComboBoxDataInterface, DataType>::GetValue;
+        using ScriptCanvasPropertyDataInterface<GraphCanvas::ComboBoxDataInterface, DataType>::SetValue;
+
+        // Returns the EnumModel used to populate the DropDown and AutoCompleter Menu
+        GraphCanvas::ComboBoxItemModelInterface* GetItemInterface() override
+        {
+            return &m_comboBoxModel;
+        }
+
+        // Interfaces for manipulating the values. Indexes will refer to the elements within the ComboBoxModel
+        void AssignIndex(const QModelIndex& index) override
+        {
+            DataType dataValue = m_comboBoxModel.GetValueForIndex(index);
+            this->SetValue(dataValue);
+        }
+
+        QModelIndex GetAssignedIndex() const override
+        {
+            DataType dataValue = this->GetValue();
+            return m_comboBoxModel.GetIndexForValue(dataValue);
+        }
+
+        QString GetDisplayString() const
+        {
+            DataType dataValue = this->GetValue();
+            return m_comboBoxModel.GetNameForValue(dataValue);
+        }
+
+        ////
+
+    private:
+
+        ScriptCanvas::TypedComboBoxNodePropertyInterface<DataType>* m_propertyInterface;
+        GraphCanvas::GraphCanvasListComboBoxModel<DataType> m_comboBoxModel;
+    };
+    ////
 }

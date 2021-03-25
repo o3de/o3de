@@ -89,8 +89,8 @@ namespace AZ
             //! Creates the internal BLAS buffers from the descriptor
             ResultCode CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
 
-            //! Returns the BLAS RHI buffer
-            virtual const RHI::Ptr<RHI::Buffer> GetBlasBuffer() const = 0;
+            //! Returns true if the RayTracingBlas has been initialized
+            virtual bool IsValid() const = 0;
 
         private:
             // Platform API

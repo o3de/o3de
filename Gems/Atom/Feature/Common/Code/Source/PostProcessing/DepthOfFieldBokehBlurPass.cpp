@@ -153,7 +153,7 @@ namespace AZ
             RPI::FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        void DepthOfFieldBokehBlurPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DepthOfFieldBokehBlurPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup, "DepthOfFieldBokehBlurPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 
@@ -172,7 +172,7 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void DepthOfFieldBokehBlurPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DepthOfFieldBokehBlurPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "DepthOfFieldBokehBlurPass %s has a null shader resource group when calling Execute.", GetPathName().GetCStr());
 

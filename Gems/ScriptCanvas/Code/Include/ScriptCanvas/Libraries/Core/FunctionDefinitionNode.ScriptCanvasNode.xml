@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="FunctionDefinitionNode"
+           QualifiedName="ScriptCanvas::Nodes::Core::FunctionDefinitionNode"
+           PreferredClassName="Function Definition"
+           Uuid="{4EE28D9F-67FB-4E61-B777-5DC5B059710F}"
+           Base="ScriptCanvas::Nodes::Core::Internal::Nodeling"
+           Icon="Editor/Icons/ScriptCanvas/Start.png"
+           Category="Core"
+           Version="1"
+           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+           GeneratePropertyFriend="True"
+           Description="Represents either an execution entry or exit node.">
+        <SerializedProperty Name="m_externalConnectionType" />
+    </Class>
+</ScriptCanvas>

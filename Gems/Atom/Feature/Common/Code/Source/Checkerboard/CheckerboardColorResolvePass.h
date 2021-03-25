@@ -55,7 +55,8 @@ namespace AZ
             void BuildAttachmentsInternal() override;
             void FrameEndInternal() override;
 
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            // Scope producer functions...
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             // one time initialization
             void Init();

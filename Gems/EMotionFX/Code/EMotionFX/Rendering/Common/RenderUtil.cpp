@@ -10,19 +10,18 @@
 *
 */
 
+#include <AzCore/Math/Plane.h>
 #include "RenderUtil.h"
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/Compare.h>
 #include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/SubMesh.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Node.h>
 #include "OrthographicCamera.h"
 #include "OrbitCamera.h"
-
-#include <AzCore/Math/Plane.h>
-
 
 namespace MCommon
 {
@@ -508,48 +507,34 @@ namespace MCommon
 
         const float scale = 0.01f * offsetScale;
 
-        AZ::Vector3*    normals     = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
-        AZ::Vector3*    positions   = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
-        uint32*         indices     = (uint32*)mesh->GetIndices();
-        uint8*          vtxCounts   = (uint8*)mesh->GetPolygonVertexCounts();
+        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
 
-        uint32 indexA;
-        uint32 indexB;
-        uint32 curIndex = 0;
-        AZ::Vector3 posA;
-        AZ::Vector3 posB;
-        const uint32 numPolygons = mesh->GetNumPolygons();
-        for (uint32 p = 0; p < numPolygons; ++p)
+        const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+        for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
         {
-            const uint32 numPolyVerts = vtxCounts[p];
-            for (uint32 i = 0; i < numPolyVerts; ++i)
+            EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+            const uint32 numTriangles = subMesh->GetNumPolygons();
+            const uint32 startVertex = subMesh->GetStartVertex();
+            const uint32 startIndex = subMesh->GetStartIndex();
+            const uint32* indices = subMesh->GetIndices();
+
+            for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
             {
-                indexA = indices[curIndex + i];
-                indexB = (i < numPolyVerts - 1) ? indices[curIndex + i + 1] : indices[curIndex];
-                posA = worldTM.TransformPoint(positions[indexA] + normals[indexA] * scale);
-                posB = worldTM.TransformPoint(positions[indexB] + normals[indexB] * scale);
+                const uint32 triangleStartIndex = triangleIndex * 3;
+                const uint32 indexA = indices[triangleStartIndex + 0] + startVertex;
+                const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
+                const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
+
+                const AZ::Vector3 posA = worldTM.TransformPoint(positions[indexA] + normals[indexA] * scale);
+                const AZ::Vector3 posB = worldTM.TransformPoint(positions[indexB] + normals[indexB] * scale);
+                const AZ::Vector3 posC = worldTM.TransformPoint(positions[indexC] + normals[indexC] * scale);
+
                 RenderLine(posA, posB, color);
+                RenderLine(posB, posC, color);
+                RenderLine(posC, posA, color);
             }
-
-            curIndex += numPolyVerts;
         }
-        /*
-            int32 a, b, c;
-            Vector3 posA, posB, posC;
-            for (uint32 j=0; j<numIndices; j+=3)
-            {
-                a       = indices[j+0];
-                b       = indices[j+1];
-                c       = indices[j+2];
-
-                posA    = (positions[a] + normals[a] * 0.005f) * worldTM;
-                posB    = (positions[b] + normals[b] * 0.005f) * worldTM;
-                posC    = (positions[c] + normals[c] * 0.005f) * worldTM;
-
-                RenderLine( posA, posB, color );
-                RenderLine( posB, posC, color );
-                RenderLine( posA, posC, color );
-            }*/
 
         if (directlyRender)
         {
@@ -575,56 +560,61 @@ namespace MCommon
 
         PrepareForMesh(mesh, worldTM);
 
-        AZ::Vector3*    normals     = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
-        uint32*         indices     = (uint32*)mesh->GetIndices();
-        const uint32    numVertices = mesh->GetNumVertices();
-        uint8*          vertCounts  = mesh->GetPolygonVertexCounts();
+        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
 
         // render face normals
         if (faceNormals)
         {
-            AZ::Vector3 posA, posB, posC;
-            AZ::Vector3 normalDir, normalPos;
-            uint32 indexA, indexB, indexC;
-            uint32 polyStartIndex = 0;
-            const uint32 numPolygons = mesh->GetNumPolygons();
-            for (uint32 p = 0; p < numPolygons; ++p)
+            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+            for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
             {
-                const uint32 numPolyVerts = vertCounts[p];
+                EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+                const uint32 numTriangles = subMesh->GetNumPolygons();
+                const uint32 startVertex = subMesh->GetStartVertex();
+                const uint32 startIndex = subMesh->GetStartIndex();
+                const uint32* indices = subMesh->GetIndices();
 
-                // get the first 3 indices
-                indexA = indices[ polyStartIndex + 0 ];
-                indexB = indices[ polyStartIndex + 1 ];
-                indexC = indices[ polyStartIndex + 2 ];
-
-                posA = mWorldSpacePositions[ indexA ];
-                posB = mWorldSpacePositions[ indexB ];
-                posC = mWorldSpacePositions[ indexC ];
-
-                normalDir   = (posB - posA).Cross(posC - posA).GetNormalized();
-
-                // calculate the center pos
-                normalPos = AZ::Vector3::CreateZero();
-                for (uint32 v = 0; v < numPolyVerts; ++v)
+                for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
                 {
-                    normalPos += mWorldSpacePositions[ indices[polyStartIndex + v] ];
+                    const uint32 triangleStartIndex = triangleIndex * 3;
+                    const uint32 indexA = indices[triangleStartIndex + 0] + startVertex;
+                    const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
+                    const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
+
+                    const AZ::Vector3& posA = mWorldSpacePositions[ indexA ];
+                    const AZ::Vector3& posB = mWorldSpacePositions[ indexB ];
+                    const AZ::Vector3& posC = mWorldSpacePositions[ indexC ];
+
+                    const AZ::Vector3 normalDir = (posB - posA).Cross(posC - posA).GetNormalized();
+
+                    // calculate the center pos
+                    const AZ::Vector3 normalPos = (posA + posB + posC) * (1.0f/3.0f);
+
+                    RenderLine(normalPos, normalPos + (normalDir * faceNormalsScale), colorFaceNormals);
                 }
-                normalPos /= (float)numPolyVerts;
-
-                RenderLine(normalPos, normalPos + (normalDir * faceNormalsScale), colorFaceNormals);
-
-                polyStartIndex += numPolyVerts;
             }
         }
 
         // render vertex normals
         if (vertexNormals)
         {
-            AZ::Vector3 normal;
-            for (uint32 j = 0; j < numVertices; ++j)
+            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+            for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
             {
-                normal = worldTM.TransformVector(normals[j]).GetNormalizedSafe() * vertexNormalsScale;
-                RenderLine(mWorldSpacePositions[j], mWorldSpacePositions[j] + normal, colorVertexNormals);
+                EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+                const uint32 numVertices = subMesh->GetNumVertices();
+                const uint32 startVertex = subMesh->GetStartVertex();
+                const uint32 startIndex = subMesh->GetStartIndex();
+                const uint32* indices = subMesh->GetIndices();
+
+                for (uint32 j = 0; j < numVertices; ++j)
+                {
+                    const uint32 vertexIndex = j + startVertex;
+                    const AZ::Vector3& position = mWorldSpacePositions[vertexIndex];
+                    const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() * vertexNormalsScale;
+                    RenderLine(position, position + normal, colorVertexNormals);
+                }
             }
         }
 

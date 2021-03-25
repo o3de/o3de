@@ -25,8 +25,8 @@ UnitTest::ScopedTemporaryDirectory::ScopedTemporaryDirectory()
 
     for (int i = 0; i < MaxAttempts; ++i)
     {
-        auto randomFolder = AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false);
-        AZStd::string testPath;
+        auto randomFolder = AZ::Uuid::CreateRandom().ToString<AZStd::fixed_string<512>>(false, false);
+        AZ::IO::FixedMaxPath testPath;
 #if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER 
         auto path = userTempFolder / ("UnitTest-" + randomFolder).c_str();
         testPath = path.string().c_str();
@@ -42,7 +42,7 @@ UnitTest::ScopedTemporaryDirectory::ScopedTemporaryDirectory()
 #else
             m_tempDirectory = testPath;
 #endif
-            m_directoryExists = AZ::IO::LocalFileIO::GetInstance()->CreatePath(m_tempDirectory.c_str());
+            m_directoryExists = AZ::IO::SystemFile::CreateDir(m_tempDirectory.c_str());
             break;
         }
     }
@@ -54,7 +54,7 @@ UnitTest::ScopedTemporaryDirectory::~ScopedTemporaryDirectory()
 {
     if (m_directoryExists)
     {
-        AZ::IO::LocalFileIO::GetInstance()->DestroyPath(m_tempDirectory.c_str());
+        AZ::IO::SystemFile::DeleteDir(m_tempDirectory.c_str());
     }
 }
 

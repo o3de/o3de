@@ -986,7 +986,7 @@ void CObjectManager::UnselectObject(CBaseObject* obj)
     {
         SetObjectSelected(obj, false);
     }
-    
+
     m_currSelection->RemoveObject(obj);
 }
 
@@ -1141,7 +1141,7 @@ int CObjectManager::ClearSelection()
         GetIEditor()->RecordUndo(new CUndoBaseObjectClearSelection(*m_currSelection));
     }
 
-    // Handle legacy entities separately so the selection group can be cleared safely. 
+    // Handle legacy entities separately so the selection group can be cleared safely.
     // This prevents every AzEntity from being removed one by one from a vector.
     m_currSelection->RemoveAllExceptLegacySet();
 
@@ -1163,7 +1163,7 @@ int CObjectManager::ClearSelection()
 
     // Unselect all component entities as one bulk operation instead of individually
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, 
+        &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
         AzToolsFramework::EntityIdList());
 
     m_processingBulkSelect = false;
@@ -1927,7 +1927,7 @@ void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, boo
     CBaseObjectsCache* displayedViewObjects = view->GetVisibleObjectsCache();
     int numVis = displayedViewObjects->GetObjectCount();
 
-    // Tracking the previous selection allows proper undo/redo functionality of additional 
+    // Tracking the previous selection allows proper undo/redo functionality of additional
     // selections (CTRL + drag select)
     AZStd::unordered_set<const CBaseObject*> previousSelection;
 
@@ -1944,7 +1944,7 @@ void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, boo
             // This will update m_currSelection
             SelectObjectInRect(object, view, hc, bSelect);
 
-            // Legacy undo/redo does not go through the Ebus system and must be done individually 
+            // Legacy undo/redo does not go through the Ebus system and must be done individually
             if (isUndoRecording && object->GetType() != OBJTYPE_AZENTITY)
             {
                 GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(object, true));
@@ -2517,27 +2517,27 @@ void CObjectManager::HideTransformManipulators()
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::AddObjectEventListener(const EventCallback& cb)
+void CObjectManager::AddObjectEventListener(EventListener* listener)
 {
-    stl::push_back_unique(m_objectEventListeners, cb);
+    stl::push_back_unique(m_objectEventListeners, listener);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::RemoveObjectEventListener(const EventCallback& cb)
+void CObjectManager::RemoveObjectEventListener(EventListener* listener)
 {
-    stl::find_and_erase(m_objectEventListeners, cb);
+    stl::find_and_erase(m_objectEventListeners, listener);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event)
 {
-    std::list<EventCallback>::iterator next;
-    for (std::list<EventCallback>::iterator it = m_objectEventListeners.begin(); it != m_objectEventListeners.end(); it = next)
+    std::list<EventListener*>::iterator next;
+    for (std::list<EventListener*>::iterator it = m_objectEventListeners.begin(); it != m_objectEventListeners.end(); it = next)
     {
         next = it;
         ++next;
         // Call listener callback.
-        (*it)(pObject, event);
+        (*it)->OnObjectEvent(pObject, event);
     }
 }
 
@@ -3004,7 +3004,7 @@ namespace
                     aabb.min.x,
                     aabb.min.y,
                     aabb.min.z
-                ), 
+                ),
                 AZ::Vector3(
                     aabb.max.x,
                     aabb.max.y,

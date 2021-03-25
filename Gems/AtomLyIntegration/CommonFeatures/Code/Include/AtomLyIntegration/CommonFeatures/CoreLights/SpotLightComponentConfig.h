@@ -40,6 +40,7 @@ namespace AZ
             bool m_enabledShadow = false;
             ShadowmapSize m_shadowmapSize = MaxShadowmapImageSize;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
+            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
             float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_predictionSampleCount = 4;
             uint16_t m_filteringSampleCount = 32;
@@ -55,6 +56,7 @@ namespace AZ
             float GetConeDegrees() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
+            bool IsPcfBoundarySearchDisabled() const;
         };
     }
 }

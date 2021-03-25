@@ -194,7 +194,7 @@ namespace ScriptCanvas
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnValueChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties, "Network Properties", "Enables whether or not this value should be network synchronized")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetScriptInputControlVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetNetworkSettingsVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_sortPriority, "Display Order", "Allows for customizable display order. -1 implies it will be at the end of the list.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnSortPriorityChanged)
@@ -324,6 +324,11 @@ namespace ScriptCanvas
         datumView.ConfigureView((*this));
     }
 
+    bool GraphVariable::IsExposedAsComponentInput() const
+    {
+        return IsInScope(VariableFlags::Scope::Input);
+    }
+
     void GraphVariable::SetVariableName(AZStd::string_view variableName)
     {
         m_variableName = variableName;
@@ -355,6 +360,18 @@ namespace ScriptCanvas
         return m_inputControlVisibility;
     }
 
+    AZ::Crc32 GraphVariable::GetNetworkSettingsVisibility() const
+    {
+        bool showNetworkSettings = false;
+        ScriptCanvasSettingsRequestBus::BroadcastResult(showNetworkSettings, &ScriptCanvasSettingsRequests::CanShowNetworkSettings);
+        if (!showNetworkSettings)
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        return AZ::Edit::PropertyVisibility::Show;
+    }
+
     AZ::Crc32 GraphVariable::GetScriptInputControlVisibility() const
     {
         AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
@@ -376,7 +393,7 @@ namespace ScriptCanvas
         AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
         ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
 
-        if (assetType == azrtti_typeid<ScriptCanvas::RuntimeFunctionAsset>())
+        if (assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
         {
             return AZ::Edit::PropertyVisibility::Show;
         }
@@ -494,9 +511,9 @@ namespace ScriptCanvas
         VariableNotificationBus::Event(GetGraphScopedId(), &VariableNotifications::OnVariableValueChanged);
     }
 
-    AZStd::vector<AZStd::pair<AZ::u8, AZStd::string>> GraphVariable::GetScopes() const
+    AZStd::vector<AZStd::pair<VariableFlags::Scope, AZStd::string>> GraphVariable::GetScopes() const
     {
-        AZStd::vector< AZStd::pair<AZ::u8, AZStd::string>> scopes;
+        AZStd::vector< AZStd::pair<VariableFlags::Scope, AZStd::string>> scopes;
 
         scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::Local, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::Local)));
         scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::Input, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::Input)));
@@ -520,7 +537,7 @@ namespace ScriptCanvas
         AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
         ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
 
-        return assetType == azrtti_typeid<ScriptCanvas::RuntimeFunctionAsset>();
+        return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     void GraphVariable::OnScopeTypedChanged()

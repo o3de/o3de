@@ -13,6 +13,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
+#include <AzCore/Math/ToString.h>
 
 namespace AzToolsFramework
 {
@@ -43,6 +44,7 @@ namespace AzToolsFramework
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale, "Non-uniform Scale",
                             "Non-uniform scale for this entity only (does not propagate through hierarchy)")
+                        ->Attribute(AZ::Edit::Attributes::Min, AZ::MinNonUniformScale)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorNonUniformScaleComponent::OnScaleChanged)
                         ;
                 }
@@ -56,7 +58,6 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("SkyCloudService"));
             incompatible.push_back(AZ_CRC_CE("DebugDrawObbService"));
             incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
             incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));
@@ -72,8 +73,6 @@ namespace AzToolsFramework
             incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
             incompatible.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("PhysXRagdollService"));
-            incompatible.push_back(AZ_CRC_CE("TouchBendingPhysicsService"));
-            incompatible.push_back(AZ_CRC_CE("WaterVolumeService"));
             incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
             incompatible.push_back(AZ_CRC_CE("NavigationAreaService"));
             incompatible.push_back(AZ_CRC_CE("GeometryService"));
@@ -81,12 +80,9 @@ namespace AzToolsFramework
             incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
             incompatible.push_back(AZ_CRC_CE("CylinderShapeService"));
             incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
-            incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
-            incompatible.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
             incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
             incompatible.push_back(AZ_CRC_CE("SplineService"));
             incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
-            incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
         }
 
         void EditorNonUniformScaleComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -113,7 +109,18 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::SetScale(const AZ::Vector3& scale)
         {
-            m_scale = scale;
+            if (scale.GetMinElement() >= AZ::MinNonUniformScale)
+            {
+                m_scale = scale;
+            }
+            else
+            {
+                AZ::Vector3 clampedScale = scale.GetMax(AZ::Vector3(AZ::MinNonUniformScale));
+                AZ_Warning("Editor Non-uniform Scale Component", false, "SetScale value was clamped from %s to %s for entity %s",
+                    AZ::ToString(scale).c_str(), AZ::ToString(clampedScale).c_str(), GetEntity()->GetName().c_str());
+                m_scale = clampedScale;
+            }
+            m_scaleChangedEvent.Signal(m_scale);
         }
 
         void EditorNonUniformScaleComponent::RegisterScaleChangedEvent(AZ::NonUniformScaleChangedEvent::Handler& handler)

@@ -59,7 +59,7 @@ namespace AZ
 
             //! Adds a BufferAssetView to the current SubMesh as a stream buffer that matches the given semantic name.
             //! Begin and BeginMesh must be called first
-            void AddMeshStreamBuffer(
+            bool AddMeshStreamBuffer(
                 const RHI::ShaderSemantic& streamSemantic,
                 const AZ::Name& customName,
                 const BufferAssetView& bufferAssetView);

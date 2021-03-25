@@ -74,6 +74,7 @@ set(FILES
     Source/RHI/MemorySubAllocator.h
     Source/RHI/MemoryView.cpp
     Source/RHI/MemoryView.h
+    Source/RHI/NsightAftermath.h
     Source/RHI/StagingMemoryAllocator.cpp
     Source/RHI/StagingMemoryAllocator.h
     Source/RHI/PhysicalDevice.h
@@ -112,6 +113,7 @@ set(FILES
     Source/RHI/AliasingBarrierTracker.h
     Source/RHI/TransientAttachmentPool.cpp
     Source/RHI/TransientAttachmentPool.h
+    Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
     Source/RHI/RayTracingTlas.cpp

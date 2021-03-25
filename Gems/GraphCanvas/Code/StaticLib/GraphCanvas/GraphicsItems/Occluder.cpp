@@ -36,7 +36,7 @@ namespace GraphCanvas
         setZValue(occluderConfiguration.m_zValue);
     }
     
-    void Occluder::paint(QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
+    void Occluder::paint([[maybe_unused]] QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
     {
         painter->fillRect(boundingRect(), m_renderColor);
     }

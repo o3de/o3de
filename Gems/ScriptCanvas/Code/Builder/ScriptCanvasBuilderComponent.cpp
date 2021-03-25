@@ -11,15 +11,61 @@
 */
 
 #include <precompiled.h>
-#include <Builder/ScriptCanvasBuilderComponent.h>
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
+#include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <Builder/ScriptCanvasBuilderComponent.h>
+#include <Builder/ScriptCanvasBuilderWorker.h>
+#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
+#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
+#include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvasBuilder
 {
+    template<typename t_Asset, typename t_Handler>
+    HandlerOwnership RegisterHandler(const char* extension, bool enableCatalog)
+    {
+        AZ::Data::AssetType assetType(azrtti_typeid<t_Asset>());
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
+
+        if (enableCatalog)
+        {
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, assetType);
+        }
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, extension);
+
+        if (auto borrowedHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType))
+        {
+            return { borrowedHandler, false };
+        }
+        else
+        {
+            t_Handler* ownedHandler = aznew t_Handler();
+            AZ::Data::AssetManager::Instance().RegisterHandler(ownedHandler, assetType);
+            return { ownedHandler, true };
+        }
+    }
+
+    SharedHandlers HandleAssetTypes()
+    {
+        SharedHandlers handlers;
+        handlers.m_editorFunctionAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasFunctionAsset, ScriptCanvasEditor::ScriptCanvasFunctionAssetHandler>("scriptcanvas_fn", false);
+        handlers.m_editorAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasAsset, ScriptCanvasEditor::ScriptCanvasAssetHandler>("scriptcanvas", false);
+        handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
+        handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
+
+        // \todo make it so we can load script events in the builder: expose the SE handler?
+        // const AZStd::string description = ScriptCanvas::AssetDescription::GetExtension<ScriptCanvas::RuntimeAsset>();
+        // handlers.m_scriptEventAssetHandler = RegisterHandler<ScriptEvents::ScriptEventsAsset, ScriptEventsEditor::ScriptEventAssetHandler>(description.data());
+
+        return handlers;
+    }
+
     void PluginComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC("ScriptCanvasBuilderService", 0x4929ffcd));
@@ -52,13 +98,14 @@ namespace ScriptCanvasBuilder
             // which will cause the "CreateJobs" function to be called, for each asset, even if the
             // source file has not changed, but won't actually do the jobs unless the source file has changed
             // or the fingerprint of the individual job is different.
-            builderDescriptor.m_analysisFingerprint = m_scriptCanvasBuilder.GetFingerprintString();
-
+            size_t fingerprint = ScriptCanvas::BehaviorContextUtils::GenerateFingerprintForBehaviorContext();
+            builderDescriptor.m_analysisFingerprint = AZStd::string(m_scriptCanvasBuilder.GetFingerprintString())
+                .append(AZStd::string::format("|%zu", fingerprint));
+            builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
 
             AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>(), ScriptCanvasEditor::ScriptCanvasAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasAsset>());
-            m_scriptCanvasBuilder.Activate();
         }
 
         {
@@ -75,13 +122,19 @@ namespace ScriptCanvasBuilder
             // source file has not changed, but won't actually do the jobs unless the source file has changed
             // or the fingerprint of the individual job is different.
             builderDescriptor.m_analysisFingerprint = m_scriptCanvasFunctionBuilder.GetFingerprintString();
-
-            m_scriptCanvasFunctionBuilder.BusConnect(builderDescriptor.m_busId);
+            builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
-
-            AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>(), ScriptCanvas::ScriptCanvasFunctionAsset::Description::GetFileFilter<ScriptCanvas::ScriptCanvasFunctionAsset>());
-            m_scriptCanvasFunctionBuilder.Activate();
+            ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
+            AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(), ScriptCanvasEditor::ScriptCanvasFunctionAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
+
+        m_sharedHandlers = HandleAssetTypes();
+        AssetHandlers workerHandlers(m_sharedHandlers);
+        m_scriptCanvasBuilder.Activate(workerHandlers);
+        m_scriptCanvasFunctionBuilder.Activate(workerHandlers);
+
+        ScriptCanvas::Translation::RequestBus::Handler::BusConnect();
+        ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
     }
 
     void PluginComponent::Deactivate()
@@ -90,10 +143,25 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::ExecuteQueuedEvents();
         
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>());
-        AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>());
+        AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
 
-        m_scriptCanvasBuilder.Deactivate();
         m_scriptCanvasBuilder.BusDisconnect();
+        m_scriptCanvasFunctionBuilder.BusDisconnect();
+
+        m_sharedHandlers.DeleteOwnedHandlers();
+
+        ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
+        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
+    }
+
+    ScriptCanvas::Grammar::Context* PluginComponent::GetGrammarContext()
+    {
+        return &m_grammarContext;
+    }
+
+    ScriptCanvas::Translation::Context* PluginComponent::GetTranslationContext()
+    {
+        return &m_translationContext;
     }
 
     void PluginComponent::Reflect(AZ::ReflectContext* context)

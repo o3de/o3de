@@ -24,9 +24,10 @@ namespace AzToolsFramework
     /// For example clicking a preview point to create a translation manipulator.
     class SelectionManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalPosition
     {
         /// Private constructor.
-        explicit SelectionManipulator(const AZ::Transform& worldFromLocal);
+        SelectionManipulator(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
 
     public:
         AZ_RTTI(SelectionManipulator, "{966F44B7-E287-4C28-9734-5958F1A13A1D}", BaseManipulator);
@@ -39,7 +40,8 @@ namespace AzToolsFramework
         ~SelectionManipulator() = default;
 
         /// A Manipulator must only be created and managed through a shared_ptr.
-        static AZStd::shared_ptr<SelectionManipulator> MakeShared(const AZ::Transform& worldFromLocal);
+        static AZStd::shared_ptr<SelectionManipulator> MakeShared(const AZ::Transform& worldFromLocal,
+            const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
 
         /// This is the function signature of callbacks that will be invoked
         /// whenever a selection manipulator is clicked on.
@@ -55,11 +57,6 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
-
-        void SetPosition(const AZ::Vector3& position) { m_position = position; }
-        void SetSpace(const AZ::Transform& worldFromLocal) { m_worldFromLocal = worldFromLocal; }
-
-        const AZ::Vector3& GetPosition() const { return m_position; }
 
         bool Selected() const { return m_selected; }
         void Select() { m_selected = true; }
@@ -84,9 +81,6 @@ namespace AzToolsFramework
 
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
-
-        AZ::Vector3 m_position = AZ::Vector3::CreateZero(); ///< Position in local space.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
 
         bool m_selected = false;
 

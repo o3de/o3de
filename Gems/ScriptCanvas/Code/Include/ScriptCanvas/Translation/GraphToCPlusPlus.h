@@ -24,7 +24,6 @@ namespace ScriptCanvas
     namespace Grammar
     {
         class AbstractCodeModel;
-        struct Function;
     }
 
     namespace Translation
@@ -33,8 +32,9 @@ namespace ScriptCanvas
             : public GraphToX
         {
         public:
-            static AZ::Outcome<void, AZStd::string> Translate(const Grammar::AbstractCodeModel& model, AZStd::string& dotH, AZStd::string& dotCPP);
+            static AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> Translate(const Grammar::AbstractCodeModel& model, AZStd::string& dotH, AZStd::string& dotCPP);
             
+            AZ_INLINE bool IsSuccessfull() const { return false;  }
         private:         
             // cpp only
             Writer m_dotH;
@@ -55,10 +55,10 @@ namespace ScriptCanvas
             void TranslateNamespaceClose();
             void TranslateStartNode();
             void TranslateVariables();
-            void WriterHeader(); // Write, not translate, because this should be less dependent on the contents of the graph
+            void WriteHeader(); // Write, not translate, because this should be less dependent on the contents of the graph
             void WriteHeaderDotH(); // Write, not translate, because this should be less dependent on the contents of the graph
             void WriteHeaderDotCPP(); // Write, not translate, because this should be less dependent on the contents of the graph
         };
-    } // namespace Translation
+    } 
 
-} // namespace ScriptCanvas
+} 

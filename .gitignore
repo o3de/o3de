@@ -9,10 +9,12 @@ Editor/EditorLayout.xml
 Tools/**/*egg-info/**
 Tools/**/*egg-link
 UserSettings.xml
-.idea/
 user/Registry/**
 FrameCapture/**
 .DS_Store
-
+user*.cfg
+.mayaSwatches/
+_savebackup/
 #Output folder for test results when running Automated Tests
 TestResults/**
+*.swatches

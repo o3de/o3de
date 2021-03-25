@@ -14,6 +14,9 @@
 
 static const float EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
 
+// Must match the equivalent enumeration in ShadowConstants.h
+enum PcfFilterMethod { PcfFilterMethod_BoundarySearch = 0, PcfFilterMethod_Bicubic = 1 };
+
 struct FilterParameter
 {
     uint m_isEnabled;

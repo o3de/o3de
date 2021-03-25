@@ -1,0 +1,13 @@
+{
+    "version": "1.0",
+    "bankName": "test_bank7.bnk",
+    "dependencies": [
+        "601903616.wem",
+        "Init.bnk",
+        "656567798.wem"
+    ],
+    "includedEvents": [
+        "test_event_11_bank7_streamed_target",
+        "test_event_12_bank7_streamed_target"
+    ]
+}

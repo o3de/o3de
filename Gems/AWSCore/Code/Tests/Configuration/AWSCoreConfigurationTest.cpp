@@ -1,0 +1,189 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzTest/AzTest.h>
+
+#include <Configuration/AWSCoreConfiguration.h>
+#include <TestFramework/AWSCoreFixture.h>
+
+using namespace AWSCore;
+
+static constexpr const char TEST_VALID_RESOURCE_MAPPING_SETREG[] =
+R"({
+    "Amazon":
+    {
+        "AWSCore": {
+            "ProfileName": "testprofile",
+            "ResourceMappingConfigFileName": "test_aws_resource_mappings.json"
+        }
+    }
+})";
+
+static constexpr const char TEST_INVALID_RESOURCE_MAPPING_SETREG[] =
+R"({
+    "Amazon":
+    {
+        "AWSCore": {
+        }
+    }
+})";
+
+class AWSCoreConfigurationTest
+    : public AWSCoreFixture
+{
+public:
+    void CreateTestSetRegFile(const AZStd::string& setregContent)
+    {
+        m_normalizedSetRegFilePath = AZStd::string::format("%s/%s",
+            m_normalizedSetRegFolderPath.c_str(), AWSCore::AWSCoreConfiguration::AWSCORE_CONFIGURATION_FILENAME);
+        AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFilePath);
+        CreateTestFile(m_normalizedSetRegFilePath, setregContent);
+    }
+
+    void SetUp() override
+    {
+        AWSCoreFixture::SetUp();
+
+        m_awsCoreConfiguration = AZStd::make_unique<AWSCore::AWSCoreConfiguration>();
+
+        m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
+            "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
+        AzFramework::StringFunc::Path::Normalize(m_normalizedSourceProjectFolder);
+        m_normalizedSetRegFolderPath = AZStd::string::format("%s/%s/",
+            m_normalizedSourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
+        AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFolderPath);
+
+        m_localFileIO->SetAlias("@devassets@", m_normalizedSourceProjectFolder.c_str());
+    }
+
+    void TearDown() override
+    {
+        RemoveTestFile();
+        RemoveTestDirectory();
+
+        m_awsCoreConfiguration.reset();
+
+        AWSCoreFixture::TearDown();
+    }
+
+    AZStd::unique_ptr<AWSCore::AWSCoreConfiguration> m_awsCoreConfiguration;
+
+private:
+    AZStd::string m_normalizedSourceProjectFolder;
+    AZStd::string m_normalizedSetRegFolderPath;
+    AZStd::string m_normalizedSetRegFilePath;
+
+    void CreateTestFile(const AZStd::string& filePath, const AZStd::string& fileContent)
+    {
+        AZ::IO::SystemFile file;
+        if (!file.Open(filePath.c_str(),
+            AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            AZ_Assert(false, "Failed to open test file");
+        }
+
+        if (file.Write(fileContent.c_str(), fileContent.size()) != fileContent.size())
+        {
+            AZ_Assert(false, "Failed to write test file");
+        }
+        file.Close();
+    }
+
+    void RemoveTestFile()
+    {
+        if (!m_normalizedSetRegFilePath.empty())
+        {
+            AZ_Assert(AZ::IO::SystemFile::Delete(m_normalizedSetRegFilePath.c_str()),
+                "Failed to delete test settings registry file at %s", m_normalizedSetRegFilePath.c_str());
+        }
+    }
+
+    void RemoveTestDirectory()
+    {
+        if (!m_normalizedSetRegFilePath.empty())
+        {
+            AZ_Assert(AZ::IO::SystemFile::DeleteDir(m_normalizedSetRegFolderPath.c_str()),
+                "Failed to delete test settings registry folder at %s", m_normalizedSetRegFolderPath.c_str());
+            AZ_Assert(AZ::IO::SystemFile::DeleteDir(m_normalizedSourceProjectFolder.c_str()),
+                "Failed to delete test folder at %s", m_normalizedSourceProjectFolder.c_str());
+        }
+    }
+};
+
+TEST_F(AWSCoreConfigurationTest, InitConfig_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
+{
+    m_localFileIO->ClearAlias("@devassets@");
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_awsCoreConfiguration->InitConfig();
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+}
+
+TEST_F(AWSCoreConfigurationTest, InitConfig_NoSettingsRegistryFileFound_ReturnEmptyConfigFilePath)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_awsCoreConfiguration->InitConfig();
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+}
+
+TEST_F(AWSCoreConfigurationTest, InitConfig_SettingsRegistryIsEmpty_ReturnEmptyConfigFilePath)
+{
+    CreateTestSetRegFile(TEST_INVALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->InitConfig();
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+}
+
+TEST_F(AWSCoreConfigurationTest, InitConfig_LoadValidSettingsRegistry_ReturnNonEmptyConfigFilePath)
+{
+    CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->InitConfig();
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    EXPECT_FALSE(actualConfigFilePath.empty());
+}
+
+TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
+{
+    m_localFileIO->ClearAlias("@devassets@");
+    m_awsCoreConfiguration->ReloadConfiguration();
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+}
+
+TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAfterInvalidOne_ReturnNonEmptyConfigFilePath)
+{
+    CreateTestSetRegFile(TEST_INVALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->InitConfig();
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    auto actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+    EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCORE_DEFAULT_PROFILE_NAME);
+
+    CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->ReloadConfiguration();
+
+    actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    EXPECT_FALSE(actualConfigFilePath.empty());
+    EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCORE_DEFAULT_PROFILE_NAME);
+}

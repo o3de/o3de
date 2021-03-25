@@ -33,6 +33,6 @@ namespace GraphCanvas
     private:
     
         ContextMenuAction* m_createBookmark;
-        CommentPresetsMenuActionGroup m_commentPresets;
+        CreateCommentPresetMenuActionGroup m_commentPresets;
     };
 }

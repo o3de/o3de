@@ -89,7 +89,7 @@ namespace GraphCanvas
         }
     }
 
-    void GenericComboBoxDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void GenericComboBoxDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
     {
         editor->setGeometry(option.rect);
 

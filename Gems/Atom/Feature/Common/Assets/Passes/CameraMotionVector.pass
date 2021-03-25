@@ -31,8 +31,8 @@
                     "Name": "CameraMotion",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Pass": "This",
+                            "Attachment": "Input"
                         }
                     },
                     "ImageDescriptor": {

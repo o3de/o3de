@@ -52,6 +52,6 @@ namespace ScriptCanvas
                 
                 SignalOutput(GetSlotId("Out"));
             }
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        }
+    }
+}

@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -11,30 +11,32 @@
 */
 
 #include <Source/Framework/ScriptCanvasTestFixture.h>
+#include <Source/Framework/ScriptCanvasTestUtilities.h>
 
 using namespace ScriptCanvasTests;
+using namespace ScriptCanvas;
 
 TEST_F(ScriptCanvasTestFixture, StringMethodCStyle2CStyle)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_StringMethodCStyle2CStyle");
+    RunUnitTestGraph("LY_SC_UnitTest_StringMethodCStyle2CStyle", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, EBusStringResultCStyle2CStyle)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2CStyle");
+    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2CStyle", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, EBusStringResultCStyle2String)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2String");
+    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2String", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, EBusStringResultCStyle2StringView)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2StringView");
+    RunUnitTestGraph("LY_SC_UnitTest_EBusStringResultCStyle2StringView", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, EBusResultNested)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EBusResultNested");
+    RunUnitTestGraph("LY_SC_UnitTest_EBusResultNested", ExecutionMode::Interpreted);
 }

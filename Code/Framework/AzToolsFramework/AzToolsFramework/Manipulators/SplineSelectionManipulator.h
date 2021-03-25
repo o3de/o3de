@@ -27,6 +27,7 @@ namespace AzToolsFramework
     /// used to test mouse picking ray against to preview closest point on spline.
     class SplineSelectionManipulator
         : public BaseManipulator
+        , public ManipulatorSpace
     {
         /// Private constructor.
         SplineSelectionManipulator();
@@ -61,7 +62,6 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        void SetSpace(const AZ::Transform& worldFromLocal) { m_worldFromLocal = worldFromLocal; }
         void SetSpline(AZStd::shared_ptr<const AZ::Spline> spline) { m_spline = AZStd::move(spline); }
         AZStd::weak_ptr<const AZ::Spline> GetSpline() const { return m_spline; }
 
@@ -76,7 +76,6 @@ namespace AzToolsFramework
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
 
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
         AZStd::weak_ptr<const AZ::Spline> m_spline;
         AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; ///< Look of manipulator and bounds for interaction.
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;

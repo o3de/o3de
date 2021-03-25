@@ -59,7 +59,7 @@ namespace AZ
                 }
 
                 template<typename Iterator>
-                auto FilterIterator<Iterator, void>::GetBaseIterator()->const Iterator&
+                auto FilterIterator<Iterator, void>::GetBaseIterator() const -> const Iterator&
                 {
                     return m_iterator;
                 }

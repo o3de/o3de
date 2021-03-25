@@ -25,8 +25,30 @@ namespace ScriptCanvas
             /////////////////
             // OperatorSize
             /////////////////
+            void OperatorSize::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                auto newDataInSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                auto oldDataInSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                if (newDataInSlots.size() == oldDataInSlots.size())
+                {
+                    for (size_t index = 0; index < newDataInSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataInSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataInSlots[index]->GetId() });
+                    }
+                }
 
-            bool OperatorSize::OperatorSizeVersionConverter([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+                auto newDataOutSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                auto oldDataOutSlots = this->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut);
+                if (newDataOutSlots.size() == oldDataOutSlots.size())
+                {
+                    for (size_t index = 0; index < newDataOutSlots.size(); index++)
+                    {
+                        outSlotIdMap.emplace(oldDataOutSlots[index]->GetId(), AZStd::vector<SlotId>{ newDataOutSlots[index]->GetId() });
+                    }
+                }
+            }
+
+            bool OperatorSize::OperatorSizeVersionConverter(AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& classElement)
             {
                 // Remove the now unnecessary OperatorBase class from the inheritance chain.
                 if (classElement.GetVersion() < 1)

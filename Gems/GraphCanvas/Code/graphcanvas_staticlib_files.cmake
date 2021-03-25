@@ -63,6 +63,7 @@ set(FILES
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/StringDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/VectorDataInterface.h
     StaticLib/GraphCanvas/Components/Nodes/NodeBus.h
+    StaticLib/GraphCanvas/Components/Nodes/NodeUIBus.h
     StaticLib/GraphCanvas/Components/Nodes/NodeConfiguration.h
     StaticLib/GraphCanvas/Components/Nodes/NodeLayoutBus.h
     StaticLib/GraphCanvas/Components/Nodes/NodeTitleBus.h
@@ -74,6 +75,8 @@ set(FILES
     StaticLib/GraphCanvas/Components/Slots/Data/DataSlotBus.h
     StaticLib/GraphCanvas/Components/Slots/Property/PropertySlotBus.h
     StaticLib/GraphCanvas/Editor/AssetEditorBus.h
+    StaticLib/GraphCanvas/Editor/Automation/AutomationIds.h
+    StaticLib/GraphCanvas/Editor/Automation/AutomationUtils.h
     StaticLib/GraphCanvas/Editor/EditorDockWidgetBus.h
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h

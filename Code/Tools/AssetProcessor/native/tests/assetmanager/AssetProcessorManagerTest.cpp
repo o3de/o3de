@@ -14,6 +14,7 @@
 #include "native/AssetManager/PathDependencyManager.h"
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
 
+#include <AzTest/AzTest.h>
 
 #include <limits>
 
@@ -27,7 +28,13 @@ public:
 
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
+
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
+#else
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles);
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTest);
@@ -69,9 +76,20 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_ValidatePathDependenciesMap);
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedSourceFileTypeProductPathDependency_DependencyHasNoProductOutput_ValidatePathDependenciesMap);
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
+#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged);
+
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
+#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAgain);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFilesSameHash_BothProcess);
@@ -2413,7 +2431,11 @@ TEST_F(PathDependencyTest, ChangeDependencies_Existing_ResolveCorrectly)
     );
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(PathDependencyTest, DISABLED_MixedPathDependencies_Existing_ResolveCorrectly)
+#else
 TEST_F(PathDependencyTest, MixedPathDependencies_Existing_ResolveCorrectly)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -2712,7 +2734,11 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
+#else
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     // One product will be pc, one will be console (order is non-deterministic)
     TestAsset asset1("testAsset1");
@@ -4585,7 +4611,11 @@ void ModtimeScanningTest::SetFileContents(QString filePath, QString contents)
     file.close();
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
+#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -4614,7 +4644,11 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged)
     ExpectNoWork();
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
+#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -5118,7 +5152,11 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     dependList.clear();
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+TEST_F(AssetProcessorManagerTest, DISABLED_RemoveSource_RemoveCacheFolderIfEmpty_Ok)
+#else
 TEST_F(AssetProcessorManagerTest, RemoveSource_RemoveCacheFolderIfEmpty_Ok)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;

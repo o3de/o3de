@@ -18,6 +18,7 @@
 #include <QScrollArea>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Math/Color.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
@@ -351,6 +352,13 @@ namespace ScriptCanvasEditor
 
             ScriptCanvas::EndpointNotificationBus::MultiHandler::BusDisconnect();
             ScriptCanvas::NodeNotificationsBus::MultiHandler::BusDisconnect();
+
+            GraphCanvas::GraphCanvasPropertyInterfaceNotificationBus::MultiHandler::BusDisconnect();
+        }
+
+        void PropertyGrid::OnPropertyComponentChanged()
+        {
+            RefreshPropertyGrid();
         }
 
         void PropertyGrid::DisplayInstances(const InstancesToDisplay& instances)
@@ -470,6 +478,12 @@ namespace ScriptCanvasEditor
         {
             GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
             ClearSelection();
+
+            for (const AZ::EntityId& gcEntityId : selectedEntityIds)
+            {
+                GraphCanvas::GraphCanvasPropertyInterfaceNotificationBus::MultiHandler::BusConnect(gcEntityId);
+            }
+
             UpdateContents(selectedEntityIds);
             RefreshPropertyGrid();
         }
@@ -479,51 +493,76 @@ namespace ScriptCanvasEditor
             RefreshPropertyGrid();
         }
 
-        void PropertyGrid::BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+        void PropertyGrid::DisableGrid()
         {
+            setEnabled(false);
+
+            for (auto& componentEditor : m_componentEditors)
+            {
+                componentEditor->setEnabled(false);
+            }
+        }
+
+        void PropertyGrid::EnableGrid()
+        {
+            setEnabled(true);
+
+            for (auto& componentEditor : m_componentEditors)
+            {
+                componentEditor->setEnabled(true);
+            }
+        }
+
+        void PropertyGrid::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
+        {
+            // For strings we want to signal out once we are finished editing the string. Mainly to help deal with
+            // issues where the string contorls the layout of hte node(ala print/build string nodes).
+            //
+            // But the SetPropertyEditingActive signal doesn't seem to be hooked up to anything, so can't generically wrap this.
+            // Instead we will push an extra 'undo' when we are going into a string modify, mark ourselves as 'dirty'
+            // then pop as normal in the after, then signal out the undo once we are finished editing.
+            if (pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZStd::string>()
+                || pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZ::Color>())
+            {
+                if (!m_propertyModified)
+                {
+                    m_propertyModified = true;
+                    GeneralRequestBus::Broadcast(&GeneralRequests::PushPreventUndoStateUpdate);
+                }
+            }
+
             GeneralRequestBus::Broadcast(&GeneralRequests::PushPreventUndoStateUpdate);
         }
 
         void PropertyGrid::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
         {
-            GeneralRequestBus::Broadcast(&GeneralRequests::PopPreventUndoStateUpdate);
-
-            AzToolsFramework::InstanceDataNode* componentNode = pNode;
-            do
+            if (pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZStd::string>()
+                || pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZ::Color>())
             {
-                auto* componentClassData = componentNode->GetClassMetadata();
-                if (componentClassData && componentClassData->m_azRtti && componentClassData->m_azRtti->IsTypeOf(azrtti_typeid<AZ::Component>()))
-                {
-                    break;
-                }
-            } while (componentNode = componentNode->GetParent());
-
-            if (!componentNode)
-            {
-                AZ_Warning("Script Canvas", false, "Failed to locate component data associated with the script canvas property. Unable to mark parent Entity as dirty.");
-                return;
+                GeneralRequestBus::Broadcast(&GeneralRequests::PopPreventUndoStateUpdate);
             }
-
-            // Only need one instance to lookup the SceneId in-order to record the undo state
-            const size_t firstInstanceIdx = 0;
-            if (componentNode->GetNumInstances())
+            else
             {
-                AZ::SerializeContext* context = componentNode->GetSerializeContext();
-                AZ::Component* componentInstance = context->Cast<AZ::Component*>(componentNode->GetInstance(firstInstanceIdx), componentNode->GetClassMetadata()->m_typeId);
-                if (componentInstance && componentInstance->GetEntity())
-                {
-                    ScriptCanvas::ScriptCanvasId scriptCanvasId = GetScriptCanvasId(componentInstance);
-                    GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, scriptCanvasId);
-                }
+                SignalUndo(pNode);
             }
         }
 
-        void PropertyGrid::SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+        void PropertyGrid::SetPropertyEditingActive(AzToolsFramework::InstanceDataNode*)
         {
+            // This signal doesn't actually get called.
         }
 
-        void PropertyGrid::SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+        void PropertyGrid::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
         {
+            if (pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZStd::string>()
+                || pNode->GetElementMetadata()->m_typeId == azrtti_typeid<AZ::Color>())
+            {
+                if (m_propertyModified)
+                {
+                    m_propertyModified = false;
+                    SignalUndo(pNode);
+                }
+            }
         }
 
         void PropertyGrid::RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode* node, const QPoint& point)
@@ -535,7 +574,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void PropertyGrid::OnSlotDisplayTypeChanged(const ScriptCanvas::SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& slotType)
+        void PropertyGrid::OnSlotDisplayTypeChanged(const ScriptCanvas::SlotId& slotId, const ScriptCanvas::Data::Type&)
         {
             const AZ::EntityId* nodeId = ScriptCanvas::NodeNotificationsBus::GetCurrentBusId();
 
@@ -643,7 +682,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void PropertyGrid::OnEndpointConnected([[maybe_unused]] const ScriptCanvas::Endpoint& targetEndpoint)
+        void PropertyGrid::OnEndpointConnected(const ScriptCanvas::Endpoint& )
         {
             const ScriptCanvas::Endpoint* sourceEndpoint = ScriptCanvas::EndpointNotificationBus::GetCurrentBusId();
 
@@ -653,7 +692,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void PropertyGrid::OnEndpointDisconnected([[maybe_unused]] const ScriptCanvas::Endpoint& targetEndpoint)
+        void PropertyGrid::OnEndpointDisconnected(const ScriptCanvas::Endpoint& )
         {
             const ScriptCanvas::Endpoint* sourceEndpoint = ScriptCanvas::EndpointNotificationBus::GetCurrentBusId();
 
@@ -692,6 +731,40 @@ namespace ScriptCanvasEditor
             {
                 slot->UpdateDatumVisibility();
                 RebuildPropertyGrid();
+            }
+        }
+
+        void PropertyGrid::SignalUndo(AzToolsFramework::InstanceDataNode* pNode)
+        {
+            GeneralRequestBus::Broadcast(&GeneralRequests::PopPreventUndoStateUpdate);
+
+            AzToolsFramework::InstanceDataNode* componentNode = pNode;
+            do
+            {
+                auto* componentClassData = componentNode->GetClassMetadata();
+                if (componentClassData && componentClassData->m_azRtti && componentClassData->m_azRtti->IsTypeOf(azrtti_typeid<AZ::Component>()))
+                {
+                    break;
+                }
+            } while (componentNode = componentNode->GetParent());
+
+            if (!componentNode)
+            {
+                AZ_Warning("Script Canvas", false, "Failed to locate component data associated with the script canvas property. Unable to mark parent Entity as dirty.");
+                return;
+            }
+
+            // Only need one instance to lookup the SceneId in-order to record the undo state
+            const size_t firstInstanceIdx = 0;
+            if (componentNode->GetNumInstances())
+            {
+                AZ::SerializeContext* context = componentNode->GetSerializeContext();
+                AZ::Component* componentInstance = context->Cast<AZ::Component*>(componentNode->GetInstance(firstInstanceIdx), componentNode->GetClassMetadata()->m_typeId);
+                if (componentInstance && componentInstance->GetEntity())
+                {
+                    ScriptCanvas::ScriptCanvasId scriptCanvasId = GetScriptCanvasId(componentInstance);
+                    GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, scriptCanvasId);
+                }
             }
         }
 

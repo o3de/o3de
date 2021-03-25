@@ -1,0 +1,64 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/Skin.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.2847791314125061,
+                0.45421531796455386,
+                0.9392080307006836,
+                1.0
+            ],
+            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png"
+        },
+        "detailLayerGroup": {
+            "baseColorDetailBlend": 0.4300000071525574,
+            "baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+            "enableBaseColor": true,
+            "enableDetailLayer": true,
+            "enableNormals": true,
+            "normalDetailFlipY": true,
+            "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
+            "normalDetailStrength": 1.5,
+            "textureMapUv": "Base"
+        },
+        "detailUV": {
+            "scale": 5.0
+        },
+        "normal": {
+            "flipY": true,
+            "textureMap": "Objects/Lucy/Lucy_normal.tif"
+        },
+        "subsurfaceScattering": {
+            "enableSubsurfaceScattering": true,
+            "influenceMap": "Objects/Lucy/Lucy_thickness.tif",
+            "scatterDistance": 15.0,
+            "subsurfaceScatterFactor": 0.4300000071525574,
+            "thicknessMap": "Objects/Lucy/Lucy_thickness.tif",
+            "transmissionAttenuation": 15.0,
+            "transmissionDistortion": 0.3499999940395355,
+            "transmissionMode": "ThickObject",
+            "transmissionPower": 16.399999618530275,
+            "transmissionScale": 0.10000000149011612,
+            "transmissionTint": [
+                1.0,
+                0.3182879388332367,
+                0.16388189792633058,
+                1.0
+            ],
+            "useInfluenceMap": false
+        },
+        "wrinkleLayers": {
+            "baseColorMap1": "TestData/Textures/cc0/Lava004_1K_Color.jpg",
+            "baseColorMap3": "TestData/Textures/checker8x8_gray_512.png",
+            "count": 3,
+            "enable": true,
+            "enableBaseColor": true,
+            "enableNormal": true,
+            "normalMap1": "TestData/Textures/cc0/Lava004_1K_Normal.jpg",
+            "normalMap2": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png"
+        }
+    }
+}

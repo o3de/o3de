@@ -16,13 +16,12 @@
 #pragma once
 
 #ifdef PLUGIN_EXPORTS
-    #define PLUGIN_API DLL_EXPORT
+#define PLUGIN_API DLL_EXPORT
 #else
-    #define PLUGIN_API DLL_IMPORT
+#define PLUGIN_API DLL_IMPORT
 #endif
 
 #include <ISystem.h>
-#include <functor.h>
 #include "Include/SandboxAPI.h"
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
@@ -258,7 +257,9 @@ struct IEditorNotifyListener
     bool m_bIsRegistered;
 
     IEditorNotifyListener()
-        : m_bIsRegistered(false) {}
+        : m_bIsRegistered(false)
+    {
+    }
     virtual ~IEditorNotifyListener()
     {
         if (m_bIsRegistered)
@@ -351,10 +352,10 @@ enum EMouseEvent
 //! Viewports update flags
 enum UpdateConentFlags
 {
-    eUpdateHeightmap    = 0x01,
-    eUpdateStatObj      = 0x02,
-    eUpdateObjects      = 0x04, //! Update objects in viewport.
-    eRedrawViewports    = 0x08 //! Just redraw viewports..
+    eUpdateHeightmap = 0x01,
+    eUpdateStatObj = 0x02,
+    eUpdateObjects = 0x04, //! Update objects in viewport.
+    eRedrawViewports = 0x08 //! Just redraw viewports..
 };
 
 enum MouseCallbackFlags
@@ -404,7 +405,7 @@ struct IPickObjectCallback
     //! Return true if specified object is pickable.
     virtual bool OnPickFilter([[maybe_unused]] CBaseObject* filterObject) { return true; };
     //! If need a specific behavior when holding space, return true or if not, return false.
-    virtual bool IsNeedSpecificBehaviorForSpaceAcce()   {   return false;   }
+    virtual bool IsNeedSpecificBehaviorForSpaceAcce() { return false; }
 };
 
 //! Class provided by editor for various registration functions.
@@ -551,7 +552,7 @@ struct IEditor
     virtual SFileVersion GetProductVersion() = 0;
     //! Retrieve pointer to game engine instance
     virtual CGameEngine* GetGameEngine() = 0;
-    virtual CDisplaySettings*   GetDisplaySettings() = 0;
+    virtual CDisplaySettings* GetDisplaySettings() = 0;
     virtual const SGizmoParameters& GetGlobalGizmoParameters() = 0;
     //! Create new object
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
@@ -705,7 +706,7 @@ struct IEditor
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
     //! Returns true if selection is made and false if selection is canceled.
-    virtual bool SelectColor(QColor &color, QWidget *parent = 0) = 0;
+    virtual bool SelectColor(QColor& color, QWidget* parent = 0) = 0;
     //! Get shader enumerator.
     virtual class CShaderEnum* GetShaderEnum() = 0;
     virtual class CUndoManager* GetUndoManager() = 0;
@@ -801,7 +802,7 @@ struct IEditor
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
-    typedef Functor2<QMenu*, const CBaseObject*> TContextMenuExtensionFunc;
+    typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
 
     virtual void SetCurrentMissionTime(float time) = 0;
@@ -819,6 +820,7 @@ struct IEditor
     virtual void LoadPlugins() = 0;
 
     virtual bool IsNewViewportInteractionModelEnabled() const = 0;
+    virtual bool IsPrefabSystemEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs

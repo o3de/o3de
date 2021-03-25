@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <IEditor.h>
 
@@ -24,6 +25,13 @@ namespace AZ
 {
     namespace Render
     {
+        static IEditor* GetLegacyEditor()
+        {
+            IEditor* editor = nullptr;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequestBus::Events::GetEditor);
+            return editor;
+        }
+
         EditorCommonFeaturesSystemComponent::EditorCommonFeaturesSystemComponent() = default;
         EditorCommonFeaturesSystemComponent::~EditorCommonFeaturesSystemComponent() = default;
 
@@ -93,9 +101,11 @@ namespace AZ
 
             if (m_levelDefaultSliceAssetId.IsValid())
             {
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().FindAsset<AZ::SliceAsset>(
+                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::SliceAsset>(
                     m_levelDefaultSliceAssetId,
                     AZ::Data::AssetLoadBehavior::Default);
+
+                asset.BlockUntilLoadComplete();
 
                 if (asset)
                 {
@@ -109,9 +119,10 @@ namespace AZ
 
                         AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
-                        if (!GetIEditor()->IsUndoSuspended())
+                        if (IEditor* editor = GetLegacyEditor();
+                            !editor->IsUndoSuspended())
                         {
-                            GetIEditor()->SuspendUndo();
+                            editor->SuspendUndo();
                         }
 
                         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
@@ -142,12 +153,14 @@ namespace AZ
 
                 AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
 
-                //save after level default slice fully instantiated
-                GetIEditor()->SaveDocument();
+                IEditor* editor = GetLegacyEditor();
 
-                if (GetIEditor()->IsUndoSuspended())
+                //save after level default slice fully instantiated
+                editor->SaveDocument();
+
+                if (editor->IsUndoSuspended())
                 {
-                    GetIEditor()->ResumeUndo();
+                    editor->ResumeUndo();
                 }
             }
         }
@@ -157,7 +170,7 @@ namespace AZ
         {
             if (m_levelDefaultSliceAssetId == sliceAssetId)
             {
-                GetIEditor()->ResumeUndo();
+                GetLegacyEditor()->ResumeUndo();
                 AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
                 AZ_Warning("EditorCommonFeaturesSystemComponent", false, "Failed to instantiate default Atom environment slice.");
             }

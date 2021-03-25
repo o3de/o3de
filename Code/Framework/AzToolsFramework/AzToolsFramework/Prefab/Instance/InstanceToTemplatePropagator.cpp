@@ -124,44 +124,45 @@ namespace AzToolsFramework
 
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
-            PrefabDom templateDom;
-            templateDom.CopyFrom(templateDomReference, templateDom.GetAllocator());
+            PatchEntityInTemplate(providedPatch, entityAlias.value(), templateId);
+        }
+
+        void InstanceToTemplatePropagator::PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId)
+        {
+            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
             //query into the template dom for the alias
-            PrefabDomValueReference entityList = PrefabDomUtils::FindPrefabDomValue(templateDom, "Entities");
+            PrefabDomValueReference entityList = PrefabDomUtils::FindPrefabDomValue(templateDomReference, PrefabDomUtils::EntitiesName);
 
-            PrefabDomValueReference entity = PrefabDomUtils::FindPrefabDomValue(entityList->get(), entityAlias->c_str());
+            PrefabDomValueReference entity = PrefabDomUtils::FindPrefabDomValue(entityList->get(), entityAlias.c_str());
             AZ_Error("Prefab", entity != AZStd::nullopt, "Failed to aquire entity value reference")
 
             //apply patch to section
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(entity->get(),
-                templateDom.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+                templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
 
             AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
                 "Patch was not successfully applied")
 
             //update the Dom and trigger propogation
-            m_prefabSystemComponentInterface->UpdatePrefabTemplate(templateId, templateDom);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
         }
 
         void InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, const TemplateId& templateId)
         {
-            const PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
-
-            PrefabDom templateDom;
-            templateDom.CopyFrom(templateDomReference, templateDom.GetAllocator());
+            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
             //apply patch to template
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDom,
-                templateDom.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
+                templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
 
             AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
-                "Patch was not successfully applied")
+                "Patch was not successfully applied");
 
             //update the Dom and trigger propogation
             if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
             {
-                m_prefabSystemComponentInterface->UpdatePrefabTemplate(templateId, templateDom);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
             }
         }
 

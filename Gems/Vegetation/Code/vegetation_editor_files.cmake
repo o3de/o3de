@@ -63,6 +63,8 @@ set(FILES
     Source/Debugger/EditorAreaDebugComponent.h
     Source/Debugger/EditorDebugComponent.cpp
     Source/Debugger/EditorDebugComponent.h
+    Source/AreaSystemComponent.cpp
+    Source/AreaSystemComponent.h
     Source/VegetationModule.cpp
     Source/VegetationModule.h
 )

@@ -47,6 +47,16 @@ namespace AZ
                 SCENE_DATA_API virtual void SetOpacity(float opacity);
                 SCENE_DATA_API virtual void SetShininess(float shininess);
                 SCENE_DATA_API virtual void SetUniqueId(uint64_t uid);
+                SCENE_DATA_API virtual void SetUseColorMap(bool useColorMap);
+                SCENE_DATA_API virtual void SetBaseColor(const AZ::Vector3& baseColor);
+                SCENE_DATA_API virtual void SetUseMetallicMap(bool useMetallicMap);
+                SCENE_DATA_API virtual void SetMetallicFactor(float metallicFactor);
+                SCENE_DATA_API virtual void SetUseRoughnessMap(bool useRoughnessMap);
+                SCENE_DATA_API virtual void SetRoughnessFactor(float roughnessFactor);
+                SCENE_DATA_API virtual void SetUseEmissiveMap(bool useEmissiveMap);
+                SCENE_DATA_API virtual void SetEmissiveIntensity(float emissiveIntensity);
+                SCENE_DATA_API virtual void SetUseAOMap(bool useAOMap);
+                
 
                 SCENE_DATA_API const AZStd::string& GetTexture(TextureMapType mapType) const override;
                 SCENE_DATA_API bool IsNoDraw() const override;
@@ -57,6 +67,15 @@ namespace AZ
                 SCENE_DATA_API float GetOpacity() const override;
                 SCENE_DATA_API float GetShininess() const override;
                 SCENE_DATA_API uint64_t GetUniqueId() const override;
+                SCENE_DATA_API bool GetUseColorMap() const override;
+                SCENE_DATA_API const AZ::Vector3& GetBaseColor() const override;
+                SCENE_DATA_API bool GetUseMetallicMap() const override;
+                SCENE_DATA_API float GetMetallicFactor() const override;
+                SCENE_DATA_API bool GetUseRoughnessMap() const override;
+                SCENE_DATA_API float GetRoughnessFactor() const override;
+                SCENE_DATA_API bool GetUseEmissiveMap() const override;
+                SCENE_DATA_API float GetEmissiveIntensity() const override;
+                SCENE_DATA_API bool GetUseAOMap() const override;
 
                 static void Reflect(ReflectContext* context);
 
@@ -66,8 +85,18 @@ namespace AZ
                 AZ::Vector3 m_diffuseColor;
                 AZ::Vector3 m_specularColor;
                 AZ::Vector3 m_emissiveColor;
+                AZ::Vector3 m_baseColor;
                 float m_opacity;
                 float m_shininess;
+                float m_metallicFactor = 0.0f;
+                float m_roughnessFactor = 0.0f;
+                float m_emissiveIntensity = 0.0f;
+
+                bool m_useColorMap = false;
+                bool m_useMetallicMap = false;
+                bool m_useRoughnessMap = false;
+                bool m_useEmissiveMap = false;
+                bool m_useAOMap = false;
 
                 bool m_isNoDraw;
 

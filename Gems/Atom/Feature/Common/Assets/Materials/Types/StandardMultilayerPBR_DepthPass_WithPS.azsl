@@ -14,6 +14,7 @@
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
 
 #include "MaterialInputs/AlphaInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
@@ -66,12 +67,11 @@ VSDepthOutput MainVS(VSInput IN)
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
-    
+
+    // By design, only UV0 is allowed to apply transforms.
     // Note there are additional UV transforms that happen for each layer, but we defer that step to the pixel shader to avoid bloating the vertex output buffer.
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
-
-    // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
-    OUT.m_uv[1] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv1, 1.0)).xy;
+    OUT.m_uv[1] = IN.m_uv1;
 
     if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
     {
@@ -124,8 +124,11 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         
         float depth;
 
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
-                         ObjectSrg::GetWorldMatrix(), MaterialSrg::m_uvMatrix, MaterialSrg::m_uvMatrixInverse,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
 
         OUT.m_depth = depth;

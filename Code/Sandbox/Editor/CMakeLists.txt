@@ -120,16 +120,16 @@ ly_add_target(
             Legacy::NewsShared
             AZ::AWSNativeSDKInit
             Legacy::CryCommonTools
+            AZ::AtomCore
+            Gem::Atom_RPI.Edit
+            Gem::Atom_RPI.Public
+            Gem::Atom_Feature_Common.Static
+            Gem::AtomToolsFramework.Static
             ${additional_dependencies}
         PUBLIC
             3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
-)
-ly_add_source_properties(
-    SOURCES IEditorImpl.cpp
-    PROPERTY COMPILE_DEFINITIONS
-    VALUES LY_METRICS_BUILD_TIME=${LY_METRICS_BUILD_TIME}
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp
@@ -169,10 +169,11 @@ ly_add_target(
         Platform/${PAL_PLATFORM_NAME}/editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::EditorLib
+            3rdParty::Qt::Core
             Legacy::CryCommon
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
+        Legacy::EditorLib
 )
 ly_add_translations(
     TARGETS Editor

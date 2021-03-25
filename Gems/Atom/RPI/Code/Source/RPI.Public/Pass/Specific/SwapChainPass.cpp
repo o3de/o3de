@@ -62,6 +62,15 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusDisconnect();
         }
 
+        RHI::Format SwapChainPass::GetSwapChainFormat() const
+        {
+            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].m_attachment)
+            {
+                return m_attachmentBindings[0].m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+            }
+            return RHI::Format::Unknown;
+        }
+
         const RHI::Scissor& SwapChainPass::GetScissor() const
         {
             return m_scissorState;

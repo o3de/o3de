@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Name/Name.h>
+#include <AzNetworking/Framework/ICompressor.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/TcpTransport/TcpListenThread.h>
@@ -59,6 +60,9 @@ namespace AzNetworking
         INetworkInterface* CreateNetworkInterface(AZ::Name name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
         INetworkInterface* RetrieveNetworkInterface(AZ::Name name) override;
         bool DestroyNetworkInterface(AZ::Name name) override;
+        void RegisterCompressorFactory(ICompressorFactory* factory) override;
+        AZStd::unique_ptr<ICompressor> CreateCompressor(AZ::Name name) override;
+        bool UnregisterCompressorFactory(AZ::Name name) override;
         //! @}
 
         //! Console commands.
@@ -74,5 +78,8 @@ namespace AzNetworking
         NetworkInterfaces m_networkInterfaces;
         AZStd::unique_ptr<TcpListenThread> m_listenThread;
         AZStd::unique_ptr<UdpReaderThread> m_readerThread;
+
+        using CompressionFactories = AZStd::unordered_map<AZ::Name, AZStd::unique_ptr<ICompressorFactory>>;
+        CompressionFactories m_compressorFactories;
     };
 }

@@ -27,8 +27,7 @@ namespace AZ
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
             AZ::u64 variationKey = shaderOption.GetShaderVariantId().m_key.to_ullong();
 
-            auto searchResult = shader->FindVariantStableId(shaderOption.GetShaderVariantId());
-            auto shaderVariant = shader->GetVariant(searchResult.GetStableId());
+            auto shaderVariant = shader->GetVariant(shaderOption.GetShaderVariantId());
 
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
             pipelineStateDescriptor.m_renderAttachmentConfiguration = renderAttachmentConfiguration;
@@ -42,7 +41,7 @@ namespace AZ
             pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
 
             m_shaderVariantTable[variationKey].m_pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_shaderVariantTable[variationKey].m_isFullyBaked = searchResult.IsFullyBaked();
+            m_shaderVariantTable[variationKey].m_isFullyBaked = shaderVariant.IsFullyBaked();
         }
 
         void PostProcessingShaderOptionBase::UpdateShaderVariant(const AZ::RPI::ShaderOptionGroup& shaderOption)

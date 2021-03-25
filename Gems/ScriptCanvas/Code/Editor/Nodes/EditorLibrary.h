@@ -17,7 +17,7 @@ namespace AZ
 {
     class ReflectContext;
     class ComponentDescriptor;
-} // namespace AZ
+}
 
 namespace ScriptCanvasEditor
 {
@@ -31,7 +31,7 @@ namespace ScriptCanvasEditor
             static void InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry);
             static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
         };
-    } // namespace Library
+    }
 
     AZStd::vector<AZ::ComponentDescriptor*> GetLibraryDescriptors();
-} // namespace ScriptCanvasEditor
+}

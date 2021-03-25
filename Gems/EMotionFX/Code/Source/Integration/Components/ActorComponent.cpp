@@ -25,7 +25,6 @@
 
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 #include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/Utils/MaterialOwnerRequestBusHandlerImpl.h>
 
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Rendering/RenderBackendManager.h>
@@ -34,6 +33,7 @@
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace EMotionFX
 {
@@ -149,6 +149,17 @@ namespace EMotionFX
             }
         }
 
+        void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
+        {
+            m_configuration.m_actorAsset = actorAsset;
+
+            Actor* actor = m_configuration.m_actorAsset->GetActor();
+            if (actor)
+            {
+                OnActorReady(actor);
+            }
+        }
+
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
             : m_debugDrawRoot(false)
@@ -157,14 +168,11 @@ namespace EMotionFX
             {
                 m_configuration = *configuration;
             }
-
-            //m_materialBusHandler = aznew LmbrCentral::MaterialOwnerRequestBusHandlerImpl;
         }
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::~ActorComponent()
         {
-            //delete m_materialBusHandler;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -172,14 +180,22 @@ namespace EMotionFX
         {
             m_actorInstance.reset();
 
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-
             auto& cfg = m_configuration;
 
             if (cfg.m_actorAsset.GetId().IsValid())
             {
+                EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
+                AZ::Data::AssetBus::Handler::BusDisconnect();
+                EMotionFX::ActorNotificationBus::Handler::BusConnect();
                 AZ::Data::AssetBus::Handler::BusConnect(cfg.m_actorAsset.GetId());
                 cfg.m_actorAsset.QueueLoad();
+
+                // In case the asset was already loaded fully, create the actor directly.
+                if (cfg.m_actorAsset.IsReady() &&
+                    cfg.m_actorAsset->GetActor())
+                {
+                    cfg.m_actorAsset->GetActor()->LoadRemainingAssets();
+                }
             }
 
             AZ::TickBus::Handler::BusConnect();
@@ -207,6 +223,7 @@ namespace EMotionFX
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusDisconnect();
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
+            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActor();
             m_configuration.m_actorAsset.Release();
@@ -283,16 +300,34 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            OnAssetReady(asset);
-        }
-
         void ActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_configuration.m_actorAsset = asset;
+            Actor* actor = m_configuration.m_actorAsset->GetActor();
+            AZ_Assert(m_configuration.m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
 
-            CheckActorCreation();
+            actor->LoadRemainingAssets();
+            actor->CheckFinalizeActor();
+        }
+
+        void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            DestroyActor();
+            m_configuration.m_actorAsset = asset;
+
+            const Actor* oldActor = m_configuration.m_actorAsset->GetActor();
+            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
+            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
+            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
+
+            m_configuration.m_actorAsset = asset;
+            Actor* newActor = m_configuration.m_actorAsset->GetActor();
+            AZ_Assert(m_configuration.m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
+
+            newActor->SetMeshAsset(meshAsset);
+            newActor->SetSkinMetaAsset(skinMetaAsset);
+            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
+            newActor->CheckFinalizeActor();
         }
 
         bool ActorComponent::IsWorldNotificationBusConnected(AZ::Crc32 worldId) const
@@ -302,81 +337,78 @@ namespace EMotionFX
 
         void ActorComponent::CheckActorCreation()
         {
-            if (m_configuration.m_actorAsset.IsReady())
+            // Create actor instance.
+            auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
+            AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
+            if (!actorAsset)
             {
-                // Create actor instance.
-                auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
-                AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
-                if (!actorAsset)
-                {
-                    return;
-                }
+                return;
+            }
 
-                DestroyActor();
+            DestroyActor();
 
-                m_actorInstance = actorAsset->CreateInstance(GetEntity());
-                if (!m_actorInstance)
-                {
-                    AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
-                    return;
-                }
+            m_actorInstance = actorAsset->CreateInstance(GetEntity());
+            if (!m_actorInstance)
+            {
+                AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
+                return;
+            }
 
-                ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
+            ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceCreated,
-                    m_actorInstance.get());
+            ActorComponentNotificationBus::Event(
+                GetEntityId(),
+                &ActorComponentNotificationBus::Events::OnActorInstanceCreated,
+                m_actorInstance.get());
 
-                m_actorInstance->SetLODLevel(m_configuration.m_lodLevel);
+            m_actorInstance->SetLODLevel(m_configuration.m_lodLevel);
 
-                // Setup initial transform and listen for transform changes.
-                AZ::Transform transform = AZ::Transform::CreateIdentity();
-                AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                OnTransformChanged(transform, transform);
-                AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
+            // Setup initial transform and listen for transform changes.
+            AZ::Transform transform = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            OnTransformChanged(transform, transform);
+            AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
-                m_actorInstance->UpdateWorldTransform();
-                m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
+            m_actorInstance->UpdateWorldTransform();
+            m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
-                RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
+            // Creating the render actor AFTER both actor asset and mesh asset loaded.
+            RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
+            if (renderBackend)
+            {
+                actorAsset->InitRenderActor();
 
                 // If there is already a RenderActorInstance, destroy it before creating the new one so there are not two instances potentially handling events for the same entityId
                 m_renderActorInstance.reset(nullptr);
                 // Create the new RenderActorInstance
                 m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
-                        m_actorInstance,
-                        m_configuration.m_actorAsset,
-                        m_configuration.m_materialPerLOD,
-                        m_configuration.m_skinningMethod,
-                        transform));
+                    m_actorInstance,
+                    m_configuration.m_actorAsset,
+                    m_configuration.m_materialPerLOD,
+                    m_configuration.m_skinningMethod,
+                    transform));
 
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
                 }
-
-                /*
-                const bool registerBus = true;
-                m_materialBusHandler->Activate(m_renderNode.get(), m_entity->GetId(), registerBus);
-                */
-
-                // Reattach all attachments
-                for (AZ::EntityId& attachment : m_attachments)
-                {
-                    LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
-                }
-
-                const AZ::EntityId entityId = GetEntityId();
-                LmbrCentral::AttachmentComponentRequestBus::Event(entityId, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
-
-                CheckAttachToEntity();
-
-                // Send general mesh creation notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(entityId, &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_configuration.m_actorAsset);
-
-                AzFramework::CharacterPhysicsDataNotificationBus::Event(entityId, &AzFramework::CharacterPhysicsDataNotifications::OnRagdollConfigurationReady);
             }
+
+            // Reattach all attachments
+            for (AZ::EntityId& attachment : m_attachments)
+            {
+                LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+            }
+
+            const AZ::EntityId entityId = GetEntityId();
+            LmbrCentral::AttachmentComponentRequestBus::Event(entityId, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+
+            CheckAttachToEntity();
+
+            // Send general mesh creation notification to interested parties.
+            LmbrCentral::MeshComponentNotificationBus::Event(entityId, &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_configuration.m_actorAsset);
+
+            AzFramework::CharacterPhysicsDataNotificationBus::Event(entityId, &AzFramework::CharacterPhysicsDataNotifications::OnRagdollConfigurationReady);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -412,8 +444,6 @@ namespace EMotionFX
 
             if (m_actorInstance)
             {
-                //m_materialBusHandler->Deactivate();
-
                 DetachFromEntity();
 
                 m_attachmentTargetActor = nullptr;
@@ -806,7 +836,6 @@ namespace EMotionFX
             }
         }
 
-
         // The entity is detaching from the target.
         void ActorComponent::OnDetached(AZ::EntityId targetId)
         {
@@ -827,6 +856,14 @@ namespace EMotionFX
             if (targetActorInstance)
             {
                 m_actorInstance->RemoveAttachment(targetActorInstance);
+            }
+        }
+
+        void ActorComponent::OnActorReady(Actor* actor)
+        {
+            if (m_configuration.m_actorAsset && m_configuration.m_actorAsset->GetActor() == actor)
+            {
+                CheckActorCreation();
             }
         }
     } // namespace Integration

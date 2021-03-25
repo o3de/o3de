@@ -15,8 +15,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
-
 #include <Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.generated.h>
 
 namespace ScriptCanvas
@@ -25,24 +23,24 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
+            //! Provides a node that uses weighted values to favor execution paths
             class WeightedRandomSequencer
-                : public Node                
+                : public Node
             {
-                ScriptCanvas_Node(WeightedRandomSequencer,
-                    ScriptCanvas_Node::Name("Random Signal")
-                    ScriptCanvas_Node::Uuid("{DFB13C5E-5FB3-4650-BD3A-E1AD79CD42AC}"),
-                    ScriptCanvas_Node::Description("Triggers one of the selected outputs at Random depending on the weights provided.")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Logic")
-                );
-                
+
             public:
+
+                SCRIPTCANVAS_NODE(WeightedRandomSequencer);
 
                 static void ReflectDataTypes(AZ::ReflectContext* reflectContext);
             
                 WeightedRandomSequencer() = default;
                 ~WeightedRandomSequencer() = default;
                 
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+
                 // Node
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
@@ -52,6 +50,8 @@ namespace ScriptCanvas
                 void OnInputSignal(const SlotId& slot);
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
+
+                bool IsSupportedByNewBackend() const override { return true; }
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 
@@ -64,9 +64,6 @@ namespace ScriptCanvas
                 AZ::Crc32 GetExecutionExtensionId() const { return AZ_CRC("WRS_Execution_Extension", 0x0706035e); }
                 AZStd::string GetDisplayGroup() const { return "WeightedExecutionGroup";  }
             
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-                
             private:
 
                 struct WeightedPairing
@@ -96,7 +93,7 @@ namespace ScriptCanvas
 
                 using WeightedPairingList = AZStd::vector<WeightedPairing>;
 
-                ScriptCanvas_SerializeProperty(WeightedPairingList, m_weightedPairings);
+                WeightedPairingList m_weightedPairings;
             };
         }
     }   

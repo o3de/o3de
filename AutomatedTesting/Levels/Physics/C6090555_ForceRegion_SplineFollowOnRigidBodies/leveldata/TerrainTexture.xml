@@ -1,0 +1,10 @@
+<TerrainTexture TileCountX="2" TileCountY="2" TileResolution="512">
+ <RGBLayer>
+  <Tiles>
+   <tile />
+   <tile />
+   <tile />
+   <tile />
+  </Tiles>
+ </RGBLayer>
+</TerrainTexture>

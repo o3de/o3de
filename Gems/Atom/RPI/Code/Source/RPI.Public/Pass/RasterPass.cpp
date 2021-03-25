@@ -159,13 +159,13 @@ namespace AZ
 
         // --- Scope producer functions ---
 
-        void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer)
+        void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
             frameGraph.SetEstimatedItemCount(static_cast<u32>(m_drawListView.size()));
         }
 
-        void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
@@ -179,7 +179,7 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
-        void RasterPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 

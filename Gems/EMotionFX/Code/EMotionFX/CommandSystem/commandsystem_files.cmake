@@ -41,8 +41,6 @@ set(FILES
     Source/CommandSystemConfig.h
     Source/ImporterCommands.cpp
     Source/ImporterCommands.h
-    Source/LODCommands.cpp
-    Source/LODCommands.h
     Source/MetaData.cpp
     Source/MetaData.h
     Source/MiscCommands.cpp

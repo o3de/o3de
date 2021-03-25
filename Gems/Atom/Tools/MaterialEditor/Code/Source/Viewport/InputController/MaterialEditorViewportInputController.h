@@ -47,8 +47,8 @@ namespace MaterialEditor
         void SetFieldOfView(float value) override;
 
         // AzFramework::ViewportControllerInstance interface overrides...
-        bool HandleInputChannelEvent(AzFramework::ViewportId viewport, const AzFramework::InputChannel& inputChannel) override;
-        void UpdateViewport(AzFramework::ViewportId viewport, AzFramework::FloatSeconds deltaTime, AZ::ScriptTimePoint time) override;
+        bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:
         using KeyMask = uint32_t;

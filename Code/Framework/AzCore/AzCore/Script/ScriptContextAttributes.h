@@ -35,6 +35,14 @@ namespace AZ
             const static AZ::Crc32 DisallowBroadcast = AZ_CRC("DisallowBroadcast", 0x389b0ac7); ///< Marks a reflected EBus as not allowing Broadcasts, only Events.
             const static AZ::Crc32 ClassConstantValue = AZ_CRC_CE("ClassConstantValue"); ///< Indicates the property is backed by a constant value
 
+            //! Attribute which stores BehaviorAzEventDescription structure which contains
+            //! the script name of an AZ::Event and the name of it's parameter arguments
+            static constexpr AZ::Crc32 AzEventDescription = AZ_CRC_CE("AzEventDescription");
+
+            //! Applied to AZ Event reflected classes.
+            //! Stores a vector<TypeId> containing the Uuid of each event param
+            static constexpr AZ::Crc32 EventParameterTypes = AZ_CRC_CE("EventParameterTypes");
+
             ///< Recommends that the Lua runtime look up the member function in the meta table of the first argument, rather than in the original table
             const static AZ::Crc32 TreatAsMemberFunction = AZ_CRC("TreatAsMemberFunction", 0x64be831a);
 

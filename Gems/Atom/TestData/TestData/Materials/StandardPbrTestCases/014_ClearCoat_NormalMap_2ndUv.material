@@ -1,0 +1,35 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                1.0,
+                0.34190890192985537,
+                0.0009155413135886192,
+                1.0
+            ],
+            "textureMap": "TestData/Textures/checker8x8_512.png",
+            "textureMapUv": "Packed"
+        },
+        "clearCoat": {
+            "enable": true,
+            "influenceMap": "TestData/Textures/checker8x8_512.png",
+            "influenceMapUv": "Packed",
+            "normalMap": "TestData/Textures/test_dome_normal.tiff",
+            "normalMapUv": "Packed",
+            "roughnessMap": "TestData/Textures/checker8x8_512.png",
+            "roughnessMapUv": "Packed",
+            "useInfluenceMap": false,
+            "useRoughnessMap": false
+        },
+        "metallic": {
+            "factor": 0.5
+        },
+        "roughness": {
+            "factor": 0.5
+        }
+    }
+}

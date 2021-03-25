@@ -84,6 +84,6 @@ namespace ScriptCanvas
                 }
             }
 
-        } // namespace Core
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        } 
+    } 
+} 

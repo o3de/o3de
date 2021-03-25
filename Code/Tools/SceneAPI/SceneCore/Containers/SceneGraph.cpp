@@ -43,6 +43,30 @@ namespace AZ
                 AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
                 if (behaviorContext)
                 {
+                    behaviorContext->Class<SceneGraph::NodeIndex>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
+                        ->Constructor<>()
+                        ->Constructor<const SceneGraph::NodeIndex&>()
+                        ->Method("AsNumber", &SceneGraph::NodeIndex::AsNumber)
+                        ->Method("Distance", &SceneGraph::NodeIndex::Distance)
+                        ->Method("IsValid", &SceneGraph::NodeIndex::IsValid)
+                        ->Method("Equal", &SceneGraph::NodeIndex::operator==)
+                            ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
+                        ->Method("ToString", [](const SceneGraph::NodeIndex& node) { return AZStd::string::format("%u", node.m_value); })
+                            ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                        ;
+
+                    behaviorContext->Class<SceneGraph::Name>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
+                        ->Constructor()
+                        ->Method("GetPath", &SceneGraph::Name::GetPath)
+                        ->Method("GetName", &SceneGraph::Name::GetName)
+                        ->Method("ToString", [](const SceneGraph::Name& self){ return self.GetName(); })
+                        ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                        ;
+
                     behaviorContext->Class<SceneGraph>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
@@ -62,41 +86,23 @@ namespace AZ
                         ->Method("GetNodeChild", [](const SceneGraph& self, NodeIndex node) { return self.GetNodeChild(node); })
                         ->Method("GetNodeCount", &SceneGraph::GetNodeCount)
                         ->Method("FindWithPath", [](const SceneGraph& self, const AZStd::string& path)
-                            {
-                                return self.Find(path);
-                            })
+                        {
+                            return self.Find(path);
+                        })
                         ->Method("FindWithRootAndPath", [](const SceneGraph& self, NodeIndex root, const AZStd::string& path)
-                            {
-                                return self.Find(root, path);
-                            })
+                        {
+                            return self.Find(root, path);
+                        })
                         ->Method("GetNodeContent", [](const SceneGraph& self, NodeIndex node) -> GraphObjectProxy*
+                        {
+                            auto graphObject = self.GetNodeContent(node);
+                            if (graphObject)
                             {
-                                auto graphObject = self.GetNodeContent(node);
-                                if (graphObject)
-                                {
-                                    GraphObjectProxy* proxy = aznew GraphObjectProxy(graphObject);
-                                    return proxy;
-                                }
-                                return nullptr;
-                            })
-                        ;
-
-                    behaviorContext->Class<SceneGraph::NodeIndex>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                        ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
-                        ->Method("AsNumber", &SceneGraph::NodeIndex::AsNumber)
-                        ->Method("Distance", &SceneGraph::NodeIndex::Distance)
-                        ->Method("IsValid", &SceneGraph::NodeIndex::IsValid)
-                        ->Method("Equal", &SceneGraph::NodeIndex::operator==)
-                        ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
-                        ;
-
-                    behaviorContext->Class<SceneGraph::Name>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                        ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
-                        ->Method("GetPath", &SceneGraph::Name::GetPath)
-                        ->Method("GetName", &SceneGraph::Name::GetName)
-                        ;
+                                GraphObjectProxy* proxy = aznew GraphObjectProxy(graphObject);
+                                return proxy;
+                            }
+                            return nullptr;
+                        });
                 }
             }
 

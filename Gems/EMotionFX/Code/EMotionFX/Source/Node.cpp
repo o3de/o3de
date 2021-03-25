@@ -227,11 +227,11 @@ namespace EMotionFX
 
 
     // recursively go through the parents until a root node is reached and store all parents inside an array
-    void Node::RecursiveCollectParents(MCore::Array<uint32>& parents, bool clearParentsArray) const
+    void Node::RecursiveCollectParents(AZStd::vector<uint32>& parents, bool clearParentsArray) const
     {
         if (clearParentsArray)
         {
-            parents.Clear();
+            parents.clear();
         }
 
         // loop until we reached a root node
@@ -243,9 +243,9 @@ namespace EMotionFX
             if (parentIndex != MCORE_INVALIDINDEX32)
             {
                 // check if the parent is already in our array, if not add it so that we only store each node once
-                if (parents.Find(parentIndex) == MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(parents), end(parents), parentIndex) == end(parents))
                 {
-                    parents.Add(parentIndex);
+                    parents.emplace_back(parentIndex);
                 }
             }
 

@@ -13,18 +13,8 @@ set(FILES
     AWSNativeSDK_android.cmake
     BuiltInPackages_android.cmake
     civetweb_android.cmake
-    cityhash_android.cmake
     expat_android.cmake
     FreeType2_android.cmake
-    GoogleBenchmark_android.cmake
-    LibTomCrypt_android.cmake
-    LibTomMath_android.cmake
-    lz4_android.cmake
-    Lzma_android.cmake
-    LZSS_android.cmake
-    md5_android.cmake
-    nvcloth_android.cmake
-    PhysX_android.cmake
+    VkValidation_android.cmake
     Wwise_android.cmake
-    zstd_android.cmake
 )

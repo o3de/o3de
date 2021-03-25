@@ -142,6 +142,17 @@
                         "type": "ShaderOption",
                         "id": "o_enableIBL"
                     }
+                },
+                {
+                    "id": "forwardPassIBLSpecular",
+                    "displayName": "Forward Pass IBL Specular",
+                    "description": "Whether to apply IBL specular in the forward pass.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_materialUseForwardPassIBLSpecular"
+                    }
                 }
             ],
             "baseColor": [
@@ -203,7 +214,7 @@
                     "displayName": "Texture Blend Mode",
                     "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
                     "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp" ],
+                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
                     "connection": {
                         "type": "ShaderOption",

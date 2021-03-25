@@ -21,17 +21,12 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Node that provides addition
             class OperatorAdd : public OperatorArithmetic
             {
             public:
 
-                ScriptCanvas_Node(OperatorAdd,
-                    ScriptCanvas_Node::Name("Add (+)")
-                    ScriptCanvas_Node::Uuid("{C1B42FEC-0545-4511-9FAC-11E0387FEDF0}")
-                    ScriptCanvas_Node::Description("Adds two or more values")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Math")
-                );
+                SCRIPTCANVAS_NODE(OperatorAdd);
 
                 OperatorAdd() = default;
 

@@ -768,8 +768,8 @@ namespace GraphCanvas
         QWheelEvent ev(
             QPoint(0, 0),
             mapToGlobal(QPoint(0, 0)),
-            QPoint(0, WHEEL_ZOOM),
-            QPoint(0,0),
+            QPoint(0, WHEEL_ZOOM * 5),
+            QPoint(0, WHEEL_ZOOM_ANGLE * 5),
             Qt::NoButton,
             Qt::NoModifier,
             Qt::NoScrollPhase,
@@ -790,8 +790,8 @@ namespace GraphCanvas
         QWheelEvent ev(
             QPoint(0, 0),
             mapToGlobal(QPoint(0, 0)),
-            QPoint(0, -WHEEL_ZOOM),
-            QPoint(0,0),
+            QPoint(0, -WHEEL_ZOOM * 5),
+            QPoint(0,-WHEEL_ZOOM_ANGLE * 5),
             Qt::NoButton,
             Qt::NoModifier,
             Qt::NoScrollPhase,
@@ -1180,8 +1180,6 @@ namespace GraphCanvas
                 setInteractive(true);
                 setDragMode(QGraphicsView::RubberBandDrag);
 
-                // If this ever moves off of the right mouse button, we need to not signal this.
-                SceneRequestBus::Event(m_sceneId, &SceneRequests::SuppressNextContextMenu);
                 SaveViewParams();
                 return;
             }

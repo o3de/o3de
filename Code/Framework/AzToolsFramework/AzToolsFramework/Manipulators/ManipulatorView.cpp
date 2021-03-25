@@ -13,6 +13,7 @@
 #include "ManipulatorView.h"
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -36,6 +37,23 @@ namespace AzToolsFramework
             worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         return TransformUniformScale(worldFromLocal);
+    }
+
+    AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
+    {
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+        return nonUniformScale;
+    }
+
+    AZ::Vector3 ManipulatorState::TransformPoint(const AZ::Vector3& point) const
+    {
+        return m_worldFromLocal.TransformPoint(m_nonUniformScale * point);
+    }
+
+    AZ::Vector3 ManipulatorState::TransformDirectionNoScaling(const AZ::Vector3& direction) const
+    {
+        return AzToolsFramework::TransformDirectionNoScaling(m_worldFromLocal, direction);
     }
 
     /// Take into account the location of the camera and orientate the axis so it faces the camera.
@@ -70,14 +88,12 @@ namespace AzToolsFramework
 
     /// Calculate quad bound in world space.
     static Picking::BoundShapeQuad CalculateQuadBound(
-        const AZ::Vector3& localPosition, const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& localPosition, const ManipulatorState& manipulatorState,
         const AZ::Vector3& axis1, const AZ::Vector3& axis2, const float size)
     {
-        const AZ::Vector3 worldPosition = worldFromLocal.TransformPoint(localPosition);
-        const AZ::Vector3 endAxis1World = localPosition +
-            TransformDirectionNoScaling(worldFromLocal, axis1) * size;
-        const AZ::Vector3 endAxis2World = localPosition +
-            TransformDirectionNoScaling(worldFromLocal, axis2) * size;
+        const AZ::Vector3 worldPosition = manipulatorState.TransformPoint(localPosition);
+        const AZ::Vector3 endAxis1World = manipulatorState.TransformDirectionNoScaling(axis1) * size;
+        const AZ::Vector3 endAxis2World = manipulatorState.TransformDirectionNoScaling(axis2) * size;
 
         Picking::BoundShapeQuad quadBound;
         quadBound.m_corner1 = worldPosition;
@@ -117,11 +133,12 @@ namespace AzToolsFramework
     static Picking::BoundShapeLineSegment CalculateLineBound(
         const AZ::Vector3& localStartPosition,
         const AZ::Vector3& localEndPosition,
-        const AZ::Transform& worldFromLocal, const float width)
+        const ManipulatorState& manipulatorState,
+        const float width)
     {
         Picking::BoundShapeLineSegment lineBound;
-        lineBound.m_start = worldFromLocal.TransformPoint(localStartPosition);
-        lineBound.m_end = worldFromLocal.TransformPoint(localEndPosition);
+        lineBound.m_start = manipulatorState.TransformPoint(localStartPosition);
+        lineBound.m_end = manipulatorState.TransformPoint(localEndPosition);
         lineBound.m_width = width;
         return lineBound;
     }
@@ -166,11 +183,11 @@ namespace AzToolsFramework
 
     /// Calculate sphere bound in world space.
     static Picking::BoundShapeSphere CalculateSphereBound(
-        const AZ::Vector3& localPosition, const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& localPosition, const ManipulatorState& manipulatorState,
         const float radius)
     {
         Picking::BoundShapeSphere sphereBound;
-        sphereBound.m_center = worldFromLocal.TransformPoint(localPosition);
+        sphereBound.m_center = manipulatorState.TransformPoint(localPosition);
         sphereBound.m_radius = radius;
         return sphereBound;
     }
@@ -305,7 +322,7 @@ namespace AzToolsFramework
 
         const Picking::BoundShapeQuad quadBound =
             CalculateQuadBound(
-                manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis1, m_cameraCorrectedAxis2,
+                manipulatorState.m_localPosition, manipulatorState, m_cameraCorrectedAxis1, m_cameraCorrectedAxis2,
                 m_size * ManipulatorViewScaleMultiplier(
                     manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState));
 
@@ -385,16 +402,16 @@ namespace AzToolsFramework
             manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState);
 
         const Picking::BoundShapeLineSegment lineBound =
-            CalculateLineBound(m_localStart, m_localEnd, manipulatorState.m_worldFromLocal, m_width * viewScale);
+            CalculateLineBound(m_localStart, m_localEnd, manipulatorState, m_width * viewScale);
 
         if (manipulatorState.m_mouseOver)
         {
             const LineSegmentSelectionManipulator::Action action = CalculateManipulationDataAction(
-                manipulatorState.m_worldFromLocal, mouseInteraction.m_mousePick.m_rayOrigin,
-                mouseInteraction.m_mousePick.m_rayDirection,
+                manipulatorState.m_worldFromLocal, manipulatorState.m_nonUniformScale,
+                mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection,
                 cameraState.m_farClip, m_localStart, m_localEnd);
 
-            const AZ::Vector3 worldLineHitPosition = manipulatorState.m_worldFromLocal.TransformPoint(action.m_localLineHitPosition);
+            const AZ::Vector3 worldLineHitPosition = manipulatorState.TransformPoint(action.m_localLineHitPosition);
             debugDisplay.SetColor(AZ::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
             debugDisplay.DrawBall(
                 worldLineHitPosition, ManipulatorViewScaleMultiplier(worldLineHitPosition, cameraState)
@@ -510,9 +527,9 @@ namespace AzToolsFramework
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         const Picking::BoundShapeSphere sphereBound =
-            CalculateSphereBound(manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal,
+            CalculateSphereBound(manipulatorState.m_localPosition, manipulatorState,
                 m_radius * ManipulatorViewScaleMultiplier(
-                    manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState));
+                    manipulatorState.TransformPoint(manipulatorState.m_localPosition), cameraState));
 
         if (m_depthTest)
         {

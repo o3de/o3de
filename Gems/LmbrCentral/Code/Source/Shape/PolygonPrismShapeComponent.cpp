@@ -50,6 +50,9 @@ namespace LmbrCentral
     {
         EntityDebugDisplayComponent::Activate();
         ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+        m_polygonPrism.SetNonUniformScale(nonUniformScale);
         GenerateVertices();
     }
 
@@ -82,7 +85,7 @@ namespace LmbrCentral
     {
         GeneratePolygonPrismMesh(
             m_polygonPrism.m_vertexContainer.GetVertices(),
-            m_polygonPrism.GetHeight(), m_polygonPrismMesh);
+            m_polygonPrism.GetHeight(), m_polygonPrism.GetNonUniformScale(), m_polygonPrismMesh);
     }
 
     void PolygonPrismShapeComponent::Reflect(AZ::ReflectContext* context)

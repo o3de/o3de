@@ -100,5 +100,7 @@ private:
 
     CLensFlareElement* m_pParent;
     LensFlareElementList m_children;
+
+    AZStd::map<void*, IVariable::OnSetCallback> m_callbackCache;
 };
 #endif // CRYINCLUDE_EDITOR_LENSFLAREEDITOR_LENSFLAREELEMENT_H

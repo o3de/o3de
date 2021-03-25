@@ -36,7 +36,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexColorData.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IMeshAdvancedRule.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/ITouchBendingRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IMaterialRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
@@ -284,13 +283,6 @@ namespace AZ
 
                 int physicsMaterialFlags = 0;
                 AZStd::vector<AZStd::string> targetNodes;
-                AZStd::shared_ptr<const DataTypes::ITouchBendingRule> touchBendingRule = rules.FindFirstByType<DataTypes::ITouchBendingRule>();
-                if (touchBendingRule)
-                {
-                    targetNodes = Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph,
-                        touchBendingRule->GetSceneNodeSelectionList(), Utilities::SceneGraphSelector::IsMesh);
-                    physicsMaterialFlags = AZ::GFxFramework::EMaterialFlags::MTL_FLAG_NODRAW_TOUCHBENDING;
-                }
                 for (auto& nodeName : targetNodes)
                 {
                     auto index = sceneGraph.Find(nodeName);

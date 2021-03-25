@@ -11,7 +11,6 @@
 
 set(FILES
     AtomShim_DevBuffer.cpp
-    AtomShim_DynamicDraw.cpp
     AtomShim_PostProcess.cpp
     AtomShim_Renderer.cpp
     AtomShim_RendPipeline.cpp
@@ -22,7 +21,6 @@ set(FILES
     AtomShim_Textures.cpp
     AtomShim_TexturesStreaming.cpp
     AtomShim_RenderAuxGeom.cpp
-    AtomShim_DynamicDraw.h
     AtomShim_Renderer.h
     AtomShim_RenderAuxGeom.h
     resource.h

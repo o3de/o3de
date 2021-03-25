@@ -144,7 +144,7 @@ namespace GraphCanvas
         return m_boundingRect;
     }
 
-    void AnimatedPulse::paint(QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
+    void AnimatedPulse::paint(QPainter* painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/)
     {
         if (m_configuration.m_controlPoints.empty())
         {

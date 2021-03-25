@@ -43,7 +43,11 @@ class CTrackViewKeyUIControls
 {
     Q_OBJECT
 public:
-    CTrackViewKeyUIControls() { m_pVarBlock = new CVarBlock; };
+    CTrackViewKeyUIControls()
+    {
+        m_pVarBlock = new CVarBlock;
+        m_onSetCallback = AZStd::bind(&CTrackViewKeyUIControls::OnInternalVariableChange, this, AZStd::placeholders::_1);
+    };
 
     void SetKeyPropertiesDlg(CTrackViewKeyPropertiesDlg* pDlg) { m_pKeyPropertiesDlg = pDlg; }
 
@@ -95,7 +99,7 @@ protected:
             var.SetName(varName);
         }
         var.SetDataType(dataType);
-        var.AddOnSetCallback(functor(*this, &CTrackViewKeyUIControls::OnInternalVariableChange));
+        var.AddOnSetCallback(&m_onSetCallback);
         varArray.AddVariable(&var);
         m_registeredVariables.push_back(&var);
     }
@@ -107,7 +111,7 @@ protected:
             var.SetName(varName);
         }
         var.SetDataType(dataType);
-        var.AddOnSetCallback(functor(*this, &CTrackViewKeyUIControls::OnInternalVariableChange));
+        var.AddOnSetCallback(&m_onSetCallback);
         m_pVarBlock->AddVariable(&var);
         m_registeredVariables.push_back(&var);
     }
@@ -117,6 +121,7 @@ protected:
     _smart_ptr<CVarBlock> m_pVarBlock;
     std::vector<_smart_ptr<IVariable> > m_registeredVariables;
     CTrackViewKeyPropertiesDlg* m_pKeyPropertiesDlg;
+    IVariable::OnSetCallback m_onSetCallback;
 };
 
 //////////////////////////////////////////////////////////////////////////

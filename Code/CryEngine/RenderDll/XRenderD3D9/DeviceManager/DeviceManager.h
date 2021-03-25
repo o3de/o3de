@@ -43,10 +43,6 @@
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_H_SECTION_1
     #include AZ_RESTRICTED_FILE(DeviceManager_h)
 #  endif
-
-#  if defined(USE_NV_API)
-#    include "DeviceManager_D3D11_NVAPI.h"
-#  endif
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -482,10 +478,6 @@ class CDeviceTexture
     void* m_pStagingMemoryUpload[NUM_UPLOAD_STAGING_RES];
 #endif
 
-#if defined(USE_NV_API)
-    void* m_handleMGPU;
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_H_SECTION_9
     #include AZ_RESTRICTED_FILE(DeviceManager_h)
@@ -523,20 +515,12 @@ public:
 
     void Unbind();
 
-#if defined(USE_NV_API)
-    void DisableMgpuSync();
-    void MgpuResourceUpdate(bool bUpdating = true);
-#endif
-
     CDeviceTexture ()
         : m_pD3DTexture(NULL)
         , m_nBaseAllocatedSize(0)
         , m_bNoDelete(false)
         , m_bCube(false)
         , m_numSubResources(0)
-#if defined(USE_NV_API)
-        , m_handleMGPU(NULL)
-#endif
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_H_SECTION_10
     #include AZ_RESTRICTED_FILE(DeviceManager_h)
@@ -558,9 +542,6 @@ public:
         , m_bNoDelete(false)
         , m_bCube(false)
         , m_numSubResources(0)
-#if defined(USE_NV_API)
-        , m_handleMGPU(NULL)
-#endif
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_H_SECTION_11
     #include AZ_RESTRICTED_FILE(DeviceManager_h)
@@ -582,9 +563,6 @@ public:
         , m_bNoDelete(false)
         , m_bCube(true)
         , m_numSubResources(0)
-#if defined(USE_NV_API)
-        , m_handleMGPU(NULL)
-#endif
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION DEVICEMANAGER_H_SECTION_12
     #include AZ_RESTRICTED_FILE(DeviceManager_h)

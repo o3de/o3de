@@ -248,12 +248,6 @@ namespace CImageExtensionHelper
     const static uint32 EIF_Colormodel_YFF      =  0x3000000;  // info for the engine: colormodel is Y'FbFr (used for reflectance)
     const static uint32 EIF_Colormodel_IRB      =  0x4000000;  // info for the engine: colormodel is IRB (used for reflectance)
 
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-    #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_CONSTS
-    #include AZ_RESTRICTED_FILE_EXPLICIT(ImageExtensionHelper_h, xenia)
-    #undef AZ_RESTRICTED_SECTION
-#endif
-
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
     #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_CONSTS
     #include AZ_RESTRICTED_FILE_EXPLICIT(ImageExtensionHelper_h, jasper)
@@ -331,10 +325,6 @@ namespace CImageExtensionHelper
     inline const bool IsImageNative(const uint32 nFlags)
     {
         return (nFlags & (0
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-    #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_ISNATIVE
-    #include AZ_RESTRICTED_FILE_EXPLICIT(ImageExtensionHelper_h, xenia)
-#endif
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
     #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_ISNATIVE
     #include AZ_RESTRICTED_FILE_EXPLICIT(ImageExtensionHelper_h, jasper)

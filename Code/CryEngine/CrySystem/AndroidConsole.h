@@ -21,7 +21,6 @@
 
 #include <IConsole.h>
 #include <ITextModeConsole.h>
-#include <INetwork.h>
 
 
 

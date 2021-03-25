@@ -27,6 +27,8 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
@@ -108,29 +110,9 @@ namespace AZ
                 }
 
                 AddGroup(groupNameId, groupDisplayName, groupDescription,
-                    new AtomToolsFramework::InspectorPropertyGroupWidget(&m_group, m_group.TYPEINFO_Uuid(), this));
+                    new AtomToolsFramework::InspectorPropertyGroupWidget(&m_group, nullptr, m_group.TYPEINFO_Uuid(), this));
 
                 AddGroupsEnd();
-            }
-
-            const AtomToolsFramework::DynamicProperty* MaterialModelUvNameMapInspector::FindPropertyForNode(AzToolsFramework::InstanceDataNode* pNode) const
-            {
-                // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-                const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
-                {
-                    const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-                    const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-                    if (context && classData)
-                    {
-                        if (context->CanDowncast(classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
-                        {
-                            return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
-                        }
-                    }
-                }
-
-                return nullptr;
             }
 
             void MaterialModelUvNameMapInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
@@ -138,7 +120,7 @@ namespace AZ
                 // For some reason the reflected property editor notifications are not symmetrical
                 // This function is called continuously anytime a property changes until the edit has completed
                 // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property && m_activeProperty != property)
                 {
                     m_activeProperty = property;
@@ -147,7 +129,7 @@ namespace AZ
 
             void MaterialModelUvNameMapInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
             {
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property && m_activeProperty == property)
                 {
                     uint32_t index = 0;
@@ -178,7 +160,7 @@ namespace AZ
             {
                 // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
                 // when this function executes the changes to the property are ready to be committed or reverted
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property && m_activeProperty == property)
                 {
                     uint32_t index = 0;
@@ -294,10 +276,12 @@ namespace AZ
                 const AZStd::unordered_set<AZ::Name>& modelUvNames,
                 MaterialModelUvOverrideMapChangedCallBack matModUvOverrideMapChangedCallBack)
             {
+                QWidget* activeWindow = nullptr;
+                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
+
                 // Constructing a dialog with a table to display all configurable material export items
-                QDialog dialog(QApplication::activeWindow());
+                QDialog dialog(activeWindow);
                 dialog.setWindowTitle("Material Inspector");
-                dialog.setFixedSize(300, 300);
 
                 MaterialModelUvNameMapInspector* inspector = new MaterialModelUvNameMapInspector(assetId, matModUvOverrides, modelUvNames, matModUvOverrideMapChangedCallBack, &dialog);
                 inspector->Populate();
@@ -318,13 +302,13 @@ namespace AZ
 
                 QPushButton* confirmButton = new QPushButton("Confirm", buttonRow);
                 QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] {
-                    dialog.done(1);
+                    dialog.accept();
                     });
 
                 QPushButton* cancelButton = new QPushButton("Cancel", buttonRow);
                 QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [inspector, matModUvOverrides, &dialog] {
                     inspector->SetUvNameMap(matModUvOverrides);
-                    dialog.done(0);
+                    dialog.reject();
                     });
 
                 QHBoxLayout* buttonLayout = new QHBoxLayout(buttonRow);
@@ -339,8 +323,19 @@ namespace AZ
                 dialogLayout->addWidget(buttonRow);
                 dialog.setLayout(dialogLayout);
 
+                // Forcing the initial dialog size to accomodate typical content.
+                // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.
+                // This forces the dialog to be centered and sized based on the layout of content.
+                // Resizing the dialog after show will not be centered and moving the dialog programatically doesn't m0ve the custmk frame. 
+                dialog.setFixedSize(300, 300);
+                dialog.show();
+
+                // Removing fixed size to allow drag resizing
+                dialog.setMinimumSize(0, 0);
+                dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
                 // Return true if the user press the export button
-                return dialog.exec() == 1;
+                return dialog.exec() == QDialog::Accepted;
             }
         } // namespace EditorMaterialComponentInspector
     } // namespace Render

@@ -70,6 +70,7 @@ namespace AZ
             RHI::Ptr<RHI::Query> CreateQuery() override;
             RHI::Ptr<RHI::IndirectBufferSignature> CreateIndirectBufferSignature() override;
             RHI::Ptr<RHI::IndirectBufferWriter> CreateIndirectBufferWriter() override;
+            RHI::Ptr<RHI::RayTracingBufferPools> CreateRayTracingBufferPools() override;
             RHI::Ptr<RHI::RayTracingBlas> CreateRayTracingBlas() override;
             RHI::Ptr<RHI::RayTracingTlas> CreateRayTracingTlas() override;
             RHI::Ptr<RHI::RayTracingPipelineState> CreateRayTracingPipelineState() override;

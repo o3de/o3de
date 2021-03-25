@@ -166,7 +166,10 @@ CLyShine::CLyShine(ISystem* system)
 
     UiAnimationSystem::StaticInitialize();
 
-    m_system->GetIRenderer()->AddRenderDebugListener(this);
+    if (m_system->GetIRenderer())
+    {
+        m_system->GetIRenderer()->AddRenderDebugListener(this);
+    }
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();

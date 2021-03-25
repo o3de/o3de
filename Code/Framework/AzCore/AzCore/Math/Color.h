@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 
@@ -32,12 +33,16 @@ namespace AZ
         Color() = default;
         Color(const Vector4& v)   { m_color = v; }
 
+        explicit Color(const Vector2& source);
+
+        explicit Color(const Vector3& source);
+
         //! Constructs vector with all components set to the same specified value.
         explicit Color(float rgba);
 
-        explicit Color(float r, float g, float b, float a);
+        Color(float r, float g, float b, float a);
 
-        explicit Color(u8 r, u8 g, u8 b, u8 a);
+        Color(u8 r, u8 g, u8 b, u8 a);
 
         //! Creates a vector with all components set to zero, more efficient than calling Color(0.0f).
         static Color CreateZero();

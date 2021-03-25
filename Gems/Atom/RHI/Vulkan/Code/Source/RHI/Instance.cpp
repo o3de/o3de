@@ -226,7 +226,7 @@ namespace AZ
                 PhysicalDevice* physicalDevice = static_cast<PhysicalDevice*>((*it).get());
                 const VkPhysicalDeviceProperties& properties = physicalDevice->GetPhysicalDeviceProperties();
                 bool shouldIgnore = false;
-                // Check that the device supports the minimun required Vulkan version.
+                // Check that the device supports the minimum required Vulkan version.
                 if (properties.apiVersion < s_minVulkanSupportedVersion)
                 {
                     AZ_Warning("Vulkan", false, "Ignoring device %s because the Vulkan version doesn't meet the minimum requirements.", properties.deviceName);

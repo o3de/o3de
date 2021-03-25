@@ -90,17 +90,10 @@ namespace AssetBuilderSDK
         {
             return AssetBuilderSDK::Platform_OSX;
         }
-        if (azstricmp(newPlatformName, "xenia") == 0)
-        {
-            return AssetBuilderSDK::Platform_XENIA;
-        }
         if (azstricmp(newPlatformName, "provo") == 0)
         {
             return AssetBuilderSDK::Platform_PROVO;
         }
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-#include AZ_RESTRICTED_FILE_EXPLICIT(AssetBuilderSDK_cpp, xenia)
-#endif
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
 #include AZ_RESTRICTED_FILE_EXPLICIT(AssetBuilderSDK_cpp, jasper)
 #endif
@@ -128,8 +121,6 @@ namespace AssetBuilderSDK
             return "ios";
         case AssetBuilderSDK::Platform_OSX:
             return "osx_gl";
-        case AssetBuilderSDK::Platform_XENIA:
-            return "xenia";
         case AssetBuilderSDK::Platform_PROVO:
             return "provo";
         case AssetBuilderSDK::Platform_SALEM:

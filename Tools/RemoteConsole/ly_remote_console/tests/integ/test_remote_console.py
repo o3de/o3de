@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import filecmp
 import os
 import pytest
+import time
 
 # ly_test_tools dependencies.
 import ly_remote_console.remote_console_commands as remote_console_commands
@@ -58,4 +59,18 @@ class TestRemoteConsole(object):
                 timeout=load_wait)
 
         remote_console_commands.capture_screenshot_command(remote_console)
+        assert True
+
+    @pytest.mark.parametrize("project", ["AutomatedTesting"])
+    @pytest.mark.parametrize("level", ['Simple'])
+    @pytest.mark.parametrize("load_wait", [120])
+    def test_RemoteConsole_DelayedConnection_Success(self, launcher, launcher_platform, remote_console, level, load_wait):
+        remote_console.start()
+        time.sleep(5)
+        with launcher.start():
+            launcher_load = remote_console.expect_log_line(
+                match_string='========================== '
+                             'Finished loading textures '
+                             '============================',
+                timeout=load_wait)
         assert True

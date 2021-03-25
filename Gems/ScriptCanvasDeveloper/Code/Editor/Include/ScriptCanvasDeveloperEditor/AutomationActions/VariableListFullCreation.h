@@ -12,12 +12,12 @@
 #pragma once
 
 class QAction;
-class QWidget;
+class QMenu;
 
 namespace ScriptCanvasDeveloperEditor
 {
     namespace VariablePaletteFullCreation
     {
-        QAction* CreateVariablePaletteFullCreationAction(QWidget* mainWindow);
+        QAction* CreateVariablePaletteFullCreationAction(QMenu* mainWindow);
     };
 }

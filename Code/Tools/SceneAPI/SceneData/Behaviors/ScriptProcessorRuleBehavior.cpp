@@ -29,6 +29,7 @@
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ
 {
@@ -36,6 +37,41 @@ namespace AZ
     {
         namespace Behaviors
         {
+            class EditorPythonConsoleNotificationHandler final
+                : protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
+            {
+            public:
+                EditorPythonConsoleNotificationHandler()
+                {
+                    BusConnect();
+                }
+
+                ~EditorPythonConsoleNotificationHandler()
+                {
+                    BusDisconnect();
+                }
+
+                ////////////////////////////////////////////////////////////////////////////////////////////
+                // AzToolsFramework::EditorPythonConsoleNotifications
+                void OnTraceMessage(AZStd::string_view message) override
+                {
+                    using namespace AZ::SceneAPI::Utilities;
+                    AZ_TracePrintf(LogWindow, "%.*s \n", AZ_STRING_ARG(message));
+                }
+
+                void OnErrorMessage(AZStd::string_view message) override
+                {
+                    using namespace AZ::SceneAPI::Utilities;
+                    AZ_TracePrintf(ErrorWindow, "[ERROR] %.*s \n", AZ_STRING_ARG(message));
+                }
+
+                void OnExceptionMessage(AZStd::string_view message) override
+                {
+                    using namespace AZ::SceneAPI::Utilities;
+                    AZ_TracePrintf(ErrorWindow, "[EXCEPTION] %.*s \n", AZ_STRING_ARG(message));
+                }
+            };                        
+
             // a event bus to signal during scene building
             struct ScriptBuildingNotifications
                 : public AZ::EBusTraits
@@ -182,6 +218,7 @@ namespace AZ
                             &ScriptBuildingNotificationBus::Events::OnUpdateManifest,
                             scene);
                     };
+                    EditorPythonConsoleNotificationHandler logger;
                     m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
 
                     // attempt to load the manifest string back to a JSON-scene-manifest

@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/TcpTransport/TcpConnection.h>
 #include <AzNetworking/TcpTransport/TcpPacketHeader.h>
 #include <AzNetworking/TcpTransport/TcpNetworkInterface.h>
@@ -17,7 +18,6 @@
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnectionSet.h>
 #include <AzNetworking/Framework/ICompressor.h>
-#include <AzNetworking/Utilities/CompressionCommon.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -61,8 +61,8 @@ namespace AzNetworking
         , m_registeredSocketFd(InvalidSocketFd)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_TcpCompressor);
-        const char* compressorName = compressor.c_str();
-        m_compressor = CreateCompressor(compressorName);
+        const AZ::Name compressorName = AZ::Name(compressor);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
 
         if (useEncryption)
         {
@@ -115,6 +115,12 @@ namespace AzNetworking
         m_sendRingbuffer.AdvanceReadBuffer(sentBytes);
         m_networkInterface.GetMetrics().m_sendBytes += numSendBytes;
         m_networkInterface.GetMetrics().m_sendBytesUncompressed += numSendBytes;
+
+        if (m_socket->IsEncrypted() && sentBytes > 0)
+        {
+            m_networkInterface.GetMetrics().m_sendBytesEncryptionInflation += (aznumeric_cast<uint32_t>(sentBytes) - numSendBytes);
+            m_networkInterface.GetMetrics().m_sendPacketsEncrypted++;
+        }
     }
 
     bool TcpConnection::UpdateRecv()

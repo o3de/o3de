@@ -93,6 +93,8 @@ namespace AzFramework
         virtual void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) = 0;
         virtual void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) = 0;
 
+        bool m_shouldAssertForLegacySlicesUsage = false;
+
     protected:
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;

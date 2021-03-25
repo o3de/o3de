@@ -187,7 +187,7 @@ namespace MaterialEditor
         for (const auto& propertyPair : m_properties)
         {
             const AtomToolsFramework::DynamicProperty& property = propertyPair.second;
-            if (!AZ::RPI::MaterialUtils::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue))
+            if (!AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue))
             {
                 propertyValuesToRestore[property.GetId()] = property.GetValue();
             }
@@ -237,7 +237,7 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overwritten properties
         const bool savedProperties = SavePropertiesToSourceData(sourceData, [](const AtomToolsFramework::DynamicProperty& property) {
-            return !AZ::RPI::MaterialUtils::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
         });
 
         if (!savedProperties)
@@ -309,7 +309,7 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overwritten properties
         const bool savedProperties = SavePropertiesToSourceData(sourceData, [](const AtomToolsFramework::DynamicProperty& property) {
-            return !AZ::RPI::MaterialUtils::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
         });
 
         if (!savedProperties)
@@ -385,7 +385,7 @@ namespace MaterialEditor
 
         // populate sourceData with modified properties
         const bool savedProperties = SavePropertiesToSourceData(sourceData, [](const AtomToolsFramework::DynamicProperty& property) {
-            return !AZ::RPI::MaterialUtils::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
         });
 
         if (!savedProperties)
@@ -450,7 +450,7 @@ namespace MaterialEditor
             [](const auto& propertyPair)
         {
             const AtomToolsFramework::DynamicProperty& property = propertyPair.second;
-            return !AZ::RPI::MaterialUtils::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
         });
     }
 
@@ -520,7 +520,7 @@ namespace MaterialEditor
             const auto& propertyName = propertyBeforeEditPair.first;
             const auto& propertyValueForUndo = propertyBeforeEditPair.second;
             const auto& propertyValueForRedo = GetPropertyValue(propertyName);
-            if (!AZ::RPI::MaterialUtils::ArePropertyValuesEqual(propertyValueForUndo, propertyValueForRedo))
+            if (!AtomToolsFramework::ArePropertyValuesEqual(propertyValueForUndo, propertyValueForRedo))
             {
                 propertyValuesForUndo[propertyName] = propertyValueForUndo;
                 propertyValuesForRedo[propertyName] = propertyValueForRedo;
@@ -672,10 +672,7 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material type source data could not be loaded: '%s'.", materialTypeSourceFilePath.c_str());
                 return false;
             }
-            else
-            {
-                m_materialTypeSourceData = materialTypeOutcome.GetValue();
-            }
+            m_materialTypeSourceData = materialTypeOutcome.GetValue();
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
@@ -688,10 +685,7 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material type source data could not be loaded: '%s'.", m_absolutePath.c_str());
                 return false;
             }
-            else
-            {
-                m_materialTypeSourceData = materialTypeOutcome.GetValue();
-            }
+            m_materialTypeSourceData = materialTypeOutcome.GetValue();
 
             // The document represents a material, not a material type.
             // If the input data is a material type file we have to generate the material source data by referencing it.

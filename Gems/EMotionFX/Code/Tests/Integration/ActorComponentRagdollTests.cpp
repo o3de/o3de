@@ -81,17 +81,19 @@ namespace EMotionFX
         auto gameEntity = AZStd::make_unique<AZ::Entity>();
         gameEntity->SetId(entityId);
 
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
+        Integration::ActorComponent::Configuration actorConf;
+        actorConf.m_actorAsset = actorAsset;
+
         auto transformComponent = gameEntity->CreateComponent<AzFramework::TransformComponent>();
-        auto actorComponent = gameEntity->CreateComponent<Integration::ActorComponent>();
+        auto actorComponent = gameEntity->CreateComponent<Integration::ActorComponent>(&actorConf);
 
         gameEntity->Init();
         gameEntity->Activate();
 
-        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-        AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
-        AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
-
-        actorComponent->OnAssetReady(actorAsset);
+        actorComponent->SetActorAsset(actorAsset);
         EXPECT_FALSE(actorComponent->IsWorldNotificationBusConnected(worldId))
             << "World notification bus should not be connected directly after creating the actor instance.";
 

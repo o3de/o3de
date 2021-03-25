@@ -29,7 +29,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            3rdParty::nvcloth
+            3rdParty::NvCloth
             Gem::LmbrCentral
         PRIVATE
             Gem::EMotionFXStaticLib
@@ -120,6 +120,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::NvCloth.Static
                 Gem::EMotionFXStaticLib
+                Gem::EMotionFX.Tests.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX
             Gem::LmbrCentral
@@ -150,6 +151,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzToolsFrameworkTestCommon
                     Gem::NvCloth.Editor.Static
                     Gem::EMotionFX.Editor.Static
+                    Gem::EMotionFX.Tests.Static
             RUNTIME_DEPENDENCIES
                 Gem::EMotionFX.Editor
                 Gem::LmbrCentral.Editor

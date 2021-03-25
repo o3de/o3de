@@ -12,13 +12,17 @@
 
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <stdarg.h> 
 
 namespace ScriptCanvas
 {
     class Graph;
+    class Node;
+    class Slot;
 
     namespace Grammar
     {
@@ -29,11 +33,17 @@ namespace ScriptCanvas
     {
         class Writer;
 
-        const char* GetAmazonCopyright();
-        
-        const char* GetDoNotModifyCommentText();
+        struct Configuration;
 
-        const char* GetAutoNativeNamespace();
+        AZStd::string EntityIdToU64String(const AZ::EntityId& entityId);
+
+        AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config);
+
+        AZStd::string_view GetAmazonCopyright();
+
+        AZStd::string_view GetAutoNativeNamespace();
+
+        AZStd::string_view GetDoNotModifyCommentText();
 
         AZ::Outcome<void, AZStd::string> SaveDotCPP(const Grammar::Source& source, AZStd::string_view dotCPP);
 
@@ -53,9 +63,9 @@ namespace ScriptCanvas
             const AZStd::string& GetOutput() const;
 
             size_t GetIndent() const;
-                        
+
             AZStd::string&& MoveOutput();
-            
+
             void Outdent(size_t tabs = 1);
 
             void SetIndent(size_t tabs);
@@ -65,15 +75,51 @@ namespace ScriptCanvas
 
             // in general, don't include newlines, as it will violate the tab policy
             void Write(const char* format, ...);
-                        
+
             void WriteIndent();
-            
+
+            // in general, don't include newlines, as it will violate the tab policy
+            inline void WriteIndented(const AZStd::string_view& stringView)
+            {
+                WriteIndent();
+                Write(stringView);
+            }
+
+            // in general, don't include newlines, as it will violate the tab policy
+            inline void WriteIndented(const char* format, ...)
+            {
+                va_list vargs;
+                va_start(vargs, format);
+                WriteIndent();
+                m_output.append(AZStd::string::format_arg(format, vargs));
+                va_end(vargs);
+            }
+
             // in general, don't include newlines, as it will violate the tab policy
             void WriteLine(const AZStd::string_view& stringView);
 
             // in general, don't include newlines, as it will violate the tab policy
             void WriteLine(const char* format, ...);
 
+            // in general, don't include newlines, as it will violate the tab policy
+            inline void WriteLineIndented(const AZStd::string_view& stringView)
+            {
+                WriteIndent();
+                WriteLine(stringView);
+            }
+
+            // in general, don't include newlines, as it will violate the tab policy
+            inline void WriteLineIndented(const char* format, ...)
+            {
+                va_list vargs;
+                va_start(vargs, format);
+                WriteIndent();
+                m_output.append(AZStd::string::format_arg(format, vargs));
+                WriteNewLine();
+                va_end(vargs);
+            }
+
+            // in general, don't include newlines, as it will violate the tab policy
             void WriteNewLine();
 
             void WriteSpace();
@@ -83,8 +129,26 @@ namespace ScriptCanvas
 
             AZStd::string m_output;
             size_t m_indent = 0;
-        }; // class Writer
+        };
          
-    } // namespace Translation
+        class ScopedIndent
+        {
+        public:
+            ScopedIndent(Writer& writer)
+                : m_writer(writer)
+            {
+                m_writer.Indent();
+            }
 
-} // namespace ScriptCanvas
+            ~ScopedIndent()
+            {
+                m_writer.Outdent();
+            }
+        
+        private:
+            Writer& m_writer;
+        };
+
+    } 
+
+} 

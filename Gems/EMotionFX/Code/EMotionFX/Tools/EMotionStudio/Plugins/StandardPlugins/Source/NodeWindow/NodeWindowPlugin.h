@@ -13,12 +13,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <EMotionFX/Source/ActorBus.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <MysticQt/Source/DialogStack.h>
 #endif
-
 
 namespace AzToolsFramework
 {
@@ -32,14 +32,11 @@ namespace EMStudio
     class NodeHierarchyWidget;
     class NodeInfo;
 
-    /**
-     *
-     *
-     */
     class NodeWindowPlugin
         : public EMStudio::DockWidgetPlugin
+        , EMotionFX::ActorNotificationBus::Handler
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(NodeWindowPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
@@ -75,14 +72,13 @@ namespace EMStudio
         void UpdateVisibleNodeIndices();
 
     private:
-        // declare the callbacks
-        MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
+        // ActorNotificationBus
+        void OnActorReady(EMotionFX::Actor* actor) override;
 
-        CommandSelectCallback*              mSelectCallback;
-        CommandUnselectCallback*            mUnselectCallback;
-        CommandClearSelectionCallback*      mClearSelectionCallback;
+        // declare the callbacks
+        MCORE_DEFINECOMMANDCALLBACK(UpdateCallback);
+
+        AZStd::vector<UpdateCallback*> m_callbacks;
 
         MysticQt::DialogStack*              mDialogStack;
         NodeHierarchyWidget*                mHierarchyWidget;

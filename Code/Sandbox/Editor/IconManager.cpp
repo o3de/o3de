@@ -117,7 +117,7 @@ int CIconManager::GetIconTexture(const char* iconName)
 
     if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        ITexture* texture = GetIEditor()->GetRenderer()->EF_LoadTexture(iconName);
+        ITexture* texture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_LoadTexture(iconName) : nullptr;
         if (texture)
         {
             id = texture->GetTextureID();

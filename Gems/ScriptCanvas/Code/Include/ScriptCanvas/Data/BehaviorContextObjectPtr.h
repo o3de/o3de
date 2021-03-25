@@ -18,11 +18,11 @@
 namespace AZ
 {
     class ReflectContext;
-} // namespace AZ
+}
 
 namespace ScriptCanvas
 {
     class BehaviorContextObject;
     using BehaviorContextObjectPtr = AZStd::intrusive_ptr<BehaviorContextObject>;
     void BehaviorContextObjectPtrReflect(AZ::ReflectContext* context);
-} // namespace ScriptCanvas
+} 

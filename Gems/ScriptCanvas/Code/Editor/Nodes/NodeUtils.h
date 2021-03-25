@@ -14,22 +14,10 @@
 
 #include <AzCore/Component/EntityId.h>
 
-#include <GraphCanvas/Components/Slots/SlotBus.h>
-
-#include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Bus/NodeIdPair.h>
-#include <ScriptCanvas/Variable/VariableCore.h>
-#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
-
-#include <ScriptEvents/ScriptEventsAsset.h>
-
 #include <Editor/Translation/TranslationHelper.h>
 
-namespace ScriptCanvas
-{
-    class Slot;
-}
+#include <ScriptCanvas/Bus/NodeIdPair.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -111,38 +99,13 @@ namespace ScriptCanvasEditor
         AZStd::string GetContextName(const AZ::SerializeContext::ClassData& classData);
         AZStd::string GetCategoryName(const AZ::SerializeContext::ClassData& classData);
 
-        AZ::EntityId DisplayEbusEventNode(const AZ::EntityId& graphCanvasGraphId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId);
-
-        // Generic method of displaying a node.
-        AZ::EntityId DisplayScriptCanvasNode(const AZ::EntityId& graphCanvasGraphId, const ScriptCanvas::Node* node);
-
-        // Specific create methods which will also handle displaying the node.
-        NodeIdPair CreateNode(const AZ::Uuid& classData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration);
-        NodeIdPair CreateEntityNode(const AZ::EntityId& sourceId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
-        NodeIdPair CreateObjectMethodNode(const AZStd::string& className, const AZStd::string& methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
-        NodeIdPair CreateEbusWrapperNode(const AZStd::string& busName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
-        
-        // Script Events
-        AZ::EntityId DisplayScriptEventNode(const AZ::EntityId& graphCanvasGraphId, const AZ::Data::AssetId assetId, const ScriptEvents::Method& methodDefinition);
-        NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId);
-        NodeIdPair CreateScriptEventSenderNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId, const ScriptCanvas::EBusEventId& eventId);
-
-        NodeIdPair CreateGetVariableNode(const ScriptCanvas::VariableId& variableId, const AZ::EntityId& scriptCanvasGraphId);
-        NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, const AZ::EntityId& scriptCanvasGraphId);
-
-        NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId);
-        AZ::EntityId DisplayFunctionNode(const AZ::EntityId& graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionNode* functionNode);
-        AZ::EntityId DisplayFunctionNode(const AZ::EntityId& graphCanvasGraphId, ScriptCanvas::Nodes::Core::FunctionNode* functionNode);
-
-        AZ::EntityId DisplayNodeling(const AZ::EntityId& graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Internal::Nodeling* nodeling);
-        NodeIdPair CreateExecutionNodeling(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string rootName = "New Nodeling");
-
-        // SlotGroup will control how elements are grouped.
-        // Invalid will cause the slots to put themselves into whatever category they belong to by default.
-        AZ::EntityId DisplayScriptCanvasSlot(const AZ::EntityId& graphCanvasNodeId, const ScriptCanvas::Slot& slot, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
-        AZ::EntityId DisplayVisualExtensionSlot(const AZ::EntityId& graphCanvasNodeId, const ScriptCanvas::VisualExtensionSlotConfiguration& extenderConfiguration);
-
         void CopySlotTranslationKeyedNamesToDatums(AZ::EntityId graphCanvasNodeId);
+
+        // Copies the the translated key name to the ScriptCanvas Data Slot which matches
+        // the scSlotId
+        void CopyTranslationKeyedNameToDatumLabel(const AZ::EntityId& graphCanvasNodeId,
+            ScriptCanvas::SlotId scSlotId,
+            const AZ::EntityId& graphCanvasSlotId);
 
         template <typename NodeType>
         NodeType* GetNode(AZ::EntityId scriptCanvasGraphId, NodeIdPair nodeIdPair)

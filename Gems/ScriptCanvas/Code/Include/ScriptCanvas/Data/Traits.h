@@ -41,5 +41,5 @@ namespace ScriptCanvas
         {
             return TypeErasedTraits(AZStd::integral_constant<eType, scTypeValue>{});
         }
-    } // namespace Data
-} // namespace ScriptCanvas
+    } 
+} 

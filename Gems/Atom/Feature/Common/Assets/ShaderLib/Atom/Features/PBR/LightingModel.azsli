@@ -21,6 +21,8 @@ option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering;
 option bool o_clearCoat_feature_enabled;
 option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
+option bool o_meshUseForwardPassIBLSpecular = false;
+option bool o_materialUseForwardPassIBLSpecular = false;
 
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
@@ -206,7 +208,8 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         float3 iblSpecular = 0.0f;
         if (o_enableIBL)
         {
-            EvalPrecomputedIbl(surface, dirToCamera, brdf, iblDiffuse, iblSpecular);
+            ApplyIblDiffuse(surface, diffuseResponse, iblDiffuse);
+            ApplyIblSpecular(surface, specularResponse, dirToCamera, brdf, iblSpecular);
         }
 
         // Apply ambient occlusion to indirect diffuse
@@ -220,6 +223,17 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         specularLighting += iblSpecular;
 
         alpha = FresnelSchlickWithRoughness(NdotV, alpha, roughness).x; // Increase opacity at grazing angles.
+    }
+    else if (o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular)
+    {
+        if (o_enableIBL)
+        {
+            float3 iblSpecular = 0.0f;
+            ApplyIblSpecular(surface, specularResponse, dirToCamera, brdf, iblSpecular);
+            
+            float iblExposureFactor = pow(2.0f, SceneSrg::m_iblExposure);
+            specularLighting += (iblSpecular * iblExposureFactor);
+        }
     }
 
     // Emissive contribution
@@ -254,4 +268,44 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
     lightingOutput.m_clearCoatNormal = float4(EncodeNormalSphereMap(clearCoatNormal), o_clearCoat_feature_enabled ? clearCoatFactor : 0.0, clearCoatRoughness);
 
     return lightingOutput;
+}
+
+//! Populates a PbrLightingOutput struct with values that can be used to render a simple debug color in the PBR pipeline.
+//! Note that this will not give you a the exact color screen pixels since it is used in the PBR pipeline, it may
+//! still have lighting or other affects applied on top of it. But this is still a convenient way to quickly get some
+//! colors on screen.
+//! @param IN the pixel shader input structure
+//! @param debugColor the color to be drawn
+//! @param normalWS world space normal vector
+//! @return a PbrLightingOutput as returned by the main PbrLighting() function
+PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor, float3 normalWS)
+{
+    // We happen to set this up initially using baseColor, but we could consider adding an option to use
+    // emissive instead to avoid depending on scene lighting.
+    const float3 baseColor = debugColor;
+    const float metallic = 0;
+    const float roughness = 1;
+    const float specularF0Factor = 0.5;
+    const float3 normal = normalWS;
+    const float3 emissive = {0,0,0};
+    const float occlusion = 1;
+    const float clearCoatFactor = 0.0f;
+    const float clearCoatRoughness = 0.0f;
+    const float3 clearCoatNormal = {0,0,0};
+    const float4 transmissionTintThickness = {0,0,0,0};
+    const float4 transmissionParams = {0,0,0,0};
+    const float2 anisotropy = 0.0;	// Does not affect calculations unless 'o_enableAnisotropy' is enabled
+    const float alpha = 1.0;
+
+    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
+        normal, IN.m_tangent, IN.m_bitangent, anisotropy,
+        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
+
+    return lightingOutput;
+}
+
+//! Same as above, using the vertex normal
+PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor)
+{
+    return MakeDebugOutput(IN, debugColor, normalize(IN.m_normal));
 }

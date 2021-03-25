@@ -30,4 +30,4 @@ namespace ScriptCanvasDeveloper
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
 
     };
-} // namespace ScriptCanvasDeveloper
+}

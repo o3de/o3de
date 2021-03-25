@@ -910,7 +910,6 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
-    Util/FunctorMulticaster.h
     Util/GdiUtil.cpp
     Util/GdiUtil.h
     Util/GeometryUtil.cpp
@@ -1000,6 +999,12 @@ set(FILES
     ModelViewport.cpp
     ModelViewport.h
     ModelViewportDC.cpp
+    EditorViewportWidget.cpp
+    EditorViewportWidget.h
+    ViewportManipulatorController.cpp
+    ViewportManipulatorController.h
+    LegacyViewportCameraController.cpp
+    LegacyViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

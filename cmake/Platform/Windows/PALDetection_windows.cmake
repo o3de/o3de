@@ -9,5 +9,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_PLATFORM_DETECTION_Windows Windows)
-set(LY_HOST_PLATFORM_DETECTION_Windows Windows)
+ly_set(LY_PLATFORM_DETECTION_Windows Windows)
+ly_set(LY_HOST_PLATFORM_DETECTION_Windows Windows)

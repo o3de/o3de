@@ -13,14 +13,10 @@
 
 // Description : A dialog for batch-rendering sequences
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_SEQUENCEBATCHRENDERDIALOG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_SEQUENCEBATCHRENDERDIALOG_H
 #pragma once
 
 #include <AzFramework/StringFunc/StringFunc.h>
-
-class CMFCButton;
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 
 #include <QDialog>
 #include <QTimer>
@@ -37,6 +33,7 @@ namespace Ui
 class CSequenceBatchRenderDialog
     : public QDialog
     , public IMovieListener
+    , private AZ::Render::FrameCaptureNotificationBus::Handler
 {
 public:
     CSequenceBatchRenderDialog(float fps, QWidget* pParent = nullptr);
@@ -58,7 +55,7 @@ protected:
     void OnSequenceSelected();
     void OnRenderItemSelChange();
     void OnFPSEditChange();
-    void OnFPSChange();
+    void OnFPSChange(int itemIndex);
     void OnImageFormatChange();
     void OnResolutionSelected();
     void OnStartFrameChange();
@@ -154,6 +151,10 @@ protected:
         IAnimSequence* endingSequence;
         // Current capture state.
         CaptureState captureState;
+        // Is an individual frame currently being captured.
+        bool capturingFrame;
+        // Current frame being captured
+        int frameNumber;
 
         bool IsInRendering() const
         { return currentItemIndex >= 0; }
@@ -171,7 +172,9 @@ protected:
             , processingFFMPEG(false)
             , canceled(false)
             , endingSequence(nullptr)
-            , captureState(CaptureState::Idle) {}
+            , captureState(CaptureState::Idle)
+            , capturingFrame(false)
+            , frameNumber(0) {}
     };
     SRenderContext m_renderContext;
 
@@ -216,6 +219,8 @@ protected slots:
     bool GetResolutionFromCustomResText(const char* customResText, int& retCustomWidth, int& retCustomHeight) const;
 
 private:
+    // FrameCaptureNotificationBus overrides ...
+    void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
     void CheckForEnableUpdateButton();
     void stashActiveViewportResolution();
@@ -230,5 +235,3 @@ private:
     int32 CV_TrackViewRenderOutputCapturing;
     QScopedPointer<CPrefixValidator> m_prefixValidator;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_SEQUENCEBATCHRENDERDIALOG_H

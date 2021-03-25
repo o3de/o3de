@@ -58,7 +58,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CopiedVariableData>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Mapping", &CopiedVariableData::m_variableMapping)
                 ;
 
@@ -77,10 +77,15 @@ namespace ScriptCanvas
 
     void GraphVariableManagerComponent::Activate()
     {
+        if (!GraphConfigurationNotificationBus::Handler::BusIsConnectedId(GetEntityId()))
+        {
+            GraphConfigurationNotificationBus::Handler::BusConnect(GetEntityId());
+        }
     }
 
     void GraphVariableManagerComponent::Deactivate()
     {
+        GraphVariableManagerRequestBus::Handler::BusDisconnect();
     }
 
     void GraphVariableManagerComponent::ConfigureScriptCanvasId(const ScriptCanvasId& scriptCanvasId)
@@ -318,13 +323,13 @@ namespace ScriptCanvas
         return m_variableData.FindVariable(varName);
     }
 
-    GraphVariable* GraphVariableManagerComponent::FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& blacklistId)
+    GraphVariable* GraphVariableManagerComponent::FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& excludedVariableIds)
     {
         for (auto& variablePair : m_variableData.GetVariables())
         {
             if (variablePair.second.GetDataType() == dataType)
             {
-                if (blacklistId.count(variablePair.first) == 0)
+                if (excludedVariableIds.count(variablePair.first) == 0)
                 {
                     return &variablePair.second;
                 }

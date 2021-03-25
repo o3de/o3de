@@ -86,7 +86,7 @@ namespace AZ
                     modelLodIndex, m_boneTransforms,
                     m_shaderOptions,
                     m_featureProcessor->GetSkinningPass(),
-                    m_instance->m_accumulatedMorphTargetDeltaOffsetsInBytes[modelLodIndex],
+                    m_instance->m_morphTargetInstanceMetaData[modelLodIndex],
                     morphDeltaIntegerEncoding });
 
             AZ_Assert(m_dispatchItemsByLod.size() == modelLodIndex + 1, "Skinned Mesh Feature Processor - Mismatch in size between the fixed vector of dispatch items and the lod being initialized");
@@ -115,7 +115,7 @@ namespace AZ
                         morphTargetInputBuffersVector[morphTargetIndex],
                         morphTargetMetaDatas[morphTargetIndex],
                         m_featureProcessor->GetMorphTargetPass(),
-                        m_instance->m_accumulatedMorphTargetDeltaOffsetsInBytes[modelLodIndex],
+                        m_instance->m_morphTargetInstanceMetaData[modelLodIndex],
                         morphDeltaIntegerEncoding });
 
                 // Initialize the MorphTargetDispatchItem we just created

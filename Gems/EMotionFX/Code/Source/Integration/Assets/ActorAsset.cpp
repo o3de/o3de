@@ -46,6 +46,12 @@ namespace EMotionFX
             m_status = AZ::Data::AssetData::AssetStatus::Ready;
         }
 
+        void ActorAsset::InitRenderActor()
+        {
+            RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
+            m_renderActor.reset(renderBackend->CreateActor(this));
+        }
+
         bool ActorAssetHandler::OnInitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
             ActorAsset* assetData = asset.GetAs<ActorAsset>();
@@ -70,8 +76,7 @@ namespace EMotionFX
 
             assetData->m_emfxActor->SetIsOwnedByRuntime(true);
 
-            RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
-            assetData->m_renderActor.reset(renderBackend->CreateActor(assetData));
+            // Note: Render actor depends on the mesh asset, so we need to manually create it after mesh asset has been loaded.
 
             return static_cast<bool>(assetData->m_emfxActor);
         }

@@ -14,6 +14,7 @@
 
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
 
 #include <Include/ScriptCanvas/Data/NumericData.h>
 

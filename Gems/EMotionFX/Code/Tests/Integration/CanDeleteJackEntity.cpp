@@ -58,14 +58,14 @@ namespace EMotionFX
         Integration::EditorActorComponent* editorActorComponent = entity->CreateComponent<Integration::EditorActorComponent>();
         Integration::EditorAnimGraphComponent* editorAnimGraphComponent = entity->CreateComponent<Integration::EditorAnimGraphComponent>();
 
-        entity->Init();
-        entity->Activate();
-
         // Load Jack actor asset
         AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
         AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
         AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
-        editorActorComponent->OnAssetReady(actorAsset);
+
+        entity->Init();
+        entity->Activate();
+        editorActorComponent->SetActorAsset(actorAsset);
 
         // Load anim graph asset
         AZ::Data::AssetId animGraphAssetId("{37629818-5166-4B96-83F5-5818B6A1F449}");

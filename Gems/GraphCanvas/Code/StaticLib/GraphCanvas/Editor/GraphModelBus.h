@@ -62,17 +62,13 @@ namespace GraphCanvas
         virtual void TriggerRedo() = 0;
 
         // Enable the specified nodes
-        virtual bool EnableNodes(const AZStd::unordered_set< NodeId >& nodeIds)
+        virtual void EnableNodes(const AZStd::unordered_set< NodeId >& /*nodeIds*/)
         {
-            AZ_UNUSED(nodeIds);
-            return false;
         }
 
         // Disables the specified nodes
-        virtual bool DisableNodes(const AZStd::unordered_set< NodeId >& nodeIds)
+        virtual void DisableNodes(const AZStd::unordered_set< NodeId >& /*nodeIds*/)
         {
-            AZ_UNUSED(nodeIds);
-            return false;
         }
 
         //! Request to create a NodePropertyDisplay class for a particular DataSlot.
@@ -129,114 +125,81 @@ namespace GraphCanvas
 
         virtual void ResetSlotToDefaultValue(const Endpoint& endpoint) = 0;
 
-        virtual void ResetReference(const Endpoint& endpoint)
+        virtual void ResetReference([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
         }
 
-        virtual void ResetProperty(const NodeId& nodeId, const AZ::Crc32& propertyId)
+        virtual void ResetProperty([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const AZ::Crc32& propertyId)
         {
-            AZ_UNUSED(nodeId);
-            AZ_UNUSED(propertyId);
         }
 
-        virtual void RemoveSlot(const Endpoint& endpoint)
+        virtual void RemoveSlot([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
         }
 
-        virtual bool IsSlotRemovable(const Endpoint& endpoint) const
+        virtual bool IsSlotRemovable([[maybe_unused]] const Endpoint& endpoint) const
         {
-            AZ_UNUSED(endpoint);
             return false;
         }
 
-        virtual bool ConvertSlotToReference(const Endpoint& endpoint)
+        virtual bool ConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
             return false;
         }
 
-        virtual bool CanConvertSlotToReference(const Endpoint& endpoint)
+        virtual bool CanConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
             return false;
         }
 
-        virtual bool CanHandleReferenceMimeEvent(const Endpoint& endpoint, const QMimeData* mimeData)
+        virtual CanHandleMimeEventOutcome CanHandleReferenceMimeEvent([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] const QMimeData* mimeData)
         {
-            AZ_UNUSED(endpoint);
-            AZ_UNUSED(mimeData);
+           return AZ::Failure(AZStd::string(""));
+        }
 
+        virtual bool HandleReferenceMimeEvent([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] const QMimeData* mimeData)
+        {
             return false;
         }
 
-        virtual bool HandleReferenceMimeEvent(const Endpoint& endpoint, const QMimeData* mimeData)
+        virtual bool CanPromoteToVariable([[maybe_unused]] const Endpoint& endpoint) const
         {
-            AZ_UNUSED(endpoint);
-            AZ_UNUSED(mimeData);
-
             return false;
         }
 
-        virtual bool CanPromoteToVariable(const Endpoint& endpoint) const
+        virtual bool PromoteToVariableAction([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
-
             return false;
         }
 
-        virtual bool PromoteToVariableAction(const Endpoint& endpoint)
+        virtual bool SynchronizeReferences([[maybe_unused]] const Endpoint& sourceEndpoint, [[maybe_unused]] const Endpoint& targetEndpoint)
         {
-            AZ_UNUSED(endpoint);
-
             return false;
         }
 
-        virtual bool SynchronizeReferences(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint)
+        virtual bool ConvertSlotToValue([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(sourceEndpoint);
-            AZ_UNUSED(targetEndpoint);
-
             return false;
         }
 
-        virtual bool ConvertSlotToValue(const Endpoint& endpoint)
+        virtual bool CanConvertSlotToValue([[maybe_unused]] const Endpoint& endpoint)
         {
-            AZ_UNUSED(endpoint);
             return false;
         }
 
-        virtual bool CanConvertSlotToValue(const Endpoint& endpoint)
+        virtual bool CanConvertSlotAndConnect([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] const Endpoint& synchronizeEndpoint)
         {
-            AZ_UNUSED(endpoint);
-
             return false;
         }
 
-        virtual bool CanConvertSlotAndConnect(const Endpoint& endpoint, const Endpoint& synchronizeEndpoint)
+        virtual CanHandleMimeEventOutcome CanHandleValueMimeEvent([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] const QMimeData* mimeData)
         {
-            AZ_UNUSED(endpoint);
-
-            AZ_UNUSED(synchronizeEndpoint);
-
-            return false;
-        }
-
-        virtual bool CanHandleValueMimeEvent(const Endpoint& endpoint, const QMimeData* mimeData)
-        {
-            AZ_UNUSED(endpoint);
-            AZ_UNUSED(mimeData);
-
-            return false;
+            return AZ::Failure(AZStd::string(""));
         }
 
         // Returns whether or not the mime event was successsfully handled.
-        virtual bool HandleValueMimeEvent(const Endpoint& endpoint, const QMimeData* mimeData)
+        virtual bool HandleValueMimeEvent([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] const QMimeData* mimeData)
         {
-            AZ_UNUSED(endpoint);
-            AZ_UNUSED(mimeData);
-
             return false;
         }
 
@@ -246,23 +209,17 @@ namespace GraphCanvas
         // Request an extension to the node for the specified group from the specific Node and ExtenderId.
         //
         // Should return the appropriate slotId for the newly added slots.
-        virtual SlotId RequestExtension(const NodeId& nodeId, const ExtenderId& extenderId)
+        virtual SlotId RequestExtension([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const ExtenderId& extenderId)
         {
-            AZ_UNUSED(nodeId);
-            AZ_UNUSED(extenderId);
             return SlotId();
         }
 
-        virtual void ExtensionCancelled(const NodeId& nodeId, const ExtenderId& extenderId)
+        virtual void ExtensionCancelled([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const ExtenderId& extenderId)
         {
-            AZ_UNUSED(nodeId);
-            AZ_UNUSED(extenderId);
         }
 
-        virtual void FinalizeExtension(const NodeId& nodeId, const ExtenderId& extenderId)
+        virtual void FinalizeExtension([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const ExtenderId& extenderId)
         {
-            AZ_UNUSED(nodeId);
-            AZ_UNUSED(extenderId);
         }
         ////
         
@@ -270,17 +227,15 @@ namespace GraphCanvas
         // Node Wrapper Optional Overrides
 
         // Returns whether or not the specified wrapper node should accept the given drop
-        virtual bool ShouldWrapperAcceptDrop(const NodeId& wrapperNode, const QMimeData* mimeData) const
+        virtual bool ShouldWrapperAcceptDrop([[maybe_unused]] const NodeId& wrapperNode, [[maybe_unused]] const QMimeData* mimeData) const
         {
-            AZ_UNUSED(wrapperNode); AZ_UNUSED(mimeData);
             AZ_Error("GraphCanvas", false, "Trying to use Node Wrappers without providing model information. Please implement 'ShouldWrapperAcceptDrop' on the GraphModelRequestBus.");
             return false;
         }
 
         // Signals out that we want to drop onto the specified wrapper node
-        virtual void AddWrapperDropTarget(const NodeId& wrapperNode)
+        virtual void AddWrapperDropTarget([[maybe_unused]] const NodeId& wrapperNode)
         {
-            AZ_UNUSED(wrapperNode);
             AZ_Error("GraphCanvas", false, "Trying to use Node Wrappers without providing model information. Please implement 'AddWrapperDropTarget' on the GraphModelRequestBus.");
         };
 

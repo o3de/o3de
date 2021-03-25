@@ -1342,7 +1342,7 @@ CMaterialDialog::CMaterialDialog(QWidget* parent /* = 0 */)
 
     GetIEditor()->RegisterNotifyListener(this);
     m_pMatManager->AddListener(this);
-    m_propsCtrl->SetUndoCallback(functor(*this, &CMaterialDialog::OnUndo));
+    m_propsCtrl->SetUndoCallback(AZStd::bind(&CMaterialDialog::OnUndo, this, AZStd::placeholders::_1));
     m_propsCtrl->SetStoreUndoByItems(false);
 
     // KDAB_TODO: hack until we have proper signal coming from the IEDitor
@@ -1899,7 +1899,7 @@ void CMaterialDialog::SelectItem(CBaseLibraryItem* item, bool bForceReload)
     UpdateShaderParamsUI(mtl);
     //////////////////////////////////////////////////////////////////////////
 
-    m_propsCtrl->SetUpdateCallback(functor(*this, &CMaterialDialog::OnUpdateProperties));
+    m_propsCtrl->SetUpdateCallback(AZStd::bind(&CMaterialDialog::OnUpdateProperties, this, AZStd::placeholders::_1));
     m_propsCtrl->EnableUpdateCallback(true);
 
     if (mtl->IsDummy())

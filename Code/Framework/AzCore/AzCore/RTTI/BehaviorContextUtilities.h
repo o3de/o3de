@@ -75,4 +75,44 @@ namespace AZ
     /// returns true iff a and b have the same type and traits
     bool TypeCompare(const BehaviorParameter& a, const BehaviorParameter& b);
 
+    // RAII class which scopes the creation and destruction of a BehaviorEBusHandler
+    // contained within the supplied BehaviorEBus class
+    struct ScopedBehaviorEBusHandler
+    {
+        ScopedBehaviorEBusHandler(const AZ::BehaviorEBus& behaviorEbus)
+            : m_behaviorEbus{ behaviorEbus }
+        {
+            if (m_behaviorEbus.m_createHandler)
+            {
+                m_behaviorEbus.m_createHandler->InvokeResult(m_handler);
+            }
+        }
+        ~ScopedBehaviorEBusHandler()
+        {
+            if (m_handler && m_behaviorEbus.m_destroyHandler)
+            {
+                m_behaviorEbus.m_destroyHandler->Invoke(m_handler);
+            }
+        }
+
+        explicit operator bool() const
+        {
+            return m_handler;
+        }
+
+        AZ::BehaviorEBusHandler* operator->() const
+        {
+            return m_handler;
+        }
+
+        AZ::BehaviorEBusHandler& operator*() const
+        {
+            return *m_handler;
+        }
+
+    private:
+        const AZ::BehaviorEBus& m_behaviorEbus;
+        AZ::BehaviorEBusHandler* m_handler{};
+    };
+
 }

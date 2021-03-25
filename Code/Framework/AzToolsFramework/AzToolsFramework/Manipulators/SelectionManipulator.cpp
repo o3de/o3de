@@ -16,14 +16,16 @@
 
 namespace AzToolsFramework
 {
-    AZStd::shared_ptr<SelectionManipulator> SelectionManipulator::MakeShared(const AZ::Transform& worldFromLocal)
+    AZStd::shared_ptr<SelectionManipulator> SelectionManipulator::MakeShared(const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& nonUniformScale)
     {
-        return AZStd::shared_ptr<SelectionManipulator>(aznew SelectionManipulator(worldFromLocal));
+        return AZStd::shared_ptr<SelectionManipulator>(aznew SelectionManipulator(worldFromLocal, nonUniformScale));
     }
 
-    SelectionManipulator::SelectionManipulator(const AZ::Transform& worldFromLocal)
-        : m_worldFromLocal(worldFromLocal)
+    SelectionManipulator::SelectionManipulator(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
     {
+        SetSpace(worldFromLocal);
+        SetNonUniformScale(nonUniformScale);
         AttachLeftMouseDownImpl();
         AttachRightMouseDownImpl();
     }
@@ -93,8 +95,8 @@ namespace AzToolsFramework
             view->Draw(
                 GetManipulatorManagerId(), managerState,
                 GetManipulatorId(), {
-                    TransformUniformScale(m_worldFromLocal),
-                    m_position, MouseOver()
+                    TransformUniformScale(GetSpace()), GetNonUniformScale(),
+                    GetLocalPosition(), MouseOver()
                 },
                 debugDisplay, cameraState, mouseInteraction);
         }

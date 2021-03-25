@@ -56,16 +56,6 @@
                     "_ao"
                 ],
                 "PixelFormat": "BC4"
-            },
-            "xenia": {
-                "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
-                "Name": "AmbientOcclusion",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_ao"
-                ],
-                "PixelFormat": "BC4"
             }
         }
     }

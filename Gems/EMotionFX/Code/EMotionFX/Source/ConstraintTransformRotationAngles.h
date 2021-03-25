@@ -45,7 +45,7 @@ namespace EMotionFX
             TYPE_ID = 0x00000001
         };
 
-        enum EAxis
+        enum EAxis : int
         {
             AXIS_X = 0,
             AXIS_Y = 1,

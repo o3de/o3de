@@ -16,24 +16,11 @@ namespace AZ
 {
     namespace RPI
     {
-        void StreamingImageAssetHandler::SetLoadMipChainsEnabled(bool enabled)
-        {
-            m_enableLoadMipChains = enabled;
-        }
-
-        bool StreamingImageAssetHandler::GetLoadMipChainsEnabled() const
-        {
-            return m_enableLoadMipChains;
-        }
-
         Data::AssetHandler::LoadResult StreamingImageAssetHandler::LoadAssetData(
             const Data::Asset<Data::AssetData>& asset,
             AZStd::shared_ptr<Data::AssetDataStream> stream,
             const Data::AssetFilterCB& assetLoadFilterCB)
         {
-            // Using customized filter instead using the input one. 
-            // We can do this because the StreamingImageAsset owns all the ImageMipChainAssets that it references. 
-            // NOTE: We can't set the mip chain assets' flags in StreamingImageAsset's constructor since the array is empty at that time.
             AZ_UNUSED(assetLoadFilterCB);
 
             StreamingImageAsset* assetData = asset.GetAs<StreamingImageAsset>();
@@ -43,10 +30,7 @@ namespace AZ
             Data::AssetHandler::LoadResult loadResult = Data::AssetHandler::LoadResult::Error;
             if (assetData)
             {
-                // Setup filter to not load the mipchain assets referenced internally. 
-                ObjectStream::FilterDescriptor filter(m_enableLoadMipChains? nullptr : Data::AssetFilterNoAssetLoading, 0);
-
-                loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext, filter) ?
+                loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext) ?
                     Data::AssetHandler::LoadResult::LoadComplete :
                     Data::AssetHandler::LoadResult::Error;
                 

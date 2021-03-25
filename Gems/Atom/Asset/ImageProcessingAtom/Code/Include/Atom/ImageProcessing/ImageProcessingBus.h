@@ -13,11 +13,10 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <Atom/ImageProcessing/ImageObject.h>
 
 namespace ImageProcessingAtom
 {
-    class IImageObject;
-
     class ImageProcessingRequests
         : public AZ::EBusTraits
     {
@@ -28,7 +27,11 @@ namespace ImageProcessingAtom
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        virtual IImageObject* LoadImage(const AZStd::string& filePath) = 0;
+        // Loads an image from a source file path
+        virtual IImageObjectPtr LoadImage(const AZStd::string& filePath) = 0;
+
+        // Loads an image from a source file path and converts it to a format suitable for previewing in tools
+        virtual IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) = 0;
     };
     using ImageProcessingRequestBus = AZ::EBus<ImageProcessingRequests>;
 } // namespace ImageProcessingAtom

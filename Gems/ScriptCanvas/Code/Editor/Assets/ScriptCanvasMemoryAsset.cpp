@@ -9,9 +9,12 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #include "precompiled.h"
 
 #include "ScriptCanvasMemoryAsset.h"
+#include "ScriptCanvasUndoHelper.h"
+
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
@@ -21,8 +24,8 @@
 namespace ScriptCanvasEditor
 {
     ScriptCanvasMemoryAsset::ScriptCanvasMemoryAsset()
-        : m_sourceInError(false)
-        , m_triggerSaveCallback(false)
+        : m_isSaving(false)
+        , m_sourceInError(false)
     {
         m_undoState = AZStd::make_unique<SceneUndoState>(this);
     }
@@ -56,16 +59,35 @@ namespace ScriptCanvasEditor
         return m_graphId;
     }
 
+    Tracker::ScriptCanvasFileState ScriptCanvasMemoryAsset::GetFileState() const
+    {
+        if (m_sourceRemoved)
+        {
+            return Tracker::ScriptCanvasFileState::SOURCE_REMOVED;
+        }
+        else
+        {
+            return m_fileState;
+        }
+    }
+
+    void ScriptCanvasMemoryAsset::SetFileState(Tracker::ScriptCanvasFileState fileState)
+    {
+        m_fileState = fileState;
+
+        SignalFileStateChanged();
+    }
+
     void ScriptCanvasMemoryAsset::CloneTo(ScriptCanvasMemoryAsset& memoryAsset)
     {
         if (m_assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
             AZ::Data::Asset<ScriptCanvasAsset> newAsset = Clone<ScriptCanvasAsset>();
-            memoryAsset.m_inMemoryAsset = newAsset;            
+            memoryAsset.m_inMemoryAsset = newAsset;
         }
-        else if (m_assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>())
+        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
-            AZ::Data::Asset<ScriptCanvas::ScriptCanvasFunctionAsset> newAsset = Clone<ScriptCanvas::ScriptCanvasFunctionAsset>();
+            AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> newAsset = Clone<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
             memoryAsset.m_inMemoryAsset = newAsset;
         }
         else
@@ -85,24 +107,24 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasAssetHandler* assetHandler = GetAssetHandlerForType(assetType);
 
-        AZ::Data::Asset<AZ::Data::AssetData> asset;
+        AZ::Data::AssetPtr asset = nullptr;
         if (assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
-            asset = { assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasAsset>()), AZ::Data::AssetLoadBehavior::Default };
+            asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasAsset>());
         }
-        else if (assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>())
+        else if (assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
-            asset = { assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>()), AZ::Data::AssetLoadBehavior::Default };
+            asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
 
-        m_inMemoryAsset = asset;
+        m_inMemoryAsset = AZ::Data::Asset<AssetType>(asset, AZ::Data::AssetLoadBehavior::PreLoad);
 
         ActivateAsset();
 
         // For new assets, we directly set its status as "Ready" in order to make it usable.
         ScriptCanvas::ScriptCanvasAssetBusRequestBus::Event(assetId, &ScriptCanvas::ScriptCanvasAssetBusRequests::SetAsNewAsset);
 
-        Internal::MemoryAssetNotificationBus::Broadcast(&Internal::MemoryAssetNotifications::OnAssetReady, this);
+        Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetReady, this);
 
         AssetHelpers::PrintInfo("Newly created Script Canvas asset is now tracked: %s", AssetHelpers::AssetIdToString(assetId).c_str());
 
@@ -138,7 +160,7 @@ namespace ScriptCanvasEditor
         streamInfo.m_streamFlags = AZ::IO::OpenMode::ModeWrite;
         streamInfo.m_streamName = m_saveAsPath;
 
-        ScriptCanvas::ScriptCanvasDataRequestBus::Event(GetScriptCanvasId(), &ScriptCanvas::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
+        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(GetScriptCanvasId(), &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         if (!streamInfo.IsValid())
         {
@@ -194,9 +216,9 @@ namespace ScriptCanvasEditor
             AZ_Assert(assetInfo.m_assetId.IsValid(), "Failed to get the asset info properly from the asset system");
         }
 
-        m_fileAssetId = assetId;
+        SetFileAssetId(assetId);
 
-        auto asset = AZ::Data::AssetManager::Instance().FindAsset<ScriptCanvasAsset>(assetId, m_sourceAsset.GetAutoLoadBehavior());
+        auto asset = AZ::Data::AssetManager::Instance().FindAsset<ScriptCanvas::ScriptCanvasAssetBase>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
         if (!asset || !asset.IsReady())
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
@@ -204,24 +226,29 @@ namespace ScriptCanvasEditor
 
         if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasAsset>(assetId, m_sourceAsset.GetAutoLoadBehavior());            
+            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
         }
-        else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>())
+        else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvas::ScriptCanvasFunctionAsset>(assetId, m_sourceAsset.GetAutoLoadBehavior());            
+            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
         }
 
-        m_sourceAsset = m_inMemoryAsset;
-
-        m_assetType = m_inMemoryAsset.GetType();
-
-        AZ_Assert(m_inMemoryAsset.GetId() == assetId, "The asset IDs must match");
-
-        m_onAssetReadyCallback = onAssetReadyCallback;
-
-        if (m_inMemoryAsset.IsReady())
+        if (m_inMemoryAsset)
         {
-            OnAssetReady(m_inMemoryAsset);
+            m_inMemoryAsset.BlockUntilLoadComplete();
+
+            m_sourceAsset = m_inMemoryAsset;
+
+            m_assetType = m_inMemoryAsset->GetType();
+
+            AZ_Assert(m_inMemoryAsset.GetId() == assetId, "The asset IDs must match");
+
+            m_onAssetReadyCallback = onAssetReadyCallback;
+
+            if (m_inMemoryAsset.IsReady())
+            {
+                OnAssetReady(m_inMemoryAsset);
+            }
         }
 
         return !m_inMemoryAsset.IsError();
@@ -268,9 +295,14 @@ namespace ScriptCanvasEditor
             return;
         }
 
+        if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
+        {
+            editorGraph->MarkFunctionGraph();
+        }
+
         m_scriptCanvasId = editorGraph->GetScriptCanvasId();
 
-        ScriptCanvas::ScriptCanvasDataRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
+        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(m_scriptCanvasId, &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         EditorGraphNotificationBus::Handler::BusDisconnect();
         EditorGraphNotificationBus::Handler::BusConnect(m_scriptCanvasId);
@@ -300,17 +332,6 @@ namespace ScriptCanvasEditor
         return m_sourceInError;
     }
 
-    void ScriptCanvasMemoryAsset::OnSystemTick()
-    {
-        if (m_triggerSaveCallback && m_onSaveCallback)
-        {
-            AZ::SystemTickBus::Handler::BusDisconnect();
-
-            m_onSaveCallback(false, m_inMemoryAsset, AZ::Data::AssetId());
-            m_triggerSaveCallback = false;
-        }
-    }
-
     void ScriptCanvasMemoryAsset::OnGraphCanvasSceneDisplayed()
     {
         // We need to wait until this event in order the get the m_graphId which represents the GraphCanvas scene Id
@@ -320,52 +341,68 @@ namespace ScriptCanvasEditor
 
     void ScriptCanvasMemoryAsset::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_fileAssetId);
-
-        AZStd::string rootPath;
-        AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(m_fileAssetId, rootPath);
-
-        AZStd::string absolutePath;
-        AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
-        m_absolutePath = absolutePath;
-        m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
-        m_assetType = asset.GetType();
-
-        // Keep the canonical asset's Id, we will need it when we want to save the asset back to file
-        m_fileAssetId = asset.GetId();
-
-        // The source file is ready, we need to make the an in-memory version of it.
-        AZ::Data::AssetId inMemoryAssetId = AZ::Uuid::CreateRandom();
-
-        m_inMemoryAsset = AZStd::move(CloneAssetData(inMemoryAssetId));
-
-        AZ_Assert(m_inMemoryAsset, "Asset should have been successfully cloned.");
-        AZ_Assert(m_inMemoryAsset.GetId() == inMemoryAssetId, "Asset Id should match to the newly created one");
-
-        m_inMemoryAssetId = m_inMemoryAsset.GetId();
-
-        ActivateAsset();
-
-        if (m_onAssetReadyCallback)
+        // If we've already cloned the memory asset, we don't want to do the start-up things again.
+        if (m_inMemoryAsset->GetId() == m_sourceAsset.GetId())
         {
-            AZStd::invoke(m_onAssetReadyCallback, *this);
+            AZStd::string rootPath;
+            AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(m_fileAssetId, rootPath);
+
+            AZStd::string absolutePath;
+            AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
+
+            m_absolutePath = absolutePath;
+            m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
+            m_assetType = asset.GetType();
+
+            // Keep the canonical asset's Id, we will need it when we want to save the asset back to file
+            SetFileAssetId(asset.GetId());
+
+            // The source file is ready, we need to make the an in-memory version of it.
+            AZ::Data::AssetId inMemoryAssetId = AZ::Uuid::CreateRandom();
+
+            m_sourceAsset = AZ::Data::AssetManager::Instance().FindAsset<ScriptCanvas::ScriptCanvasAssetBase>(m_fileAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            m_inMemoryAsset = AZStd::move(CloneAssetData(inMemoryAssetId));
+
+            AZ_Assert(m_inMemoryAsset, "Asset should have been successfully cloned.");
+            AZ_Assert(m_inMemoryAsset.GetId() == inMemoryAssetId, "Asset Id should match to the newly created one");
+
+            m_inMemoryAssetId = m_inMemoryAsset.GetId();
+
+            ActivateAsset();
+
+            if (m_onAssetReadyCallback)
+            {
+                AZStd::invoke(m_onAssetReadyCallback, *this);
+            }
+        }
+        // Instead just update the source asset to the get the new asset to keep it in memory.
+        else
+        {
+            m_sourceAsset = AZ::Data::AssetManager::Instance().FindAsset<ScriptCanvas::ScriptCanvasAssetBase>(m_fileAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         }
 
-        Internal::MemoryAssetNotificationBus::Broadcast(&Internal::MemoryAssetNotifications::OnAssetReady, this);
+        if (m_fileAssetId == asset.GetId())
+        {
+            Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetReady, this);
+        }
     }
 
     void ScriptCanvasMemoryAsset::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (m_fileAssetId == asset.GetId())
         {
+            m_sourceInError = false;
+
+            // Update our source asset information so we keep references alive.
+            m_sourceAsset = AZ::Data::AssetManager::Instance().FindAsset<ScriptCanvas::ScriptCanvasAssetBase>(m_fileAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+
             // The source file was reloaded, but we have an in-memory version of it.
             // We need to handle this.
         }
         else
         {
             AZ::Data::AssetId assetId = asset.GetId();
-            Internal::MemoryAssetNotificationBus::Broadcast(&Internal::MemoryAssetNotifications::OnAssetReloaded, this);
+            Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetReloaded, this);
         }
     }
 
@@ -383,13 +420,16 @@ namespace ScriptCanvasEditor
         else
         {
             AZ::Data::AssetId assetId = asset.GetId();
-            Internal::MemoryAssetNotificationBus::Broadcast(&Internal::MemoryAssetNotifications::OnAssetError, this);
+            Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetError, this);
         }
     }
 
     void ScriptCanvasMemoryAsset::OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType)
     {
-        AssetTrackerNotificationBus::Event(assetId, &AssetTrackerNotifications::OnAssetUnloaded, assetId, assetType);
+        if (m_fileAssetId == assetId)
+        {
+            AssetTrackerNotificationBus::Event(assetId, &AssetTrackerNotifications::OnAssetUnloaded, assetId, assetType);
+        }
     }
 
     void ScriptCanvasMemoryAsset::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceAssetId)
@@ -402,49 +442,24 @@ namespace ScriptCanvasEditor
         AzFramework::StringFunc::Path::Join(scanFolder.data(), relativePath.data(), fullPath);
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, fullPath);
 
-        auto assetPathIdIt = AZStd::find(m_pendingSave.begin(), m_pendingSave.end(), fullPath);
-
-        if (assetPathIdIt != m_pendingSave.end())
-        {
-            AZ::SystemTickBus::Handler::BusDisconnect();
-
-            AZ::Data::AssetId previousFileAssetId;
-            if (sourceAssetId != m_fileAssetId.m_guid)
-            {
-                previousFileAssetId = m_fileAssetId;
-
-                // The source file has changed, store the AssetId to the canonical asset on file
-                m_fileAssetId = sourceAssetId;
-            }
-            else if (!m_fileAssetId.IsValid())
-            {
-                m_fileAssetId = sourceAssetId;
-            }
-
-            m_formerGraphIdPair = AZStd::make_pair(m_scriptCanvasId, m_graphId);
-
-            m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
-
-            // Connect to the source asset's bus to monitor for situations we may need to handle
-            AZ::Data::AssetBus::MultiHandler::BusConnect(m_inMemoryAsset.GetId());
-
-            m_pendingSave.erase(assetPathIdIt);
-
-            if (m_onSaveCallback)
-            {
-                m_onSaveCallback(true, m_inMemoryAsset, previousFileAssetId);
-            }
-        }
+        SavingComplete(fullPath, sourceAssetId);
     }
+
+
 
     void ScriptCanvasMemoryAsset::SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId)
     {
         AZ_UNUSED(relativePath);
         AZ_UNUSED(scanFolder);
-        AZ_UNUSED(fileAssetId);
+
+        if (m_fileAssetId == fileAssetId)
+        {
+            m_sourceRemoved = true;
+            SignalFileStateChanged();
+        }
     }
 
-    void ScriptCanvasMemoryAsset::SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void ScriptCanvasMemoryAsset::SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid)
     {
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(scanFolder.data(), relativePath.data(), fullPath);
@@ -454,113 +469,72 @@ namespace ScriptCanvasEditor
 
         if (assetPathIdIt != m_pendingSave.end())
         {
+            if (m_onSaveCallback)
+            {
+                m_onSaveCallback(false, m_inMemoryAsset.Get(), AZ::Data::AssetId());
+                m_onSaveCallback = nullptr;
+            }
+
             m_pendingSave.erase(assetPathIdIt);
+        }
+    }
+
+    void ScriptCanvasMemoryAsset::SavingComplete(const AZStd::string& streamName, AZ::Uuid sourceAssetId)
+    {
+        AZStd::string normPath = streamName;
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, normPath);
+
+        auto assetPathIdIt = AZStd::find(m_pendingSave.begin(), m_pendingSave.end(), normPath);
+        if (assetPathIdIt != m_pendingSave.end())
+        {
+            AZ::Data::AssetId previousFileAssetId;
+
+            if (sourceAssetId != m_fileAssetId.m_guid)
+            {
+                previousFileAssetId = m_fileAssetId;
+
+                // The source file has changed, store the AssetId to the canonical asset on file
+                SetFileAssetId(sourceAssetId);
+
+            }
+            else if (!m_fileAssetId.IsValid())
+            {
+                SetFileAssetId(sourceAssetId);
+            }
+
+            m_formerGraphIdPair = AZStd::make_pair(m_scriptCanvasId, m_graphId);
+
+            m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
+
+            m_pendingSave.erase(assetPathIdIt);
+
+            m_absolutePath = m_saveAsPath;
+            m_saveAsPath.clear();
+
+            // Connect to the source asset's bus to monitor for situations we may need to handle
+            AZ::Data::AssetBus::MultiHandler::BusConnect(m_inMemoryAsset.GetId());
+            AZ::Data::AssetBus::MultiHandler::BusConnect(m_fileAssetId);
 
             if (m_onSaveCallback)
             {
-                m_onSaveCallback(false, m_inMemoryAsset, AZ::Data::AssetId());
+                m_onSaveCallback(true, m_inMemoryAsset.Get(), previousFileAssetId);
+                m_onSaveCallback = nullptr;
             }
         }
     }
 
     void ScriptCanvasMemoryAsset::FinalizeAssetSave(bool, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZ::Data::AssetStreamInfo& saveInfo, Callbacks::OnSave onSaveCallback)
     {
-        auto fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (fileInfo.IsLockedByOther())
-        {
-            AZ_Error("Script Canvas", !fileInfo.IsLockedByOther(), "The file is already exclusively opened by another user: %s", fileInfo.m_filePath.data());
-            AZStd::invoke(onSaveCallback, false, m_inMemoryAsset, m_fileAssetId);
-            return;
-        }
-        else if (fileInfo.IsReadOnly() && fileIO->Exists(fileInfo.m_filePath.c_str()))
-        {
-            AZ_Error("Script Canvas", !fileInfo.IsReadOnly(), "File %s is read-only. It cannot be saved."
-                " If this file is in perforce it may not have been checked out by the Source Control API.", fileInfo.m_filePath.data());
-            AZStd::invoke(onSaveCallback, false, m_inMemoryAsset, m_fileAssetId);
-            return;
-        }
+        m_onSaveCallback = onSaveCallback;
 
         AZStd::string normPath = saveInfo.m_streamName;
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, normPath);
         m_pendingSave.emplace_back(normPath);
 
-        ScriptCanvasEditor::SystemRequestBus::Broadcast(&ScriptCanvasEditor::SystemRequests::AddAsyncJob, [this, saveInfo, onSaveCallback]()
+        m_assetSaveFinalizer.Reset();
+        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([this, saveInfo](AZ::Data::AssetId /*assetId*/)
             {
-                // ScriptCanvas Asset must be saved to a temporary location as the FileWatcher will pick up the file immediately if it detects any changes
-                // and attempt to reload it
-
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-                const AZStd::string tempPath = MakeTemporaryFilePathForSave(saveInfo.m_streamName);
-                AZ::IO::FileIOStream stream(tempPath.data(), saveInfo.m_streamFlags);
-                if (stream.IsOpen())
-                {
-                    ScriptCanvasAssetHandler* assetHandler = nullptr;
-                    AssetTrackerRequestBus::BroadcastResult(assetHandler, &AssetTrackerRequests::GetAssetHandlerForType, m_inMemoryAsset.GetType());
-                    AZ_Assert(assetHandler, "An asset handler must be found for an asset of type %s", AssetHelpers::AssetIdToString(m_inMemoryAsset.GetId()).c_str());
-
-                    bool savedSuccess;
-                    {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
-                        savedSuccess = assetHandler->SaveAssetData(m_inMemoryAsset, &stream);
-                    }
-                    stream.Close();
-                    if (savedSuccess)
-                    {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
-
-                        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                        const bool targetFileExists = fileIO->Exists(saveInfo.m_streamName.data());
-
-                        bool removedTargetFile;
-                        {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
-                            removedTargetFile = fileIO->Remove(saveInfo.m_streamName.data());
-                        }
-
-                        if (targetFileExists && !removedTargetFile)
-                        {
-                            savedSuccess = false;
-                        }
-                        else
-                        {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
-                            AZ::IO::Result renameResult = fileIO->Rename(tempPath.data(), saveInfo.m_streamName.data());
-                            if (!renameResult)
-                            {
-                                savedSuccess = false;
-                            }
-                        }
-                    }
-
-                    // Store the onSave callback so that we can call it from the proper place
-                    m_onSaveCallback = onSaveCallback;
-
-                    if (savedSuccess)
-                    {
-                        AZStd::string watchFolder;
-                        AZ::Data::AssetInfo assetInfo;
-                        bool sourceInfoFound{};
-                        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, saveInfo.m_streamName.data(), assetInfo, watchFolder);
-
-                        if (sourceInfoFound)
-                        {
-                            AZ_TracePrintf("Script Canvas", "Script Canvas successfully saved as Asset \"%s\"", saveInfo.m_streamName.data());
-                            m_absolutePath = m_saveAsPath;
-                        }
-                        else
-                        {
-                            AZ_TracePrintf("Script Canvas", "Script Canvas successfully saved as Asset \"%s\" but is outside of project scope and cannot be loaded.", saveInfo.m_streamName.data());
-                            m_triggerSaveCallback = true;
-                        }
-
-                        m_saveAsPath.clear();
-                    }
-                }
-            });
-
-        // Because this is connecting from within the lambda, the this is necessary. Otherwise it 'connects' but won't actually trigger.
-        AZ::SystemTickBus::Handler::BusConnect();
+            }));
     }
 
     AZ::Data::Asset<AZ::Data::AssetData> ScriptCanvasMemoryAsset::CloneAssetData(AZ::Data::AssetId newAssetId)
@@ -569,9 +543,9 @@ namespace ScriptCanvasEditor
         {
             return CloneAssetData<ScriptCanvasAsset>(newAssetId);
         }
-        else if (m_assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>())
+        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
-            return CloneAssetData<ScriptCanvas::ScriptCanvasFunctionAsset>(newAssetId);
+            return CloneAssetData<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(newAssetId);
         }
 
         AZ_Assert(false, "The provides asset type is not supported as a valid Script Canvas memory asset");
@@ -582,6 +556,21 @@ namespace ScriptCanvasEditor
     {
         UndoNotificationBus::Broadcast(&UndoNotifications::OnCanUndoChanged, m_undoState->m_undoStack->CanUndo());
         UndoNotificationBus::Broadcast(&UndoNotifications::OnCanRedoChanged, m_undoState->m_undoStack->CanRedo());
+    }
+
+    void ScriptCanvasMemoryAsset::SetFileAssetId(const AZ::Data::AssetId& fileAssetId)
+    {
+        m_fileAssetId = fileAssetId;
+
+        if (m_canvasWidget)
+        {
+            m_canvasWidget->SetAssetId(fileAssetId);
+        }
+    }
+
+    void ScriptCanvasMemoryAsset::SignalFileStateChanged()
+    {
+        MemoryAssetNotificationBus::Event(m_fileAssetId, &MemoryAssetNotifications::OnFileStateChanged, GetFileState());
     }
 
     AZStd::string ScriptCanvasMemoryAsset::MakeTemporaryFilePathForSave(AZStd::string_view targetFilename)
@@ -645,179 +634,168 @@ namespace ScriptCanvasEditor
         return AZ::EntityId();
     }
 
-    ///////////////
-    // UndoHelper
-    ///////////////
+    // AssetSaveFinalizer
+    //////////////////////////////////////
 
-    UndoHelper::UndoHelper(ScriptCanvasMemoryAsset& memoryAsset)
-        : m_memoryAsset(memoryAsset)
+    bool AssetSaveFinalizer::ValidateStatus(const AzToolsFramework::SourceControlFileInfo& fileInfo)
     {
-        UndoRequestBus::Handler::BusConnect(memoryAsset.GetScriptCanvasId());
-    }
-
-    UndoHelper::~UndoHelper()
-    {
-        UndoRequestBus::Handler::BusDisconnect();
-    }
-
-    ScriptCanvasEditor::UndoCache* UndoHelper::GetSceneUndoCache()
-    {
-        return m_memoryAsset.GetUndoState()->m_undoCache.get();
-    }
-
-    ScriptCanvasEditor::UndoData UndoHelper::CreateUndoData()
-    {
-        AZ::EntityId graphCanvasGraphId = m_memoryAsset.GetGraphId();
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.GetScriptCanvasId();
-
-        GraphCanvas::GraphModelRequestBus::Event(graphCanvasGraphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, graphCanvasGraphId);
-
-        UndoData undoData;
-
-        ScriptCanvas::GraphData* graphData{};
-        ScriptCanvas::GraphRequestBus::EventResult(graphData, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraphData);
-
-        const ScriptCanvas::VariableData* varData{};
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(varData, scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariableDataConst);
-
-        if (graphData && varData)
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (fileInfo.IsLockedByOther())
         {
-            undoData.m_graphData = *graphData;
-            undoData.m_variableData = *varData;
+            AZ_Error("Script Canvas", !fileInfo.IsLockedByOther(), "The file is already exclusively opened by another user: %s", fileInfo.m_filePath.data());
+            AZStd::invoke(m_onSave, false, m_inMemoryAsset, m_fileAssetId);
+            return false;
+        }
+        else if (fileInfo.IsReadOnly() && fileIO->Exists(fileInfo.m_filePath.c_str()))
+        {
+            AZ_Error("Script Canvas", !fileInfo.IsReadOnly(), "File %s is read-only. It cannot be saved."
+                " If this file is in Perforce it may not have been checked out by the Source Control API.", fileInfo.m_filePath.data());
+            AZStd::invoke(m_onSave, false, m_inMemoryAsset, m_fileAssetId);
+            return false;
+        }
+        else if (m_saving)
+        {
+            AZ_Warning("Script Canvas", false, "Trying to save the same file twice. Will result in one save callback being ignored.");
+            return false;
+        }
+        return true;
+    }
 
-            EditorGraphRequestBus::EventResult(undoData.m_visualSaveData, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasSaveData);
+    AssetSaveFinalizer::AssetSaveFinalizer()
+        : m_inMemoryAsset(nullptr)
+        , m_sourceAsset(nullptr)
+        , m_saving(false)
+        , m_fileAvailableForSave(false)
+    {
+
+    }
+
+    AssetSaveFinalizer::~AssetSaveFinalizer()
+    {
+        AZ::SystemTickBus::Handler::BusDisconnect();
+    }
+
+    void AssetSaveFinalizer::Start(ScriptCanvasMemoryAsset* sourceAsset, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZ::Data::AssetStreamInfo& saveInfo, Callbacks::OnSave onSaveCallback, OnCompleteHandler onComplete)
+    {
+        m_onCompleteHandler = onComplete;
+        m_onCompleteHandler.Connect(m_onComplete);
+
+        m_saveInfo = saveInfo;
+        m_onSave = onSaveCallback;
+        m_sourceAsset = sourceAsset;
+        m_inMemoryAsset = sourceAsset->GetAsset().Get();
+        m_assetType = sourceAsset->GetAssetType();
+
+        if (!ValidateStatus(fileInfo))
+        {
+            return;
         }
 
-        return undoData;
-    }
-
-    void UndoHelper::BeginUndoBatch(AZStd::string_view label)
-    {
-        m_memoryAsset.GetUndoState()->BeginUndoBatch(label);
-    }
-
-    void UndoHelper::EndUndoBatch()
-    {
-        m_memoryAsset.GetUndoState()->EndUndoBatch();
-    }
-
-    void UndoHelper::AddUndo(AzToolsFramework::UndoSystem::URSequencePoint* sequencePoint)
-    {
-        if (SceneUndoState * sceneUndoState = m_memoryAsset.GetUndoState())
-        {
-            if (!sceneUndoState->m_currentUndoBatch)
+        auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
+        AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(saveInfo.m_streamName.data());
+        streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
             {
-                sceneUndoState->m_undoStack->Post(sequencePoint);
-            }
-            else
+                m_fileAvailableForSave = true;
+            });
+        streamer->QueueRequest(flushRequest);
+
+        AZ::SystemTickBus::Handler::BusConnect();
+
+        m_saving = true;
+    }
+
+    AZStd::string AssetSaveFinalizer::MakeTemporaryFilePathForSave(AZStd::string_view targetFilename)
+    {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "File IO is not initialized.");
+
+        AZStd::string tempFilename;
+        AzFramework::StringFunc::Path::GetFullFileName(targetFilename.data(), tempFilename);
+        AZStd::string tempPath = AZStd::string::format("@cache@/scriptcanvas/%s.temp", tempFilename.data());
+
+        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());
+        return resolvedPath.data();
+    }
+
+    void AssetSaveFinalizer::OnSystemTick()
+    {
+        if (m_fileAvailableForSave)
+        {
+
+            AZ::SystemTickBus::Handler::BusDisconnect();
+
+            m_fileAvailableForSave = false;
+
+            const AZStd::string tempPath = MakeTemporaryFilePathForSave(m_saveInfo.m_streamName);
+            AZ::IO::FileIOStream stream(tempPath.data(), m_saveInfo.m_streamFlags);
+            if (stream.IsOpen())
             {
-                sequencePoint->SetParent(sceneUndoState->m_currentUndoBatch);
+                ScriptCanvasAssetHandler* assetHandler = nullptr;
+                AssetTrackerRequestBus::BroadcastResult(assetHandler, &AssetTrackerRequests::GetAssetHandlerForType, m_assetType);
+                AZ_Assert(assetHandler, "An asset handler must be found");
+
+                bool savedSuccess;
+                {
+                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
+
+                    ScriptCanvasMemoryAsset cloneAsset;
+                    m_sourceAsset->CloneTo(cloneAsset);
+
+                    savedSuccess = assetHandler->SaveAssetData(cloneAsset.GetAsset(), &stream);
+                }
+                stream.Close();
+                if (savedSuccess)
+                {
+                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
+
+                    AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                    const bool targetFileExists = fileIO->Exists(m_saveInfo.m_streamName.data());
+
+                    bool removedTargetFile;
+                    {
+                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
+                        removedTargetFile = fileIO->Remove(m_saveInfo.m_streamName.data());
+                    }
+
+                    if (targetFileExists && !removedTargetFile)
+                    {
+                        savedSuccess = false;
+                    }
+                    else
+                    {
+                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
+                        AZ::IO::Result renameResult = fileIO->Rename(tempPath.data(), m_saveInfo.m_streamName.data());
+                        if (!renameResult)
+                        {
+                            savedSuccess = false;
+                        }
+                    }
+                }
+
+                if (savedSuccess)
+                {
+                    AZ_TracePrintf("Script Canvas", "Script Canvas successfully saved as Asset \"%s\"", m_saveInfo.m_streamName.data());
+                }
+
+                m_onComplete.Signal(m_sourceAsset->GetId());
+
             }
+
+            Reset();
+
         }
+
     }
 
-    void UndoHelper::AddGraphItemChangeUndo(AZStd::string_view undoLabel)
+    void AssetSaveFinalizer::Reset()
     {
-        GraphItemChangeCommand* command = aznew GraphItemChangeCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
-        command->Capture(m_memoryAsset, false);
-        AddUndo(command);
-    }
-
-    void UndoHelper::AddGraphItemAdditionUndo(AZStd::string_view undoLabel)
-    {
-        GraphItemAddCommand* command = aznew GraphItemAddCommand(undoLabel);
-        command->Capture(m_memoryAsset, false);
-        AddUndo(command);
-    }
-
-    void UndoHelper::AddGraphItemRemovalUndo(AZStd::string_view undoLabel)
-    {
-        GraphItemRemovalCommand* command = aznew GraphItemRemovalCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
-        AddUndo(command);
-    }
-
-    void UndoHelper::Undo()
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
-        if (sceneUndoState)
-        {
-            AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when performing a redo operation");
-
-            if (sceneUndoState->m_undoStack->CanUndo())
-            {
-                m_status = Status::InUndo;
-                sceneUndoState->m_undoStack->Undo();
-                m_status = Status::Idle;
-
-                UpdateCache();
-            }
-        }
-    }
-
-    void UndoHelper::Redo()
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
-        if (sceneUndoState)
-        {
-            AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when performing a redo operation");
-
-            if (sceneUndoState->m_undoStack->CanRedo())
-            {
-                m_status = Status::InUndo;
-                sceneUndoState->m_undoStack->Redo();
-                m_status = Status::Idle;
-
-                UpdateCache();
-            }
-        }
-    }
-
-    void UndoHelper::Reset()
-    {
-        if (SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState())
-        {
-            AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when reseting the undo stack");
-            sceneUndoState->m_undoStack->Reset();
-        }
-    }
-
-    bool UndoHelper::IsIdle()
-    {
-        return m_status == Status::Idle;
-    }
-
-    bool UndoHelper::IsActive()
-    {
-        return m_status != Status::Idle;
-    }
-
-    bool UndoHelper::CanUndo() const
-    {
-        return m_memoryAsset.GetUndoState()->m_undoStack->CanUndo();
-    }
-
-    bool UndoHelper::CanRedo() const
-    {
-        return m_memoryAsset.GetUndoState()->m_undoStack->CanRedo();
-    }
-
-    void UndoHelper::UpdateCache()
-    {
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.GetScriptCanvasId();
-
-        UndoCache* undoCache = nullptr;
-        UndoRequestBus::EventResult(undoCache, scriptCanvasId, &UndoRequests::GetSceneUndoCache);
-
-        if (undoCache)
-        {
-            undoCache->UpdateCache(scriptCanvasId);
-        }
+        m_sourceAsset = nullptr;
+        m_fileAssetId = {};
+        m_onSave = nullptr;
+        m_saving = false;
+        m_inMemoryAsset = nullptr;
+        m_saveInfo = {};
     }
 
 }

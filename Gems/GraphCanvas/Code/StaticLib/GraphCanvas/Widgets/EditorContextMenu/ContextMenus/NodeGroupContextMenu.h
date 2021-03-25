@@ -34,6 +34,7 @@ namespace GraphCanvas
 
         EditActionsMenuGroup m_editActionsGroup;
         NodeGroupActionsMenuGroup m_nodeGroupActionsGroup;
+        ApplyNodeGroupPresetMenuActionGroup m_applyNodeGroupPresets;
         AlignmentActionsMenuGroup m_alignmentActionsGroup;
 
         ContextMenuAction* m_createPresetFrom;

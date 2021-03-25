@@ -1,0 +1,282 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "ExecutionInterpretedDebugAPI.h"
+
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Script/lua/lua.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+
+#include <Libraries/UnitTesting/UnitTestBus.h>
+
+namespace ExecutionInterpretedDebugAPIcpp
+{
+    using namespace ScriptCanvas;
+    using namespace ScriptCanvas::Execution;
+
+    void PopulateSignalDatum(lua_State* lua, int stackIndex, DatumValue& datumValue, const ScriptCanvas::Grammar::DebugDataSource* debugDatumSource)
+    {
+        if (debugDatumSource->m_fromStack)
+        {
+            Datum datum(debugDatumSource->m_slotDatumType, Datum::eOriginality::Copy);
+            AZ::BehaviorClass* behaviorClass(nullptr);
+            AZ::BehaviorValueParameter bvp = datum.ToBehaviorContext(behaviorClass);
+            debugDatumSource->m_fromStack(lua, stackIndex, bvp, behaviorClass, nullptr);
+            datumValue = DatumValue::Create(datum);
+        }
+    }
+
+    void PopulateSignalData(lua_State* lua, int stackIndex, Signal& signal, const AZStd::vector<ScriptCanvas::Grammar::DebugDataSource>& debugDataSource)
+    {
+        for (auto& debugDatumSource : debugDataSource)
+        {
+            PopulateSignalDatum(lua, stackIndex, signal.m_data[NamedSlotId(debugDatumSource.m_slotId)], &debugDatumSource);
+            // internal debug data will not be stacked up in lua script, skip
+            if (debugDatumSource.m_sourceType != ScriptCanvas::Grammar::DebugDataSourceType::Internal
+            || debugDatumSource.m_slotDatumType.IsValid())
+            {
+                ++stackIndex;
+            }
+        }
+    }
+}
+
+namespace ScriptCanvas
+{
+    namespace Execution
+    {
+        int DebugIsTraced(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugIsTraced is not an ExecutionStateInterpreted");
+            if (executionState)
+            {
+                bool isObserved{};
+                ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, executionState->GetEntityId(), executionState->GetGraphIdentifier());
+                lua_pushboolean(lua, isObserved);
+            }
+            else
+            {
+                lua_pushboolean(lua, false);
+            }
+
+            return 1;
+        }
+
+        int DebugRuntimeError(lua_State* lua)
+        {
+            // Lua: executionState, string
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, -2);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugRuntimeError is not an ExecutionStateInterpreted");
+
+            if (executionState)
+            {
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::RuntimeError, executionState->GetScriptCanvasId(), executionState->GetGraphIdentifier(), lua_tostring(lua, -1));
+            }
+
+            lua_remove(lua, -2);
+            lua_error(lua);
+            return 1;
+        }
+
+        int DebugSignalIn(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalIn is not an ExecutionStateInterpreted");
+            size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 2);
+
+            if (const Grammar::DebugExecution* debugIn = executionState->GetDebugSymbolIn(debugExecutionIndex))
+            {
+                InputSignal inSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()));
+                inSignal.m_endpoint = debugIn->m_namedEndpoint;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 3, inSignal, debugIn->m_data);
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, inSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug information in DebugSignalIn");
+            }
+
+            return 0;
+        }
+
+        int DebugSignalInSubgraph(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalInSubgraph is not an ExecutionStateInterpreted");
+            AZ_Assert(lua_isstring(lua, 2), "Error in compiled Lua file, 2nd argument to DebugSignalInSubgraph is not a string.");
+            const char* assetIdString = lua_tostring(lua, 2);
+            AZ::Data::AssetId subgraphId = AZ::Data::AssetId::CreateString(assetIdString);
+            size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 3);
+
+            if (const Grammar::DebugExecution* debugIn = executionState->GetDebugSymbolIn(debugExecutionIndex, subgraphId))
+            {
+                InputSignal inSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)));
+                inSignal.m_endpoint = debugIn->m_namedEndpoint;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 4, inSignal, debugIn->m_data);
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, inSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug information in DebugSignalInSubgraph");
+            }
+
+            return 0;
+        }
+
+        int DebugSignalOut(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalOut is not an ExecutionStateInterpreted");
+            size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 2);
+
+            if (const Grammar::DebugExecution* debugOut = executionState->GetDebugSymbolOut(debugExecutionIndex))
+            {
+                OutputSignal outSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()));
+                outSignal.m_endpoint = debugOut->m_namedEndpoint;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 3, outSignal, debugOut->m_data);
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledOutput, outSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug information in DebugSignalOut");
+            }
+
+            return 0;
+        }
+
+        int DebugSignalOutSubgraph(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalOutSubgraph is not an ExecutionStateInterpreted");
+            AZ_Assert(lua_isstring(lua, 2), "Error in compiled Lua file, 2nd argument to DebugSignalOutSubgraph is not a string.");
+            const char* assetIdString = lua_tostring(lua, 2);
+            AZ::Data::AssetId subgraphId = AZ::Data::AssetId::CreateString(assetIdString);
+            size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 3);
+
+            if (const Grammar::DebugExecution* debugOut = executionState->GetDebugSymbolOut(debugExecutionIndex, subgraphId))
+            {
+                OutputSignal outSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)));
+                outSignal.m_endpoint = debugOut->m_namedEndpoint;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 4, outSignal, debugOut->m_data);
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledOutput, outSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug informatoin in DebugSignalOutSubgraph");
+            }
+
+            return 0;
+        }
+
+        int DebugSignalReturn(lua_State* /*lua*/)
+        {
+//             auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+//             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalReturn is not an ExecutionStateInterpreted");
+//             size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 2);
+//             const Grammar::DebugExecution* debugReturn = executionState->GetDebugSymbolReturn(debugExecutionIndex);
+//             ReturnSignal returnSignal(GraphInfo(executionState->m_entityId, executionState->GetGraphId()));
+//             returnSignal.m_endpoint = debugReturn.m_namedEndpoint;
+//             ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 3, returnSignal, debugReturn.m_data);
+//             ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, returnSignal);
+             return 0;
+        }
+
+        int DebugSignalReturnSubgraph(lua_State* /*lua*/)
+        {
+//             auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+//             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugSignalReturnSubgraph is not an ExecutionStateInterpreted");
+//             AZ_Assert(lua_isstring(lua, 2), "Error in compiled Lua file, 2nd argument to DebugSignalReturnSubgraph is not a string.");
+//             const char* assetIdString = lua_tostring(lua, 2);
+//             AZ::Data::AssetId subgraphId = AZ::Data::AssetId::CreateString(assetIdString);
+//             size_t debugExecutionIndex = AZ::ScriptValue<size_t>::StackRead(lua, 3);
+
+//             const Grammar::DebugExecution* debugReturn = executionState->GetDebugSymbolReturn(debugExecutionIndex);
+//             ReturnSignal returnSignal(GraphInfo(executionState->m_entityId, executionState->GetGraphId()));
+//             returnSignal.m_endpoint = debugReturn.m_namedEndpoint;
+//             ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 4, returnSignal, debugReturn.m_data);
+//             ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, returnSignal);
+
+            return 0;
+        }
+
+        int DebugVariableChange(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugVariableChange is not an ExecutionStateInterpreted");
+            size_t debugVariableChangeIndex = AZ::ScriptValue<size_t>::StackRead(lua, 2);
+
+            if (const Grammar::DebugDataSource* variableChangeSymbol = executionState->GetDebugSymbolVariableChange(debugVariableChangeIndex))
+            {
+                DatumValue value;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalDatum(lua, 3, value, variableChangeSymbol);
+                VariableChange variableChangeSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()), value);
+                // \todo this signal is missing the variable id
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::VariableChanged, variableChangeSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug information in DebugVariableChange");
+            }
+
+            return 0;
+        }
+        
+        int DebugVariableChangeSubgraph(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to DebugVariableChangeSubgraph is not an ExecutionStateInterpreted");
+            AZ_Assert(lua_isstring(lua, 2), "Error in compiled Lua file, 2nd argument to DebugVariableChangeSubgraph is not a string.");
+            const char* assetIdString = lua_tostring(lua, 2);
+            AZ::Data::AssetId subgraphId = AZ::Data::AssetId::CreateString(assetIdString);
+            size_t debugVariableChangeIndex = AZ::ScriptValue<size_t>::StackRead(lua, 3);
+
+            if (const Grammar::DebugDataSource* variableChangeSymbol = executionState->GetDebugSymbolVariableChange(debugVariableChangeIndex, subgraphId))
+            {
+                DatumValue value;
+                ExecutionInterpretedDebugAPIcpp::PopulateSignalDatum(lua, 4, value, variableChangeSymbol);
+                VariableChange variableChangeSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)), value);
+                // \todo this signal is missing the variable id
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::VariableChanged, variableChangeSignal);
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvas", false, "Missing debug information in DebugVariableChangeSubgraph");
+            }
+
+            return 0;
+        }
+
+        void RegisterDebugAPI(lua_State* lua)
+        {
+            using namespace ScriptCanvas::Grammar;
+
+            lua_register(lua, k_DebugIsTracedName, &DebugIsTraced);
+            lua_register(lua, k_DebugRuntimeErrorName, &DebugRuntimeError);
+            lua_register(lua, k_DebugSignalInName, &DebugSignalIn);
+            lua_register(lua, k_DebugSignalInSubgraphName, &DebugSignalInSubgraph);
+            lua_register(lua, k_DebugSignalOutName, &DebugSignalOut);
+            lua_register(lua, k_DebugSignalOutSubgraphName, &DebugSignalOutSubgraph);
+            lua_register(lua, k_DebugSignalReturnName, &DebugSignalReturn);
+            lua_register(lua, k_DebugSignalReturnSubgraphName, &DebugSignalReturnSubgraph);
+            lua_register(lua, k_DebugVariableChangeName, &DebugVariableChange);
+            lua_register(lua, k_DebugVariableChangeSubgraphName, &DebugVariableChangeSubgraph);
+        }
+        
+    } 
+
+} 

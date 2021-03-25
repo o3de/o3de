@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
 #include <SceneAPI/SceneData/Behaviors/SkeletonGroup.h>
 #include <SceneAPI/SceneData/Behaviors/SkinGroup.h>
+#include <SceneAPI/SceneData/Behaviors/SkinRuleBehavior.h>
 
 namespace AZ
 {
@@ -40,7 +41,8 @@ namespace AZ
                     Behaviors::MeshGroup::CreateDescriptor(),
                     Behaviors::ScriptProcessorRuleBehavior::CreateDescriptor(),
                     Behaviors::SkeletonGroup::CreateDescriptor(),
-                    Behaviors::SkinGroup::CreateDescriptor()
+                    Behaviors::SkinGroup::CreateDescriptor(),
+                    SkinRuleBehavior::CreateDescriptor()
                 });
             }
         } // SceneData

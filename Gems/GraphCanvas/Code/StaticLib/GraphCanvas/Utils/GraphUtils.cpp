@@ -724,10 +724,12 @@ namespace GraphCanvas
                                 }
                             }
 
-                            if (m_containedNodes.find(expansionNode) == m_containedNodes.end()
-                                && internalSceneMembers.find(expansionNode) != internalSceneMembers.end())
+                            AZ::EntityId outermostNode = GraphUtils::FindOutermostNode(expansionNode);
+
+                            if (m_containedNodes.find(outermostNode) == m_containedNodes.end()
+                                && internalSceneMembers.find(outermostNode) != internalSceneMembers.end())
                             {
-                                searchableEntities.insert(expansionNode);
+                                searchableEntities.insert(outermostNode);
                             }
                         }
                     }
@@ -749,7 +751,10 @@ namespace GraphCanvas
 
                     internalSceneMembers.erase(wrappedNodeId);
 
-                    searchableEntities.insert(wrappedNodeId);
+                    if (m_containedNodes.count(wrappedNodeId) == 0)
+                    {
+                        searchableEntities.insert(wrappedNodeId);
+                    }
 
                     if (GraphUtils::IsWrapperNode(wrappedNodeId))
                     {
@@ -941,6 +946,11 @@ namespace GraphCanvas
         return (SlotRequestBus::FindFirstHandler(graphMemberId) != nullptr);
     }
 
+    bool GraphUtils::IsGroupableElement(const AZ::EntityId& graphMemberId)
+    {
+        return (GroupableSceneMemberRequestBus::FindFirstHandler(graphMemberId) != nullptr);
+    }
+
     bool GraphUtils::IsSlotVisible(const SlotId& slotId)
     {
         SlotGroup slotGroup = SlotGroups::Invalid;
@@ -1042,7 +1052,7 @@ namespace GraphCanvas
 
         if (nodeGroupEntity)
         {
-            SceneRequestBus::Event(graphId, &SceneRequests::AddNode, nodeGroupEntity->GetId(), scenePoint);
+            SceneRequestBus::Event(graphId, &SceneRequests::AddNode, nodeGroupEntity->GetId(), scenePoint, false);
 
             ResizeGroupToElements(nodeGroupEntity->GetId(), memberIds);
 
@@ -1606,14 +1616,14 @@ namespace GraphCanvas
                 SlotType slotType = SlotTypes::Invalid;
                 SlotRequestBus::EventResult(slotType, slotId, &SlotRequests::GetSlotType);
 
-                if (detachConfig.m_listingType == ListingType::AllowedList)
+                if (detachConfig.m_listingType == ListingType::InclusiveList)
                 {
                     if (detachConfig.m_typeListing.count(slotType) == 0)
                     {
                         continue;
                     }
                 }
-                else if (detachConfig.m_listingType == ListingType::BlockedList)
+                else if (detachConfig.m_listingType == ListingType::ExclusiveList)
                 {
                     if (detachConfig.m_typeListing.count(slotType) != 0)
                     {
@@ -2022,7 +2032,7 @@ namespace GraphCanvas
         return spliceResult;
     }
 
-    void GraphUtils::AlignNodes(const AZStd::vector< AZ::EntityId >& memberIds, const AlignConfig& alignConfig, QRectF overallBoundingRect)
+    QRectF GraphUtils::AlignNodes(const AZStd::vector< AZ::EntityId >& memberIds, const AlignConfig& alignConfig, QRectF overallBoundingRect)
     {
         bool calculateBoundingRect = overallBoundingRect.isEmpty();
 
@@ -2092,7 +2102,7 @@ namespace GraphCanvas
 
         if (validElements.empty())
         {
-            return;
+            return QRectF();
         }
 
         AZStd::set< NodeOrderingStruct, NodeOrderingStruct::Comparator > nodeOrdering(NodeOrderingStruct::Comparator(overallBoundingRect, alignConfig));
@@ -2101,7 +2111,8 @@ namespace GraphCanvas
 
         for (const AZ::EntityId& memberId : validElements)
         {
-            if (GraphUtils::IsComment(memberId))
+            if (GraphUtils::IsComment(memberId)
+                || GraphUtils::IsNodeGroup(memberId))
             {
                 QGraphicsItem* graphicsItem = nullptr;
                 SceneMemberUIRequestBus::EventResult(graphicsItem, memberId, &SceneMemberUIRequests::GetRootGraphicsItem);
@@ -2138,8 +2149,12 @@ namespace GraphCanvas
         alignmentPoint.setX(overallBoundingRect.left() + overallBoundingRect.width() * anchorPoint.GetX());
         alignmentPoint.setY(overallBoundingRect.top() + overallBoundingRect.height() * anchorPoint.GetY());
 
+        QRectF finalBoundingRect = QRectF();
+
         {
             ScopedGraphUndoBlocker undoBlocker(graphId);
+
+            SceneRequests* sceneRequests = SceneRequestBus::FindFirstHandler(graphId);
 
             // We want to align everything to the average position to try to minimize the amount of motion required to do the alignment
             for (const NodeOrderingStruct& nodeStruct : nodeOrdering)
@@ -2149,8 +2164,6 @@ namespace GraphCanvas
 
                 QRectF moveableBoundingRect = CalculateAlignedPosition(alignConfig, nodeStruct.m_boundingBox, movementVector, boundingRects, gridStep, gridStep * 0.5f);
 
-                boundingRects.push_back(moveableBoundingRect);
-
                 RootGraphicsItemRequestBus::Event(nodeStruct.m_nodeId, &RootGraphicsItemRequests::AnimatePositionTo, moveableBoundingRect.topLeft(), alignConfig.m_alignTime);
 
                 if (GraphUtils::IsNodeGroup(nodeStruct.m_nodeId))
@@ -2158,32 +2171,89 @@ namespace GraphCanvas
                     AlignConfig groupAlignConfig = alignConfig;
                     groupAlignConfig.m_ignoreNodes.insert(nodeStruct.m_nodeId);
 
-                    QRectF groupedBoundingBox;
-                    NodeGroupRequestBus::EventResult(groupedBoundingBox, nodeStruct.m_nodeId, &NodeGroupRequests::GetGroupBoundingBox);
-
-                    // Need to account for the fact the node group doesn't need to be perfectly aligned.
-                    float topOffset = aznumeric_cast<float>(static_cast<int>(groupedBoundingBox.height()) % static_cast<int>(gridStep.GetY()));
-
-                    if (AZ::IsClose(topOffset, 0, gridStep.GetY() * 0.25f))
-                    {
-                        topOffset = gridStep.GetY();
-                    }
-
-                    groupedBoundingBox.adjust(gridStep.GetX(), topOffset, -gridStep.GetX(), -gridStep.GetY());
-
-                    QPointF movementVector2 = moveableBoundingRect.topLeft() - nodeStruct.m_boundingBox.topLeft();
-
-                    groupedBoundingBox.adjust(movementVector2.x(), movementVector2.y(), movementVector2.x(), movementVector2.y());
-
                     AZStd::vector< AZ::EntityId > groupedElements;
                     NodeGroupRequestBus::Event(nodeStruct.m_nodeId, &NodeGroupRequests::FindGroupedElements, groupedElements);
 
-                    AlignNodes(groupedElements, alignConfig, groupedBoundingBox);
+                    QRectF internalGroupBoundingBox;
+                    NodeGroupRequestBus::EventResult(internalGroupBoundingBox, nodeStruct.m_nodeId, &NodeGroupRequests::GetGroupBoundingBox);
+
+                    // Figure out our relative movement distance
+                    QPointF movementVector2 = moveableBoundingRect.topLeft() - nodeStruct.m_boundingBox.topLeft();
+
+                    internalGroupBoundingBox.moveTopLeft(internalGroupBoundingBox.topLeft() + movementVector2);
+                    internalGroupBoundingBox = GraphUtils::AlignBoundingBoxToGrid(internalGroupBoundingBox, minorStep);
+                    internalGroupBoundingBox.adjust(gridStep.GetX(), gridStep.GetY(), -gridStep.GetX(), -gridStep.GetY());
+
+                    QRectF groupedBoundingRect = AlignNodes(groupedElements, alignConfig, internalGroupBoundingBox);
+
+                    internalGroupBoundingBox.adjust(-gridStep.GetX(), 0, gridStep.GetX(), gridStep.GetY());
+
+                    if (groupedBoundingRect.width() > internalGroupBoundingBox.width())
+                    {
+                        float difference = aznumeric_cast<float>(groupedBoundingRect.width() - internalGroupBoundingBox.width());
+
+                        switch (alignConfig.m_horAlign)
+                        {
+                        case HorizontalAlignment::Left:
+                        {
+                            moveableBoundingRect.adjust(0.0f, 0.0f, difference, 0.0f);
+                            break;
+                        }
+                        case HorizontalAlignment::Center:
+                        {
+                            float halfDiff = difference * 0.5f;
+                            moveableBoundingRect.adjust(halfDiff, 0.0f, -halfDiff, 0.0f);
+                            break;
+                        }
+                        case HorizontalAlignment::Right:
+                        {
+                            moveableBoundingRect.adjust(-difference, 0.0f, 0.0f, 0.0f);
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                    }
+
+                    if (groupedBoundingRect.height() > internalGroupBoundingBox.height())
+                    {
+                        float difference = aznumeric_cast<float>(groupedBoundingRect.height() - internalGroupBoundingBox.height());
+
+                        switch (alignConfig.m_verAlign)
+                        {
+                        case VerticalAlignment::Top:
+                        {
+                            moveableBoundingRect.adjust(0.0f, 0.0f, 0.0f, difference);
+                            break;
+                        }
+                        case VerticalAlignment::Middle:
+                        {
+                            float halfDiff = difference * 0.5f;
+                            moveableBoundingRect.adjust(halfDiff, 0.0f, -halfDiff, 0.0f);
+                            break;
+                        }
+                        case VerticalAlignment::Bottom:
+                        {
+                            moveableBoundingRect.adjust(0.0f, difference, 0.0f, 0.0f);
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                    }
+
+                    moveableBoundingRect = GraphUtils::AlignBoundingBoxToGrid(moveableBoundingRect, gridStep);
                 }
+
+                boundingRects.push_back(moveableBoundingRect);
+
+                finalBoundingRect |= moveableBoundingRect;
             }
         }
 
         GraphModelRequestBus::Event(graphId, &GraphModelRequests::RequestUndoPoint);
+
+        return finalBoundingRect;
     }
 
     void GraphUtils::OrganizeNodes(const AZStd::vector< AZ::EntityId>& memberIds, const AlignConfig& alignConfig)
@@ -2473,9 +2543,6 @@ namespace GraphCanvas
                             }
                             else
                             {
-                                int space2 = aznumeric_cast<int>(triggeredHelper->m_boundingArea.width());
-                                int seperator2 = aznumeric_cast<int>(gridStep.GetX());
-
                                 if (connectionDirection.y() < 0)
                                 {
                                     allocationHelper = &topAllocation;
@@ -2910,6 +2977,38 @@ namespace GraphCanvas
         return terminalNodes;
     }
 
+    void GraphUtils::SanityCheckEnabledState(AZ::EntityId nodeId)
+    {
+        // If we are wrapped we want to add the parent.
+        if (IsNodeWrapped(nodeId))
+        {
+            nodeId = FindOutermostNode(nodeId);
+        }
+
+        RootGraphicsItemRequests* itemInterface = RootGraphicsItemRequestBus::FindFirstHandler(nodeId);
+
+        RootGraphicsItemEnabledState startingState = RootGraphicsItemEnabledState::ES_Unknown;
+
+        if (itemInterface)
+        {
+            startingState = itemInterface->GetEnabledState();
+        }
+
+        RootGraphicsItemEnabledState updatedState = RootGraphicsItemEnabledState::ES_Unknown;
+        NodeRequestBus::EventResult(updatedState, nodeId, &NodeRequests::UpdateEnabledState);
+
+        if (updatedState == RootGraphicsItemEnabledState::ES_Unknown)
+        {
+            updatedState = startingState;
+        }
+
+        if (startingState != updatedState)
+        {
+            AZStd::unordered_set< NodeId > unexploredNodes = { nodeId };
+            PropagateNewEnabledState(unexploredNodes);
+        }
+    }
+
     void GraphUtils::SetNodesEnabledState(const AZStd::unordered_set<NodeId>& nodeIds, RootGraphicsItemEnabledState enabledState)
     {
         AZStd::unordered_set< NodeId > unexploredNodes;
@@ -2922,7 +3021,7 @@ namespace GraphCanvas
                 nodeId = FindOutermostNode(nodeId);
             }
 
-            RootGraphicsItemRequests* itemInterface = RootGraphicsItemRequestBus::FindFirstHandler(nodeId);            
+            RootGraphicsItemRequests* itemInterface = RootGraphicsItemRequestBus::FindFirstHandler(nodeId);
 
             if (itemInterface)
             {
@@ -2933,6 +3032,8 @@ namespace GraphCanvas
                 {
                     itemInterface->SetEnabledState(enabledState);
 
+                    // The node could be set to 'enabled' but still be partially disabled.
+                    // This method will handle that information, and send back the propagation.
                     RootGraphicsItemEnabledState newState = RootGraphicsItemEnabledState::ES_Enabled;
                     NodeRequestBus::EventResult(newState, nodeId, &NodeRequests::UpdateEnabledState);
                 }
@@ -2973,90 +3074,7 @@ namespace GraphCanvas
             }
         }        
 
-        AZStd::unordered_set< NodeId > exploredNodes;
-
-        while (!unexploredNodes.empty())
-        {
-            NodeId nodeId = (*unexploredNodes.begin());
-
-            auto insertResult = exploredNodes.insert(nodeId);
-
-            unexploredNodes.erase(unexploredNodes.begin());
-
-            if (!insertResult.second)
-            {
-                continue;
-            }
-
-            RootGraphicsItemEnabledState enabledState = RootGraphicsItemEnabledState::ES_Enabled;
-            RootGraphicsItemRequestBus::EventResult(enabledState, nodeId, &RootGraphicsItemRequests::GetEnabledState);
-
-            // We'll allow re-entrant attempts for partially disabled nodes as they're beholdent on order of operation problems.
-            if (enabledState == RootGraphicsItemEnabledState::ES_PartialDisabled)
-            {
-                exploredNodes.erase(nodeId);
-            }
-
-            bool nodeDisabled = enabledState != RootGraphicsItemEnabledState::ES_Enabled;
-
-            AZStd::vector< SlotId > nodeSlots;
-            NodeRequestBus::EventResult(nodeSlots, nodeId, &NodeRequests::GetSlotIds);
-
-            for (const SlotId& slotId : nodeSlots)
-            {
-                Endpoint currentEndpoint(nodeId, slotId);
-
-                AZStd::vector< ConnectionId > connectionIds;
-                SlotRequestBus::EventResult(connectionIds, slotId, &SlotRequests::GetConnections);
-
-                ConnectionType connectionType = CT_Invalid;
-                SlotRequestBus::EventResult(connectionType, slotId, &SlotRequests::GetConnectionType);
-
-                SlotType slotType = SlotTypes::Invalid;
-                SlotRequestBus::EventResult(slotType, slotId, &SlotRequests::GetSlotType);
-
-                for (const ConnectionId& connectionId : connectionIds)
-                {
-                    RootGraphicsItemEnabledState connectionState = RootGraphicsItemEnabledState::ES_Enabled;
-                    RootGraphicsItemRequestBus::EventResult(connectionState, connectionId, &RootGraphicsItemRequests::GetEnabledState);
-
-                    bool connectionEnabled = connectionState != RootGraphicsItemEnabledState::ES_Enabled;
-
-                    if (enabledState != connectionState)
-                    {                        
-                        Endpoint otherEndpoint;
-
-                        ConnectionRequestBus::EventResult(otherEndpoint, connectionId, &ConnectionRequests::FindOtherEndpoint, currentEndpoint);
-
-                        RootGraphicsItemEnabledState otherEnabledState = RootGraphicsItemEnabledState::ES_Enabled;
-                        RootGraphicsItemRequestBus::EventResult(otherEnabledState, otherEndpoint.GetNodeId(), &RootGraphicsItemRequests::GetEnabledState);
-
-                        // If we are an execution out slot. We'll want to tell the node to update its display state
-                        // to maintain the right affect.
-                        if (connectionType == CT_Output && slotType == SlotTypes::ExecutionSlot)
-                        {
-                            RootGraphicsItemEnabledState newState = RootGraphicsItemEnabledState::ES_Enabled;
-                            NodeRequestBus::EventResult(newState, otherEndpoint.GetNodeId(), &NodeRequests::UpdateEnabledState);
-
-                            if (newState != otherEnabledState
-                                && exploredNodes.count(otherEndpoint.GetNodeId()) == 0)
-                            {
-                                unexploredNodes.insert(otherEndpoint.GetNodeId());
-                            }
-                        }                        
-
-                        RootGraphicsItemEnabledState connectionState2 = enabledState;
-
-                        if (otherEnabledState > enabledState)
-                        {
-                            connectionState2 = otherEnabledState;
-                        }
-
-                        RootGraphicsItemRequestBus::Event(connectionId, &RootGraphicsItemRequests::SetEnabledState, connectionState2);
-                    }
-                }
-            }
-        }
+        PropagateNewEnabledState(unexploredNodes);
     }
 
     bool GraphUtils::CanHideEndpoint(const Endpoint& endpoint, const HideSlotConfig& hideConfig)
@@ -3198,6 +3216,108 @@ namespace GraphCanvas
         }
 
         return QPointF(xPoint - offset.width(), yPoint - offset.height());
+    }
+
+    void GraphUtils::AddElementToGroup(const AZ::EntityId& memberId, const AZ::EntityId& groupTarget)
+    {
+        if (IsNodeGroup(groupTarget))
+        {
+            AZ::EntityId outermostNode = FindOutermostNode(memberId);
+
+            if (IsGroupableElement(outermostNode))
+            {
+                NodeGroupRequests* nodeGroupRequests = NodeGroupRequestBus::FindFirstHandler(groupTarget);
+
+                nodeGroupRequests->AddElementToGroup(outermostNode);
+
+                const bool growGroupOnly = true;
+                nodeGroupRequests->ResizeGroupToElements(growGroupOnly);
+            }
+        }
+    }
+
+    AZ::EntityId GraphUtils::FindVisibleElement(const AZ::EntityId& memberId)
+    {
+        AZ::EntityId visibleMemberId = memberId;
+
+        GraphCanvas::GraphId graphId;
+        GraphCanvas::SceneMemberRequestBus::EventResult(graphId, visibleMemberId, &GraphCanvas::SceneMemberRequests::GetScene);
+
+        // Deal with elements being hidden when they are going to be highlighted
+        bool isHidden = false;
+        GraphCanvas::SceneRequestBus::EventResult(isHidden, graphId, &GraphCanvas::SceneRequests::IsHidden, visibleMemberId);
+
+        if (isHidden)
+        {
+            AZ::EntityId groupId;
+            GraphCanvas::GroupableSceneMemberRequestBus::EventResult(groupId, visibleMemberId, &GraphCanvas::GroupableSceneMemberRequests::GetGroupId);
+
+            while (groupId.IsValid())
+            {
+                visibleMemberId = groupId;
+
+                bool isCollapsed = false;
+                GraphCanvas::NodeGroupRequestBus::EventResult(isCollapsed, groupId, &GraphCanvas::NodeGroupRequests::IsCollapsed);
+
+                if (isCollapsed)
+                {
+                    GraphCanvas::NodeGroupRequestBus::EventResult(visibleMemberId, groupId, &GraphCanvas::NodeGroupRequests::GetCollapsedNodeId);
+                }
+
+                bool isGroupHidden = false;
+                GraphCanvas::SceneRequestBus::EventResult(isHidden, visibleMemberId, &GraphCanvas::SceneRequests::IsHidden, visibleMemberId);
+
+                if (isGroupHidden)
+                {
+                    GraphCanvas::GroupableSceneMemberRequestBus::EventResult(groupId, visibleMemberId, &GraphCanvas::GroupableSceneMemberRequests::GetGroupId);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return visibleMemberId;
+    }
+
+    bool GraphUtils::UngroupGroup(const GraphId& /*graphId*/, AZ::EntityId groupElement)
+    {
+        bool ungroupedGroup = false;
+
+        if (GraphUtils::IsCollapsedNodeGroup(groupElement))
+        {
+            CollapsedNodeGroupRequestBus::EventResult(groupElement, groupElement, &CollapsedNodeGroupRequests::GetSourceGroup);
+        }
+        else if (!GraphUtils::IsNodeGroup(groupElement))
+        {
+            return false;
+        }
+
+        if (groupElement.IsValid())
+        {
+            AZ::EntityId parentGroup;
+            GroupableSceneMemberRequestBus::EventResult(parentGroup, groupElement, &GroupableSceneMemberRequests::GetGroupId);
+
+            // Collect our grouped elements, if we have any to assign to our parent group when we ungroup.
+            AZStd::vector< AZ::EntityId > groupedElements;
+
+            if (parentGroup.IsValid())
+            {
+                NodeGroupRequestBus::Event(groupElement, &NodeGroupRequests::FindGroupedElements, groupedElements);
+            }
+
+            NodeGroupRequestBus::Event(groupElement, &NodeGroupRequests::UngroupGroup);
+
+            if (parentGroup.IsValid() && !groupedElements.empty())
+            {
+                NodeGroupRequestBus::Event(parentGroup, &NodeGroupRequests::AddElementsVectorToGroup, groupedElements);
+            }
+
+            ungroupedGroup = true;
+        }
+
+        return ungroupedGroup;
     }
 
     AZ::EntityId GraphUtils::CreateUnknownConnection(const GraphId& graphId, const Endpoint& firstEndpoint, const Endpoint& secondEndpoint)
@@ -3409,5 +3529,93 @@ namespace GraphCanvas
         resultBox.moveTo(newPosition.x(), newPosition.y());
 
         return resultBox;
+    }
+
+    void GraphUtils::PropagateNewEnabledState(AZStd::unordered_set<AZ::EntityId> unexploredNodes)
+    {
+        AZStd::unordered_set< NodeId > exploredNodes;
+
+        while (!unexploredNodes.empty())
+        {
+            NodeId nodeId = (*unexploredNodes.begin());
+
+            auto insertResult = exploredNodes.insert(nodeId);
+
+            unexploredNodes.erase(unexploredNodes.begin());
+
+            if (!insertResult.second)
+            {
+                continue;
+            }
+
+            RootGraphicsItemEnabledState enabledState = RootGraphicsItemEnabledState::ES_Unknown;
+            RootGraphicsItemRequestBus::EventResult(enabledState, nodeId, &RootGraphicsItemRequests::GetEnabledState);
+
+            // We'll allow re-entrant attempts for partially disabled nodes as they're beholden on order of operation problems.
+            if (enabledState == RootGraphicsItemEnabledState::ES_PartialDisabled)
+            {
+                exploredNodes.erase(nodeId);
+            }
+
+            bool nodeDisabled = enabledState != RootGraphicsItemEnabledState::ES_Enabled;
+
+            AZStd::vector< SlotId > nodeSlots;
+            NodeRequestBus::EventResult(nodeSlots, nodeId, &NodeRequests::GetSlotIds);
+
+            for (const SlotId& slotId : nodeSlots)
+            {
+                Endpoint currentEndpoint(nodeId, slotId);
+
+                AZStd::vector< ConnectionId > connectionIds;
+                SlotRequestBus::EventResult(connectionIds, slotId, &SlotRequests::GetConnections);
+
+                ConnectionType connectionType = CT_Invalid;
+                SlotRequestBus::EventResult(connectionType, slotId, &SlotRequests::GetConnectionType);
+
+                SlotType slotType = SlotTypes::Invalid;
+                SlotRequestBus::EventResult(slotType, slotId, &SlotRequests::GetSlotType);
+
+                for (const ConnectionId& connectionId : connectionIds)
+                {
+                    RootGraphicsItemEnabledState connectionState = RootGraphicsItemEnabledState::ES_Enabled;
+                    RootGraphicsItemRequestBus::EventResult(connectionState, connectionId, &RootGraphicsItemRequests::GetEnabledState);
+
+                    bool connectionEnabled = connectionState != RootGraphicsItemEnabledState::ES_Enabled;
+
+                    if (enabledState != connectionState)
+                    {
+                        Endpoint otherEndpoint;
+
+                        ConnectionRequestBus::EventResult(otherEndpoint, connectionId, &ConnectionRequests::FindOtherEndpoint, currentEndpoint);
+
+                        RootGraphicsItemEnabledState otherEnabledState = RootGraphicsItemEnabledState::ES_Enabled;
+                        RootGraphicsItemRequestBus::EventResult(otherEnabledState, otherEndpoint.GetNodeId(), &RootGraphicsItemRequests::GetEnabledState);
+
+                        // If we are an execution out slot. We'll want to tell the node to update its display state
+                        // to maintain the right affect.
+                        if (connectionType == CT_Output && slotType == SlotTypes::ExecutionSlot)
+                        {
+                            RootGraphicsItemEnabledState newState = RootGraphicsItemEnabledState::ES_Enabled;
+                            NodeRequestBus::EventResult(newState, otherEndpoint.GetNodeId(), &NodeRequests::UpdateEnabledState);
+
+                            if (newState != otherEnabledState
+                                && exploredNodes.count(otherEndpoint.GetNodeId()) == 0)
+                            {
+                                unexploredNodes.insert(otherEndpoint.GetNodeId());
+                            }
+                        }
+
+                        RootGraphicsItemEnabledState connectionState2 = enabledState;
+
+                        if (otherEnabledState > enabledState)
+                        {
+                            connectionState2 = otherEnabledState;
+                        }
+
+                        RootGraphicsItemRequestBus::Event(connectionId, &RootGraphicsItemRequests::SetEnabledState, connectionState2);
+                    }
+                }
+            }
+        }
     }
 }

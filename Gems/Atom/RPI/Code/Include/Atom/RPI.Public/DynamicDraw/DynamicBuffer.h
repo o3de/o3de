@@ -25,11 +25,11 @@ namespace AZ
     namespace RPI
     {
         //! A DynamicBuffer represents a transient GPU buffer which only be valid for one frame after it's acquired.
-        //! The acquired DynamicBuffers become invalid when DynamicDrawSystemInterface2::Get()->FrameEnd() is called.
+        //! The acquired DynamicBuffers become invalid when DynamicDrawInterface::Get()->FrameEnd() is called.
         //! DynamicBuffers are allocated by DynamicBufferAllocator. Check the description of DynamicBufferAllocator class for detail. 
         //! The typical usage:
         //!     // For every frame
-        //!     auto buffer = DynamicDrawSystemInterface2::Get()->GetDynamicBuffer(size);
+        //!     auto buffer = DynamicDrawInterface::Get()->GetDynamicBuffer(size);
         //!     if (buffer) // the buffer could be empty if the allocation failed.e
         //!     {
         //!         // write data to the buffer

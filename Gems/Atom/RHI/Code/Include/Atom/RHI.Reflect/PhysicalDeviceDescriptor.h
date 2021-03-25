@@ -16,24 +16,26 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        /**
-         * A list of popular vendor Ids. This is not an enum at the moment because it's an incomplete list.
-         */
-        namespace VendorId
-        {
-            const uint32_t Unknown = 0;
-            const uint32_t Intel = 0x8086;
-            const uint32_t nVidia = 0x10de;
-            const uint32_t AMD = 0x1002;
-            const uint32_t Qualcomm = 0x5143;
-            const uint32_t Samsung = 0x1099;
-            const uint32_t ARM = 0x13B5;
-        }
+        //! A list of popular vendor Ids. 
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(VendorId, uint32_t,
+            (Unknown,  0),
+            (Intel,    0x8086),
+            (nVidia,   0x10de),
+            (AMD,      0x1002),
+            (Qualcomm, 0x5143),
+            (Samsung,  0x1099),
+            (ARM,      0x13B5)
+        );
+
+        void ReflectVendorIdEnums(ReflectContext* context);
 
         enum class PhysicalDeviceType : uint32_t
         {
@@ -68,10 +70,60 @@ namespace AZ
 
             AZStd::string m_description;
             PhysicalDeviceType m_type = PhysicalDeviceType::Unknown;
-            uint32_t m_vendorId = VendorId::Unknown;
+            VendorId m_vendorId = VendorId::Unknown;
             uint32_t m_deviceId = 0;
             uint32_t m_driverVersion = 0;
             AZStd::array<size_t, HeapMemoryLevelCount> m_heapSizePerLevel = {{}};
         };
+
+        //! The GPU driver related information like unsupported versions, minimum version supported by the RHI.
+        class PhysicalDeviceDriverInfo
+        {
+        public:
+            AZ_RTTI(AZ::RHI::PhysicalDeviceDriverInfo, "{0063AFB9-C4F1-40F5-9F46-FEC631732F55}");
+            static void Reflect(AZ::ReflectContext* context);
+            virtual ~PhysicalDeviceDriverInfo() = default;
+
+        private:
+            struct Version
+            {
+                uint32_t m_encodedVersion;
+                AZStd::string m_readableVersion;
+            };
+
+            VendorId m_vendorId;
+            Version m_minVersion;
+            AZStd::vector<Version> m_versionsWithIssues;
+
+            void PrintRequiredDiverInfo() const;
+
+            friend class PhysicalDeviceDriverValidator;
+            friend class JsonPhysicalDeviceDriverInfoSerializer;
+        };
+
+        //! Validator for the current GPU driver.
+        //! If the driver doesn't meet the requirements defined by RHI, a clear message will be output at RHI initialization time.
+        class PhysicalDeviceDriverValidator
+        {
+        public:
+            AZ_RTTI(AZ::RHI::PhysicalDeviceDriverValidator, "{EA11001D-5A5D-43D6-A90C-77E5E44273FC}");
+            static void Reflect(AZ::ReflectContext* context);
+            virtual ~PhysicalDeviceDriverValidator() = default;
+
+            enum class ValidationResult
+            {
+                Supported,            //! The version meets the minimum requirement and no known issues.
+                SupportedWithIssues,  //! The version meets the minimum requirement but with known issues.
+                Unsupported,          //! The version doesn't meet the minimum requirement.
+                MissingInfo           //! RHI doesn't define the requirements the drivers of a certain vendor.
+            };
+
+            ValidationResult ValidateDriverVersion(const PhysicalDeviceDescriptor& descriptor) const;
+
+        private:
+            AZStd::unordered_map<VendorId, PhysicalDeviceDriverInfo> m_driverInfo;
+        };
     }
+
+    AZ_TYPE_INFO_SPECIALIZE(AZ::RHI::VendorId, "{12E63C56-976A-4575-B89F-1AE8C6D104D4}");
 }

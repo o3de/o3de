@@ -12,12 +12,16 @@
 
 #include "CoreNodes.h"
 
-#include <ScriptCanvas/Libraries/Libraries.h>
 #include <Data/DataMacros.h>
 #include <Data/DataTrait.h>
+#include <Execution/ExecutionState.h>
 #include <ScriptCanvas/Core/Attributes.h>
-
+#include <ScriptCanvas/Core/EBusHandler.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
+#include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
+#include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Core/SubgraphInterface.h>
 
 namespace ContainerTypeReflection
 {
@@ -74,13 +78,27 @@ namespace ScriptCanvas
             }
 
             Nodes::Core::EBusEventEntry::Reflect(reflection);
+            Nodes::Core::AzEventEntry::Reflect(reflection);
             Nodes::Core::Internal::ScriptEventEntry::Reflect(reflection);
             Nodes::Core::Internal::ScriptEventBase::Reflect(reflection);
             Nodes::Core::Internal::Nodeling::Reflect(reflection);
 
             ContainerTypeReflection::ReflectOnDemandTargets::Reflect(reflection);
+            
+            // reflected to go over the network
+            ExecutionState::Reflect(reflection);
+            Grammar::Variable::Reflect(reflection);
+            Grammar::FunctionPrototype::Reflect(reflection);
 
-            ContainerTypeReflection::TraitsReflector<AzFramework::SliceInstantiationTicket>::Reflect(reflection);
+            // reflect to build nodes that are built from sub graph definitions
+            Grammar::SubgraphInterface::Reflect(reflection);
+
+            // used to speed up the broadcast of debug information from Lua
+            Grammar::ReflectDebugSymbols(reflection);
+
+            //ContainerTypeReflection::TraitsReflector<AzFramework::SliceInstantiationTicket>::Reflect(reflection);
+            SlotExecution::Map::Reflect(reflection);
+            EBusHandler::Reflect(reflection);
         }
 
         void Core::InitNodeRegistry(NodeRegistry& nodeRegistry)
@@ -89,10 +107,12 @@ namespace ScriptCanvas
             AddNodeToRegistry<Core, Error>(nodeRegistry);
             AddNodeToRegistry<Core, ErrorHandler>(nodeRegistry);
             AddNodeToRegistry<Core, Method>(nodeRegistry);
+            AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
             AddNodeToRegistry<Core, BehaviorContextObjectNode>(nodeRegistry);
             AddNodeToRegistry<Core, Start>(nodeRegistry);            
             AddNodeToRegistry<Core, ScriptCanvas::Nodes::Core::String>(nodeRegistry);
             AddNodeToRegistry<Core, EBusEventHandler>(nodeRegistry);
+            AddNodeToRegistry<Core, AzEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, ExtractProperty>(nodeRegistry);
             AddNodeToRegistry<Core, ForEach>(nodeRegistry);
             AddNodeToRegistry<Core, GetVariableNode>(nodeRegistry);
@@ -101,7 +121,9 @@ namespace ScriptCanvas
             AddNodeToRegistry<Core, SendScriptEvent>(nodeRegistry);
             AddNodeToRegistry<Core, Repeater>(nodeRegistry);
             AddNodeToRegistry<Core, FunctionNode>(nodeRegistry);
-            AddNodeToRegistry<Core, ExecutionNodeling>(nodeRegistry);
+            AddNodeToRegistry<Core, FunctionDefinitionNode>(nodeRegistry);
+            // Nodeables
+            AddNodeToRegistry<Core, Nodes::RepeaterNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
@@ -110,10 +132,12 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Core::Error::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ErrorHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
+                ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::BehaviorContextObjectNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                
                 ScriptCanvas::Nodes::Core::String::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::EBusEventHandler::CreateDescriptor(),
+                ScriptCanvas::Nodes::Core::AzEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ExtractProperty::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ForEach::CreateDescriptor(),                
                 ScriptCanvas::Nodes::Core::GetVariableNode::CreateDescriptor(),
@@ -122,7 +146,9 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Core::SendScriptEvent::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Repeater::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::FunctionNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ExecutionNodeling::CreateDescriptor(),
+                ScriptCanvas::Nodes::Core::FunctionDefinitionNode::CreateDescriptor(),
+                // Nodeables
+                ScriptCanvas::Nodes::RepeaterNodeableNode::CreateDescriptor(),
             });
         }
     }

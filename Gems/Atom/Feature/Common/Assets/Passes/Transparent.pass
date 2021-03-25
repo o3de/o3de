@@ -7,6 +7,7 @@
             "Name": "TransparentPassTemplate",
             "PassClass": "RasterPass",
             "Slots": [
+                // Inputs...
                 {
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
@@ -35,7 +36,7 @@
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
-                },                
+                },
                 {
                     "Name": "SpotLightShadowmap",
                     "ShaderInputName": "m_spotLightShadowmaps",
@@ -44,7 +45,7 @@
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
-                },       
+                },
                 {
                     "Name": "ExponentialShadowmapSpot",
                     "ShaderInputName": "m_spotLightExponentialShadowmap",
@@ -53,11 +54,6 @@
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
-                },                
-                {
-                    "Name": "DepthStencil",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
                     "Name": "TileLightData",
@@ -70,6 +66,12 @@
                     "SlotType": "Input",
                     "ShaderInputName": "m_lightListRemapped",
                     "ScopeAttachmentUsage": "Shader"
+                },
+                // Input/Outputs
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "ImageAttachments": [

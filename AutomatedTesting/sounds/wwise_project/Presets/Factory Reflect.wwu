@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{C4AA5FFA-27C8-411F-8EA9-8D5494E6DE5C}" SchemaVersion="97">
+	<Presets>
+		<WorkUnit Name="Factory Reflect" ID="{C4AA5FFA-27C8-411F-8EA9-8D5494E6DE5C}" PersistMode="Standalone">
+			<ChildrenList>
+				<AuxBus Name="Early Reflection Auxiliary Bus" ID="{2D1428C1-542C-483E-B0B6-4A856FC681BC}">
+					<PropertyList>
+						<Property Name="BusChannelConfig" Type="int32">
+							<ValueList>
+								<Value>16641</Value>
+							</ValueList>
+						</Property>
+						<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+						<Property Name="ListenerRelativeRouting" Type="bool" Value="True"/>
+						<Property Name="UseGameAuxSends" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Effect0" PluginName="Wwise Reflect" CompanyID="0" PluginID="171" PluginType="3">
+							<ObjectRef Name="Wwise_Reflect" ID="{37779A87-4754-4420-8175-3236FA46AA12}" WorkUnitID="{923039AD-F8B4-46D4-BDA7-CB5A6EE595E0}"/>
+						</Reference>
+					</ReferenceList>
+				</AuxBus>
+			</ChildrenList>
+		</WorkUnit>
+	</Presets>
+</WwiseDocument>

@@ -1,0 +1,436 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/SpawnableMetaDataBuilder.h>
+
+namespace UnitTest
+{
+    class SpawnableMetaDataTests
+        : public AllocatorsFixture
+    {
+    };
+
+    template<typename T>
+    class TypedSpawnableMetaDataTests
+        : public SpawnableMetaDataTests
+    {
+    public:
+        using SetType = T;
+        using GetType = AZStd::conditional_t<AZStd::is_same_v<T, AZStd::string>, AZStd::string_view, T>;
+
+        SetType GetValue()
+        {
+            if constexpr (AZStd::is_same_v<SetType, bool>)
+            {
+                return true;
+            }
+            else if constexpr(AZStd::is_same_v<SetType, uint64_t>)
+            {
+                return 42;
+            }
+            else if constexpr(AZStd::is_same_v<SetType, int64_t>)
+            {
+                return -42;
+            }
+            else if constexpr(AZStd::is_same_v<SetType, double>)
+            {
+                return 42.0;
+            }
+            else if constexpr(AZStd::is_same_v<SetType, AZStd::string>)
+            {
+                return AZStd::string("The number 42");
+            }
+        }
+
+        AzFramework::SpawnableMetaData::ValueType GetValueType()
+        {
+            if constexpr (AZStd::is_same_v<SetType, bool>)
+            {
+                return AzFramework::SpawnableMetaData::ValueType::Boolean;
+            }
+            else if constexpr (AZStd::is_same_v<SetType, uint64_t>)
+            {
+                return AzFramework::SpawnableMetaData::ValueType::UnsignedInteger;
+            }
+            else if constexpr (AZStd::is_same_v<SetType, int64_t>)
+            {
+                return AzFramework::SpawnableMetaData::ValueType::SignedInteger;
+            }
+            else if constexpr (AZStd::is_same_v<SetType, double>)
+            {
+                return AzFramework::SpawnableMetaData::ValueType::FloatingPoint;
+            }
+            else if constexpr (AZStd::is_same_v<SetType, AZStd::string>)
+            {
+                return AzFramework::SpawnableMetaData::ValueType::String;
+            }
+        }
+
+        template<typename LT, typename RT>
+        void ExpectEq(const LT& lhs, const RT& rhs)
+        {
+            if constexpr (AZStd::is_same_v<LT, AZStd::string> || AZStd::is_same_v<RT, AZStd::string>)
+            {
+                EXPECT_STREQ(lhs.data(), rhs.data());
+            }
+            else
+            {
+                EXPECT_EQ(lhs, rhs);
+            }
+        }
+    };
+
+    TYPED_TEST_CASE_P(TypedSpawnableMetaDataTests);
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_AddValueToMetaData_NoCrash)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", this->GetValue());
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_ChainAdds_NoCrash)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey1", this->GetValue()).Add("RandomKey2", this->GetValue());
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_AddThenRetrieveValue_StoredIsSameAsRetrieved)
+    {
+        using GetType = typename TypedSpawnableMetaDataTests<TypeParam>::GetType;
+
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        GetType stored{};
+        EXPECT_TRUE(metaData.Get("RandomKey", stored));
+
+        this->ExpectEq(stored, value);
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_OverwritingValue_OriginalReplacedWithNewValue)
+    {
+        using GetType = typename TypedSpawnableMetaDataTests<TypeParam>::GetType;
+
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        if constexpr (AZStd::is_same_v<GetType, bool>)
+        {
+            builder.Add("RandomKey", 42.0);
+        }
+        else
+        {
+            builder.Add("RandomKey", true);
+        }
+
+        builder.Add("RandomKey", this->GetValue());
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        GetType stored{};
+        EXPECT_EQ(this->GetValueType(), metaData.GetType("RandomKey"));
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Add_OverwritingArray_ArrayElementsAreRemoved)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", true);
+        builder.AppendArray("RandomKey", uint64_t{ 42 });
+        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", 42.0);
+        builder.AppendArray("RandomKey", "Hello");
+        ASSERT_EQ(6, builder.GetEntryCount()); // 5 entries plus the entry that holds the array size.
+
+        auto value = this->GetValue();
+        builder.Add("RandomKey", value);
+
+        EXPECT_EQ(1, builder.GetEntryCount());
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, GetType_RetrieveTypeOfValue_ValueTypeMatches)
+    {
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        AzFramework::SpawnableMetaData::ValueType type = metaData.GetType("RandomKey");
+        EXPECT_EQ(this->GetValueType(), type);
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, GetType_RetrieveTypeOfArrayEntry_ValueTypeMatches)
+    {
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        AzFramework::SpawnableMetaData::ValueType type = metaData.GetType("RandomKey", 0);
+        EXPECT_EQ(this->GetValueType(), type);
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, AppendArray_AddValueToMetaDataArray_NoCrash)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", this->GetValue());
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, AppendArray_AppendThenRetrieveValue_StoredIsSameAsRetrieved)
+    {
+        using GetType = typename TypedSpawnableMetaDataTests<TypeParam>::GetType;
+
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        GetType stored{};
+        EXPECT_TRUE(metaData.Get("RandomKey", 0, stored));
+
+        this->ExpectEq(stored, value);
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, AppendArray_ReplaceExistingValue_ArraySizeReplacesOriginalEntry)
+    {
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", value);
+        builder.AppendArray("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        EXPECT_EQ(AzFramework::SpawnableMetaData::ValueType::ArraySize, metaData.GetType("RandomKey"));
+    }
+
+    TYPED_TEST_P(TypedSpawnableMetaDataTests, Get_WrongType_ReturnsFalse)
+    {
+        using GetType = typename TypedSpawnableMetaDataTests<TypeParam>::GetType;
+
+        auto value = this->GetValue();
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", value);
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        if constexpr (AZStd::is_same_v<GetType, bool>)
+        {
+            double stored{};
+            EXPECT_FALSE(metaData.Get("RandomKey", stored));
+        }
+        else
+        {
+            bool stored{};
+            EXPECT_FALSE(metaData.Get("RandomKey", stored));
+        }
+    }
+
+    REGISTER_TYPED_TEST_CASE_P(TypedSpawnableMetaDataTests,
+        Add_AddValueToMetaData_NoCrash,
+        Add_ChainAdds_NoCrash,
+        Add_AddThenRetrieveValue_StoredIsSameAsRetrieved,
+        Add_OverwritingValue_OriginalReplacedWithNewValue,
+        Add_OverwritingArray_ArrayElementsAreRemoved,
+        GetType_RetrieveTypeOfValue_ValueTypeMatches,
+        GetType_RetrieveTypeOfArrayEntry_ValueTypeMatches,
+        AppendArray_AddValueToMetaDataArray_NoCrash,
+        AppendArray_AppendThenRetrieveValue_StoredIsSameAsRetrieved,
+        AppendArray_ReplaceExistingValue_ArraySizeReplacesOriginalEntry,
+        Get_WrongType_ReturnsFalse);
+
+    using SpawnableMetaDataTestTypes = ::testing::Types<bool, uint64_t, int64_t, double, AZStd::string>;
+    INSTANTIATE_TYPED_TEST_CASE_P(SpawnableMetaDataTests, TypedSpawnableMetaDataTests, SpawnableMetaDataTestTypes);
+
+
+    TEST_F(SpawnableMetaDataTests, Get_UnknownKey_ReturnsFalse)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", uint64_t{ 42 });
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        uint64_t stored{};
+        EXPECT_FALSE(metaData.Get("UnknownKey", stored));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_ArraySize_ReturnsNumberOfEntries)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", true);
+        builder.AppendArray("RandomKey", uint64_t{ 42 });
+        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", 42.0);
+        builder.AppendArray("RandomKey", "Hello");
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+        AzFramework::SpawnableMetaDataArraySize stored{};
+        EXPECT_TRUE(metaData.Get("RandomKey", stored));
+
+        EXPECT_EQ(AzFramework::SpawnableMetaDataArraySize{ 5 }, stored);
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_ArrayElementsAtVariousIndices_ReturnsValues)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        for (uint64_t i = 42; i < 88; ++i)
+        {
+            builder.AppendArray("RandomKey", i);
+        }
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        for (size_t i = 0; i < 88 - 42; ++i)
+        {
+            uint64_t stored;
+            EXPECT_TRUE(metaData.Get("RandomKey", i, stored));
+            EXPECT_EQ(42 + i, stored);
+        }
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_ArrayIndexOutOfBounds_ReturnsFalse)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", true);
+        builder.AppendArray("RandomKey", uint64_t{ 42 });
+        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", 42.0);
+        builder.AppendArray("RandomKey", "Hello");
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        uint64_t stored{};
+        EXPECT_FALSE(metaData.Get("RandomKey", 5, stored));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_RetrieveArrayType_ReturnArrayType)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", true);
+        builder.AppendArray("RandomKey", uint64_t{ 42 });
+        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", 42.0);
+        builder.AppendArray("RandomKey", "Hello");
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        EXPECT_EQ(AzFramework::SpawnableMetaData::ValueType::ArraySize, metaData.GetType("RandomKey"));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_RetrieveNonExistingValue_ReturnUnavailable)
+    {
+        AzFramework::SpawnableMetaData metaData;
+        EXPECT_EQ(AzFramework::SpawnableMetaData::ValueType::Unavailable, metaData.GetType("RandomKey"));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Get_RetrieveNonExistingArrayIndex_ReturnUnavailable)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", true);
+        builder.AppendArray("RandomKey", uint64_t{ 42 });
+        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", 42.0);
+        builder.AppendArray("RandomKey", "Hello");
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        EXPECT_EQ(AzFramework::SpawnableMetaData::ValueType::Unavailable, metaData.GetType("RandomKey", 42));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Remove_RemoveExistingEntry_EntryNotFound)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.Add("RandomKey", uint64_t{ 42 });
+
+        ASSERT_TRUE(builder.Remove("RandomKey"));
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        uint64_t stored{};
+        EXPECT_FALSE(metaData.Get("RandomKey", stored));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Remove_RemoveNonExistingEntry_ReturnsFalse)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        EXPECT_FALSE(builder.Remove("UnknownKey"));
+    }
+
+    TEST_F(SpawnableMetaDataTests, Remove_RemoveArray_AllArrayEntriesAreRemovedAsWell)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", uint64_t{ 10 });
+        builder.AppendArray("RandomKey", uint64_t{ 11 });
+        builder.AppendArray("RandomKey", uint64_t{ 12 });
+        builder.AppendArray("RandomKey", uint64_t{ 13 });
+        builder.AppendArray("RandomKey", uint64_t{ 14 });
+        builder.AppendArray("RandomKey", uint64_t{ 15 });
+
+        EXPECT_TRUE(builder.Remove("RandomKey"));
+
+        EXPECT_EQ(0, builder.GetEntryCount());
+    }
+
+    TEST_F(SpawnableMetaDataTests, RemoveArrayEntry_RemoveExistingEntry_EntryNotFound)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", uint64_t{ 10 });
+        builder.AppendArray("RandomKey", uint64_t{ 11 });
+        builder.AppendArray("RandomKey", uint64_t{ 12 });
+        builder.AppendArray("RandomKey", uint64_t{ 13 });
+        builder.AppendArray("RandomKey", uint64_t{ 14 });
+        builder.AppendArray("RandomKey", uint64_t{ 15 });
+
+        ASSERT_TRUE(builder.RemoveArrayEntry("RandomKey", 3));
+
+        AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
+
+        AzFramework::SpawnableMetaDataArraySize stored{};
+        EXPECT_TRUE(metaData.Get("RandomKey", stored));
+        EXPECT_EQ(stored, AzFramework::SpawnableMetaDataArraySize{ 5 });
+
+        uint64_t storedValue;
+        EXPECT_TRUE(metaData.Get("RandomKey", 0, storedValue));
+        EXPECT_EQ(10, storedValue);
+
+        EXPECT_TRUE(metaData.Get("RandomKey", 1, storedValue));
+        EXPECT_EQ(11, storedValue);
+
+        EXPECT_TRUE(metaData.Get("RandomKey", 2, storedValue));
+        EXPECT_EQ(12, storedValue);
+
+        EXPECT_TRUE(metaData.Get("RandomKey", 3, storedValue));
+        EXPECT_EQ(14, storedValue);
+
+        EXPECT_TRUE(metaData.Get("RandomKey", 4, storedValue));
+        EXPECT_EQ(15, storedValue);
+
+        EXPECT_FALSE(metaData.Get("RandomKey", 5, storedValue));
+    }
+
+    TEST_F(SpawnableMetaDataTests, RemoveArrayEntry_RemoveNonExistingKey_ReturnFalse)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        ASSERT_FALSE(builder.RemoveArrayEntry("RandomKey", 0));
+    }
+
+    TEST_F(SpawnableMetaDataTests, RemoveArrayEntry_RemoveNonExistingEntry_ReturnFalse)
+    {
+        AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
+        builder.AppendArray("RandomKey", uint64_t{ 0 });
+        builder.AppendArray("RandomKey", uint64_t{ 1 });
+        builder.AppendArray("RandomKey", uint64_t{ 2 });
+        builder.AppendArray("RandomKey", uint64_t{ 3 });
+        builder.AppendArray("RandomKey", uint64_t{ 4 });
+        builder.AppendArray("RandomKey", uint64_t{ 5 });
+
+        ASSERT_FALSE(builder.RemoveArrayEntry("RandomKey", 42));
+    }
+}

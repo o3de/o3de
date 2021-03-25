@@ -1,0 +1,22 @@
+{
+    "Amazon":
+    {
+        "Tools":
+        {
+            "Prefab":
+            {
+                "Processing":
+                {
+                    "Stack":
+                    {
+                        "GameObjectCreation":
+                        [
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

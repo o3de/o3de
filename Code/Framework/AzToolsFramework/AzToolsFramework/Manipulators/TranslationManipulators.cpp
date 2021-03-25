@@ -27,7 +27,7 @@ namespace AzToolsFramework
     static const AZ::Color s_surfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
 
     TranslationManipulators::TranslationManipulators(
-        const Dimensions dimensions, const AZ::Transform& worldFromLocal)
+        const Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
         : m_dimensions(dimensions)
     {
         switch (dimensions)
@@ -55,7 +55,8 @@ namespace AzToolsFramework
             break;
         }
 
-        m_space = worldFromLocal;
+        m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
+        SetNonUniformScale(nonUniformScale);
     }
 
     void TranslationManipulators::InstallLinearManipulatorMouseDownCallback(
@@ -139,7 +140,7 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::SetLocalTransform(const AZ::Transform& localTransform)
+    void TranslationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
         {
@@ -153,13 +154,11 @@ namespace AzToolsFramework
 
         if (m_surfaceManipulator)
         {
-            m_surfaceManipulator->SetPosition(localTransform.GetTranslation());
+            m_surfaceManipulator->SetLocalPosition(localTransform.GetTranslation());
         }
-
-        m_localTransform = localTransform;
     }
 
-    void TranslationManipulators::SetLocalPosition(const AZ::Vector3& localPosition)
+    void TranslationManipulators::SetLocalPositionImpl(const AZ::Vector3& localPosition)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
         {
@@ -173,13 +172,11 @@ namespace AzToolsFramework
 
         if (m_surfaceManipulator)
         {
-            m_surfaceManipulator->SetPosition(localPosition);
+            m_surfaceManipulator->SetLocalPosition(localPosition);
         }
-
-        m_localTransform.SetTranslation(localPosition);
     }
 
-    void TranslationManipulators::SetLocalOrientation(const AZ::Quaternion& localOrientation)
+    void TranslationManipulators::SetLocalOrientationImpl(const AZ::Quaternion& localOrientation)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
         {
@@ -190,12 +187,9 @@ namespace AzToolsFramework
         {
             manipulator->SetLocalOrientation(localOrientation);
         }
-
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
-    void TranslationManipulators::SetSpace(const AZ::Transform& worldFromLocal)
+    void TranslationManipulators::SetSpaceImpl(const AZ::Transform& worldFromLocal)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
         {
@@ -211,8 +205,24 @@ namespace AzToolsFramework
         {
             m_surfaceManipulator->SetSpace(worldFromLocal);
         }
+    }
 
-        m_space = worldFromLocal;
+    void TranslationManipulators::SetNonUniformScaleImpl(const AZ::Vector3& nonUniformScale)
+    {
+        for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
+        {
+            manipulator->SetNonUniformScale(nonUniformScale);
+        }
+
+        for (AZStd::shared_ptr<PlanarManipulator>& manipulator : m_planarManipulators)
+        {
+            manipulator->SetNonUniformScale(nonUniformScale);
+        }
+
+        if (m_surfaceManipulator)
+        {
+            m_surfaceManipulator->SetNonUniformScale(nonUniformScale);
+        }
     }
 
     void TranslationManipulators::SetAxes(

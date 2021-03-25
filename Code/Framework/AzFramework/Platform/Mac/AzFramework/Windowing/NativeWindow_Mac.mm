@@ -61,8 +61,6 @@ namespace AzFramework
                                              const WindowGeometry& geometry,
                                              const WindowStyleMasks& styleMasks)
     {
-        AZ_UNUSED(windowType);
-
         m_width = geometry.m_width;
         m_height = geometry.m_height;
 

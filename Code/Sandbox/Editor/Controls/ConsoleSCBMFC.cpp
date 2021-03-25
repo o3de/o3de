@@ -180,7 +180,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
             {
                 m_historyIndex = m_history.size();
             }
-            
+
             // Do not add the same string if it is the top of the stack, but allow duplicate entries otherwise
             if (m_history.isEmpty() || m_history.back() != str)
             {
@@ -528,7 +528,7 @@ static CString mfc_popup_helper(HWND hwnd, int x, int y)
     if (!gPropertiesDlg->m_hWnd)
     {
         gPropertiesDlg->Create(CPropertiesDialog::IDD, AfxGetMainWnd());
-        gPropertiesDlg->SetUpdateCallback(functor(OnConsoleVariableUpdated));
+        gPropertiesDlg->SetUpdateCallback(AZStd::bind(OnConsoleVariableUpdated, AZStd::placeholders::_1));
     }
     gPropertiesDlg->ShowWindow(SW_SHOW);
     gPropertiesDlg->BringWindowToTop();

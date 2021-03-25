@@ -378,11 +378,11 @@ void ConnectionWorker::ConnectSocket(qintptr socketDescriptor)
         disconnect(&m_engineSocket, &QTcpSocket::stateChanged, this, &ConnectionWorker::EngineSocketStateChanged);
         m_engineSocket.setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState, QIODevice::ReadWrite);
 
-        Q_EMIT IsAddressWhiteListed(m_engineSocket.peerAddress(), reinterpret_cast<void*>(this));
+        Q_EMIT IsAddressInAllowedList(m_engineSocket.peerAddress(), reinterpret_cast<void*>(this));
     }
 }
 
-void ConnectionWorker::AddressIsWhiteListed(void* token, bool result)
+void ConnectionWorker::AddressIsInAllowedList(void* token, bool result)
 {
     if (reinterpret_cast<void*>(this) == token)
     {
@@ -395,7 +395,7 @@ void ConnectionWorker::AddressIsWhiteListed(void* token, bool result)
         else
         {
             // this address has been rejected, disconnect immediately!!!
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, " A connection attempt was ignored because it is not whitelisted.  Please consider adding white_list=(IP ADDRESS),localhost to the bootstrap.cfg");
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, " A connection attempt was ignored because it is not in the allowed list.  Please consider adding allowed_list=(IP ADDRESS),localhost to the bootstrap.cfg");
 
             disconnect(&m_engineSocket, &QTcpSocket::readyRead, this, &ConnectionWorker::EngineSocketHasData);
 

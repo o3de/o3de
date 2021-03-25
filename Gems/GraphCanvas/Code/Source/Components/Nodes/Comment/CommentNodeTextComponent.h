@@ -110,6 +110,7 @@ namespace GraphCanvas
         // EntitySaveDataRequestBus
         void WriteSaveData(EntitySaveDataContainer& saveDataContainer) const override;
         void ReadSaveData(const EntitySaveDataContainer& saveDataContainer) override;
+        void ApplyPresetData(const EntitySaveDataContainer& saveDataContainer) override;
         ////
 
     protected:

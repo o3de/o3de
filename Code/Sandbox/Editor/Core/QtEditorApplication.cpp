@@ -410,10 +410,9 @@ namespace Editor
             }
         }
 
-        // Ensure that the Windows WM_INPUT messages get passed through to the AzFramework input system,
-        // but only while in game mode so we don't accumulate raw input events before we start actually
-        // ticking the input devices, otherwise the queued events will get sent when entering game mode.
-        if (msg->message == WM_INPUT && GetIEditor()->IsInGameMode())
+        // Ensure that the Windows WM_INPUT messages get passed through to the AzFramework input system.
+        // These events are now consumed both in and out of game mode.
+        if (msg->message == WM_INPUT)
         {
             UINT rawInputSize;
             const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);

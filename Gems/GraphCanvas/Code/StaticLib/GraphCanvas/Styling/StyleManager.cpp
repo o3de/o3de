@@ -725,13 +725,13 @@ namespace GraphCanvas
         m_pixmapCache[key] = pixmap;
     }
 
-    int StyleManager::FindLayerZValue(AZStd::string_view layer)
+    int StyleManager::FindLayer(AZStd::string_view layer)
     {
         AZ::Crc32 layerId(layer.data());
 
         Styling::StyleHelper* styleHelper = FindCreateStyleHelper(layer);
 
-        return styleHelper->GetAttribute(GraphCanvas::Styling::Attribute::ZValue, 0);
+        return styleHelper->GetAttribute(GraphCanvas::Styling::Attribute::Layer, 0);
     }
 
     int StyleManager::GetSteppedWidth(int gridSteps)

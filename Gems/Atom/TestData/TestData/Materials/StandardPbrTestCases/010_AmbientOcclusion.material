@@ -1,0 +1,15 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "ambientOcclusion": {
+            "enable": true,
+            "factor": 1.25,
+            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_ao.png"
+        },
+        "baseColor": {
+            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png"
+        }
+    }
+}

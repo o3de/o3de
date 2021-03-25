@@ -145,6 +145,8 @@ namespace AzToolsFramework
         bool IsEditorInIsolationMode() override;
         const char* GetEngineRootPath() const override;
         const char* GetEngineVersion() const override;
+        bool IsLegacySliceSystemEnabled() const override;
+        bool ShouldAssertForLegacySlicesUsage() const override;
 
         void CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName) override;
 

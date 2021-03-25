@@ -131,7 +131,7 @@ namespace GraphCanvas
         QPixmap* FindPixmap(const AZ::Crc32& keyName) override;
         void CachePixmap(const AZ::Crc32& keyName, QPixmap* pixmap) override;
 
-        int FindLayerZValue(AZStd::string_view layer) override;
+        int FindLayer(AZStd::string_view layer) override;
 
         int GetSteppedWidth(int width) override;
         int GetSteppedHeight(int height) override;

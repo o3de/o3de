@@ -20,7 +20,6 @@ set(FILES
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
     CrySizerStats.cpp
-    CryTomcrypt.cpp
     DebugCallStack.cpp
     GeneralMemoryHeap.cpp
     HandlerBase.cpp
@@ -74,7 +73,6 @@ set(FILES
     ConsoleBatchFile.h
     ConsoleHelpGen.h
     CrySizerStats.h
-    CryTomcrypt.h
     CryWaterMark.h
     DebugCallStack.h
     GeneralMemoryHeap.h
@@ -121,8 +119,6 @@ set(FILES
     XML/XmlUtils.h
     XML/ReadXMLSink.cpp
     XML/WriteXMLSource.cpp
-    ZipEncrypt.h
-    ZipEncrypt.cpp
     ZipFile.h
     ZipFileFormat_info.h
     LoadingProfiler.cpp
@@ -162,14 +158,6 @@ set(FILES
     Statistics/LocalMemoryUsage.cpp
     ZLibCompressor.cpp
     ZLibCompressor.h
-    Cryptography/Crypto.cpp
-    Cryptography/Crypto.h
-    Cryptography/rijndael.cpp
-    Cryptography/StreamCipher.cpp
-    Cryptography/Whirlpool.cpp
-    Cryptography/rijndael.h
-    Cryptography/StreamCipher.h
-    Cryptography/Whirlpool.h
     SoftCode/SoftCodeMgr.cpp
     SoftCode/SoftCodeMgr.h
     OverloadSceneManager/OverloadSceneManager.cpp

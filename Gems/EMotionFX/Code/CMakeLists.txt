@@ -39,6 +39,9 @@ ly_add_target(
             AZ::AzFramework
             Legacy::CryCommon
             Gem::LmbrCentral
+        PUBLIC
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
@@ -66,6 +69,12 @@ ly_add_target(
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    find_package(OpenGL QUIET REQUIRED)
+    # Imported targets (like OpenGL::GL) are scoped to a directory. Add an interface library to make a target with
+    # a global scope
+    add_library(OpenGLInterface INTERFACE)
+    target_link_libraries(OpenGLInterface INTERFACE OpenGL::GL)
 
     ly_add_target(
         NAME EMotionFX.Editor.Static STATIC
@@ -103,10 +112,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneData
                 AZ::SceneUI
                 AZ::AzToolsFramework
-                ${additional_dependencies}
                 Legacy::Editor.Headers
-            PRIVATE
-                3rdParty::EMotionFXGLEW
+                OpenGLInterface
         COMPILE_DEFINITIONS
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED
@@ -135,10 +142,22 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME EMotionFX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME EMotionFX.Tests.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             emotionfx_shared_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::EMotionFX.Static
+    )
+
+    ly_add_target(
+        NAME EMotionFX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
             emotionfx_tests_files.cmake
             Source/Integration/System/emotionfx_module_files.cmake
         INCLUDE_DIRECTORIES
@@ -151,6 +170,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::EMotionFX.Static
+                Gem::EMotionFX.Tests.Static
     )
     ly_add_googletest(
         NAME Gem::EMotionFX.Tests
@@ -181,6 +201,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Test
                     3rdParty::Qt::Concurrent
                     Gem::EMotionFX.Editor.Static
+                    Gem::EMotionFX.Tests.Static
         )
         ly_add_googletest(
             NAME Gem::EMotionFX.Editor.Tests

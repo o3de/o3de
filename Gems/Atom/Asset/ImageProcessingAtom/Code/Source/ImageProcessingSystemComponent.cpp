@@ -32,7 +32,11 @@
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <Editor/TexturePropertyEditor.h>
 
+#include <ImageLoader/ImageLoaders.h>
+#include <Processing/ImageAssetProducer.h>
+#include <Processing/ImageConvert.h>
 #include <Processing/ImagePreview.h>
+#include <Processing/ImageToProcess.h>
 #include <Processing/Utils.h>
 
 #include "ImageProcessingSystemComponent.h"
@@ -100,10 +104,12 @@ namespace ImageProcessingAtom
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
+        ImageProcessingRequestBus::Handler::BusConnect();
     }
 
     void ImageProcessingSystemComponent::Deactivate()
     {
+        ImageProcessingRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
         ImageProcessingAtomEditor::ImageProcessingEditorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
@@ -117,6 +123,23 @@ namespace ImageProcessingAtom
     {
         ImageProcessingAtomEditor::TexturePropertyEditor editor(textureSourceID, QApplication::activeWindow());
         editor.exec();
+    }
+
+    IImageObjectPtr ImageProcessingSystemComponent::LoadImage(const AZStd::string& filePath)
+    {
+        return IImageObjectPtr(LoadImageFromFile(filePath));
+    }
+
+    IImageObjectPtr ImageProcessingSystemComponent::LoadImagePreview(const AZStd::string& filePath)
+    {
+        IImageObjectPtr image(LoadImageFromFile(filePath));
+        if (image)
+        {
+            ImageToProcess imageToProcess(image);
+            imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
+            return imageToProcess.Get();
+        }
+        return image;
     }
 
     void ImageProcessingSystemComponent::AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)

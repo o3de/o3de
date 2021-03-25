@@ -43,6 +43,8 @@ namespace ScriptCanvasEditor
         
         // AZ::Data::AssetBus::Handler
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         ////
 
         // VersionControlledNodeRequestBus::Handler
@@ -58,6 +60,8 @@ namespace ScriptCanvasEditor
         void OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId) override;
 
     private:
+
+        void TriggerUpdate();
 
         void UpdateTitles();
 

@@ -64,7 +64,7 @@ namespace AzToolsFramework
         */
         class AssetEditorWidget
             : public QWidget
-            , private AZ::Data::AssetBus::Handler
+            , private AZ::Data::AssetBus::MultiHandler
             , private AzFramework::AssetCatalogEventBus::Handler
             , private AzToolsFramework::IPropertyEditorNotify
             , private AZ::SystemTickBus::Handler

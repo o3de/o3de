@@ -52,11 +52,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QMessageBox>
 AZ_POP_DISABLE_WARNING
 
-namespace Platform
-{
-    void LoadPluginDependencies();
-}
-
 namespace MaterialEditor
 {
     //! This function returns the build system target name of "MaterialEditor
@@ -171,8 +166,6 @@ namespace MaterialEditor
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
 
         AzFramework::Application::StartCommon(systemEntity);
-
-        Platform::LoadPluginDependencies();
 
         StartInternal();
 

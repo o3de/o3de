@@ -40,7 +40,7 @@ DisplayContext::DisplayContext()
 
     m_currentMatrix = 0;
     m_matrixStack[m_currentMatrix].SetIdentity();
-    pRenderAuxGeom = gEnv->pRenderer->GetIRenderAuxGeom();
+    pRenderAuxGeom = gEnv->pRenderer ? gEnv->pRenderer->GetIRenderAuxGeom() : nullptr;
     m_thickness = 0;
 
     m_width = 0;

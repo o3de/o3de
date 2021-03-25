@@ -11,6 +11,10 @@
 */
 
 #include "Countdown.h"
+#include <ScriptCanvas/Libraries/Time/TimeDelayNodeable.h>
+
+#include <ScriptCanvas/Core/Contracts.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
 
 namespace ScriptCanvas
 {
@@ -21,6 +25,23 @@ namespace ScriptCanvas
             //////////////
             // TimeDelay
             //////////////
+            void TimeDelay::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                if (auto nodeableNode = azrtti_cast<const Nodes::TimeDelayNodeableNode*>(replacementNode))
+                {
+                    if (auto nodeable = azrtti_cast<Nodeables::Time::TimeDelayNodeable*>(nodeableNode->GetMutableNodeable()))
+                    {
+                        nodeable->SetTimeUnits(static_cast<int>(GetTimeUnits()));
+                    }
+                }
+
+                auto newSlotIds = replacementNode->GetSlotIds(GetBaseTimeSlotName());
+                auto oldSlots = GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);
+                if (newSlotIds.size() == 1 && oldSlots.size() == 1 && oldSlots[0]->GetName() == GetBaseTimeSlotName())
+                {
+                    outSlotIdMap.emplace(oldSlots[0]->GetId(), AZStd::vector<SlotId>{ newSlotIds[0] });
+                }
+            }
 
             void TimeDelay::OnInputSignal(const SlotId& slotId)
             {
@@ -40,13 +61,27 @@ namespace ScriptCanvas
 
             void TimeDelay::OnTimeElapsed()
             {
-                SignalOutput(TimeDelayProperty::GetOutSlotId(this));
                 StopTimer();
+                SignalOutput(TimeDelayProperty::GetOutSlotId(this));
             }
 
             //////////////
             // TickDelay
             //////////////
+            void TickDelay::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
+            {
+                if (auto nodeableNode = azrtti_cast<const Nodes::TimeDelayNodeableNode*>(replacementNode))
+                {
+                    if (auto nodeable = azrtti_cast<Nodeables::Time::TimeDelayNodeable*>(nodeableNode->GetMutableNodeable()))
+                    {
+                        nodeable->SetTimeUnits(static_cast<int>(Nodes::Internal::BaseTimerNode::TimeUnits::Ticks));
+                    }
+                }
+
+                auto newSlotId = replacementNode->GetSlotId("Delay");
+                outSlotIdMap.emplace(TickDelayProperty::GetTicksSlotId(this), AZStd::vector<SlotId>{ newSlotId });
+                outSlotIdMap.emplace(TickDelayProperty::GetTickOrderSlotId(this), AZStd::vector<SlotId>());
+            }
 
             TickDelay::TickDelay()
                 : Node()
@@ -87,7 +122,7 @@ namespace ScriptCanvas
                 AZ::TickBus::Handler::BusConnect();
             }
 
-            void TickDelay::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+            void TickDelay::OnTick(float, AZ::ScriptTimePoint)
             {
                 --m_tickCounter;
 
@@ -105,38 +140,6 @@ namespace ScriptCanvas
                 return m_tickOrder;
             }
 
-            bool Countdown::CountdownNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-            {
-                // Fixed issue with out pins not being correctly marked as latent.
-                if (classElement.GetVersion() < 2)
-                {
-                    const char* slotsKey = "Slots";
-                    AZ::Crc32 slotsId = AZ::Crc32(slotsKey);
-
-                    AZStd::list< ScriptCanvas::Slot > nodeSlots;
-
-                    AZ::SerializeContext::DataElementNode* baseClassElement = classElement.FindSubElement(AZ::Crc32("BaseClass1"));
-                    AZ::SerializeContext::DataElementNode* dataNode = baseClassElement->FindSubElement(slotsId);
-
-                    if (dataNode && dataNode->GetData(nodeSlots))
-                    {
-                        baseClassElement->RemoveElementByName(slotsId);
-
-                        for (ScriptCanvas::Slot& slot : nodeSlots)
-                        {
-                            if (slot.GetName() == "Out")
-                            {
-                                slot.ConvertToLatentExecutionOut();
-                            }
-                        }
-
-                        baseClassElement->AddElementWithData(context, slotsKey, nodeSlots);
-                    }
-                }
-
-                return true;
-            }
-
             //////////////
             // CountDown
             //////////////
@@ -146,15 +149,15 @@ namespace ScriptCanvas
                 , m_countdownSeconds(0.f)
                 , m_looping(false)
                 , m_holdTime(0.f)
-                , m_elapsedTime(0.f)
                 , m_holding(false)
                 , m_currentTime(0.)
-            {}            
+            {}
 
             void Countdown::OnInputSignal(const SlotId& slot)
             {
-                const SlotId& inSlotId = CountdownProperty::GetInSlotId(this);
-                const SlotId& resetSlotId = CountdownProperty::GetResetSlotId(this);
+                SlotId inSlotId = CountdownProperty::GetInSlotId(this);
+                SlotId resetSlotId = CountdownProperty::GetResetSlotId(this);
+                SlotId cancelSlotId = CountdownProperty::GetCancelSlotId(this);
 
                 if (slot == resetSlotId || (slot == inSlotId && !AZ::TickBus::Handler::BusIsConnected()))
                 {
@@ -164,17 +167,29 @@ namespace ScriptCanvas
                     m_countdownSeconds = CountdownProperty::GetTime(this);
                     m_looping = CountdownProperty::GetLoop(this);
                     m_holdTime = CountdownProperty::GetHold(this);
-
+                    
                     m_currentTime = m_countdownSeconds;
 
                     AZ::TickBus::Handler::BusConnect();
                 }
+                else if (slot == cancelSlotId)
+                {
+                    m_holding = false;
+                    m_currentTime = 0.f;
+
+                    AZ::TickBus::Handler::BusDisconnect();
+                }
             }
 
-            void Countdown::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+            bool Countdown::IsOutOfDate(const VersionData& graphVersion) const
             {
-                const SlotId outSlot = CountdownProperty::GetOutSlotId(this);
-                const SlotId loopingSlot = CountdownProperty::GetLoopSlotId(this);
+                AZ_UNUSED(graphVersion);
+                return !CountdownProperty::GetCancelSlotId(this).IsValid();
+            }
+
+            void Countdown::OnTick(float deltaTime, AZ::ScriptTimePoint)
+            {
+                m_currentTime -= static_cast<float>(deltaTime);
 
                 if (m_currentTime <= 0.f)
                 {
@@ -182,11 +197,22 @@ namespace ScriptCanvas
                     {
                         m_holding = false;
                         m_currentTime = m_countdownSeconds;
-                        m_elapsedTime = 0.f;
                         return;
                     }
                     else
                     {
+                        const SlotId outSlot = CountdownProperty::GetOutSlotId(this);
+                        
+                        if (Slot* elapsedSlot = CountdownProperty::GetElapsedSlot(this))
+                        {
+                            float elapsedTime = m_countdownSeconds - m_currentTime;
+
+                            Datum o(Data::Type::Number(), Datum::eOriginality::Copy);
+                            o.Set(elapsedTime);
+
+                            PushOutput(o, *elapsedSlot);
+                        }
+
                         SignalOutput(outSlot);
                     }
 
@@ -200,26 +226,32 @@ namespace ScriptCanvas
                         m_currentTime = m_holding ? m_holdTime : m_countdownSeconds;
                     }
                 }
-                else
-                {
-                    m_currentTime -= static_cast<float>(deltaTime);
-                    m_elapsedTime = m_holding ? 0.f : m_countdownSeconds - m_currentTime;
-
-                    const SlotId elapsedSlot = CountdownProperty::GetElapsedSlotId(this);
-
-                    Datum o(Data::Type::Number(), Datum::eOriginality::Copy);
-                    o.Set(m_elapsedTime);
-                    if (auto* slot = GetSlot(elapsedSlot))
-                    {
-                        PushOutput(o, *slot);
-                    }
-
-                }
             }
 
             void Countdown::OnDeactivate()
             {
                 AZ::TickBus::Handler::BusDisconnect();
+            }
+
+            UpdateResult Countdown::OnUpdateNode()
+            {
+                // Add in the missing cancel slot
+                ExecutionSlotConfiguration slotConfiguration;
+
+                slotConfiguration.m_name = "Cancel";
+                slotConfiguration.m_toolTip = "Cancels the current delay.";
+
+                slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Input);
+
+                slotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>
+                {
+                    // Contract: DisallowReentrantExecutionContract
+                    { []() { return aznew DisallowReentrantExecutionContract; } }
+                };
+
+                AddSlot(slotConfiguration);
+
+                return UpdateResult::DirtyGraph;
             }
         }
     }

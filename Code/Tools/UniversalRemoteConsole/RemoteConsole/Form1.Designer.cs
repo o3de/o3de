@@ -516,7 +516,6 @@ namespace RemoteConsole
             this.imgList.Images.SetKeyName(2, "clear.png");
             this.imgList.Images.SetKeyName(3, "copy.png");
             this.imgList.Images.SetKeyName(4, "pc");
-            this.imgList.Images.SetKeyName(5, "xenia");
             this.imgList.Images.SetKeyName(6, "UnknownTarget");
             this.imgList.Images.SetKeyName(7, "videoClipRecord");
             this.imgList.Images.SetKeyName(8, "screenShoot");

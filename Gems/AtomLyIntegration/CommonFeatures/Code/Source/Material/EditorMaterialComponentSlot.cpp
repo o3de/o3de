@@ -165,18 +165,6 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::AutoAssignMaterial()
-        {
-            if (!m_materialAsset.GetId().IsValid() && m_id.m_materialAssetId.IsValid())
-            {
-                // If no material is assigned to this slot, assign the default material from the slot id to edit its properties
-                m_materialAsset.Create(m_id.m_materialAssetId);
-
-                // Update the UI and undo state to reflect the new value
-                OnMaterialChanged();
-            }
-        }
-
         void EditorMaterialComponentSlot::OpenMaterialEditor() const
         {
             const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_materialAsset.GetId());
@@ -186,11 +174,24 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::Reset()
+        void EditorMaterialComponentSlot::Clear()
         {
             m_materialAsset = {};
             m_propertyOverrides = {};
             m_matModUvOverrides = {};
+            OnMaterialChanged();
+        }
+
+        void EditorMaterialComponentSlot::SetDefaultAsset()
+        {
+            m_materialAsset = {};
+            m_propertyOverrides = {};
+            m_matModUvOverrides = {};
+            if (m_id.m_materialAssetId.IsValid())
+            {
+                // If no material is assigned to this slot, assign the default material from the slot id to edit its properties
+                m_materialAsset.Create(m_id.m_materialAssetId);
+            }
             OnMaterialChanged();
         }
 
@@ -210,17 +211,9 @@ namespace AZ
             {
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {
-                    if (exportItem.m_exportAction == EditorMaterialComponentExporter::ExportAction::Nothing || exportItem.m_exportPath.empty())
+                    if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
                     {
                         continue;
-                    }
-
-                    if (exportItem.m_exportAction == EditorMaterialComponentExporter::ExportAction::GenerateNew)
-                    {
-                        if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
-                        {
-                            continue;
-                        }
                     }
 
                     // Generate a new asset ID utilizing the export file path so that we can update this material slot to reference the new asset
@@ -247,23 +240,12 @@ namespace AZ
                 OnPropertyChanged();
             };
 
-            AzToolsFramework::ScopedUndoBatch undoBatch("Material instance editor opened.");
-
-            // Store the pre-edit asset ID to restore if edit is canceled
-            const AZ::Data::AssetId originalAssetId = m_materialAsset.GetId();
-
-            AutoAssignMaterial();
-
             if (m_materialAsset.GetId().IsValid())
             {
-                if (!EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
+                if (EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
                 {
-                    // If the edit was canceled restore the previous state
-                    m_materialAsset.Create(originalAssetId);
+                    OnMaterialChanged();
                 }
-
-                // Update the UI and undo state to reflect any changes or reversions
-                OnMaterialChanged();
             }
         }
 
@@ -276,23 +258,12 @@ namespace AZ
                 OnPropertyChanged();
             };
 
-            AzToolsFramework::ScopedUndoBatch undoBatch("Material instance UV name editor opened.");
-
-            // Store the pre-edit asset ID to restore if edit is canceled
-            const AZ::Data::AssetId originalAssetId = m_materialAsset.GetId();
-
-            AutoAssignMaterial();
-
             if (m_materialAsset.GetId().IsValid())
             {
-                if (!EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_matModUvOverrides, m_modelUvNames, applyMatModUvOverrideChangedCallback))
+                if (EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_matModUvOverrides, m_modelUvNames, applyMatModUvOverrideChangedCallback))
                 {
-                    // If the edit was canceled restore the previous state
-                    m_materialAsset.Create(originalAssetId);
+                    OnMaterialChanged();
                 }
-
-                // Update the UI and undo state to reflect any changes or reversions
-                OnMaterialChanged();
             }
         }
 
@@ -302,7 +273,15 @@ namespace AZ
 
             QAction* action = nullptr;
 
-            action = menu.addAction("Generate Editable Material...", [this]() { OpenMaterialExporter(); });
+            action = menu.addAction("Clear", [this]() { Clear(); });
+            action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
+
+            action = menu.addAction("Set Default Asset", [this]() { SetDefaultAsset(); });
+            action->setEnabled(m_id.m_materialAssetId.IsValid());
+
+            menu.addSeparator();
+
+            action = menu.addAction("Generate Source Material...", [this]() { OpenMaterialExporter(); });
             action->setEnabled(m_id.m_materialAssetId.IsValid());
 
             menu.addSeparator();
@@ -310,18 +289,13 @@ namespace AZ
             const auto instanceAssetId = m_materialAsset.GetId().IsValid() ? m_materialAsset.GetId() : m_id.m_materialAssetId;
 
             action = menu.addAction("Edit Material Instance...", [this]() { OpenMaterialInspector(); });
-            action->setEnabled(instanceAssetId.IsValid());
+            action->setEnabled(m_materialAsset.GetId().IsValid());
 
             action = menu.addAction("Edit Material Model UV Map...", [this]() { OpenUvNameMapInspector(); });
-            action->setEnabled(instanceAssetId.IsValid());
+            action->setEnabled(m_materialAsset.GetId().IsValid());
 
             action = menu.addAction("Edit Material in Material Editor...", [this]() { OpenMaterialEditor(); });
             action->setEnabled(HasSourceData());
-
-            menu.addSeparator();
-
-            action = menu.addAction("Reset to Default", [this]() { Reset(); });
-            action->setEnabled(instanceAssetId.IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
 
             menu.exec(QCursor::pos());
         }

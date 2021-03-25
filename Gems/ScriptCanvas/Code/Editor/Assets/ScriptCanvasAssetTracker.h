@@ -38,7 +38,7 @@ namespace ScriptCanvasEditor
 
     class AssetTracker
         : AssetTrackerRequestBus::Handler
-        , Internal::MemoryAssetNotificationBus::Handler
+        , Internal::MemoryAssetSystemNotificationBus::Handler
     {
     public:
         AssetTracker() = default;
@@ -46,12 +46,12 @@ namespace ScriptCanvasEditor
         void Activate()
         {
             AssetTrackerRequestBus::Handler::BusConnect();
-            Internal::MemoryAssetNotificationBus::Handler::BusConnect();
+            Internal::MemoryAssetSystemNotificationBus::Handler::BusConnect();
         }
 
         void Deactivate()
         {
-            Internal::MemoryAssetNotificationBus::Handler::BusDisconnect();
+            Internal::MemoryAssetSystemNotificationBus::Handler::BusDisconnect();
             AssetTrackerRequestBus::Handler::BusDisconnect();
         }
 

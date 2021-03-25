@@ -55,8 +55,15 @@ namespace EMotionFX
             m_entityId = AZ::EntityId(740216387);
             m_entity = AZStd::make_unique<AZ::Entity>(m_entityId);
 
+            // Actor asset.
+            AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+            AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
+            AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
+            Integration::ActorComponent::Configuration actorConf;
+            actorConf.m_actorAsset = actorAsset;
+
             auto transformComponent = m_entity->CreateComponent<AzFramework::TransformComponent>();
-            auto actorComponent = m_entity->CreateComponent<Integration::ActorComponent>();
+            auto actorComponent = m_entity->CreateComponent<Integration::ActorComponent>(&actorConf);
             auto animGraphComponent = m_entity->CreateComponent<Integration::AnimGraphComponent>();
 
             m_entity->Init();
@@ -86,13 +93,10 @@ namespace EMotionFX
             EXPECT_EQ(motionSetAsset.IsReady(), true) << "Motion set asset is not ready yet.";
             animGraphComponent->OnAssetReady(motionSetAsset);
 
-            // Actor asset.
-            AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-            AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
-            AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
-            actorComponent->OnAssetReady(actorAsset);
-
             m_entity->Activate();
+
+            // Actor component
+            actorComponent->SetActorAsset(actorAsset);
         }
 
         void AddMotionEntry(Motion* motion, const AZStd::string& motionId)

@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <QGraphicsItem>
 #include <QPointF>
 
 #include <AzCore/std/string/string.h>
@@ -119,7 +120,7 @@ namespace GraphCanvas
         //! Get user data from this connection
         virtual AZStd::any* GetUserData() = 0;
 
-        virtual void ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos) = 0;
+        virtual void ChainProposalCreation(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget) = 0;
     };
 
     using ConnectionRequestBus = AZ::EBus<ConnectionRequests>;
@@ -176,6 +177,8 @@ namespace GraphCanvas
         virtual void UpdateConnectionPath() = 0;
 
         virtual void SetAltDeletionEnabled(bool enabled) = 0;
+
+        virtual void SetGraphicsItemFlags(QGraphicsItem::GraphicsItemFlags flags) = 0;
     };
 
     using ConnectionUIRequestBus = AZ::EBus<ConnectionUIRequests>;

@@ -40,7 +40,6 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ICommentRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IMaterialRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IMeshAdvancedRule.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/IOriginRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkeletonProxyRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
@@ -166,7 +165,6 @@ namespace AZ
                     context->Class<AZ::SceneAPI::DataTypes::ICommentRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IMaterialRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IMeshAdvancedRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
-                    context->Class<AZ::SceneAPI::DataTypes::IOriginRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ILodRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ISkeletonProxyRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     // Register graph data interfaces

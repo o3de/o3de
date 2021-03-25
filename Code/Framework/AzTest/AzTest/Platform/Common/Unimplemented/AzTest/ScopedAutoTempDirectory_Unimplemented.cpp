@@ -20,16 +20,5 @@ namespace AZ
         ScopedAutoTempDirectory::ScopedAutoTempDirectory()
         {
         }
-    
-        ScopedAutoTempDirectory::~ScopedAutoTempDirectory()
-        {
-        }
-
-        const char* ScopedAutoTempDirectory::GetDirectory() const
-        {
-            AZ_Error("AzTest", false, "ScopedAutoTempDirectory not implemented on this platform.");
-            return nullptr;
-        }
-
     } // Test
 } // AZ

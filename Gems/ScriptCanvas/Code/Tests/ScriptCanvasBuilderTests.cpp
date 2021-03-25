@@ -23,6 +23,7 @@
 #include <Builder/ScriptCanvasBuilderWorker.h>
 
 #include "ScriptCanvas/Asset/RuntimeAsset.h"
+#include "AssetBuilderSDK/SerializationDependencies.h"
 
 struct MockAsset
     : public AZ::Data::AssetData
@@ -60,7 +61,10 @@ struct MockAssetRefComponent
     }
 
     void Activate() override {}
-    void Deactivate() override {}
+    void Deactivate() override
+    {
+        m_asset->Release();
+    }
 
     AZ::Data::Asset<MockAsset> m_asset;
 };
@@ -140,14 +144,13 @@ TEST_F(ScriptCanvasBuilderTests, ScriptCanvasWithAssetReference_GatherProductDep
 {
     MockAssetRefComponent* assetComponent = aznew MockAssetRefComponent;
     AZ::Data::AssetId testAssetId("{CAAC5458-0738-43F6-A2BD-4E315C64BFD3}", 71);
-    assetComponent->m_asset =
-        AZ::Data::AssetManager::Instance().CreateAsset<MockAsset>(testAssetId, AZ::Data::AssetLoadBehavior::Default);
+    assetComponent->m_asset = AZ::Data::AssetManager::Instance().CreateAsset<MockAsset>(testAssetId, AZ::Data::AssetLoadBehavior::Default);
 
     AZ::Entity* graphEntity = aznew AZ::Entity;
     graphEntity->AddComponent(assetComponent);
 
     ScriptCanvas::RuntimeData runtimeData;
-    runtimeData.m_graphData.m_nodes.emplace(graphEntity);
+    //runtimeData.m_graphData.m_nodes.emplace(graphEntity);
 
     AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
     runtimeAsset.Create(AZ::Uuid::CreateRandom());
@@ -155,11 +158,11 @@ TEST_F(ScriptCanvasBuilderTests, ScriptCanvasWithAssetReference_GatherProductDep
 
     AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
     AssetBuilderSDK::ProductPathDependencySet productPathDependencySet;
-    bool gatherResults = ScriptCanvasBuilder::Worker::GatherProductDependencies(
-        *m_serializeContext,
-        runtimeAsset,
-        productDependencies,
-        productPathDependencySet);
+
+    bool gatherResults = AssetBuilderSDK::GatherProductDependencies(*m_serializeContext, graphEntity, productDependencies, productPathDependencySet);
+
+    delete graphEntity;
+
     ASSERT_TRUE(gatherResults);
     ASSERT_EQ(productDependencies.size(), 1);
     ASSERT_EQ(productDependencies[0].m_dependencyId, testAssetId);

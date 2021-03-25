@@ -27,7 +27,8 @@ namespace PhysX
         , const AZ::Uuid& componentType
         , const AZStd::string& name)
         : EditorSubComponentModeBase(entityComponentIdPair, componentType, name)
-        , m_translationManipulators(AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::Identity())
+        , m_translationManipulators(AzToolsFramework::TranslationManipulators::Dimensions::Three,
+            AZ::Transform::Identity(), AZ::Vector3::CreateOne())
     {
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentId.GetEntityId());
 

@@ -1,0 +1,105 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+{% import 'ScriptCanvas_Nodeable_Macros.jinja' as nodemacro %}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Header.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include <ScriptCanvas/Core/Nodeable.h>
+#include <ScriptCanvas/Core/NodeableNode.h>
+
+{% for xml in dataFiles %}
+{%   for Class in xml.findall('Class') %}
+
+{# Any user-provided includes #}
+{%      for Include in Class.findall('Include') %}
+#include <{{ Include.attrib['File'] }}>
+{%      endfor %}
+
+{# Class Attributes #}
+{# ----------------------------------------------------------------------------------------- #}
+
+{% set attribute_Namespace = undefined %}
+{%- if Class.attrib['Namespace'] is defined %}
+{%      if Class.attrib['Namespace'] != "None" %}
+{%          set attribute_Namespace = Class.attrib['Namespace'] %}
+{%      endif %}
+{% endif %}
+
+{% if attribute_Namespace is defined %}
+namespace {{attribute_Namespace}}
+{
+{% endif %}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////
+//// {{ Class.attrib['Name'] }}
+////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+{% set className = Class.attrib['Name'] %}
+{% set nodeableClassName = Class.attrib['Name'] %}
+
+// The following will be injected directly into the source header file for which AZ AutoGen is being run.
+// You must #include the generated header into the source header
+#define SCRIPTCANVAS_NODE_{{className}} \
+public: \
+    AZ_RTTI({{className}}, "{{nodeableClassName|createHashGuid}}"{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}); \
+    static void Reflect(AZ::ReflectContext* reflection); \
+    static const char* GetDescription() { return "{{ macros.GetAttributeAsString(Class.attrib, 'Description') }}"; } \
+    ScriptCanvas::NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override; \
+    bool IsActive() const override { return false; } \
+{{ nodemacro.PopulateMemberVariables(Class) }}{{ nodemacro.ExecutionInDeclarations(Class) }}{{ nodemacro.ExecutionOutDeclarations(Class) }}/* end #define SCRIPTCANVAS_NODE_{{className}} */
+
+{% if className is defined -%}
+{% set nodeableNodeName = nodeableClassName + 'Node' %}
+
+      namespace Nodes
+      {
+          class {{nodeableNodeName}} : public ScriptCanvas::Nodes::NodeableNode
+          {
+          public:
+
+              AZ_COMPONENT({{nodeableNodeName}}, {% if Class.attrib['NodeableUuid'] is defined %}"{{Class.attrib['NodeableUuid']}}"{% else %}"{{nodeableNodeName|createHashGuid}}"{% endif %}, ScriptCanvas::Nodes::NodeableNode);
+
+              static void Reflect(AZ::ReflectContext* context);
+              void ConfigureSlots() override;
+              void ConfigureVisualExtensions() override;
+              size_t GenerateFingerprint() const override;
+{%            if Class.attrib['EntryPoint'] is defined and Class.attrib['EntryPoint'] == "true" %}
+              bool IsEntryPoint() const override { return true; }
+{%            endif %}
+              {{nodeableNodeName}}();
+          };
+      }
+{% endif %}
+
+{% if attribute_Namespace is defined %}
+}
+{% endif %}
+
+{{ macros.ReportErrors() }}
+
+
+{%  endfor %}
+{% endfor %}

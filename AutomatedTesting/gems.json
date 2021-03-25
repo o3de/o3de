@@ -1,0 +1,298 @@
+{
+    "GemListFormatVersion": 2,
+    "Gems": [
+        {
+            "Path": "Gems/EMotionFX",
+            "Uuid": "044a63ea67d04479aa5daf62ded9d9ca",
+            "Version": "0.1.0",
+            "_comment": "EMotionFX"
+        },
+        {
+            "Path": "Gems/PBSreferenceMaterials",
+            "Uuid": "07375b61b1a2424bb03088bbdf28b2c8",
+            "Version": "0.1.0",
+            "_comment": "PBSreferenceMaterials"
+        },
+        {
+            "Path": "Gems/GraphModel",
+            "Uuid": "0844f64a3acf4f5abf3a535dc9b63bc9",
+            "Version": "0.1.0",
+            "_comment": "GraphModel"
+        },
+        {
+            "Path": "Gems/StartingPointInput",
+            "Uuid": "09f4bedeee614358bc36788e77f97e51",
+            "Version": "0.1.0",
+            "_comment": "StartingPointInput"
+        },
+        {
+            "Path": "Gems/LyShine",
+            "Uuid": "0fefab3f13364722b2eab3b96ce2bf20",
+            "Version": "0.1.0",
+            "_comment": "LyShine"
+        },
+        {
+            "Path": "Gems/LandscapeCanvas",
+            "Uuid": "19c2b2d5018940108baf252934b8e6bf",
+            "Version": "0.1.0",
+            "_comment": "LandscapeCanvas"
+        },
+        {
+            "Path": "Gems/ScriptCanvasPhysics",
+            "Uuid": "1c27519a4dda4ffaaeebf91514e5b1e8",
+            "Version": "0.1.0",
+            "_comment": "ScriptCanvasPhysics"
+        },
+        {
+            "Path": "Gems/HttpRequestor",
+            "Uuid": "28479e255bde466e91fc34eec808d9c7",
+            "Version": "1.0.0",
+            "_comment": "HttpRequestor"
+        },
+        {
+            "Path": "Gems/DevTextures",
+            "Uuid": "2c227161447b4d77a5b07c093e214fe3",
+            "Version": "0.1.0",
+            "_comment": "DevTextures"
+        },
+        {
+            "Path": "Gems/ScriptEvents",
+            "Uuid": "32d8ba21703e4bbbb08487366e48dd69",
+            "Version": "0.1.0",
+            "_comment": "ScriptEvents"
+        },
+        {
+            "Path": "Gems/Maestro",
+            "Uuid": "3b9a978ed6f742a1acb99f74379a342c",
+            "Version": "0.1.0",
+            "_comment": "Maestro"
+        },
+        {
+            "Path": "Gems/ExpressionEvaluation",
+            "Uuid": "4c6f9df57ca2468f93c8d860ee6a1167",
+            "Version": "0.1.0",
+            "_comment": "ExpressionEvaluation"
+        },
+        {
+            "Path": "Gems/PhysX",
+            "Uuid": "4e08125824434932a0fe3717259caa47",
+            "Version": "0.1.0",
+            "_comment": "PhysX"
+        },
+        {
+            "Path": "Gems/PhysXDebug",
+            "Uuid": "516145e2d9904b13813f1b54605e26a6",
+            "Version": "0.1.0",
+            "_comment": "PhysXDebug"
+        },
+        {
+            "Path": "Gems/CameraFramework",
+            "Uuid": "54f2763fe191432fa681ce4a354eedf5",
+            "Version": "0.1.0",
+            "_comment": "CameraFramework"
+        },
+        {
+            "Path": "Gems/TextureAtlas",
+            "Uuid": "5a149b6b3c964064bd4970f0e92f72e2",
+            "Version": "0.1.0",
+            "_comment": "TextureAtlas"
+        },
+        {
+            "Path": "Gems/SurfaceData",
+            "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
+            "Version": "0.1.0",
+            "_comment": "SurfaceData"
+        },
+        {
+            "Path": "Gems/AssetValidation",
+            "Uuid": "5a5c3c10b91d4b4ea8baef474c5b5d49",
+            "Version": "0.1.0",
+            "_comment": "AssetValidation"
+        },
+        {
+            "Path": "Gems/Gestures",
+            "Uuid": "6056556b6088413984309c4a413593ad",
+            "Version": "1.0.0",
+            "_comment": "Gestures"
+        },
+        {
+            "Path": "Gems/CertificateManager",
+            "Uuid": "659cffff33b14a10835bafc6ea623f98",
+            "Version": "0.0.1",
+            "_comment": "CertificateManager"
+        },
+        {
+            "Path": "Gems/DebugDraw",
+            "Uuid": "66239f50bf754354b514c850c8b841fb",
+            "Version": "0.1.0",
+            "_comment": "DebugDraw"
+        },
+        {
+            "Path": "Gems/UiBasics",
+            "Uuid": "6bb61c9e547043f0afc5019d6d460b78",
+            "Version": "0.1.0",
+            "_comment": "UiBasics"
+        },
+        {
+            "Path": "Gems/AudioSystem",
+            "Uuid": "6f63f2b6d07f4b89b4b7c86ebee7feb8",
+            "Version": "0.1.0",
+            "_comment": "AudioSystem"
+        },
+        {
+            "Path": "Gems/StartingPointMovement",
+            "Uuid": "73d8779dc28a4123b7c9ed76217464af",
+            "Version": "0.1.0",
+            "_comment": "StartingPointMovement"
+        },
+        {
+            "Path": "Gems/GameLift",
+            "Uuid": "76de765796504906b73be7365a9bff06",
+            "Version": "2.0.0",
+            "_comment": "GameLift"
+        },
+        {
+            "Path": "Gems/SceneProcessing",
+            "Uuid": "7c2578f634df4345aca98d671e39b8ab",
+            "Version": "0.1.0",
+            "_comment": "SceneProcessing"
+        },
+        {
+            "Path": "Gems/StartingPointCamera",
+            "Uuid": "834070b9537d44df83559e2045c3859f",
+            "Version": "0.1.0",
+            "_comment": "StartingPointCamera"
+        },
+        {
+            "Path": "Gems/ScriptCanvas",
+            "Uuid": "869a0d0ec11a45c299917d45c81555e6",
+            "Version": "0.1.0",
+            "_comment": "ScriptCanvasGem"
+        },
+        {
+            "Path": "Gems/GraphCanvas",
+            "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
+            "Version": "0.1.0",
+            "_comment": "GraphCanvas"
+        },
+        {
+            "Path": "Gems/GradientSignal",
+            "Uuid": "8825563d9d964ec3be3bab681f3bd9f2",
+            "Version": "0.1.0",
+            "_comment": "GradientSignal"
+        },
+        {
+            "Path": "Gems/InAppPurchases",
+            "Uuid": "92fe57eae7d3402a90761973678c079a",
+            "Version": "0.1.0",
+            "_comment": "InAppPurchases"
+        },
+        {
+            "Path": "Gems/PhysicsEntities",
+            "Uuid": "99ea531451fc4f64a5a9fe8f385e8a76",
+            "Version": "0.1.0",
+            "_comment": "PhysicsEntities"
+        },
+        {
+            "Path": "AutomatedTesting/Gem",
+            "Uuid": "afc25e1593194d6283d9ff744ab6d5a1",
+            "Version": "0.1.0"
+        },
+        {
+            "Path": "Gems/EditorPythonBindings",
+            "Uuid": "b658359393884c4381c2fe2952b1472a",
+            "Version": "0.1.0",
+            "_comment": "EditorPythonBindings"
+        },
+        {
+            "Path": "Gems/ImGui",
+            "Uuid": "bab8807a1bc646b3909f3cc200ffeedf",
+            "Version": "0.1.0",
+            "_comment": "ImGui"
+        },
+        {
+            "Path": "Gems/ChatPlay",
+            "Uuid": "bfbc60c63ffd4b00927003735b26ce99",
+            "Version": "0.1.0",
+            "_comment": "ChatPlay"
+        },
+        {
+            "Path": "Gems/Metastream",
+            "Uuid": "c02d7efe05134983b5699d9ee7594c3a",
+            "Version": "1.0.0",
+            "_comment": "Metastream"
+        },
+        {
+            "Path": "Gems/PhysXSamples",
+            "Uuid": "c4a4aadba44241ae9f0141e145def7f7",
+            "Version": "0.1.0",
+            "_comment": "PhysXSamples"
+        },
+        {
+            "Path": "Gems/Water",
+            "Uuid": "c5083fcf89b24ab68fb0611c01a07b1d",
+            "Version": "0.1.0",
+            "_comment": "Water"
+        },
+        {
+            "Path": "Gems/WhiteBox",
+            "Uuid": "c5833dbda2e045d3a5f16b7414280c27",
+            "Version": "0.1.0",
+            "_comment": "WhiteBox"
+        },
+        {
+            "Path": "Gems/TouchBending",
+            "Uuid": "c58d2057f3724b22ae0df0be68a4e316",
+            "Version": "0.1.0",
+            "_comment": "TouchBending"
+        },
+        {
+            "Path": "Gems/FastNoise",
+            "Uuid": "c5f23032407f49ca8d8de1733423565c",
+            "Version": "0.1.0",
+            "_comment": "FastNoise"
+        },
+        {
+            "Path": "Gems/LyShineExamples",
+            "Uuid": "c7935ecf5e8047fe8ca947b34b11cadb",
+            "Version": "0.1.0",
+            "_comment": "LyShineExamples"
+        },
+        {
+            "Path": "Gems/PrimitiveAssets",
+            "Uuid": "ed07631f95fb4be1bd10cd37298ec697",
+            "Version": "1.0.0",
+            "_comment": "PrimitiveAssets"
+        },
+        {
+            "Path": "Gems/ImageProcessing",
+            "Uuid": "eeffbd9211cf4ce0b5cc73696b427cbe",
+            "Version": "0.1.0",
+            "_comment": "ImageProcessing"
+        },
+        {
+            "Path": "Gems/Vegetation",
+            "Uuid": "f394e7cf54424bba89615381bba9511b",
+            "Version": "0.1.0",
+            "_comment": "Vegetation"
+        },
+        {
+            "Path": "Gems/TestAssetBuilder",
+            "Uuid": "f5c92f1560714010ba30467d93feecef",
+            "Version": "0.1.0",
+            "_comment": "TestAssetBuilder"
+        },
+        {
+            "Path": "Gems/Camera",
+            "Uuid": "f910686b6725452fbfc4671f95f733c6",
+            "Version": "0.1.0",
+            "_comment": "Camera"
+        },
+        {
+            "Path": "Gems/LmbrCentral",
+            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
+            "Version": "0.1.0",
+            "_comment": "LmbrCentral"
+        }
+    ]
+}

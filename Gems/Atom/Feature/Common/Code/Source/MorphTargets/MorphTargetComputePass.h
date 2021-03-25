@@ -37,7 +37,7 @@ namespace AZ
 
         private:
             void BuildAttachmentsInternal() override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             AZStd::mutex m_mutex;
             AZStd::unordered_set<const RHI::DispatchItem*> m_dispatches;

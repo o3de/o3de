@@ -19,8 +19,10 @@
 #include <AzCore/Serialization/Utils.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
+
+#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
@@ -28,6 +30,8 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
+#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
@@ -37,6 +41,8 @@
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/ErrorHandler.h>
+#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
@@ -47,6 +53,20 @@
 #include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
+
+namespace GraphCpp
+{
+    enum GraphVersion
+    {
+        RemoveUniqueId = 12,
+        MergeScriptEventsAndFunctions,
+        MergeScriptAssetDescriptions,
+        VariablePanelSymantics,
+        AddVersionData,
+        // label your version above
+        Current
+    };
+}
 
 namespace ScriptCanvas
 {
@@ -99,9 +119,12 @@ namespace ScriptCanvas
         if (serializeContext)
         {
             serializeContext->Class<Graph, AZ::Component>()
-                ->Version(13, &GraphComponentVersionConverter)
+                ->Version(GraphCpp::GraphVersion::Current, &GraphComponentVersionConverter)
                 ->Field("m_graphData", &Graph::m_graphData)
+                ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
+                ->Field("isFunctionGraph", &Graph::m_isFunctionGraph)
+                ->Field("versionData", &Graph::m_versionData)
                 ;
         }
     }
@@ -111,6 +134,8 @@ namespace ScriptCanvas
         const auto& scriptCanvasId = GetScriptCanvasId();
         GraphRequestBus::Handler::BusConnect(scriptCanvasId);
         RuntimeRequestBus::Handler::BusConnect(scriptCanvasId);
+
+        ValidationRequestBus::Handler::BusConnect(scriptCanvasId);
 
         for (auto& nodeEntity : m_graphData.m_nodes)
         {
@@ -145,144 +170,53 @@ namespace ScriptCanvas
         StatusRequestBus::Handler::BusConnect(scriptCanvasId);
     }
 
-    void Graph::Activate()
+    bool Graph::IsFunctionGraph() const
     {
-        if (!m_executionContext.ActivateContext(GetScriptCanvasId()))
+        if (m_isFunctionGraph)
         {
-            return;
+            return true;    
         }
-
-        RefreshConnectionValidity(true);
-
-        AZ::EntityBus::Handler::BusConnect(GetEntityId());
-
-        // If there are no nodes, there's nothing to do, deactivate the graph's entity.
-        if (m_graphData.m_nodes.empty())
-        {
-            Deactivate();
-            return;
-        }
-
-        AZ::SerializeContext* serializeContext{};
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        const bool replaceIdOnEntity{ true };
-        const bool updateIdOnEntityId{ false };
-
-        // Gather list of all the graph's node and connection entities
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> assetToRuntimeInternalMap;
-        auto internalGraphEntityIdMapper = [&assetToRuntimeInternalMap](const AZ::EntityId& entityId, bool, const AZ::IdUtils::Remapper<AZ::EntityId>::IdGenerator)
-        {
-            // Add entity AZ::Entity::m_id instances to the map
-            assetToRuntimeInternalMap.emplace(entityId, entityId);
-            return entityId;
-        };
-
-        assetToRuntimeInternalMap[ScriptCanvas::GraphOwnerId] = GetEntityId();
-        assetToRuntimeInternalMap[ScriptCanvas::UniqueId] = GetScriptCanvasId();
-        assetToRuntimeInternalMap[GetEntityId()] = GetEntityId();
-        assetToRuntimeInternalMap[GetScriptCanvasId()] = GetScriptCanvasId();
-        assetToRuntimeInternalMap[AZ::EntityId()] = AZ::EntityId();
-
-        AZ::IdUtils::Remapper<AZ::EntityId>::RemapIds(&m_graphData, internalGraphEntityIdMapper, serializeContext, replaceIdOnEntity);
-
-        // Looks up the EntityContext loaded game entity map
-        const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* loadedGameEntityIdMap = nullptr;
-
-        AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(owningContextId, GetEntityId(), &AzFramework::EntityIdContextQueries::GetOwningContextId);
-        if (!owningContextId.IsNull())
-        {
-            // Add a mapping for the GraphOwnerId to the execution component entity id
-            AzFramework::SliceEntityOwnershipServiceRequests* requests =
-                AzFramework::SliceEntityOwnershipServiceRequestBus::FindFirstHandler(owningContextId);
-
-            if (requests)
-            {
-                loadedGameEntityIdMap = &requests->GetLoadedEntityIdMap();
-            }
-            else
-            {
-                static AZStd::unordered_map<AZ::EntityId, AZ::EntityId> s_emptyStaticMap;
-                loadedGameEntityIdMap = &s_emptyStaticMap;
-            }
-        }
-
-        // Lambda function remaps any known world map entities to their correct id other wise it DOES NOT remap the entityId.
-        // This works differently than the runtime component remapping which remaps unknown world entities to invalid entity id
-        auto worldEntityRemapper = [&assetToRuntimeInternalMap, &loadedGameEntityIdMap](const AZ::EntityId& entityId, bool, const AZ::IdUtils::Remapper<AZ::EntityId>::IdGenerator&) -> AZ::EntityId
-        {
-            auto foundEntityIdIt = assetToRuntimeInternalMap.find(entityId);
-            if (foundEntityIdIt != assetToRuntimeInternalMap.end())
-            {
-                return foundEntityIdIt->second;
-            }
-            else
-            {
-                auto loadedIdIter = loadedGameEntityIdMap->find(entityId);
-
-                if (loadedIdIter != loadedGameEntityIdMap->end())
-                {
-                    return loadedIdIter->second;
-                }
-
-                AZ_Warning("Script Canvas", false, "Entity Id %s is not part of the entity ids known by the graph. It will be not be remapped", entityId.ToString().data());
-                return entityId;
-            }
-        };
-
-        AZ::IdUtils::Remapper<AZ::EntityId>::ReplaceIdsAndIdRefs(&m_graphData, worldEntityRemapper, serializeContext);
-
-        bool entryPointFound = false;
 
         for (auto& nodeEntity : m_graphData.m_nodes)
         {
             if (nodeEntity)
             {
-                if (auto startNode = AZ::EntityUtils::FindFirstDerivedComponent<Nodes::Core::Start>(nodeEntity))
+                if (auto node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity))
                 {
-                    m_executionContext.AddToExecutionStack(*startNode, SlotId());
-                    entryPointFound = true;
-                }
-                else if (!entryPointFound)
-                {
-                    auto nodes = AZ::EntityUtils::FindDerivedComponents<ScriptCanvas::Node>(nodeEntity);
-                    for (auto iter = nodes.begin(); iter != nodes.end() && !entryPointFound; ++iter)
+                    if (azrtti_istypeof<Nodes::Core::FunctionDefinitionNode*>(node))
                     {
-                        entryPointFound = (*iter)->IsEntryPoint();
+                        return true;
                     }
                 }
             }
         }
 
-        // If we still can't find a start node, there's nothing to do.
-        if (!entryPointFound)
-        {
-            AZ_Warning("Script Canvas", false, "Graph does not have any entry point nodes, it will not run.");
-            Deactivate();
-            return;
-        }
+        return false;
+    }
+
+    void Graph::MarkFunctionGraph()
+    {
+        m_isFunctionGraph = true;
+    }
+
+    void Graph::MarkVersion()
+    {
+        m_versionData.MarkLatest();
+    }
+
+    const VersionData& Graph::GetVersion() const
+    {
+        return m_versionData;
+    }
+
+    void Graph::Activate()
+    {
+        m_variableRequests = nullptr;
+
+        RefreshConnectionValidity(true);
 
         for (auto& nodeEntity : m_graphData.m_nodes)
         {
-            // Restore once we have Error Handling figured out
-            if (auto errorHandlerNode = nodeEntity ? AZ::EntityUtils::FindFirstDerivedComponent<Nodes::Core::ErrorHandler>(nodeEntity) : nullptr)
-            {
-                AZStd::vector<AZStd::pair<Node*, const SlotId>> errorSources = errorHandlerNode->GetSources();
-
-                if (errorSources.empty())
-                {
-                    m_executionContext.AddErrorHandler(m_scriptCanvasId, errorHandlerNode->GetEntityId());
-                }
-                else
-                {
-                    for (auto errorNodes : errorSources)
-                    {
-                        m_executionContext.AddErrorHandler(errorNodes.first->GetEntityId(), errorHandlerNode->GetEntityId());
-                    }
-                }
-            }
-
             if (nodeEntity)
             {
                 if (nodeEntity->GetState() == AZ::Entity::State::Init)
@@ -308,8 +242,11 @@ namespace ScriptCanvas
 
     void Graph::Deactivate()
     {
-        m_executionContext.DeactivateContext();
-        AZ::EntityBus::Handler::BusDisconnect(GetEntityId());
+        // Unit tests don't create an entity
+        if (GetEntity())
+        {
+            AZ::EntityBus::Handler::BusDisconnect(GetEntityId());
+        }
 
         for (auto& nodeEntity : m_graphData.m_nodes)
         {
@@ -374,9 +311,44 @@ namespace ScriptCanvas
         return false;
     }
 
+    AZStd::pair<ScriptCanvas::ScriptCanvasId, ValidationResults> Graph::GetValidationResults()
+    {
+        ValidationResults validationResults;
+        ValidateGraph(validationResults);
+        return AZStd::make_pair(m_scriptCanvasId, validationResults);
+    }
+
+    void Graph::Parse(ValidationResults& validationResults)
+    {
+        Grammar::Request request;
+        request.graph = this;
+        request.name = "editorValidation";
+
+        request.rawSaveDebugOutput = Grammar::s_saveRawTranslationOuputToFile;
+        request.printModelToConsole = Grammar::s_printAbstractCodeModel;
+
+        const Translation::Result result = Translation::ToLua(request);
+
+        if (!result.IsModelValid())
+        {
+            // Gets the parser errors, if any
+            for (const auto& eventList : result.m_model->GetValidationEvents())
+            {
+                validationResults.AddValidationEvent(eventList.get());
+            }
+
+            if (validationResults.HasResults())
+            {
+                AZ_Error("ScriptCanvas", result.IsModelValid(), "Script Canvas parsing failed");
+            }
+        }
+    }
+
     void Graph::ValidateGraph(ValidationResults& validationResults)
     {
         validationResults.ClearResults();
+
+        // Parse(validationResults);
 
         for (auto& connectionEntity : m_graphData.m_connections)
         {
@@ -445,7 +417,11 @@ namespace ScriptCanvas
 
     void Graph::PostActivate()
     {
-        GraphConfigurationNotificationBus::Event(GetEntityId(), &GraphConfigurationNotifications::ConfigureScriptCanvasId, GetScriptCanvasId());
+        // Unit tests don't create a valid entity
+        if (GetEntity())
+        {
+            GraphConfigurationNotificationBus::Event(GetEntityId(), &GraphConfigurationNotifications::ConfigureScriptCanvasId, GetScriptCanvasId());
+        }
 
         m_variableRequests = GraphVariableManagerRequestBus::FindFirstHandler(GetScriptCanvasId());
 
@@ -504,9 +480,10 @@ namespace ScriptCanvas
                 ValidationEvent* validationEvent = nullptr;
                 if (auto scriptEventNode = AZ::EntityUtils::FindFirstDerivedComponent<Nodes::Core::Internal::ScriptEventBase>(nodeEntity))
                 {
-                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
+                    AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::PreLoad);
                     if (assetData)
                     {
+                        assetData.BlockUntilLoadComplete();
                         ScriptEvents::ScriptEvent& definition = assetData.Get()->m_definition;
 
                         if (scriptEventNode->GetVersion() != definition.GetVersion())
@@ -520,10 +497,8 @@ namespace ScriptCanvas
         }
     }
 
-    void Graph::ReportError(const Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage)
+    void Graph::ReportError(const Node& /*node*/, const AZStd::string& /*errorSource*/, const AZStd::string& /*errorMessage*/)
     {
-        AZStd::string annotatedErrorMessage = AZStd::string::format("%s - %s", errorSource.c_str(), errorMessage.c_str());
-        m_executionContext.ReportError(node, annotatedErrorMessage.c_str());
     }
 
     bool Graph::AddNode(const AZ::EntityId& nodeId)
@@ -819,7 +794,7 @@ namespace ScriptCanvas
         return false;
     }
 
-    bool Graph::AddDependentAsset(AZ::EntityId nodeId, [[maybe_unused]] const AZ::TypeId assetType, [[maybe_unused]] const AZ::Data::AssetId assetId)
+    bool Graph::AddDependentAsset(AZ::EntityId nodeId, const AZ::TypeId, const AZ::Data::AssetId)
     {
         AZ::Entity* nodeEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, nodeId);
@@ -831,10 +806,7 @@ namespace ScriptCanvas
             {
                 if (Nodes::Core::Internal::ScriptEventBase* scriptEventBase = azrtti_cast<Nodes::Core::Internal::ScriptEventBase*>(node))
                 {
-                    if (m_graphData.m_dependentAssets.find(scriptEventBase->GetAssetId()) == m_graphData.m_dependentAssets.end())
-                    {
-                        m_graphData.m_scriptEventAssets.push_back(AZStd::make_pair(nodeId, scriptEventBase->GetAsset()));
-                    }
+                    m_graphData.m_scriptEventAssets.push_back(AZStd::make_pair(nodeId, scriptEventBase->GetAsset()));
                     return true;
                 }
             }
@@ -846,11 +818,11 @@ namespace ScriptCanvas
     {
         auto assetIter = AZStd::find_if(m_graphData.m_scriptEventAssets.begin(), m_graphData.m_scriptEventAssets.end(), [nodeId](const GraphData::DependentScriptEvent::value_type& value) { return nodeId == value.first; });
         if (assetIter != m_graphData.m_scriptEventAssets.end())
-            {
-            assetIter->second.Reset();
+        {
+            assetIter->second = ScriptEvents::ScriptEventsAssetPtr();
             m_graphData.m_scriptEventAssets.erase(assetIter);
-                return true;
-            }
+            return true;
+        }
 
         return false;
     }
@@ -963,53 +935,6 @@ namespace ScriptCanvas
             return AZ::Failure(validationStruct);
         }
 
-        if (sourceSlot->IsData())
-        {
-            return ValidateDataConnection((*sourceNode), (*sourceSlot), (*targetNode), (*targetSlot));
-        }
-        else
-        {
-            return ValidateExecutionConnection((*sourceNode), (*sourceSlot), (*targetNode), (*targetSlot));
-        }
-    }
-
-    AZ::Outcome<void, Graph::ValidationStruct> Graph::ValidateExecutionConnection([[maybe_unused]] const Node& sourceNode, [[maybe_unused]] const Slot& sourceSlot, [[maybe_unused]] const Node& targetNode, [[maybe_unused]] const Slot& targetSlot) const
-    {
-        // Nothing special to validate for Execution Connections yet
-        return AZ::Success();
-    }
-
-    AZ::Outcome<void, Graph::ValidationStruct> Graph::ValidateDataConnection(const Node& sourceNode, const Slot& sourceSlot, const Node& targetNode, const Slot& targetSlot) const
-    {
-        if (sourceSlot.IsData() && sourceSlot.GetDescriptor().CanConnectTo(targetSlot.GetDescriptor()))
-        {
-            bool isInDataFlow = false;
-
-            if (sourceSlot.IsInput())
-            {
-                isInDataFlow = IsInDataFlowPath(&targetNode, &sourceNode);
-            }
-            else
-            {
-                isInDataFlow = IsInDataFlowPath(&sourceNode, &targetNode);
-            }
-
-            if (!isInDataFlow)
-            {
-                ValidationStruct validationStruct;
-                validationStruct.m_validationEventId = DataValidationIds::ScopedDataConnectionCrc;
-                validationStruct.m_errorDescription = AZStd::string::format("There is an invalid data connection %s.%s --> %s.%s, the data is not in the execution path between nodes. Either route execution %s --> %s, or store the data in a variable if it is needed."
-                                                                            , sourceNode.GetNodeName().data()
-                                                                            , sourceSlot.GetName().data()
-                                                                            , targetNode.GetNodeName().data()
-                                                                            , targetSlot.GetName().data()
-                                                                            , sourceNode.GetNodeName().data()
-                                                                            , targetNode.GetNodeName().data());
-
-                return AZ::Failure(validationStruct);
-            }
-        }
-
         return AZ::Success();
     }
 
@@ -1085,7 +1010,7 @@ namespace ScriptCanvas
         return false;
     }
 
-    void Graph::RefreshConnectionValidity(bool warnOnRemoval)
+    void Graph::RefreshConnectionValidity([[maybe_unused]] bool warnOnRemoval)
     {
         AZStd::vector<AZ::EntityId> removableConnections;
 
@@ -1100,21 +1025,19 @@ namespace ScriptCanvas
             }
         }
 
-        for (auto connectionId : removableConnections)
-        {
-            DisconnectById(connectionId);
-        }
+//         for (auto connectionId : removableConnections)
+//         {
+//             DisconnectById(connectionId);
+//         }
 
         if (!removableConnections.empty())
         {
-            RefreshConnectionValidity(warnOnRemoval);
+            // RefreshConnectionValidity(warnOnRemoval);
         }
     }
   
     void Graph::OnEntityActivated(const AZ::EntityId&)
     {
-        AZ::EntityBus::Handler::BusDisconnect(GetEntityId());
-        m_executionContext.Execute();
     }
 
     bool Graph::AddGraphData(const GraphData& graphData)
@@ -1138,7 +1061,7 @@ namespace ScriptCanvas
         {
             if (auto scriptEventNode = AZ::EntityUtils::FindFirstDerivedComponent<Nodes::Core::Internal::ScriptEventBase>(nodeItem))
             {
-                AZ::Data::AssetManager::Instance().FindOrCreateAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
             }
         }
         
@@ -1244,22 +1167,22 @@ namespace ScriptCanvas
 
     VariableData* Graph::GetVariableData()
     {
-        return m_variableRequests->GetVariableData();
+        return m_variableRequests ? m_variableRequests->GetVariableData() : nullptr;
     }
 
     const GraphVariableMapping* Graph::GetVariables() const
     {
-        return m_variableRequests->GetVariables();
+        return m_variableRequests ? m_variableRequests->GetVariables() : nullptr;
     }
 
     GraphVariable* Graph::FindVariable(AZStd::string_view propName)
     {
-        return m_variableRequests->FindVariable(propName);
+        return m_variableRequests ? m_variableRequests->FindVariable(propName) : nullptr;
     }
 
     GraphVariable* Graph::FindVariableById(const VariableId& variableId)
     {
-        return m_variableRequests->FindVariableById(variableId);
+        return m_variableRequests ? m_variableRequests->FindVariableById(variableId) : nullptr;
     }
 
     Data::Type Graph::GetVariableType(const VariableId& variableId) const

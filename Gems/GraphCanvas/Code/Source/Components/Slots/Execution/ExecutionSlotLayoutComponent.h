@@ -31,7 +31,7 @@ namespace GraphCanvas
         : public QGraphicsLinearLayout
         , public SlotNotificationBus::Handler
         , public SceneMemberNotificationBus::Handler
-        , public StyleNotificationBus::Handler
+        , public StyleNotificationBus::Handler        
     {
     public:
         AZ_CLASS_ALLOCATOR(ExecutionSlotLayout, AZ::SystemAllocator, 0);
@@ -60,6 +60,13 @@ namespace GraphCanvas
 
     private:
 
+        // ExecutionSlotLayoutBus
+        void SetTextDecoration(const AZStd::string& textDecoration, const AZStd::string& toolTip);
+        void ClearTextDecoration();
+        ////
+
+        void ApplyTextStyle(GraphCanvasLabel* graphCanvasLabel);
+
         void UpdateLayout();
         void UpdateGeometry();
 
@@ -70,6 +77,8 @@ namespace GraphCanvas
 
         ExecutionSlotConnectionPin* m_slotConnectionPin;
         GraphCanvasLabel*           m_slotText;
+
+        GraphCanvasLabel*           m_textDecoration;
     };
 
     //! Lays out the parts of a basic Node

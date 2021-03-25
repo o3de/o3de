@@ -86,8 +86,8 @@ Connection::Connection(bool isUserCreatedConnection, qintptr socketDescriptor, Q
     connect(m_connectionWorker, &AssetProcessor::ConnectionWorker::ConnectionEstablished, this, &Connection::OnConnectionEstablished, Qt::BlockingQueuedConnection);
     connect(m_connectionWorker, &AssetProcessor::ConnectionWorker::ErrorMessage, this, &Connection::ErrorMessage);
 
-    connect(m_connectionWorker, &AssetProcessor::ConnectionWorker::IsAddressWhiteListed, this, &Connection::IsAddressWhiteListed);
-    connect(this, &Connection::AddressIsWhiteListed, m_connectionWorker, &AssetProcessor::ConnectionWorker::AddressIsWhiteListed);
+    connect(m_connectionWorker, &AssetProcessor::ConnectionWorker::IsAddressInAllowedList, this, &Connection::IsAddressInAllowedList);
+    connect(this, &Connection::AddressIsInAllowedList, m_connectionWorker, &AssetProcessor::ConnectionWorker::AddressIsInAllowedList);
 }
 
 void Connection::Activate(qintptr socketDescriptor)

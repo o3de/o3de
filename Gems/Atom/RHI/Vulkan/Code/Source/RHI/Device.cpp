@@ -77,7 +77,16 @@ namespace AZ
                 VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
                 VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
                 VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME
+                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+
+                // ray tracing extensions
+                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
             } };
 
             RawStringList optionalExtensions = FilterList(optionalDeviceExtensions, deviceExtensions);
@@ -685,7 +694,12 @@ namespace AZ
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
             m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
             m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
-            m_features.m_rayTracing = false;
+
+            // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions
+            // to determine if ray tracing is supported on this device
+            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
+            StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

@@ -72,6 +72,12 @@ namespace AZ
             return m_vertexCount;
         }
 
+        void SkinnedMeshInputLod::SetIndexBuffer(const Data::Asset<RPI::BufferAsset> bufferAsset)
+        {
+            m_indexBufferAsset = bufferAsset;
+            m_indexBuffer = RPI::Buffer::FindOrCreate(bufferAsset);
+        }
+
         void SkinnedMeshInputLod::CreateIndexBuffer(const uint32_t* data, const AZStd::string& bufferNamePrefix)
         {
             AZ_Assert(m_indexCount > 0, "SkinnedMeshInputLod::CreateIndexBuffer called with a index count of 0. Make sure SetIndexCount has been called before trying to create any buffers.");
@@ -97,6 +103,12 @@ namespace AZ
             const char* bufferName = !bufferNamePrefix.empty() ? bufferNamePrefix.c_str() : streamInfo.m_bufferName.GetCStr();
 
             Data::Asset<RPI::BufferAsset> bufferAsset = CreateBufferAsset(data, viewDescriptor, RHI::BufferBindFlags::ShaderRead, SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamResourcePool(), bufferName);
+            m_inputBufferAssets[static_cast<uint8_t>(inputStream)] = bufferAsset;
+            m_inputBuffers[static_cast<uint8_t>(inputStream)] = RPI::Buffer::FindOrCreate(bufferAsset);
+        }
+
+        void SkinnedMeshInputLod::SetSkinningInputBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshInputVertexStreams inputStream)
+        {
             m_inputBufferAssets[static_cast<uint8_t>(inputStream)] = bufferAsset;
             m_inputBuffers[static_cast<uint8_t>(inputStream)] = RPI::Buffer::FindOrCreate(bufferAsset);
         }
@@ -177,10 +189,10 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshInputLod::AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& vertexNumbers, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix)
+        void SkinnedMeshInputLod::AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix)
         {
             m_morphTargetMetaDatas.push_back(MorphTargetMetaData{ minWeight, maxWeight, minDelta, maxDelta, vertexCount });
-            m_morphTargetInputBuffers.push_back(aznew MorphTargetInputBuffers{ vertexNumbers, deltas, bufferNamePrefix });
+            m_morphTargetInputBuffers.push_back(aznew MorphTargetInputBuffers{ vertexCount, deltas, bufferNamePrefix });
         }
 
         
@@ -320,7 +332,7 @@ namespace AZ
                 // used for dependency tracking between passes. This can be switched to a transient memory pool so that the memory is free
                 // later in the frame once skinning is finished ATOM-14429
 
-                AZStd::intrusive_ptr<SkinnedMeshOutputStreamAllocation> allocation = SkinnedMeshOutputStreamManagerInterface::Get()->Allocate(vertexCount * static_cast<size_t>(MorphTargetConstants::s_unpackedMorphTargetDeltaSize));
+                AZStd::intrusive_ptr<SkinnedMeshOutputStreamAllocation> allocation = SkinnedMeshOutputStreamManagerInterface::Get()->Allocate(vertexCount * static_cast<size_t>(MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes) * MorphTargetConstants::s_morphTargetDeltaTypeCount);
                 if (!allocation)
                 {
                     // Suppress the OnMemoryFreed signal when releasing the previous successful allocations
@@ -340,15 +352,27 @@ namespace AZ
                     // so we are not doing an offset from the beginning of the buffer
                     AZ_Error("SkinnedMeshInputBuffers", allocation->GetVirtualAddress().m_ptr < static_cast<uintptr_t>(std::numeric_limits<uint32_t>::max()), "Morph target deltas allocated from the skinned mesh memory pool are outside the range that can be accessed from the skinning shader");
 
-                    // Track both the allocation and the offset in the instance
-                    instance->m_accumulatedMorphTargetDeltaOffsetsInBytes.push_back(allocation->GetVirtualAddress().m_ptr);
+                    MorphTargetInstanceMetaData instanceMetaData;
+
+                    // Positions start at the beginning of the allocation
+                    instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes = allocation->GetVirtualAddress().m_ptr;
+                    uint32_t deltaStreamSizeInBytes = vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes;
+
+                    // Followed by normals, tangents, and bitangents
+                    instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes = instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes + deltaStreamSizeInBytes;
+                    instanceMetaData.m_accumulatedTangentDeltaOffsetInBytes = instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes + deltaStreamSizeInBytes;
+                    instanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes = instanceMetaData.m_accumulatedTangentDeltaOffsetInBytes + deltaStreamSizeInBytes;
+
+                    // Track both the allocation and the metadata in the instance
+                    instance->m_morphTargetInstanceMetaData.push_back(instanceMetaData);
                     lodAllocations.push_back(allocation);
                 }
             }
             else
             {
                 // No morph targets for this lod
-                instance->m_accumulatedMorphTargetDeltaOffsetsInBytes.push_back(MorphTargetConstants::s_invalidDeltaOffset);
+                MorphTargetInstanceMetaData instanceMetaData{ MorphTargetConstants::s_invalidDeltaOffset, MorphTargetConstants::s_invalidDeltaOffset, MorphTargetConstants::s_invalidDeltaOffset, MorphTargetConstants::s_invalidDeltaOffset };
+                instance->m_morphTargetInstanceMetaData.push_back(instanceMetaData);
             }
 
             return true;

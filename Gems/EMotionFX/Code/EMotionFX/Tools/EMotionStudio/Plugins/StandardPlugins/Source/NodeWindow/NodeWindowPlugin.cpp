@@ -32,9 +32,6 @@ namespace EMStudio
 {
     NodeWindowPlugin::NodeWindowPlugin()
         : EMStudio::DockWidgetPlugin()
-        , mSelectCallback(nullptr)
-        , mUnselectCallback(nullptr)
-        , mClearSelectionCallback(nullptr)
         , mDialogStack(nullptr)
         , mHierarchyWidget(nullptr)
         , m_propertyWidget(nullptr)
@@ -44,13 +41,14 @@ namespace EMStudio
 
     NodeWindowPlugin::~NodeWindowPlugin()
     {
-        // unregister the command callbacks and get rid of the memory
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
+        EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
+
+        for (UpdateCallback* callback : m_callbacks)
+        {
+            GetCommandManager()->RemoveCommandCallback(callback, false);
+            delete callback;
+        }
+        m_callbacks.clear();
     }
 
 
@@ -73,14 +71,16 @@ namespace EMStudio
     // init after the parent dock window has been created
     bool NodeWindowPlugin::Init()
     {
-        // create and register the command callbacks only (only execute this code once for all plugins)
-        mSelectCallback                 = new CommandSelectCallback(false);
-        mUnselectCallback               = new CommandUnselectCallback(false);
-        mClearSelectionCallback         = new CommandClearSelectionCallback(false);
+        EMotionFX::ActorNotificationBus::Handler::BusConnect();
 
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
+        m_callbacks.emplace_back(new UpdateCallback(false));
+        GetCommandManager()->RegisterCommandCallback("Select", m_callbacks.back());
+
+        m_callbacks.emplace_back(new UpdateCallback(false));
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_callbacks.back());
+
+        m_callbacks.emplace_back(new UpdateCallback(false));
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_callbacks.back());
 
         // create the dialog stack
         AZ_Assert(!mDialogStack, "Expected an unitialized mDialogStack, was this function called more than once?");
@@ -329,6 +329,11 @@ namespace EMStudio
         GetManager()->SetVisibleJointIndices(m_visibleNodeIndices);
     }
 
+    void NodeWindowPlugin::OnActorReady([[maybe_unused]] EMotionFX::Actor* actor)
+    {
+        ReInit();
+    }
+
     //-----------------------------------------------------------------------------------------
     // command callbacks
     //-----------------------------------------------------------------------------------------
@@ -352,12 +357,6 @@ namespace EMStudio
         return true;
     }
 
-    bool NodeWindowPlugin::CommandSelectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)           { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
-    bool NodeWindowPlugin::CommandSelectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)              { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
-    bool NodeWindowPlugin::CommandUnselectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)         { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
-    bool NodeWindowPlugin::CommandUnselectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)            { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
-    bool NodeWindowPlugin::CommandClearSelectionCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
-    bool NodeWindowPlugin::CommandClearSelectionCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)      { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
+    bool NodeWindowPlugin::UpdateCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)           { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
+    bool NodeWindowPlugin::UpdateCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)              { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitNodeWindowPlugin(); }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/moc_NodeWindowPlugin.cpp>

@@ -52,9 +52,15 @@ namespace AZ
             // Pass behavior overrides...
             void BuildAttachmentsInternal() override;
 
+            ///////////////////////////////////////////////////////////////////
+            // ShaderReloadNotificationBus overrides...
+            void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
+            void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
+            void OnShaderVariantReinitialized(const AZ::RPI::Shader& shader, const AZ::RPI::ShaderVariantId& shaderVariantId, AZ::RPI::ShaderVariantStableId shaderVariantStableId) override;
+
             // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             RHI::MultisampleState GetMultiSampleState();
             AZ::Name GetMultiSampleName();

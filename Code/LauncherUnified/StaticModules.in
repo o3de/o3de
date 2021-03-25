@@ -25,7 +25,6 @@
 
 DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_Cry3DEngine)
 DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_CryFont)
-DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_CryNetwork)
 DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_CryRenderer)
 
 #undef DECLARE_CRYREGISTER_SINGLETON_CLASS
@@ -46,7 +45,6 @@ ${module_invocations}
 
     NON_STRIPPING_CALL(CEngineModule_Cry3DEngine);
     NON_STRIPPING_CALL(CEngineModule_CryFont);
-    NON_STRIPPING_CALL(CEngineModule_CryNetwork);
     NON_STRIPPING_CALL(CEngineModule_CryRenderer);
 #undef NON_STRIPPING_CALL
 }

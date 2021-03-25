@@ -57,10 +57,16 @@ namespace ScriptCanvasEditor
 
             if (object && object->IS_A(ScriptCanvas::Data::Type::EntityID()))
             {
-                const AZ::EntityId* entityId = object->GetAs<AZ::EntityId>();
-                if (entityId && *entityId == ScriptCanvas::GraphOwnerId)
+                if (const AZ::EntityId* entityId = object->GetAs<AZ::EntityId>())
                 {
-                    return "Self";
+                    if (*entityId == ScriptCanvas::GraphOwnerId)
+                    {
+                        return "Self";
+                    }
+                    else if (*entityId == ScriptCanvas::UniqueId)
+                    {
+                        return "Unique";
+                    }
                 }
             }
 
@@ -98,10 +104,15 @@ namespace ScriptCanvasEditor
 
             if (datumView.IsValid() && datumView.IsType(ScriptCanvas::Data::Type::EntityID()))
             {
-                datumView.SetAs(entityId);
+                const AZ::EntityId* storedId = datumView.GetAs<AZ::EntityId>();
 
-                PostUndoPoint();
-                PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+                if (storedId == nullptr || (*storedId) != entityId)
+                {
+                    datumView.SetAs(entityId);
+
+                    PostUndoPoint();
+                    PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+                }
             }
         }
         ////

@@ -186,7 +186,7 @@ namespace AZStd
             : any(alloc)
         {
             static_assert(std::is_copy_constructible<decay_t<ValueType>>::value
-                        ||  (std::is_rvalue_reference<ValueType>::value && std::is_move_constructible<decay_t<ValueType>>::value), "ValueType must be copy constructible or a movable rvalue ref.");
+                        ||  (std::is_rvalue_reference<ValueType&&>::value && std::is_move_constructible<decay_t<ValueType>>::value), "ValueType must be copy constructible or a movable rvalue ref.");
 
             // Initialize typeinfo from the type given
             m_typeInfo = create_template_type_info<decay_t<ValueType>>();

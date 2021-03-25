@@ -26,10 +26,16 @@ namespace ScriptCanvas
     {
         friend class Graph;
     public:
+        using ValidationEventList = AZStd::vector<ValidationConstPtr>;
 
         ~ValidationResults()
         {
             ClearResults();
+        }
+
+        bool HasResults() const
+        {
+            return !m_validationEvents.empty();
         }
 
         bool HasErrors() const
@@ -54,17 +60,17 @@ namespace ScriptCanvas
 
         void ClearResults()
         {
-            for (auto validationEvent : m_validationEvents)
-            {
-                delete validationEvent;
-            }
-
             m_validationEvents.clear();
         }
 
-        const AZStd::vector< ValidationEvent* >& GetEvents() const
+        const ValidationEventList& GetEvents() const
         {
             return m_validationEvents;
+        }
+
+        void AddValidationEvent(const ValidationEvent* validationEvent)
+        {
+            m_validationEvents.push_back(validationEvent);
         }
 
         void AddValidationEvent(ValidationEvent* validationEvent)
@@ -102,7 +108,7 @@ namespace ScriptCanvas
             return count;
         }
 
-        AZStd::vector< ValidationEvent* > m_validationEvents;
+        ValidationEventList m_validationEvents;
     };
 
     class StatusRequests : public AZ::EBusTraits
@@ -115,7 +121,24 @@ namespace ScriptCanvas
         //! Validates the graph for invalid connections between node's endpoints
         //! Any errors are logged to the "Script Canvas" window
         virtual void ValidateGraph(ValidationResults& validationEvents) = 0;
+
+        virtual void ReportValidationResults(ValidationResults& validationEvents) = 0;
     };
 
     using StatusRequestBus = AZ::EBus<StatusRequests>;
+
+    class ValidationRequests : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        using BusIdType = ScriptCanvas::ScriptCanvasId;
+
+        //! Validates the graph for invalid connections between node's endpoints
+        //! Any errors are logged to the "Script Canvas" window
+        virtual AZStd::pair<ScriptCanvas::ScriptCanvasId, ValidationResults> GetValidationResults() = 0;
+    };
+
+    using ValidationRequestBus = AZ::EBus<ValidationRequests>;
+
 }

@@ -13,12 +13,9 @@
 #include <AzCore/Math/Vector3.h>
 #include <SceneAPI/FbxSDKWrapper/FbxSceneWrapper.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
-
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
 #include <assimp/scene.h>
-#endif
 
 
 namespace AZ
@@ -52,7 +49,6 @@ namespace AZ
                     m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));
                 }
             }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             else if (azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(fbxScene))
             {
                 const AssImpSDKWrapper::AssImpSceneWrapper* assImpScene = azrtti_cast<const AssImpSDKWrapper::AssImpSceneWrapper*>(fbxScene);
@@ -135,7 +131,6 @@ namespace AZ
                     m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));
                 }
             }
-#endif
         }
 
         void FbxSceneSystem::SwapVec3ForUpAxis(Vector3& swapVector) const

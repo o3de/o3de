@@ -31,7 +31,6 @@
 */Code/Framework/AzCore/Platform/Provo/AzCore/AzCore_Traits_Provo.h
 */Code/Framework/AzCore/Platform/Salem/AzCore/AzCore_Traits_Salem.h
 */Code/Framework/AzCore/Platform/Windows/AzCore/AzCore_Traits_Windows.h
-*/Code/Framework/AzCore/Platform/Xenia/AzCore/AzCore_Traits_Xenia.h
 */Code/Framework/AzCore/Tests/AZStd/Examples.cpp
 */Code/Framework/AzCore/Tests/Memory.cpp
 */Code/Framework/AzFramework/AzFramework/Asset/AssetSystemComponentHelper.cpp

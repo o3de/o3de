@@ -11,6 +11,7 @@
 */
 
 #include <Libraries/Logic/Once.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
@@ -22,22 +23,16 @@ namespace ScriptCanvas
         {
             Once::Once()
                 : Node()
-                , m_resetStatus(true)
             {}
 
-            void Once::OnInputSignal(const SlotId& slotId)
+            AZ::Outcome<DependencyReport, void> Once::GetDependencies() const
             {
-                SlotId resetSlot = OnceProperty::GetResetSlotId(this);
+                return AZ::Success(DependencyReport());
+            }
 
-                if (slotId == resetSlot)
-                {
-                    m_resetStatus = true;
-                }
-                else if (m_resetStatus)
-                {
-                    m_resetStatus = false;
-                    SignalOutput(OnceProperty::GetOutSlotId(this));
-                }
+            ExecutionNameMap Once::GetExecutionNameMap() const
+            {
+                return { {"In", "Out"}, {"Reset", "On Reset" } };
             }
         }
     }

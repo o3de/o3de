@@ -10,7 +10,6 @@
 *
 */
 
-#include "ResourceCompilerScene_precompiled.h"
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>

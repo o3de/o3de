@@ -1,0 +1,931 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+  
+  
+  
+  <title>cryTools: AnimTools</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: AnimTools </h1>
+
+<span style="font-family: Arial;"><a href="#install">Installation</a><br>
+<a href="#quadmenu">
+Quadmenu Functions</a><br>
+
+Main Dialogue<br>
+
+&nbsp; &nbsp;<a href="#selection">Selection Rollout</a><br>
+
+&nbsp; &nbsp;</span><span style="font-family: Arial;"><a href="#operation">Operation Rollout</a><br>
+
+</span><span style="font-family: Arial;">&nbsp; &nbsp;<a href="#pivot">Pivot</a></span><span style="font-family: Arial;"><a href="#pivot"> Rollout</a><br>
+
+&nbsp; &nbsp;<a href="#misc">Misc Rollout</a><br>
+
+&nbsp; &nbsp;<a href="#loadsave">Load/Save/Export Rollout</a><br>
+
+&nbsp; &nbsp;<a href="#perforce">Perforce Rollout</a><br>
+
+&nbsp; &nbsp;<a href="#tools">Tools Rollout</a><br>
+<a href="ModelSetup.html">Model Set-Up</a><br>
+<a href="BatchExport.html">Batch Export Rollout</a></span>
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;"><a name="install"></a> Installation </h2>
+
+
+<p style="font-family: Arial;">
+After initialization of the script in Max, it will also generate entries in the customization dialog:
+(<em>Under the</em> <code>MainUI</code> <em>group and in the</em> <code>CryAnim</code> <em>category</em>)
+</p>
+
+<p style="font-family: Arial;">
+<img alt="cryAnimInstallation.jpg" src="images/atools/cryAnimInstallation.jpg" style="border: 0px solid ; margin-right: 2em; width: 555px; height: 523px;"> <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+There are all functions available to make a key shortcut or tool bar button. <br>
+
+
+(<em>most of the functionality is in the quad menu too</em>)</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="quadmenu"></a> Quadmenu Functions </h2>
+
+
+<p style="font-family: Arial;">
+<img alt="quadmenu.jpg" src="images/atools/quadmenu.jpg" style="border: 0px solid ; margin-right: 2em; width: 340px; height: 418px; float: left;">
+</p>
+
+<p style="font-family: Arial;">
+<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">  <strong>bip to [0,0]</strong><br>
+
+Takes the Bip01 node to [0,0].
+</p>
+
+<hr style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">bip to [0,0,0]</strong><span style="font-family: Arial;"><br>
+
+Takes the Bip01 node to [0,0,0].</span><br>
+
+
+<hr style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">show trajectory</strong><span style="font-family: Arial;"><br>
+
+Enables the trajectory of the selected node.  <br>
+
+(</span><em style="font-family: Arial;">is hidden if no Biped object is selected</em><span style="font-family: Arial;">)</span><br style="font-family: Arial;">
+
+
+<hr style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">hide trajectories</strong>
+<p style="font-family: Arial;">
+Hides all visible trajectories. <br>
+
+ (<em>is available if a trajectory is visible</em>)
+</p>
+
+<hr style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">move to snapshot</strong><span style="font-family: Arial;"><br>
+
+<span style="font-family: Arial;">Moves the selected Biped object to the nearest snapshot (generated out of the same object)</span><span style="font-style: italic; font-family: Arial;"> </span></span><em style="font-family: Arial;">if a pivot point is selected, it keeps the offset of it</em><span style="font-style: italic; font-family: Arial;"> </span><em style="font-family: Arial;">is disabled if no correct snapshot is in the scene</em><span style="font-family: Arial;"> </span><em style="font-family: Arial;">is visible if a Biped object is selected<br>
+
+</em>
+<hr style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">move/rotate to snapshot</strong><span style="font-family: Arial;"><br>
+
+The same as "move to snapshot" </span><strong style="font-family: Arial;">plus Rotation<br>
+
+</strong>
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>lock rotation</strong><br>
+
+Rotates the object every time it will be moved to the set rotation back <br>
+
+
+(<em>is visible if a Biped object is in scene</em>) <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>reset rotation</strong><br>
+
+Rotates the selected Biped object with the same rotation as the parent object <br>
+
+
+(<em>is visible if a Biped object is selected</em>) <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>move to floor</strong><br>
+
+If the foot is selected, it will be rotated and moved to plant on the ground <br>
+
+
+(<em>is available if a Biped foot is selected</em>) <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>create snapshot</strong>
+</p>
+
+<p style="font-family: Arial;">
+<strong>single</strong><br>
+
+Creates a snapshot of the selected object <br>
+
+
+(<em>is visible if an Object is selected</em>) <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<strong>children</strong><br>
+
+Creates snapshots of all children of the selected object <br>
+
+
+(<em>is visible if an Object is selected</em>) <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>copy</strong><br>
+
+Copies the position and rotation of the selected objects and stores them into a temporary file in cry_temp folder <br>
+
+
+(<em>is visible if an Object is selected</em>) <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>paste<br>
+
+</strong></p>
+
+<p style="font-family: Arial;"><strong>transform</strong><br>
+
+Pastes the position and rotation from the temporary file to the selected objects <br>
+
+
+(<em>is visible if the temporary file exists and an Object is selected</em>) <br>
+
+
+(<em>works for non-Biped nodes too</em>) <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<strong>position</strong><br>
+
+Pastes only the position <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<strong>rotation</strong><br>
+
+Pastes only the rotation <br>
+
+
+</p>
+
+<hr style="font-family: Arial;">
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="go_forward" src="images/atools/go_forward.gif" align="top">&nbsp;<strong>select pivot</strong><br>
+
+Starts the pivotSelect tool to select an internal pivot to align with snapshots or pivot points <br>
+
+
+(<em>is available if hand or foot is selected</em>)</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="selection"></a> Main Dialog: Selection Rollout </h2>
+
+
+<p style="font-family: Arial;">
+<img alt="dialogSelection.jpg" src="images/atools/dialogSelection.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 158px; float: left;">
+</p>
+
+<p style="font-family: Arial;">
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"> <strong>Drop down List :</strong> <br>
+
+
+In the drop down list you specify the object you want to appy the operation to.<br>
+
+
+When choosing <strong>Update List</strong>, the list will be updated with the available nodes in the scene.
+</p>
+
+<p style="font-family: Arial;">
+If the selection is not "--Current Selection--" but an object in the
+scene is selected, the axis and offset is available and the Operation&nbsp;rollout will be updated.
+</p>
+
+<p style="font-family: Arial;">
+<img alt="dialogSelection2.jpg" src="images/atools/dialogSelection2.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 158px; float: left;">
+</p>
+
+<p style="font-family: Arial;">&nbsp;<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"> <strong>Used Axis :</strong> <br>
+
+
+If enabled, you can select which coordinate axis will be used for the operation.<br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Offset Set Button :</strong> <br>
+
+
+If enabled, sets the offset from the current selected object and the object selected in the drop down list.
+After the offset is generated, the Offset checkboxes are available.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Offset Axis :</strong> <br>
+
+If
+position is checked, the selected object will be in addition to the
+offset aligned to the object set in the list.
+With this, the locator can be easily aligned in cycles or other
+animations, where the locator has a different position as the object
+selected in the list.
+</p>
+
+<p style="font-family: Arial;">
+If rotation is checked, the selected object will be in addition to the offset rotated to the object set in the list.
+This helps when animating the locator in animations where the character runs in circles and the locator needs to follow up.
+</p>
+
+<p style="font-family: Arial;"> </p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="operation"></a> Main Dialog: Operation Rollout</h2>
+
+<h2 style="background-color: rgb(192, 192, 192); font-family: Arial;"><img alt="dialogOperation.jpg" src="images/atools/dialogOperation.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 184px; float: left;">
+</h2>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Start / Stop :</strong> <br>
+
+
+This button sets the range of operation.<br>
+
+
+The red square box indicates which value will be changed when hitting again.<br>
+
+
+<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Steps :</strong> <br>
+
+
+Specify how many steps the operation will use.<br>
+
+
+(<em>Default is 1</em>)
+<br>
+
+
+<br>
+
+
+<br>
+
+
+</p>
+
+<h3><img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-orange" src="images/atools/led-orange.gif" align="top"> <strong style="font-family: Arial;">Operation :</strong></h3>
+
+<p style="font-family: Arial;"><strong><em>If 'Current Selection' is selected in the Selection rollout:</em></strong></p>
+
+<table style="font-family: Arial;" class="twikiTable" border="0" cellpadding="1" cellspacing="1">
+
+  <tbody>
+
+    <tr>
+
+      <th class="twikiFirstCol" align="center" bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogOperation?sortcol=0;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">Name</font></a> </th>
+
+      <th align="center" bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogOperation?sortcol=1;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">Operation</font></a> </th>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Planted Key</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> generates a planted key </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Sliding Key</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> generates a sliding key </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Free Key</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> generates a free key </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#eaeaea"> -------------------- </td>
+
+      <td bgcolor="#eaeaea"> ------------------------------------------------------------------------------------------------ </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Move</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> moves the selected Biped object to the nearest snapshot / pivot point </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Move / Rotate</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> moves and rotates the selected Biped object </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#eaeaea"> -------------------- </td>
+
+      <td bgcolor="#eaeaea"> ------------------------------------------------------------------------------------------------ </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Move to Floor</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> if the foot is selected it puts the foot on the floor </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Reset Rotation</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> adapts the rotation of the selected objects parent rotation </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#eaeaea"> -------------------- </td>
+
+      <td bgcolor="#eaeaea"> ------------------------------------------------------------------------------------------------ </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Copy</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> copies the rotation and position of the current selected object </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Paste</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> pastes the rotation / position / transform  to the current selected object </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#eaeaea"> -------------------- </td>
+
+      <td bgcolor="#eaeaea"> ------------------------------------------------------------------------------------------------ </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Bip to [0,0]</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> puts Bip01 node to [0,0] </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Bip to [0,0,0]</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> puts Bip01 node to [0,0,0] </td>
+
+    </tr>
+
+
+  
+  </tbody>
+</table>
+
+
+<br style="font-family: Arial;">
+
+
+<br style="font-family: Arial;">
+
+
+<strong style="font-family: Arial;"><em>If some Object in the list is selected:</em></strong>
+<table style="font-family: Arial;" class="twikiTable" border="0" cellpadding="1" cellspacing="1">
+
+  <tbody>
+
+    <tr>
+
+      <th class="twikiFirstCol" align="center" bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogOperation?sortcol=0;table=2;up=0#sorted_table" title="Sort by this column"><font color="#000000">Name</font></a> </th>
+
+      <th align="center" bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogOperation?sortcol=1;table=2;up=0#sorted_table" title="Sort by this column"><font color="#000000">Operation</font></a> </th>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Move</font></strong>  </th>
+
+      <td bgcolor="#ffffff"> moves the selected Biped object to the object selected in the list </td>
+
+    </tr>
+
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada">  <strong><font color="#000000">Line</font></strong>  </th>
+
+      <td bgcolor="#eaeaea"> moves the selected Biped object with reference of the selected object in the list along a line </td>
+
+    </tr>
+
+
+  
+  </tbody>
+</table>
+
+
+<br style="font-family: Arial;">
+
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Apply</strong> <br>
+
+
+Applies <strong>once</strong> the selected operation to the selected object.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Begin / End</strong> <br>
+
+
+Applies the selected operation in the specified range (<strong>Start / Stop</strong>) and with the given <strong>Steps</strong>
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Range</strong> <br>
+
+
+Applies the selected operation for the <strong style="font-family: Arial;">Full animation range</strong><span style="font-family: Arial;"> with the given </span><strong style="font-family: Arial;">Steps</strong> </p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="pivot"></a> Main Dialog: Pivot Rollout </h2>
+
+
+<p style="font-family: Arial;">
+
+</p>
+
+<p style="font-family: Arial;"><img alt="dialogPivot.jpg" src="images/atools/dialogPivot.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 179px; float: left;"><img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"> <strong>Select Pivot</strong> <br>
+
+
+If a foot is selected, you can select which pivot you want to operate with for <strong>Move</strong> operation. <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Create</strong> <br>
+
+
+Creates a new <strong>Pivot Point</strong> with the selected pivot. <br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Delete</strong> <br>
+
+
+Deletes the <strong>Pivot Point</strong> of the selected Biped Object. <br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Single</strong> <br>
+
+
+Creates a single snapshot from the selected Object. <br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>+ Children</strong> <br>
+
+
+Creates snapshot from the children of the selected Object and integrates them into a group.&nbsp;</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="misc"></a> Main Dialog: Misc Rollout </h2>
+
+
+<p style="font-family: Arial;">
+<img alt="dialogMisc.jpg" src="images/atools/dialogMisc.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 210px; float: left;">
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Load Model</strong> <br>
+
+
+If a model list is created before, the model selected will be opened (without message box asking to save changes!). <br>
+
+
+<a href="ModelSetup.html" class="twikiLink"><strong>How to maintain models</strong> </a><br>
+
+
+<br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Reset Locator</strong> <br>
+
+
+Rotates and translates the locator to Y+ and [0,0,0] (origin of scene). <br>
+
+
+<br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Weapons Drop Down List</strong> <br>
+
+
+If a weapon list is created before, the weapon selected will be
+unhidden, every weapon before will be hidden (needs reference in
+weapons_ref.max in tools folder). <br>
+
+
+<strong><a href="http://server41/twiki/bin/view/AssetCreation/CryAnimTutorialDialogMiscWeaponSetup" class="twikiLink">How to maintain weapons</a></strong></p>
+
+<p style="font-family: Arial;"><strong><a href="http://server41/twiki/bin/view/AssetCreation/CryAnimTutorialDialogMiscWeaponSetup" class="twikiLink"></a></strong>
+</p>
+
+<h3 style="font-family: Arial;"><img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-orange" src="images/atools/led-orange.gif" align="top"><strong>Muscles</strong>&nbsp;</h3>
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">AutoMuscles</strong><span style="font-family: Arial;"> <br>
+
+If checked and nanoMuscles are in the scene, automatically repositions the look-at targets without animating. </span><br style="font-family: Arial;">
+
+<span style="font-family: Arial;">
+If unchecked and Use Keys is unchecked too, keys will be generated automatically when changing the timeline. </span><br style="font-family: Arial;">
+
+<span style="font-family: Arial;">
+When exporting using the cryAnim tools, the nanoMuscles will be baked automatically by export. </span><br>
+
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Use Key</strong> <br>
+
+
+Is available when Auto-Muscles is unchecked. <br>
+
+
+If nanoMuscles are baked and Use Keys is checked, it will not generate
+keys when changing the timeline. Needed when tweaking the bones. <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"><span style="font-family: Arial;">&nbsp;</span><strong style="font-family: Arial;">Create</strong><span style="font-family: Arial;"> </span><br>
+
+
+If there is no nanoMuscles rig available on the character, it will be generated. <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Bake</strong> <br>
+
+
+Bakes the nanoMuscles Keys. <br>
+
+
+</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="loadsave"></a> Main Dialog: Load / Save / Export Rollout</h2>
+
+<p style="font-family: Arial;">
+<img alt="dialogLoadSave.jpg" src="images/atools/dialogLoadSave.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 414px; float: left;">
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Load Biped File</strong> <br>
+
+
+Prompts a open file dialog where you can choose the biped you want to
+load (must have correct file naming: works not without file extension).
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Start / End</strong> <br>
+
+
+Sets the range to save the biped to.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Range</strong> <br>
+
+
+Sets the current animation range to save the biped to.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>All</strong> <br>
+
+
+Uses the biped range for saving.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Add</strong> <br>
+
+
+If a bone is currently selected, the bone will be added to the bone export list.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Delete</strong> <br>
+
+
+If a bone is selected in the list, it will be deleted.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Save</strong> <br>
+
+
+Prompts a saving file dialog to choose a file where to save the biped to.
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Export</strong> <br>
+
+
+Prompts a saving file dialog to choose a file where to export to. <br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Save / Export</strong> <br>
+
+
+Prompts a saving file dialog to choose a file where to save to. <br>
+
+
+(<em>It will generate automatically the correct path for the CAF file and export the biped.</em>)
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Batch Export</strong> <br>
+
+
+Runs the batch exporter to export .bip or .fbx files. <br>
+
+
+<strong><a href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogBatchExport" class="twikiLink">How to use the batch export</a></strong>
+</p>
+
+<p style="font-family: Arial;">
+</p>
+
+<p style="font-family: Arial;"></p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="perforce"></a> Main Dialog: Perforce Rollout </h2>
+
+
+<p style="font-family: Arial;">
+<img alt="dialogPerforce.jpg" src="images/atools/dialogPerforce.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 291px; float: left;">
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>AutoUpdate</strong> <br>
+
+
+If checked, tries to get latest revision every minute from perforce. <br>
+
+<br>
+
+
+</p>
+
+<p style="font-family: Arial;">
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Notify</strong> <br>
+
+
+If checked, shows a message box if there is a new updated installed. <br>
+
+<br>
+
+<br>
+
+</p>
+
+<table style="font-family: Arial;" class="twikiTable" border="0" cellpadding="1" cellspacing="1">
+
+  <tbody>
+
+    <tr>
+
+      <th class="twikiFirstCol" bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogPerforce?sortcol=0;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">Name</font></a> </th>
+
+      <th bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogPerforce?sortcol=1;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">Y(es)</font></a> </th>
+
+      <th bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogPerforce?sortcol=2;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">N(o)</font></a> </th>
+
+      <th bgcolor="#dadada"> <a rel="nofollow" href="http://server41/twiki/bin/view/AssetCreation/CryAnimDialogPerforce?sortcol=3;table=1;up=0#sorted_table" title="Sort by this column"><font color="#000000">A(sk)</font></a> </th>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#ffffff"> Open For Edit </td>
+
+      <td bgcolor="#ffffff"> always open </td>
+
+      <td bgcolor="#ffffff"> never open </td>
+
+      <td bgcolor="#ffffff"> prompt message to ask </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td class="twikiFirstCol" bgcolor="#eaeaea"> Add to Source Control </td>
+
+      <td bgcolor="#eaeaea"> always add </td>
+
+      <td bgcolor="#eaeaea"> never add </td>
+
+      <td bgcolor="#eaeaea"> prompt message to ask </td>
+
+    </tr>
+
+
+  
+  </tbody>
+</table>
+
+
+<p style="font-family: Arial;">
+<br>
+
+<br>
+
+</p>
+
+<h2 style="font-family: Arial; background-color: rgb(192, 192, 192);"><a name="tools"></a> Main Dialog: Tools Rollout </h2>
+
+
+<p style="font-family: Arial;">
+
+</p>
+
+<p style="font-family: Arial;"><img alt="dialogTools.jpg" src="images/atools/dialogTools.jpg" style="border: 0px solid ; margin-right: 2em; width: 176px; height: 301px; float: left;"><img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top"> <strong>Reload Script</strong> <br>
+
+
+Destroys the dialog and runs the loading script to load all necessary files again. <br>
+
+<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Prompt for File</strong> <br>
+
+
+When saving or exporting, a open file dialog pops up to get the file
+location the animation should be saved to (works only with extension).<br>
+
+<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Biped Working Directory</strong> <br>
+
+
+Has the path of the directory to use when Save / Exporting animations and will be the default folder when Loading Biped Files.<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Pick</strong> <br>
+
+
+Opens a dialog to get the directory for the biped files.<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Set</strong> <br>
+
+
+Assigns the folder path to the variable used internally.<br>
+
+<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Use Rollout States</strong> <br>
+
+
+If checked, remembers the last state (rolled up/down) of the rollouts
+and when loading the dialog again, these states will be set.<br>
+
+
+<img style="border: 0px solid ; width: 16px; height: 16px; font-family: Arial;" alt="led-yellow" src="images/atools/led-yellow.gif" align="top">&nbsp;<strong>Notify File Attribute</strong> <br>
+
+
+If checked, pops up a message box if the file to save or export to is read-only.<br>
+
+</p>
+
+<p></p>
+
+<p></p>
+
+<span style="font-family: Arial;">
+
+</span>
+</body>
+</html>

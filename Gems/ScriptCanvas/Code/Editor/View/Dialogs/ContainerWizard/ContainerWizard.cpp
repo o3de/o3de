@@ -247,9 +247,11 @@ namespace ScriptCanvasEditor
                 if (!lineEdit->DisplayType(typeId))
                 {
                     selectedTypeId = lineEdit->GetDefaultTypeId();
-                    lineEdit->DisplayType(typeId);
+                    lineEdit->DisplayType(selectedTypeId);
                 }
             }
+
+            lineEdit->update();
             
             m_containerTypes[typeIndex] = selectedTypeId;
             workingCrc.Add(selectedTypeId.ToString<AZStd::string>().c_str());            

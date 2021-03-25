@@ -21,17 +21,12 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Node that provides division
             class OperatorDiv : public OperatorArithmetic
             {
             public:
 
-                ScriptCanvas_Node(OperatorDiv,
-                    ScriptCanvas_Node::Name("Divide (/)")
-                    ScriptCanvas_Node::Uuid("{DC17E19F-3829-410D-9A0B-AD60C6066DAA}")
-                    ScriptCanvas_Node::Description("Divides two or more values")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Math")
-                );
+                SCRIPTCANVAS_NODE(OperatorDiv);
 
                 OperatorDiv() = default;
                 ~OperatorDiv() = default;

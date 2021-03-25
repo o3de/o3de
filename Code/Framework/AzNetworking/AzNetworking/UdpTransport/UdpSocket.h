@@ -23,6 +23,12 @@
 #   define ENABLE_LATENCY_DEBUG 1
 #endif
 
+namespace AZ
+{
+    // Forwards
+    class ScheduledEvent;
+}
+
 namespace AzNetworking
 {
     // Forwards
@@ -57,9 +63,8 @@ namespace AzNetworking
         //! Accepts an encryption socket wrapper.
         //! @param dtlsEndpoint the encryption wrapper instance to create a connection over
         //! @param address      the IP address of the endpoint to connect to
-        //! @param dtlsData     data buffer containing the dtls handshake packet
         //! @return a connect result specifying whether the connection is still pending, failed, or complete
-        virtual DtlsEndpoint::ConnectResult AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address, const UdpPacketEncodingBuffer& dtlsData) const;
+        virtual DtlsEndpoint::ConnectResult AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address) const;
 
         //! Opens the UDP socket on the given port.
         //! @param port      the port number to open the UDP socket on, 0 will bind to any available port
@@ -70,11 +75,6 @@ namespace AzNetworking
 
         //! Closes an open socket.
         virtual void Close();
-
-#ifdef ENABLE_LATENCY_DEBUG
-        //! Checks packets deferred by latency debug and sends any that have passed their latency threshold
-        virtual void ProcessDeferredPackets();
-#endif
 
         //! Returns true if the UDP socket is currently in an open state.
         //! @return boolean true if the socket is in a connected state
@@ -105,12 +105,20 @@ namespace AzNetworking
         //! @return the total number of packets sent on this socket
         uint32_t GetSentPackets() const;
 
-        //! Returns the total number of bytes received on this socket.
-        //! @return the total number of bytes received on this socket
+        //! Returns the total number of bytes sent on this socket.
+        //! @return the total number of bytes sent on this socket
         uint32_t GetSentBytes() const;
 
-        //! Returns the total number of packets sent on this socket.
-        //! @return the total number of packets sent on this socket
+        //! Returns the total number of encrypted packets sent on this socket.
+        //! @return the total number of encrypted packets sent on this socket
+        uint32_t GetSentPacketsEncrypted() const;
+
+        //! Returns the total number of additional bytes sent on this socket due to SSL encryption.
+        //! @return the total number of additional bytes sent on this socket due to SSL encryption
+        uint32_t GetSentBytesEncryptionInflation() const;
+
+        //! Returns the total number of packets received on this socket.
+        //! @return the total number of packets received on this socket
         uint32_t GetRecvPackets() const;
 
         //! Returns the total number of bytes received on this socket.
@@ -118,6 +126,9 @@ namespace AzNetworking
         uint32_t GetRecvBytes() const;
 
     protected:
+
+        mutable uint32_t m_sentPacketsEncrypted = 0;
+        mutable uint32_t m_sentBytesEncryptionInflation = 0;
 
         virtual int32_t SendInternal(const IpAddress& address, const uint8_t* data, uint32_t size, bool encrypt, DtlsEndpoint& dtlsEndpoint) const;
 
@@ -132,29 +143,24 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
         struct DeferredData
         {
-            DeferredData(AZ::TimeMs timeDeferredMs, const IpAddress& address, const uint8_t* data, uint32_t size, bool encrypt, DtlsEndpoint& dtlsEndpoint)
-                : m_timeDeferredMs(timeDeferredMs)
-                , m_address(address)
+            DeferredData(const IpAddress& address, const uint8_t* data, uint32_t size, bool encrypt, DtlsEndpoint& dtlsEndpoint)
+                : m_address(address)
                 , m_encrypt(encrypt)
                 , m_dtlsEndpoint(&dtlsEndpoint)
             {
                 m_dataBuffer.CopyValues(data, size);
             }
 
-            bool operator <(const DeferredData& rhs) const 
-            {
-                return m_timeDeferredMs < rhs.m_timeDeferredMs;
-            }
-
-            AZ::TimeMs m_timeDeferredMs;
-            IpAddress m_address;
             bool m_encrypt;
-            DtlsEndpoint* m_dtlsEndpoint;
-            UdpPacketEncodingBuffer m_dataBuffer;
+            DtlsEndpoint* m_dtlsEndpoint = nullptr;
+            AZ::ScheduledEvent* m_owningEvent = nullptr;
+            IpAddress m_address;
+            // Deferred UDP packets should have gone through UDP Fragmentation already so ChunkBuffer is sufficient size
+            ChunkBuffer m_dataBuffer;
         };
 
-        mutable AZStd::deque<DeferredData> m_sendBuffer;
-        mutable AZStd::deque<DeferredData> m_recvBuffer;
+        int32_t SendInternalDeferred(const DeferredData& data) const;
+
         mutable AZ::SimpleLcgRandom m_random;
 #endif
     };

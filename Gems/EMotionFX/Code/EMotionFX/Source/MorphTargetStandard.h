@@ -122,12 +122,11 @@ namespace EMotionFX
         /**
          * Extended constructor.
          * @param captureTransforms Set this to true if you want this morph target to capture rigid transformations (changes in pos/rot/scale).
-         * @param captureMeshDeforms Set this to true if you want this morph target to capture mesh deformations (changes in vertex positions).
          * @param neutralPose The actor that contains the neutral pose.
          * @param targetPose The actor representing the pose of the character when the weight value would equal 1.
          * @param name The unique name of the morph target.
          */
-        static MorphTargetStandard* Create(bool captureTransforms, bool captureMeshDeforms, Actor* neutralPose, Actor* targetPose, const char* name);
+        static MorphTargetStandard* Create(bool captureTransforms, Actor* neutralPose, Actor* targetPose, const char* name);
 
         /**
          * Get the type of morph target.
@@ -143,11 +142,10 @@ namespace EMotionFX
          * store this information on a specific way so it can be used to accumulate multiple morph targets
          * together and apply them to the actor to which this morph target is attached to.
          * @param captureTransforms Set this to true if you want this morph target to capture rigid transformations (changes in pos/rot/scale).
-         * @param captureMeshDeforms Set this to true if you want this morph target to capture mesh deformations (changes in vertex positions).
          * @param neutralPose The actor that represents the neutral pose.
          * @param targetPose The actor representing the pose of the character when the weight value would equal 1.
          */
-        void InitFromPose(bool captureTransforms, bool captureMeshDeforms, Actor* neutralPose, Actor* targetPose) override;
+        void InitFromPose(bool captureTransforms, Actor* neutralPose, Actor* targetPose) override;
 
         /**
          * Apply the relative transformation caused by this morph target to a given node.
@@ -227,6 +225,11 @@ namespace EMotionFX
         void RemoveAllDeformDatas();
 
         /**
+         * Remove all deform data objects for the given joint.
+         */
+        void RemoveAllDeformDatasFor(Node* joint);
+
+        /**
          * Remove the given deform data.
          * @param index The deform data to remove. The index must be in range of [0, GetNumDeformDatas()].
          * @param delFromMem Set to true (default) when you wish to also delete the specified deform data from memory.
@@ -262,7 +265,7 @@ namespace EMotionFX
 
     private:
         MCore::Array<Transformation>    mTransforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
-        MCore::Array<DeformData*>       mDeformDatas;           /**< The deformation data objects. */
+        AZStd::vector<DeformData*>      mDeformDatas;           /**< The deformation data objects. */
 
         /**
          * The constructor.
@@ -274,25 +277,15 @@ namespace EMotionFX
         /**
          * Extended constructor.
          * @param captureTransforms Set this to true if you want this morph target to capture rigid transformations (changes in pos/rot/scale).
-         * @param captureMeshDeforms Set this to true if you want this morph target to capture mesh deformations (changes in vertex positions).
          * @param neutralPose The actor that contains the neutral pose.
          * @param targetPose The actor representing the pose of the character when the weight value would equal 1.
          * @param name The unique name of the morph target.
          */
-        MorphTargetStandard(bool captureTransforms, bool captureMeshDeforms, Actor* neutralPose, Actor* targetPose, const char* name);
+        MorphTargetStandard(bool captureTransforms, Actor* neutralPose, Actor* targetPose, const char* name);
 
         /**
          * The destructor.
          */
         ~MorphTargetStandard();
-
-        /**
-         * Build a representation of the orginal mesh.
-         * This stores an array for each original vertex. Each array element for an original vertex contains a duplicate vertex index.
-         * The array indexing looks like: [0..numOrgVerts][0..numVertexDupes] = vertexNumber, where vertexNumber is the vertex number inside the position and normal arrays (and other attributes).
-         * @param mesh The mesh to generate the original mesh info for.
-         * @param output The output array, which will be automatically resized.
-         */
-        void BuildWorkMesh(Mesh* mesh, MCore::Array< MCore::Array<uint32> >& output);
     };
 } // namespace EMotionFX

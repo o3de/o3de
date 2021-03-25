@@ -13,17 +13,17 @@
 #include <lz4.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
-#include <MultiplayerCompression/MultiplayerCompressionBus.h>
 #include <LZ4Compressor.h>
+
 #include <AzCore/Compression/Compression.h>
+#include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzTest/AzTest.h>
 
 class MultiplayerCompressionTest
     : public UnitTest::AllocatorsTestFixture
 {
 protected:
-
-    static const int MAX_BUFFER_SIZE = 512;
 
     void SetUp() override
     {
@@ -38,30 +38,24 @@ protected:
 
 TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
 {
-    // [SPEC-3870] Revisit this test once higher level layers are implemented to see if it can be repurposed
-    /*
-    GridMate::WriteBufferDynamic wb(AzNetworking::EndianType::IgnoreEndian);
+    AzNetworking::UdpPacketEncodingBuffer buffer;
+    buffer.Resize(buffer.GetCapacity());
 
     // Setup and marshal a highly compressable buffer for LZ4
     AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
-    GridMate::Marshaler<int> marshaler;
-    for (int i = 0; i < MAX_BUFFER_SIZE; ++i)
-    {
-        marshaler.Marshal(wb, 1);
-    }
-    const AZ::u64 marshalTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    memset(buffer.GetBuffer(), 255, buffer.GetCapacity());
 
-    size_t maxCompressedSize = wb.Size() + 32U;
+    size_t maxCompressedSize = buffer.GetSize() + 32U;
     size_t compressedSize = -1;
     size_t uncompressedSize = -1;
     size_t consumedSize = -1;
     char* pCompressedBuffer = new char[maxCompressedSize];
-    char* pDecompressedBuffer = new char[wb.Size()];
+    char* pDecompressedBuffer = new char[buffer.GetSize()];
 
     //Run and test compress
     MultiplayerCompression::LZ4Compressor lz4Compressor;
     startTime = AZStd::chrono::system_clock::now();
-    AzNetworking::CompressorError compressStatus = lz4Compressor.Compress(wb.Get(), wb.Size(), pCompressedBuffer, maxCompressedSize, compressedSize);
+    AzNetworking::CompressorError compressStatus = lz4Compressor.Compress(buffer.GetBuffer(), buffer.GetSize(), pCompressedBuffer, maxCompressedSize, compressedSize);
     const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(compressStatus == AzNetworking::CompressorError::Ok);
@@ -69,24 +63,13 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
 
     //Run and test decompress
     startTime = AZStd::chrono::system_clock::now();
-    AzNetworking::CompressorError decompressStatus = lz4Compressor.Decompress(pCompressedBuffer, compressedSize, pDecompressedBuffer, wb.Size(), consumedSize, uncompressedSize);
+    AzNetworking::CompressorError decompressStatus = lz4Compressor.Decompress(pCompressedBuffer, compressedSize, pDecompressedBuffer, buffer.GetSize(), consumedSize, uncompressedSize);
     const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(decompressStatus == AzNetworking::CompressorError::Ok);
-    EXPECT_TRUE(uncompressedSize = wb.Size());
-    EXPECT_TRUE(memcmp(pDecompressedBuffer, wb.Get(), uncompressedSize) == 0);
+    EXPECT_TRUE(uncompressedSize = buffer.GetSize());
+    EXPECT_TRUE(memcmp(pDecompressedBuffer, buffer.GetBuffer(), uncompressedSize) == 0);
 
-
-    GridMate::ReadBuffer rb(GridMate::EndianType::IgnoreEndian, pDecompressedBuffer, wb.Size());
-
-    //Calculate unmarshal time for data's sake
-    startTime = AZStd::chrono::system_clock::now();
-    for (int i = 0; i < MAX_BUFFER_SIZE; ++i)
-    {
-        int testVal1;
-        marshaler.Unmarshal(testVal1, rb);
-        EXPECT_TRUE(testVal1 == 1);
-    }
     const AZ::u64 unmarshalTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     delete [] pCompressedBuffer;
@@ -95,15 +78,10 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     //Expected [Profile]: Uncompressed Size: 2048 B Compressed Size: 21 B
     AZ_TracePrintf("Multiplayer Compression Test", "Uncompressed Size:(%llu B) Compressed Size:(%llu B) \n", uncompressedSize, compressedSize);
     //Expected [Profile]: Marshal Time : 84 mcs Unmarshal Time : 98 mcs Compress Time : 182 mcs Decompress Time : 7 mcs (times will vary with hardware)
-    AZ_TracePrintf("Multiplayer Compression Test", "Marshal Time:(%llu mcs) Unmarshal Time:(%llu mcs) Compress Time:(%llu mcs) Decompress Time:(%llu mcs) \n", marshalTime, unmarshalTime, compressTime, decompressTime);
-    */
+    AZ_TracePrintf("Multiplayer Compression Test", "Compress Time:(%llu mcs) Decompress Time:(%llu mcs) \n", compressTime, decompressTime);
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_MULTIPLAYER_COMPRESSION_TESTS
-TEST_F(MultiplayerCompressionTest, DISABLED_MultiplayerCompression_OversizeTest)
-#else
 TEST_F(MultiplayerCompressionTest, MultiplayerCompression_OversizeTest)
-#endif
 {
     size_t badInputSize = LZ4_MAX_INPUT_SIZE + 1;
     size_t bufferSize = 4;
@@ -122,11 +100,7 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_OversizeTest)
     delete [] pBuffer;
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_MULTIPLAYER_COMPRESSION_TESTS
-TEST_F(MultiplayerCompressionTest, DISABLED_MultiplayerCompressionTest_UndersizeTest)
-#else
 TEST_F(MultiplayerCompressionTest, MultiplayerCompressionTest_UndersizeTest)
-#endif
 {
     size_t badInputSize = LZ4_MAX_INPUT_SIZE + 1;
     size_t bufferSize = 4;

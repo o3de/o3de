@@ -21,19 +21,16 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Node that provides subtraction
             class OperatorSub: public OperatorArithmetic
             {
             public:
 
-                ScriptCanvas_Node(OperatorSub,
-                    ScriptCanvas_Node::Name("Subtract (-)")
-                    ScriptCanvas_Node::Uuid("{D0615D0A-027F-47F6-A02B-E35DAF22F431}")
-                    ScriptCanvas_Node::Description("Subtracts two of more elements")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Math")
-                );
+                SCRIPTCANVAS_NODE(OperatorSub);
 
                 OperatorSub() = default;
+
+                AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const override;
 
                 void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result) override;
             };

@@ -55,7 +55,7 @@ namespace AZ
             float m_radiusMax = 0.0f;
             
             // Scope producer functions...
-            virtual void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
         };
     }   // namespace Render
 }   // namespace AZ

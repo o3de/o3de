@@ -16,11 +16,15 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <AzCore/Math/MathUtils.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/SpotLightFeatureProcessor.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Math/MathUtils.h>
 
 namespace AZ
 {
@@ -28,24 +32,15 @@ namespace AZ
     {
         DiffuseProbeGrid::~DiffuseProbeGrid()
         {
-            if (m_transformService && m_objectId.IsValid())
-            {
-                m_transformService->ReleaseObjectId(m_objectId);
-            }
-
-            m_transformService = nullptr;
+            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
         }
 
         void DiffuseProbeGrid::Init(RPI::Scene* scene, DiffuseProbeGridRenderData* renderData)
         {
             AZ_Assert(scene, "DiffuseProbeGrid::Init called with a null Scene pointer");
 
+            m_scene = scene;
             m_renderData = renderData;
-
-            // reserve transform objectId
-            m_transformService = scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
-            AZ_Assert(m_transformService, "ReflectionProbe requires a TransformServiceFeatureProcessor on its parent scene.");
-            m_objectId = m_transformService->ReserveObjectId();
 
             // create attachment Ids
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
@@ -53,12 +48,14 @@ namespace AZ
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
             m_relocationImageAttachmentId = AZStd::string::format("ProbeRelocationImageAttachmentId_%s", uuidString.c_str());
+
+            // setup culling
+            m_cullable.m_cullData.m_scene = m_scene;
+            m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
         }
 
-        void DiffuseProbeGrid::Simulate([[maybe_unused]] RPI::Scene* scene, uint32_t probeIndex)
+        void DiffuseProbeGrid::Simulate(uint32_t probeIndex)
         {
-            AZ_Assert(scene, "DiffuseProbeGrid::Simulate called with a null Scene pointer");
-
             UpdateTextures();
 
             if (m_renderObjectSrg)
@@ -93,23 +90,14 @@ namespace AZ
                         drawPacketBuilder.AddDrawItem(drawRequest);
 
                         m_drawPacket = drawPacketBuilder.End();
+
+                        // we also need to update culling with the new draw packet
+                        UpdateCulling();
                     }
                 }
             }
 
-            m_probeRayRotationTransform = ComputeRandomRotation();
-        }
-
-        void DiffuseProbeGrid::Render(RPI::ViewPtr view)
-        {
-            // [GFX TODO][ATOM-4364] Add culling for probe grids
-            if (view->HasDrawListTag(m_renderData->m_drawListTag))
-            {
-                if (m_drawPacket)
-                {
-                    view->AddDrawPacket(m_drawPacket.get());
-                }
-            }
+            m_probeRayRotationTransform = AZ::Matrix4x4::CreateIdentity();
         }
 
         bool DiffuseProbeGrid::ValidateProbeSpacing(const AZ::Vector3& newSpacing)
@@ -145,7 +133,6 @@ namespace AZ
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
             m_position = transform.GetTranslation();
-            m_transformService->SetTransformForId(m_objectId, transform);
             m_aabbWs = Aabb::CreateCenterHalfExtents(m_position, m_extents / 2.0f);
 
             // probes need to be relocated since the grid position changed
@@ -216,11 +203,10 @@ namespace AZ
                 uint32_t height = GetTotalProbeCount();
 
                 m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-                uint32_t imageSize = width * height * RHI::GetFormatSize(RHI::Format::R32G32B32A32_FLOAT);
 
                 RHI::ImageInitRequest request;
                 request.m_image = m_rayTraceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R32G32B32A32_FLOAT);
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                 RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
             }
@@ -235,11 +221,12 @@ namespace AZ
                 uint32_t height = probeCountY * (DefaultNumIrradianceTexels + 2);
 
                 m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-                uint32_t imageSize = width * height * RHI::GetFormatSize(RHI::Format::R10G10B10A2_UNORM);
 
                 RHI::ImageInitRequest request;
                 request.m_image = m_irradianceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R10G10B10A2_UNORM);
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
+                RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
+                request.m_optimizedClearValue = &clearValue;
                 RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
             }
@@ -250,11 +237,10 @@ namespace AZ
                 uint32_t height = probeCountY * (DefaultNumDistanceTexels + 2);
 
                 m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-                uint32_t imageSize = width * height * RHI::GetFormatSize(RHI::Format::R32G32_FLOAT);
 
                 RHI::ImageInitRequest request;
                 request.m_image = m_distanceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R32G32_FLOAT);
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                 RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
             }
@@ -265,11 +251,10 @@ namespace AZ
                 uint32_t height = probeCountY;
 
                 m_relocationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-                uint32_t imageSize = width * height * RHI::GetFormatSize(RHI::Format::R16G16B16A16_FLOAT);
 
                 RHI::ImageInitRequest request;
                 request.m_image = m_relocationImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R16G16B16A16_FLOAT);
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RelocationImageFormat);
                 RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
             }
@@ -278,6 +263,9 @@ namespace AZ
 
             // textures have changed so we need to update the render Srg to bind the new ones
             m_updateRenderObjectSrg = true;
+
+            // we need to clear the irradiance texture
+            m_irradianceClearRequired = true;
         }
 
         void DiffuseProbeGrid::ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ)
@@ -392,7 +380,7 @@ namespace AZ
             srg->SetConstant(constantIndex, m_probeRayRotationTransform);
         }
 
-        void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset, const RPI::Scene* scene)
+        void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
         {
             if (!m_rayTraceSrg)
             {
@@ -406,7 +394,7 @@ namespace AZ
             RHI::ShaderInputConstantIndex constantIndex;
 
             // TLAS
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
@@ -430,7 +418,7 @@ namespace AZ
             m_rayTraceSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
 
             // directional lights
-            const auto directionalLightFP = scene->GetFeatureProcessor<DirectionalLightFeatureProcessor>();
+            const auto directionalLightFP = m_scene->GetFeatureProcessor<DirectionalLightFeatureProcessor>();
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_directionalLights"));
             m_rayTraceSrg->SetBufferView(bufferIndex, directionalLightFP->GetLightBuffer()->GetBufferView());
 
@@ -438,7 +426,7 @@ namespace AZ
             m_rayTraceSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
 
             // spot lights
-            const auto spotLightFP = scene->GetFeatureProcessor<SpotLightFeatureProcessor>();
+            const auto spotLightFP = m_scene->GetFeatureProcessor<SpotLightFeatureProcessor>();
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_spotLights"));
             m_rayTraceSrg->SetBufferView(bufferIndex, spotLightFP->GetLightBuffer()->GetBufferView());
 
@@ -446,12 +434,50 @@ namespace AZ
             m_rayTraceSrg->SetConstant(constantIndex, spotLightFP->GetLightCount());
 
             // point lights
-            const auto pointLightFP = scene->GetFeatureProcessor<PointLightFeatureProcessor>();
+            const auto pointLightFP = m_scene->GetFeatureProcessor<PointLightFeatureProcessor>();
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_pointLights"));
             m_rayTraceSrg->SetBufferView(bufferIndex, pointLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_pointLightCount"));
             m_rayTraceSrg->SetConstant(constantIndex, pointLightFP->GetLightCount());
+
+            // disk lights
+            const auto diskLightFP = m_scene->GetFeatureProcessor<DiskLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_diskLights"));
+            m_rayTraceSrg->SetBufferView(bufferIndex, diskLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_diskLightCount"));
+            m_rayTraceSrg->SetConstant(constantIndex, diskLightFP->GetLightCount());
+
+            // capsule lights
+            const auto capsuleLightFP = m_scene->GetFeatureProcessor<CapsuleLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_capsuleLights"));
+            m_rayTraceSrg->SetBufferView(bufferIndex, capsuleLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_capsuleLightCount"));
+            m_rayTraceSrg->SetConstant(constantIndex, capsuleLightFP->GetLightCount());
+
+            // quad lights
+            const auto quadLightFP = m_scene->GetFeatureProcessor<QuadLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_quadLights"));
+            m_rayTraceSrg->SetBufferView(bufferIndex, quadLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_quadLightCount"));
+            m_rayTraceSrg->SetConstant(constantIndex, quadLightFP->GetLightCount());
+
+            // diffuse environment map for sky hits
+            ImageBasedLightFeatureProcessor* imageBasedLightFeatureProcessor = m_scene->GetFeatureProcessor<ImageBasedLightFeatureProcessor>();
+            if (imageBasedLightFeatureProcessor)
+            {
+                imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
+                m_rayTraceSrg->SetImage(imageIndex, imageBasedLightFeatureProcessor->GetDiffuseImage());
+
+                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblOrientation"));
+                m_rayTraceSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetOrientation());
+
+                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
+                m_rayTraceSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetExposure());
+            }
 
             // grid settings
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
@@ -460,8 +486,10 @@ namespace AZ
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_giShadows"));
             m_rayTraceSrg->SetConstant(constantIndex, m_giShadows);
 
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_useDiffuseIbl"));
+            m_rayTraceSrg->SetConstant(constantIndex, m_useDiffuseIbl);
+
             SetGridConstants(m_rayTraceSrg);
-            m_rayTraceSrg->Compile();
         }
 
         void DiffuseProbeGrid::UpdateBlendIrradianceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
@@ -482,9 +510,6 @@ namespace AZ
             m_blendIrradianceSrg->SetImageView(imageIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
 
             SetGridConstants(m_blendIrradianceSrg);
-
-            // Note: must be compiled every frame since the probe ray transform is changing
-            m_blendIrradianceSrg->Compile();
         }
 
         void DiffuseProbeGrid::UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
@@ -505,9 +530,6 @@ namespace AZ
             m_blendDistanceSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
 
             SetGridConstants(m_blendDistanceSrg);
-
-            // Note: must be compiled every frame since the probe ray transform is changing
-            m_blendDistanceSrg->Compile();
         }
 
         void DiffuseProbeGrid::UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset,
@@ -530,8 +552,6 @@ namespace AZ
 
                 constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_numTexels"));
                 m_borderUpdateRowIrradianceSrg->SetConstant(constantIndex, DefaultNumIrradianceTexels);
-
-                m_borderUpdateRowIrradianceSrg->Compile();
             }
 
             // border update column irradiance
@@ -551,8 +571,6 @@ namespace AZ
 
                 constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_numTexels"));
                 m_borderUpdateColumnIrradianceSrg->SetConstant(constantIndex, DefaultNumIrradianceTexels);
-
-                m_borderUpdateColumnIrradianceSrg->Compile();
             }
 
             // border update row distance
@@ -572,8 +590,6 @@ namespace AZ
 
                 constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_numTexels"));
                 m_borderUpdateRowDistanceSrg->SetConstant(constantIndex, DefaultNumDistanceTexels);
-
-                m_borderUpdateRowDistanceSrg->Compile();
             }
 
             // border update column distance
@@ -593,8 +609,6 @@ namespace AZ
 
                 constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_numTexels"));
                 m_borderUpdateColumnDistanceSrg->SetConstant(constantIndex, DefaultNumDistanceTexels);
-
-                m_borderUpdateColumnDistanceSrg->Compile();
             }
         }
 
@@ -621,8 +635,6 @@ namespace AZ
             m_relocationSrg->SetConstant(constantIndex, probeDistanceScale);
 
             SetGridConstants(m_relocationSrg);
-
-            m_relocationSrg->Compile();
         }
 
         void DiffuseProbeGrid::UpdateRenderObjectSrg()
@@ -669,35 +681,50 @@ namespace AZ
 
             SetGridConstants(m_renderObjectSrg);
 
-            m_renderObjectSrg->Compile();
             m_updateRenderObjectSrg = false;
+
+            // update culling now since the position and/or extents may have changed
+            UpdateCulling();
         }
 
-        AZ::Matrix4x4 DiffuseProbeGrid::ComputeRandomRotation()
+        void DiffuseProbeGrid::UpdateCulling()
         {
-            // Fast Random Rotation Matrices by James Arvo
-            // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.1357&rep=rep1&type=pdf
-            // http://www.realtimerendering.com/resources/GraphicsGems/gemsiii/rand_rotation.c
-            float x1 = m_random.GetRandomFloat();
-            float x2 = m_random.GetRandomFloat();
-            float x3 = m_random.GetRandomFloat();
+            if (!m_drawPacket)
+            {
+                return;
+            }
 
-            float theta = 2.0f * AZ::Constants::Pi * x1;
-            float phi = 2.0f * AZ::Constants::Pi * x2;
-            float z = 2.0f * x3;
-            float r = AZ::Sqrt(z);
-            AZ::Vector3 V(AZ::Sin(phi) * r, AZ::Cos(phi) * r, AZ::Sqrt(2.0f - z));
+            // set draw list mask
+            m_cullable.m_cullData.m_drawListMask.reset();
+            m_cullable.m_cullData.m_drawListMask = m_drawPacket->GetDrawListMask();
 
-            float sinTheta = AZ::Sin(theta);
-            float cosTheta = AZ::Cos(theta);
-            AZ::Vector3 S(V.GetX() * cosTheta - V.GetY() * sinTheta, V.GetX() * sinTheta + V.GetY() * cosTheta, V.GetZ());
+            // setup the Lod entry, only one entry is needed for the draw packet
+            m_cullable.m_lodData.m_lods.clear();
+            m_cullable.m_lodData.m_lods.resize(1);
+            RPI::Cullable::LodData::Lod& lod = m_cullable.m_lodData.m_lods.back();
 
-            AZ::Matrix4x4 transform;
-            transform.SetRow(0, AZ::Vector4(V.GetX() * S.GetX() - cosTheta, V.GetX() * S.GetY() - sinTheta, V.GetX() * V.GetZ(), 0.0f));
-            transform.SetRow(1, AZ::Vector4(V.GetY() * S.GetX() + sinTheta, V.GetY() * S.GetY() - cosTheta, V.GetY() * V.GetZ(), 0.0f));
-            transform.SetRow(2, AZ::Vector4(V.GetZ() * S.GetX(), V.GetZ() * S.GetY(), 1.0f - z, 0.0f));
-            transform.SetRow(3, AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-            return transform;
+            // add the draw packet
+            lod.m_drawPackets.push_back(m_drawPacket.get());
+
+            // set screen coverage
+            // probe volume should cover at least a screen pixel at 1080p to be drawn
+            static const float MinimumScreenCoverage = 1.0f / 1080.0f;
+            lod.m_screenCoverageMin = MinimumScreenCoverage;
+            lod.m_screenCoverageMax = 1.0f;
+
+            // update cullable bounds
+            Vector3 center;
+            float radius;
+            m_aabbWs.GetAsSphere(center, radius);
+
+            m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
+            m_cullable.m_cullData.m_boundingObb = m_aabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
+            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = m_aabbWs;
+            m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
+            m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+
+            // register with culling system
+            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
         }
     }   // namespace Render
 }   // namespace AZ

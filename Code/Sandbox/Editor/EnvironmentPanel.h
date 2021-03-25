@@ -46,6 +46,8 @@ public:
 
 private:
     QScopedPointer<Ui::CEnvironmentPanel> ui;
+
+    IVariable::OnSetCallback m_onSetCallback;
 };
 
 #endif // CRYINCLUDE_EDITOR_ENVIRONMENTPANEL_H

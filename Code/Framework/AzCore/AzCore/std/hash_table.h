@@ -9,8 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#ifndef AZSTD_HASH_TABLE_H
-#define AZSTD_HASH_TABLE_H 1
+#pragma once
 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/containers/node_handle.h>
@@ -20,6 +19,7 @@
 #include <AzCore/std/containers/fixed_list.h>
 
 #include <AzCore/std/hash.h>
+#include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/functional_basic.h>
 #include <AzCore/std/allocator_ref.h>
@@ -685,14 +685,6 @@ namespace AZStd
             }
         }
 
-        //AZ_FORCE_INLINE void          erase(const key_type *first, const key_type *last)
-        //{
-        //  // erase all that match array of keys [first, last)
-        //  //_DEBUG_RANGE(first, last);
-        //  for (; first != last; ++first)
-        //      erase(*first);
-        //}
-
         AZ_FORCE_INLINE void            clear()
         {
             // erase all
@@ -959,28 +951,6 @@ namespace AZStd
     protected:
         AZ_FORCE_INLINE size_type bucket_from_hash(const size_type key) const   { return key % m_data.get_num_buckets(); }
 
-        // FOR SLIST VERSION
-        /*AZ_FORCE_INLINE iterator find_previous(list_type& list, vector_value_type* buckets, iterator& iter, size_type bucketIndex)
-        {
-            if( iter != list.begin() )
-            {
-                while(bucketIndex>0)
-                {
-                    --bucketIndex;
-                    const vector_value_type& bucket = buckets[bucketIndex];
-                    if(bucket.first > 0)
-                    {
-                        iterator iter = bucket.second;
-                        for(size_type i = 0; i < (bucket.first-1); ++i, ++iter);
-                        return iter;
-                    }
-                }
-            }
-
-            return list.before_begin();
-        }*/
-
-
         void copy(const this_type& rhs)
         {
             // copy entire hash table
@@ -1105,6 +1075,18 @@ namespace AZStd
             return (pair_iter_bool(insertPos, true));   // return iterator for new element
         }
 
+        template <typename ComparableToKey, typename... Args>
+        pair_iter_bool try_emplace_transparent(ComparableToKey&& key, Args&&... arguments);
+
+        template <typename ComparableToKey, typename... Args>
+        iterator try_emplace_transparent(const_iterator hint, ComparableToKey&& key, Args&&... arguments);
+
+        template <typename ComparableToKey, typename MappedType>
+        pair_iter_bool insert_or_assign_transparent(ComparableToKey&& key, MappedType&& value);
+
+        template <typename ComparableToKey, typename MappedType>
+        iterator insert_or_assign_transparent(const_iterator hint, ComparableToKey&& key, MappedType&& value);
+
         storage_type    m_data;
         key_eq          m_keyEqual;
         hasher          m_hasher;
@@ -1202,7 +1184,97 @@ namespace AZStd
 
         return m_data.m_list.unlink(removePos);
     }
-}
 
-#endif // AZSTD_HASH_TABLE_H
-#pragma once
+    template <class Traits>
+    template <typename ComparableToKey, typename... Args>
+    inline auto hash_table<Traits>::try_emplace_transparent(ComparableToKey&& key, Args&&... arguments) -> pair_iter_bool
+    {
+        // Check if the key has a corresponding node in the container
+        if (iterator findIter = find(key); findIter != m_data.m_list.end())
+        {
+            return { findIter, false };
+        }
+
+        size_type bucketIndex = bucket_from_hash(m_hasher(key));
+        auto& [numElements, bucketFrontIter] = m_data.buckets()[bucketIndex];
+
+        // advance to the end of the bucket and piecewise construct the arguments at before that iterator
+        iterator insertIter = AZStd::next(bucketFrontIter, numElements);
+
+        if (numElements == 0)
+        {
+            // No elements in the bucket
+            // emplace the element at the beginning of the list and update the bucket front iterator to point to it
+            insertIter = m_data.m_list.emplace(m_data.m_list.begin(), AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+                AZStd::forward_as_tuple(AZStd::forward<Args>(arguments)...));
+            bucketFrontIter = insertIter;
+        }
+        else
+        {
+            // The returned iterator from list::emplace is pointing at the newly inserted element
+            insertIter = m_data.m_list.emplace(insertIter, AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+                AZStd::forward_as_tuple(AZStd::forward<Args>(arguments)...));
+        }
+
+        // Update the number of elements in the bucket using the numElements reference variable
+        ++numElements;
+
+        m_data.rehash_if_needed(this);
+
+        return { insertIter, true };
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename... Args>
+    inline auto hash_table<Traits>::try_emplace_transparent(const_iterator, ComparableToKey&& key, Args&&... arguments) -> iterator
+    {
+        return try_emplace_transparent(AZStd::forward<ComparableToKey>(key), AZStd::forward<Args>(arguments)...).first;
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename MappedType>
+    inline auto hash_table<Traits>::insert_or_assign_transparent(ComparableToKey&& key, MappedType&& value) -> pair_iter_bool
+    {
+        // Check if the key has a corresponding node in the container
+        if (iterator findIter = find(key); findIter != m_data.m_list.end())
+        {
+            // Update the mapped element if the key has been found
+            findIter->second = AZStd::forward<MappedType>(value);
+            return { findIter, false };
+        }
+
+        size_type bucketIndex = bucket_from_hash(m_hasher(key));
+        auto& [numElements, bucketFrontIter] = m_data.buckets()[bucketIndex];
+
+        // advance to the end of the bucket and piecewise construct the arguments at before that iterator
+        iterator insertIter = AZStd::next(bucketFrontIter, numElements);
+
+        if (numElements == 0)
+        {
+            // No elements in the bucket
+            // emplace the element at the beginning of the list and update the bucket front iterator to point to it
+            insertIter = m_data.m_list.emplace(m_data.m_list.begin(), AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+                AZStd::forward_as_tuple(AZStd::forward<MappedType>(value)));
+            bucketFrontIter = insertIter;
+        }
+        else
+        {
+            // The returned iterator from list::emplace is pointing at the newly inserted element
+            insertIter = m_data.m_list.emplace(insertIter, AZStd::piecewise_construct, AZStd::forward_as_tuple(AZStd::forward<ComparableToKey>(key)),
+                AZStd::forward_as_tuple(AZStd::forward<MappedType>(value)));
+        }
+        // Update the number of elements in the bucket using the numElements reference variable
+        ++numElements;
+
+        m_data.rehash_if_needed(this);
+
+        return { insertIter, true };
+    }
+
+    template <class Traits>
+    template <typename ComparableToKey, typename MappedType>
+    inline auto hash_table<Traits>::insert_or_assign_transparent(const_iterator, ComparableToKey&& key, MappedType&& value) -> iterator
+    {
+        return insert_or_assign_transparent(AZStd::forward<ComparableToKey>(key), AZStd::forward<MappedType>(value)).first;
+    }
+}

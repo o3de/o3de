@@ -157,6 +157,17 @@
                         "type": "ShaderOption",
                         "id": "o_enableIBL"
                     }
+                },
+                {
+                    "id": "forwardPassIBLSpecular",
+                    "displayName": "Forward Pass IBL Specular",
+                    "description": "Whether to apply IBL specular in the forward pass.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_materialUseForwardPassIBLSpecular"
+                    }
                 }
             ],
             "baseColor": [
@@ -211,7 +222,7 @@
                     "displayName": "Texture Blend Mode",
                     "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
                     "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp" ],
+                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
                     "connection": {
                         "type": "ShaderOption",
@@ -582,8 +593,7 @@
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
-                    // "#softMax": [GFX TODO] replace this max with a softMax to allow a slider but have an arbitrarily high range
-                    "max": 2.0,
+                    "softMax": 2.0,
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_normalFactor"
@@ -1166,132 +1176,142 @@
                     "displayName": "Enable Detail Layer",
                     "description": "Enable detail layer for fine details and scratches",
                     "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_enableDetailLayer"
-                    }
+                    "defaultValue": false
                 },
                 {
-                    "id": "enableDetailMaskTexture",
-                    "displayName": "Enable Detail Mask Texture",
-                    "description": "Enable detail mask texture for blending the layer textures affect",
-                    "type": "Bool",
-                    "defaultValue": false,
+                    "id": "blendDetailFactor",
+                    "displayName": "Blend Factor",
+                    "description": "Scales the overall impact of the detail layer.",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
                     "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_maskDetail_useTexture"
+                        "type": "ShaderInput",
+                        "id": "m_detail_blendFactor"
                     }
                 },
                 {
                     "id": "blendDetailMask",
-                    "displayName": "Detail Blend Mask",
-                    "description": "Detailed blend mask for application of the detail maps",
+                    "displayName": "Blend Mask",
+                    "description": "Detailed blend mask for application of the detail maps.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_detailBlendMask"
+                        "id": "m_detail_blendMask_texture"
                     }
                 },
                 {
-                    "id": "baseColorDetail",
-                    "displayName": "Detail Base Color",
-                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 1.0, 1.0 ],
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_baseColorDetail"
-                    }
-                },
-                {
-                    "id": "enableDetailBaseColorTexture",
-                    "displayName": "Enable Detail Base Color Texture",
-                    "description": "Enable detail base color to override parts of the base layer color",
+                    "id": "enableDetailMaskTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Enable detail mask texture",
                     "type": "Bool",
-                    "defaultValue": false,
+                    "defaultValue": true
+                },
+                {
+                    "id": "blendDetailMaskUv",
+                    "displayName": "    Blend Mask UV",
+                    "description": "Which UV set to use for sampling the detail blend mask",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Base",
                     "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_baseColorDetail_useTexture"
+                        "type": "ShaderInput",
+                        "id": "m_detail_blendMask_uvIndex"
                     }
                 },
                 {
-                    "id": "baseColorDetailBlend",
-                    "displayName": "Base Color Detail Blend with Main",
-                    "description": "Blend between Detail Base Color and Main Base Color",
-                    "type": "Float",
-                    "defaultValue": 0.0,
-                    "min": 0.0,
-                    "max": 2.0,
+                    "id": "detailMapsMapUv",
+                    "displayName": "Detail Map UVs",
+                    "description": "Which UV set to use for detail map texture sampling",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Base",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_baseColorDetailBlend"
+                        "id": "m_detail_allMapsUvIndex"
                     }
+                },
+                {
+                    "id": "enableBaseColor",
+                    "displayName": "Enable Base Color",
+                    "description": "Enable detail blending for base color",
+                    "type": "Bool",
+                    "defaultValue": false
                 },
                 {
                     "id": "baseColorDetailMap",
-                    "displayName": "Base Color Detail Map",
+                    "displayName": "    Texture Map",
                     "description": "Detailed Base Color Texture map",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_baseColorDetailMap"
+                        "id": "m_detail_baseColor_texture"
                     }
                 },
                 {
-                    "id": "enableDetaiNormalTexture",
-                    "displayName": "Enable Detail Normal Texture",
+                    "id": "baseColorDetailBlend",
+                    "displayName": "    Blend Factor",
+                    "description": "How much to blend the detail layer into the base color.",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detail_baseColor_factor"
+                    }
+                },
+                {
+                    "id": "enableNormals",
+                    "displayName": "Enable Normal",
                     "description": "Enable detail normal texture to be used for fine detail normal such as scratches and small dents",
                     "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_normalDetail_useTexture"
-                    }
+                    "defaultValue": false
                 },
                 {
                     "id": "normalDetailStrength",
-                    "displayName": "Normal Detail Strength",
+                    "displayName": "    Factor",
                     "description": "Strength factor for scaling the Detail Normal",
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
-                    "max": 2.0,
+                    "softMax": 2.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_normalDetailStrength"
+                        "id": "m_detail_normal_factor"
                     }
                 },
                 {
                     "id": "normalDetailMap",
-                    "displayName": "Normal Detail Texture Map",
+                    "displayName": "    Texture Map",
                     "description": "Detailed Normal Texture map",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_normalDetailMap"
+                        "id": "m_detail_normal_texture"
                     }
                 },
                 {
                     "id": "normalDetailFlipX",
-                    "displayName": "Flip Detail X Channel",
+                    "displayName": "    Flip X Channel",
                     "description": "Flip Detail tangent direction for this normal map.",
                     "type": "Bool",
                     "defaultValue": false,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_normalDetailflipX"
+                        "id": "m_detail_normal_flipX"
                     }
                 },
                 {
                     "id": "normalDetailFlipY",
-                    "displayName": "Flip Detail Y Channel",
+                    "displayName": "    Flip Y Channel",
                     "description": "Flip Detail bitangent direction for this normal map.",
                     "type": "Bool",
                     "defaultValue": false,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_normalDetailflipY"
+                        "id": "m_detail_normal_flipY"
                     }
                 }
             ],
@@ -1451,8 +1471,8 @@
                 "translateXProperty": "detailUV.offsetU",
                 "translateYProperty": "detailUV.offsetV",
                 "rotateDegreesProperty": "detailUV.rotateDegrees",
-                "float3x3ShaderInput": "m_detailUVMatrix",
-                "float3x3InverseShaderInput": "m_detailUVMatrixInverse"
+                "float3x3ShaderInput": "m_detailUvMatrix",
+                "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
             }
         },
         {
@@ -2063,6 +2083,12 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_HandleOpacityMode.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
             }
         }
     ],

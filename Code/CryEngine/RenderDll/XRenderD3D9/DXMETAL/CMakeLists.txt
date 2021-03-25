@@ -42,8 +42,6 @@ if(DXGL_TRAIT_BUILD_DXMETAL_SUPPORTED AND NOT LY_MONOLITHIC_GAME) # Only Atom is
             PUBLIC
                 AZ::AzFramework
                 AZ::HLSLcc.Headers
-                3rdParty::Lzma
-                3rdParty::LZSS
                 Legacy::CryCommon
                 Legacy::CryCommon.EngineSettings.Static
     )

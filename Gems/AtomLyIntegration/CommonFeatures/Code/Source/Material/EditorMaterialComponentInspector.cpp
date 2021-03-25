@@ -29,6 +29,8 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
@@ -104,16 +106,13 @@ namespace AZ
                 }
 
                 // At this point, we should be ready to attempt to load the material type data
-                auto materialTypeOutcome = RPI::MaterialUtils::LoadMaterialTypeSourceData(materialTypePath);
+                auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(materialTypePath);
                 if (!materialTypeOutcome.IsSuccess())
                 {
-                    AZ_Error("AZ::Render::EditorMaterialComponentInspector", false, "Failed to get load material type source data: %s", materialTypePath.c_str());
+                    AZ_Error("AZ::Render::EditorMaterialComponentInspector", false, "Failed to load material type source data: %s", materialTypePath.c_str());
                     return false;
                 }
-                else
-                {
-                    m_materialTypeSourceData = materialTypeOutcome.GetValue();
-                }
+                m_materialTypeSourceData = materialTypeOutcome.GetValue();
 
                 // Get a list of all the editor functors to be used for property editor states
                 auto propertyLayout = m_materialAsset->GetMaterialPropertiesLayout();
@@ -180,8 +179,14 @@ namespace AZ
                 propertyConfig.m_readOnly = true;
                 group.m_properties.emplace_back(propertyConfig);
 
-                AddGroup(groupNameId, groupDisplayName, groupDescription,
-                    new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+                // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                        AZ_UNUSED(source);
+                        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+                    });
+                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
             }
 
             void MaterialPropertyInspector::AddUvNamesGroup()
@@ -214,8 +219,14 @@ namespace AZ
                     group.m_properties.emplace_back(propertyConfig);
                 }
 
-                AddGroup(groupNameId, groupDisplayName, groupDescription,
-                    new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+                // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                        AZ_UNUSED(source);
+                        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+                    });
+                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
             }
 
             void MaterialPropertyInspector::Populate()
@@ -245,14 +256,21 @@ namespace AZ
 
                             propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
                             const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                             group.m_properties.emplace_back(propertyConfig);
                         }
                     }
 
-                    AddGroup(groupNameId, groupDisplayName, groupDescription,
-                        new AtomToolsFramework::InspectorPropertyGroupWidget(&group, group.TYPEINFO_Uuid(), this));
+                    // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                        [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                            AZ_UNUSED(source);
+                            const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+                            return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+                        });
+                    AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
                 }
 
                 AddGroupsEnd();
@@ -387,7 +405,7 @@ namespace AZ
                 // For some reason the reflected property editor notifications are not symmetrical
                 // This function is called continuously anytime a property changes until the edit has completed
                 // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property)
                 {
                     if (m_activeProperty != property)
@@ -399,7 +417,7 @@ namespace AZ
 
             void MaterialPropertyInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
             {
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property)
                 {
                     if (m_activeProperty == property)
@@ -415,7 +433,7 @@ namespace AZ
             {
                 // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
                 // when this function executes the changes to the property are ready to be committed or reverted
-                const AtomToolsFramework::DynamicProperty* property = FindPropertyForNode(pNode);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property)
                 {
                     if (m_activeProperty == property)
@@ -429,32 +447,14 @@ namespace AZ
                 }
             }
 
-            const AtomToolsFramework::DynamicProperty* MaterialPropertyInspector::FindPropertyForNode(AzToolsFramework::InstanceDataNode* pNode) const
-            {
-                // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-                const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
-                {
-                    const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-                    const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-                    if (context && classData)
-                    {
-                        if (context->CanDowncast(classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
-                        {
-                            return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
-                        }
-                    }
-                }
-
-                return nullptr;
-            }
-
             bool OpenInspectorDialog(const AZ::Data::AssetId& assetId, MaterialPropertyOverrideMap propertyOverrideMap, PropertyChangedCallback propertyChangedCallback)
             {
+                QWidget* activeWindow = nullptr;
+                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
+
                 // Constructing a dialog with a table to display all configurable material export items
-                QDialog dialog(QApplication::activeWindow());
+                QDialog dialog(activeWindow);
                 dialog.setWindowTitle("Material Inspector");
-                dialog.setFixedSize(300, 600);
 
                 MaterialPropertyInspector* inspector = new MaterialPropertyInspector(assetId, propertyChangedCallback, &dialog);
                 if (!inspector->LoadMaterial())
@@ -481,13 +481,13 @@ namespace AZ
 
                 QPushButton* confirmButton = new QPushButton("Confirm", buttonRow);
                 QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] {
-                    dialog.done(1);
+                    dialog.accept();
                     });
 
                 QPushButton* cancelButton = new QPushButton("Cancel", buttonRow);
                 QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [inspector, propertyOverrideMap, &dialog] {
                     inspector->SetOverrides(propertyOverrideMap);
-                    dialog.done(0);
+                    dialog.reject();
                     });
 
                 QHBoxLayout* buttonLayout = new QHBoxLayout(buttonRow);
@@ -502,8 +502,19 @@ namespace AZ
                 dialogLayout->addWidget(buttonRow);
                 dialog.setLayout(dialogLayout);
 
+                // Forcing the initial dialog size to accomodate typical content.
+                // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.
+                // This forces the dialog to be centered and sized based on the layout of content.
+                // Resizing the dialog after show will not be centered and moving the dialog programatically doesn't m0ve the custmk frame. 
+                dialog.setFixedSize(300, 600);
+                dialog.show();
+
+                // Removing fixed size to allow drag resizing
+                dialog.setMinimumSize(0, 0);
+                dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
                 // Return true if the user press the export button
-                return dialog.exec() == 1;
+                return dialog.exec() == QDialog::Accepted;
             }
         } // namespace EditorMaterialComponentInspector
     } // namespace Render

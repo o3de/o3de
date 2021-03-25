@@ -133,32 +133,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{2174E04B-73BB-4DF1-8961-4900DC3C9D72}",
-                "Name": "ConvolvedCubemap",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "FileMasks": [
-                    "_ccm",
-                    "_convolvedcubemap"
-                ],
-                "SuppressEngineReduce": true,
-                "PixelFormat": "R9G9B9E5",
-                "DiscardAlpha": true,
-                "MaxTextureSize": 256,
-                "MinTextureSize": 256,
-                "IsPowerOf2": true,
-                "CubemapSettings": {
-                    "Filter": "GGX",
-                    "MipAngle": 7.0,
-                    "MipSlope": 2.299999952316284,
-                    "EdgeFixup": -431602080.0,
-                    "RequiresConvolve": false
-                },
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

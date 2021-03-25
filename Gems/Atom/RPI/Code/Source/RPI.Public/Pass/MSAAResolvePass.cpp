@@ -48,8 +48,9 @@ namespace AZ
             RenderPass::FrameBeginInternal(params);
         }
 
-        void MSAAResolvePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const PassScopeProducer& producer)
+        void MSAAResolvePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
+            // Manually declare attachments since the resolve attachment is not supported by RenderPass
             AZ_Assert(GetInputCount() == 1, "MSAAResolvePass only supports a single Input");
             AZ_Assert(GetOutputCount() == 1, "MSAAResolvePass only supports a single Output");
 
@@ -63,14 +64,16 @@ namespace AZ
             descriptor.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
             descriptor.m_resolveAttachmentId = copySource.m_attachment->GetAttachmentId();
             frameGraph.UseResolveAttachment(descriptor);
+
+            RenderPass::AddScopeQueryToFrameGraph(frameGraph);
         }
 
 
-        void MSAAResolvePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void MSAAResolvePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
         }
 
-        void MSAAResolvePass::BuildCommandList([[maybe_unused]] const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void MSAAResolvePass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
         }
     }   // namespace RPI

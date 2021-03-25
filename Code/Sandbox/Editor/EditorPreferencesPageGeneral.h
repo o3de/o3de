@@ -58,6 +58,10 @@ private:
         bool m_restoreViewportCamera;
         bool m_bShowNews;
         bool m_enableSceneInspector;
+        bool m_enablePrefabSystem;
+
+        // Only used to tell if the user has changed this value since it requires a restart
+        bool m_enablePrefabSystemInitialValue;
     };
 
     struct Messaging

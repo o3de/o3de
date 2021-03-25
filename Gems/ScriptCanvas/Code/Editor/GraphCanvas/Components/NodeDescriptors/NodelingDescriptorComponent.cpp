@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
     }
     
     NodelingDescriptorComponent::NodelingDescriptorComponent()
-        : NodeDescriptorComponent(NodeDescriptorType::ExecutionNodeling)
+        : NodeDescriptorComponent(NodeDescriptorType::FunctionDefinitionNode)
     {
     }
     

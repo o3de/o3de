@@ -46,7 +46,7 @@ namespace AZ
 
             void GarbageCollect();
 
-            View Allocate(size_t sizeInBytes, size_t alignmentInBytes);
+            View Allocate(size_t sizeInBytes, size_t alignmentInBytes, bool forceUnique = false);
 
             void DeAllocate(const View& memory);
 
@@ -110,7 +110,7 @@ namespace AZ
         }
 
         template<typename SubAllocator, typename View>
-        View MemoryTypeAllocator<SubAllocator, View>::Allocate(size_t sizeInBytes, size_t alignmentInBytes)
+        View MemoryTypeAllocator<SubAllocator, View>::Allocate(size_t sizeInBytes, size_t alignmentInBytes, bool forceUnique /*=false*/)
         {
             AZ_TRACE_METHOD();
 
@@ -119,6 +119,7 @@ namespace AZ
             View memoryView;
 
             // First attempt to sub-allocate a buffer from the sub-allocator.
+            if (!forceUnique)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_subAllocatorMutex);
                 memoryView = View(ViewBase(m_subAllocator.Allocate(sizeInBytes, alignmentInBytes), MemoryAllocationType::SubAllocated));

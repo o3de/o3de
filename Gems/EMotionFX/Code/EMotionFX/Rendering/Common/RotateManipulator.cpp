@@ -605,13 +605,16 @@ namespace MCommon
             // adjust rotation
             mRotation += mRotationAxis * angle;
             //mRotation = Vector3( MCore::Clamp(mRotation.x, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.y, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.z, -Math::twoPi, Math::twoPi) );
-            mRotationQuat = MCore::CreateFromAxisAndAngle(mRotationAxis, MCore::Math::FMod(-angle, MCore::Math::twoPi)); //MCore::Clamp(-angle*movementLength, -Math::twoPi, Math::twoPi) );
+            mRotationQuat = AZ::Quaternion::CreateFromAxisAngle(mRotationAxis, MCore::Math::FMod(-angle, MCore::Math::twoPi));
+            mRotationQuat.Normalize();
         }
 
         // update the callback
         if (mCallback)
         {
-            mCallback->Update(mRotationQuat.GetNormalized());
+            const AZ::Quaternion curRot = mCallback->GetCurrValueQuat();
+            const AZ::Quaternion newRot = (curRot * mRotationQuat).GetNormalized();
+            mCallback->Update(newRot);
         }
     }
 } // namespace MCommon

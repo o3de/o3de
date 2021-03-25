@@ -15,7 +15,8 @@
 #define CRYINCLUDE_CRYCOMMON_INAVIGATIONSYSTEM_H
 #pragma once
 
-#include <functor.h>
+#include <AzCore/std/functional.h>
+
 #include <IMNM.h>
 #include <physinterface.h>
 
@@ -49,8 +50,8 @@ private:
 typedef TNavigationID<MeshIDTag> NavigationMeshID;
 typedef TNavigationID<AgentTypeIDTag> NavigationAgentTypeID;
 typedef TNavigationID<VolumeIDTag> NavigationVolumeID;
-typedef Functor3<NavigationAgentTypeID, NavigationMeshID, uint32> NavigationMeshChangeCallback;
-typedef Functor2wRet<IPhysicalEntity&, uint32&, bool> NavigationMeshEntityCallback;
+typedef AZStd::function<void(NavigationAgentTypeID, NavigationMeshID, uint32)> NavigationMeshChangeCallback;
+typedef AZStd::function<bool(IPhysicalEntity&, uint32&)> NavigationMeshEntityCallback;
 
 struct INavigationSystemUser
 {

@@ -145,7 +145,7 @@ namespace AZ
         typedef AZStd::unordered_map<Uuid, ClassData> UuidToClassMap;
 
         /// If registerIntegralTypes is true we will register the default serializer for all integral types.
-        SerializeContext(bool registerIntegralTypes = true, bool createEditContext = false);
+        explicit SerializeContext(bool registerIntegralTypes = true, bool createEditContext = false);
         virtual ~SerializeContext();
 
         /// Deleting copy ctor because we own unique_ptr's of IDataContainers
@@ -185,6 +185,17 @@ namespace AZ
         template<typename EnumType>
         EnumBuilder Enum(IObjectFactory* factory);
 
+        //! Function Pointer which is used to construct an AZStd::any for a registered type using the Serialize Context
+        using CreateAnyFunc = AZStd::any(*)(SerializeContext*);
+        //! Allows registration of a TypeId without the need to supply a C++ type
+        //! If the type is not already registered, then the ClassData is moved into the SerializeContext
+        //! internal structure
+        ClassBuilder RegisterType(const AZ::TypeId& typeId, AZ::SerializeContext::ClassData&& classData,
+            CreateAnyFunc createAnyFunc = [](SerializeContext*) -> AZStd::any { return {}; });
+
+        //! Unregister a type from the SerializeContext and removes all internal mappings
+        //! @return true if the type was previously registered
+        bool UnregisterType(const AZ::TypeId& typeId);
         // Helper method that gets the generic info of ValueType and calls Reflect on it, should it exist
         template <class ValueType>
         void RegisterGenericType();
@@ -1055,7 +1066,6 @@ namespace AZ
         AZStd::any CreateAny(const Uuid& classId);
 
         /// Register GenericClassInfo with the SerializeContext
-        using CreateAnyFunc = AZStd::any(*)(SerializeContext*);
         void RegisterGenericClassInfo(const AZ::Uuid& typeId, GenericClassInfo* genericClassInfo, const CreateAnyFunc& createAnyFunc);
 
         /// Unregisters all GenericClassInfo instances registered in the current module and deletes the GenericClassInfo instances
@@ -1091,11 +1101,6 @@ namespace AZ
         const TypeId& GetUnderlyingTypeId(const TypeId& enumTypeId) const;
 
     private:
-        /**
-         * Generic enumerate function can can take both 'const void*' and 'void*' data pointer types.
-         */
-        template<class PtrType, class EnumType>
-        bool EnumerateInstanceTempl(PtrType ptr, const Uuid& classId, EnumType beginElemCB, const SerializeContext::EndElemEnumCB& endElemCB, const ClassData* classData, const char* elementName, const ClassElement* classElement);
 
         /// Enumerate function called to enumerate an azrtti hierarchy
         static void EnumerateBaseRTTIEnumCallback(const Uuid& id, void* userData);

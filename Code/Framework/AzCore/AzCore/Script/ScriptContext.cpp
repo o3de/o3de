@@ -99,6 +99,159 @@ namespace AzLsvInternal
 
 namespace AZ
 {
+    struct ExposedLambda
+    {
+        AZ_TYPE_INFO(ExposedLambda, "{B702DB0B-516B-4807-8007-DC50A5CE180A}");
+        AZ_CLASS_ALLOCATOR(ExposedLambda, AZ::SystemAllocator, 0);
+
+        // assumes a lambda is at the top of the stack and will pop it
+        ExposedLambda(lua_State* lua)
+            : m_lambdaRegistryIndex(luaL_ref_Checked(lua))
+            , m_lua(lua)
+        {
+            lua_pushinteger(lua, 1);
+            m_refCountRegistryIndex = luaL_ref_Checked(lua);
+        }
+
+        ExposedLambda(ExposedLambda&& source) noexcept
+        {
+            *this = AZStd::move(source);
+        }
+
+        ExposedLambda(const ExposedLambda& source)
+        {
+            *this = source;
+        }
+
+        ~ExposedLambda()
+        {
+            if (m_lua && DecrementRefCount() == 0)
+            {
+                luaL_unref(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
+                luaL_unref(m_lua, LUA_REGISTRYINDEX, m_refCountRegistryIndex);
+            }
+        }
+
+        ExposedLambda& operator=(const ExposedLambda& source)
+        {
+            if (this != &source)
+            {
+                m_lambdaRegistryIndex = source.m_lambdaRegistryIndex;
+                m_refCountRegistryIndex = source.m_refCountRegistryIndex;
+                m_lua = source.m_lua;
+                IncrementRefCount();
+            }
+
+            return *this;
+        }
+
+        ExposedLambda& operator=(ExposedLambda&& source) noexcept
+        {
+            if (this != &source)
+            {
+                m_lambdaRegistryIndex = source.m_lambdaRegistryIndex;
+                m_refCountRegistryIndex = source.m_refCountRegistryIndex;
+                source.m_lambdaRegistryIndex = source.m_refCountRegistryIndex = LUA_NOREF;
+                m_lua = source.m_lua;
+                source.m_lua = nullptr;
+            }
+
+            return *this;
+        }
+
+        void operator()([[maybe_unused]] AZ::BehaviorValueParameter*  resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        {
+            auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
+            // Lua:
+            lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
+            // Lua: lambda
+
+            for (int i = 0; i < numArguments; ++i)
+            {
+                ExposedLambda::StackPush(m_lua, behaviorContext, argsBVPs[i]);
+            }
+
+            // Lua: lambda, args...
+            Internal::LuaSafeCall(m_lua, numArguments, 0);
+        }
+
+        // \note Do not use, these are here for compiler compatibility only
+        ExposedLambda()
+            : m_lua(nullptr)
+            , m_lambdaRegistryIndex(LUA_NOREF)
+            , m_refCountRegistryIndex(LUA_NOREF)
+        {}
+
+    private:
+        static int luaL_ref_Checked(lua_State* lua)
+        {
+            AZ_Assert(lua, "null lua_State");
+            int ref = luaL_ref(lua, LUA_REGISTRYINDEX);
+            AZ_Assert(ref != LUA_NOREF && ref != LUA_REFNIL, "invalid lambdaRegistryIndex");
+            return ref;
+        }
+
+        template<typename T>
+        static T* GetAs(AZ::BehaviorValueParameter& argument)
+        {
+            return argument.m_typeId == azrtti_typeid<T>()
+                ? reinterpret_cast<T*>(argument.GetValueAddress())
+                : nullptr;
+        }
+
+        static void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        {
+            if (auto cStringPtr = GetAs<const char*>(argument))
+            {
+                auto realValue = reinterpret_cast<const char*>(cStringPtr);
+                lua_pushstring(lua, realValue);
+            }
+            else if (auto stringPtr = GetAs<AZStd::string>(argument))
+            {
+                lua_pushlstring(lua, stringPtr->data(), stringPtr->size());
+            }
+            else if (auto viewPtr = GetAs<AZStd::string_view>(argument))
+            {
+                lua_pushlstring(lua, viewPtr->data(), viewPtr->size());
+            }
+            else
+            {
+                AZ::StackPush(lua, context, argument);
+            }
+        }
+
+        int m_lambdaRegistryIndex;
+        int m_refCountRegistryIndex;
+        lua_State* m_lua;
+
+        int AddRefCount(int value)
+        {
+            AZ_Assert(value == 1 || value == -1, "ModRefCount is only for incrementing or decrementing on copy or destruction of ExposedLambda")
+            lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_refCountRegistryIndex);
+            // Lua: refCount-old
+            const int refCount = Internal::azlua_tointeger(m_lua, -1) + value;
+            lua_pushinteger(m_lua, m_refCountRegistryIndex);
+            // Lua: refCount-old, registry index
+            lua_pushinteger(m_lua, refCount);
+            // Lua: refCount-old, registry index, refCount-new
+            lua_rawset(m_lua, LUA_REGISTRYINDEX);
+            // Lua: refCount-old
+            lua_pop(m_lua, 1);
+            // Lua:
+            return refCount;
+        }
+
+        int DecrementRefCount()
+        {
+            return AddRefCount(-1);
+        }
+
+        void IncrementRefCount()
+        {
+            AddRefCount(1);
+        }
+    };
+
     constexpr const char* StorageTypeToString(Script::Attributes::StorageType storageType)
     {
         switch (storageType)
@@ -4942,6 +5095,11 @@ LUA_API const Node* lua_getDummyNode()
                 //lua_rawseti(l, -2, AZ_LUA_CLASS_METATABLE_STORAGE_CREATOR_INDEX);
 
                 BindClassMethodAndProperties(behaviorClass);
+
+                if (AZ::Attribute* eventHandlerCreationFunctionAttribute = FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
+                {
+                    BindEventSupport();
+                }
                 
                 if (storageType != Script::Attributes::StorageType::Value)
                 {
@@ -5193,6 +5351,50 @@ LUA_API const Node* lua_getDummyNode()
                 }
 
                 Internal::azlua_setglobal(m_lua, ValidateName(ebusName));
+            }
+                        
+            static int ConnectToExposedEvent(lua_State* lua)
+            {
+                if (!(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2)))
+                {
+                    ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true, "1st argument to ConnectToExposedEvent is not userdata");
+                    return 0;
+                }
+
+                if (!lua_isfunction(lua, -1))
+                {
+                    ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true, "2nd argument to ConnectToExposedEvent is not a function (lambda need to get around atypically routed arguments)");
+                    return 0;
+                }
+
+                auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
+                AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "1st argument is not user AZ supported userdata");
+                AZ::Attribute* eventHandlerCreationFunctionAttribute = FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, userData->behaviorClass->m_attributes);
+                AZ_Assert(eventHandlerCreationFunctionAttribute, "failure to expose AZ::Event type in class reflected to Lua");
+                AZ::AttributeReader attributeReader(nullptr, eventHandlerCreationFunctionAttribute);
+                AZ::EventHandlerCreationFunctionHolder holder;
+                attributeReader.Read<EventHandlerCreationFunctionHolder>(holder);
+                                
+                // Lua: ExposedEvent, lambda
+                lua_pushvalue(lua, -1);
+                // Lua: ExposedEvent, lambda, lambda
+                auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, AZStd::move(ExposedLambda(lua)));
+                // Lua: ExposedEvent, lambda    
+                Internal::RegisteredObjectToLua(lua, handlerAndType.m_address, handlerAndType.m_typeId, ObjectToLua::ByReference, AcquisitionOnPush::ScriptAcquire);
+                // Lua: ExposedEvent, lambda, handler
+                return 1;
+            }
+
+            //////////////////////////////////////////////////////////////////////////
+            void BindEventSupport()
+            {
+                // Lua: ..., class_mt
+                lua_pushliteral(m_lua, "Connect");
+                // Lua: ..., class_mt, "Connect"
+                lua_pushcfunction(m_lua, &ConnectToExposedEvent);
+                // Lua: ..., class_mt, "Connect", ConnectToExposedEvent
+                lua_rawset(m_lua, -3);
+                // Lua: ..., class_mt
             }
 
             //////////////////////////////////////////////////////////////////////////
@@ -5674,7 +5876,7 @@ LUA_API const Node* lua_getDummyNode()
     }
 
     //////////////////////////////////////////////////////////////////////////
-    bool ScriptContext::Call(const char* functionName, ScriptDataContext& dc, bool warnIfNotFound)
+    bool ScriptContext::Call(const char* functionName, ScriptDataContext& dc)
     {
         dc.Reset();
         Internal::azlua_getglobal(m_impl->m_lua, functionName);
@@ -5686,10 +5888,7 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            if (warnIfNotFound)
-            {
-                AZ_Warning("Script", false, "%s is not a function!", functionName);
-            }
+            AZ_Warning("Script", false, "%s is not a function!", functionName);
         }
         return false;
     }

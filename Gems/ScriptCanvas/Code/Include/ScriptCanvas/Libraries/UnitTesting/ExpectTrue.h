@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.generated.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/UnitTesting.h>
@@ -27,31 +26,13 @@ namespace ScriptCanvas
                 : public Node
             {
             public:
-                ScriptCanvas_Node(ExpectTrue,
-                    ScriptCanvas_Node::Name("Expect True", "Expects a value to be true")
-                    ScriptCanvas_Node::Uuid("{88F9BE2D-F591-45AD-9682-FBB67C39C504}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/ExpectTrue.png")
-                    ScriptCanvas_Node::Version(1, ScriptCanvas::UnitTesting::ExpectBooleanVersioner)
-                );
+
+                SCRIPTCANVAS_NODE(ExpectTrue);
 
                 void OnInit() override;
                 void OnInputSignal(const SlotId& slotId) override;
-
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_Property(bool,
-                    ScriptCanvas_Property::Name("Candidate", "a value that must be true")
-                    ScriptCanvas_Property::Input);
                 
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report")
-                    ScriptCanvas_Property::Input);
-            }; // class ExpectTrue
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            };
+        }
+    }
+}

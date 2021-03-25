@@ -11,6 +11,8 @@
 
 include_guard()
 
+include(cmake/LySet.cmake)
+
 # this script exists to make sure a python interpreter is immediately available
 # it will both locate and run pip on python for our requirements.txt
 # but you can also call update_pip_requirements(filename) at any time after.
@@ -21,18 +23,21 @@ include_guard()
 
 # CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
-    set(LY_PYTHON_VERSION 3.7.10)
-    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev2-linux)
+    ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev2-linux)
+    ly_set(LY_PYTHON_PACKAGE_HASH 6b9cf455e6190ec38836194f4454bb9db6bfc6890b4baff185cc5520aa822f05)
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-    set(LY_PYTHON_VERSION 3.7.10)
-    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-darwin)
+    ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-darwin)
+    ly_set(LY_PYTHON_PACKAGE_HASH 3f65801894e4e44b5faa84dd85ef80ecd772dcf728cdd2d668a6e75978a32695)
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-    set(LY_PYTHON_VERSION 3.7.10)
-    set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-windows)
+    ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-windows)
+    ly_set(LY_PYTHON_PACKAGE_HASH 851383addea5c54b7c6398860d04606c1053f1157c2edd801ec3d47394f73136)
 endif()
 
 # settings and globals
-set(LY_PYTHON_DEFAULT_REQUIREMENTS_TXT "${CMAKE_SOURCE_DIR}/python/requirements.txt")
+ly_set(LY_PYTHON_DEFAULT_REQUIREMENTS_TXT "${LY_ROOT_FOLDER}/python/requirements.txt")
 
 include(cmake/3rdPartyPackages.cmake)
 
@@ -202,21 +207,19 @@ endfunction()
 # But we don't want to full verify using hashes after we successfully get it the
 # first time.
 
-set(temp_LY_PACKAGE_VALIDATE_CONTENTS ${LY_PACKAGE_VALIDATE_CONTENTS})
-set(temp_LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER ${LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER})
-if (EXISTS  ${CMAKE_SOURCE_DIR}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
+set(temp_LY_PACKAGE_VALIDATE_PACKAGE ${LY_PACKAGE_VALIDATE_PACKAGE})
+if (EXISTS  ${LY_ROOT_FOLDER}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
     # we will not validate the hash of every file, just that it is present
     # this is not just an optimization, see comment above.
-    set(LY_PACKAGE_VALIDATE_CONTENTS FALSE)
-    set(LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER FALSE)
+    set(LY_PACKAGE_VALIDATE_PACKAGE FALSE)
 endif()
 
-ly_associate_package(${LY_PYTHON_PACKAGE_NAME} "Python")
-ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/python/runtime)
+ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${LY_ROOT_FOLDER}/python/runtime)
 ly_download_associated_package(Python)
 
-set(LY_PACKAGE_VALIDATE_CONTENTS ${temp_LY_PACKAGE_VALIDATE_CONTENTS})
-set(LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER ${temp_LY_PACKAGE_VALIDATE_CONTENTS_FROM_SERVER})
+ly_set(LY_PACKAGE_VALIDATE_CONTENTS ${temp_LY_PACKAGE_VALIDATE_CONTENTS})
+ly_set(LY_PACKAGE_VALIDATE_PACKAGE ${temp_LY_PACKAGE_VALIDATE_PACKAGE})
 
 if (NOT CMAKE_SCRIPT_MODE_FILE)
     # if we're in script mode, we dont want to actually try to find package or anything else
@@ -253,9 +256,9 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
         # pip installation modules and lead to machine-specific config problems
         # it also uses our wrapper python, which can add additional paths to the python path
         if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-            set(LY_PYTHON_CMD "${CMAKE_SOURCE_DIR}/python/python.cmd" "-s")
+            set(LY_PYTHON_CMD "${LY_ROOT_FOLDER}/python/python.cmd" "-s")
         else()
-            set(LY_PYTHON_CMD "${CMAKE_SOURCE_DIR}/python/python.sh" "-s")
+            set(LY_PYTHON_CMD "${LY_ROOT_FOLDER}/python/python.sh" "-s")
         endif()
 
         update_pip_requirements(${LY_PYTHON_DEFAULT_REQUIREMENTS_TXT} default_requirements)
@@ -263,8 +266,8 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
         # we also need to make sure any custom packages are installed.
         # this costs a moment of time though, so we'll only do it based on stamp files.
 
-        ly_pip_install_local_package_editable(${CMAKE_SOURCE_DIR}/Tools/LyTestTools ly-test-tools)
-        ly_pip_install_local_package_editable(${CMAKE_SOURCE_DIR}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
+        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/LyTestTools ly-test-tools)
+        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
     endif()
 endif()
 

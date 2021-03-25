@@ -126,9 +126,4 @@ namespace AzManipulatorTestFramework
     {
         return {};
     }
-
-    QPoint ViewportInteraction::ViewportCursorScreenPosition()
-    {
-        return QPoint();
-    }
 } // namespace AzManipulatorTestFramework

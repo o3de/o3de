@@ -47,11 +47,12 @@ namespace GraphCanvas
                 const char* const ActionLabelEmptyNodes = "actionLabelEmpty";
             }
 
-            namespace BlockComment
+            namespace NodeGroup
             {
-                const char* const BlockComment = "blockComment";
+                const char* const NodeGroup = "nodeGroup";
                 const char* const Title = "titleBox";
                 const char* const BlockArea = "blockArea";
+                const char* const Border = "border";
             }
 
             // Pseudo-elements
@@ -183,7 +184,7 @@ namespace GraphCanvas
             const char* const EvenOffsetPercent = "even-offset-percent";
             const char* const MinimumRepetitions = "min-repetitions";
 
-            const char* const ZValue = "z-value";
+            const char* const Layer = "layer";
             const char* const Opacity = "opacity";
 
             const char* const Steps = "steps";
@@ -262,7 +263,7 @@ namespace GraphCanvas
             EvenOffsetPercent,
             MinimumRepetitions,
 
-            ZValue,
+            Layer,
 
             Opacity,
 

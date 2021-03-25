@@ -88,7 +88,7 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
     {
         for (int x = -extent; x <= extent; ++x)
         {
-            float3 downsampledNormal = PassSrg::m_downsampledNormal.Load(probeIrradianceCoords, sampleIndex, int2(x, y)).rgb;
+            float3 downsampledNormal = PassSrg::m_downsampledNormal.Load(probeIrradianceCoords + int2(x, y), sampleIndex).rgb;
             downsampledNormal = downsampledNormal * 2.0f - 1.0f;
             float normalDot = dot(downsampledNormal, normal);
 
@@ -97,10 +97,10 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
                 if (normalDot > NormalMatchTolerance)
                 {
                     // the normals are almost identical, if the depth is within the tolerance we can optimize by just taking this sample
-                    float downsampledDepth = PassSrg::m_downsampledDepth.Load(probeIrradianceCoords, sampleIndex, int2(x, y)).r;
+                    float downsampledDepth = PassSrg::m_downsampledDepth.Load(probeIrradianceCoords + int2(x, y), sampleIndex).r;
                     if (abs(depth - downsampledDepth) <= DepthTolerance)
                     {
-                        float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex, int2(x, y)).rgb;
+                        float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + int2(x, y), sampleIndex).rgb;
                         probeIrradiance = saturate(probeIrradiance);
                         return probeIrradiance;
                     }
@@ -112,7 +112,7 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
         }
     }
     
-    float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex, closestOffset).rgb;
+    float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + closestOffset, sampleIndex).rgb;
     probeIrradiance = saturate(probeIrradiance);
     return probeIrradiance;
 }

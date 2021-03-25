@@ -159,15 +159,4 @@ namespace GraphCanvas
     {
         return m_scene;
     }
-
-    bool GridComponent::LockForExternalMovement([[maybe_unused]] const AZ::EntityId& sceneMemberId)
-    {
-        AZ_Error("Graph Canvas", false, "The grid should not be controlled directly, as is the background.");
-        return false;
-    }
-
-    void GridComponent::UnlockForExternalMovement([[maybe_unused]] const AZ::EntityId& sceneMemberId)
-    {
-        AZ_Error("Graph Canvas", false, "The grid should not be controlled directly, as is the background.");
-    }
 }

@@ -1,0 +1,13 @@
+{
+    "gem_name": "RenderToTexture",
+    "GemFormatVersion": 3,
+    "Uuid": "b895c3bc4f894c1ebb9562a3577248f9",
+    "Name": "RenderToTexture",
+    "DisplayName": "Render to Texture [PREVIEW]",
+    "Version": "0.1.0",
+    "LinkType": "Dynamic",
+    "Summary": "Includes the Render to Texture component, which renders the scene to a texture from the viewport of the camera that you select. This feature is commonly used for rearview mirrors, security camera screens, and drawing 3D models in the UI. ",
+    "Tags": ["Rendering","Camera","Texture"],
+    "IconPath": "preview.png",
+    "EditorModule": true
+}

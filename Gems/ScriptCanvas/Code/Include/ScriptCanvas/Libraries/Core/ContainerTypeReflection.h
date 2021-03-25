@@ -146,7 +146,7 @@ namespace ContainerTypeReflection
             HashContainerReflector<t_Type>::Reflect(reflectContext);
         }
     };
-} // namespace ContainerTypeReflection
+}
 
 namespace AZ
 {

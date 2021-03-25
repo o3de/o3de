@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
@@ -93,7 +94,7 @@ namespace EMotionFX
 
                 serializeContext->Class<IMotionGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(1);
 
-                serializeContext->Class<MotionGroup, IMotionGroup>()->Version(4, VersionConverter)
+                serializeContext->Class<MotionGroup, IMotionGroup>()->Version(5, VersionConverter)
                     ->Field("name", &MotionGroup::m_name)
                     ->Field("selectedRootBone", &MotionGroup::m_selectedRootBone)
                     ->Field("id", &MotionGroup::m_id)
@@ -216,6 +217,16 @@ namespace EMotionFX
                                 break;
                             }
                         }
+                    }
+                }
+
+                // Coordinate system rule moved to the SceneAPI
+                if (version < 5)
+                {
+                    if (!AZ::SceneAPI::SceneData::CoordinateSystemRule::ConvertLegacyCoordinateSystemRule(context, classElement))
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cannot convert legacy coordinate system rule.\n");
+                        return false;
                     }
                 }
 

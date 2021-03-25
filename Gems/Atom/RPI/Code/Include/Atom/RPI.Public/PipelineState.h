@@ -17,26 +17,31 @@
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 namespace AZ
 {
     namespace RPI
     {
+        using ShaderOption = AZStd::pair<Name, Name>;
+        using ShaderOptionList = AZStd::vector<ShaderOption>;
+
         //! The PipelineStateForDraw caches descriptor for RHI::PipelineState's creation so the RHI::PipelineState can be created
         //! or updated later when Scene's render pipelines changed or any other data in the descriptor has changed.
         class PipelineStateForDraw
             : public AZStd::intrusive_base
+            , public ShaderReloadNotificationBus::MultiHandler
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator, 0);
 
             PipelineStateForDraw();
             PipelineStateForDraw(const PipelineStateForDraw& right);
-            ~PipelineStateForDraw() = default;
+            ~PipelineStateForDraw();
 
             //! Initialize the pipeline state from a shader and one of its shader variant
             //! The previous data will be reset
-            void Init(const Data::Instance<Shader>& shader, const AZStd::vector<AZStd::pair<Name, Name>>* optionAndValues = nullptr);
+            void Init(const Data::Instance<Shader>& shader, const ShaderOptionList* optionAndValues = nullptr);
 
             //! Update the pipeline state descriptor for the specified scene
             //! This is usually called when Scene's render pipelines changed
@@ -55,21 +60,52 @@ namespace AZ
             //! It triggers an assert if the pipeline state is dirty.
             const RHI::PipelineState* GetRHIPipelineState() const;
 
-            //! Return the reference of the pipeline state descriptor which can be used to modify the descriptor directly.
-            //! It sets this pipeline state to dirty when it's called regardless user modify the descriptor or not.
-            RHI::PipelineStateDescriptorForDraw& Descriptor();
+            //! Return the reference of the RenderStates overlay which will be applied to original m_renderState which are loaded from shader variant
+            //! Use this function to modify pipeline states RenderStates. 
+            //! It sets this pipeline state to dirty whenever it's called.
+            //! Use ConstDescriptor() to access read-only RenderStates
+            RHI::RenderStates& RenderStatesOverlay();
+
+            //! Return the reference of the pipeline state descriptor's m_inputStreamLayout which can be modified directly
+            //! It sets this pipeline state to dirty whenever it's called.
+            //! Use ConstDescriptor() to access read-only InputStreamLayout
+            RHI::InputStreamLayout& InputStreamLayout();
 
             const RHI::PipelineStateDescriptorForDraw& ConstDescriptor() const;
 
+            //! Setup the shader variant fallback key to a shader resource group if the shader variant is not ready
+            //! Return true if the srg was modified. 
+            bool UpdateSrgVariantFallback(Data::Instance<ShaderResourceGroup>& srg) const;
+
+            //! Clear all the states and references
+            void Shutdown();
+
         private:
+            ///////////////////////////////////////////////////////////////////
+            // ShaderReloadNotificationBus overrides...
+            void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
+            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
+            void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId) override;
+            ///////////////////////////////////////////////////////////////////
+
+            // Update shader variant from m_shader. It's called whenever shader, shader asset or shader variant were changed.
+            void RefreshShaderVariant();
+
             RHI::PipelineStateDescriptorForDraw m_descriptor;
 
-            Data::Instance<RPI::Shader> m_shader;
+            // The render state overlay which would be applied to render states acquired from shader variant before create the RHI::PipelineState
+            RHI::RenderStates m_renderStatesOverlay;
+
+            Data::Instance<Shader> m_shader;
             const RHI::PipelineState* m_pipelineState = nullptr;
+
+            ShaderVariantId m_shaderVariantId;
             
             bool m_initDataFromShader : 1;      // whether it's initialized from a shader
-            bool m_hasOutputData : 1;        // whether it has the data from the scene
+            bool m_hasOutputData : 1;           // whether it has the data from the scene
             bool m_dirty : 1;                   // whether descriptor is dirty
+            bool m_isShaderVariantReady : 1;    // whether the shader variant is ready
+            bool m_useRenderStatesOverlay : 1;  // whether a render states overlay is used for this pipeline state
         };
     }
 }

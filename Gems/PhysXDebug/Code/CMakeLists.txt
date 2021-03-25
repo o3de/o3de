@@ -14,6 +14,7 @@ ly_get_list_relative_pal_filename(physx_pal_source_dir ${LY_ROOT_FOLDER}/Gems/Ph
 include(${physx_pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
+    set(physx_dependency 3rdParty::PhysX)
     set(physx_files physxdebug_files.cmake)
     set(physx_editor_files physxdebug_editor_files.cmake)
 else()
@@ -34,7 +35,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            3rdParty::PhysX
+            ${physx_dependency}
             Legacy::CryCommon
             Gem::PhysX
             Gem::ImGui.imguilib
@@ -58,7 +59,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                3rdParty::PhysX
+                ${physx_dependency}
                 Legacy::CryCommon
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework

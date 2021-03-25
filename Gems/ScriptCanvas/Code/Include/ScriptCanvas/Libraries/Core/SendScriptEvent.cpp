@@ -20,6 +20,7 @@
 #include <ScriptEvents/ScriptEventsBus.h>
 
 #include <ScriptCanvas/Core/ModifiableDatumView.h>
+#include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvas
 {
@@ -38,8 +39,7 @@ namespace ScriptCanvas
                 {
                     if (!m_asset.IsReady())
                     {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, m_asset.GetAutoLoadBehavior());
-                        m_asset.BlockUntilLoadComplete();
+                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
                     }
 
                     CreateSender(m_asset);
@@ -101,6 +101,45 @@ namespace ScriptCanvas
                 return m_eventId;
             }
 
+            AZ::Outcome<Grammar::LexicalScope, void> SendScriptEvent::GetFunctionCallLexicalScope(const Slot* /*slot*/) const
+            {
+                if (!m_asset || !m_asset.IsReady())
+                {
+                    return AZ::Failure();
+                }
+
+                Grammar::LexicalScope scope;
+                scope.m_type = Grammar::LexicalScopeType::Namespace;
+                scope.m_namespaces.push_back(m_asset.Get()->m_definition.GetName());
+                return AZ::Success(scope);
+            }
+
+            AZ::Outcome<AZStd::string, void> SendScriptEvent::GetFunctionCallName(const Slot* /*slot*/) const
+            {
+                if (!m_asset || !m_asset.IsReady())
+                {
+                    return AZ::Failure();
+                }
+                for (auto methodDefinition : m_asset.Get()->m_definition.GetMethods())
+                {
+                    if (m_eventId == methodDefinition.GetEventId())
+                    {
+                        return AZ::Success(methodDefinition.GetName());
+                    }
+                }
+                return AZ::Failure();
+            }
+
+            EventType SendScriptEvent::GetFunctionEventType(const Slot* /*slot*/) const
+            {
+                if (!m_asset || !m_asset.IsReady())
+                {
+                    return EventType::Count;
+                }
+                return BehaviorContextUtils::GetEBusAddressPolicyByUuid(m_asset.Get()->m_definition.GetAddressType()) == AZ::EBusAddressPolicy::Single
+                    ? EventType::Broadcast : EventType::Event;
+            }
+
             SlotId SendScriptEvent::GetBusSlotId() const
             {
                 if (m_method && m_method->HasBusId())
@@ -135,11 +174,6 @@ namespace ScriptCanvas
                         if (!type.IsValid())
                         {
                             return AZ::Failure(AZStd::string::format("Argument type at index: %zu is not valid in ScriptCanvas, TypeId: %s", argIndex, argument->m_typeId.ToString<AZStd::string>().data()));
-                        }
-
-                        if ((argument->m_traits & AZ::BehaviorParameter::TR_THIS_PTR) && Data::IsValueType(type))
-                        {
-                            return AZ::Failure(AZStd::string::format("No member functions on value types, like, %s, are allowed in ScriptCanvas", Data::GetName(type).c_str()));
                         }
                     }
                     else
@@ -213,7 +247,7 @@ namespace ScriptCanvas
                 }
 
                 AZ::BehaviorMethod* method{};
-                if (FindEvent(method, m_namespaces, m_eventName))
+                if (m_scriptEvent && BehaviorContextUtils::FindEvent(const_cast<const AZ::BehaviorMethod*&>(method), m_scriptEvent->GetBehaviorBus(), m_eventName))
                 {
                     ConfigureMethod(*method);
                 }
@@ -238,7 +272,8 @@ namespace ScriptCanvas
                 AZ::Data::AssetBus::Handler::BusConnect(assetId);
                 m_ignoreReadyEvent = false;
 
-                AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                asset.BlockUntilLoadComplete();
 
                 const ScriptEvents::ScriptEvent& definition = asset.Get()->m_definition;
                 
@@ -264,12 +299,12 @@ namespace ScriptCanvas
                     }
                 }
 
-                Namespaces emptyNamespaces;
+                NamespacePath emptyNamespacePath;
     
                 ScriptEvents::ScriptEventBus::BroadcastResult(m_scriptEvent, &ScriptEvents::ScriptEventRequests::RegisterScriptEvent, assetId, m_version);
 
                 AZ::BehaviorMethod* method{};
-                if (!FindEvent(method, emptyNamespaces, ebusEventName))
+                if (!FindEvent(method, emptyNamespacePath, ebusEventName))
                 {
                     AZ_Error("Script Canvas", IsUpdating(), "The Script Event %s::%s could not be found", busName.c_str(), ebusEventName.data());
                     return;
@@ -445,7 +480,7 @@ namespace ScriptCanvas
                         ScriptEvents::Method methodDefinition;
                         if (definition.FindMethod(m_eventId, methodDefinition))
                         {
-                            if (FindEvent(method, m_namespaces, methodDefinition.GetName()))
+                            if (m_scriptEvent && BehaviorContextUtils::FindEvent(const_cast<const AZ::BehaviorMethod*&>(method), m_scriptEvent->GetBehaviorBus(), methodDefinition.GetName()))
                             {
                                 ConfigureMethod(*method);
                                 InitializeResultSlotId();
@@ -458,7 +493,7 @@ namespace ScriptCanvas
                         ScriptEvents::Method methodDefinition;
                         if (definition.FindMethod(m_eventId, methodDefinition))
                         {
-                            if (FindEvent(method, m_namespaces, methodDefinition.GetName()))
+                            if (m_scriptEvent && BehaviorContextUtils::FindEvent(const_cast<const AZ::BehaviorMethod*&>(method), m_scriptEvent->GetBehaviorBus(), methodDefinition.GetName()))
                             {
                                 ConfigureMethod(*method);
                                 InitializeResultSlotId();
@@ -472,33 +507,15 @@ namespace ScriptCanvas
                 return false;
             }
 
-            bool SendScriptEvent::IsOutOfDate() const
+            bool SendScriptEvent::IsOutOfDate(const VersionData& graphVersion) const
             {
-                bool isOutOfDate = false;
-
-                AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
-
-                if(assetData)
-                {
-                    ScriptEvents::ScriptEvent& definition = assetData.Get()->m_definition;
-
-                    if(GetVersion() != definition.GetVersion())
-                    {
-                        isOutOfDate = true;
-                    }
-                }
-                else
-                {
-                    // If we don't have any asset data. We are definitely out of date.
-                    return true;
-                }
-
-                return isOutOfDate;
+                AZ_UNUSED(graphVersion);
+                return IsAssetOutOfDate().second;
             }
 
             UpdateResult SendScriptEvent::OnUpdateNode()
             {
-                for(auto mapPair : m_eventSlotMapping)
+                for (auto mapPair : m_eventSlotMapping)
                 {
                     Slot* slot = GetSlot(mapPair.second);
 
@@ -575,7 +592,7 @@ namespace ScriptCanvas
                 m_eventName = method.m_name;
             }
 
-            bool SendScriptEvent::FindEvent(AZ::BehaviorMethod*& outMethod, [[maybe_unused]] const Namespaces& namespaces, AZStd::string_view eventName)
+            bool SendScriptEvent::FindEvent(AZ::BehaviorMethod*& outMethod, const NamespacePath&, AZStd::string_view eventName)
             {
                 if (m_scriptEvent == nullptr)
                 {

@@ -157,7 +157,7 @@ TEST_F(ScriptCanvasTestFixture, Asynchronous_Behaviors)
     RegisterComponentDescriptor<AsyncNode>();
 
     // Make the graph.
-    Graph* graph = nullptr;
+    ScriptCanvas::Graph* graph =nullptr;
     SystemRequestBus::BroadcastResult(graph, &SystemRequests::MakeGraph);
     ASSERT_TRUE(graph != nullptr);
 
@@ -171,7 +171,7 @@ TEST_F(ScriptCanvasTestFixture, Asynchronous_Behaviors)
     startEntity->Init();
 
     AZ::EntityId startNodeId;
-    Nodes::Core::Start* startNode = CreateTestNode<Nodes::Core::Start>(graphUniqueId, startNodeId);
+    ScriptCanvas::Nodes::Core::Start* startNode = CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
 
     AZ::EntityId asyncNodeId;
     AsyncNode* asyncNode = CreateTestNode<AsyncNode>(graphUniqueId, asyncNodeId);
@@ -288,7 +288,7 @@ TEST_F(ScriptCanvasTestFixture, ComputeFibonacciAsyncGraphTest)
     RegisterComponentDescriptor<AsyncFibonacciComputeNode>();
 
     // Make the graph.
-    Graph* graph = nullptr;
+    ScriptCanvas::Graph* graph =nullptr;
     SystemRequestBus::BroadcastResult(graph, &SystemRequests::MakeGraph);
     ASSERT_NE(graph, nullptr);
 
@@ -299,7 +299,7 @@ TEST_F(ScriptCanvasTestFixture, ComputeFibonacciAsyncGraphTest)
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startNodeId;
-    Nodes::Core::Start* startNode = CreateTestNode<Nodes::Core::Start>(graphUniqueId, startNodeId);
+    ScriptCanvas::Nodes::Core::Start* startNode = CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
 
     AZ::EntityId asyncNodeId;
     AsyncFibonacciComputeNode* asyncNode = CreateTestNode<AsyncFibonacciComputeNode>(graphUniqueId, asyncNodeId);

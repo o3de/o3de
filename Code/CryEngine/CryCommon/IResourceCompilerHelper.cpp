@@ -82,7 +82,7 @@ namespace RCPathUtil
                 return filepathstr;
             case '.':
                 // there's an extension in this file name
-                filepathstr = filepathstr.substr(0, p - str);
+                filepathstr.erase(p - str);
                 return filepathstr;
             }
         }

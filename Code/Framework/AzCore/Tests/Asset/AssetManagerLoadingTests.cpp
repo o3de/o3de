@@ -835,11 +835,11 @@ namespace UnitTest
         m_testAssetManager->SetParallelDependentLoadingEnabled(true);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_LoadTest_SameAsset_DifferentFilters)
 #else
     TEST_F(AssetJobsFloodTest, LoadTest_SameAsset_DifferentFilters)
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
 
@@ -1188,11 +1188,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1229,11 +1229,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1268,11 +1268,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets

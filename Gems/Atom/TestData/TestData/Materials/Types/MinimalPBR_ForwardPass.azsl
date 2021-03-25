@@ -1,0 +1,92 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+ShaderResourceGroup MinimalPBRSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+}
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
+};
+
+#include <Atom/Features/PBR/LightingModel.azsli>
+
+VSOutput MinimalPBR_MainPassVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+ 
+    PbrVsHelper(IN, OUT, worldPosition);
+
+    return OUT;
+}
+
+ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
+{
+    ForwardPassOutput OUT;
+    
+    const float3 baseColor = MinimalPBRSrg::m_baseColor;
+    const float metallic = MinimalPBRSrg::m_metallic;
+    const float roughness = MinimalPBRSrg::m_roughness;
+    const float specularF0Factor = 0.5;
+    const float3 normal = normalize(IN.m_normal);
+    const float3 emissive = {0,0,0};
+    const float occlusion = 1;
+    const float clearCoatFactor = 0.0;
+    const float clearCoatRoughness = 0.0;
+    const float3 clearCoatNormal = {0,0,0};
+    const float4 transmissionTintThickness = {0,0,0,0};
+    const float4 transmissionParams = {0,0,0,0};
+    const float2 anisotropy = 0.0;	// Does not affect calculations unless 'o_enableAnisotropy' is enabled
+    const float alpha = 1.0;
+
+    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
+        normal, IN.m_tangent, IN.m_bitangent, anisotropy,
+        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
+    OUT.m_scatterDistance = float3(0,0,0);
+
+    return OUT;
+}
+

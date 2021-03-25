@@ -14,14 +14,19 @@ import sys
 from ly_test_tools import WINDOWS
 
 
-def _get_test_launcher_cmd():
+def _get_test_launcher_cmd(build_dir=None):
     """
     Helper function to determine the test launcher command for the current platform
+    :param build_dir: the --build-directory arg that is passed to determine which build dir to use. Can also be None
     :return: The test launcher command
     """
-    python_runner = "python3.cmd"
+    build_arg = ""
+    if build_dir:
+        build_arg = f"--build-directory {build_dir} "
+
+    python_runner = "python.cmd"
     if not WINDOWS:
-        python_runner = "python3.sh"
+        python_runner = "python.sh"
     current_dir = sys.executable
 
     # Look upward a handful of levels to check for the LY python entry point script
@@ -29,12 +34,12 @@ def _get_test_launcher_cmd():
     for _ in range(10):
         python_wrapper = os.path.join(current_dir, python_runner)
         if os.path.exists(python_wrapper):
-            return f"{python_wrapper} -m pytest "
+            return f"{python_wrapper} -m pytest{build_arg} "
         # Using an explicit else to avoid aberrant behavior from following filesystem links
         else:
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
-    return f"{sys.executable} -m pytest "
+    return f"{sys.executable} -m pytest{build_arg} "
 
 
 def _format_cmd(launcher_cmd, test_path, nodeid):
@@ -65,17 +70,18 @@ def _format_cmd(launcher_cmd, test_path, nodeid):
     return f"{launcher_cmd}{test_id_argument}"
 
 
-def build_rerun_commands(test_path, nodeids):
+def build_rerun_commands(test_path, nodeids, build_dir=None):
     """
     Builds a list of commands to run tests
 
     :param test_path: File or directory that contains the test(s) that were run
     :param nodeids: List of test node ids, with parametrized values
+    :param build_dir: the --build-directory arg that is passed to determine which build dir to use. Can also be None
     :return: A list of commands to re-run tests
     """
 
     commands = []
-    test_launcher_cmd = _get_test_launcher_cmd()
+    test_launcher_cmd = _get_test_launcher_cmd(build_dir)
 
     for nodeid in nodeids:
         commands.append(_format_cmd(test_launcher_cmd, test_path, nodeid))

@@ -95,7 +95,7 @@
  *     In the case of NVIDIA GPUs, using RG render targets seems to actually be
  *     slower.
  *
- *     On older xenia platforms, you can use the same render target for resolving both
+ *     On some older platforms, you can use the same render target for resolving both
  *     |edgesTex| and |blendTex|, as they aren't needed simultaneously.
  *
  *  2. Both temporal render targets |edgesTex| and |blendTex| must be cleared

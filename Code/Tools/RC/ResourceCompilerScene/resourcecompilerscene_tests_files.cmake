@@ -18,6 +18,5 @@ set(FILES
     Tests/Cgf/CgfMeshExporterTests.cpp
     Tests/Cgf/CgfMeshGroupExporterTests.cpp
     Tests/Cgf/CgfUVStreamExporterTests.cpp
-    Tests/Cgf/CgfWorldMatrixExporterTests.cpp
     ResourceCompilerScene.cpp
 )

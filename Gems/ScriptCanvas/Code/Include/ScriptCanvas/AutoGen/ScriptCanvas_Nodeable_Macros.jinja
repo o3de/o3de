@@ -1,0 +1,347 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+{# ------------------------------------------------------------------------------------- #}
+{# Macros for Nodeables #}
+
+{# CleanName #}
+{# Returns a clean name without quotations, commas, slashes or white space #}
+
+{%- macro CleanName(name) -%}
+{{name|replace(' ','')|replace('"','')|replace('/','')|replace(':','')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+{# SlotName #}
+{# Returns a name in the format required for Slots #}
+
+{%- macro SlotName(slotName) -%}
+{{slotName|replace("\\", '')|replace("\"", '')|replace(" ", '')|replace(':','')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+{# ParameterList #}
+{# Produces a function's parameter list based on a list of types #}
+
+{%- macro ParameterList(parameterTypes) -%}
+{%-  set parameters = [] -%}
+{%-  for parameter in parameterTypes -%}
+{%-      if parameters.append("[[maybe_unused]] " + parameter.attrib['Type'] + CleanName(parameter.attrib['Name'])) %}{%- endif -%}
+{%-  endfor %}
+{%-  if parameters|length > 0 -%}
+{{      parameters|join(", ")}}
+{%-  endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+
+{# In 
+{%- macro FunctionSignature(qualifiedName, Class) -%}
+ Get the input types for any free-standing slots 
+{%-      set standardExecutionParameterTypes = [] -%}
+{%-      for parameter in Class.findall('Parameter') -%}
+{%-          if parameter.attrib['Input'] is defined and parameter.attrib['Input'] == "True" -%}
+{%-              if standardExecutionParameterTypes.append(parameter) -%}{%- endif -%}
+{%-          endif -%}
+{%-      endfor -%}
+{%-      set standardExecutionReturnTypes = [] -%}
+ Get the return types for any free-standing slots 
+{%-      for parameter in Class.findall('Parameter') -%}
+{%-          if parameter.attrib['Output'] is defined and parameter.attrib['Output'] == "True" -%}
+{%-              if standardExecutionReturnTypes.append(parameter.attrib['Type']) -%}{%- endif -%}
+{%-          endif -%}
+{%-      endfor -%}
+ Produce the signature 
+{%- if qualifiedName is defined %}
+    {{ReturnType(standardExecutionReturnTypes)}} {{ qualifiedName }}::In({{ ParameterList(standardExecutionParameterTypes) }})
+{%- else %}
+    {{ReturnType(standardExecutionReturnTypes)}} In({{ ParameterList(standardExecutionParameterTypes) }})
+{%- endif -%}
+{%- endmacro -%}
+#}
+ 
+{# PopulateMemberVariables #}
+{# Produces the code for the specified member variables  #}
+{%- macro PopulateMemberVariables(Class) -%}
+{%- for field in Class.findall('Property') -%}
+{%-     set propertyName = CleanName(field.attrib['Name']) -%}
+{{      macros.Required('Type', field, Class) }}
+{%-         set propertyType = field.attrib['Type'] -%}
+{%-         set propertyDefaultValue = field.attrib['DefaultValue'] -%}
+{{ propertyType }} {{ propertyName }} {%- if propertyDefaultValue is defined -%} = {{propertyDefaultValue}};{%- else -%};{%- endif -%} \
+{%+ endfor -%}
+
+{%- for field in Class.findall('Parameter') -%}
+{%-     if field.attrib['Input'] is defined and field.attrib['Input'] == "True" -%}
+{%-         set propertyType = field.attrib['Type'] -%}
+{%-         set propertyName = CleanName(field.attrib['Name']) -%}
+{%-         set propertyDefaultValue = field.attrib['DefaultValue'] -%}
+{{ propertyType }} {{ propertyName }} {%- if propertyDefaultValue is defined -%} = {{propertyDefaultValue}};{%- else -%};{%- endif -%} \
+{%      endif %}
+{%+ endfor -%}
+
+{%- for field in Class.findall('Parameter') -%}
+{%-     if field.attrib['Output'] is defined and field.attrib['Output'] == "True" -%}
+{%-         set propertyType = field.attrib['Type'] -%}
+{%-         set propertyName = CleanName(field.attrib['Name']) -%}
+{%-         set propertyDefaultValue = field.attrib['DefaultValue'] -%}
+{{ propertyType }} {{ propertyName }} {%- if propertyDefaultValue is defined -%} = {{propertyDefaultValue}};{%- else -%};{%- endif -%} \
+{%      endif %}
+{%+ endfor -%}
+{%- endmacro -%}
+
+{%- macro DataSlotDefaultValue(defaultValue) -%}
+{%- if "\\\"" in defaultValue -%}
+{{defaultValue|replace("\\\"", '')}}
+{%- else -%}
+{{defaultValue|replace('"', '')}}
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName) %}
+
+        // Data Slot: {{slotName}} ({% if isInput == "true" %}Input{% else %}Output{% endif %})
+        {
+
+{% if valueType is undefined %}
+            static_assert(false, "DataSlot type is undefined for slot: {{ slotName }}");
+{% endif %}
+            ScriptCanvas::DataSlotConfiguration dataSlotConfiguration;
+            dataSlotConfiguration.m_name = "{{ slotName }}";
+            dataSlotConfiguration.m_toolTip = "{{ slotDescription }}";
+{% if displayGroup is defined %}
+            dataSlotConfiguration.m_displayGroup = "{{ displayGroup }}";
+{% elif parentName is defined%}
+            dataSlotConfiguration.m_displayGroup = "{{ parentName }}";
+{% endif %}
+            dataSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::{% if isInput == "true" %}Input{% else %}Output{% endif %});
+{% if slotDefaultValue is undefined 
+or DataSlotDefaultValue(slotDefaultValue) == "NONE"
+or DataSlotDefaultValue(slotDefaultValue) == "nullptr" %}
+            dataSlotConfiguration.SetAZType<{{valueType}}>();
+{% else %}
+            dataSlotConfiguration.SetDefaultValue<{{valueType}}>({{ DataSlotDefaultValue(slotDefaultValue) }});
+{% endif %}
+            SlotId slotId = AddSlot(dataSlotConfiguration);
+            AZ_Assert(slotId.IsValid(), "Data slot is not created successfully.");
+{% if executionName is defined %}
+            {{ executionName }}.push_back(slotId);
+{% endif %}
+        }
+        // Data Slot: {{slotName}}...
+
+{% endmacro %}
+
+{# ------- #}
+
+{# TODO-LS: This macro lacks parsing the parameters provided to a Contract tag #}
+{%- macro AddContract(configurationName, item) -%}
+
+{% set contracts = [] %}
+{% for contract in item.iter('Contract') %}
+{% if contracts.append(contract) %}{% endif %}
+{% endfor %}
+
+{% if contracts|length() > 0 %}
+{{configurationName}}.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>{
+{% for contract in item.iter('Contract') %}
+    { []() { return aznew {{contract.attrib['Type']}}() },
+};
+{% endfor %}
+{% endif %}
+{%- endmacro -%}
+
+{# ------- #}
+{%- macro HasNestedTupleResults(results) -%}
+{%- set replaced = results|replace("AZStd::tuple", '', 1) -%}
+{%- if "AZStd::tuple" in replaced -%}
+true
+{%- else -%}
+false
+{%- endif -%}
+{%- endmacro -%}
+
+
+
+
+{# ------- #}
+
+{%- macro UnpackTupleResultsType(results) -%}
+{{ results|replace("AZStd::tuple", '')|replace('<', '')|replace('>', '')|replace(' ', '') }}
+{%- endmacro -%}
+
+
+{# slotType is Input or Output #}
+{% macro CreateExecutionSlot(tag, executionDirection, isLatent) %}
+{%- set slotName = tag.attrib['Name'] %}
+{%- set slotNameClean = CleanName(slotName) %}
+{%- set slotDescription = tag.attrib['Description'] %}
+        // Execution{{ executionDirection }} - {{ slotName }}
+        ScriptCanvas::ExecutionSlotConfiguration slotConfiguration{{executionDirection}}; 
+        slotConfiguration{{executionDirection}}.m_name = "{{ slotName }}";
+        slotConfiguration{{executionDirection}}.m_toolTip = "{{ slotDescription }}";
+        slotConfiguration{{executionDirection}}.SetConnectionType(ScriptCanvas::ConnectionType::{{ executionDirection }});
+{% if tag.attrib['DisplayGroup'] is defined %}
+        slotConfiguration{{executionDirection}}.m_displayGroup = "{{ tag.attrib['DisplayGroup'] }}";
+{% else %}
+        slotConfiguration{{executionDirection}}.m_displayGroup = "{{ slotName }}";
+{% endif %}
+{% if isLatent is defined or executionDirection == "Output" %}
+        slotConfiguration{{executionDirection}}.m_isLatent = true;
+{% endif %}
+{{      AddContract("slotConfiguration{{executionDirection}}", tag) }}
+        SlotId slotId{{ slotNameClean }}{{ executionDirection }} = AddSlot(slotConfiguration{{executionDirection}});
+        AZ_Assert(slotId{{ slotNameClean }}{{ executionDirection }}.IsValid(), "Execution{{ executionDirection }} slot: {{ slotName }} was not created successfully.");
+{% endmacro -%}
+
+{# ------- #}
+
+
+{# In: a list of Return entries #}
+{# Out: if 0 Returns: "void"; if 1 Return: "<type>"; else "AZSTd::tuple<types..>" #}
+{%- macro ReturnType(returns) -%}
+{%-  if returns is undefined or returns|length == 0 -%}
+void
+{%-  elif returns|length == 1 -%}
+{{ returns[0].attrib['Type'] }}
+{%-  else -%}
+{%- set returnTypes = [] -%}
+{%-      for return in returns -%}
+{%-         if returnTypes.append(return.attrib['Type']) -%}{%- endif -%}
+{%-      endfor -%}
+AZStd::tuple<{{returns|join(", ")}}>
+{%-  endif -%}
+{%- endmacro -%}
+
+
+{# ------- #}
+{# ------- #}
+{% macro ExecutionOutParameterDefinition(returns, parameters) %}
+{% if returns|length != 0 %}, {% endif %}
+{%-     for parameter in parameters -%}
+[[maybe_unused]] {{parameter.attrib['Type']}} {{CleanName(parameter.attrib['Name'])}} {%- if not loop.last %}, {%- endif -%} 
+{%+     endfor -%}
+{% endmacro %}
+
+
+{# ------- #}
+{# ------- #}
+{%- macro ExecutionOutReturnDefinition(returns) -%}
+{%-  if returns is undefined or returns|length == 0 -%}
+{%-  elif returns|length == 1 -%}
+[[maybe_unused]] {{ returns[0] }}& result
+{%-  else -%}
+{%- set returns = [] -%}
+{%-      for type in returns -%}
+{%-         if returns.append(type) -%}{%- endif -%}
+{%-      endfor -%}
+[[maybe_unused]] AZStd::tuple<{{returns|join(", ")}}>& result
+{%-  endif -%}
+{%- endmacro -%}
+
+
+{# Input: Execution-In Slot declaration #}
+{# Output: <ReturnTypeMacro> <Name>(<Parameters...>); \ #}
+{% macro ExecutionInDeclaration(Class, executionIn) %}
+{%      set name = CleanName(executionIn.attrib['Name']) %}
+{%      set returns = executionIn.findall('Return') %}
+{%      set branches = executionIn.findall('Branch') %}
+{%      set parameters = executionIn.findall('Parameter') %}
+{% if branches|length() != 0 %}    void{% else %}{{ReturnType(returns)}}{% endif %} {{name}}(
+{%-     for parameter in parameters -%}
+    [[maybe_unused]] {{parameter.attrib['Type']}} {{CleanName(parameter.attrib['Name'])}}{%- if not loop.last %}, {% endif -%} 
+{%+     endfor -%}); \
+{% endmacro %}
+
+
+{# Input: Class declaration #}
+{# Output: Header declaration of all functions for 'Input' mark up #}
+{% macro ExecutionInDeclarations(Class) %}
+{%      for method in Class.findall('Input') -%}
+                {{ ExecutionInDeclaration(Class, method) }}
+{%-     endfor %}
+{% endmacro %}
+
+
+{# Input: Class, execution out #}
+{# Output: void Call('Name', <ReturnValue&>, <Parameters...>); \ #}
+{% macro ExecutionOutDeclaration(Class, executionOut) %}
+{%      set returns = executionOut.findall('Return') %}
+{%      set params = executionOut.findall('Parameter') %}
+{%      set name = CleanName(executionOut.attrib['Name']) %}
+    void Call{{ name }}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}); \
+{% endmacro %}
+
+{# Input: Class, execution branch #}
+{# Output: void Call('Name', <ReturnValue&>, <Parameters...>); \ #}
+{% macro ExecutionBranchDeclaration(Class, executionOut) %}
+{%      set returns = executionOut.findall('Parameter') %}
+{%      set params = executionOut.findall('Return') %}
+{%      set name = CleanName(executionOut.attrib['Name']) %}
+    void Call{{ name }}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}); \
+{% endmacro %}
+
+{# Input: Class #}
+{# Output: Declarations of CallX for every 'Output' and 'Branch' #}
+{% macro ExecutionOutDeclarations(Class) %}
+{%      for method in Class.findall('Input') %}
+{%              for branch in method.findall('Branch') %}
+                {{ ExecutionBranchDeclaration(Class, branch) }}
+{%-             endfor %}
+{%      endfor %}
+{%      for executionOut in Class.findall('Output') %}
+                {{ ExecutionOutDeclaration(Class, executionOut) }}
+{%-     endfor %}
+{% endmacro %}
+
+{% macro ExecutionBranchDefinition(Class, qualifiedName, executionOut) %}
+{%      set outName = CleanName(executionOut.attrib['Name']) %}
+{%      set returns = executionOut.findall('Parameter') %}
+{%      set params = executionOut.findall('Return') %}
+void {{qualifiedName}}::Call{{CleanName(outName)}}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}) {
+{% if returns|length() == 0 %}
+    ExecutionOut(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"){% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+{% else %}
+    OutResult(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"), result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+{% endif -%}); 
+}
+{% endmacro %}
+
+{% macro ExecutionOutDefinition(Class, qualifiedName, executionOut) %}
+{%      set outName = CleanName(executionOut.attrib['Name']) %}
+{%      set returns = executionOut.findall('Return') %}
+{%      set params = executionOut.findall('Parameter') %}
+void {{qualifiedName}}::Call{{CleanName(outName)}}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}) {
+{% if returns|length() == 0 %}
+    ExecutionOut(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"){% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+{% else %}
+    OutResult(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"), result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+{% endif -%} ); 
+}
+{% endmacro %}
+
+{% macro ExecutionOutDefinitions(Class, qualifiedName) %}
+{%      for method in Class.findall('Input') %}
+{%-             for branch in method.findall('Branch') %}
+                      {{ ExecutionBranchDefinition(Class, qualifiedName, branch) }}
+{%-             endfor %}
+{%     endfor %}
+{%-      for executionOut in Class.findall('Output') -%}
+                {{ ExecutionOutDefinition(Class, qualifiedName, executionOut) }}
+{%-     endfor %}
+{% endmacro %}

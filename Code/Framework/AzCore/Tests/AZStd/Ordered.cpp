@@ -1353,6 +1353,149 @@ namespace UnitTest
         EXPECT_EQ(1, uniqueMap.count(4));
     }
 
+    TEST_F(Tree_Map, MapTryEmplace_DoesNotConstruct_OnExistingKey)
+    {
+        static int s_tryEmplaceConstructorCallCount;
+        s_tryEmplaceConstructorCallCount = 0;
+        struct TryEmplaceConstructorCalls
+        {
+            TryEmplaceConstructorCalls()
+            {
+                ++s_tryEmplaceConstructorCallCount;
+            }
+            TryEmplaceConstructorCalls(int value)
+                : m_value{ value }
+            {
+                ++s_tryEmplaceConstructorCallCount;
+            }
+            TryEmplaceConstructorCalls(const TryEmplaceConstructorCalls& other)
+                : m_value{ other.m_value }
+            {
+                ++s_tryEmplaceConstructorCallCount;
+            }
+
+            int m_value{};
+        };
+        using TryEmplaceTestMap = AZStd::map<int, TryEmplaceConstructorCalls>;
+        TryEmplaceTestMap testContainer;
+
+        // try_emplace move key
+        AZStd::pair<TryEmplaceTestMap::iterator, bool> emplacePairIter = testContainer.try_emplace(1, 5);
+        EXPECT_EQ(1, s_tryEmplaceConstructorCallCount);
+        EXPECT_TRUE(emplacePairIter.second);
+        EXPECT_EQ(5, emplacePairIter.first->second.m_value);
+
+        // try_emplace copy key
+        int testKey = 3;
+        emplacePairIter = testContainer.try_emplace(testKey, 72);
+        EXPECT_EQ(2, s_tryEmplaceConstructorCallCount);
+        EXPECT_TRUE(emplacePairIter.second);
+        EXPECT_EQ(72, emplacePairIter.first->second.m_value);
+
+        // invoke try_emplace with hint and move key
+        TryEmplaceTestMap::iterator emplaceIter = testContainer.try_emplace(testContainer.end(), 5, 4092);
+        EXPECT_EQ(3, s_tryEmplaceConstructorCallCount);
+        EXPECT_EQ(4092, emplaceIter->second.m_value);
+
+        // invoke try_emplace with hint and copy key
+        testKey = 48;
+        emplaceIter = testContainer.try_emplace(testContainer.end(), testKey, 824);
+        EXPECT_EQ(4, s_tryEmplaceConstructorCallCount);
+        EXPECT_EQ(824, emplaceIter->second.m_value);
+
+        // Since the key of '1' exist, nothing should be constructed
+        emplacePairIter = testContainer.try_emplace(1, -6354);
+        EXPECT_EQ(4, s_tryEmplaceConstructorCallCount);
+        EXPECT_FALSE(emplacePairIter.second);
+        EXPECT_EQ(5, emplacePairIter.first->second.m_value);
+    }
+
+    TEST_F(Tree_Map, MapTryEmplace_DoesNotMoveValue_OnExistingKey)
+    {
+        AZStd::unordered_map<int, AZStd::unique_ptr<int>> testMap;
+        auto testPtr = AZStd::make_unique<int>(5);
+        auto [emplaceIter, inserted] = testMap.try_emplace(1, AZStd::move(testPtr));
+        EXPECT_TRUE(inserted);
+        EXPECT_EQ(nullptr, testPtr);
+
+        testPtr = AZStd::make_unique<int>(7000);
+        auto [emplaceIter2, inserted2] = testMap.try_emplace(1, AZStd::move(testPtr));
+        EXPECT_FALSE(inserted2);
+        ASSERT_NE(nullptr, testPtr);
+        EXPECT_EQ(7000, *testPtr);
+    }
+
+    TEST_F(Tree_Map, MapInsertOrAssign_PerformsAssignment_OnExistingKey)
+    {
+        static int s_tryInsertOrAssignConstructorCalls;
+        static int s_tryInsertOrAssignAssignmentCalls;
+        s_tryInsertOrAssignConstructorCalls = 0;
+        s_tryInsertOrAssignAssignmentCalls = 0;
+        struct InsertOrAssignInitCalls
+        {
+            InsertOrAssignInitCalls()
+            {
+                ++s_tryInsertOrAssignConstructorCalls;
+            }
+            InsertOrAssignInitCalls(int value)
+                : m_value{ value }
+            {
+                ++s_tryInsertOrAssignConstructorCalls;
+            }
+            InsertOrAssignInitCalls(const InsertOrAssignInitCalls& other)
+                : m_value{ other.m_value }
+            {
+                ++s_tryInsertOrAssignConstructorCalls;
+            }
+
+            InsertOrAssignInitCalls& operator=(int value)
+            {
+                m_value = value;
+                ++s_tryInsertOrAssignAssignmentCalls;
+                return *this;
+            }
+
+            int m_value{};
+        };
+        using InsertOrAssignTestMap = AZStd::map<int, InsertOrAssignInitCalls>;
+        InsertOrAssignTestMap testContainer;
+
+        // insert_or_assign move key
+        AZStd::pair<InsertOrAssignTestMap::iterator, bool> insertOrAssignPairIter = testContainer.insert_or_assign(1, 5);
+        EXPECT_EQ(1, s_tryInsertOrAssignConstructorCalls);
+        EXPECT_EQ(0, s_tryInsertOrAssignAssignmentCalls);
+        EXPECT_TRUE(insertOrAssignPairIter.second);
+        EXPECT_EQ(5, insertOrAssignPairIter.first->second.m_value);
+
+        // insert_or_assign copy key
+        int testKey = 3;
+        insertOrAssignPairIter = testContainer.insert_or_assign(testKey, 72);
+        EXPECT_EQ(2, s_tryInsertOrAssignConstructorCalls);
+        EXPECT_EQ(0, s_tryInsertOrAssignAssignmentCalls);
+        EXPECT_TRUE(insertOrAssignPairIter.second);
+        EXPECT_EQ(72, insertOrAssignPairIter.first->second.m_value);
+
+        // invoke insert_or_assign with hint and move key
+        InsertOrAssignTestMap::iterator insertOrAssignIter = testContainer.insert_or_assign(testContainer.end(), 5, 4092);
+        EXPECT_EQ(3, s_tryInsertOrAssignConstructorCalls);
+        EXPECT_EQ(0, s_tryInsertOrAssignAssignmentCalls);
+        EXPECT_EQ(4092, insertOrAssignIter->second.m_value);
+
+        // invoke insert_or_assign with hint and copy key
+        testKey = 48;
+        insertOrAssignIter = testContainer.insert_or_assign(testContainer.end(), testKey, 824);
+        EXPECT_EQ(4, s_tryInsertOrAssignConstructorCalls);
+        EXPECT_EQ(0, s_tryInsertOrAssignAssignmentCalls);
+        EXPECT_EQ(824, insertOrAssignIter->second.m_value);
+
+        // Since the key of '1' exist, only an assignment should take place
+        insertOrAssignPairIter = testContainer.insert_or_assign(1, -6354);
+        EXPECT_EQ(4, s_tryInsertOrAssignConstructorCalls);
+        EXPECT_EQ(1, s_tryInsertOrAssignAssignmentCalls);
+        EXPECT_FALSE(insertOrAssignPairIter.second);
+        EXPECT_EQ(-6354, insertOrAssignPairIter.first->second.m_value);
+    }
+
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
         : public AllocatorsFixture

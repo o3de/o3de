@@ -165,8 +165,8 @@ namespace GraphCanvas
 
         // ConnectionUIRequestBus
         void UpdateConnectionPath() override;
-
         void SetAltDeletionEnabled(bool enabled) override;
+        void SetGraphicsItemFlags(QGraphicsItem::GraphicsItemFlags flags) override;
         ////
 
         // SceneMemberNotifications

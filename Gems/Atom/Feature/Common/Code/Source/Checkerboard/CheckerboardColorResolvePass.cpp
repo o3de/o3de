@@ -114,7 +114,7 @@ namespace AZ
             Base::BuildAttachmentsInternal();
         }
 
-        void CheckerboardColorResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer)
+        void CheckerboardColorResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // Same structure layout as PassSrg::Constants in CheckerboardColorResolveCS.azsl
             struct Constants
@@ -141,7 +141,7 @@ namespace AZ
 
             m_shaderResourceGroup->SetConstant(m_constantsIndex, constants);
 
-            Base::CompileResources(context, producer);
+            Base::CompileResources(context);
         }
 
         void CheckerboardColorResolvePass::FrameEndInternal()

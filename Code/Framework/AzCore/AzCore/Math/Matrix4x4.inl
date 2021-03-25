@@ -477,6 +477,37 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator+(const Matrix4x4& rhs) const
+    {
+        return Matrix4x4
+            ( Simd::Vec4::Add(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue())
+            , Simd::Vec4::Add(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue())
+            , Simd::Vec4::Add(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
+            , Simd::Vec4::Add(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue()));
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-(const Matrix4x4& rhs) const
+    {
+        return Matrix4x4
+            ( Simd::Vec4::Sub(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue())
+            , Simd::Vec4::Sub(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue())
+            , Simd::Vec4::Sub(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
+            , Simd::Vec4::Sub(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue()));
+    }
+
+    AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+    AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator-=(const Matrix4x4& rhs)
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator*(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;

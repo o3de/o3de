@@ -58,7 +58,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME GraphModel.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME GraphModel.Editor.Tests MODULE
             NAMESPACE Gem
             FILES_CMAKE
                 graphmodel_tests_editor_files.cmake

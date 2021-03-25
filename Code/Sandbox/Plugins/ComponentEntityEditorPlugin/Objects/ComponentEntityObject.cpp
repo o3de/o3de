@@ -1142,7 +1142,7 @@ void CComponentEntityObject::SetupEntityIcon()
             m_hasIcon = true;
 
             int textureId = GetIEditor()->GetIconManager()->GetIconTexture(m_icon.c_str());
-            m_iconTexture = GetIEditor()->GetRenderer()->EF_GetTextureByID(textureId);
+            m_iconTexture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_GetTextureByID(textureId) : nullptr;
         }
     }
 }

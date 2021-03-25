@@ -127,7 +127,7 @@ namespace AZ
             uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType);
 
             //! Reconstructs the expected output product paths of the AzslBuilder (from the 2 arguments @azslSourceFullPath and @apiType)
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder(const char* builderName, const AZStd::string& azslSourceFullPath, RHI::APIType apiType);
+            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder(const char* builderName, const AZStd::string& azslSourceFullPath, RHI::APIType apiType, const AZStd::string& platform);
 
             //! Returns true if a file should skip processing.
             //! Should be called only for non *.srgi files.

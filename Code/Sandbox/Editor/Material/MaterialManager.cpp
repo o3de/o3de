@@ -586,7 +586,7 @@ CMaterial* CMaterialManager::LoadMaterialWithFullSourcePath(const QString& relat
 
 //////////////////////////////////////////////////////////////////////////
 CMaterial* CMaterialManager::LoadMaterialInternal(const QString &materialNameClear, const QString &fullSourcePath, const QString &relativeFilePath, bool makeIfNotFound)
-{    
+{
     // Note:  We are loading from source files here, not from compiled assets, so there is no need to query the asset system for compilation status, etc.
 
     // Load material with this name if not yet loaded.
@@ -650,7 +650,7 @@ void CMaterialManager::AddSourceFileOpeners(const char* fullSourceFileName, [[ma
 
     if (AZStd::wildcard_match("*.mtl", fullSourceFileName))
     {
-        // we can handle these!  
+        // we can handle these!
         auto materialCallback = [this](const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
         {
             const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
@@ -867,7 +867,7 @@ void CMaterialManager::OnCreateMaterial(_smart_ptr<IMaterial> pMatInfo)
 
             AddForHighlighting(pMaterial);
         }
-        else 
+        else
         {
             // If the material already exists, re-set its values from the engine material that was just re-loaded
             existingMaterial->SetFromMatInfo(pMatInfo);
@@ -1031,12 +1031,12 @@ void CMaterialManager::RemoveMaterialFromDisk(const char * fileName)
 //////////////////////////////////////////////////////////////////////////
 void CMaterialManager::RegisterCommands(CRegistrationContext& regCtx)
 {
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "duplicate", "", "", functor(*this, &CMaterialManager::Command_Duplicate));
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "merge", "", "", functor(*this, &CMaterialManager::Command_Merge));
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "delete", "", "", functor(*this, &CMaterialManager::Command_Delete));
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "assign_to_selection", "", "", functor(*this, &CMaterialManager::Command_AssignToSelection));
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "select_assigned_objects", "", "", functor(*this, &CMaterialManager::Command_SelectAssignedObjects));
-    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "select_from_object", "", "", functor(*this, &CMaterialManager::Command_SelectFromObject));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "duplicate", "", "", AZStd::bind(&CMaterialManager::Command_Duplicate, this));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "merge", "", "", AZStd::bind(&CMaterialManager::Command_Merge, this));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "delete", "", "", AZStd::bind(&CMaterialManager::Command_Delete, this));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "assign_to_selection", "", "", AZStd::bind(&CMaterialManager::Command_AssignToSelection, this));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "select_assigned_objects", "", "", AZStd::bind(&CMaterialManager::Command_SelectAssignedObjects, this));
+    CommandManagerHelper::RegisterCommand(regCtx.pCommandManager, "material", "select_from_object", "", "", AZStd::bind(&CMaterialManager::Command_SelectFromObject, this));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1802,7 +1802,7 @@ void CMaterialManager::QueueSourceControlTick()
         };
         AZ::SystemTickBus::QueueFunction(tickFunction);
 
-        // Stop further queues as TickSourceControl will queue itself 
+        // Stop further queues as TickSourceControl will queue itself
         // until there are no more paths in the buffer to process
         m_sourceControlFunctionQueued = true;
     }
@@ -1860,7 +1860,7 @@ void CMaterialManager::StartDccMaterialSaveThread()
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// Will save all the .dccmtl file paths in the buffer to source .mtl 
+// Will save all the .dccmtl file paths in the buffer to source .mtl
 // Runs on a separate thread so as not to stall the main thread
 void CMaterialManager::DccMaterialSaveThreadFunc()
 {
@@ -1887,7 +1887,7 @@ void CMaterialManager::DccMaterialSaveThreadFunc()
             m_dccMaterialSaveBuffer.clear();
         }
 
-        // Save all the buffered .dccmtl files 
+        // Save all the buffered .dccmtl files
         for (AZStd::string& fileName : dccMaterialPaths)
         {
             SaveDccMaterial(fileName);
@@ -1987,9 +1987,9 @@ void CMaterialManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 {
     AZ::Data::AssetInfo assetInfo;
     EBUS_EVENT_RESULT(assetInfo, AZ::Data::AssetCatalogRequestBus, GetAssetInfoById, assetId);
-    
+
     if (assetInfo.m_assetType != m_dccMaterialAssetType)
-    {    
+    {
         // Ignore types that aren't .dccmtl
         return;
     }
@@ -2007,7 +2007,7 @@ void CMaterialManager::AddDccMaterialPath(const AZStd::string relativeDccMateria
 
     // Lock access to the buffer
     AZStd::lock_guard<AZStd::mutex> lock(m_sourceControlBufferMutex);
-    
+
     // Add file path
     m_sourceControlBuffer.push_back(relativeDccMaterialPath);
 

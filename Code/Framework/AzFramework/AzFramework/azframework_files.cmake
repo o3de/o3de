@@ -82,6 +82,8 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    Engine/Engine.cpp
+    Engine/Engine.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -262,10 +264,11 @@ set(FILES
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
-    Physics/TouchBendingBus.h
     Physics/WorldEventhandler.h
     Physics/ScriptCanvasPhysicsUtils.h
     Physics/ScriptCanvasPhysicsUtils.cpp
+    ProjectManager/ProjectManager.h
+    ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GeometryIntersectionBus.h
@@ -273,6 +276,14 @@ set(FILES
     Render/Intersector.cpp
     Render/Intersector.h
     Render/IntersectorInterface.h
+    Spawnable/Spawnable.cpp
+    Spawnable/Spawnable.h
+    Spawnable/SpawnableAssetHandler.h
+    Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableMetaData.cpp
+    Spawnable/SpawnableMetaData.h
+    Spawnable/SpawnableSystemComponent.h
+    Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Platform/PlatformDefaults.h

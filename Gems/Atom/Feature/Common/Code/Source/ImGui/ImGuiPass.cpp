@@ -24,12 +24,13 @@
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Scene.h>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 
@@ -41,7 +42,6 @@ namespace AZ
     {
         namespace
         {
-            constexpr const uint32_t DefaultUploadBufferSize = 1024 * 1024;
             static const char* PassName = "ImGuiPass";
             static const char* ImguiShaderFilePath = "Shaders/imgui/imgui.azshader";
         }
@@ -455,26 +455,23 @@ namespace AZ
             }
 
             {
-                m_pipelineStateDescriptor = RHI::PipelineStateDescriptorForDraw{};
-                {
-                    RHI::InputStreamLayoutBuilder layoutBuilder;
-
-                    layoutBuilder.AddBuffer()
-                        ->Channel("POSITION", RHI::Format::R32G32_FLOAT)
-                        ->Channel("UV", RHI::Format::R32G32_FLOAT)
-                        ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
-
-                    m_pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
-                }
-
                 m_shader = RPI::LoadShader(ImguiShaderFilePath);
-                const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-                shaderVariant.ConfigurePipelineState(m_pipelineStateDescriptor);
+
+                m_pipelineState = aznew RPI::PipelineStateForDraw;
+                m_pipelineState->Init(m_shader);
+
+                RHI::InputStreamLayoutBuilder layoutBuilder;
+                layoutBuilder.AddBuffer()
+                    ->Channel("POSITION", RHI::Format::R32G32_FLOAT)
+                    ->Channel("UV", RHI::Format::R32G32_FLOAT)
+                    ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+                m_pipelineState->InputStreamLayout() = layoutBuilder.End();
+
             }
 
             // Get shader resource group
             {
-                auto perObjectSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
+                auto perObjectSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{"ObjectSrg"});
                 if (!perObjectSrgAsset.GetId().IsValid())
                 {
                     AZ_Error(PassName, false, "Failed to get shader resource group asset");
@@ -535,46 +532,16 @@ namespace AZ
 
         void ImGuiPass::OnBuildAttachmentsFinishedInternal()
         {
-            // Configure pipeline state
-            {
-                m_pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
-                m_pipelineStateDescriptor.m_renderStates.m_multisampleState = GetMultisampleState();
-
-                m_pipelineState = m_shader->AcquirePipelineState(m_pipelineStateDescriptor);
-                if (!m_pipelineState)
-                {
-                    AZ_Error(PassName, false, "Failed to acquire default pipeline state for shader '%s'", ImguiShaderFilePath);
-                    return;
-                }
-            }
-
-            // Init buffers if needed
-            {
-                RPI::CommonBufferDescriptor desc;
-                desc.m_poolType = RPI::CommonBufferPoolType::DynamicInputAssembly;
-                desc.m_byteCount = DefaultUploadBufferSize;
-
-                if (!m_imguiIndexBuffer)
-                {
-                    desc.m_bufferName = AZStd::string(GetPathName().GetCStr()) + "IndexBuffer";
-                    m_imguiIndexBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                    AZ_Error(PassName, m_imguiIndexBuffer, "Failed to create index buffer for ImGui");
-                }
-
-                if (!m_imguiVertexBuffer)
-                {
-                    desc.m_bufferName = AZStd::string(GetPathName().GetCStr()) + "VertexBuffer";
-                    m_imguiVertexBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                    AZ_Error(PassName, m_imguiVertexBuffer, "Failed to create vertex buffer for ImGui");
-                }
-            }
+            // Set output format and finalize pipeline state
+            m_pipelineState->SetOutputFromPass(this);
+            m_pipelineState->Finalize();
 
             Base::OnBuildAttachmentsFinishedInternal();
         }
 
-        void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            DeclareAttachmentsToFrameGraph(frameGraph);
+            Base::SetupFrameGraphDependencies(frameGraph);
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::Render();
             uint32_t drawCount = UpdateImGuiResources();
@@ -584,11 +551,11 @@ namespace AZ
             m_draws.reserve(drawCount);
         }
 
-        void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             m_resourceGroup->Compile();
 
-            // Create all the DrawIndexeds so they can be submitted in parallel on BuildCommandList()
+            // Create all the DrawIndexeds so they can be submitted in parallel on BuildCommandListInternal()
             uint32_t vertexOffset = 0;
             uint32_t indexOffset = 0;
 
@@ -633,7 +600,7 @@ namespace AZ
             ImGui::NewFrame();
         }
 
-        void ImGuiPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: Execute");
@@ -650,7 +617,7 @@ namespace AZ
             {
                 RHI::DrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
-                drawItem.m_pipelineState = m_pipelineState.get();
+                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
                 drawItem.m_shaderResourceGroupCount = 1;
                 drawItem.m_shaderResourceGroups = shaderResourceGroups;
@@ -669,9 +636,6 @@ namespace AZ
             AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: UpdateImGuiResources");
 
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
-
-            m_imguiIndexBuffer->Orphan();
-            m_imguiVertexBuffer->Orphan();
 
             constexpr uint32_t indexSize = aznumeric_cast<uint32_t>(sizeof(ImDrawIdx));
             constexpr uint32_t vertexSize = aznumeric_cast<uint32_t>(sizeof(ImDrawVert));
@@ -694,8 +658,11 @@ namespace AZ
                 return 0; // Nothing to draw.
             }
 
-            ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(m_imguiIndexBuffer->Map(totalIdxBufferSize, 0));
-            ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(m_imguiVertexBuffer->Map(totalVtxBufferSize, 0));
+            auto vertexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalVtxBufferSize);
+            auto indexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalIdxBufferSize);
+
+            ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(indexBuffer->GetBufferAddress());
+            ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(vertexBuffer->GetBufferAddress());
 
             uint32_t drawCount = 0;
             uint32_t indexBufferOffset = 0;
@@ -719,14 +686,11 @@ namespace AZ
                 }
             }
 
-            m_imguiIndexBuffer->Unmap();
-            m_imguiVertexBuffer->Unmap();
-
             static_assert(indexSize == 2, "Expected index size from ImGui to be 2 to match RHI::IndexFormat::Uint16");
-            m_indexBufferView = RHI::IndexBufferView(*m_imguiIndexBuffer->GetRHIBuffer(), 0, totalIdxBufferSize, RHI::IndexFormat::Uint16);
-            m_vertexBufferView[0] = RHI::StreamBufferView(*m_imguiVertexBuffer->GetRHIBuffer(), 0, totalVtxBufferSize, vertexSize);
+            m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16);
+            m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
 
-            RHI::ValidateStreamBufferViews(m_pipelineStateDescriptor.m_inputStreamLayout, m_vertexBufferView);
+            RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
 
             return drawCount;
         }

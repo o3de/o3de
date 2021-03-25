@@ -97,8 +97,8 @@ namespace EMotionFX
             const uint32 orgVertex  = orgVertices[vertexIndex];
 
             // for all skinning influences of the vertex
-            const uint32 numInfluences = skinLayer->GetNumInfluences(orgVertex);
-            for (uint32 i = 0; i < numInfluences; ++i)
+            const size_t numInfluences = skinLayer->GetNumInfluences(orgVertex);
+            for (size_t i = 0; i < numInfluences; ++i)
             {
                 // if the bone is disabled
                 SkinInfluence*  influence   = skinLayer->GetInfluence(orgVertex, i);

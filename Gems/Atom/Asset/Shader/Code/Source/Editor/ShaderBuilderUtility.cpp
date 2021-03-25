@@ -17,6 +17,7 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 
 #include <AzCore/Asset/AssetManager.h>
 
@@ -562,7 +563,7 @@ namespace AZ
                 return static_cast<uint32_t>(subId) + (apiType << shiftLeft);
             }
 
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType)
+            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)
             {
                 AzslSubProducts::Paths products;
                 for (RPI::ShaderAssetSubId sub : AzslSubProducts::SubList)
@@ -578,9 +579,28 @@ namespace AZ
                     // get the relative path:
                     AZStd::string assetPath;
                     Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
+
+                    // platform id from identifier
+                    AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
+                    if (platform == "pc")
+                    {
+                        platformId = AzFramework::PlatformId::PC;
+                    }
+                    if (platform == "osx_gl")
+                    {
+                        platformId = AzFramework::PlatformId::OSX;
+                    }
+                    else if (platform == "es3")
+                    {
+                        platformId = AzFramework::PlatformId::ES3;
+                    }
+                    else if (platform == "ios")
+                    {
+                        platformId = AzFramework::PlatformId::IOS;
+                    }
+
                     // get the root:
-                    AZStd::string assetRoot;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(assetRoot, &AzFramework::ApplicationRequests::GetAssetRoot);
+                    AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
                     // join
                     AZStd::string assetFullPath;
                     AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);

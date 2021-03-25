@@ -21,6 +21,7 @@
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 
 namespace
@@ -179,23 +180,16 @@ namespace ScriptCanvasEditor
 
     StatisticsDialog::~StatisticsDialog()
     {
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
-    
+
     void StatisticsDialog::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
     {
-        if (m_scriptCanvasAssetTreeRoot)
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+        if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>()
+            || assetInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
-            AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
-            if (assetInfo.m_assetId.IsValid())
-            {
-                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>()
-                    || assetInfo.m_assetType == azrtti_typeid<ScriptCanvas::ScriptCanvasFunctionAsset>())
-                {
-                    m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId);
-                }
-            }
+            m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, assetInfo.m_assetType);
         }
     }
     
@@ -206,8 +200,10 @@ namespace ScriptCanvasEditor
     
     void StatisticsDialog::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
     {
-        // at this point, the asset is gone.  You can't search for it in the catalog.
-        if (m_scriptCanvasAssetTreeRoot)
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+        if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>()
+            || assetInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
         {
             m_scriptCanvasAssetTreeRoot->RemoveAsset(assetId);
         }
@@ -449,11 +445,12 @@ namespace ScriptCanvasEditor
             {
                 const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = static_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
 
-                if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasAsset>())
+                if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasAsset>()
+                    || productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
                 {
                     const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
 
-                    m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId);
+                    m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, productEntry->GetAssetType());
                 }
             }
         }

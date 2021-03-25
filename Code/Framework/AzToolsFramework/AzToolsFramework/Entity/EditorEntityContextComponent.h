@@ -124,18 +124,19 @@ namespace AzToolsFramework
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EditorEntityContextService", 0x28d93a43));
+            provided.push_back(AZ_CRC_CE("EditorEntityContextService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EditorEntityContextService", 0x28d93a43));
+            incompatible.push_back(AZ_CRC_CE("EditorEntityContextService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-            dependent.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
+            dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+            dependent.push_back(AZ_CRC_CE("SliceSystemService"));
+            dependent.push_back(AZ_CRC_CE("PrefabSystem"));
         }
 
     protected:
@@ -183,7 +184,8 @@ namespace AzToolsFramework
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
         //! Edit time visibility management integrating entities with the IVisibilitySystem.
-        AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem; 
+        AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
+        bool m_isLegacySliceService;
     };
 } // namespace AzToolsFramework
 

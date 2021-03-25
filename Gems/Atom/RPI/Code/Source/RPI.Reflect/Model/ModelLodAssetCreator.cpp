@@ -11,7 +11,6 @@
 */
 
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
-
 #include <AzCore/Asset/AssetManager.h>
 
 namespace AZ
@@ -88,14 +87,20 @@ namespace AZ
             m_currentMesh.m_indexBufferAssetView = AZStd::move(bufferAssetView);
         }
 
-        void ModelLodAssetCreator::AddMeshStreamBuffer(
+        bool ModelLodAssetCreator::AddMeshStreamBuffer(
             const RHI::ShaderSemantic& streamSemantic,
             const AZ::Name& customName,
             const BufferAssetView& bufferAssetView)
         {
             if (!ValidateIsMeshReady())
             {
-                return;
+                return false;
+            }
+
+            if (m_currentMesh.m_streamBufferInfo.size() >= RHI::Limits::Pipeline::StreamCountMax)
+            {
+                ReportError("Cannot add another stream buffer info. Maximum of %d already reached.", RHI::Limits::Pipeline::StreamCountMax);
+                return false;
             }
 
             // If this streamId already exists throw an error
@@ -104,7 +109,7 @@ namespace AZ
                 if (streamBufferInfo.m_semantic == streamSemantic || (!streamBufferInfo.m_customName.IsEmpty() && streamBufferInfo.m_customName == customName))
                 {
                     ReportError("Failed to add Stream Buffer. Buffer with this streamId or name already exists.");
-                    return;
+                    return false;
                 }
             }
             
@@ -114,6 +119,8 @@ namespace AZ
             streamBufferInfo.m_bufferAssetView = AZStd::move(bufferAssetView);
 
             m_currentMesh.m_streamBufferInfo.push_back(AZStd::move(streamBufferInfo));
+
+            return true;
         }
 
         void ModelLodAssetCreator::AddMeshStreamBuffer(

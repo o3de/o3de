@@ -362,9 +362,13 @@ namespace ScriptCanvasEditor
 
                 if (!isRunningGame)
                 {
-                    m_startedSession = true;
+                    if (GetIEditor()->IsLevelLoaded())
+                    {
+                        m_startedSession = true;
 
-                    GetIEditor()->SetInGameMode(true);
+                        GetIEditor()->SetInGameMode(true);
+                    }
+
                     return;
                 }
             }

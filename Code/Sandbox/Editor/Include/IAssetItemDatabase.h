@@ -151,7 +151,7 @@ struct IAssetItemDatabase
     typedef std::vector<SAssetField> TAssetFields;
     typedef std::map < QString/*field name*/, SAssetField > TAssetFieldFiltersMap;
     typedef std::map < QString/*asset filename*/, IAssetItem* > TFilenameAssetMap;
-    typedef Functor1wRet<const IAssetItem*, bool> MetaDataChangeListener;
+    typedef AZStd::function<bool(const IAssetItem*)> MetaDataChangeListener;
 
     // Description:
     //      Refresh the database by scanning the folders/paks for files, does not load the files, only filename and filesize are fetched

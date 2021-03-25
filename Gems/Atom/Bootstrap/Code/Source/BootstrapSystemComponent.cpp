@@ -210,6 +210,8 @@ namespace AZ
                 params.device = device;
                 params.windowHandle = m_windowHandle;
                 params.renderScene = m_defaultScene;
+                // Setting the default ViewportContextID to an arbitrary and otherwise invalid (negative) value to ensure its uniqueness
+                params.id = -10;
 
                 auto viewContextManager = AZ::Interface<RPI::ViewportContextRequestsInterface>::Get();
                 m_viewportContext = viewContextManager->CreateViewportContext(
@@ -338,7 +340,12 @@ namespace AZ
             {
                 EnsureDefaultRenderPipelineInstalledForScene(m_defaultScene, m_viewportContext);
 
-                m_renderPipelineId = m_defaultScene->FindRenderPipelineForWindow(m_viewportContext->GetWindowHandle())->GetId();
+                const auto pipeline = m_defaultScene->FindRenderPipelineForWindow(m_viewportContext->GetWindowHandle());
+                AZ_Error("AtomBootstrap", pipeline, "No pipeline found for the default viewport window! Did the default render pipeline fail to compile?");
+                if (pipeline)
+                {
+                    m_renderPipelineId = pipeline->GetId();
+                }
 
                 // Send notification when the scene and its pipeline are ready
                 Render::Bootstrap::NotificationBus::Broadcast(&Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());

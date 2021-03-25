@@ -31,6 +31,8 @@ namespace AZ
             public:                
                 AZ_RTTI(MeshVertexTangentData, "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}", AZ::SceneAPI::DataTypes::IMeshVertexTangentData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API ~MeshVertexTangentData() override = default;
 
                 SCENE_DATA_API size_t GetCount() const override;

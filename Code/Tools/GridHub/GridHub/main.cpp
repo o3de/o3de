@@ -621,8 +621,8 @@ int main(int argc, char *argv[])
 {
     bool failSilently = false;
 
-    // We are laucnhing this from Woodpecker all the time.
-    // When launching from Woodpecker, we don't want to show
+    // We are launching this from application all the time.
+    // When launching from the application, we don't want to show
     // any of our error messages, which might be useful at other times.
     // So, it passes along this fail_silently flag which lets us suppress
     // our messages without disrupting any other flow.

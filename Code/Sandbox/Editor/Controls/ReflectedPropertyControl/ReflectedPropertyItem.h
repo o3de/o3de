@@ -162,6 +162,11 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     QString m_strNoScriptDefault;
     QString m_strScriptDefault;
+
+AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    IVariable::OnSetCallback m_onSetCallback;
+    IVariable::OnSetEnumCallback m_onSetEnumCallback;
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 typedef _smart_ptr<ReflectedPropertyItem> ReflectedPropertyItemPtr;

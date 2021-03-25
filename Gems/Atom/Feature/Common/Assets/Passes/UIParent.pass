@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "UIParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "2DPass",
+                    "TemplateName": "UIPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "2dpass",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "ImGuiPass",
+                    "TemplateName": "ImGuiPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "2DPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ImGuiPassData",
+                        "IsDefaultImGui": true
+                    }
+                }
+            ]
+        }
+    }
+}

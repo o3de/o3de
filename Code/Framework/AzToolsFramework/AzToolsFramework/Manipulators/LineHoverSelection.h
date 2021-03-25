@@ -45,6 +45,7 @@ namespace AzToolsFramework
         void SetBoundsDirty() override;
         void Refresh() override;
         void SetSpace(const AZ::Transform& worldFromLocal) override;
+        void SetNonUniformScale(const AZ::Vector3& nonUniformScale) override;
 
     private:
         AZ::EntityId m_entityId;

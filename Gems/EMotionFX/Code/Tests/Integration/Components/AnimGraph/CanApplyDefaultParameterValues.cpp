@@ -90,6 +90,7 @@ namespace EMotionFX
 
             entity->Init();
             entity->Activate();
+            actorComponent->SetActorAsset(actorAsset);
 
             const auto matchesInitialValue = AZStd::invoke(matcherFactory, initialDefaultValue);
             const auto matchesCustomValue = AZStd::invoke(matcherFactory, customDefaultValue);

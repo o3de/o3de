@@ -32,10 +32,10 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Utils/GraphUtils.h>
 
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Core.h>
 #endif
-
 
 class QToolButton;
 namespace ScriptCanvasEditor { class FunctionPaletteTreeItem; }
@@ -61,6 +61,8 @@ namespace ScriptCanvasEditor
             : public GraphCanvas::NodePaletteTreeItem
             , AzFramework::AssetCatalogEventBus::Handler
             , AZ::Data::AssetBus::MultiHandler
+            , UpgradeNotifications::Bus::Handler
+            , AZ::SystemTickBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator, 0);
@@ -82,11 +84,32 @@ namespace ScriptCanvasEditor
 
             void ProcessAsset(AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry);
 
+            // SystemTickBus
+            void OnSystemTick() override;
+            ////
+
             // AssetCatalogEventBus
             void OnCatalogAssetChanged(const AZ::Data::AssetId& /*assetId*/) override;
-            void OnCatalogAssetAdded(const AZ::Data::AssetId& /*assetId*/) override;
-            void OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& /*assetInfo*/) override;
             ////
+
+            // UpgradeNotifications::Bus
+            void OnUpgradeStart() override;
+            void OnUpgradeComplete() override;
+            void OnUpgradeCancelled() override;
+            ////
+
+            void ConnectLambdas();
+            void DisconnectLambdas();
+
+            // Requests an async load of a given asset of a type
+            void RequestAssetLoad(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType);
+
+            // When the asset loading is ready, this allows to use the asset in some meaningful way
+            void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            bool HasAssetTreeItem(AZ::Data::AssetId assetId) const;
+
+            void CreateFunctionPaletteItem(const AZStd::string& displayName, const AZ::Data::AssetInfo& assetInfo, const AZ::Data::AssetId& sourceId, const AZ::Data::AssetId& runtimeId = {});
 
             const NodePaletteModel& m_nodePaletteModel;
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
@@ -97,16 +120,14 @@ namespace ScriptCanvasEditor
             AZ::Data::AssetId m_previousAssetId;
 
             AZStd::unordered_map< AZ::Data::AssetId, ScriptEventsPaletteTreeItem* > m_scriptEventElementTreeItems;
+
+            AZStd::unordered_set< AZ::Data::AssetId > m_runtimeAssets;
             AZStd::unordered_map< AZ::Data::AssetId, FunctionPaletteTreeItem* > m_globalFunctionTreeItems;
+
+            AZStd::vector< AZStd::pair<AZ::Data::AssetId, AZ::Data::AssetType>> m_queuedLoads;
 
             // RequestAssetLoad uses this set to track assets being asynchronously loaded
             AZStd::unordered_set<AZStd::pair<AZ::Data::AssetId, AZ::Data::AssetType>> m_pendingAssets;
-
-            // Requests an async load of a given asset of a type
-            void RequestAssetLoad(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType);
-
-            // When the asset loading is ready, this allows to use the asset in some meaningful way
-            void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
             AZStd::vector< QMetaObject::Connection > m_lambdaConnections;
         };
@@ -169,6 +190,8 @@ namespace ScriptCanvasEditor
             // GraphCanvas::SceneNotificationBus
             void OnSelectionChanged() override;
             ////
+
+            
 
         protected:
 

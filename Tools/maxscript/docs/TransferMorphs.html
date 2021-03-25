@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+
+  
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+
+
+  
+  
+  
+  
+  
+  <title>cryTools: MorphTools: Transfer Morphs Between Characters</title>
+</head>
+
+
+<body style="color: rgb(0, 0, 0);" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+
+
+
+
+<h1 style="background-color: rgb(192, 192, 192); font-family: Arial;">cryTools: MorphTools: Transferring Morphs Between Characters</h1>
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">To save time we created a way to bake morphtargets from one
+character to another character. This tutorial will show you how you we do this.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><o:p>&nbsp;</o:p>We use for all our head the same topology with the same
+vertex index. This allows us to transfer morph targets from one head to another
+head.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><o:p></o:p>Here you can see an example for this.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shapetype id="_x0000_t75" coordsize="21600,21600"
+ o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f"
+ stroked="f">
+ <v:stroke joinstyle="miter"/>
+ <v:formulas>
+  <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+  <v:f eqn="sum @0 1 0"/>
+  <v:f eqn="sum 0 0 @1"/>
+  <v:f eqn="prod @2 1 2"/>
+  <v:f eqn="prod @3 21600 pixelWidth"/>
+  <v:f eqn="prod @3 21600 pixelHeight"/>
+  <v:f eqn="sum @0 0 1"/>
+  <v:f eqn="prod @6 1 2"/>
+  <v:f eqn="prod @7 21600 pixelWidth"/>
+  <v:f eqn="sum @8 21600 0"/>
+  <v:f eqn="prod @7 21600 pixelHeight"/>
+  <v:f eqn="sum @10 21600 0"/>
+ </v:formulas>
+ <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+ <o:lock v:ext="edit" aspectratio="t"/>
+</v:shapetype><v:shape id="_x0000_i1025" type="#_x0000_t75" style='width:404.25pt;
+ height:282pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image001.jpg"
+  o:title="1"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 539px; height: 376px;" alt="1" src="images/transfer_tut/image002.jpg" v:shapes="_x0000_i1025"><!--[endif]--></p>
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal">Let&rsquo;s bake the existing morphs from the left guy to the
+Asian.<br>
+<o:p><br>
+</o:p>To do this we open the scene of the head with the existing
+morphtargets.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">The black head on the upper left corner is our basehead
+without morphs. The blue morphs are symmetrical morphs. The red ones are
+asymmetrical morphs.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">The green squares are helpers which I will describe later.</p>
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1026" type="#_x0000_t75"
+ style='width:626.25pt;height:404.25pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image003.jpg"
+  o:title="2"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 835px; height: 539px;" alt="2" src="images/transfer_tut/image004.jpg" v:shapes="_x0000_i1026"><!--[endif]--><o:p><br>
+<br>
+</o:p>Now we apply a morph modifier to the head with the neutral
+expression and add all morphs which shall be baked to the Asian head.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">In this case I add all symmetrical and asymmetrical morphs
+to it.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1027" type="#_x0000_t75"
+ style='width:456pt;height:420.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image005.jpg"
+  o:title="3"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 868px; height: 801px;" alt="3" src="images/transfer_tut/image005.jpg" v:shapes="_x0000_i1027"><!--[endif]--><br>
+<o:p><br>
+</o:p>Delete all Morphtargets of the afro American and merge the
+Asian head into your scene.<o:p>&nbsp;</o:p></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1028" type="#_x0000_t75"
+ style='width:736.5pt;height:468.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image007.jpg"
+  o:title="4"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 982px; height: 625px;" alt="4" src="images/transfer_tut/image008.jpg" v:shapes="_x0000_i1028"><!--[endif]--></p>
+
+
+
+
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1029" type="#_x0000_t75"
+ style='width:396pt;height:299.25pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image009.jpg"
+  o:title="d1"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 528px; height: 399px;" alt="5" src="images/transfer_tut/image009.jpg" v:shapes="_x0000_i1029"><!--[endif]--><span style="">&nbsp;</span><br>
+<o:p><br>
+</o:p>Normally the UVs of the characters are not matching,
+therefore we need to use an inbetween step.</p>
+
+
+
+
+<ol style="margin-top: 0in; font-family: Arial;" start="1" type="1">
+  <li class="MsoNormal" style="">create
+     a copy of the Asian Head (red wireframe).</li>
+  <li class="MsoNormal" style="">create
+     a morpher for the asian head, choose the African head as a morphtarget and
+     set the vaule to 100%</li>
+  <li class="MsoNormal" style="">collapse
+     the morpher modifier (result see below &ndash; green wireframe)</li>
+</ol>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1030" type="#_x0000_t75"
+ style='width:558.75pt;height:283.5pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image010.jpg"
+  o:title="d2"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 745px; height: 378px;" alt="6" src="images/transfer_tut/image010.jpg" v:shapes="_x0000_i1030"><!--[endif]--></p>
+
+
+<ol style="margin-top: 0in; font-family: Arial;" start="4" type="1">
+  <li class="MsoNormal" style="">Copy
+     the morpher from the African head to the Asian head(green wireframe).
+     Delete the afrcian head, it is not longer needed.</li>
+  <li class="MsoNormal" style=""><span style="">&nbsp;</span>Add the copy of the Asian head (red wireframe)
+     as a morph to the existing morpher modifier on the green head and turn the
+     amount to 100%.</li>
+</ol>
+
+
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1031" type="#_x0000_t75"
+ style='width:557.25pt;height:529.5pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image011.jpg"
+  o:title="d3"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 743px; height: 706px;" alt="7" src="images/transfer_tut/image011.jpg" v:shapes="_x0000_i1031"><!--[endif]--><o:p>&nbsp;</o:p></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Open the CryMorphManager and open the &ldquo;Facial Tools&rdquo;</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Select the green head and add click on the &ldquo;Load Morphs From
+Selection&rdquo; button. The tool will load all morphs which are added to the morph
+modifier and display you how many morphs are stored.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">When you activate &ldquo;Organize&rdquo; your generated Morphs will be
+automatically aligned to the helper. Call the helper for this Dummy_+the name
+of the morph. At example: &ldquo;Dummy_Lip_funneler&rdquo;.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">All generated morphs will be moved into a new layer. For
+this set the name of the new layer into the textbox beside to New Layer.</p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Before you press the &ldquo;Bake Morphs&rdquo; button, be sure that you
+have the head with the morphmodifier selected. </p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Now you are ready to generate the morphs.</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1032" type="#_x0000_t75"
+ style='width:172.5pt;height:243.75pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image012.jpg"
+  o:title="d4"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 230px; height: 325px;" alt="8" src="images/transfer_tut/image012.jpg" v:shapes="_x0000_i1032"><!--[endif]--></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Note: the bake function will also generate a copy of your
+copy(red head) which you loaded into the morph modifier. Just delete it if you
+don&rsquo;t need it.<o:p></o:p></p>
+
+
+<p style="font-family: Arial;" class="MsoNormal">Result:</p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1033" type="#_x0000_t75"
+ style='width:874.5pt;height:562.5pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image013.jpg"
+  o:title="d5"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 1166px; height: 750px;" alt="13" src="images/transfer_tut/image013.jpg" v:shapes="_x0000_i1033"><!--[endif]--></p>
+
+
+
+
+<p style="font-family: Arial;" class="MsoNormal"><!--[if gte vml 1]><v:shape id="_x0000_i1034" type="#_x0000_t75"
+ style='width:752.25pt;height:562.5pt'>
+ <v:imagedata src="file:///C:\DOCUME~1\CHRIST~1\LOCALS~1\Temp\msohtml1\01\clip_image014.jpg"
+  o:title="d6"/>
+</v:shape><![endif]--><!--[if !vml]--><img style="width: 1003px; height: 750px;" alt="14" src="images/transfer_tut/image014.jpg" v:shapes="_x0000_i1034"><!--[endif]--></p>
+
+<p style="font-family: Arial;"></p>
+
+
+
+<span style="font-family: Arial;">
+
+</span>
+</body>
+</html>

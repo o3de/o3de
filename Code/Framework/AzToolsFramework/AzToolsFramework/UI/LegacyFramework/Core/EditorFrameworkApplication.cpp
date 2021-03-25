@@ -155,7 +155,6 @@ namespace LegacyFramework
         ComponentApplication::SetSettingsRegistrySpecializations(specializations);
         specializations.Append("legacy");
         specializations.Append("tools");
-        specializations.Append("editor");
     }
 
     int Application::Run(const ApplicationDesc& desc)
@@ -296,7 +295,7 @@ namespace LegacyFramework
             // if the component already exists on the system entity, this is an error.
             if (auto comp = m_ptrSystemEntity->FindComponent(componentCRC))
             {
-                AZ_Warning("EditorFramework", 0, "Attempt to add a component that already exists on the system entity: %s\n", comp->RTTI_TypeName());
+                AZ_Warning("EditorFramework", 0, "Attempt to add a component that already exists on the system entity: %s\n", comp->RTTI_GetTypeName());
                 return true;
             }
 
@@ -404,7 +403,7 @@ namespace LegacyFramework
 
         if (!m_applicationEntity)
         {
-            m_applicationEntity = aznew AZ::Entity("WoodpeckerApplicationEntity");
+            m_applicationEntity = aznew AZ::Entity("StandaloneToolsApplicationEntity");
         }
 
         CreateApplicationComponents();
@@ -500,8 +499,6 @@ namespace LegacyFramework
     void Application::CreateSystemComponents()
     {
         EnsureComponentCreated(AZ::MemoryComponent::RTTI_Type());
-        EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
-        EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
 
         AZ_Assert(!m_desc.m_enableProjectManager || m_desc.m_enableGUI, "Enabling the project manager in the application settings requires enabling the GUI as well.");
 

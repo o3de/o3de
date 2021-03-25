@@ -51,6 +51,8 @@ namespace AZ
 
             RHI::HardwareQueueClass GetHardwareQueueClass() const;
 
+            void SetAftermathEventMarker(const AZStd::string& markerData);
+
         protected:
             void Init(Device& device, RHI::HardwareQueueClass hardwareQueueClass, ID3D12CommandAllocator* commandAllocator);
 
@@ -66,6 +68,9 @@ namespace AZ
             Microsoft::WRL::ComPtr<ID3D12GraphicsCommandListX> m_commandList;
             AZStd::vector<D3D12_RESOURCE_BARRIER> m_queuedBarriers;
             bool m_isRecording = false;
+
+            // Nsight Aftermath related command list context
+            void* m_aftermathCommandListContext = nullptr;
         };
     }
 }

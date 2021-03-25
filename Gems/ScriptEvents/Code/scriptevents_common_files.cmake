@@ -14,8 +14,11 @@ set(FILES
     Source/ScriptEventsSystemComponent.cpp
     Include/ScriptEvents/ScriptEventsGem.h
     Include/ScriptEvents/ScriptEventsAsset.h
+    Include/ScriptEvents/ScriptEventsAsset.cpp
     Include/ScriptEvents/ScriptEventsAssetRef.h
     Include/ScriptEvents/ScriptEventsBus.h
+    Include/ScriptEvents/ScriptEventRegistration.h
+    Include/ScriptEvents/ScriptEventRegistration.cpp
     Include/ScriptEvents/ScriptEventFundamentalTypes.h
     Include/ScriptEvents/ScriptEventDefinition.h
     Include/ScriptEvents/ScriptEventDefinition.cpp

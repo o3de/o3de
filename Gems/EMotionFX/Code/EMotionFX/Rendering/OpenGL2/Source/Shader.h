@@ -38,6 +38,7 @@ namespace RenderGL
 
         virtual void Activate() = 0;
         virtual void Deactivate() = 0;
+        virtual bool Validate() = 0;
 
         virtual uint32 GetType() const = 0;
 

@@ -9,9 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_PLATFORM_DETECTION_Android Android)
+ly_set(LY_PLATFORM_DETECTION_Android Android)
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL Darwin)
-    set(LY_HOST_PLATFORM_DETECTION_Android Mac)
+    ly_set(LY_HOST_PLATFORM_DETECTION_Android Mac)
 else()
-    set(LY_HOST_PLATFORM_DETECTION_Android ${CMAKE_HOST_SYSTEM_NAME})
+    ly_set(LY_HOST_PLATFORM_DETECTION_Android ${CMAKE_HOST_SYSTEM_NAME})
 endif()

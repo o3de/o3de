@@ -13,12 +13,12 @@
 #pragma once
 
 class QAction;
-class QWidget;
+class QMenu;
 
 namespace ScriptCanvasDeveloperEditor
 {
     namespace TSGenerateAction
     {
-        QAction* SetupTSFileAction(QWidget* mainWindow);
+        QAction* SetupTSFileAction(QMenu* mainWindow);
     };
 }

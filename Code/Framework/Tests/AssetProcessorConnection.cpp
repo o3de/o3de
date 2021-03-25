@@ -97,7 +97,11 @@ protected:
 
 };
 
+#if AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
+TEST_F(APConnectionTest, DISABLED_TestAddRemoveCallbacks)
+#else
 TEST_F(APConnectionTest, TestAddRemoveCallbacks)
+#endif // AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
 {
     using namespace AzFramework;
 
@@ -219,7 +223,11 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks)
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apConnection, SocketConnection::EConnectionState::Disconnected));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
+TEST_F(APConnectionTest, DISABLED_TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCrash)
+#else
 TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCrash)
+#endif // AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
 {
     using namespace AzFramework;
 
@@ -310,7 +318,11 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_RemoveDuringCallback_DoesNotCras
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apConnection, SocketConnection::EConnectionState::Disconnected));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
+TEST_F(APConnectionTest, DISABLED_TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
+#else
 TEST_F(APConnectionTest, TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
+#endif // AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
 {
     using namespace AzFramework;
 
@@ -444,7 +456,11 @@ TEST_F(APConnectionTest, TestAddRemoveCallbacks_AddDuringCallback_DoesNotCrash)
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apConnection, SocketConnection::EConnectionState::Disconnected));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
+TEST_F(APConnectionTest, DISABLED_TestConnection)
+#else
 TEST_F(APConnectionTest, TestConnection)
+#endif // AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
 {
     using namespace AzFramework;
 
@@ -546,7 +562,11 @@ TEST_F(APConnectionTest, TestConnection)
     EXPECT_TRUE(WaitForConnectionStateToBeEqual(apListener, SocketConnection::EConnectionState::Disconnected));
 }
 
+#if AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
+TEST_F(APConnectionTest, DISABLED_TestReconnect)
+#else
 TEST_F(APConnectionTest, TestReconnect)
+#endif // AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS
 {
     using namespace AzFramework;
 

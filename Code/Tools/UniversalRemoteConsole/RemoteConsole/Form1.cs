@@ -559,8 +559,6 @@ namespace RemoteConsole
 					idx = imgList.Images.IndexOfKey("WinLogoImg16");
 				else if (tgt.ToLower() == "provo")
 					idx = imgList.Images.IndexOfKey("provo");
-				else if (tgt.ToLower() == "xenia")
-					idx = imgList.Images.IndexOfKey("xenia");
 				else if (tgt.ToLower() == "custom_ip")
 					idx = imgList.Images.IndexOfKey("IpImg");
 				else if (tgt.ToLower() == "custom_port")

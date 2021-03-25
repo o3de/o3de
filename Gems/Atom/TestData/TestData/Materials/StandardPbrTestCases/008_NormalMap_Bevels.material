@@ -1,0 +1,12 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "normal": {
+            "factor": 0.30000001192092898,
+            "textureMap": "TestData/Objects/cube/cube_norm.tif"
+        }
+    }
+}

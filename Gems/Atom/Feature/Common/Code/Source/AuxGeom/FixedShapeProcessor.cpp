@@ -171,7 +171,6 @@ namespace AZ
                     pipelineStateOptions.m_faceCullMode = shape.m_faceCullMode;
 
                     RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
-                    const AZ::RHI::PipelineState* rhiPipelineState = pipelineState->GetRHIPipelineState();
 
                     const AZ::Vector3 position = shape.m_position;
                     const AZ::Vector3 scale = shape.m_scale;
@@ -184,7 +183,8 @@ namespace AZ
                             continue;
                         }
                         LodIndex lodIndex = GetLodIndexForShape(shape.m_shapeType, view.get(), position, scale);
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, rhiPipelineState, lodIndex);
+                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(
+                            drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, pipelineState, lodIndex);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
@@ -204,9 +204,9 @@ namespace AZ
                     pipelineStateOptions.m_faceCullMode = box.m_faceCullMode;
 
                     RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
-                    const AZ::RHI::PipelineState* rhiPipelineState = pipelineState->GetRHIPipelineState();
 
-                    const RHI::DrawPacket* drawPacket = BuildDrawPacketForBox(drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, rhiPipelineState);
+                    const RHI::DrawPacket* drawPacket =
+                        BuildDrawPacketForBox(drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, pipelineState);
                     if (drawPacket)
                     {
                         m_drawPackets.emplace_back(drawPacket);
@@ -250,7 +250,6 @@ namespace AZ
                     pipelineStateOptions.m_faceCullMode = shape.m_faceCullMode;
 
                     RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
-                    const AZ::RHI::PipelineState* rhiPipelineState = pipelineState->GetRHIPipelineState();
 
                     const AZ::Vector3 position = shape.m_position;
                     const AZ::Vector3 scale = shape.m_scale;
@@ -264,7 +263,8 @@ namespace AZ
                         RHI::DrawItemSortKey sortKey = view->GetSortKeyForPosition(position);
                         LodIndex lodIndex = GetLodIndexForShape(shape.m_shapeType, view.get(), position, scale);
 
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, rhiPipelineState, lodIndex, sortKey);
+                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(
+                            drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, pipelineState, lodIndex, sortKey);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
@@ -285,7 +285,6 @@ namespace AZ
                     pipelineStateOptions.m_faceCullMode = box.m_faceCullMode;
 
                     RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
-                    const AZ::RHI::PipelineState* rhiPipelineState = pipelineState->GetRHIPipelineState();
 
                     const AZ::Vector3 position = box.m_position;
                     for (auto& view : fpPacket.m_views)
@@ -296,7 +295,8 @@ namespace AZ
                             continue;
                         }
                         RHI::DrawItemSortKey sortKey = view->GetSortKeyForPosition(position);
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForBox(drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, rhiPipelineState, sortKey);
+                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForBox(
+                            drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, pipelineState, sortKey);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
@@ -1481,6 +1481,7 @@ namespace AZ
             // Use the the pipeline state for PipelineStateOptions with default values and input perspective type as base pipeline state. Create one if it was empty.
             PipelineStateOptions defaultOptions;
             defaultOptions.m_perpectiveType = pipelineStateOptions.m_perpectiveType;
+            defaultOptions.m_drawStyle = pipelineStateOptions.m_drawStyle;
             RPI::Ptr<RPI::PipelineStateForDraw>& basePipelineState = GetPipelineState(defaultOptions);
             if (basePipelineState.get() == nullptr)
             {
@@ -1491,8 +1492,8 @@ namespace AZ
 
                 // shader option data for shader variant
                 Name optionViewProjectionModeName = Name("o_viewProjMode");
-                AZStd::vector<AZStd::pair<Name, Name>> shaderOptionAndValues;
-                shaderOptionAndValues.push_back(AZStd::pair<Name, Name>(optionViewProjectionModeName, GetAuxGeomPerspectiveTypeName(pipelineStateOptions.m_perpectiveType)));
+                RPI::ShaderOptionList shaderOptionAndValues;
+                shaderOptionAndValues.push_back(RPI::ShaderOption(optionViewProjectionModeName, GetAuxGeomPerspectiveTypeName(pipelineStateOptions.m_perpectiveType)));
 
                 // initialize pipeline state with shader and shader options
                 basePipelineState->Init(shader, &shaderOptionAndValues);
@@ -1510,27 +1511,29 @@ namespace AZ
             }
 
             // blendMode
-            RHI::TargetBlendState& blendState = destPipelineState->Descriptor().m_renderStates.m_blendState.m_targets[0];
+            RHI::TargetBlendState& blendState = destPipelineState->RenderStatesOverlay().m_blendState.m_targets[0];
             blendState.m_enable = pipelineStateOptions.m_blendMode == AuxGeomBlendMode::BlendMode_Alpha;
             blendState.m_blendSource = RHI::BlendFactor::AlphaSource;
             blendState.m_blendDest = RHI::BlendFactor::AlphaSourceInverse;
 
             // primitiveType
-            destPipelineState->Descriptor().m_inputStreamLayout = m_objectStreamLayout[pipelineStateOptions.m_drawStyle];
+            destPipelineState->InputStreamLayout() = m_objectStreamLayout[pipelineStateOptions.m_drawStyle];
 
             // depthReadType
             // Keep the default depth comparison function and only set it when depth read is off
             // Note: since the default PipelineStateOptions::m_depthReadType is DepthRead_On, the basePipelineState keeps the comparison function read from shader variant
             if (pipelineStateOptions.m_depthReadType == AuxGeomDepthReadType::DepthRead_Off)
             {
-                destPipelineState->Descriptor().m_renderStates.m_depthStencilState.m_depth.m_func = RHI::ComparisonFunc::Always;
+                destPipelineState->RenderStatesOverlay().m_depthStencilState.m_depth.m_func = RHI::ComparisonFunc::Always;
             }
 
             // depthWriteType
-            destPipelineState->Descriptor().m_renderStates.m_depthStencilState.m_depth.m_writeMask = ConvertToRHIDepthWriteMask(pipelineStateOptions.m_depthWriteType);
+            destPipelineState->RenderStatesOverlay().m_depthStencilState.m_depth.m_writeMask =
+                ConvertToRHIDepthWriteMask(pipelineStateOptions.m_depthWriteType);
 
             // faceCullMode
-            destPipelineState->Descriptor().m_renderStates.m_rasterState.m_cullMode = ConvertToRHICullMode(pipelineStateOptions.m_faceCullMode);
+            destPipelineState->RenderStatesOverlay().m_rasterState.m_cullMode =
+                ConvertToRHICullMode(pipelineStateOptions.m_faceCullMode);
 
             // finalize
             destPipelineState->SetOutputFromScene(m_scene);
@@ -1583,7 +1586,7 @@ namespace AZ
             const ShapeBufferEntry& shape,
             int drawStyle,
             const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
-            const AZ::RHI::PipelineState* pipelineState,
+            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             LodIndex lodIndex,
             RHI::DrawItemSortKey sortKey)
         {
@@ -1620,6 +1623,9 @@ namespace AZ
             {
                 srg->SetConstant(shaderData.m_viewProjectionOverrideIndex, viewProjOverrides[shape.m_viewProjOverrideIndex]);
             }
+
+            pipelineState->UpdateSrgVariantFallback(srg);
+            
             srg->Compile();
             m_processSrgs.push_back(srg);
 
@@ -1628,7 +1634,7 @@ namespace AZ
             auto& streamBufferViews = GetShapeStreamBufferViews(shape.m_shapeType, lodIndex, drawStyle);
             auto& drawListTag = shaderData.m_drawListTag;
 
-            return BuildDrawPacket(drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState, sortKey);
+            return BuildDrawPacket(drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState(), sortKey);
         }
 
         const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
@@ -1677,7 +1683,7 @@ namespace AZ
             const BoxBufferEntry& box,
             int drawStyle,
             const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
-            const AZ::RHI::PipelineState* pipelineState,
+            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             ShaderData& shaderData = m_perObjectShaderData[drawStyle==DrawStyle_Shaded?1:0];
@@ -1710,6 +1716,7 @@ namespace AZ
             {
                 srg->SetConstant(shaderData.m_viewProjectionOverrideIndex, viewProjOverrides[box.m_viewProjOverrideIndex]);
             }
+            pipelineState->UpdateSrgVariantFallback(srg);
             srg->Compile();
             m_processSrgs.push_back(srg);
 
@@ -1718,7 +1725,9 @@ namespace AZ
             auto& streamBufferViews = GetBoxStreamBufferViews(drawStyle);
             auto& drawListTag = shaderData.m_drawListTag;
 
-            return BuildDrawPacket(drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState, sortKey);
+            return BuildDrawPacket(
+                drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState(),
+                sortKey);
         }
 
         const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacket(

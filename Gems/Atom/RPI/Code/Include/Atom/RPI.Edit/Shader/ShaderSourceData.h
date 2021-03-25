@@ -42,24 +42,8 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            // [GFX TODO][ATOM-5216] Remove struct Variant once this ticket is addressed.
-            //! A struct that describes shader variant data that is used to populate a ShaderSourceData at asset build time.
-            struct Variant
-            {
-                AZ_TYPE_INFO(AZ::RPI::ShaderSourceData::Variant, "{F792BA66-069E-449C-8372-4B0E8F6C653E}");
-
-                // [GFX TODO][ATOM-930] - Shader Variant System Phase 2 - Investigation and Prototyping
-                // The entire Q3 epic will deal will prototyping different shader variants approaches
-                // A lot of code in prototype stage is disabled before a clearer vision for the system
-                // is in place, including the three states below, which are also duplicated in the
-                // containing ShaderSourceData structure:
-                // RHI::DepthStencilState m_depthStencilState;
-                // RHI::RasterState m_rasterState;
-                // RHI::TargetBlendState m_blendState;
-                // AZStd::vector<AZStd::string> m_shaderEntryPoints;
-
-                AZStd::map<AZStd::string/*optionName*/, AZStd::string/*valueName*/> m_options;
-            };
+            //! Helper function. Returns true if @rhiName is present in m_disabledRhiBackends
+            bool IsRhiBackendDisabled(const AZ::Name& rhiName);
 
             struct EntryPoint
             {
@@ -90,6 +74,9 @@ namespace AZ
             
             // Hints for building the shader option group layout
             RPI::ShaderOptionGroupHints m_shaderOptionGroupHints;
+
+            //! List of RHI Backends (aka ShaderPlatformInterface) for which this shader should not be compiled.
+            AZStd::vector<AZStd::string> m_disabledRhiBackends;
         };
         
     } // namespace RPI

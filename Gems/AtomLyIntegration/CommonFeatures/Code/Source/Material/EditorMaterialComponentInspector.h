@@ -67,8 +67,6 @@ namespace AZ
                 void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
                 void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode*, bool) override {}
 
-                const AtomToolsFramework::DynamicProperty* FindPropertyForNode(AzToolsFramework::InstanceDataNode* pNode) const;
-
                 void AddDetailsGroup();
                 void AddUvNamesGroup();
                 void RunPropertyChangedCallback();

@@ -12,15 +12,21 @@
 
 #pragma once
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/typetraits/add_pointer.h>
 #include <AzCore/std/typetraits/function_traits.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Translation/TranslationContext.h>
 
 #include "Node.h"
 #include "Attributes.h"
+
+#pragma warning( push )
+#pragma warning( disable : 5046) // 'function' : Symbol involving type with internal linkage not defined
 
 /**
  * NodeFunctionGeneric.h
@@ -96,6 +102,7 @@ namespace ScriptCanvas
             return !result.empty() ? result.data() : "Result";\
         }\
         \
+        static const char* GetDependency() { return CATEGORY; }\
         static const char* GetCategory() { if (ISDEPRECATED) return AZ_STRINGIZE(CATEGORY /Deprecated); else return CATEGORY; };\
         static const char* GetDescription() { return DESCRIPTION; };\
         static const char* GetNodeName() { return #NODE_NAME; };\
@@ -174,7 +181,6 @@ namespace ScriptCanvas
         AZ_RTTI(((NodeFunctionGeneric<t_Func, t_Traits, function, t_DefaultFunc, defaultsFunction>), "{19E4AABE-1730-402C-A020-FC1006BC7F7B}", t_Func, t_Traits, t_DefaultFunc), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGeneric);
         AZ_COMPONENT_BASE(NodeFunctionGeneric, Node);
-
     };
 
     template<typename t_Func, typename t_Traits, t_Func function, typename t_DefaultFunc, t_DefaultFunc defaultsFunction>
@@ -185,6 +191,16 @@ namespace ScriptCanvas
         AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
+
+        static const char* GetNodeFunctionName()
+        {
+            return t_Traits::GetNodeName();
+        }
+
+        static t_Func GetFunction()
+        {
+            return function;
+        }
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -218,6 +234,26 @@ namespace ScriptCanvas
                 serializeContext->ClassDeprecate("NodeFunctionGenericMultiReturnV1", genericMultiReturnV1TypeId, &ConvertOldNodeGeneric);
             }
         }
+
+        AZ::Outcome<DependencyReport, void> GetDependencies() const override
+        {
+            return AZ::Success(DependencyReport::NativeLibrary(t_Traits::GetDependency()));
+        }
+
+        AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot*) const override
+        { 
+            return AZ::Success(AZStd::string(GetNodeFunctionName()));
+        }
+
+        AZ::Outcome<Grammar::LexicalScope, void> GetFunctionCallLexicalScope(const Slot* /*slot*/) const override
+        {
+            Grammar::LexicalScope scope;
+            scope.m_type = Grammar::LexicalScopeType::Namespace;
+            scope.m_namespaces.push_back(Translation::Context::GetCategoryLibraryName(t_Traits::GetDependency()));
+            return AZ::Success(scope);
+        }
+
+        bool IsSupportedByNewBackend() const override { return true; }
 
     protected:
 
@@ -267,7 +303,7 @@ namespace ScriptCanvas
             MultipleOutputInvoker<t_Func, function, t_Traits>::Add(*this);
         }
 
-        void OnInputSignal([[maybe_unused]] const SlotId& slotId) override
+        void OnInputSignal(const SlotId&) override
         {
             MultipleOutputInvoker<t_Func, function, t_Traits>::Call(*this);
             SignalOutput(GetSlotId("Out"));
@@ -280,8 +316,11 @@ namespace ScriptCanvas
     private:
 
         bool m_initialized = false;
-    }; // class NodeFunctionGenericMultiReturn
-    
+    };
+
+#define SCRIPT_CANVAS_GENERICS_TO_VM(GenericClass, ReflectClass, BehaviorContext, CategoryName)\
+    GenericClass::Reflect<ReflectClass>(BehaviorContext, ScriptCanvas::Translation::Context::GetCategoryLibraryName(CategoryName).c_str());
+
     template<typename... t_Node>
     class RegistrarGeneric
     {
@@ -297,7 +336,15 @@ namespace ScriptCanvas
             auto& nodes = nodeRegistry.m_nodeMap[azrtti_typeid<t_NodeGroup>()];
             SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(nodes.push_back({ azrtti_typeid<t_Node>(), AZ::AzTypeInfo<t_Node>::Name() }));
         }
-    }; // class RegistrarGeneric
+
+        template<typename t_Library>
+        static void Reflect(AZ::BehaviorContext* behaviorContext, const char* libraryName)
+        {
+            auto reflection = behaviorContext->Class<t_Library>(libraryName);
+            reflection->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)->Attribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, true);
+            SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(reflection->Method(t_Node::GetNodeFunctionName(), t_Node::GetFunction())->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::Documentation));
+        }
+    };
 
     template<typename t_Func, typename t_Traits, t_Func function, typename t_DefaultFunc, t_DefaultFunc defaultsFunction>
     bool NodeFunctionGenericMultiReturn<t_Func, t_Traits, function, t_DefaultFunc, defaultsFunction>::ConvertOldNodeGeneric(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
@@ -338,3 +385,5 @@ namespace ScriptCanvas
     }
 
 }
+
+#pragma warning( pop )

@@ -17,9 +17,9 @@ namespace fbxsdk
 {
     class FbxScene;
 }
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+
 struct aiScene;
-#endif
+
 
 namespace AZ
 {
@@ -32,9 +32,7 @@ namespace AZ
             SceneWrapperBase() = default;
             SceneWrapperBase(fbxsdk::FbxScene* fbxScene);
             virtual ~SceneWrapperBase() = default;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             SceneWrapperBase(aiScene* aiScene);
-#endif
 
             virtual bool LoadSceneFromFile(const char* fileName);
             virtual bool LoadSceneFromFile(const AZStd::string& fileName);
@@ -45,14 +43,10 @@ namespace AZ
             virtual void Clear();
             
             virtual fbxsdk::FbxScene* GetFbxScene() const;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             virtual const aiScene* GetAssImpScene() const;
-#endif
 
             fbxsdk::FbxScene* m_fbxScene = nullptr;
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
             const aiScene* m_assImpScene = nullptr;
-#endif
 
             static const char* s_defaultSceneName;
         };

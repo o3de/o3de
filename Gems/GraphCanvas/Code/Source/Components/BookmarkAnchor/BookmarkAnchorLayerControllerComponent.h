@@ -34,7 +34,7 @@ namespace GraphCanvas
         AZ_COMPONENT(BookmarkAnchorLayerControllerComponent, "{AC75ED23-1F88-484A-A7FE-35679A23329B}", LayerControllerComponent);
 
         BookmarkAnchorLayerControllerComponent()
-            : LayerControllerComponent("BookmarkAnchor")
+            : LayerControllerComponent("BookmarkAnchor", BookmarkAnchorOffset)
         {
 
         }

@@ -1,0 +1,54 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "autoSelect": false,
+        "displayName": "Kloetzle Blei",
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{8C964DCA-0737-5EA1-B333-EF1D2F281431}",
+                "subId": 1000
+            },
+            "assetHint": "lightingpresets/lowcontrast/kloetzle_blei_4k_iblskyboxcm.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{8C964DCA-0737-5EA1-B333-EF1D2F281431}",
+                "subId": 2000
+            },
+            "assetHint": "lightingpresets/lowcontrast/kloetzle_blei_4k_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{8C964DCA-0737-5EA1-B333-EF1D2F281431}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/lowcontrast/kloetzle_blei_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblExposure": 0.0,
+        "skyboxExposure": 0.0,
+        "lights": [
+            {
+                "direction": [
+                    -0.15000000596046449,
+                    -0.15000000596046449,
+                    -1.0
+                ],
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowFarClipDistance": 20.0,
+                "shadowmapSize": "Size2048",
+                "enableShadowDebugColoring": false
+            }
+        ],
+        "shadowCatcherOpacity": 0.3499999940395355
+    }
+}

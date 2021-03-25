@@ -48,6 +48,8 @@ namespace ScriptCanvasEditor
 
         // GraphCanvas::NodeNotificationBus
         void OnAddedToScene(const AZ::EntityId& sceneId) override final;
+        void OnNodeDisabled() override;
+        void OnNodeEnabled() override;
         ////
 
     protected:

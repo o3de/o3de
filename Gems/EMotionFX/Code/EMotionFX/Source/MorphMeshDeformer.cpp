@@ -168,7 +168,7 @@ namespace EMotionFX
                     tangents[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
                 }
             }
-            if (tangents && !bitangents)    // tangents but no bitangents
+            else if (tangents && !bitangents) // tangents but no bitangents
             {
                 uint32 vtxNr;
                 for (uint32 v = 0; v < numDeformVerts; ++v)

@@ -217,10 +217,16 @@ namespace AzToolsFramework
                     ComponentEntityEditorRequestBus::Event(descendant, &ComponentEntityEditorRequestBus::Events::RefreshVisibilityAndLock);
                 }
             }
+
+            AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Broadcast(
+                &AzToolsFramework::Layers::EditorLayerComponentNotifications::OnLayerComponentActivated, GetEntityId());
         }
 
         void EditorLayerComponent::Deactivate()
         {
+            AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Broadcast(
+                &AzToolsFramework::Layers::EditorLayerComponentNotifications::OnLayerComponentDeactivated, GetEntityId());
+
             AZ::TransformNotificationBus::Handler::BusDisconnect();
         }
 

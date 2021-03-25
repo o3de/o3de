@@ -40,7 +40,9 @@ namespace ScriptCanvasEditor
         if (serializeContext)
         {
             serializeContext->Class<ScriptEventSenderNodeDescriptorComponent, NodeDescriptorComponent>()
-                ->Version(1)
+                ->Version(2)
+                ->Field("AssetId", &ScriptEventSenderNodeDescriptorComponent::m_assetId)
+                ->Field("EventId", &ScriptEventSenderNodeDescriptorComponent::m_eventId)
                 ;
         }
     }

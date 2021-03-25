@@ -27,6 +27,7 @@ namespace AzToolsFramework
     /// in the opposite direction the rotation axis points to.
     class AngularManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalTransform
     {
         /// Private constructor.
         explicit AngularManipulator(const AZ::Transform& worldFromLocal);
@@ -81,12 +82,6 @@ namespace AzToolsFramework
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
         void SetAxis(const AZ::Vector3& axis);
-        void SetSpace(const AZ::Transform& worldFromLocal);
-        void SetLocalTransform(const AZ::Transform& localTransform);
-        void SetLocalPosition(const AZ::Vector3& localPosition);
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation);
-
-        AZ::Vector3 GetPosition() const { return m_localTransform.GetTranslation(); }
         const AZ::Vector3& GetAxis() const { return m_fixed.m_axis; }
 
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
@@ -132,9 +127,6 @@ namespace AzToolsFramework
             StartInternal m_start;
             CurrentInternal m_current;
         };
-
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); ///< Local transform of the manipulator.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
 
         Fixed m_fixed;
         ActionInternal m_actionInternal;

@@ -487,7 +487,7 @@ namespace GraphCanvas
         return this;
     }
 
-    void GeneralSlotLayoutGraphicsWidget::OnSceneSet([[maybe_unused]] const AZ::EntityId& sceneId)
+    void GeneralSlotLayoutGraphicsWidget::OnSceneSet(const AZ::EntityId& /*sceneId*/)
     {
         m_addedToScene = true;
         UpdateLayout();

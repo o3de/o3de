@@ -25,6 +25,7 @@ namespace AzToolsFramework
     /// while also staying aligned exactly to the height of the terrain.
     class SurfaceManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalPosition
     {
         /// Private constructor.
         explicit SurfaceManipulator(const AZ::Transform& worldFromLocal);
@@ -77,11 +78,6 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        void SetPosition(const AZ::Vector3& position) { m_position = position; }
-        void SetSpace(const AZ::Transform& worldFromLocal) { m_worldFromLocal = worldFromLocal; }
-
-        const AZ::Vector3& GetPosition() const { return m_position; }
-
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
 
     private:
@@ -102,9 +98,6 @@ namespace AzToolsFramework
             AZ::Vector3 m_localHitPosition; ///< The hit position with the terrain in local space.
             AZ::Vector3 m_snapOffset; ///< The snap offset amount to ensure manipulator is aligned to the grid.
         };
-
-        AZ::Vector3 m_position = AZ::Vector3::CreateZero(); ///< Position in local space.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
 
         StartInternal m_startInternal; ///< Internal initial state recorded/created in OnMouseDown.
 

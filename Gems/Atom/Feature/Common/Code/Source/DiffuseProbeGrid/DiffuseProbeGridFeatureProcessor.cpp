@@ -70,10 +70,10 @@ namespace AZ
             }
 
             // create image view descriptors
-            m_probeGridRenderData.m_probeRayTraceImageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::R32G32B32A32_FLOAT, 0, 0);
-            m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::R10G10B10A2_UNORM, 0, 0);
-            m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::R32G32_FLOAT, 0, 0);
-            m_probeGridRenderData.m_probeRelocationImageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::R16G16B16A16_FLOAT, 0, 0);
+            m_probeGridRenderData.m_probeRayTraceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RayTraceImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeRelocationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RelocationImageFormat, 0, 0);
 
             // load shader
             // Note: the shader may not be available on all platforms
@@ -146,22 +146,9 @@ namespace AZ
             for (uint32_t probeGridIndex = 0; probeGridIndex < m_diffuseProbeGrids.size(); ++probeGridIndex)
             {
                 AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid = m_diffuseProbeGrids[probeGridIndex];
-                diffuseProbeGrid->Simulate(GetParentScene(), probeGridIndex);
-            }
-        }
+                AZ_Assert(diffuseProbeGrid.use_count() > 1, "DiffuseProbeGrid found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
-        void DiffuseProbeGridFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
-        {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
-            for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
-            {
-                for (auto& view : packet.m_views)
-                {
-                    AZ_Assert(diffuseProbeGrid.use_count() > 1, "DiffuseProbeGrid found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
-
-                    diffuseProbeGrid->Render(view);
-                }
+                diffuseProbeGrid->Simulate(probeGridIndex);
             }
         }
 
@@ -250,8 +237,14 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows)
         {
-            AZ_Assert(probeGrid.get(), "Enable called with an invalid handle");
+            AZ_Assert(probeGrid.get(), "SetGIShadows called with an invalid handle");
             probeGrid->SetGIShadows(giShadows);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl)
+        {
+            AZ_Assert(probeGrid.get(), "SetUseDiffuseIbl called with an invalid handle");
+            probeGrid->SetUseDiffuseIbl(useDiffuseIbl);
         }
 
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()

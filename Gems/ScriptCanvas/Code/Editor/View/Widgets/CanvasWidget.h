@@ -13,7 +13,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformDef.h>
+
+AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 #include <QWidget>
+AZ_POP_DISABLE_WARNING
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Component/EntityId.h>
 #include <Debugger/Bus.h>
@@ -50,6 +55,9 @@ namespace ScriptCanvasEditor
 
             void SetDefaultBorderColor(AZ::Color defaultBorderColor);
             void ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
+
+            void SetAssetId(const AZ::Data::AssetId& assetId);
+
             const GraphCanvas::ViewId& GetViewId() const;
 
             void EnableView();

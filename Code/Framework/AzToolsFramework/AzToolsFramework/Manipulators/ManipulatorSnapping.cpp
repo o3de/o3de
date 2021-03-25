@@ -49,14 +49,16 @@ namespace AzToolsFramework
     }
 
     ManipulatorInteraction BuildManipulatorInteraction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection)
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection)
     {
         const AZ::Transform worldFromLocalUniform = AzToolsFramework::TransformUniformScale(worldFromLocal);
         const AZ::Transform localFromWorldUniform = worldFromLocalUniform.GetInverse();
 
         return {localFromWorldUniform.TransformPoint(worldRayOrigin),
                 TransformDirectionNoScaling(localFromWorldUniform, worldRayDirection),
-                ScaleReciprocal(worldFromLocalUniform)};
+                ScaleReciprocal(worldFromLocalUniform),
+                NonUniformScaleReciprocal(nonUniformScale)};
     }
 
     AZ::Vector3 CalculateSnappedOffset(

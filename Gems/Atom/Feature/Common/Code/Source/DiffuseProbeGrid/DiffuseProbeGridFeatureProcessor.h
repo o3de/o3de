@@ -45,12 +45,12 @@ namespace AZ
             void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) override;
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
+            void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
 
             // FeatureProcessor overrides
             void Activate() override;
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
-            void Render(const FeatureProcessor::RenderPacket& packet) override;
 
             // retrieve the full list of diffuse probe grids
             using DiffuseProbeGridVector = AZStd::vector<AZStd::shared_ptr<DiffuseProbeGrid>>;

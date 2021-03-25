@@ -62,13 +62,16 @@ namespace ScriptCanvasEditor
         AZ_RTTI(FunctionPaletteTreeItem, "{AF75BBAD-BC8A-46D2-81B6-54C0E6CB3E41}", GraphCanvas::DraggableNodePaletteTreeItem);
         AZ_CLASS_ALLOCATOR(FunctionPaletteTreeItem, AZ::SystemAllocator, 0);
 
-        FunctionPaletteTreeItem(const char* name, const AZ::Data::AssetId& sourceAssetId, const AZ::Data::AssetId& runtimeAssetId);
+        FunctionPaletteTreeItem(const char* name, const AZ::Data::AssetId& sourceAssetId, const AZ::Data::AssetId& runtimeAssetId = {});
         ~FunctionPaletteTreeItem() = default;
+
+        void SetRuntimeAssetId(const AZ::Data::AssetId& assetId);
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const;
         QVariant OnData(const QModelIndex& index, int role) const;
 
         const AZ::Data::AssetId& GetSourceAssetId() const;
+        const AZ::Data::AssetId& GetRuntimeAssetId() const;
 
     protected:
 

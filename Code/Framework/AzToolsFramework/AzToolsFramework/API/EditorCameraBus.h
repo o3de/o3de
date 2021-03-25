@@ -15,6 +15,11 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/Component.h>
 
+namespace AzFramework
+{
+    struct CameraState;
+}
+
 namespace Camera
 {
     /**
@@ -56,6 +61,16 @@ namespace Camera
          * @return True if the camera position was successfully retrieved, false if not.
          */
         virtual bool GetActiveCameraPosition(AZ::Vector3& /*cameraPos*/) { return false; }
+
+        /**
+         * Gets the position of the currently active Editor camera.
+         * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
+         * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
+         * active viewport that's updating every frame, and the others are not).
+         * @param cameraView The current camera view in the one active Editor viewport.
+         * @return True if the camera view was successfully retrieved, false if not.
+         */
+        virtual bool GetActiveCameraState([[maybe_unused]] AzFramework::CameraState& cameraState) { return false; }
     };
 
     using EditorCameraRequestBus = AZ::EBus<EditorCameraRequests>;

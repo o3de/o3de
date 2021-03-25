@@ -1,0 +1,15 @@
+{
+    "description": "",
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "metallic": {
+            "factor": 1.0,
+            "textureMap": "TestData/Objects/cube/cube_diff.tif"
+        },
+        "roughness": {
+            "factor": 0.0
+        }
+    }
+}

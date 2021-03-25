@@ -1,4 +1,5 @@
 {
+    "gem_name": "GameEffectSystem",
     "GemFormatVersion": 3,
     "LinkType": "DynamicStatic",
     "Name": "GameEffectSystem",

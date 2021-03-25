@@ -361,6 +361,7 @@ public:
     void DestroyQMimeData(QMimeData* data) const override;
 
     bool IsNewViewportInteractionModelEnabled() const override;
+    bool IsPrefabSystemEnabled() const override;
 
 protected:
 
@@ -478,5 +479,6 @@ protected:
     static const char* m_crashLogFileName;
 
     bool m_isNewViewportInteractionModelEnabled = true;
+    bool m_isPrefabSystemEnabled = false;
 };
 

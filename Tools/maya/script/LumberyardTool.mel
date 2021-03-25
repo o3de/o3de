@@ -1,0 +1,363 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/////////////////////////////////////////////////////////////////////////////////
+//
+//  LYExport.mel
+//
+//  UI code for improved Maya exporter
+//
+//  Description: this file contains code for creating the new improved Maya exporter (called 
+//  as "Lumberyard Tools" with primarily the UI change, plus some underlying functional change),
+//  reference link: https://wiki.labcollab.net/confluence/display/lmbr/Improved+Maya+Exporter
+//  The new Maya exporter consolidates the massive windows existed in the original CryTek 
+//  exporter into a unified one. It will improve the efficiency of artist workflow of 
+//  exporting asserts from Maya. This file is still under development in parallel with the 
+//  CryTek exporter (allow co-exist), and will eventually replace the current CryTek exporter as a 
+//  last step.
+//
+/////////////////////////////////////////////////////////////////////////////////
+ 
+LumberyardToolLoadDependencies();
+
+//! Load dependencies for using their global functions
+/*!
+ \todo Add LumberyardValidator to script dependencies if it is added to the window controls
+*/
+global proc LumberyardToolLoadDependencies()
+{
+    eval("source cryValidate.mel");
+    eval("source cryAnim.mel");
+    eval("source cryMaterial.mel");
+    eval("source cryExport.mel");
+    eval("source cryTools.mel");
+    eval("source cryUDP.mel");
+    eval("source degraded_faces_check.mel");
+    eval("source cryPivot.mel");
+    eval("source cryAlembic.mel");
+    if( !`cryPluginIsLoaded` )
+    {
+        cryLoadPluginQuiet;
+    }
+    
+    eval("source LumberyardUIStyle.mel");
+    eval("source LumberyardUtilities.mel");
+    eval("source LumberyardAnimationPane.mel");
+    eval("source LumberyardGeometry.mel");
+    eval("source LumberyardMaterial.mel");
+    //eval("source LumberyardValidator.mel");
+}
+
+//! Utility function to call cryPivotRun function with the correct parameters
+global proc LumberyardToolOriginToPivot()
+{
+    int $centerPivots = `menuItem -query -checkBox LUMBERYARD_CENTER_PIVOTS_CHECKBOX`;
+    cryPivotRun($centerPivots);
+}
+
+//! Creates the top menu bar for the Lumberyard Tools window
+/*!
+ \param $versionString The version of the plugin mll (used in the Help toolbar menu to display version number)
+ \todo 
+  Determine whether Output Attachment Helpers functionality is still valid, 
+  and reactivate if it is.
+*/
+proc LumberyardToolCreateToolMenuBar(string $versionString)
+{
+    menuBarLayout;
+    // Tools Menu
+    string $toolsMenu = `menu -label "Tools" LUMBERYARD_TOOLS_MENU`;
+    
+    // temporarily remove Auto Add Geometry related to LMBR-13573
+    /*
+    menuItem -label "Auto Add Geometry" -subMenu true;
+    {
+        menuItem -label "Execute" -enable true -command ("LumberyardAutoAddAll");
+        menuItem -divider true;
+        menuItem -label "Include materials" -checkBox true -enable true autoAddMaterialsCheckbox;
+        setParent -menu $toolsMenu;
+    }
+    menuItem -divider true;
+    */
+    menuItem -label "Add Scene Root" -command ("LumberyardUtilitiesAddSceneRoot");
+    menuItem -label "Move Origin to Pivot" -subMenu true;
+    {
+        menuItem -label "Execute" -command ("LumberyardToolOriginToPivot");
+        menuItem -divider true;
+        menuItem -label "Center Pivots" -checkBox false LUMBERYARD_CENTER_PIVOTS_CHECKBOX;
+        setParent -menu $toolsMenu;
+    }
+    menuItem -label "Zero Joint Rotations" -command ("cryAnimZeroJointRotation");
+    //menuItem -label "Output Attachment Helpers" -command ("cryOutputAttachmentHelpers");
+    menuItem -divider true;
+    menuItem -label "Add Attributes" -command ("cryExportAddAttributes");
+    menuItem -label "User Defined Properties..." -command ("cryUDPWindow");
+    menuItem -divider true;
+    menuItem -label "Polygon Check" -command ("cryCheckFaces");
+    menuItem -divider true;
+    menuItem -label "Prepare Alembic materials" -command ("cryAlembic_prepareMaterials");
+    menuItem -label "Export Selected to Alembic..." -command ("cryAlembic_export");
+    menuItem -divider true;
+    menuItem -label "Joint Proxy Editor (Experimental)..." -command ("LumberyardStartJointProxyEditor");
+    menuItem -divider true;
+    menuItem -label "Validator..." -command ("cryValidateComplete");
+    
+    // Options Menu
+    menu -label "Options";
+    menuItem -label "Remove Name Spaces" -checkBox false -enable true
+        -command ("LumberyardToolSetRemoveNamespaces") LUMBERYARD_REMOVE_NAMESPACES_CHECKBOX;
+    
+    // Help Menu
+    menu -label "Help" -helpMenu true;
+    menuItem -label "Online Documentation" -enable true
+		-command ("LumberyardToolSetOpenHelp");
+    
+    LumberyardToolLoadMenuCheckBoxValues;
+    setParent ..;
+
+    scriptJob -event "NewSceneOpened" "LumberyardToolHandleSceneChange" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    scriptJob -event "PostSceneRead" "LumberyardToolHandleSceneChange" -parent "LUMBERYARDTOOL_MAIN_LAYOUT";
+    
+}
+
+//! Utility function to call LumberyardAutoDetectGeometry with the correct parameters
+global proc LumberyardAutoAddAll()
+{
+    int $includeMaterial = `menuItem -query -checkBox autoAddMaterialsCheckbox`;
+    LumberyardAutoDetectGeometry $includeMaterial;
+}
+
+global proc LumberyardStartJointProxyEditor()
+{
+    //reload() call is used during development so that the python gets recompiled each time it is opened
+    python ("import LumberyardProxyTool; reload(LumberyardProxyTool); LumberyardProxyTool.LumberyardProxyTool()");
+}
+
+//! Update Remove Namespaces option value in back-end data with checkBox value.  
+global proc LumberyardToolSetRemoveNamespaces()
+{
+    int $removeNamespaces = `menuItem -query -checkBox LUMBERYARD_REMOVE_NAMESPACES_CHECKBOX`;
+    cryExportSetExportSettingValue "removeNamespaces" $removeNamespaces;
+}
+
+//! Open up the online documentation website at the maya tools section
+global proc LumberyardToolSetOpenHelp()
+{
+    launch -webPage "https://docs.aws.amazon.com/console/lumberyard/userguide/lumberyard-maya-tools";
+}
+
+//! Find old style export settings node and show dialog to confirm upgrade.
+global proc int LumberyardToolFindAndUpgradeOldStyleExportSettingsNode()
+{
+    if (`objExists CRYEXPORTSETTINGS`)
+    {
+        string $dialogMessage = "Detected old export SETTINGS data. Do you wish to upgrade " + 
+            "to the new tool format? (This operation will remove old data)";
+        if(`confirmDialog -title "Lumberyard Exporter" -message $dialogMessage
+                -button "Yes" -button "No" -defaultButton "Yes"
+                -cancelButton "No" -dismissString "No"` == "No")
+        {
+            return false;
+        }
+        string $exportSettingsNode = LumberyardGetExportSettingNodeName();
+        //there is potential for the new settings node to be generated first by other event handlers
+        //before this code is run to update so delete the new one.
+        //If the CRYEXPORTSETTINGS is there then the newly generated settings has no information in it
+        if (`objExists $exportSettingsNode`)
+        {
+            delete $exportSettingsNode;
+        }
+        if( !`objExists LUMBERYARD_EXPORT_GROUP` )
+        {
+            // Create LUMBERYARD_EXPORT_GROUP
+            group -empty -name LUMBERYARD_EXPORT_GROUP;
+        }
+        rename CRYEXPORTSETTINGS $exportSettingsNode;
+        parent ($exportSettingsNode, "LUMBERYARD_EXPORT_GROUP");
+    }
+    return true;
+}
+
+//! Find old style export settings node and show dialog to confirm upgrade.
+global proc int LumberyardToolFindAndUpgradeOldStyleExportAnimationNode()
+{
+    if (`objExists "LUMBERYARD_ANIMATIONEXPORT_GROUP"` )
+    {
+        string $parents[] = `listRelatives -parent "LUMBERYARD_ANIMATIONEXPORT_GROUP"`;
+        if (!stringArrayContains("LUMBERYARD_EXPORT_GROUP", $parents))
+        {
+            string $dialogMessage = "Detected old export Animation data. Do you wish to upgrade " + 
+                "to the new tool format? (This operation will move LUMBERYARD_ANIMATIONEXPORT_GROUP under LUMBERYARD_EXPORT_GROUP)";
+            if(`confirmDialog -title "Lumberyard Exporter" -message $dialogMessage
+                -button "Yes" -button "No" -defaultButton "Yes"
+                -cancelButton "No" -dismissString "No"` == "No")
+            {
+                return false;
+            }
+            
+            if( !`objExists "LUMBERYARD_EXPORT_GROUP"` )
+            {
+                //Create LUMBERYARD_EXPORT_GROUP
+                group -empty -name "LUMBERYARD_EXPORT_GROUP";
+            }
+            
+            parent ("LUMBERYARD_ANIMATIONEXPORT_GROUP", "LUMBERYARD_EXPORT_GROUP");
+        }
+    }
+    return true;
+}
+
+global proc LumberyardToolHandleSceneChange()
+{
+    if (!LumberyardToolFindAndUpgradeOldStyleExportSettingsNode())
+    {
+        // Close Lumberyard tools window if user choose not to upgrade.
+        if( `window -exists LUMBERYARDTOOL_MAIN_WINDOW` )
+        {
+            deleteUI LUMBERYARDTOOL_MAIN_WINDOW;
+        }
+        return;
+    }
+    
+    if (!LumberyardToolFindAndUpgradeOldStyleExportAnimationNode())
+    {
+        // Close Lumberyard tools window if user choose not to upgrade.
+        if( `window -exists LUMBERYARDTOOL_MAIN_WINDOW` )
+        {
+            deleteUI LUMBERYARDTOOL_MAIN_WINDOW;
+        }
+        return;
+    }
+    LumberyardToolLoadMenuCheckBoxValues();
+}
+
+//! Update the menu checkBox values with saved back-end data.
+global proc LumberyardToolLoadMenuCheckBoxValues()
+{
+    if (`cryExportGetExportSettingValue "removeNamespaces"` == "")
+    {
+        cryExportSetExportSettingValue "removeNamespaces" 1;
+    }
+    int $removeNamespaces = `LumberyardGetIntExportSetting "removeNamespaces"`;
+    menuItem -edit -checkBox $removeNamespaces LUMBERYARD_REMOVE_NAMESPACES_CHECKBOX;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+//
+// Lumberyard Tool Main Window
+//
+/////////////////////////////////////////////////////////////////////////////////
+
+//! Utility function to call the export function for all asset types, ignoring warnings
+global proc LumberyardToolExportAll()
+{
+    LumberyardToolExportCheckedGeometryListItems(0);
+    LumberyardToolExportCheckedMaterialGroups(0);
+    LumberyardUtilitiesExportSelectedAnimations(0);
+}
+
+//! Resize Lumberyard Tool window with a height change
+/*!
+  \param $heightDiff The difference of window height for change
+*/
+global proc LumberyardToolResizeWindow(int $heightDiff)
+{
+    int $height = `window -query -height LUMBERYARDTOOL_MAIN_WINDOW` + $heightDiff;
+    window -edit -height $height LUMBERYARDTOOL_MAIN_WINDOW;
+}
+
+//! Creates the main UI window for the Lumberyard Tools and call creation for all sub-elements
+/*!
+ \todo Add validator UI to the main window once it has been hooked to the validation output
+*/
+proc LumberyardToolCreateWindow()
+{
+    global float $g_UIColor[];
+    if (!LumberyardToolFindAndUpgradeOldStyleExportSettingsNode())
+    {
+        return;
+    }
+    
+    if (!LumberyardToolFindAndUpgradeOldStyleExportAnimationNode())
+    {
+        return;
+    }
+    
+    int $windowExists = `window -exists LUMBERYARDTOOL_MAIN_WINDOW`;
+    if(!$windowExists) 
+    {
+        if (!`LumberyardToolAttemptDataUpdates`)
+        {
+            return;
+        }
+        if(`windowPref -exists LUMBERYARDTOOL_MAIN_WINDOW`) 
+        {
+            windowPref -topLeftCorner `windowPref -query -topEdge LUMBERYARDTOOL_MAIN_WINDOW` `windowPref -query -leftEdge LUMBERYARDTOOL_MAIN_WINDOW` LUMBERYARDTOOL_MAIN_WINDOW;
+        }
+        print("\nGetting plugin info...\n");
+        string $pluginName = `cryGetPluginName`;
+        print("PluginName: " + $pluginName + "\n");
+        string $pluginVersionString = `pluginInfo -query -version $pluginName`;
+        print("PluginVersion: " + $pluginVersionString + "\n");
+        window -titleBar true -title "Lumberyard Tools" -sizeable true -minimizeButton false -maximizeButton false LUMBERYARDTOOL_MAIN_WINDOW;
+
+        $layout1 = `formLayout -numberOfDivisions 100`;
+        $collayout = `columnLayout -adjustableColumn true -rowSpacing 15 LUMBERYARDTOOL_MAIN_LAYOUT`;
+        
+        LumberyardToolCreateToolMenuBar($pluginVersionString);
+        
+        LumberyardToolCreateGeometryFrame;
+        
+        LumberyardToolCreateMaterialFrame;
+        
+        LumberyardAnimationPaneCreate;
+        
+        setParent LUMBERYARDTOOL_MAIN_LAYOUT;
+        button -height 44 -label "Export All" -backgroundColor $g_UIColor[0] $g_UIColor[1] $g_UIColor[2]
+            -command ("LumberyardToolExportAll");
+
+        //LumberyardToolCreateValidatorFrame;
+    }
+    showWindow LUMBERYARDTOOL_MAIN_WINDOW;
+    
+    if(!$windowExists)
+    {
+        // Collapsing Advance Options has to go after the window is shown, otherwise the 
+        // interpreted current window size to based on will not be correct. 
+        LumberyardGeometryCollapseAdvanceOptionsFrame;
+        LumberyardMaterialCollapseAdvanceOptionsFrame;
+    }
+}
+
+//! Load maya plugin (.mll) file and create the main window of Lumberyard Tools if plugin loads successfully
+global proc LumberyardToolWindow()
+{
+    string $pluginName = `cryGetPluginName`;
+    if( catchQuiet( `pluginInfo -query -version $pluginName` ))
+    {
+        error("Plugin `" + $pluginName + "` could not be found.");
+    }
+    
+    LumberyardToolLoadGeometryExportNodes;
+    
+    if( !`LumberyardToolFindAndUpgradeOldStyleExportNodes` )
+    {
+        return;
+    }
+    
+    if( !`LumberyardUtilitiesUpgradeAnimationData` )
+    {
+        return;
+    }
+    
+    LumberyardToolCreateWindow();
+}

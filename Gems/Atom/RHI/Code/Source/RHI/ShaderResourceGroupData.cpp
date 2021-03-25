@@ -252,6 +252,10 @@ namespace AZ
                     isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
                     break;
 
+                case ShaderInputBufferType::AccelerationStructure:
+                    isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
+                    break;
+
                 default:
                     AZ_Assert(false, "Buffer Input '%s[%d]': Invalid buffer type!", shaderInputBuffer.m_name.GetCStr(), arrayIndex);
                     return false;

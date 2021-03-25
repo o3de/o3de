@@ -39,6 +39,9 @@ namespace EMotionFX
         : public AZ::EBusTraits
     {
     public:
+        // Enable multi-threaded access by locking primitive using a mutex when connecting handlers to the EBus or executing events.
+        using MutexType = AZStd::recursive_mutex;
+
         /**
          * Called whenever the motion extraction node of an actor changed.
          */
@@ -46,6 +49,7 @@ namespace EMotionFX
 
         virtual void OnActorCreated(Actor* actor) { AZ_UNUSED(actor); }
         virtual void OnActorDestroyed(Actor* actor) { AZ_UNUSED(actor); }
+        virtual void OnActorReady(Actor* actor) { AZ_UNUSED(actor); }
     };
 
     using ActorNotificationBus = AZ::EBus<ActorNotifications>;

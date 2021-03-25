@@ -34,6 +34,16 @@ namespace AzNetworking
         return m_sentBytes;
     }
 
+    inline uint32_t UdpSocket::GetSentPacketsEncrypted() const
+    {
+        return m_sentPacketsEncrypted;
+    }
+
+    inline uint32_t UdpSocket::GetSentBytesEncryptionInflation() const
+    {
+        return m_sentBytesEncryptionInflation;
+    }
+
     inline uint32_t UdpSocket::GetRecvPackets() const
     {
         return m_recvPackets;

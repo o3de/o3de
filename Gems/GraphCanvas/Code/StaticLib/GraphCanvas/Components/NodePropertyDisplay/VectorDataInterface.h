@@ -41,16 +41,16 @@ namespace GraphCanvas
         virtual AZStd::string GetElementStyle(int index) const = 0;
 
         // Returns the precision for the given index.
-        virtual int GetDecimalPlaces([[maybe_unused]] int index) const { return 7; }
+        virtual int GetDecimalPlaces(int /*index*/) const { return 7; }
 
         // Returns the truncated display precision for the given index.
-        virtual int GetDisplayDecimalPlaces([[maybe_unused]] int index) const { return 4; }
+        virtual int GetDisplayDecimalPlaces(int /*index*/) const { return 4; }
         
         // Returns the minimum/maximum value for the given index.
-        virtual double GetMinimum([[maybe_unused]] int index) const { return -999999999; }
-        virtual double GetMaximum([[maybe_unused]] int index) const { return 999999999; }
+        virtual double GetMinimum(int /*index*/) const { return -999999999; }
+        virtual double GetMaximum(int /*index*/) const { return 999999999; }
         
         // Returns the suffix to append to the spin box.
-        virtual const char* GetSuffix([[maybe_unused]] int index) const { return ""; }        
+        virtual const char* GetSuffix(int /*index*/) const { return ""; }        
     };
 }

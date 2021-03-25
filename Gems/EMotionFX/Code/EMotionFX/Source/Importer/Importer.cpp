@@ -1066,26 +1066,19 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable2());
 
         // Actor file format
-        RegisterChunkProcessor(aznew ChunkProcessorActorMesh());
-        RegisterChunkProcessor(aznew ChunkProcessorActorSkinningInfo());
-        RegisterChunkProcessor(aznew ChunkProcessorActorStdMaterial());
-        RegisterChunkProcessor(aznew ChunkProcessorActorStdMaterialLayer());
-        RegisterChunkProcessor(aznew ChunkProcessorActorGenericMaterial());
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo());
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo2());
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo3());
-        RegisterChunkProcessor(aznew ChunkProcessorActorMeshLOD());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTarget());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeGroups());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodes());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets2());
-        RegisterChunkProcessor(aznew ChunkProcessorActorMaterialInfo());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeMotionSources());
         RegisterChunkProcessor(aznew ChunkProcessorActorAttachmentNodes());
-        RegisterChunkProcessor(aznew ChunkProcessorActorMaterialAttributeSet());
         RegisterChunkProcessor(aznew ChunkProcessorActorPhysicsSetup());
         RegisterChunkProcessor(aznew ChunkProcessorActorSimulatedObjectSetup());
+        RegisterChunkProcessor(aznew ChunkProcessorMeshAsset());
 
         // Motion file format
         RegisterChunkProcessor(aznew ChunkProcessorMotionInfo());
@@ -1173,25 +1166,16 @@ namespace EMotionFX
             // if we're loading an actor
             if (actorSettings)
             {
-                if ((actorSettings->mLoadSkinningInfo           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_SKINNINGINFO) ||
-                    (actorSettings->mLoadStandardMaterialLayers == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDMATERIALLAYER) ||
-                    (actorSettings->mLoadLimits                 == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_LIMIT) ||
+                if ((actorSettings->mLoadLimits                 == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_LIMIT) ||
                     (actorSettings->mLoadMorphTargets           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET) ||
                     (actorSettings->mLoadMorphTargets           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS) ||
-                    (actorSettings->mLoadGeometryLODs           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_MESHLODLEVELS) ||
                     (actorSettings->mLoadSimulatedObjects       == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP))
-                {
-                    mustSkip = true;
-                }
-
-                // skip mesh chunks when we dont want any collision meshes or regular meshes
-                if (actorSettings->mLoadMeshes == false && actorSettings->mLoadCollisionMeshes == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_MESH)
                 {
                     mustSkip = true;
                 }
             }
 
-            // if we're loading amotion
+            // if we're loading a motion
             if (skelMotionSettings)
             {
                 if (skelMotionSettings->mLoadMotionEvents       == false && chunk.mChunkID == FileFormat::MOTION_CHUNK_MOTIONEVENTTABLE)
@@ -1216,39 +1200,15 @@ namespace EMotionFX
     // make sure no settings conflict or can cause crashes
     void Importer::ValidateActorSettings(ActorSettings* settings)
     {
-        // disable loading of skinning when we load no meshes
-        if (settings->mLoadMeshes == false && settings->mLoadSkinningInfo)
+        // After atom: Make sure we are not loading the tangents and bitangents
+        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_TANGENTS))
         {
-            settings->mLoadSkinningInfo = false;
+            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_TANGENTS);
         }
 
-        // if no meshes are loaded at all, also disable loading of geometry LODs
-        if (settings->mLoadMeshes == false && settings->mLoadCollisionMeshes == false)
+        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_BITANGENTS))
         {
-            settings->mLoadGeometryLODs = false;
-        }
-
-        // if we want to skip loading tangents, disable loading the tangent data layer
-        if (settings->mLoadTangents == false && settings->mLoadMeshes)
-        {
-            if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_TANGENTS))
-            {
-                settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_TANGENTS);
-            }
-
-            if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_BITANGENTS))
-            {
-                settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_BITANGENTS);
-            }
-        }
-
-        // make sure that the loading of tangents flag is set to false when we want to skip the tangent layer
-        if (settings->mLoadTangents && settings->mLoadMeshes)
-        {
-            if (settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_TANGENTS))
-            {
-                settings->mLoadTangents = false;
-            }
+            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_BITANGENTS);
         }
 
         // make sure we load at least the position and normals and org vertex numbers
@@ -1263,143 +1223,6 @@ namespace EMotionFX
     {
         MCORE_UNUSED(settings);
     }
-
-    /*
-    // make sure no settings conflict or can cause crashes
-    void Importer::ValidateProgMorphMotionSettings(MorphMotionSettings* settings)
-    {
-    }
-    */
-
-    // convert a vertex attribute layer ID into a string
-    const char* Importer::ActorVertexAttributeLayerTypeToString(uint32 layerID)
-    {
-        switch (layerID)
-        {
-        case Mesh::ATTRIB_POSITIONS:
-            return "Positions";
-        case Mesh::ATTRIB_NORMALS:
-            return "Normals";
-        case Mesh::ATTRIB_TANGENTS:
-            return "Tangents";
-        case Mesh::ATTRIB_BITANGENTS:
-            return "Bitangents";
-        case Mesh::ATTRIB_UVCOORDS:
-            return "UV Coordinates";
-        case Mesh::ATTRIB_COLORS32:
-            return "32-bit Colors";
-        case Mesh::ATTRIB_COLORS128:
-            return "128-bit Colors";
-        case Mesh::ATTRIB_ORGVTXNUMBERS:
-            return "Original Vertex Numbers";
-        case Mesh::ATTRIB_CLOTH_DATA:
-            return "Cloth Data";
-        default:
-            return "<Unknown>";
-        }
-        ;
-    }
-
-
-    // convert for an abstract data layer
-    bool Importer::StandardLayerConvert(VertexAttributeLayerAbstractData* layer, const MCore::Endian::EEndianType sourceEndianType)
-    {
-        const uint32 layerID = layer->GetType();
-        switch (layerID)
-        {
-        // positions (Vector3)
-        case Mesh::ATTRIB_NORMALS:
-        case Mesh::ATTRIB_POSITIONS:
-        {
-            AZ::Vector3* data = (AZ::Vector3*)layer->GetOriginalData();
-            const uint32 numAttribs = layer->GetNumAttributes();
-            ChunkProcessor::ConvertVector3(data, sourceEndianType, numAttribs);
-            return true;
-        }
-        break;
-
-
-        // UV coordinates (Vector2)
-        case Mesh::ATTRIB_UVCOORDS:
-        {
-            AZ::Vector2* data = static_cast<AZ::Vector2*>(layer->GetOriginalData());
-            const uint32 numAttribs = layer->GetNumAttributes();
-            MCore::Endian::ConvertVector2(data, sourceEndianType, numAttribs);
-            return true;
-        }
-        break;
-
-
-        // tangents (Vector4)
-        case Mesh::ATTRIB_TANGENTS:
-        {
-            AZ::Vector4* data = static_cast<AZ::Vector4*>(layer->GetOriginalData());
-            const uint32 numAttribs = layer->GetNumAttributes();
-            for (uint32 i = 0; i < numAttribs; ++i)
-            {
-                AZ::Vector3 tangent(data[i].GetX(), data[i].GetY(), data[i].GetZ());
-                MCore::Endian::ConvertVector3(&tangent, sourceEndianType);      // convert the endian of the Vector3 part
-                data[i].SetX(tangent.GetX());
-                data[i].SetY(tangent.GetY());
-                data[i].SetZ(tangent.GetZ());
-                float dataW = data[i].GetW();
-                MCore::Endian::ConvertFloat(&dataW, sourceEndianType);      // convert endian of the w component
-                data[i].SetW(dataW);
-            }
-            return true;
-        }
-        break;
-
-
-        // 128 bit colors (RGBAColor)
-        case Mesh::ATTRIB_COLORS128:
-        {
-            MCore::RGBAColor* data = (MCore::RGBAColor*)layer->GetOriginalData();
-            const uint32 numAttribs = layer->GetNumAttributes();
-            MCore::Endian::ConvertRGBAColor(data, sourceEndianType, numAttribs);
-            return true;
-        }
-        break;
-
-
-        // colors, original vertex numbers and cloth inverse masses (uint32)
-        case Mesh::ATTRIB_ORGVTXNUMBERS:
-        case Mesh::ATTRIB_COLORS32:
-        case Mesh::ATTRIB_CLOTH_DATA:
-        {
-            uint32* data = (uint32*)layer->GetOriginalData();
-            const uint32 numAttribs = layer->GetNumAttributes();
-            MCore::Endian::ConvertUnsignedInt32(data, sourceEndianType, numAttribs);
-            return true;
-        }
-        break;
-
-
-        // bitangents (Vector3)
-        case Mesh::ATTRIB_BITANGENTS:
-        {
-            AZ::Vector3* data = (AZ::Vector3*)layer->GetOriginalData();
-            const uint32 numAttribs = layer->GetNumAttributes();
-            for (uint32 i = 0; i < numAttribs; ++i)
-            {
-                AZ::Vector3 bitangent(data[i].GetX(), data[i].GetY(), data[i].GetZ());
-                MCore::Endian::ConvertVector3(&bitangent, sourceEndianType);      // convert the endian of the Vector3 part
-                data[i] = bitangent;
-            }
-            return true;
-        }
-        break;
-
-
-        // when we don't know the type
-        default:
-            MCore::LogError("Importer::StandardLayerEndianConvert() - The layer type is unknown, so the data can't be converted!");
-        }
-        ;
-
-        return false;
-    }
-
 
     // loads the given file and checks if it is an actor or motion
     Importer::EFileType Importer::CheckFileType(const char* filename)

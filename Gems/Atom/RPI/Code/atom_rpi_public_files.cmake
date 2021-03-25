@@ -40,8 +40,7 @@ set(FILES
     Include/Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h
     Include/Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h
     Include/Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h
-    Include/Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface.h
-    Include/Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface2.h
+    Include/Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h
     Include/Atom/RPI.Public/Image/AttachmentImage.h
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
     Include/Atom/RPI.Public/Image/DefaultStreamingImageController.h

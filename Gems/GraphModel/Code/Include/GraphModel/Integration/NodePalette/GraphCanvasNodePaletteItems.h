@@ -54,7 +54,7 @@ namespace GraphModelIntegration
             {
                 AZ::EntityId graphCanvasNodeId = graphCanvasNode->GetId();
 
-                GraphCanvas::SceneRequestBus::Event(graphCanvasSceneId, &GraphCanvas::SceneRequests::AddNode, graphCanvasNodeId, dropPosition);
+                GraphCanvas::SceneRequestBus::Event(graphCanvasSceneId, &GraphCanvas::SceneRequests::AddNode, graphCanvasNodeId, dropPosition, false);
                 GraphCanvas::SceneMemberUIRequestBus::Event(graphCanvasNodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
 
                 AZ::EntityId gridId;

@@ -32,7 +32,7 @@ namespace ScriptCanvas
             {
                 if (slotId == GetSlotId("Show"))
                 {
-                    ScriptCanvasDiagnostics::DebugDrawBus::Handler::BusConnect(GetEntityId());
+                    ScriptCanvasDiagnostics::DebugDrawBus::Handler::BusConnect(this);
 
                     m_duration = DrawTextNodeProperty::GetDuration(this);
                     if (m_duration > 0.f && !AZ::TickBus::Handler::BusIsConnected())

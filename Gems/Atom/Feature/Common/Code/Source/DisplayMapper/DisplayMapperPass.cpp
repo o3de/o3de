@@ -13,10 +13,11 @@
 #include <Atom/Feature/DisplayMapper/DisplayMapperPass.h>
 #include <Atom/Feature/ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
+#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
-#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
+#include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -96,17 +97,13 @@ namespace AZ
         {
             // [GFX TODO] [ATOM-2450] Logic determine the type of display attached and use it to drive the
             // display mapper parameters.
-
-            RPI::PassAttachmentRef passAttachmentRef;
-            passAttachmentRef.m_pass = "Parent";
-            passAttachmentRef.m_attachment = "SwapChainOutput";
-            const RPI::PassAttachmentBinding* binding = FindAdjacentBinding(passAttachmentRef);
-            if (binding)
+            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
             {
-                AZ_Assert(binding->m_attachment->GetAttachmentType() == RHI::AttachmentType::Image, "Invalid attachment");
-                const RHI::TransientImageDescriptor imageDesc = binding->m_attachment->GetTransientImageDescriptor();
-                m_displayBufferFormat = imageDesc.m_imageDescriptor.m_format;
+                m_displayBufferFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+            }
 
+            if (m_displayBufferFormat != RHI::Format::Unknown)
+            {
                 if (m_acesOutputTransformPass)
                 {
                     m_acesOutputTransformPass->SetDisplayBufferFormat(m_displayBufferFormat);
@@ -186,7 +183,9 @@ namespace AZ
                 m_ldrGradingLookupTablePass->SetInputReferencePassName(inputPass);
                 m_ldrGradingLookupTablePass->SetInputReferenceAttachmentName(inputPassAttachment);
             }
-        
+
+            m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
+
             ParentPass::BuildAttachmentsInternal();
         }
 

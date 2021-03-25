@@ -38,7 +38,7 @@ namespace GraphCanvas
         setEnabled(GraphUtils::IsComment(targetId));
     }
 
-    ContextMenuAction::SceneReaction EditCommentMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction EditCommentMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
 

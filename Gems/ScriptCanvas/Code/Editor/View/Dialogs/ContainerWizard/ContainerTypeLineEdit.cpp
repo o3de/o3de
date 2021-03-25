@@ -343,6 +343,11 @@ namespace ScriptCanvasEditor
 
     bool ContainerTypeLineEdit::DisplayType(const AZ::TypeId& typeId)
     {
+        if (!m_dataTypeMenu.GetModel()->HasType(typeId))
+        {
+            return false;
+        }
+
         QSignalBlocker signalBlocker(m_ui->variableType);
         AZStd::string typeName = m_dataTypeMenu.GetModel()->FindTypeNameForTypeId(typeId);
 

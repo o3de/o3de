@@ -17,7 +17,7 @@
 
 namespace AzFramework
 {
-    static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformES3, PlatformIOS, PlatformOSX, PlatformXenia, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+    static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformES3, PlatformIOS, PlatformOSX, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
     const char* PlatformIdToPalFolder(AzFramework::PlatformId platform)
     {
@@ -35,8 +35,6 @@ namespace AzFramework
             return "iOS";
         case AzFramework::OSX:
             return "Mac";
-        case AzFramework::XENIA:
-            return "Xenia";
         case AzFramework::PROVO:
             return "Provo";
         case AzFramework::SALEM:
@@ -83,10 +81,6 @@ namespace AzFramework
         else if (osPlatform == PlatformCodeNameSalem)
         {
             return PlatformSalem;
-        }
-        else if (osPlatform == PlatformCodeNameXenia)
-        {
-            return PlatformCodeNameXenia;
         }
         else if (osPlatform == PlatformCodeNameJasper)
         {
@@ -219,9 +213,6 @@ namespace AzFramework
             break;
         case PlatformId::OSX:
             platformCodes.emplace_back(PlatformCodeNameMac);
-            break;
-        case PlatformId::XENIA:
-            platformCodes.emplace_back(PlatformCodeNameXenia);
             break;
         case PlatformId::PROVO:
             platformCodes.emplace_back(PlatformCodeNameProvo);

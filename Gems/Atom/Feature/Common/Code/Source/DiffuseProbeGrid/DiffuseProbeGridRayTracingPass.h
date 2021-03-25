@@ -47,9 +47,9 @@ namespace AZ
             void CreateShaderTableScope();
 
             // Scope producer functions
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const RPI::PassScopeProducer& producer) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context, const RPI::PassScopeProducer& producer) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // Pass overrides
             void FrameBeginInternal(FramePrepareParams params) override;
@@ -59,6 +59,8 @@ namespace AZ
 
             // ray tracing shader and pipeline state
             Data::Instance<RPI::Shader> m_rayTracingShader;
+            Data::Instance<RPI::Shader> m_missShader;
+            Data::Instance<RPI::Shader> m_closestHitShader;
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table
@@ -69,8 +71,24 @@ namespace AZ
             Data::Asset<RPI::ShaderResourceGroupAsset> m_globalSrgAsset;
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
-            // local SRGs associated with each mesh for the hit shaders
-            AZStd::vector<AZ::Data::Instance<RPI::ShaderResourceGroup>> m_localSrgs;
+            struct ClosestHitData
+            {
+                uint32_t m_indexOffset = 0;
+                uint32_t m_positionOffset = 0;
+                uint32_t m_normalOffset = 0;
+                uint32_t m_padding = 0;
+
+                AZ::Vector4 m_materialColor = AZ::Vector4(0.0f);
+                AZ::Matrix3x3 m_worldInvTranspose = AZ::Matrix3x3::CreateIdentity();
+            };
+
+            // [GFX TODO][ATOM-14780] SRG support for unbounded arrays
+            // we are limited to 512 meshes until unbounded array support is implemented
+            AZStd::array<ClosestHitData, 512> m_closestHitData;
+            AZStd::vector<const RHI::BufferView*> m_meshVertexPositionBuffer;
+            AZStd::vector<const RHI::BufferView*> m_meshVertexNormalBuffer;
+            AZStd::vector<const RHI::BufferView*> m_meshIndexBuffer;
+            uint32_t m_meshCount = 0;
 
             bool m_initialized = false;
         };

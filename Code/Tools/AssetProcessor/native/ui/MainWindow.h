@@ -107,7 +107,7 @@ public:
 public Q_SLOTS:
     void ShowWindow();
     
-    void SyncWhiteListAndRejectedList(QStringList whiteList, QStringList rejectedList);
+    void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
     void FirstTimeAddedToRejctedList(QString ipAddress);
     void SaveLogPanelState();
     void OnAssetProcessorStatusChanged(const AssetProcessor::AssetProcessorStatusEntry entry);
@@ -163,17 +163,17 @@ private:
     void OnConnectionSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
     QStringListModel m_rejectedAddresses;
-    QStringListModel m_whitelistedAddresses;
+    QStringListModel m_allowedListAddresses;
     
-    void OnWhiteListedConnectionsListViewClicked();
+    void OnAllowedListConnectionsListViewClicked();
     void OnRejectedConnectionsListViewClicked();
     
-    void OnWhiteListCheckBoxToggled();
+    void OnAllowedListCheckBoxToggled();
     
-    void OnAddHostNameWhiteListButtonClicked();
-    void OnAddIPWhiteListButtonClicked();
+    void OnAddHostNameAllowedListButtonClicked();
+    void OnAddIPAllowedListButtonClicked();
 
-    void OnToWhiteListButtonClicked();
+    void OnToAllowedListButtonClicked();
     void OnToRejectedListButtonClicked();
 
     void UpdateJobLogView(QModelIndex selectedIndex);

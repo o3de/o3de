@@ -68,5 +68,5 @@ namespace ScriptCanvas
             return m_info.IsValid();
         }
 
-    } // namespace Debugger
-} // namespace ScriptCanvas
+    }
+} 

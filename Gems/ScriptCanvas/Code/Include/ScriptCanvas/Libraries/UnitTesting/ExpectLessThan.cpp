@@ -13,6 +13,7 @@
 #include "ExpectLessThan.h"
 
 #include "UnitTestBus.h"
+#include "UnitTestBusSenderMacros.h"
 
 namespace ScriptCanvas
 {
@@ -84,28 +85,11 @@ namespace ScriptCanvas
 
                 switch (lhs->GetType().GetType())
                 {
-                case Data::eType::Number:
-                      ScriptCanvas::UnitTesting::Bus::Event
-                          ( GetOwningScriptCanvasId()
-                          , &ScriptCanvas::UnitTesting::BusTraits::ExpectLessThanNumber
-                          , *lhs->GetAs<Data::NumberType>()
-                          , *rhs->GetAs<Data::NumberType>()
-                          , *report);
-                      break;
-
-                case Data::eType::String:
-                    ScriptCanvas::UnitTesting::Bus::Event
-                        ( GetOwningScriptCanvasId()
-                        , &ScriptCanvas::UnitTesting::BusTraits::ExpectLessThanString
-                        , *lhs->GetAs<Data::StringType>()
-                        , *rhs->GetAs<Data::StringType>()
-                        , *report);
-
-                    break;
+                    SCRIPT_CANVAS_UNIT_TEST_LEGACY_NODE_COMPARE_IMPLEMENTATIONS(ExpectLessThan);
                 }
 
                 SignalOutput(GetSlotId("Out"));
             }
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+        }
+    }
+}

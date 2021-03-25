@@ -31,17 +31,7 @@
 //#include <QtGui>
 #include <QMainWindow>
 #include <QOpenGLWidget>
-// QOpenGLFunctions doesnt like to have GLEW defined before in Mac
-// However, this seems to not produce any errors, so we are workaround it.
-// According to the documentation, GLEW and QOpenGLFunctions provide
-// the same features, so we should just use one.
-#ifdef __GLEW_H__
-#undef __GLEW_H__
-#include <QOpenGLFunctions>
-#define __GLEW_H__
-#else
-#include <QOpenGLFunctions>
-#endif
+#include <QOpenGLExtraFunctions>
 #include <QFont>
 #include <QFontMetrics>
 #endif
@@ -56,7 +46,7 @@ namespace EMStudio
     class GLWidget
         : public QOpenGLWidget
         , public RenderWidget
-        , public QOpenGLFunctions
+        , protected QOpenGLExtraFunctions
     {
         Q_OBJECT
                  MCORE_MEMORYOBJECTCATEGORY(GLWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERPLUGIN);

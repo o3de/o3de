@@ -22,11 +22,6 @@
 #include <CryPath.h>
 #include <AzFramework/Archive/Archive.h>
 
-
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-#include "../ZipEncrypt.h"
-#endif
-
 extern CMTSafeHeap* g_pPakHeap;
 
 #if defined(STREAMENGINE_ENABLE_STATS)
@@ -146,11 +141,7 @@ uint32 CAsyncIOFileRequest::ConfigureRead(AZ::IO::CCachedFileData* pFileData)
         m_crc32FromHeader = pFileEntry->desc.lCRC32;
     }
 
-    m_bEncryptedBuffer = false;
-
     m_nPageReadCurrent = 0;
-
-    // FIXME later - see FIXME in DecryptBlockEntry if changing how m_bStreamInPlace is inited
 
     m_bStreamInPlace = !m_bCompressedBuffer || ((!m_pExternalMemoryBuffer || !m_bWriteOnlyExternal) && (m_nFileSize > m_nFileSizeCompressed));
     m_bReadBegun = 1;
@@ -267,17 +258,6 @@ uint32 CAsyncIOFileRequest::AllocateOutput([[maybe_unused]] AZ::IO::CCachedFileD
             m_pDecompQueue = new SStreamJobQueue;
         }
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-        if (m_bEncryptedBuffer)
-        {
-            m_pDecryptQueue = new SStreamJobQueue;
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-            m_pDecryptionCTR = new symmetric_CTR;
-#endif
-        }
-
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-
         // Doesn't need to be atomic, as there's no concurrency yet.
         int nMemoryBufferUsers = 0;
         if (nReadAllocSize > 0)
@@ -285,10 +265,6 @@ uint32 CAsyncIOFileRequest::AllocateOutput([[maybe_unused]] AZ::IO::CCachedFileD
             ++nMemoryBufferUsers;
         }
         if (m_bCompressedBuffer)
-        {
-            ++nMemoryBufferUsers;
-        }
-        if (m_bEncryptedBuffer)
         {
             ++nMemoryBufferUsers;
         }
@@ -321,19 +297,9 @@ void CAsyncIOFileRequest::Cancel()
     {
         CryOptionalAutoLock<CryCriticalSection> readLock(m_externalBufferLockRead, m_pExternalMemoryBuffer != NULL);
         CryOptionalAutoLock<CryCriticalSection> decompLock(m_externalBufferLockDecompress, m_pExternalMemoryBuffer != NULL);
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-        CryOptionalAutoLock<CryCriticalSection> decryptLock(m_externalBufferLockDecrypt, m_pExternalMemoryBuffer != NULL);
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
 
         Failed(ERROR_USER_ABORT);
     }
-}
-
-void CAsyncIOFileRequest::SyncWithDecrypt()
-{
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    m_decryptJobExecutor.reset(); // destructor waits on job completion
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
 }
 
 void CAsyncIOFileRequest::SyncWithDecompress()
@@ -358,14 +324,6 @@ bool CAsyncIOFileRequest::TryCancel()
                 m_externalBufferLockRead.Unlock();
                 return false;
             }
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-            if (!m_externalBufferLockDecrypt.TryLock())
-            {
-                m_externalBufferLockDecompress.Unlock();
-                m_externalBufferLockRead.Unlock();
-                return false;
-            }
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
             bExt = true;
         }
 
@@ -373,9 +331,6 @@ bool CAsyncIOFileRequest::TryCancel()
 
         if (bExt)
         {
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-            m_externalBufferLockDecrypt.Unlock();
-#endif
             m_externalBufferLockDecompress.Unlock();
             m_externalBufferLockRead.Unlock();
         }
@@ -408,25 +363,6 @@ void CAsyncIOFileRequest::FreeBuffer()
         delete m_pDecompQueue;
         m_pDecompQueue = NULL;
     }
-
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    if (m_pDecryptQueue)
-    {
-        m_pDecryptQueue->Flush(tms);
-        delete m_pDecryptQueue;
-        m_pDecryptQueue = NULL;
-    }
-
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-    if (m_pDecryptionCTR)
-    {
-        ZipEncrypt::FinishStreamCipher(m_pDecryptionCTR);
-        delete m_pDecryptionCTR;
-        m_pDecryptionCTR = NULL;
-    }
-#endif
-
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
 
     if (m_pMemoryBuffer)
     {
@@ -474,9 +410,6 @@ void CAsyncIOFileRequest::Flush()
 
 void CAsyncIOFileRequest::Reset()
 {
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-    m_decryptJobExecutor.reset(); // destructor waits on job completion
-#endif
     m_decompJobExecutor.reset(); // destructor waits on job completion
 
 #ifndef _RELEASE
@@ -489,10 +422,6 @@ void CAsyncIOFileRequest::Reset()
     m_pReadStream = NULL;
     m_strFileName.resize(0);
     m_pakFile.resize(0);
-
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-    m_decryptionCTRInitialisedAgainst = m_pakFile;
-#endif
 
     // Reset POD members of the structure
     memset(&m_nSortKey, 0, ((char*)(this + 1) - (char*)&m_nSortKey));
@@ -696,7 +625,6 @@ uint32 CAsyncIOFileRequest::ReadFileInPages(CStreamingIOThread* pIOThread, CCryF
     uint32 nPageReadLen = (m_nPageReadEnd - m_nPageReadStart);
 
     bool const bCompressed = m_bCompressedBuffer;
-    bool const bEncrypted = m_bEncryptedBuffer;
     bool const bInPlace = m_bStreamInPlace;
     bool const bIgnoreOutOfTmp = IgnoreOutofTmpMem();
 
@@ -811,14 +739,7 @@ uint32 CAsyncIOFileRequest::ReadFileInPages(CStreamingIOThread* pIOThread, CCryF
 
             bool bLastBlock = (m_nPageReadCurrent + nPageSize) == nPageReadLen;
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-            if (bEncrypted)
-            {
-                PushDecryptPage(pStreamEngine->GetJobEngineState(), pReadTarget, pTemporaryPageHdr, nPageSize, bLastBlock);
-            }
-            else
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-            if (bCompressed)    //Spawn the decompression jobs here only if the file isn't encrypted. Encryption and Decompression are strictly linear, the decryption jobs will spawn decompression jobs as they complete.
+            if (bCompressed)
             {
                 PushDecompressPage(pStreamEngine->GetJobEngineState(), pReadTarget, pTemporaryPageHdr, nPageSize, bLastBlock);
             }

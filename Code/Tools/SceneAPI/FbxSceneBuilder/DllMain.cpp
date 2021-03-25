@@ -19,13 +19,18 @@
 #include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 
 #include <SceneAPI/FbxSceneBuilder/FbxImporter.h>
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBitangentStreamImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpColorStreamImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpMaterialImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpMeshImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpTangentStreamImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpTransformImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpUvMapImporter.h>
-#endif
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpSkinImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpSkinWeightsImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBoneImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBlendShapeImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxAnimationImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxBlendShapeImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxBoneImporter.h>
@@ -38,7 +43,6 @@
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxSkinWeightsImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxTransformImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxUvMapImporter.h>
-
 
 namespace AZ
 {
@@ -86,13 +90,19 @@ namespace AZ
                     g_componentDescriptors.push_back(FbxUvMapImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(FbxTangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(FbxBitangentStreamImporter::CreateDescriptor());
-#ifdef ASSET_IMPORTER_SDK_SUPPORTED_TRAIT
+                    g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpColorStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpMaterialImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpMeshImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpTangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpTransformImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpUvMapImporter::CreateDescriptor());
-#endif
+                    g_componentDescriptors.push_back(AssImpSkinImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpSkinWeightsImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpBoneImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpAnimationImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpBlendShapeImporter::CreateDescriptor());
+
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
                         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Handler::RegisterComponentDescriptor, descriptor);

@@ -12,9 +12,7 @@
 
 #pragma once
 
-// include the shared structs
 #include "SharedFileFormatStructs.h"
-
 
 namespace EMotionFX
 {
@@ -24,47 +22,18 @@ namespace EMotionFX
         enum
         {
             ACTOR_CHUNK_NODE                  = 0,
-            ACTOR_CHUNK_MESH                  = 1,
-            ACTOR_CHUNK_SKINNINGINFO          = 2,
-            ACTOR_CHUNK_STDMATERIAL           = 3,
-            ACTOR_CHUNK_STDMATERIALLAYER      = 4,
-            ACTOR_CHUNK_FXMATERIAL            = 5,
             ACTOR_CHUNK_LIMIT                 = 6,
             ACTOR_CHUNK_INFO                  = 7,
-            ACTOR_CHUNK_MESHLODLEVELS         = 8,
             ACTOR_CHUNK_STDPROGMORPHTARGET    = 9,
             ACTOR_CHUNK_NODEGROUPS            = 10,
             ACTOR_CHUNK_NODES                 = 11,       // Actor_Nodes
             ACTOR_CHUNK_STDPMORPHTARGETS      = 12,       // Actor_MorphTargets
-            ACTOR_CHUNK_MATERIALINFO          = 13,       // Actor_MaterialInfo
             ACTOR_CHUNK_NODEMOTIONSOURCES     = 14,       // Actor_NodeMotionSources
             ACTOR_CHUNK_ATTACHMENTNODES       = 15,       // Actor_AttachmentNodes
-            ACTOR_CHUNK_MATERIALATTRIBUTESET  = 16,
-            ACTOR_CHUNK_GENERICMATERIAL       = 17,       // Actor_GenericMaterial
             ACTOR_CHUNK_PHYSICSSETUP          = 18,
             ACTOR_CHUNK_SIMULATEDOBJECTSETUP  = 19,
+            ACTOR_CHUNK_MESHASSET             = 20,
             ACTOR_FORCE_32BIT                 = 0xFFFFFFFF
-        };
-
-
-        // material layer map types
-        enum
-        {
-            ACTOR_LAYERID_UNKNOWN         = 0,// unknown layer
-            ACTOR_LAYERID_AMBIENT         = 1,// ambient layer
-            ACTOR_LAYERID_DIFFUSE         = 2,// a diffuse layer
-            ACTOR_LAYERID_SPECULAR        = 3,// specular layer
-            ACTOR_LAYERID_OPACITY         = 4,// opacity layer
-            ACTOR_LAYERID_BUMP            = 5,// bump layer
-            ACTOR_LAYERID_SELFILLUM       = 6,// self illumination layer
-            ACTOR_LAYERID_SHINE           = 7,// shininess (for specular)
-            ACTOR_LAYERID_SHINESTRENGTH   = 8,// shine strength (for specular)
-            ACTOR_LAYERID_FILTERCOLOR     = 9,// filter color layer
-            ACTOR_LAYERID_REFLECT         = 10,// reflection layer
-            ACTOR_LAYERID_REFRACT         = 11,// refraction layer
-            ACTOR_LAYERID_ENVIRONMENT     = 12,// environment map layer
-            ACTOR_LAYERID_DISPLACEMENT    = 13,// displacement map layer
-            ACTOR_LAYERID_FORCE_8BIT      = 0xFF// don't use more than 8 bit values
         };
 
         // When a struct is not aligned, memset the object to 0 before using it, otherwise you might end up with some garbage paddings.
@@ -135,6 +104,11 @@ namespace EMotionFX
             // string : the name of the actor
         };
 
+        struct Actor_MeshAsset
+        {
+            // followed by:
+            // string : Mesh asset id
+        };
 
         // a node header
         // (not aligned)
@@ -153,163 +127,12 @@ namespace EMotionFX
             // string : node name (the unique name of the node)
         };
 
-
-        // a mesh LOD level
-        // (aligned)
-        struct Actor_MeshLODLevel
-        {
-            uint32 mLODLevel;
-            uint32 mSizeInBytes;
-
-            // followed by:
-            // array[uint8] The LOD model memory file
-        };
-
-
         // uv (texture) coordinate
         // (aligned)
         struct Actor_UV
         {
             float   mU;
             float   mV;
-        };
-
-
-        // (not aligned)
-        struct Actor_SkinningInfo
-        {
-            uint32  mNodeIndex;             // the node number in the actor
-            uint32  mLOD;                   // the level of detail
-            uint32  mNumLocalBones;         // number of local bones to reserve space for, this represents how many bones are used by the mesh the skinning is linked to
-            uint32  mNumTotalInfluences;    // the total number of influences of all vertices together
-            uint8   mIsForCollisionMesh;    // is it for a collision mesh?
-
-            // followed by:
-            //   Actor_SkinInfluence[mNumTotalInfluences]
-            //   Actor_SkinningInfoTableEntry[mesh.GetNumOrgVerts()]
-        };
-
-
-        // (aligned)
-        struct Actor_SkinningInfoTableEntry
-        {
-            uint32  mStartIndex;// index inside the SkinInfluence array
-            uint32  mNumElements;// the number of influences for this item/entry that follow from the given start index
-        };
-
-
-        // a skinning influence
-        // (not aligned)
-        struct Actor_SkinInfluence
-        {
-            float   mWeight;
-            uint16  mNodeNr;
-        };
-
-
-        // standard material, with integrated set of standard material layers
-        // (aligned)
-        struct Actor_StandardMaterial
-        {
-            uint32      mLOD;           // the level of detail
-            FileColor   mAmbient;       // ambient color
-            FileColor   mDiffuse;       // diffuse color
-            FileColor   mSpecular;      // specular color
-            FileColor   mEmissive;      // self illumination color
-            float       mShine;         // shine
-            float       mShineStrength; // shine strength
-            float       mOpacity;       // the opacity amount [1.0=full opac, 0.0=full transparent]
-            float       mIOR;           // index of refraction
-            uint8       mDoubleSided;   // double sided?
-            uint8       mWireFrame;     // render in wireframe?
-            uint8       mTransparencyType;// F=filter / S=substractive / A=additive / U=unknown
-            uint8       mNumLayers;     // the number of material layers
-
-            // followed by:
-            // string : material name
-            // Actor_StandardMaterialLayer2[ mNumLayers ]
-        };
-
-
-        // a material layer (version 2)
-        // (aligned)
-        struct Actor_StandardMaterialLayer
-        {
-            float   mAmount;        // the amount, between 0 and 1
-            float   mUOffset;       // u offset (horizontal texture shift)
-            float   mVOffset;       // v offset (vertical texture shift)
-            float   mUTiling;       // horizontal tiling factor
-            float   mVTiling;       // vertical tiling factor
-            float   mRotationRadians;// texture rotation in radians
-            uint16  mMaterialNumber;// the parent material number (as read from the file, where 0 means the first material)
-            uint8   mMapType;       // the map type (see enum in somewhere near the top of file)
-            uint8   mBlendMode;     // blend mode that is used to control how successive layers of textures are combined together
-
-            // followed by:
-            // string : texture filename
-        };
-
-
-        // (aligned)
-        struct Actor_GenericMaterial
-        {
-            uint32      mLOD;       // the level of detail
-
-            // followed by:
-            // string : material name
-        };
-
-
-        // a vertex attribute layer (added layer name)
-        // (not aligned)
-        struct Actor_VertexAttributeLayer
-        {
-            uint32  mLayerTypeID;   // the type of vertex attribute layer
-            uint32  mAttribSizeInBytes;// the size of a single vertex attribute of this type, in bytes
-            uint8   mEnableDeformations;// enable deformations on this layer?
-            uint8   mIsScale;       // is this a scale value, or not? (coordinate system conversion thing)
-
-            // followed by:
-            // string : layername
-            // (sizeof(mAttribSizeInBytes) * mesh.numVertices) bytes, or mesh.numVertices mDataType objects
-        };
-
-
-        // a submesh (with polygon support)
-        // (aligned)
-        struct Actor_SubMesh
-        {
-            uint32  mNumIndices;    // number of indices
-            uint32  mNumVerts;      // number of vertices
-            uint32  mNumPolygons;   // number of polygons
-            uint32  mMaterialIndex; // material number, indexes into the file, so 0 means the first read material
-            uint32  mNumBones;      // the number of bones used by this submesh
-
-            // followed by:
-            // uint32[mNumIndices]
-            // uint8[mNumPolys]
-            // uint32[mNumBones]
-        };
-
-
-        // a mesh (now using Actor_VertexAttributeLayer2)
-        // (not aligned)
-        struct Actor_Mesh
-        {
-            uint32  mNodeIndex;     // the node number this mesh belongs to (0 means the first node in the file, 1 means the second, etc.)
-            uint32  mLOD;           // the level of detail
-            uint32  mNumOrgVerts;   // number of original vertices
-            uint32  mNumPolygons;   // number of polygons
-            uint32  mTotalVerts;    // total number of vertices (of all submeshes)
-            uint32  mTotalIndices;  // total number of indices (of all submeshes)
-            uint32  mNumSubMeshes;  // number of submeshes to follow
-            uint32  mNumLayers;     // the number of layers to follow
-            uint8   mIsCollisionMesh;// is this mesh a collision mesh or a normal mesh?
-            uint8   mIsTriangleMesh;// is this mesh a pure triangle mesh?
-
-            // followed by:
-            // Actor_VertexAttributeLayer2[mNumLayers]
-            // Actor_SubMesh2[mNumSubMeshes]
         };
 
         //-------------------------------------------------------
@@ -329,20 +152,18 @@ namespace EMotionFX
         };
 
 
-        // a  morph target mesh
+        // a  morph target
         // (aligned)
         struct Actor_MorphTarget
         {
             float   mRangeMin;          // the slider min
             float   mRangeMax;          // the slider max
             uint32  mLOD;               // the level of detail to which this expression part belongs to
-            uint32  mNumMeshDeformDeltas;// the number of mesh deform data objects to follow
             uint32  mNumTransformations;// the number of transformations to follow
             uint32  mPhonemeSets;       // the number of phoneme sets to follow
 
             // followed by:
             // string :  morph target name
-            // Actor_MorphTargetMeshDeltas[ mNumDeformDatas ]
             // Actor_MorphTargetTransform[ mNumTransformations ]
         };
 
@@ -356,39 +177,6 @@ namespace EMotionFX
 
             // followed by:
             // Actor_MorphTarget[ mNumMorphTargets ]
-        };
-
-
-        // morph target deformation data
-        // (aligned)
-        struct Actor_MorphTargetMeshDeltas
-        {
-            uint32  mNodeIndex;
-            float   mMinValue;      // minimum range value for x y and z components of the compressed position vectors
-            float   mMaxValue;      // maximum range value for x y and z components of the compressed position vectors
-            uint32  mNumVertices;   // the number of deltas
-
-            // followed by:
-            // File16BitVector3[ mNumVertices ]  (delta position values)
-            // File8BitVector3[ mNumVertices ]   (delta normal values)
-            // File8BitVector3[ mNumVertices ]   (delta tangent values)
-            // uint32[ mNumVertices ]            (vertex numbers)
-        };
-
-       // morph target deformation data (including bitangents)
-        struct Actor_MorphTargetMeshDeltas2
-        {
-            uint32  mNodeIndex;
-            float   mMinValue;      // minimum range value for x y and z components of the compressed position vectors
-            float   mMaxValue;      // maximum range value for x y and z components of the compressed position vectors
-            uint32  mNumVertices;   // the number of deltas
-
-            // followed by:
-            // File16BitVector3[ mNumVertices ]  (delta position values)
-            // File8BitVector3[ mNumVertices ]   (delta normal values)
-            // File8BitVector3[ mNumVertices ]   (delta tangent values)
-            // File8BitVector3[ mNumVertices ]   (delta bitangent values)
-            // uint32[ mNumVertices ]            (vertex numbers)
         };
 
 
@@ -427,19 +215,6 @@ namespace EMotionFX
             // followed by Actor_Node4[mNumNodes] or Actor_NODE5[mNumNodes] (for v2)
         };
 
-
-        // material statistics, which appears before the actual material chunks
-        // (aligned)
-        struct Actor_MaterialInfo
-        {
-            uint32  mLOD;                   // the level of detail
-            uint32  mNumTotalMaterials;     // total number of materials to follow (including default/extra material)
-            uint32  mNumStandardMaterials;  // the number of standard materials in the file
-            uint32  mNumFXMaterials;        // the number of fx materials in the file
-            uint32  mNumGenericMaterials;   // number of generic materials
-        };
-
-
         // node motion sources used for the motion mirroring feature
         // (aligned)
         struct Actor_NodeMotionSources2
@@ -457,16 +232,6 @@ namespace EMotionFX
         {
             uint32 mNumNodes;
             // followed by uint16[mNumNodes]    // an index per attachment node
-        };
-
-
-        // material attribute set
-        // (aligned)
-        struct Actor_MaterialAttributeSet
-        {
-            uint32  mMaterialIndex;
-            uint32  mLODLevel;
-            // followed by MCore::AttributeSet  // see MCore::AttributeSet::CalcStreamSize() for the exact size
         };
     } // namespace FileFormat
 }   // namespace EMotionFX

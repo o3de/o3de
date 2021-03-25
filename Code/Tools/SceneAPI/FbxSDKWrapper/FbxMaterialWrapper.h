@@ -38,7 +38,7 @@ namespace AZ
             AZ::Vector3 GetEmissiveColor() const override;
             float GetOpacity() const override;
             float GetShininess() const override;
-            uint64_t GetUniqueId() const override;
+            AZ::u64 GetUniqueId() const override;
         };
     } // namespace FbxSDKWrapper
 } // namespace AZ

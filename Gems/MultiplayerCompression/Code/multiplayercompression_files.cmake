@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Include/MultiplayerCompression/MultiplayerCompressionBus.h
     Source/LZ4Compressor.cpp
     Source/LZ4Compressor.h
     Source/MultiplayerCompressionFactory.cpp

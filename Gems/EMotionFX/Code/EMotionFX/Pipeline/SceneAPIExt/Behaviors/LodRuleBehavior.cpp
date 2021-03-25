@@ -23,7 +23,6 @@
 #include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/IMaterialRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
@@ -73,7 +72,7 @@ namespace EMotionFX
                     const size_t lodRuleCount = rule->GetLodRuleCount();
                     for (size_t ruleIndex = 0; ruleIndex < lodRuleCount; ++ruleIndex)
                     {
-                        Utilities::LODSelector::SelectLODNodes(scene, rule->GetSceneNodeSelectionList(ruleIndex), ruleIndex);
+                        Utilities::LODSelector::SelectLODBones(scene, rule->GetSceneNodeSelectionList(ruleIndex), ruleIndex);
                     }
                 }
             }
@@ -86,7 +85,7 @@ namespace EMotionFX
                     for (size_t lodLevel = 0; lodLevel < g_maxLods; ++lodLevel)
                     {
                         Data::LodNodeSelectionList selection;
-                        const size_t lodCount = Utilities::LODSelector::SelectLODNodes(scene, selection, lodLevel);
+                        const size_t lodCount = Utilities::LODSelector::SelectLODBones(scene, selection, lodLevel);
                         if (lodCount > 0)
                         {
                             //Only create a lodRule if we have the first lod level. 
@@ -162,7 +161,7 @@ namespace EMotionFX
                             for (size_t ruleIndex = lodRuleCount; ruleIndex < g_maxLods; ++ruleIndex)
                             {
                                 Data::LodNodeSelectionList selection;
-                                const size_t lodCount = Utilities::LODSelector::SelectLODNodes(scene, selection, ruleIndex);
+                                const size_t lodCount = Utilities::LODSelector::SelectLODBones(scene, selection, ruleIndex);
                                 if (lodCount > 0)
                                 {
                                     rule->AddLod();

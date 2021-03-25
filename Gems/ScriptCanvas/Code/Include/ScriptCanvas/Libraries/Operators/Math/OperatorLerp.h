@@ -16,7 +16,6 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/unordered_set.h>
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/GraphBus.h>
@@ -30,6 +29,7 @@ namespace ScriptCanvas
     {
 #define LERPABLE_TYPES { Data::Type::Number(), Data::Type::Vector2(), Data::Type::Vector3(), Data::Type::Vector4() }
 
+        //! Deprecated: see NodeableNodeOverloadedLerp
         class LerpBetween 
             : public Node
             , public AZ::SystemTickBus::Handler
@@ -37,66 +37,9 @@ namespace ScriptCanvas
         {
         public:
 
-            ScriptCanvas_Node(LerpBetween,
-                ScriptCanvas_Node::Name("Lerp Between")
-                ScriptCanvas_Node::Uuid("{58AF538D-021A-4D0C-A3F1-866C2FFF382E}")
-                ScriptCanvas_Node::Description("Performs a lerp between the two specified sources using the speed specified or in the amount of time specified, or the minimum of the two")
-                ScriptCanvas_Node::Version(1)
-                ScriptCanvas_Node::Category("Math")
-            );
-            
-            // General purpose nodes that we don't need to do anything fancy for
-            ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-            ScriptCanvas_In(ScriptCanvas_In::Name("Cancel", ""));
-            
-            ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-            ScriptCanvas_OutLatent(ScriptCanvas_Out::Name("Tick", "Signalled at each step of the lerp"));
-            ScriptCanvas_OutLatent(ScriptCanvas_Out::Name("Lerp Complete", "Output signal"));
-            ////
+            SCRIPTCANVAS_NODE(LerpBetween);
 
-            // DataInput
-
-            // Because all of the data slots are grouped together. We only need one of them to have
-            // the restricted type contract and all of them will get it.
-            ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                                         ScriptCanvas::ConnectionType::Input,
-                                         ScriptCanvas_DynamicDataSlot::Name("Start", "The value to start lerping from.")
-                                         ScriptCanvas_DynamicDataSlot::DynamicGroup("LerpGroup")
-                                         ScriptCanvas_DynamicDataSlot::RestrictedTypeContractTag(LERPABLE_TYPES)
-                                        );
-
-            ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                                         ScriptCanvas::ConnectionType::Input,
-                                         ScriptCanvas_DynamicDataSlot::Name("Stop", "The value to stop lerping at.")
-                                         ScriptCanvas_DynamicDataSlot::DynamicGroup("LerpGroup")
-                                        );
-
-            ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                                         ScriptCanvas::ConnectionType::Input,
-                                         ScriptCanvas_DynamicDataSlot::Name("Speed", "The speed at which to lerp between the start and stop.")
-                                         ScriptCanvas_DynamicDataSlot::DynamicGroup("LerpGroup")
-                                        );
-
-            ScriptCanvas_PropertyWithDefaults(int, -1,
-                                                ScriptCanvas_Property::Name("Maximum Duration", "The maximum amount of time it will take to complete the specified lerp. Negative value implies no limit, 0 implies instant.")
-                                                ScriptCanvas_Property::Input
-                                            );
-            ////
-
-            // DataOutput
-            ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Value,
-                                         ScriptCanvas::ConnectionType::Output,
-                                         ScriptCanvas_DynamicDataSlot::Name("Step", "The value of the current step of the lerp.")
-                                         ScriptCanvas_DynamicDataSlot::DynamicGroup("LerpGroup")
-                                        );
-
-            ScriptCanvas_Property(float,
-                                  ScriptCanvas_Property::Name("Percent", "The percentage of the way through the lerp this tick is on.")
-                                  ScriptCanvas_Property::Output
-                                 );
-            
-            // Serialize Properties
-            ScriptCanvas_SerializeProperty(Data::Type, m_displayType);
+            Data::Type m_displayType;
 
             // Data Input SlotIds
             SlotId m_startSlotId;
@@ -119,15 +62,15 @@ namespace ScriptCanvas
             void OnDeactivate() override;
             void OnConfigured() override;
             
-            // SystemTickBus
+            // SystemTickBus...
             void OnSystemTick() override;
             ////
             
-            // TickBus
+            // TickBus...
             void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;                
             ////
             
-            // Node
+            // Node...
             void OnInputSignal(const SlotId& slotId) override;
             ////
             

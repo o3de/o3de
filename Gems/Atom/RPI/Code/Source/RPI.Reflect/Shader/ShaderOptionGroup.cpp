@@ -41,9 +41,24 @@ namespace AZ
             AZ_Assert(m_layout, "ShaderOptionGroup created with null layout!");
         }
 
+        void ShaderOptionGroup::Reflect(AZ::ReflectContext* context)
+        {
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ShaderOptionGroup>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Shader")
+                    ->Attribute(AZ::Script::Attributes::Module, "shader")
+                    ->Method("GetValueByOptionName", static_cast<ShaderOptionValue (ShaderOptionGroup::*)(const Name&) const>(&ShaderOptionGroup::GetValue))
+                    ->Method("GetShaderOptionDescriptors", &ShaderOptionGroup::GetShaderOptionDescriptors)
+                    ->Method("GetShaderVariantId", &ShaderOptionGroup::GetShaderVariantId)
+                    ;
+            }
+        }
+
         void ShaderOptionGroup::Clear()
         {
-            m_id.reset();
+            m_id.Reset();
         }
 
         ShaderOptionIndex ShaderOptionGroup::FindShaderOptionIndex(const Name& optionName) const
@@ -302,6 +317,11 @@ namespace AZ
                 s.resize(s.size() - separateLength);
             }
             return s;
+        }
+
+        const AZStd::vector<AZ::RPI::ShaderOptionDescriptor>& ShaderOptionGroup::GetShaderOptionDescriptors() const
+        {
+            return m_layout->GetShaderOptions();
         }
 
     } // namespace RPI

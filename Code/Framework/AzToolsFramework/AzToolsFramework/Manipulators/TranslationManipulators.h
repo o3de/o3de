@@ -35,7 +35,7 @@ namespace AzToolsFramework
             Three
         };
 
-        TranslationManipulators(Dimensions dimensions, const AZ::Transform& worldFromLocal);
+        TranslationManipulators(Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale);
 
         void InstallLinearManipulatorMouseDownCallback(const LinearManipulator::MouseActionCallback& onMouseDownCallback);
         void InstallLinearManipulatorMouseMoveCallback(const LinearManipulator::MouseActionCallback& onMouseMoveCallback);
@@ -49,10 +49,11 @@ namespace AzToolsFramework
         void InstallSurfaceManipulatorMouseMoveCallback(const SurfaceManipulator::MouseActionCallback& onMouseMoveCallback);
         void InstallSurfaceManipulatorMouseUpCallback(const SurfaceManipulator::MouseActionCallback& onMouseUpCallback);
 
-        void SetSpace(const AZ::Transform& worldFromLocal) override;
-        void SetLocalTransform(const AZ::Transform& localTransform) override;
-        void SetLocalPosition(const AZ::Vector3& localPosition) override;
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation) override;
+        void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
+        void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
+        void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;
+        void SetLocalOrientationImpl(const AZ::Quaternion& localOrientation) override;
+        void SetNonUniformScaleImpl(const AZ::Vector3& nonUniformScale) override;
 
         void SetAxes(
             const AZ::Vector3& axis1, const AZ::Vector3& axis2,
@@ -91,8 +92,8 @@ namespace AzToolsFramework
     {
         explicit IndexedTranslationManipulator(
             TranslationManipulators::Dimensions dimensions, AZ::u64 vertIndex,
-            const Vertex& position, const AZ::Transform& worldFromLocal)
-                : m_manipulator(dimensions, worldFromLocal)
+            const Vertex& position, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
+                : m_manipulator(dimensions, worldFromLocal, nonUniformScale)
         {
             m_vertices.push_back({ position, Vertex::CreateZero(), vertIndex });
         }

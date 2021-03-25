@@ -24,22 +24,29 @@ namespace AZ
 
         RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
         {
-            AZ_Assert(m_hitGroupBuildContext == nullptr && m_rootSignatureBuildContext == nullptr, "MaxPayloadSize can only be added to the top level of the RayTracingPipelineState");
+            AZ_Assert(IsTopLevelBuildContext(), "MaxPayloadSize can only be added to the top level of the RayTracingPipelineState");
             m_configuration.m_maxPayloadSize = maxPayloadSize;
             return this;
         }
 
         RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
         {
-            AZ_Assert(m_hitGroupBuildContext == nullptr && m_rootSignatureBuildContext == nullptr, "MaxAttributeSize can only be added to the top level of the RayTracingPipelineState");
+            AZ_Assert(IsTopLevelBuildContext(), "MaxAttributeSize can only be added to the top level of the RayTracingPipelineState");
             m_configuration.m_maxAttributeSize = maxAttributeSize;
             return this;
         }
 
         RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxRecursionDepth(uint32_t maxRecursionDepth)
         {
-            AZ_Assert(m_hitGroupBuildContext == nullptr && m_rootSignatureBuildContext == nullptr, "MaxRecursionDepth can only be added to the top level of the RayTracingPipelineState");
+            AZ_Assert(IsTopLevelBuildContext(), "MaxRecursionDepth can only be added to the top level of the RayTracingPipelineState");
             m_configuration.m_maxRecursionDepth = maxRecursionDepth;
+            return this;
+        }
+
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(const RHI::PipelineState* pipelineState)
+        {
+            AZ_Assert(IsTopLevelBuildContext(), "PipelineState can only be added to the top level of the RayTracingPipelineState");
+            m_pipelineState = pipelineState;
             return this;
         }
 
@@ -47,7 +54,54 @@ namespace AZ
         {
             ClearBuildContext();
 
-            m_shaderLibraries.push_back({ descriptor });
+            m_shaderLibraries.push_back({descriptor});
+            m_shaderLibraryBuildContext = &m_shaderLibraries.back();
+            return this;
+        }
+
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RayGenerationShaderName(const AZ::Name& name)
+        {
+            AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "RayGenerationShaderName can only be added to a ShaderLibrary");
+            m_shaderLibraryBuildContext->m_rayGenerationShaderName = name;
+            return this;
+        }
+
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MissShaderName(const AZ::Name& name)
+        {
+            AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "MissShaderName can only be added to a ShaderLibrary");
+            m_shaderLibraryBuildContext->m_missShaderName = name;
+            return this;
+        }
+
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
+        {
+            AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "ClosestHitShaderName can only be added to a ShaderLibrary or a HitGroup");
+
+            if (m_hitGroupBuildContext)
+            {
+                m_hitGroupBuildContext->m_closestHitShaderName = closestHitShaderName;
+            }
+            else
+            {
+                m_shaderLibraryBuildContext->m_closestHitShaderName = closestHitShaderName;
+            }
+
+            return this;
+        }
+
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AnyHitShaderName(const AZ::Name& anyHitShaderName)
+        {
+            AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "AnyHitShaderName can only be added to a ShaderLibrary or a HitGroup");
+
+            if (m_hitGroupBuildContext)
+            {
+                m_hitGroupBuildContext->m_anyHitShaderName = anyHitShaderName;
+            }
+            else
+            {
+                m_shaderLibraryBuildContext->m_anyHitShaderName = anyHitShaderName;
+            }
+
             return this;
         }
 
@@ -61,183 +115,15 @@ namespace AZ
             return this;
         }
 
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
-        {
-            AZ_Assert(m_hitGroupBuildContext, "ClosestHitShaderName can only be added to a HitGroup");
-            m_hitGroupBuildContext->m_closestHitShaderName = closestHitShaderName;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AnyHitShaderName(const AZ::Name& anyHitShaderName)
-        {
-            AZ_Assert(m_hitGroupBuildContext, "AnyHitShaderName can only be added to a HitGroup");
-            m_hitGroupBuildContext->m_anyHitShaderName = anyHitShaderName;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::GlobalRootSignature()
-        {
-            ClearBuildContext();
-
-            m_rootSignatureBuildContext = &m_globalRootSignature;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::LocalRootSignature()
-        {
-            ClearBuildContext();
-
-            m_localRootSignatures.emplace_back();
-            m_localRootSignatureBuildContext = &m_localRootSignatures.back();
-            m_rootSignatureBuildContext = m_localRootSignatureBuildContext;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::CbvParameter()
-        {
-            ClearParamBuildContext();
-
-            AZ_Assert(m_rootSignatureBuildContext, "CbvParameter can only be added to a RootSignature");
-            AZ_Assert(m_rootSignatureBuildContext->m_cbvParam.m_addedToRootSignature == false, "Only one CbvParameter can be added to a RootSignature");
-            m_rootSignatureCbvParamBuildContext = &m_rootSignatureBuildContext->m_cbvParam;
-            m_rootSignatureBuildContext->m_cbvParam.m_addedToRootSignature = true;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::DescriptorTableParameter()
-        {
-            ClearParamBuildContext();
-
-            AZ_Assert(m_rootSignatureBuildContext, "DescriptorTableParameter can only be added to a RootSignature");
-            AZ_Assert(m_rootSignatureBuildContext->m_descriptorTableParam.m_addedToRootSignature == false, "Only one DescriptorTableParameter can be added to a RootSignature");
-            m_rootSignatureDescriptorTableParamBuildContext = &m_rootSignatureBuildContext->m_descriptorTableParam;
-            m_rootSignatureBuildContext->m_descriptorTableParam.m_addedToRootSignature = true;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RootParameterIndex(uint32_t rootParameterIndex)
-        {
-            AZ_Assert(m_rootSignatureCbvParamBuildContext
-                || m_rootSignatureDescriptorTableParamBuildContext
-                || m_rootSignatureStaticSamplerBuildContext, "RootParameterIndex can only be added to a RootSignature parameter or static sampler");
-
-            if (m_rootSignatureCbvParamBuildContext)
-            {
-                m_rootSignatureCbvParamBuildContext->m_rootParameterIndex = rootParameterIndex;
-            }
-            else if (m_rootSignatureDescriptorTableParamBuildContext)
-            {
-                m_rootSignatureDescriptorTableParamBuildContext->m_rootParameterIndex = rootParameterIndex;
-            }
-            else
-            {
-                m_rootSignatureStaticSamplerBuildContext->m_rootParameterIndex = rootParameterIndex;
-            }
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ShaderRegister(uint32_t shaderRegister)
-        {
-            AZ_Assert(m_rootSignatureCbvParamBuildContext
-                || m_rootSignatureDescriptorTableParamRangeBuildContext
-                || m_rootSignatureStaticSamplerBuildContext, "ShaderRegister can only be added to a RootSignature parameter or static sampler");
-
-            if (m_rootSignatureCbvParamBuildContext)
-            {
-                m_rootSignatureCbvParamBuildContext->m_shaderRegister = shaderRegister;
-            }
-            else if (m_rootSignatureDescriptorTableParamRangeBuildContext)
-            {
-                m_rootSignatureDescriptorTableParamRangeBuildContext->m_shaderRegister = shaderRegister;
-            }
-            else
-            {
-                m_rootSignatureStaticSamplerBuildContext->m_shaderRegister = shaderRegister;
-            }
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RegisterSpace(uint32_t registerSpace)
-        {
-            AZ_Assert(m_rootSignatureCbvParamBuildContext
-                || m_rootSignatureDescriptorTableParamRangeBuildContext
-                || m_rootSignatureStaticSamplerBuildContext, "RegisterSpace can only be added to a RootSignature parameter or static sampler");
-
-            if (m_rootSignatureCbvParamBuildContext)
-            {
-                m_rootSignatureCbvParamBuildContext->m_registerSpace = registerSpace;
-            }
-            else if (m_rootSignatureDescriptorTableParamRangeBuildContext)
-            {
-                m_rootSignatureDescriptorTableParamRangeBuildContext->m_registerSpace = registerSpace;
-            }
-            else
-            {
-                m_rootSignatureStaticSamplerBuildContext->m_registerSpace = registerSpace;
-            }
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::Range()
-        {
-            AZ_Assert(m_rootSignatureDescriptorTableParamBuildContext, "Range can only be added to a RootSignature DescriptorTable parameter");
-            m_rootSignatureDescriptorTableParamBuildContext->m_ranges.emplace_back();
-            m_rootSignatureDescriptorTableParamRangeBuildContext = &m_rootSignatureDescriptorTableParamBuildContext->m_ranges.back();
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RangeType(RayTracingRootSignatureDescriptorTableParam::Range::Type rangeType)
-        {
-            AZ_Assert(m_rootSignatureDescriptorTableParamRangeBuildContext, "RangeType can only be added to a RootSignature DescriptorTable Range parameter");
-            m_rootSignatureDescriptorTableParamRangeBuildContext->m_type = rangeType;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ShaderAssociation(const AZ::Name& shaderName)
-        {
-            AZ_Assert(m_localRootSignatureBuildContext, "ShaderAssociation can only be added to a LocalRootSignature");
-            m_localRootSignatureBuildContext->m_shaderAssociations.push_back(shaderName);
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::StaticSampler()
-        {
-            ClearParamBuildContext();
-
-            m_rootSignatureBuildContext->m_staticSamplers.emplace_back();
-            m_rootSignatureStaticSamplerBuildContext = &m_rootSignatureBuildContext->m_staticSamplers.back();
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::FilterMode(RHI::FilterMode filterMode)
-        {
-            AZ_Assert(m_rootSignatureStaticSamplerBuildContext, "FilterMode can only be added to a StaticSampler parameter");
-            m_rootSignatureStaticSamplerBuildContext->m_filterMode = filterMode;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AddressMode(RHI::AddressMode addressMode)
-        {
-            AZ_Assert(m_rootSignatureStaticSamplerBuildContext, "AddressMode can only be added to a StaticSampler parameter");
-            m_rootSignatureStaticSamplerBuildContext->m_addressMode = addressMode;
-            return this;
-        }
-
         void RayTracingPipelineStateDescriptor::ClearBuildContext()
         {
+            m_shaderLibraryBuildContext = nullptr;
             m_hitGroupBuildContext = nullptr;
-            m_rootSignatureBuildContext = nullptr;
-            m_localRootSignatureBuildContext = nullptr;
-            m_rootSignatureStaticSamplerBuildContext = nullptr;
-
-            ClearParamBuildContext();
         }
 
-        void RayTracingPipelineStateDescriptor::ClearParamBuildContext()
+        bool RayTracingPipelineStateDescriptor::IsTopLevelBuildContext()
         {
-            m_rootSignatureCbvParamBuildContext = nullptr;
-            m_rootSignatureDescriptorTableParamBuildContext = nullptr;
-            m_rootSignatureDescriptorTableParamRangeBuildContext = nullptr;
+            return (m_shaderLibraryBuildContext == nullptr && m_hitGroupBuildContext == nullptr);
         }
 
         RHI::Ptr<RHI::RayTracingPipelineState> RayTracingPipelineState::CreateRHIRayTracingPipelineState()

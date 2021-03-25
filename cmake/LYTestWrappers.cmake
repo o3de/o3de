@@ -20,12 +20,12 @@ set(LY_GOOGLETEST_EXTRA_PARAMS CACHE STRING "Allows injection of additional opti
 
 find_package(Python REQUIRED MODULE)
 
-set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=log -c ${CMAKE_SOURCE_DIR}/ctest_pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
-set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
-set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
+ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=log -c ${LY_ROOT_FOLDER}/ctest_pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
+ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
 # Set default to 20 minutes
-set(LY_TEST_DEFAULT_TIMEOUT 1200)
+ly_set(LY_TEST_DEFAULT_TIMEOUT 1200)
 
 # Add the CMake Test targets for each suite if testing is supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -33,8 +33,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 endif()
 
 # Set and create folders for PyTest and GTest xml output
-set (PYTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Pytest)
-set (GTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Gtest)
+ly_set(PYTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Pytest)
+ly_set(GTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Gtest)
 file(MAKE_DIRECTORY ${PYTEST_XML_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${GTEST_XML_OUTPUT_DIR})
 
@@ -86,6 +86,8 @@ endfunction()
 #                       Those params which vary per CTest are stored in this parameter
 #                       and do not appy to the "launch options" for the IDE target.
 # \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
+# \arg:LABELS (optional) - Additional labels to apply to the test target which can be used by ctest filters.
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
 # \arg:TEST_LIBRARY(internal) - Internal variable that contains the library be used. This is only to be used by the other
 #      ly_add_* function below, not by user code
@@ -93,7 +95,7 @@ endfunction()
 function(ly_add_test)
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
     set(one_value_args NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
-    set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES)
+    set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
     # note that we dont use TEST_LIBRARY here, but PAL files might so do not remove!
 
     cmake_parse_arguments(ly_add_test "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -158,6 +160,19 @@ function(ly_add_test)
     if (ly_add_test_TEST_REQUIRES)
         list(TRANSFORM ly_add_test_TEST_REQUIRES PREPEND "REQUIRES_" OUTPUT_VARIABLE prepended_list)
         list(APPEND final_labels ${prepended_list})
+
+        # Workaround so we can filter "AND" of labels until https://gitlab.kitware.com/cmake/cmake/-/issues/21087 is fixed
+        list(TRANSFORM prepended_list PREPEND "SUITE_${ly_add_test_TEST_SUITE}_" OUTPUT_VARIABLE prepended_list)
+        list(APPEND final_labels ${prepended_list})
+    endif()
+
+    if (ly_add_test_COMPONENT)
+        list(TRANSFORM ly_add_test_COMPONENT PREPEND "COMPONENT_" OUTPUT_VARIABLE prepended_component_list)
+        list(APPEND final_labels ${prepended_component_list})
+    endif()
+
+    if (ly_add_test_LABELS)
+        list(APPEND final_labels ${ly_add_test_LABELS})
     endif()
 
     # labels expects a single param, of concatenated labels
@@ -236,6 +251,7 @@ endfunction()
 # \arg:TEST_SERIAL (bool) disable parallel execution alongside other test modules, important when this test depends on shared resources or environment state
 # \arg:TEST_REQUIRES (optional) list of system resources needed by the tests in this module.  Used to filter out execution when those system resources are not available.  For example, 'gpu'
 # \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
@@ -249,7 +265,7 @@ function(ly_add_pytest)
 
     set(options TEST_SERIAL)
     set(oneValueArgs NAME PATH TEST_SUITE PYTEST_MARKS)
-    set(multiValueArgs EXTRA_ARGS)
+    set(multiValueArgs EXTRA_ARGS COMPONENT)
 
     cmake_parse_arguments(ly_add_pytest "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -278,9 +294,11 @@ function(ly_add_pytest)
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
+        LABELS FRAMEWORK_pytest
         TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
         TEST_LIBRARY pytest
         NON_IDE_PARAMS ${non_ide_params}
+        COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
@@ -298,6 +316,7 @@ endfunction()
 # \arg:TEST_REQUIRES (optional) list of system resources needed by the tests in this module.  Used to filter out execution when those system resources are not available.  For example, 'gpu'
 # \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
 #      "Editor" and "EditorPythonBindings" gem are automatically included as dependencies.
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 function(ly_add_editor_python_test)
     if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED)
@@ -306,7 +325,7 @@ function(ly_add_editor_python_test)
 
     set(options TEST_SERIAL)
     set(oneValueArgs NAME PATH TEST_SUITE TEST_PROJECT TIMEOUT)
-    set(multiValueArgs TEST_REQUIRES RUNTIME_DEPENDENCIES)
+    set(multiValueArgs TEST_REQUIRES RUNTIME_DEPENDENCIES COMPONENT)
     
     cmake_parse_arguments(ly_add_editor_python_test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -341,8 +360,10 @@ function(ly_add_editor_python_test)
         Legacy::CryRenderNULL
         Legacy::Editor
         TEST_SUITE ${ly_add_editor_python_test_TEST_SUITE}
+        LABELS FRAMEWORK_pytest
         TEST_LIBRARY pytest_editor
         TIMEOUT ${ly_add_editor_python_test_TIMEOUT}
+        COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
 
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
@@ -358,6 +379,7 @@ endfunction()
 #      and instead places it a special suite of tests that only run when requested.
 # \arg:TEST_COMMAND(optional) - Command which runs the tests.
 #      If not supplied, a default of "AzTestRunner $<TARGET_FILE:${NAME}> AzRunUnitTests" will be used
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
 function(ly_add_googletest)
@@ -366,7 +388,7 @@ function(ly_add_googletest)
     endif()
 
     set(one_value_args NAME TEST_SUITE) 
-    set(multi_value_args TEST_COMMAND)
+    set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
 
@@ -415,11 +437,13 @@ function(ly_add_googletest)
     ly_add_test(
         NAME ${ly_add_googletest_NAME}
         TEST_SUITE ${ly_add_googletest_TEST_SUITE}
+        LABELS FRAMEWORK_googletest
         TEST_COMMAND ${full_test_command} --gtest_output=xml:${report_directory} ${LY_GOOGLETEST_EXTRA_PARAMS}
         TEST_LIBRARY googletest
         ${ly_add_googletest_UNPARSED_ARGUMENTS}
         NON_IDE_PARAMS ${non_ide_params}
         RUNTIME_DEPENDENCIES AZ::AzTestRunner
+        COMPONENT ${ly_add_googletest_COMPONENT}
     )
 endfunction()
 
@@ -431,6 +455,7 @@ endfunction()
 #      Only available option is "gpu"
 # \arg:TEST_COMMAND(optional) - Command which runs the tests
 #      If not supplied, a default of "AzTestRunner $<TARGET_FILE:${TARGET}> AzRunBenchmarks" will be used
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:OUTPUT_FILE_FORMAT(optional) - Format of benchmark output file. Valid options are <console|json|csv>
 #      If not supplied, json is used as a default and the test run command will output results to
 #      "${CMAKE_BINARY_DIR}/BenchmarkResults/" directory
@@ -445,7 +470,7 @@ function(ly_add_googlebenchmark)
     endif()
 
     set(one_value_args NAME TARGET OUTPUT_FILE_FORMAT TIMEOUT)
-    set(multi_value_args TEST_REQUIRES TEST_COMMAND)
+    set(multi_value_args TEST_REQUIRES TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googlebenchmark "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
     ly_strip_target_namespace(TARGET ${ly_add_googlebenchmark_NAME} OUTPUT_VARIABLE stripped_name)
@@ -494,11 +519,13 @@ function(ly_add_googlebenchmark)
         TEST_REQUIRES ${ly_add_googlebenchmark_TEST_REQUIRES}
         TEST_COMMAND ${full_test_command} ${LY_GOOGLETEST_EXTRA_PARAMS}
         TEST_SUITE "benchmark"
+        LABELS FRAMEWORK_googlebenchmark
         TEST_LIBRARY googlebenchmark
         TIMEOUT ${ly_add_googlebenchmark_TIMEOUT}
         RUNTIME_DEPENDENCIES 
             ${build_target}
             AZ::AzTestRunner
+        COMPONENT ${ly_add_googlebenchmark_COMPONENT}
     )
 
 endfunction()

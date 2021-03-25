@@ -11,13 +11,45 @@
 */
 
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::Color, "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}");
+
     namespace SceneData
     {
         namespace GraphData
         {
+            void MeshVertexColorData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<MeshVertexColorData>()->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<MeshVertexColorData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetCustomName", [](const MeshVertexColorData& self) { return self.GetCustomName().GetCStr(); })
+                        ->Method("GetCount", &MeshVertexColorData::GetCount )
+                        ->Method("GetColor", &MeshVertexColorData::GetColor);
+
+                    behaviorContext->Class<AZ::SceneAPI::DataTypes::Color>("MeshVertexColor")
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Property("red", BehaviorValueGetter(&AZ::SceneAPI::DataTypes::Color::red), nullptr)
+                        ->Property("green", BehaviorValueGetter(&AZ::SceneAPI::DataTypes::Color::green), nullptr)
+                        ->Property("blue", BehaviorValueGetter(&AZ::SceneAPI::DataTypes::Color::blue), nullptr)
+                        ->Property("alpha", BehaviorValueGetter(&AZ::SceneAPI::DataTypes::Color::alpha), nullptr);
+                }
+            }
+
             const AZ::Name& MeshVertexColorData::GetCustomName() const
             {
                 return m_customName;

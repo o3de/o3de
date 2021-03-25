@@ -57,24 +57,6 @@ namespace EMotionFX
 
     public:
         /**
-         * The abstract vertex layer data conversion callback type.
-         * The callback is responsible for converting coordinate system and endian of the layer data.
-         */
-        typedef bool (MCORE_CDECL * AbstractLayerConverter)(VertexAttributeLayerAbstractData* layer, const MCore::Endian::EEndianType sourceEndianType);
-
-        /**
-         * The standard layer convert function.
-         * This will convert the data inside a layer that is being read.
-         * You can specify your own layer convert function if you need to convert your own layer types.
-         * The conversions done will be coordinate system conversion and endian conversion.
-         * The supported layer types are the ones found in the Mesh enum that contains Mesh::ATTRIB_POSITIONS.
-         * @param layer The abstract vertex data layer to convert.
-         * @param sourceEndianType The endian type in which the vertex data is currently stored.
-         * @result Returns true when the layer has been successfully converted. In case of an unknown layer, false is returned.
-         */
-        static bool MCORE_CDECL StandardLayerConvert(VertexAttributeLayerAbstractData* layer, const MCore::Endian::EEndianType sourceEndianType);
-
-        /**
          * The attribute data endian conversion callback.
          * This callback is responsible for converting the endian of the data stored inside a given attribute into the currently expected endian.
          */
@@ -95,15 +77,8 @@ namespace EMotionFX
          */
         struct EMFX_API ActorSettings
         {
-            bool mLoadMeshes = true;                               /**< Set to false if you wish to disable loading any meshes. */
-            bool mLoadCollisionMeshes = true;                      /**< Set to false if you wish to disable loading any collision meshes. */
-            bool mLoadStandardMaterialLayers = true;               /**< Set to false if you wish to disable loading any standard material layers. */
-            bool mLoadSkinningInfo = true;                         /**< Set to false if you wish to disable loading of skinning (using bones) information. */
             bool mLoadLimits = true;                               /**< Set to false if you wish to disable loading of joint limits. */
-            bool mLoadGeometryLODs = true;                         /**< Set to false if you wish to disable loading of geometry LOD levels. */
             bool mLoadSkeletalLODs = true;                         /**< Set to false if you wish to disable loading of skeletal LOD levels. */
-            bool mLoadTangents = true;                             /**< Set to false if you wish to disable loading of tangent information. */
-            bool mAutoGenTangents = true;                          /**< Set to false if you don't wish the tangents to be calculated at load time if there are no tangent layers present. */
             bool mLoadMorphTargets = true;                         /**< Set to false if you wish to disable loading any morph targets. */
             bool mDualQuatSkinning = false;                        /**< Set to true  if you wish to enable software skinning using dual quaternions. */
             bool mMakeGeomLODsCompatibleWithSkeletalLODs = false;  /**< Set to true if you wish to disable the process that makes sure no skinning influences are mapped to disabled bones. Default is false. */
@@ -113,21 +88,13 @@ namespace EMotionFX
             uint32 mThreadIndex = 0;
             MCore::Array<uint32>    mChunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
             MCore::Array<uint32>    mLayerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
-            AbstractLayerConverter  mLayerConvertFunction = StandardLayerConvert;  /**< The layer conversion callback. On default it uses the StandardLayerConvert function. */
 
             /**
              * If the actor need to be optimized for server, will overwrite a few other actor settings.
              */
             void OptimizeForServer()
             {
-                mLoadMeshes = false;
-                mLoadCollisionMeshes = false;
-                mLoadStandardMaterialLayers = false;
-                mLoadSkinningInfo = false;
-                mLoadGeometryLODs = false;
                 mLoadSkeletalLODs = false;
-                mLoadTangents = false;
-                mAutoGenTangents = false;
                 mLoadMorphTargets = false;
                 mLoadSimulatedObjects = false;
             }
@@ -411,13 +378,6 @@ namespace EMotionFX
          * @return Returns true when detail-logging is enabled, otherwise false is returned.
          */
         bool GetLogDetails() const;
-
-        /**
-         * Convert an attribute layer type into a string, which is more clear to understand.
-         * @param layerID The layer ID, see ActorFileFormat.h for available ID values, such as FileFormat::Actor_VERTEXDATA_NORMALS.
-         * @result A string containing the description.
-         */
-        static const char* ActorVertexAttributeLayerTypeToString(uint32 layerID);
 
         /**
          * Check the type of a given file on disk.

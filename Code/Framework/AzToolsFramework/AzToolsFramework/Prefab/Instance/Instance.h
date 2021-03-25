@@ -77,8 +77,10 @@ namespace AzToolsFramework
 
             bool AddEntity(AZ::Entity& entity);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
+            void DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+            void RemoveNestedEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
-            InstanceOptionalReference AddInstance(AZStd::unique_ptr<Instance> instance);
+            Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
 
             /**
@@ -91,9 +93,17 @@ namespace AzToolsFramework
             /**
             * Gets the ids for the entities in the Instance DOM.  Can recursively trace all nested instances.
             */
-            void GetNestedEntityIds(const AZStd::function<bool(const AZ::EntityId&)>& callback);
+            void GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback);
 
-            void GetEntityIds(const AZStd::function<bool(const AZ::EntityId&)>& callback);
+            void GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback);
+
+            /**
+            * Gets the entities in the Instance DOM.  Can recursively trace all nested instances.
+            */
+            void GetConstNestedEntities(const AZStd::function<bool(const AZ::Entity&)>& callback);
+            void GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback);
+            void GetNestedEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            void GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
 
             /**
             * Gets the alias for a given EnitityId in the Instance DOM.
@@ -105,9 +115,9 @@ namespace AzToolsFramework
             /**
             * Gets the id for a given EnitityAlias in the Instance DOM.
             *
-            * @return entityId via optional
+            * @return entityId, invalid ID if not found
             */
-            AZStd::optional<AZ::EntityId> GetEntityId(const EntityAlias& alias);
+            AZ::EntityId GetEntityId(const EntityAlias& alias);
 
 
             /**
@@ -146,6 +156,8 @@ namespace AzToolsFramework
 
             bool IsParentInstance(const Instance& instance) const;
 
+            AZ::EntityId GetContainerEntityId() const;
+
         protected:
             /**
             * Gets the entities owned by this instance
@@ -155,6 +167,9 @@ namespace AzToolsFramework
         private:
 
             void ClearEntities();
+
+            void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+            void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);
@@ -172,8 +187,10 @@ namespace AzToolsFramework
             // A map of prefab instance pointers that this prefab instance owns.
             AliasToInstanceMap m_nestedInstances;
 
+            // The entity representing this Instance as a container in the entity hierarchy.
+            AZStd::unique_ptr<AZ::Entity> m_containerEntity;
             
-            // The id of the link that connects the template of this instance to it's source template.
+            // The id of the link that connects the template of this instance to its source template.
             // This is not unique per instance. It's unique per link. It is invalid for instances that aren't nested under other instances.
             LinkId m_linkId = InvalidLinkId;
 

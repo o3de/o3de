@@ -155,7 +155,7 @@ namespace GraphCanvas
         emit ToastNotificationHidden();
     }
 
-    void ToastNotification::mousePressEvent([[maybe_unused]] QMouseEvent* mouseEvent)
+    void ToastNotification::mousePressEvent(QMouseEvent*)
     {
         if (m_closeOnClick)
         {
@@ -164,7 +164,7 @@ namespace GraphCanvas
         }
     }
 
-    bool ToastNotification::eventFilter([[maybe_unused]] QObject* object, QEvent* event)
+    bool ToastNotification::eventFilter(QObject*, QEvent* event)
     {
         if (event->type() == QEvent::MouseButtonPress)
         {

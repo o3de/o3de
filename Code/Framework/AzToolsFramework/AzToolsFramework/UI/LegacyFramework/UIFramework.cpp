@@ -276,8 +276,8 @@ namespace AzToolsFramework
 
         if (m_ptrTicker)
         {
-            // if the ticker is alive it means we failed to properly perform the "UserWantsToQuit" sequience.
-            // se still need to clean up:
+            // if the ticker is alive it means we failed to properly perform the "UserWantsToQuit" sequence.
+            // see still need to clean up:
             m_ptrTicker->cancel();
             QApplication::processEvents();
             AZ::ComponentApplication* pApp = NULL;
@@ -304,8 +304,6 @@ namespace AzToolsFramework
         delete m_ActionChangeProject;
         m_ActionChangeProject = nullptr;
 
-        // in order to be symmetric with constructor and init(), we should be destroying this here.
-        delete pApplication;
         pApplication = NULL;
     }
 
@@ -497,7 +495,7 @@ namespace AzToolsFramework
 
         // we successfully got permission to quit!
         // pump the tickbus one last time!
-        QApplication::processEvents();
+       // QApplication::processEvents();
         AZ::ComponentApplication* pApp = NULL;
         EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
         if (pApp)
@@ -556,7 +554,7 @@ namespace AzToolsFramework
         // Since we quickly pulled the applications into two separate apps to fix up some UX flow
         // this menu doesn't make any sense. Keeping the logic here in case we decide to revert the previous change when a proper solution is attempted
 #if 0
-        //"Woodpecker"
+        //"Application"
         //  + Open Lua Editor
         //  + Open World Editor
         //  + Open Driller
@@ -618,7 +616,7 @@ namespace AzToolsFramework
             typedef FrameworkMessages::Bus HotkeyBus;
 
             m_ActionQuit = new QAction("Quit", this);
-            AzToolsFramework::HotkeyDescription hk(AZ_CRC("GlobalQuitWoodpecker", 0x37f9faa3), "Alt+Q", "Quit", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
+            AzToolsFramework::HotkeyDescription hk(AZ_CRC_CE("GlobalQuitStandaloneTools"), "Alt+Q", "Quit", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
             EBUS_EVENT(HotkeyBus, RegisterHotkey, hk);
             EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, hk.m_HotKeyIDCRC, m_ActionQuit);
             connect(m_ActionQuit, SIGNAL(triggered()), this, SLOT(OnMenuQuit()));

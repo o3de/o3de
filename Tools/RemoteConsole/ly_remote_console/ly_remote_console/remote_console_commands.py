@@ -11,10 +11,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 RemoteConsole: Used to interact with Lumberyard Launchers through the Remote Console to execute console commands.
 """
 
-import socket
-import threading
 import logging
 import os
+import socket
+import threading
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -118,16 +119,55 @@ class RemoteConsole:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def start(self, timeout=10):
+    def start(self, timeout=10, timeout_port=30, retry_delay=5):
         # type: (int) -> None
         """
         Starts the socket connection to the Launcher instance.
         :param timeout: The timeout in seconds for the pump thread to get ready before raising an exception.
+        :param timeout_port: The timeout in seconds before giving up connecting to a port
+        :param retry_delay: The delay in seconds before a retry is attempted.
         """
         if self.connected:
             logger.warning('RemoteConsole is already connected.')
             return
 
+        # Connect to the remote console via a port
+        self._connect_to_port(timeout_port, retry_delay)
+
+        # Clear the timeout. Further socket operations won't timeout.
+        self.socket.settimeout(None)
+
+        # Check if the remote console is ready
+        self.pump_thread.start()
+        if not self.ready.wait(timeout):
+            raise Exception("remote_console_commands.py:start: Remote console connection never became ready. "
+                            "Waited for {} seconds.".format(timeout))
+
+        self.connected = True
+        logger.info('Remote Console Started at port {}'.format(self.port))
+
+    def _connect_to_port(self, timeout_port, retry_delay):
+        """
+        Helper method to connect to the RC on a given port.
+        :param timeout_port: The timeout in seconds before giving up connecting to a port
+        :param retry_delay: The delay in seconds before a retry is attempted.
+        """
+        time_waited = 0
+        while True:
+            if time_waited >= timeout_port:
+                raise Exception("remote_console_commands.py:start: Remote console connection never became ready. "
+                                "Waited for {} seconds.".format(time_waited))
+            else:
+                if self._scan_ports():
+                    # connected successfully to RC on a port
+                    break
+                else:
+                    # failed to find RC on a port, wait
+                    time_waited += retry_delay
+                    time.sleep(retry_delay)
+                    logger.debug("remote_console_commands.py:start: Have waited for at least {} seconds.".format(time_waited))
+
+    def _scan_ports(self):
         # Do not wait more than 3.0 seconds per connection attempt.
         self.socket.settimeout(3.0)
         num_ports_to_scan = 8
@@ -136,22 +176,15 @@ class RemoteConsole:
             try:
                 self.socket.connect((self.addr, self.port))
                 logger.info('Successfully connected to port: {}'.format(self.port))
-                break
+                return True
             except:
                 self.port += 1
         if self.port >= max_port:
             from_port_to_port = "from port {} to port {}".format(
-                self.port-num_ports_to_scan, self.port-1)
-            raise Exception(
-                "Remote console connection never became ready after scanning {}".format(
-                    from_port_to_port))
-        # Clear the timeout. Further socket operations won't timeout.
-        self.socket.settimeout(None)
-        self.pump_thread.start()
-        if not self.ready.wait(timeout):
-            raise Exception("Remote console connection never became ready")
-        self.connected = True
-        logger.info('Remote Console Started at port {}'.format(self.port))
+                self.port - num_ports_to_scan, self.port - 1)
+            logger.debug("Remote console connection never became ready after scanning {}. Trying again".format(
+                from_port_to_port))
+        return False
 
     def stop(self):
         # type: () -> None

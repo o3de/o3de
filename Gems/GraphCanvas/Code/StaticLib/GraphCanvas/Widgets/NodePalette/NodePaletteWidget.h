@@ -11,8 +11,9 @@
 */
 #pragma once
 
-#include <AzCore/PlatformDef.h>
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QAction>
 #include <QTimer>
@@ -120,9 +121,15 @@ namespace GraphCanvas
         NodePaletteTreeView* GetTreeView() const;
         ////
 
+        QLineEdit* GetSearchFilter() const;
+
         // QWidget
         bool eventFilter(QObject* object, QEvent* event) override;
         ////
+
+        NodePaletteSortFilterProxyModel* GetFilterModel();
+        
+        GraphCanvasTreeItem* FindItemWithName(QString name);
 
     protected:
 

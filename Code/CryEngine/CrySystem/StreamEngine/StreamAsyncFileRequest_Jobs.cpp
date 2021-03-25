@@ -17,11 +17,6 @@
 #include <CryPath.h>
 #include "StreamAsyncFileRequest.h"
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-#include "ZipEncrypt.h"
-#include "StreamEngine.h"
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-
 #include "MTSafeAllocator.h"
 
 namespace AZ::IO::ZipDir::ZipDirStructuresInternal
@@ -69,32 +64,6 @@ public:
         if (m_bInProgress)
         {
             m_pL->OnStreamEndInflate(m_pReq);
-            m_bInProgress = false;
-        }
-    }
-};
-class NotifyListenerDecrypt
-    : NotifyListener
-{
-public:
-    NotifyListenerDecrypt(IStreamEngineListener* pL, CAsyncIOFileRequest* pReq)
-        : NotifyListener(pL, pReq)
-    {
-        if (m_pL)
-        {
-            m_pL->OnStreamBeginDecrypt(m_pReq);
-            m_bInProgress = true;
-        }
-    }
-    ~NotifyListenerDecrypt()
-    {
-        End();
-    }
-    void End()
-    {
-        if (m_bInProgress)
-        {
-            m_pL->OnStreamEndDecrypt(m_pReq);
             m_bInProgress = false;
         }
     }
@@ -294,153 +263,6 @@ void CAsyncIOFileRequest::DecompressBlockEntry(SStreamJobEngineState engineState
 #endif
 }
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-//////////////////////////////////////////////////////////////////////////
-void CAsyncIOFileRequest::DecryptBlockEntry(SStreamJobEngineState engineState, int nJob)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
-
-    STREAM_DECOMPRESS_TRACE("[StreamDecrypt],DecryptBlockEntry,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), m_strFileName.c_str(), this, nJob);
-
-    SStreamJobQueue::Job& job = m_pDecryptQueue->m_jobs[nJob];
-
-    void* const pSrc = job.pSrc;
-    SStreamPageHdr* const pSrcHdr = job.pSrcHdr;
-    const uint32 nOffs = job.nOffs;
-    const uint32 nBytes = job.nBytes;
-    const bool bLast = job.bLast;
-    const bool bFailed = HasFailed();
-    const bool bCompressed = m_bCompressedBuffer;
-
-    CAsyncIOFileRequest_TransferPtr pSelf(this);
-
-    bool decryptOK = false;
-
-    if (!bFailed)
-    {
-#if defined(STREAMENGINE_ENABLE_TIMING)
-        LARGE_INTEGER liStart;
-        QueryPerformanceCounter(&liStart);
-#endif
-
-        //printf("Inflate: %s Avail in: %d, Avail Out: %d, Next In: 0x%p, Next Out: 0x%p\n", m_strFileName.c_str(), m_pZlibStream->avail_in, m_pZlibStream->avail_out, m_pZlibStream->next_in, m_pZlibStream->next_out);
-
-#ifdef STREAMENGINE_ENABLE_LISTENER
-        NotifyListenerDecrypt decryptListener(gEnv->pSystem->GetStreamEngine()->GetListener(), this);
-#endif
-
-        unsigned long nBytesDecrypted = m_nBytesDecrypted;
-        uint8_t* pData = (uint8_t*)pSrc + nOffs;
-
-        //if (reinterpret_cast<UINT_PTR>(m_pExternalMemoryBuffer) < 0xc0000000 || reinterpret_cast<UINT_PTR>(m_pExternalMemoryBuffer) >= 0xd0000000)
-        {
-            CryOptionalAutoLock<CryCriticalSection> decryptLock(m_externalBufferLockDecrypt, m_pExternalMemoryBuffer != NULL);
-
-            if (0)
-            {
-                //Intentionally empty
-            }
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION
-            else if (m_pDecryptionCTR)
-            {
-                STREAM_DECOMPRESS_TRACE ("[StreamDecrypt],ZipEncrypt::DecryptBufferWithStreamCipher,0x%x,%s,0x%p,%i,0x%p,%i,%i\n",
-                    CryGetCurrentThreadId(),
-                    m_strFileName.c_str(), 
-                    pData,
-                    m_nFileSize - nBytesDecrypted,
-                    (uint8_t*)pSrc + nOffs,
-                    nBytes,
-                    nBytesDecrypted);
-
-                decryptOK = ZipEncrypt::DecryptBufferWithStreamCipher(
-                        pData, //In
-                        pData, //Out - same = decrypt in place
-                        nBytes,
-                        m_pDecryptionCTR);
-                nBytesDecrypted += decryptOK ? nBytes : 0;
-            }
-#endif
-            else
-            {
-                //Should never get here, this should have been checked in the prep functions
-                CryFatalError("Invalid encryption technique in streaming engine");
-            }
-        }
-
-        m_nBytesDecrypted = nBytesDecrypted;
-
-        //inform listen, so aysnc callback does not overlap
-#ifdef STREAMENGINE_ENABLE_LISTENER
-        decryptListener.End();
-#endif
-
-        if (decryptOK)
-        {
-#if defined(STREAMENGINE_ENABLE_TIMING)
-            LARGE_INTEGER liEnd, liFreq;
-            QueryPerformanceCounter(&liEnd);
-            QueryPerformanceFrequency(&liFreq);
-
-            m_decryptTime += CTimeValue((int64)((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart));
-#endif
-        }
-        else
-        {
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR_DBGBRK, "Decrypt Error: %s\n", m_strFileName.c_str());
-            Failed(ERROR_DECRYPTION_FAIL);
-        }
-    }
-
-    // FIXME later - if we end up here with a uncompressed request, that is not in-place, this won't copy
-    // to the output. Not currently an issue given how ConfigureRead sets up m_bStreamInPlace, but may be in
-    // future.
-
-    if (!decryptOK || !bCompressed) // Inverse of push condition below
-    {
-        if (pSrcHdr)
-        {
-            if (CryInterlockedDecrement(&pSrcHdr->nRefs) == 0)
-            {
-                engineState.pTempMem->TempFree(engineState.pHeap, pSrc, pSrcHdr->nSize);
-            }
-        }
-    }
-
-    int nPopSlot = m_pDecryptQueue->Pop();
-
-    // job is no longer valid
-
-    if (decryptOK && bCompressed)
-    {
-        PushDecompressBlock(engineState, pSrc, pSrcHdr, nOffs, nBytes, bLast);
-
-        if (pSrcHdr)
-        {
-            if (CryInterlockedDecrement(&pSrcHdr->nRefs) == 0)
-            {
-                engineState.pTempMem->TempFree(engineState.pHeap, pSrc, pSrcHdr->nSize);
-            }
-        }
-    }
-
-    if (HasFailed() || bLast)
-    {
-        JobFinalize_Decrypt(pSelf, engineState);
-    }
-    else if (nPopSlot >= 0)
-    {
-        // Chain start the next job, we're responsible for it.
-        STREAM_DECOMPRESS_TRACE("[StreamDecrypt],Chaining,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), m_strFileName.c_str(), this, nPopSlot);
-
-        JobStart_Decrypt(pSelf, engineState, nPopSlot);
-    }
-
-#if defined(STREAMENGINE_ENABLE_STATS)
-    CryInterlockedDecrement(&engineState.pStats->nCurrentDecryptCount);
-#endif
-}
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-
 //////////////////////////////////////////////////////////////////////////
 
 uint32 CAsyncIOFileRequest::PushDecompressPage(const SStreamJobEngineState& engineState, void* pSrc, SStreamPageHdr* pSrcHdr, uint32 nBytes, bool bLast)
@@ -502,71 +324,10 @@ void CAsyncIOFileRequest::JobStart_Decompress(CAsyncIOFileRequest_TransferPtr& p
     }); // Legacy JobManager priority: eStreamPriority
 }
 
-#if defined(STREAMENGINE_SUPPORT_DECRYPT)
-uint32 CAsyncIOFileRequest::PushDecryptPage(const SStreamJobEngineState& engineState, void* pSrc, SStreamPageHdr* pSrcHdr, uint32 nBytes, bool bLast)
-{
-    uint32 nError = 0;
-
-    for (uint32 nBlockPos = 0; !nError && (nBlockPos < nBytes); nBlockPos += STREAMING_BLOCK_SIZE)
-    {
-        bool bLastBlock = (nBlockPos + STREAMING_BLOCK_SIZE) >= nBytes;
-        uint32 nBlockSize = min(nBytes - nBlockPos, (uint32)STREAMING_BLOCK_SIZE);
-
-        nError = PushDecryptBlock(engineState, pSrc, pSrcHdr, nBlockPos, nBlockSize, bLast && bLastBlock);
-    }
-
-    return nError;
-}
-
-uint32 CAsyncIOFileRequest::PushDecryptBlock(const SStreamJobEngineState& engineState, void* pSrc, SStreamPageHdr* pSrcHdr, uint32 nOffs, uint32 nBytes, bool bLast)
-{
-    uint32 nError = m_nError;
-
-    if (!nError)
-    {
-        if (pSrcHdr)
-        {
-            CryInterlockedIncrement(&pSrcHdr->nRefs);
-        }
-
-        int nPushJob = m_pDecryptQueue->Push(pSrc, pSrcHdr, nOffs, nBytes, bLast);
-        if (nPushJob >= 0)
-        {
-            STREAM_DECOMPRESS_TRACE("[StreamDecrypt],PushDecryptBlock,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), m_strFileName.c_str(), this, nPushJob);
-
-            AddRef();
-            CAsyncIOFileRequest_TransferPtr pSelf(this);
-            JobStart_Decrypt(pSelf, engineState, nPushJob);
-        }
-    }
-
-    return nError;
-}
-
-void CAsyncIOFileRequest::JobStart_Decrypt(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState, int nJob)
-{
-    STREAM_DECOMPRESS_TRACE("[StreamDecrypt],QueueDecryptBlockAppend,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), pSelf->m_strFileName.c_str(), &pSelf, nJob);
-
-#if defined(STREAMENGINE_ENABLE_STATS)
-    CryInterlockedIncrement(&engineState.pStats->nCurrentDecryptCount);
-#endif
-
-    CAsyncIOFileRequest* request = pSelf.Relinquish();
-    if (!request->m_decryptJobExecutor)
-    {
-        request->m_decryptJobExecutor = AZStd::make_unique<AZ::LegacyJobExecutor>();
-    }
-    request->m_decryptJobExecutor->StartJob([request, engineState, nJob]()
-    {
-        request->DecryptBlockEntry(engineState, nJob);
-    }); // Legacy JobManager priority: eStreamPriority
-}
-#endif  //STREAMENGINE_SUPPORT_DECRYPT
-
 //////////////////////////////////////////////////////////////////////////
 void CAsyncIOFileRequest::JobFinalize_Read(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState)
 {
-    if ((!pSelf->m_bCompressedBuffer && !pSelf->m_bEncryptedBuffer) || pSelf->HasFailed())
+    if (!pSelf->m_bCompressedBuffer || pSelf->HasFailed())
     {
         JobFinalize_Transfer(pSelf, engineState);
     }
@@ -606,39 +367,6 @@ void CAsyncIOFileRequest::JobFinalize_Decompress(CAsyncIOFileRequest_TransferPtr
 #endif
 
     JobFinalize_Transfer(pSelf, engineState);
-}
-
-void CAsyncIOFileRequest::JobFinalize_Decrypt(CAsyncIOFileRequest_TransferPtr& pSelf, const SStreamJobEngineState& engineState)
-{
-    STREAM_DECOMPRESS_TRACE("[StreamDecompress],FinalizeDecompress,0x%x,%s,0x%p,0x%p,0x%p,0x%p\n", CryGetCurrentThreadId(), pSelf->m_strFileName.c_str(), &pSelf, &engineState, engineState.pStats, engineState.pDecompressStats);
-
-    CAsyncIOFileRequest* pReq = &*pSelf;
-
-    const bool bCompressed = pReq->m_bCompressedBuffer;
-    const bool bFailed = pReq->HasFailed();
-
-    if (!bCompressed && !bFailed)
-    {
-        pReq->JobFinalize_Validate(engineState);
-    }
-
-    pReq->JobFinalize_Buffer(engineState);
-
-#if defined(STREAMENGINE_ENABLE_STATS) && defined(STREAMENGINE_ENABLE_TIMING)
-    if (pReq->m_decryptTime.GetValue() != 0)
-    {
-        engineState.pDecompressStats->m_nTotalBytesDecrypted += pReq->m_nFileSize;
-        engineState.pDecompressStats->m_totalDecryptTime += pReq->m_decryptTime;
-
-        engineState.pDecompressStats->m_nTempBytesDecrypted += pReq->m_nFileSize;
-        engineState.pDecompressStats->m_tempDecryptTime += pReq->m_decryptTime;
-    }
-#endif
-
-    if (!bCompressed || pReq->HasFailed())
-    {
-        JobFinalize_Transfer(pSelf, engineState);
-    }
 }
 
 void CAsyncIOFileRequest::JobFinalize_Buffer(const SStreamJobEngineState& engineState)

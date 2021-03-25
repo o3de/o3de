@@ -11,8 +11,8 @@
 */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QDialog>
 #include <QLineEdit>
@@ -47,6 +47,17 @@ namespace GraphCanvas
         ////
 
         void SetFilter(const QString& filter);
+
+        void BeginModelReset()
+        {
+            beginResetModel();
+        }
+
+        void EndModelReset()
+        {
+            endResetModel();
+            invalidate();
+        }
 
     private:
         QString m_filter;

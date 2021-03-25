@@ -15,6 +15,8 @@
 #include <AzCore/Component/Component.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 
+class QMainWindow;
+
 namespace ScriptCanvasDeveloperEditor
 {
     class SystemComponent
@@ -38,6 +40,6 @@ namespace ScriptCanvasDeveloperEditor
         ////
 
         // ScriptCanvasEditor::UINotificationBus
-        void MainWindowCreationEvent(QWidget*) override;
+        void MainWindowCreationEvent(QMainWindow* mainWindow) override;
     };
 }

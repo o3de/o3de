@@ -124,8 +124,6 @@ set(FILES
     UdpTransport/UdpSocket.inl
     Utilities/CidrAddress.cpp
     Utilities/CidrAddress.h
-    Utilities/CompressionCommon.cpp
-    Utilities/CompressionCommon.h
     Utilities/EncryptionCommon.cpp
     Utilities/EncryptionCommon.h
     Utilities/Endian.h

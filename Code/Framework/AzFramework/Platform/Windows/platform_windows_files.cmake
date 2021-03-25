@@ -16,6 +16,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Windows.h
     AzFramework/Application/Application_Windows.cpp
     AzFramework/Asset/AssetSystemComponentHelper_Windows.cpp
+    AzFramework/ProjectManager/ProjectManager_Windows.cpp
     ../Common/WinAPI/AzFramework/IO/LocalFileIO_WinAPI.cpp
     AzFramework/IO/LocalFileIO_Windows.cpp
     ../Common/WinAPI/AzFramework/Network/AssetProcessorConnection_WinAPI.cpp

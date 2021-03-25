@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{463D666B-3CA8-4FA5-8B4A-5FEF12B883F6}" SchemaVersion="97">
+	<VirtualAcoustics>
+		<WorkUnit Name="Factory Reflect Acoustic Textures" ID="{463D666B-3CA8-4FA5-8B4A-5FEF12B883F6}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="Textures" ID="{781E12A3-E328-4ADF-8BBA-5FB89C74031D}" ShortID="356586175">
+					<ChildrenList>
+						<AcousticTexture Name="Wood" ID="{1FFFBC96-6FE7-489E-BA6C-7C14A71391AE}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="35"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="32"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="20"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="25"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Tile" ID="{A882DAC4-132A-47B7-BA9D-B9907BA29CC0}">
+							<PropertyList>
+								<Property Name="AbsorptionLow" Type="Real32" Value="67"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="12"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="41"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Carpet" ID="{34227589-DC56-4260-96C4-B9F4B669092B}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="46"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="76"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="45"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Brick" ID="{B086A5A9-F204-4C53-A838-BDB18B18F6D6}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="35"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="12"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="23"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="18"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Mountain" ID="{C5933731-001A-4AB4-98DD-9B033A8C8EAB}"/>
+						<AcousticTexture Name="Wood_Bright" ID="{7B85D1E5-C1A2-4E63-9A13-CEC54B641ADC}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="9"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="32"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="10"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="25"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Wood_Deep" ID="{5246478E-C5DA-4E0C-A0DE-C98D1479529A}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="35"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="1"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="20"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="8"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Drywall" ID="{68A4E3F4-4C0B-4687-A8B8-A84DB93DBC8F}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="2"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="2"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="2"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="2"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Anechoic" ID="{8B0AC232-02E2-4EDE-BEAC-FDD1A900E3ED}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="100"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Concrete" ID="{5CF81C00-2896-4AE0-AF7C-3080BDABA682}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="14"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="6"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="6"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="6"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Fabric" ID="{8381D532-DB6E-4EED-A7A3-BC7B0A0B8BA8}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="72"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="3"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="48"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="13"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Acoustic_Banner" ID="{2F2D53F2-DACC-408E-8B88-98B1B52A26D6}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="37"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="100"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Cork_Tiles" ID="{30D2C919-925F-4143-8906-3DBB3C4AE5E2}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="100"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="14"/>
+								<Property Name="AbsorptionMidHigh" Type="Real32" Value="73"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="30"/>
+							</PropertyList>
+						</AcousticTexture>
+						<AcousticTexture Name="Curtains" ID="{F8E69E33-5C97-4968-B508-A1535F2D66E8}">
+							<PropertyList>
+								<Property Name="AbsorptionHigh" Type="Real32" Value="84"/>
+								<Property Name="AbsorptionLow" Type="Real32" Value="7"/>
+								<Property Name="AbsorptionMidLow" Type="Real32" Value="60"/>
+							</PropertyList>
+						</AcousticTexture>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</VirtualAcoustics>
+</WwiseDocument>

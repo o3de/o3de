@@ -234,7 +234,7 @@ namespace GraphCanvas
         return{ QPointF{ -100000.0, -100000.0 }, QPointF{ 100000.0, 100000.0 } };
     }
 
-    void GridGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
+    void GridGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* /*widget*/)
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
         int lod = 0;

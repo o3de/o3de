@@ -28,6 +28,10 @@
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
+
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+
 #include <cinttypes>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -110,15 +114,24 @@ namespace AZ
                     AZ_Warning(s_exporterName, false, "Multiple mesh groups with duplicate name: \"%s\". Skipping export...", meshGroupName.c_str());
                     continue;
                 }
-                else
-                {
-                    groupNames.insert(meshGroupName);
-                }
+
+                groupNames.insert(meshGroupName);
 
                 AZ_TraceContext("Mesh group", meshGroupName.c_str());
 
+                // Get the coordinate system conversion rule.
+                AZ::SceneAPI::CoordinateSystemConverter coordSysConverter;
+                AZStd::shared_ptr<AZ::SceneAPI::SceneData::CoordinateSystemRule> coordinateSystemRule = meshGroup.GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+                if (coordinateSystemRule)
+                {
+                    coordinateSystemRule->UpdateCoordinateSystemConverter();
+                    coordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
+                }
+
                 Data::Asset<ModelAsset> modelAsset;
-                ModelAssetBuilderContext modelContext(exportEventContext.GetScene(), meshGroup, materialsByUid, modelAsset);
+                Data::Asset<SkinMetaAsset> skinMetaAsset;
+                Data::Asset<MorphTargetMetaAsset> morphTargetMetaAsset;
+                ModelAssetBuilderContext modelContext(exportEventContext.GetScene(), meshGroup, coordSysConverter, materialsByUid, modelAsset, skinMetaAsset, morphTargetMetaAsset);
                 combinerResult = SceneAPI::Events::Process<ModelAssetBuilderContext>(modelContext);
                 if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
                 {
@@ -220,6 +233,40 @@ namespace AZ
                 if (!ExportAsset(modelAsset, modelExportContext, exportEventContext, "Model"))
                 {
                     return SceneAPI::Events::ProcessingResult::Failure;
+                }
+
+                // Export skin meta data
+                if (skinMetaAsset.IsReady())
+                {
+                    AssetExportContext skinMetaExportContext =
+                    {
+                        /*relativeFilename=*/meshGroupName,
+                        SkinMetaAsset::Extension,
+                        sourceSceneUuid,
+                        DataStream::ST_JSON
+                    };
+
+                    if (!ExportAsset(skinMetaAsset, skinMetaExportContext, exportEventContext, "SkinMeta"))
+                    {
+                        return SceneAPI::Events::ProcessingResult::Failure;
+                    }
+                }
+
+                // Export morph target meta data
+                if (morphTargetMetaAsset.IsReady())
+                {
+                    AssetExportContext morphTargetMetaExportContext =
+                    {
+                        /*relativeFilename=*/meshGroupName,
+                        MorphTargetMetaAsset::Extension,
+                        sourceSceneUuid,
+                        DataStream::ST_JSON
+                    };
+
+                    if (!ExportAsset(morphTargetMetaAsset, morphTargetMetaExportContext, exportEventContext, "MorphTargetMeta"))
+                    {
+                        return SceneAPI::Events::ProcessingResult::Failure;
+                    }
                 }
             } //foreach meshGroup
 

@@ -11,7 +11,9 @@
 */
 
 #include "Start.h"
+
 #include <ScriptCanvas/Core/GraphBus.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
 
 namespace ScriptCanvas
 {
@@ -23,6 +25,6 @@ namespace ScriptCanvas
             {
                 SignalOutput(StartProperty::GetOutSlotId(this));
             }
-        }
+       }
     }
 }

@@ -114,12 +114,12 @@ namespace GraphCanvas
         SlotRequestBus::Handler::BusDisconnect();
     }
 
-    void SlotComponent::SetScene([[maybe_unused]] const AZ::EntityId& sceneId)
+    void SlotComponent::SetScene(const AZ::EntityId&)
     {
         AZ_Error("Graph Canvas", false, "The scene cannot be set directly on a slot; it follows that of the node to which it belongs (slot: %s)", GetEntityId().ToString().data());
     }
 
-    void SlotComponent::ClearScene([[maybe_unused]] const AZ::EntityId& oldSceneId)
+    void SlotComponent::ClearScene(const AZ::EntityId&)
     {
         AZ_Error("Graph Canvas", false, "The scene cannot be cleared directly on a slot; it follows that of the node to which it belongs (slot: %s)", GetEntityId().ToString().data());
     }
@@ -134,17 +134,6 @@ namespace GraphCanvas
         AZ::EntityId sceneId;
         SceneMemberRequestBus::EventResult(sceneId, m_nodeId, &SceneMemberRequests::GetScene);
         return sceneId;
-    }
-
-    bool SlotComponent::LockForExternalMovement(const AZ::EntityId&)
-    {
-        AZ_Error("Graph Canvas", false, "The slot should not be controlled directly, as the node it belongs to already controls it's postioning (slot: %s)", GetEntityId().ToString().data());
-        return false;
-    }
-
-    void SlotComponent::UnlockForExternalMovement(const AZ::EntityId&)
-    {
-        AZ_Error("Graph Canvas", false, "The slot should not be controlled directly, as the node it belongs to already controls it's postioning (slot: %s)", GetEntityId().ToString().data());
     }
 
     void SlotComponent::OnSceneSet(const AZ::EntityId& sceneId)
@@ -258,7 +247,7 @@ namespace GraphCanvas
         SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnTooltipChanged, m_slotConfiguration.m_tooltip);
     }
 
-    void SlotComponent::DisplayProposedConnection(const AZ::EntityId& connectionId, [[maybe_unused]] const Endpoint& endpoint)
+    void SlotComponent::DisplayProposedConnection(const AZ::EntityId& connectionId, const Endpoint& /*endpoint*/)
     {
         bool needsStyleUpdate = m_connections.empty();
         m_connections.emplace_back(connectionId);
@@ -269,7 +258,7 @@ namespace GraphCanvas
         }
     }
 
-    void SlotComponent::RemoveProposedConnection(const AZ::EntityId& connectionId, [[maybe_unused]] const Endpoint& endpoint)
+    void SlotComponent::RemoveProposedConnection(const AZ::EntityId& connectionId, const Endpoint& /*endpoint*/)
     {
         auto it = AZStd::find(m_connections.begin(), m_connections.end(), connectionId);
 
@@ -479,6 +468,11 @@ namespace GraphCanvas
         }
 
         SceneRequestBus::Event(GetScene(), &SceneRequests::Delete, deleteIds);
+    }
+
+    const SlotConfiguration& SlotComponent::GetSlotConfiguration() const
+    {
+        return m_slotConfiguration;
     }
 
     SlotConfiguration* SlotComponent::CloneSlotConfiguration() const

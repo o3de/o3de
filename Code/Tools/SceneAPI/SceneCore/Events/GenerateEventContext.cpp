@@ -18,58 +18,18 @@ namespace AZ::SceneAPI::Events
     // PreGenerateEventContext
     /////////////
 
-    PreGenerateEventContext::PreGenerateEventContext(Containers::Scene& scene, const char* platformIdentifier)
+    GenerateEventBaseContext::GenerateEventBaseContext(Containers::Scene& scene, const char* platformIdentifier)
         : m_scene(scene)
         , m_platformIdentifier(platformIdentifier)
     {
     }
 
-    Containers::Scene& PreGenerateEventContext::GetScene() const
+    Containers::Scene& GenerateEventBaseContext::GetScene() const
     {
         return m_scene;
     }
 
-    const char* PreGenerateEventContext::GetPlatformIdentifier() const
-    {
-        return m_platformIdentifier;
-    }
-
-    /////////////
-    // GenerateEventContext
-    /////////////
-
-    GenerateEventContext::GenerateEventContext(Containers::Scene& scene, const char* platformIdentifier)
-        : m_scene(scene)
-        , m_platformIdentifier(platformIdentifier)
-    {
-    }
-
-    Containers::Scene& GenerateEventContext::GetScene() const
-    {
-        return m_scene;
-    }
-
-    const char* GenerateEventContext::GetPlatformIdentifier() const
-    {
-        return m_platformIdentifier;
-    }
-
-    /////////////
-    // PostGenerateEventContext
-    /////////////
-
-    PostGenerateEventContext::PostGenerateEventContext(Containers::Scene& scene, const char* platformIdentifier)
-        : m_scene(scene)
-        , m_platformIdentifier(platformIdentifier)
-    {
-    }
-
-    Containers::Scene& PostGenerateEventContext::GetScene() const
-    {
-        return m_scene;
-    }
-
-    const char* PostGenerateEventContext::GetPlatformIdentifier() const
+    const char* GenerateEventBaseContext::GetPlatformIdentifier() const
     {
         return m_platformIdentifier;
     }

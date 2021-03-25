@@ -11,7 +11,6 @@
 */
 
 #include <MCore/Source/Config.h>
-#include "GLInclude.h"
 #include "GLSLShader.h"
 #include "GraphicsManager.h"
 #include <QFile>
@@ -56,11 +55,11 @@ namespace RenderGL
     // destructor
     GLSLShader::~GLSLShader()
     {
-        glDetachObjectARB(mProgram, mVertexShader);
-        glDetachObjectARB(mProgram, mPixelShader);
-        glDeleteObjectARB(mVertexShader);
-        glDeleteObjectARB(mPixelShader);
-        glDeleteObjectARB(mProgram);
+        glDetachShader(mProgram, mVertexShader);
+        glDetachShader(mProgram, mPixelShader);
+        glDeleteShader(mVertexShader);
+        glDeleteShader(mPixelShader);
+        glDeleteShader(mProgram);
     }
 
 
@@ -78,20 +77,35 @@ namespace RenderGL
         for (uint32 i = 0; i < numAttribs; ++i)
         {
             const uint32 index = mActivatedAttribs[i];
-            glDisableVertexAttribArrayARB(mAttributes[index].mLocation);
+            glDisableVertexAttribArray(mAttributes[index].mLocation);
         }
 
         const uint32 numTextures = mActivatedTextures.GetLength();
         for (uint32 i = 0; i < numTextures; ++i)
         {
             const uint32 index = mActivatedTextures[i];
-            assert(mUniforms[index].mType == GL_SAMPLER_2D_ARB);
-            glActiveTextureARB(GL_TEXTURE0_ARB + mUniforms[index].mTextureUnit);
+            assert(mUniforms[index].mType == GL_SAMPLER_2D);
+            glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         mActivatedAttribs.Clear(false);
         mActivatedTextures.Clear(false);
+    }
+
+    bool GLSLShader::Validate()
+    {
+        int success = 0;
+        glValidateProgram(mProgram);
+        glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &success);
+
+        if (success == 0)
+        {
+            MCore::LogInfo("Failed to validate program '%s'", mFileName.c_str());
+            InfoLog(mProgram, &QOpenGLExtraFunctions::glGetProgramInfoLog);
+            return false;
+        }
+        return true;
     }
 
 
@@ -130,15 +144,15 @@ namespace RenderGL
 
         // create shader
         const char* textPtr = text.c_str();
-        GLhandleARB shader = glCreateShaderObjectARB(type);
-        glShaderSourceARB(shader, 1, (const GLcharARB**)&textPtr, nullptr);
-        glCompileShaderARB(shader);
+        GLuint shader = glCreateShader(type);
+        glShaderSource(shader, 1, (const GLchar**)&textPtr, nullptr);
+        glCompileShader(shader);
 
         // check for errors
         int success = 0;
-        glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &success);
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-        InfoLog(shader);
+        InfoLog(shader, &QOpenGLExtraFunctions::glGetShaderInfoLog);
 
         if (success == false)
         {
@@ -152,18 +166,21 @@ namespace RenderGL
 
 
     // LogInfo
-    void GLSLShader::InfoLog(GLhandleARB object)
+    template<class T>
+    void GLSLShader::InfoLog(GLuint object, T func)
     {
         // get the info log
         int logLen     = 0;
         int logWritten = 0;
 
-        glGetObjectParameterivARB(object, GL_OBJECT_INFO_LOG_LENGTH_ARB, &logLen);
+        auto getIv = func == &QOpenGLExtraFunctions::glGetProgramInfoLog ? &QOpenGLExtraFunctions::glGetProgramiv : & QOpenGLExtraFunctions::glGetShaderiv;
+        AZStd::invoke(getIv, static_cast<QOpenGLExtraFunctions*>(this), object, GL_INFO_LOG_LENGTH, &logLen);
         if (logLen > 1)
         {
-            char* text = (char*)MCore::Allocate(logLen);
+            AZStd::string text;
+            text.resize(logLen);
 
-            glGetInfoLogARB(object, logLen, &logWritten, text);
+            AZStd::invoke(func, static_cast<QOpenGLExtraFunctions*>(this), object, logLen, &logWritten, text.data());
 
             // if there are any defines, print that out too
             if (mDefines.GetLength() > 0)
@@ -189,8 +206,7 @@ namespace RenderGL
                 MCore::LogDetailedInfo("[GLSL] Compiling shader '%s'", mFileName.c_str());
             }
 
-            MCore::LogDetailedInfo(AZStd::string(text).c_str());
-            MCore::Free(text);
+            MCore::LogDetailedInfo(text.c_str());
         }
     }
 
@@ -198,6 +214,7 @@ namespace RenderGL
     // Init
     bool GLSLShader::Init(const char* vFile, const char* pFile, MCore::Array<AZStd::string>& defines)
     {
+        initializeOpenGLFunctions();
         /*const char* args[] = { "unroll all",
                                "inline all",
                                "O3",
@@ -205,58 +222,45 @@ namespace RenderGL
 
         mDefines = defines;
 
-        glUseProgramObjectARB(0);
+        glUseProgram(0);
 
         // compile shaders
-        if (vFile && CompileShader(GL_VERTEX_SHADER_ARB, &mVertexShader, vFile) == false)
+        if (vFile && CompileShader(GL_VERTEX_SHADER, &mVertexShader, vFile) == false)
         {
             return false;
         }
 
-        if (pFile && CompileShader(GL_FRAGMENT_SHADER_ARB, &mPixelShader, pFile) == false)
+        if (pFile && CompileShader(GL_FRAGMENT_SHADER, &mPixelShader, pFile) == false)
         {
             return false;
         }
 
         // create program
-        mProgram = glCreateProgramObjectARB();
+        mProgram = glCreateProgram();
         if (vFile)
         {
-            glAttachObjectARB(mProgram, mVertexShader);
+            glAttachShader(mProgram, mVertexShader);
         }
 
         if (pFile)
         {
-            glAttachObjectARB(mProgram, mPixelShader);
+            glAttachShader(mProgram, mPixelShader);
         }
 
         // link
-        glLinkProgramARB(mProgram);
+        glLinkProgram(mProgram);
 
         // check for linking errors
         GLint success = 0;
-        glGetObjectParameterivARB(mProgram, GL_OBJECT_LINK_STATUS_ARB, &success);
+        glGetProgramiv(mProgram, GL_LINK_STATUS, &success);
 
-        if (success == 0)
+        if (!success)
         {
             MCore::LogInfo("[OpenGL] Failed to link shaders '%s' and '%s' ", vFile, pFile);
-            InfoLog(mProgram);
+            InfoLog(mProgram, &QOpenGLExtraFunctions::glGetProgramInfoLog);
             return false;
         }
 
-        // validate shaders
-        glValidateProgramARB(mProgram);
-        glGetObjectParameterivARB(mProgram, GL_OBJECT_VALIDATE_STATUS_ARB, &success);
-
-        if (success == 0)
-        {
-            MCore::LogInfo("Failed to validate shaders '%s' and '%s' ", vFile, pFile);
-            InfoLog(mProgram);
-            return false;
-        }
-
-
-        //glUseProgramObjectARB(mProgram);
         return true;
     }
 
@@ -294,7 +298,7 @@ namespace RenderGL
         }
 
         // the parameter wasn't cached, try to retrieve it
-        const GLint loc = glGetAttribLocationARB(mProgram, name);
+        const GLint loc = glGetAttribLocation(mProgram, name);
         mAttributes.Add(ShaderParameter(name, loc, true));
 
         if (loc < 0)
@@ -350,7 +354,7 @@ namespace RenderGL
         }
 
         // the parameter wasn't cached, try to retrieve it
-        const GLint loc = glGetUniformLocationARB(mProgram, name);
+        const GLint loc = glGetUniformLocation(mProgram, name);
         mUniforms.Add(ShaderParameter(name, loc, false));
 
         if (loc < 0)
@@ -373,8 +377,8 @@ namespace RenderGL
 
         ShaderParameter* param = &mAttributes[index];
 
-        glEnableVertexAttribArrayARB(param->mLocation);
-        glVertexAttribPointerARB(param->mLocation, dim, type, GL_FALSE, stride, (GLvoid*)offset);
+        glEnableVertexAttribArray(param->mLocation);
+        glVertexAttribPointer(param->mLocation, dim, type, GL_FALSE, stride, (GLvoid*)offset);
 
         mActivatedAttribs.Add(index);
     }
@@ -389,7 +393,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform1fARB(param->mLocation, value);
+        glUniform1f(param->mLocation, value);
     }
 
 
@@ -402,7 +406,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform1fARB(param->mLocation, (float)value);
+        glUniform1f(param->mLocation, (float)value);
     }
 
 
@@ -415,7 +419,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform4fvARB(param->mLocation, 1, (float*)&color);
+        glUniform4fv(param->mLocation, 1, (float*)&color);
     }
 
 
@@ -428,7 +432,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform2fvARB(param->mLocation, 1, (float*)&vector);
+        glUniform2fv(param->mLocation, 1, (float*)&vector);
     }
 
 
@@ -441,7 +445,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform3fvARB(param->mLocation, 1, (float*)&vector);
+        glUniform3fv(param->mLocation, 1, (float*)&vector);
     }
 
 
@@ -454,7 +458,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform4fvARB(param->mLocation, 1, (float*)&vector);
+        glUniform4fv(param->mLocation, 1, (float*)&vector);
     }
 
 
@@ -474,7 +478,7 @@ namespace RenderGL
             return;
         }
 
-        glUniformMatrix4fvARB(param->mLocation, 1, !transpose, (float*)&matrix);
+        glUniformMatrix4fv(param->mLocation, 1, !transpose, (float*)&matrix);
     }
 
 
@@ -487,7 +491,7 @@ namespace RenderGL
             return;
         }
 
-        glUniformMatrix4fvARB(param->mLocation, count, GL_FALSE, (float*)matrices);
+        glUniformMatrix4fv(param->mLocation, count, GL_FALSE, (float*)matrices);
     }
 
 
@@ -500,7 +504,7 @@ namespace RenderGL
         }
 
         // update the value
-        glUniform1fvARB(param->mLocation, numFloats, values);
+        glUniform1fv(param->mLocation, numFloats, values);
     }
 
 
@@ -513,7 +517,7 @@ namespace RenderGL
             return;
         }
 
-        mUniforms[index].mType = GL_SAMPLER_2D_ARB; // why is this being set here?
+        mUniforms[index].mType = GL_SAMPLER_2D; // why is this being set here?
 
         // if the texture doesn't have a sampler unit assigned, give it one
         if (mUniforms[index].mTextureUnit == MCORE_INVALIDINDEX32)
@@ -527,9 +531,9 @@ namespace RenderGL
             texture = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
         }
 
-        glActiveTextureARB(GL_TEXTURE0_ARB + mUniforms[index].mTextureUnit);
+        glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
         glBindTexture(GL_TEXTURE_2D, texture->GetID());
-        glUniform1iARB(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
+        glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
 
         mActivatedTextures.Add(index);
     }
@@ -544,7 +548,7 @@ namespace RenderGL
             return;
         }
 
-        mUniforms[index].mType = GL_SAMPLER_2D_ARB; // why is this being set here?
+        mUniforms[index].mType = GL_SAMPLER_2D; // why is this being set here?
 
         // if the texture doesn't have a sampler unit assigned, give it one
         if (mUniforms[index].mTextureUnit == MCORE_INVALIDINDEX32)
@@ -558,9 +562,9 @@ namespace RenderGL
             textureID = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture()->GetID();
         }
 
-        glActiveTextureARB(GL_TEXTURE0_ARB + mUniforms[index].mTextureUnit);
+        glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glUniform1iARB(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
+        glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
 
         mActivatedTextures.Add(index);
     }

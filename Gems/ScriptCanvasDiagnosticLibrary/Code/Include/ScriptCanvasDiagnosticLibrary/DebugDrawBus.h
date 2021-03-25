@@ -24,7 +24,7 @@ namespace ScriptCanvasDiagnostics
     public:
 
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::EntityId;
+        using BusIdType = void*;
 
         virtual void OnDebugDraw(IRenderer*) = 0;
     };

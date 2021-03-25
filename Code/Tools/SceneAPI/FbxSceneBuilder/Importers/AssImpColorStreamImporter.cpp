@@ -58,11 +58,10 @@ namespace AZ
 
                 AZStd::shared_ptr<DataTypes::IGraphObject> parentData =
                     context.m_scene.GetGraph().GetNodeContent(context.m_currentGraphPosition);
-                AZ_Assert(
-                    parentData && parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()),
-                    "Tried to construct color stream attribute for invalid or non-mesh parent data");
                 if (!parentData || !parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
                 {
+                    AZ_Error(Utilities::ErrorWindow, false,
+                        "Tried to construct color stream attribute for invalid or non-mesh parent data");
                     return Events::ProcessingResult::Failure;
                 }
                 const SceneData::GraphData::MeshData* const parentMeshData = azrtti_cast<SceneData::GraphData::MeshData*>(parentData.get());
@@ -71,9 +70,7 @@ namespace AZ
                 int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
                 if (sdkMeshIndex < 0)
                 {
-                    AZ_Error(
-                        Utilities::ErrorWindow,
-                        false,
+                    AZ_Error(Utilities::ErrorWindow, false,
                         "Tried to construct color stream attribute for invalid or non-mesh parent data, mesh index is missing");
                     return Events::ProcessingResult::Failure;
                 }

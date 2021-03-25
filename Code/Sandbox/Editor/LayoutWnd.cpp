@@ -31,6 +31,7 @@
 #include "MainWindow.h"
 #include "ViewPane.h"
 #include "QtViewPaneManager.h"
+#include "ViewManager.h"
 
 #include <AzQtComponents/Components/Style.h>
 
@@ -426,7 +427,7 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
     m_maximizedView->setVisible(false);
     m_maximizedView->SetFullscren(true);
 
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get()) // Only supports 1 viewport for now.
+    if (!CViewManager::IsMultiViewportEnabled())
     {
         m_viewType[0] = ViewportTypeToClassName(defaultView);
         if (bBindViewports)

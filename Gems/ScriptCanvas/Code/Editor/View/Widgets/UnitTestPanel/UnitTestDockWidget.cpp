@@ -37,29 +37,29 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
-#include <Data/Data.h>
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/QtMetaTypes.h>
 #include <Editor/Settings.h>
-#include <Editor/Translation/TranslationHelper.h>
-#include <Editor/View/Widgets/PropertyGridBus.h>
+
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <Editor/Model/UnitTestBrowserFilterModel.h>
-
-#include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
-#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
-
-#include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
-#include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
-
-#include <LyViewPaneNames.h>
-
+#include <Editor/Translation/TranslationHelper.h>
+#include <Editor/View/Widgets/PropertyGridBus.h>
 #include <Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.h>
 #include <Editor/View/Widgets/UnitTestPanel/ui_UnitTestDockWidget.h>
 #include <Editor/View/Widgets/UnitTestPanel/moc_UnitTestDockWidget.cpp>
 
+#include <Data/Data.h>
+
+#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
+
+#include <LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
 {
@@ -352,6 +352,38 @@ namespace ScriptCanvasEditor
         }
     }
 
+    QCheckBox* UnitTestDockWidget::GetEnabledCheckBox(ScriptCanvas::ExecutionMode mode)
+    {
+        switch (mode)
+        {
+        case ScriptCanvas::ExecutionMode::Interpreted:
+            return m_ui->executionInterpretedEnabled;
+
+        case ScriptCanvas::ExecutionMode::Native:
+            return m_ui->executionNativeEnabled;
+
+        default:
+            AZ_Assert(false, "Unsupported type");
+            return nullptr;
+        }
+    }
+    
+    QLabel* UnitTestDockWidget::GetStatusLabel(ScriptCanvas::ExecutionMode mode)
+    {
+         switch (mode)
+         {
+         case ScriptCanvas::ExecutionMode::Interpreted:
+             return m_ui->labelInterpretedStatus;
+         
+         case ScriptCanvas::ExecutionMode::Native:
+             return m_ui->labelNativeStatus;
+         
+         default:
+            AZ_Assert(false, "Unsupported type");
+            return nullptr;
+         }
+    }
+
     void UnitTestDockWidget::ClearSearchFilter()
     {
         {
@@ -423,73 +455,192 @@ namespace ScriptCanvasEditor
         }
     }
 
+    QString ModeToString(ScriptCanvas::ExecutionMode mode)
+    {
+        using namespace ScriptCanvas;
+
+        switch (mode)
+        {
+        case ExecutionMode::Interpreted:
+            return QString("Interpreted");
+        
+        case ExecutionMode::Native:
+            return QString("Native");
+        
+        default:
+            return QString("<invalid>");
+        }
+    }
+    
+    bool UnitTestDockWidget::IsModeEnabled(ScriptCanvas::ExecutionMode mode)
+    {
+        return GetEnabledCheckBox(mode)->checkState() == Qt::Checked;
+    }
+
     void UnitTestDockWidget::RunTests(const AZStd::vector<AZ::Uuid>& scriptUuids)
     {
-        m_ui->consoleOutput->hide();
+        AZStd::vector<ScriptCanvas::ExecutionMode> activeModes;
 
-        m_filter->FlushLatestTestRun();
-        m_filter->TestsStart();
-
-        int successCount = 0;
-        int failureCount = 0;
-
-        m_ui->label->setText(QString("Starting %1 tests.").arg(scriptUuids.size()));
-        
-        for (const AZ::Uuid& scriptUuid : scriptUuids)
+        auto executionModes = { ExecutionMode::Interpreted, ExecutionMode::Native };
+        for (auto mode : executionModes)
         {
-            const SourceAssetBrowserEntry* sourceBrowserEntry = SourceAssetBrowserEntry::GetSourceByUuid(scriptUuid);
-
-            if (sourceBrowserEntry == nullptr)
+            if (IsModeEnabled(mode))
             {
-                ++failureCount;
+                activeModes.push_back(mode);
             }
             else
             {
-                AZStd::string scriptAbsolutePath = sourceBrowserEntry->GetFullPath();
+                GetStatusLabel(mode)->setText(ModeToString(mode) + QString(" not running"));
+            }
+        }
+        
+        if (activeModes.empty() || scriptUuids.empty())
+        {
+            m_ui->consoleOutput->hide();
+            m_filter->FlushLatestTestRun();
+            return;
+        }
+        else
+        {
+            AZ::SystemTickBus::Handler::BusConnect();
 
-                Reporter reporter;
+            m_ui->label->setText(QString("Starting %1 tests.").arg(scriptUuids.size()));
+            m_filter->FlushLatestTestRun();
+            m_filter->TestsStart();
+            m_ui->consoleOutput->hide();
 
-                UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, scriptUuid);
+            for (size_t modeIndex = 0; modeIndex < activeModes.size(); ++modeIndex)
+            {
+                auto mode = activeModes[modeIndex];
 
-                ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunGraph, scriptAbsolutePath);
+                GetStatusLabel(mode)->setText(QString("Starting %1 tests.").arg(scriptUuids.size()));
+                
+                for (const AZ::Uuid& scriptUuid : scriptUuids)
+                {                    
+                    const SourceAssetBrowserEntry* sourceBrowserEntry = SourceAssetBrowserEntry::GetSourceByUuid(scriptUuid);
+                    if (sourceBrowserEntry == nullptr)
+                    {
+                        AZ_Error("Script Canvas", false, "The source asset file with ID: %s was not found", scriptUuid.ToString<AZStd::string>().c_str());
+                        continue;
+                    }
 
-                UnitTestResult testResult;
-                UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
-
-                UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, scriptUuid, testResult);
-
-                if (testResult.m_success)
-                {
-                    ++successCount;
+                    AZ::Data::AssetInfo assetInfo;
+                    if (AssetHelpers::GetAssetInfo(sourceBrowserEntry->GetFullPath(), assetInfo))
+                    {
+                        auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetInfo.m_assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
+                        asset.BlockUntilLoadComplete();
+                        if (asset.IsReady())
+                        {
+                            RunTestGraph(asset, mode);
+                        }
+                    }
                 }
-                else
-                {
-                    ++failureCount;
-                }
-            }
-            
-            QString executionMessage = QString("Executed %1 out of %2 test(s) - ").arg(successCount + failureCount).arg(scriptUuids.size());
+            }           
+        }
+    }
 
-            if (successCount > 0)
-            {
-                executionMessage += QString("%1 passed").arg(successCount);
-            }
+    void UnitTestDockWidget::OnTestsComplete()
+    {
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
-            if (successCount > 0 && failureCount > 0)
-            {
-                executionMessage += ", ";
-            }
+        QString testCompletionString;
 
-            if (failureCount > 0)
-            {
-                executionMessage += QString("%1 failed").arg(failureCount);
-            }
+        const int nativeMode = static_cast<int>(ExecutionMode::Native);
+        if (m_testMetrics[nativeMode].m_graphsTested > 0)
+        {
+            testCompletionString = ModeToString(ExecutionMode::Native);
+            testCompletionString += QString(": ");
 
-            executionMessage += ".";
+            testCompletionString += QString("Attempted %1 test(s) - %2 Succeeded, %3 Failed, %4 Failed to Compile")
+                .arg(m_testMetrics[nativeMode].m_graphsTested)
+                .arg(m_testMetrics[nativeMode].m_success)
+                .arg(m_testMetrics[nativeMode].m_failures)
+                .arg(m_testMetrics[nativeMode].m_compilationFailures);
 
-            m_ui->label->setText(QString(executionMessage));
+            GetStatusLabel(ExecutionMode::Native)->setText(testCompletionString);
+        }
+
+        const int interpretedMode = static_cast<int>(ExecutionMode::Interpreted);
+        if (m_testMetrics[interpretedMode].m_graphsTested > 0)
+        {
+            testCompletionString = ModeToString(ExecutionMode::Interpreted);
+            testCompletionString += QString(": ");
+
+            testCompletionString += QString("Attempted %1 test(s) - %2 Succeeded, %3 Failed, %4 Failed to Compile")
+                .arg(m_testMetrics[interpretedMode].m_graphsTested)
+                .arg(m_testMetrics[interpretedMode].m_success)
+                .arg(m_testMetrics[interpretedMode].m_failures)
+                .arg(m_testMetrics[interpretedMode].m_compilationFailures);
+
+            GetStatusLabel(ExecutionMode::Interpreted)->setText(testCompletionString);
         }
 
         m_filter->TestsEnd();
+        m_ui->label->setText(QString("Finished"));
+
+        m_testMetrics[nativeMode].Clear();
+        m_testMetrics[interpretedMode].Clear();
     }
+
+    void UnitTestDockWidget::RunTestGraph(AZ::Data::Asset<AZ::Data::AssetData> asset, ScriptCanvas::ExecutionMode mode)
+    {
+        Reporter reporter;
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset.GetId().m_guid);
+
+        ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunAssetGraph, asset, mode);
+
+        UnitTestResult testResult;
+
+        UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.GetId().m_guid, testResult);
+
+        m_pendingTests.Add(asset.GetId(), mode);
+
+        ++m_testMetrics[static_cast<int>(mode)].m_graphsTested;
+
+        if (testResult.m_compiled)
+        {
+            if (testResult.m_completed)
+            {
+                ++m_testMetrics[static_cast<int>(mode)].m_success;
+            }
+            else
+            {
+                ++m_testMetrics[static_cast<int>(mode)].m_failures;
+            }
+        }
+        else
+        {
+            ++m_testMetrics[static_cast<int>(mode)].m_compilationFailures;
+        }
+
+        m_pendingTests.Complete(asset.GetId(), mode);
+    }
+
+    void UnitTestDockWidget::OnSystemTick()
+    {
+        if (m_pendingTests.IsFinished())
+        {
+            OnTestsComplete();
+        }
+    }
+
+    void UnitTestDockWidget::PendingTests::Add(AZ::Data::AssetId assetId, ExecutionMode mode)
+    {
+        m_pendingTests.push_back(AZStd::make_pair(assetId, mode));
+    }
+
+    void UnitTestDockWidget::PendingTests::Complete(AZ::Data::AssetId assetId, ExecutionMode mode)
+    {
+        AZStd::erase_if(m_pendingTests, [assetId, mode](const AZStd::pair<AZ::Data::AssetId, ExecutionMode>& pending)
+            {
+                return (assetId == pending.first && mode == pending.second);
+            });
+    }
+
+    bool UnitTestDockWidget::PendingTests::IsFinished() const
+    {
+        return m_pendingTests.empty();
+    }
+
 }

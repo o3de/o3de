@@ -26,9 +26,9 @@
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
+#include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-
 
 namespace AzToolsFramework
 {
@@ -122,6 +122,21 @@ namespace AzToolsFramework
                 const TemplateId& targetTemplateId,
                 PrefabDomValue::MemberIterator& instanceIterator,
                 InstanceOptionalReference instance) override;
+
+            /**
+            * Create a new Link with Prefab System Component and create a unique id for it.
+            * @param linkTargetId The Id of Template which owns this Link.
+            * @param linkSourceId The Id of Template whose instance is referred by targetTemplate.
+            * @param instanceAlias The alias of the instance that should be included in link.
+            * @param linkId The id of the link.  If invalid, create a new link id.  If valid, use to recreate
+            * a prior link.
+            * @return A unique id for the new Link.
+            */
+            LinkId CreateLink(
+                const TemplateId& linkTargetId,
+                const TemplateId& linkSourceId,
+                const InstanceAlias& instanceAlias,
+                const LinkId& linkId = InvalidLinkId) override;
 
             /**
             * Remove the Link associated with the given id from Prefab System Component.
@@ -272,13 +287,13 @@ namespace AzToolsFramework
              * Remove given Link Id from the Link's target Template.
              * @return bool on whether the operation succeeded.
              */
-            bool RemoveLinkIdFromTargetTemplate(const LinkId& linkId);
+            bool RemoveLinkFromTargetTemplate(const LinkId& linkId);
 
             /**
-             * Given Link and its Id, remove the Id from the Link's target Template..
+             * Given Link and its Id, remove the link from the target Template..
              * @return bool on whether the operation succeeded.
              */
-            bool RemoveLinkIdFromTargetTemplate(const LinkId& linkId, const Link& link);
+            bool RemoveLinkFromTargetTemplate(const LinkId& linkId, const Link& link);
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
@@ -306,6 +321,9 @@ namespace AzToolsFramework
 
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
+
+            // Handler the public Prefab API used by UI and scripting
+            PrefabPublicHandler m_prefabPublicHandler;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;

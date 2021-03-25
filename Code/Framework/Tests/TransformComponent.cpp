@@ -986,16 +986,6 @@ namespace UnitTest
         EXPECT_FALSE(m_transformInterface->IsStaticTransform());
     }
 
-    TEST_F(TransformComponentConvertFromV2, IsPositionInterpolated_False)
-    {
-        EXPECT_FALSE(m_transformInterface->IsPositionInterpolated());
-    }
-
-    TEST_F(TransformComponentConvertFromV2, IsRotationInterpolated_False)
-    {
-        EXPECT_FALSE(m_transformInterface->IsRotationInterpolated());
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // TransformConfig
 
@@ -1003,9 +993,6 @@ namespace UnitTest
     {
         return lhs.m_parentId == rhs.m_parentId
             && lhs.m_parentActivationTransformMode == rhs.m_parentActivationTransformMode
-            && lhs.m_netSyncEnabled == rhs.m_netSyncEnabled
-            && lhs.m_interpolatePosition == rhs.m_interpolatePosition
-            && lhs.m_interpolateRotation == rhs.m_interpolateRotation
             && lhs.m_isStatic == rhs.m_isStatic
             && lhs.m_localTransform == rhs.m_localTransform
             && lhs.m_worldTransform == rhs.m_worldTransform

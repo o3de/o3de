@@ -17,8 +17,15 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/map.h>
 
+namespace ScriptCanvas::Grammar
+{
+    struct FunctionPrototype;
+}
+
 namespace ScriptCanvas
 {
+    int CountMatchingInputTypes(const Grammar::FunctionPrototype& a, const Grammar::FunctionPrototype& b, const AZStd::vector<size_t>& checkedIndices);
+
     struct BehaviorContextMethodHelper
     {
         enum BehaviorContextInputOutput : size_t
@@ -74,9 +81,12 @@ namespace ScriptCanvas
 
         template<typename ... Args, size_t ... Indices>
         static AZStd::vector<AZ::BehaviorValueParameter> CreateParameterListInternal(const AZ::BehaviorMethod* method, AZStd::index_sequence<Indices...>, Args&&... args);
-    }; // struct BehaviorContextMethodHelper    
+    };
 
-    AZStd::map<size_t, const AZ::BehaviorMethod*> GetTupleGetMethods(const AZ::TypeId& typeId);
+    AZStd::unordered_map<size_t, const AZ::BehaviorMethod*> GetTupleGetMethodsFromResult(const AZ::BehaviorMethod& method);
+
+    AZStd::unordered_map<size_t, const AZ::BehaviorMethod*> GetTupleGetMethods(const AZ::TypeId& typeId);
+
     AZ::Outcome<const AZ::BehaviorMethod*, void> GetTupleGetMethod(const AZ::TypeId& typeID, size_t index);
 
     template<typename t_Call, typename t_Slots>
@@ -172,7 +182,7 @@ namespace ScriptCanvas
                 {
                     // Populate parameters
                     AZStd::vector<AZ::BehaviorValueParameter> parameters = CreateParameterList(method, input, AZStd::forward<Args>(args)...);
-                    return Datum::CallBehaviorContextMethodResult(method, resultType, parameters.begin(), (unsigned int)AZStd::GetMin(parameters.size(), method->GetNumArguments()));
+                    return Datum::CallBehaviorContextMethodResult(method, resultType, parameters.begin(), (unsigned int)AZStd::GetMin(parameters.size(), method->GetNumArguments()), behaviorClass->m_name);
                 }
                 else
                 {
@@ -212,4 +222,4 @@ namespace ScriptCanvas
         return { ToBehaviorValueParameter(method, Indices, args)... };
     }
 
-} // namespace ScriptCanvas
+} 

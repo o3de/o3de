@@ -39,13 +39,6 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "PixelFormat": "R32G32F"
-            },
-            "xenia": {
-                "UUID": "{52470B8B-0798-4E03-B0D3-039D5141CFEC}",
-                "Name": "LUT_RG32F",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "PixelFormat": "R32G32F"
             }
         }
     }

@@ -24,6 +24,29 @@ namespace ScriptCanvasPhysics
 {
     namespace WorldNodes
     {
+        class World
+        {
+        public:
+            AZ_TYPE_INFO(World, "{55A54AF1-B545-4C12-9F74-01D30789CA1D}");
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<World>()
+                        ->Version(0)
+                        ;
+
+                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                    {
+                        editContext->Class<World>("World", "")
+                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ;
+                    }
+                }
+            }
+        };
+
         using Result = AZStd::tuple<
             bool /*true if an object was hit*/,
             AZ::Vector3 /*world space position*/,
@@ -37,6 +60,8 @@ namespace ScriptCanvasPhysics
             bool, /*true if the overlap returned hits*/
             AZStd::vector<AZ::EntityId> /*list of entityIds*/
         >;
+
+        static const char* k_categoryName = "PhysX/World";
 
         AZ_INLINE Result RayCastWorldSpaceWithGroup(const AZ::Vector3& start,
             const AZ::Vector3& direction,
@@ -74,7 +99,7 @@ namespace ScriptCanvasPhysics
             return AZStd::make_tuple(hit.m_body != nullptr, hit.m_position, hit.m_normal, hit.m_distance, id, surfaceType);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastWorldSpaceWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{695EE108-68C1-40E3-ADA5-8ED9AB74D054}",
             "Returns the first entity hit by a ray cast in world space from the start position in the specified direction.",
             "Start",
@@ -127,7 +152,7 @@ namespace ScriptCanvasPhysics
             return AZStd::make_tuple(hit.m_body != nullptr, hit.m_position, hit.m_normal, hit.m_distance, id, surfaceType);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastLocalSpaceWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{938E0C6E-C6A3-4716-9233-941EFA70241A}",
             "Returns the first entity hit by a ray cast in local space from the source entity in the specified direction.",
             "Source",
@@ -169,7 +194,7 @@ namespace ScriptCanvasPhysics
             return hits;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastMultipleLocalSpaceWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{A867FC55-6610-42C2-97E8-C614450CAE92}",
             "Returns all entities hit by a ray cast in local space from the source entity in the specified direction.",
             "Source",
@@ -218,7 +243,7 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(AZ::Transform::CreateTranslation(position), sphere, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapSphereWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{0A2831AB-E994-4533-8E64-700631994E64}",
             "Returns the objects overlapping a sphere at a position",
             "Position",
@@ -236,7 +261,7 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(pose, box, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapBoxWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{1991BA3D-3848-4BF0-B696-C39C42CFE49A}",
             "Returns the objects overlapping a box at a position",
             "Pose",
@@ -255,7 +280,7 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(pose, capsule, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapCapsuleWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{1DD49D7A-348A-4CB1-82C0-D93FE01FEFA1}",
             "Returns the objects overlapping a capsule at a position",
             "Pose",
@@ -314,7 +339,7 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction, sphere, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(SphereCastWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{7A4D8893-51F5-444F-9C77-64D179F9C9BB}", "SphereCast",
             "Distance", "Pose", "Direction", "Radius", "Collision group", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
@@ -332,7 +357,7 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction, box, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(BoxCastWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{E7C2CFE0-3FB9-438B-9A8A-A5D333AB0791}", "BoxCast",
             "Distance", "Pose", "Direction", "Dimensions", "Collision group", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
@@ -350,7 +375,7 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction, capsule, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(CapsuleCastWithGroup,
-            "PhysX/World",
+            k_categoryName,
             "{938B047C-6282-4510-8AFE-21D58426061D}", "CapsuleCast",
             "Distance", "Pose", "Direction", "Height", "Radius", "Collision group", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
@@ -378,7 +403,7 @@ namespace ScriptCanvasPhysics
         }
 
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastWorldSpace,
-            "PhysX/World",
+            k_categoryName,
             "{F75EF071-6755-40A3-8D5D-0603964774AE}",
             "This node is deprecated, use RayCastWorldSpaceWithGroup",
             "Start",
@@ -389,14 +414,14 @@ namespace ScriptCanvasPhysics
             "Position",
             "Normal",
             "Distance",
-            "EntityId");
+            "Result");
 
         AZ_INLINE DeprecatedResult RayCastLocalSpace(const AZ::EntityId& fromEntityId, const AZ::Vector3& direction, float distance, AZ::EntityId ignore)
         {
             return AZStd::apply(DeprecatedResultFunc, RayCastLocalSpaceWithGroup(fromEntityId, direction, distance, "", ignore));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastLocalSpace,
-            "PhysX/World",
+            k_categoryName,
             "{1D6935AF-8EE9-4636-9F0C-E0485D935800}",
             "This node is deprecated, use RayCastLocalSpaceWithGroup",
             "Source",
@@ -407,14 +432,14 @@ namespace ScriptCanvasPhysics
             "Position",
             "Normal",
             "Distance",
-            "EntityId");
+            "Result");
 
         AZ_INLINE AZStd::vector<Physics::RayCastHit> RayCastMultipleLocalSpace(const AZ::EntityId& fromEntityId, const AZ::Vector3& direction, float distance, AZ::EntityId ignore)
         {
             return RayCastMultipleLocalSpaceWithGroup(fromEntityId, direction, distance, "", ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastMultipleLocalSpace,
-            "PhysX/World",
+            k_categoryName,
             "{AB48C54A-0E0D-41F1-B73E-F689B9570446}",
             "This node is deprecated, use RayCastMultipleLocalSpaceWithGroup",
             "Source",
@@ -428,7 +453,7 @@ namespace ScriptCanvasPhysics
             return OverlapSphereWithGroup(position, radius, "", ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapSphere,
-            "PhysX/World",
+            k_categoryName,
             "{ED1CE1E1-5BF1-46BA-8DFF-78966FFDBF75}",
             "This node is deprecated, use OverlapSphereWithGroup",
             "Position",
@@ -441,7 +466,7 @@ namespace ScriptCanvasPhysics
             return OverlapBoxWithGroup(pose, dimensions, "", ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapBox,
-            "PhysX/World",
+            k_categoryName,
             "{8D60E5FA-6101-4D3B-BC60-28449CC93AC2}",
             "This node is deprecated, use OverlapBoxWithGroup",
             "Pose",
@@ -454,7 +479,7 @@ namespace ScriptCanvasPhysics
             return OverlapCapsuleWithGroup(pose, height, radius, "", ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapCapsule,
-            "PhysX/World",
+            k_categoryName,
             "{600D8F16-2F18-4FA3-858B-D7B59484BEF1}",
             "This node is deprecated, use OverlapCapsuleWithGroup",
             "Pose",
@@ -468,7 +493,7 @@ namespace ScriptCanvasPhysics
             return AZStd::apply(DeprecatedResultFunc, SphereCastWithGroup(distance, pose, direction, radius, "", ignore));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(SphereCast,
-            "PhysX/World",
+            k_categoryName,
             "{0236AC59-190C-4A41-99ED-5AFA3AD6C500}", "This node is deprecated, use SphereCastWithGroup",
             "Distance", "Pose", "Direction", "Radius", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
@@ -479,7 +504,7 @@ namespace ScriptCanvasPhysics
             return AZStd::apply(DeprecatedResultFunc, BoxCastWithGroup(distance, pose, direction, dimensions, "", ignore));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(BoxCast,
-            "PhysX/World",
+            k_categoryName,
             "{E9DB2310-21FE-4D58-BA13-512CA9BAA305}", "This node is deprecated, use BoxCastWithGroup",
             "Distance", "Pose", "Direction", "Dimensions", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
@@ -490,15 +515,14 @@ namespace ScriptCanvasPhysics
             return AZStd::apply(DeprecatedResultFunc, CapsuleCastWithGroup(distance, pose, direction, height, radius, "", ignore));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(CapsuleCast,
-            "PhysX/World",
+            k_categoryName,
             "{FC9F0631-4D63-453C-A876-EC87BC4F2A23}", "This node is deprecated, use CapsuleCastWithGroup",
             "Distance", "Pose", "Direction", "Height", "Radius", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
         );
 
         ///////////////////////////////////////////////////////////////
-        using Registrar = ScriptCanvas::RegistrarGeneric
-            < 
+        using Registrar = ScriptCanvas::RegistrarGeneric< 
             RayCastWorldSpaceNode,
             RayCastWorldSpaceWithGroupNode,
             RayCastLocalSpaceNode,
@@ -517,6 +541,6 @@ namespace ScriptCanvasPhysics
             BoxCastWithGroupNode,
             CapsuleCastNode,
             CapsuleCastWithGroupNode
-            >;
+        >;
     }
 }

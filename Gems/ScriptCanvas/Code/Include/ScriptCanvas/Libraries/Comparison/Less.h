@@ -63,19 +63,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class LessGeneric
-                : public BinaryOperatorGeneric<Less, ComparisonOperator<OperatorType::Less>>
-            {
-            public:
-                using BaseType = BinaryOperatorGeneric<Less, ComparisonOperator<OperatorType::Less>>;
-                AZ_COMPONENT(LessGeneric, "{D1FB2E44-2115-4850-8B34-B2A2EC100FB4}", BaseType);
-
-                static const char* GetOperatorName() { return "Less"; }
-                static const char* GetOperatorDesc() { return "Compares if first value is less than second value"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Placeholder.png"; } // TODO: Get final icon image
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

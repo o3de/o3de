@@ -12,29 +12,32 @@
 
 #pragma once
 
-#include "ScriptCanvasTestApplication.h"
-#include "ScriptCanvasTestNodes.h"
-#include "EntityRefTests.h"
-#include "ScriptCanvasTestUtilities.h"
+#include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Driller/Driller.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Memory/MemoryDriller.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzTest/AzTest.h>
+
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
-
-#include <AzTest/AzTest.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <ScriptCanvas/SystemComponent.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
+#include "EntityRefTests.h"
+#include "ScriptCanvasTestApplication.h"
+#include "ScriptCanvasTestBus.h"
+#include "ScriptCanvasTestNodes.h"
+#include "ScriptCanvasTestUtilities.h"
+#include <Nodes/Nodeables/SharedDataSlotExample.h>
+#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
@@ -44,7 +47,7 @@ namespace ScriptCanvasTests
 
     class ScriptCanvasTestFixture
         : public ::testing::Test
-        , protected NodeAccessor
+        //, protected NodeAccessor
     {
     public:
         static AZStd::atomic_bool s_asyncOperationActive;
@@ -75,6 +78,10 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ScriptCanvasGem.Editor.869a0d0ec11a45c299917d45c81555e6.v0.1.0";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ExpressionEvaluation.4c6f9df57ca2468f93c8d860ee6a1167.v0.1.0";
+                    descriptor.m_modules.push_back(dynamicModuleDescriptor);
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ScriptEvents.32d8ba21703e4bbbb08487366e48dd69.v0.1.0";
+                    descriptor.m_modules.push_back(dynamicModuleDescriptor);
 
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -99,6 +106,32 @@ namespace ScriptCanvasTests
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
             
             AZ::TickBus::AllowFunctionQueuing(true);
+
+            auto m_serializeContext = s_application->GetSerializeContext();
+            auto m_behaviorContext = s_application->GetBehaviorContext();
+            ScriptCanvasTesting::GlobalBusTraits::Reflect(m_serializeContext);
+            ScriptCanvasTesting::GlobalBusTraits::Reflect(m_behaviorContext);
+            ScriptCanvasTesting::LocalBusTraits::Reflect(m_serializeContext);
+            ScriptCanvasTesting::LocalBusTraits::Reflect(m_behaviorContext);
+            ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(m_serializeContext);
+            ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(m_behaviorContext);
+            ScriptCanvasTesting::TestTupleMethods::Reflect(m_behaviorContext);
+
+            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
+            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
+            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
+            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
+            ::Nodes::ReturnTypeExampleNode::Reflect(m_serializeContext);
+            ::Nodes::ReturnTypeExampleNode::Reflect(m_behaviorContext);
+            ::Nodes::InputTypeExampleNode::Reflect(m_serializeContext);
+            ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
+            ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
+            ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
+
+            TestNodeableObject::Reflect(m_serializeContext);
+            TestNodeableObject::Reflect(m_behaviorContext);
+            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
+            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
         }
 
         static void TearDownTestCase()
@@ -117,7 +150,7 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-
+            
             s_allocatorSetup.TeardownAllocator();
         }
 
@@ -148,33 +181,21 @@ namespace ScriptCanvasTests
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());
 
             m_dataSlotConfigurationType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<ScriptCanvas::DataSlotConfiguration>());
-
-            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
-            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
         }
 
         void TearDown() override
         {
+            delete m_graph;
+            m_graph = nullptr;
+
             ASSERT_TRUE(s_setupSucceeded) << "ScriptCanvasTestFixture set up failed, unit tests can't work properly";
-
-            m_serializeContext->EnableRemoveReflection();
-            m_behaviorContext->EnableRemoveReflection();
-
-            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
-            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
-
-            m_serializeContext->DisableRemoveReflection();
-            m_behaviorContext->DisableRemoveReflection();
 
             for (AZ::ComponentDescriptor* componentDescriptor : m_descriptors)
             {
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
             }
 
-            m_descriptors.clear();
-
-            delete m_graph;
-            m_graph = nullptr;
+            m_descriptors.clear();            
         }
 
         ScriptCanvas::Graph* CreateGraph()
@@ -207,13 +228,9 @@ namespace ScriptCanvasTests
 
         void ReportErrors(ScriptCanvas::Graph* graph, bool expectErrors = false, bool expectIrrecoverableErrors = false)
         {
-            EXPECT_EQ(graph->IsInErrorState(), expectErrors);
-            EXPECT_EQ(graph->IsInIrrecoverableErrorState(), expectIrrecoverableErrors);
-
-            if (graph->IsInErrorState())
-            {
-                AZ_TracePrintf("UnitTest", "%s\n", AZStd::string(graph->GetLastErrorDescription()).c_str());
-            }
+            AZ_UNUSED(graph);
+            AZ_UNUSED(expectErrors);
+            AZ_UNUSED(expectIrrecoverableErrors);
         }
 
         void TestConnectionBetween(ScriptCanvas::Endpoint sourceEndpoint, ScriptCanvas::Endpoint targetEndpoint, bool isValid = true)

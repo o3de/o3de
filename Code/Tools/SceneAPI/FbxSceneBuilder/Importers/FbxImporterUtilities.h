@@ -16,7 +16,6 @@
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 
-
 namespace AZ
 {
     struct Uuid;

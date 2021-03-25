@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/UdpTransport/DtlsSocket.h>
 #include <AzCore/Console/ILogger.h>
 
@@ -35,9 +36,9 @@ namespace AzNetworking
         return dtlsEndpoint.Connect(*this, address, outDtlsData);
     }
 
-    DtlsEndpoint::ConnectResult DtlsSocket::AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address, const UdpPacketEncodingBuffer& dtlsData) const
+    DtlsEndpoint::ConnectResult DtlsSocket::AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address) const
     {
-        return dtlsEndpoint.Accept(*this, address, dtlsData);
+        return dtlsEndpoint.Accept(*this, address);
     }
 
     bool DtlsSocket::Open(uint16_t port, CanAcceptConnections canAccept, TrustZone trustZone)
@@ -91,6 +92,11 @@ namespace AzNetworking
         // Write out the packet we were requested to send
         const int32_t sentBytesRaw = SSL_write(dtlsEndpoint.m_sslSocket, data, size);
         const int32_t sentBytesEnc = BIO_read(dtlsEndpoint.m_writeBio, encrpytedSendBuffer, sizeof(encrpytedSendBuffer));
+
+        // Track encryption metrics
+        m_sentBytesEncryptionInflation += aznumeric_cast<uint32_t>(sentBytesEnc - aznumeric_cast<int32_t>(size));
+        m_sentPacketsEncrypted++;
+
         return UdpSocket::SendInternal(address, encrpytedSendBuffer, sentBytesEnc, encrypt, dtlsEndpoint);
 #else
         return 0;

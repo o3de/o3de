@@ -73,6 +73,8 @@ namespace AZ
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
             void SelectMotionVectorShader(Data::Instance<RPI::Material> material);
+            void UpdateObjectSrg();
+            bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
 
             using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
 
@@ -90,10 +92,12 @@ namespace AZ
 
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
+            bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_skinnedMeshWithMotion = false;
             bool m_rayTracingEnabled = true;
             bool m_visible = true;
+            bool m_useForwardPassIblSpecular = false;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -151,6 +155,10 @@ namespace AZ
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
+            void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
+
+            // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
+            void UpdateMeshReflectionProbes();
 
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;

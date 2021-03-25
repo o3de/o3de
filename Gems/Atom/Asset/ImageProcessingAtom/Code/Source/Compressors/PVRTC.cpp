@@ -153,7 +153,7 @@ namespace ImageProcessingAtom
             }
             else if (quality <= eQuality_Normal)
             {
-                internalQuality = pvrtexture::eETCFastPerceptual;
+                internalQuality = pvrtexture::eETCNormal;
             }
             else if (isUniform)
             {
@@ -161,7 +161,7 @@ namespace ImageProcessingAtom
             }
             else
             {
-                internalQuality = pvrtexture::eETCSlowPerceptual;
+                internalQuality = pvrtexture::eETCSlow;
             }
         }
         else if (IsASTCFormat(fmtDst))

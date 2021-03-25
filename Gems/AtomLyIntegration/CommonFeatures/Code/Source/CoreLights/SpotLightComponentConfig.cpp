@@ -23,7 +23,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<SpotLightComponentConfig, ComponentConfig>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("Color", &SpotLightComponentConfig::m_color)
                     ->Field("Intensity", &SpotLightComponentConfig::m_intensity)
                     ->Field("IntensityMode", &SpotLightComponentConfig::m_intensityMode)
@@ -39,7 +39,7 @@ namespace AZ
                     ->Field("Softening Boundary Width", &SpotLightComponentConfig::m_boundaryWidthInDegrees)
                     ->Field("Prediction Sample Count", &SpotLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &SpotLightComponentConfig::m_filteringSampleCount)
-                    ;
+                    ->Field("Pcf Method", &SpotLightComponentConfig::m_pcfMethod);
             }
         }
 
@@ -67,6 +67,16 @@ namespace AZ
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool SpotLightComponentConfig::IsPcfBoundarySearchDisabled() const
+        {
+            if (IsShadowPcfDisabled())
+            {
+                return true;
+            }
+
+            return m_pcfMethod != PcfMethod::BoundarySearch;
         }
 
     } // namespace Render

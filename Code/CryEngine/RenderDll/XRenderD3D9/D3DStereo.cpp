@@ -25,10 +25,6 @@
 #define D3DSTEREO_CPP_SECTION_2 2
 #endif
 
-#if defined(USE_NV_API)
-#include <nvapi.h>
-#endif
-
 #include <MathConversion.h>
 
 CD3DStereoRenderer::CD3DStereoRenderer(CD3D9Renderer& renderer, EStereoDevice device)
@@ -90,31 +86,6 @@ void CD3DStereoRenderer::SelectDefaultDevice()
 void CD3DStereoRenderer::InitDeviceBeforeD3D()
 {
     LOADING_TIME_PROFILE_SECTION;
-#if defined(USE_NV_API)
-    bool availableDriverNV = false;
-    uint8 enabled = 0;
-
-    // Always set direct mode so that the NV driver never does its own stereo
-    if (NvAPI_Initialize() == NVAPI_OK &&
-        NvAPI_Stereo_SetDriverMode(NVAPI_STEREO_DRIVER_MODE_DIRECT) == NVAPI_OK &&
-        NvAPI_Stereo_IsEnabled(&enabled) == NVAPI_OK)
-    {
-        if (!enabled)
-        {
-            iLog->LogWarning("3DVision is disabled in control panel");
-        }
-        else
-        {
-            availableDriverNV = true;
-        }
-    }
-
-    if (!availableDriverNV && m_device == STEREO_DEVICE_DRIVER && CRenderer::CV_r_StereoDevice == STEREO_DEVICE_DEFAULT)
-    {
-        // Fall back to frame-compatible device
-        m_device = STEREO_DEVICE_FRAMECOMP;
-    }
-#endif
 
     if (m_device == STEREO_DEVICE_NONE)
     {
@@ -124,35 +95,7 @@ void CD3DStereoRenderer::InitDeviceBeforeD3D()
     bool success = true;
     m_deviceState = STEREO_DEVSTATE_UNSUPPORTED_DEVICE;
 
-#if defined(USE_NV_API)
-    if (m_device == STEREO_DEVICE_DRIVER)
-    {
-        if (availableDriverNV)
-        {
-            m_driver = DRIVER_NV;
-        }
-        else
-        {
-            success = false;
-            m_deviceState = STEREO_DEVSTATE_BAD_DRIVER;
-        }
-    }
-    else if (m_device == STEREO_DEVICE_DUALHEAD)
-    {
-        ICVar* cvar = iConsole->GetCVar("r_Fullscreen");
-        bool fullscreen = gEnv->IsEditor() ? false : cvar && cvar->GetIVal() > 0;
-
-        if (!fullscreen)
-        {
-            success = false;
-            m_deviceState = STEREO_DEVSTATE_REQ_FULLSCREEN;
-        }
-    }
-    else if (m_device == STEREO_DEVICE_HDMI)
-    {
-        success = false;
-    }
-#elif defined(AZ_RESTRICTED_PLATFORM)
+#if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION D3DSTEREO_CPP_SECTION_2
     #include AZ_RESTRICTED_FILE(D3DStereo_cpp)
 #endif
@@ -172,30 +115,6 @@ void CD3DStereoRenderer::InitDeviceBeforeD3D()
 void CD3DStereoRenderer::InitDeviceAfterD3D()
 {
     LOADING_TIME_PROFILE_SECTION;
-#if defined(USE_NV_API)
-    if (IsDriver(DRIVER_NV))
-    {
-        if (m_nvStereoHandle)
-        {
-            NvAPI_Stereo_DestroyHandle(m_nvStereoHandle);
-            m_nvStereoHandle = NULL;
-        }
-
-        void* pStereoHandle;
-        D3DDevice* device = &m_renderer.GetDevice();
-
-        if (NvAPI_Stereo_CreateHandleFromIUnknown(device, &pStereoHandle) == NVAPI_OK)
-        {
-            m_nvStereoHandle = pStereoHandle;
-        }
-        else
-        {
-            m_device = STEREO_DEVICE_NONE;
-        }
-
-        DisableStereo();  // Always disabled at startup
-    }
-#endif
 
     // Note: Resources will be created in EF_Init, so no need to create them here
     AZ::StereoRendererRequestBus::Handler::BusConnect();
@@ -234,14 +153,6 @@ void CD3DStereoRenderer::Shutdown()
     ReleaseResources();
 
     ShutdownHmdRenderer();
-
-#if defined(USE_NV_API)
-    if (m_nvStereoHandle)
-    {
-        NvAPI_Stereo_DestroyHandle(m_nvStereoHandle);
-        m_nvStereoHandle = NULL;
-    }
-#endif
 }
 
 
@@ -259,28 +170,6 @@ void CD3DStereoRenderer::ReleaseResources()
 
 bool CD3DStereoRenderer::EnableStereo()
 {
-#if defined(USE_NV_API)
-    if (IsDriver(DRIVER_NV))
-    {
-        uint8 windowedSupport = 0;
-        NvAPI_Stereo_IsWindowedModeSupported(&windowedSupport);
-
-        if (m_renderer.m_bFullScreen || windowedSupport)
-        {
-            NvAPI_Stereo_Activate(m_nvStereoHandle);
-            NvAPI_Stereo_SetNotificationMessage(m_nvStereoHandle, NULL, NULL);
-            NvAPI_Stereo_SetActiveEye(m_nvStereoHandle, NVAPI_STEREO_EYE_LEFT);
-            return true;
-        }
-        else
-        {
-            NvAPI_Stereo_Deactivate(m_nvStereoHandle);
-            iLog->LogError("3DVision requires fullscreen mode");
-            return false;
-        }
-    }
-#endif
-
     if (!m_hmdRenderer)
     {
         return InitializeHmdRenderer();
@@ -292,13 +181,6 @@ bool CD3DStereoRenderer::EnableStereo()
 
 void CD3DStereoRenderer::DisableStereo()
 {
-#if defined(USE_NV_API)
-    if (IsDriver(DRIVER_NV))
-    {
-        NvAPI_Stereo_Deactivate(m_nvStereoHandle);
-    }
-#endif
-
     m_gammaAdjustment = 0;
 
     ShutdownHmdRenderer();
@@ -347,13 +229,6 @@ void CD3DStereoRenderer::ShutdownHmdRenderer()
 
 void CD3DStereoRenderer::PrepareStereo(EStereoMode mode, EStereoOutput output)
 {
-#if defined(USE_NV_API)
-    if (IsDriver(DRIVER_NV))
-    {
-        HandleNVControl();
-    }
-#endif
-
     if (m_mode != mode || m_output != output)
     {
         m_renderer.ForceFlushRTCommands();
@@ -415,15 +290,6 @@ void CD3DStereoRenderer::PrepareStereo(EStereoMode mode, EStereoOutput output)
 
 void CD3DStereoRenderer::HandleNVControl()
 {
-#if defined(USE_NV_API)
-    if (m_stereoStrength != CRenderer::CV_r_StereoStrength)
-    {
-        NvAPI_Stereo_SetSeparation(m_nvStereoHandle, clamp_tpl((CRenderer::CV_r_StereoStrength - 0.5f) * 100.f, 0.f, 100.f));
-    }
-
-    NvAPI_Stereo_IsActivated(m_nvStereoHandle, &m_nvStereoActivated);
-    NvAPI_Stereo_GetSeparation(m_nvStereoHandle, &m_nvStereoStrength);
-#endif
 }
 
 
@@ -641,16 +507,6 @@ void CD3DStereoRenderer::DisplayStereo()
     GetUtils().SetTexture(!CRenderer::CV_r_StereoFlipEyes ? GetRightEye() : GetLeftEye(), 1, FILTER_LINEAR);
 
     GetUtils().DrawFullScreenTri(width, height);
-
-#if defined(USE_NV_API)
-    if (IsDriver(DRIVER_NV) && m_nvStereoActivated)
-    {
-        NvAPI_Stereo_SetActiveEye(m_nvStereoHandle, NVAPI_STEREO_EYE_RIGHT);
-        GetUtils().SetTexture(!CRenderer::CV_r_StereoFlipEyes ? GetRightEye() : GetLeftEye(), 0, FILTER_LINEAR);
-        GetUtils().DrawFullScreenTri(width, height);
-        NvAPI_Stereo_SetActiveEye(m_nvStereoHandle, NVAPI_STEREO_EYE_LEFT);
-    }
-#endif
 
     pSH->FXEndPass();
     pSH->FXEnd();

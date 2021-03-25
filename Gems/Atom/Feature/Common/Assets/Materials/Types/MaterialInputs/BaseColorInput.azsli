@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/BlendUtility.azsli>
 
 // This file provides utilities for common handling of inputs for the base color of PBR materials.
 
@@ -30,14 +31,6 @@ Texture2D prefix##m_baseColorMap;
 option bool prefix##o_baseColor_useTexture; \
 option TextureBlendMode prefix##o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
-enum class TextureBlendMode { Multiply, LinearLight, Lerp };
-
-// See https://en.wikipedia.org/wiki/Blend_modes#Dodge_and_burn
-float3 TextureBlend_LinearLight(float3 base, float3 mask)
-{
-    return saturate(base + 2 * mask - 1);
-}
-
 float3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, float3 baseColor, bool useTexture)
 {
     if(useTexture)
@@ -53,88 +46,19 @@ float3 BlendBaseColor(float3 sampledBaseColor, float3 baseColor, float factor, T
     // [GFX TODO][ATOM-1761] Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack alpha. 
     if (useTexture)
     {
-        switch (blendMode)
+        // Depending on the blend mode, we need to flip the order of the colors in order to get a useful result.
+        if(blendMode == TextureBlendMode::Overlay)
         {
-            case TextureBlendMode::Multiply:
-                baseColor = factor * baseColor * sampledBaseColor;
-                break;
-
-            case TextureBlendMode::Lerp:
-                baseColor = lerp(baseColor, sampledBaseColor, factor);
-                break;
-
-            case TextureBlendMode::LinearLight:
-                {
-                    // For more info on this blend mode: https://wiki.agscollab.com/pages/viewpage.action?pageId=15764930
-                    // [GFX TODO][ATOM-3237] See if we can avoid these extra color space conversions...
-                    
-                    // To get blend behavior that mimics photoshop, convert to sRGB
-                    sampledBaseColor = TransformColor(sampledBaseColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
-                    float3 baseColorSRGB = TransformColor(baseColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
-                    
-                    // Apply blend
-                    float3 blendColor = TextureBlend_LinearLight(baseColorSRGB, sampledBaseColor);
-
-                    // Convert back to ACEScg
-                    blendColor = TransformColor(blendColor, ColorSpaceId::SRGB, ColorSpaceId::ACEScg);                    
-
-                    // Apply factor
-                    baseColor = lerp(baseColor, blendColor, factor);
-                }
-                break;
+            baseColor = ApplyTextureBlend(sampledBaseColor, baseColor, factor, blendMode);
+        }
+        else
+        {
+            baseColor = ApplyTextureBlend(baseColor, sampledBaseColor, factor, blendMode);
         }
     }
     else
     {
         baseColor *= factor;
-    }
-    return baseColor;
-}
-
-float3 BlendBaseColorDetailed(float3 sampledBaseColor, float3 detailColor, float detailBlendFactor, float3 baseColor, float factor, TextureBlendMode blendMode, bool useTexture)
-{
-    if (useTexture)
-    {
-        switch (blendMode)
-        {
-            case TextureBlendMode::Multiply:
-                baseColor = factor * baseColor * sampledBaseColor;
-                baseColor = lerp(baseColor, detailColor, detailBlendFactor );
-                break;
-
-            case TextureBlendMode::Lerp:
-                baseColor = lerp(baseColor, sampledBaseColor, factor);
-                baseColor = lerp(baseColor, detailColor, detailBlendFactor);
-                break;
-
-            case TextureBlendMode::LinearLight:
-                {
-                    // For more info on this blend mode: https://wiki.agscollab.com/pages/viewpage.action?pageId=15764930
-                    // [GFX TODO][ATOM-3237] See if we can avoid these extra color space conversions...
-
-                    // Since detailColor is already in ACEScg space, the Dodge and Burn effect will 
-                    // be done on the combined color in this space based on the base layer color texture
-                    baseColor = lerp(baseColor, detailColor, detailBlendFactor);     // ACEScg space
-
-                    // To get blend behavior that mimics photoshop, convert to sRGB
-                    sampledBaseColor = TransformColor(sampledBaseColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
-                    float3 baseColorSRGB = TransformColor(baseColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
-
-                    // Apply blend
-                    float3 blendColor = TextureBlend_LinearLight(baseColorSRGB, sampledBaseColor);
-                    
-                    // Convert back to ACEScg
-                    blendColor = TransformColor(blendColor, ColorSpaceId::SRGB, ColorSpaceId::ACEScg);
-                    
-                    baseColor = lerp(baseColor, blendColor, factor);
-                }
-                break;
-        }
-    }
-    else
-    {
-        baseColor *= factor;
-        baseColor = lerp( baseColor, detailColor, detailBlendFactor );
     }
     return baseColor;
 }

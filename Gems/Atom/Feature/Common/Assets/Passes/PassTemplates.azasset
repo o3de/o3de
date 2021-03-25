@@ -439,6 +439,42 @@
             {
                 "Name": "MorphTargetPassTemplate",
                 "Path": "Passes/MorphTarget.pass"
+            },
+            {
+                "Name": "DepthMSAAParentTemplate",
+                "Path": "Passes/DepthMSAAParent.pass"
+            },
+            {
+                "Name": "MotionVectorParentTemplate",
+                "Path": "Passes/MotionVectorParent.pass"
+            },
+            {
+                "Name": "LightCullingParentTemplate",
+                "Path": "Passes/LightCullingParent.pass"
+            },
+            {
+                "Name": "ShadowParentTemplate",
+                "Path": "Passes/ShadowParent.pass"
+            },
+            {
+                "Name": "OpaqueParentTemplate",
+                "Path": "Passes/OpaqueParent.pass"
+            },
+            {
+                "Name": "TransparentParentTemplate",
+                "Path": "Passes/TransparentParent.pass"
+            },
+            {
+                "Name": "PostProcessParentTemplate",
+                "Path": "Passes/PostProcessParent.pass"
+            },
+            {
+                "Name": "DebugOverlayParentTemplate",
+                "Path": "Passes/DebugOverlayParent.pass"
+            },
+            {
+                "Name": "UIParentTemplate",
+                "Path": "Passes/UIParent.pass"
             }
         ]
     }

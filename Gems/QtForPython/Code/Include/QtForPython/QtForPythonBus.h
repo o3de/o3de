@@ -32,9 +32,6 @@ namespace QtForPython
 
         //! The 'winId' of the main Qt window in the Lumberyard editor
         AZ::u64 m_mainWindowId;
-
-        //! PySide package folder to attach to the Python system path
-        AZStd::string m_pySidePackageFolder;
     };
 
     //! Used to fetch tools framework data 

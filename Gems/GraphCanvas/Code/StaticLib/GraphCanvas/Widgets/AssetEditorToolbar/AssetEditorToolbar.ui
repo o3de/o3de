@@ -42,7 +42,8 @@
      </property>
      <property name="icon">
       <iconset resource="../Resources/GraphCanvasEditorResources.qrc">
-       <normaloff>:/GraphCanvasEditorResources/comment.svg</normaloff>:/GraphCanvasEditorResources/comment.svg</iconset>
+       <normaloff>:/GraphCanvasEditorResources/comment.svg</normaloff>:/GraphCanvasEditorResources/comment.svg
+      </iconset>
      </property>
      <property name="shortcut">
       <string>Ctrl+Alt+M</string>

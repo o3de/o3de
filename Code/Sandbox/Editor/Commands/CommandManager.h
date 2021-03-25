@@ -49,7 +49,7 @@ public:
         const char* name,
         const char* description,
         const char* example,
-        const Functor0& functor,
+        const AZStd::function<void()>& functor,
         const CCommand0::SUIInfo& uiInfo);
     bool AttachUIInfo(const char* fullCmdName, const CCommand0::SUIInfo& uiInfo);
     bool GetUIInfo(const string& module, const string& name, CCommand0::SUIInfo& uiInfo) const;
@@ -112,10 +112,10 @@ private:
     static CAutoRegisterCommandHelper* s_pLast;
 };
 
-#define REGISTER_EDITOR_COMMAND(functionPtr, moduleName, functionName, description, example)                                    \
+#define REGISTER_EDITOR_COMMAND(boundFunction, moduleName, functionName, description, example)                                  \
     void RegisterCommand##moduleName##functionName(CEditorCommandManager & cmdMgr)                                              \
     {                                                                                                                           \
-        CommandManagerHelper::RegisterCommand(&cmdMgr, #moduleName, #functionName, description, example, functor(functionPtr)); \
+        CommandManagerHelper::RegisterCommand(&cmdMgr, #moduleName, #functionName, description, example, boundFunction);        \
     }                                                                                                                           \
     CAutoRegisterCommandHelper g_AutoRegCmdHelper##moduleName##functionName(RegisterCommand##moduleName##functionName)
 

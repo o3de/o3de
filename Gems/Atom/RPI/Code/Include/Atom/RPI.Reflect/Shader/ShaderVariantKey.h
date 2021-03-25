@@ -52,7 +52,8 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            ShaderVariantId& reset();
+            bool IsEmpty() const;
+            ShaderVariantId& Reset();
 
             bool operator==(const ShaderVariantId& other) const;
             bool operator!=(const ShaderVariantId& other) const;

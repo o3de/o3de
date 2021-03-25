@@ -193,8 +193,10 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 
     const char* engineRoot;
     EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
+    AZStd::string gamePathString;
+    AZ::StringFunc::Path::Join(engineRoot, gEnv->pConsole->GetCVar("sys_game_folder")->GetString(), gamePathString);
 
-    QString gamePath = QString(engineRoot) + QDir::separator() + gEnv->pConsole->GetCVar("sys_game_folder")->GetString();
+    QString gamePath = QString(gamePathString.c_str());
     Path::ConvertSlashToBackSlash(gamePath);
     gamePath = Path::ToUnixPath(gamePath.toLower());
     gamePath = Path::AddSlash(gamePath);

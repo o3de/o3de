@@ -25,10 +25,13 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            CryCommon
             Gem::ScriptCanvas
     AUTOGEN_RULES
         *.ScriptCanvasNode.xml,ScriptCanvasNode_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNode.xml,ScriptCanvasNode_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 ly_add_target(
@@ -45,6 +48,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
+            AZ::AzFramework
             Gem::StartingPointInput.Static
 )
 ly_add_source_properties(
@@ -68,6 +72,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
+                AZ::AzFramework
                 Gem::StartingPointInput.Static
     )
 endif()
@@ -77,7 +82,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME StartingPointInput.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME StartingPointInput.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             startingpointinput_tests_files.cmake

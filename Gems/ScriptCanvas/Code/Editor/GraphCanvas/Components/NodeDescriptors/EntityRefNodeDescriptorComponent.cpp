@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
         UpdateNodeTitle();
     }   
 
-    void EntityRefNodeDescriptorComponent::OnInputChanged(const ScriptCanvas::SlotId& slotId)    
+    void EntityRefNodeDescriptorComponent::OnSlotInputChanged(const ScriptCanvas::SlotId& slotId)
     {
         if (slotId == m_endpoint.GetSlotId())
         {

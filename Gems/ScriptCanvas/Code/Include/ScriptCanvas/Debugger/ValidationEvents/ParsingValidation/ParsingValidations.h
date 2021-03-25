@@ -14,20 +14,68 @@
 #include <AzCore/Component/EntityId.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/HighlightEffect.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEffects/FocusOnEffect.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidationIds.h>
+
+#include <ScriptCanvas/Results/ErrorText.h>
 
 namespace ScriptCanvas
 {
-    // \todo this must be removed before it goes even into preview
-    class NotYetImplemented
+    //! Base class for all parser validation events, they will all share the same
+    //! behavior
+    class ParserValidation
         : public ValidationEvent
+        , public HighlightEntityEffect
+        , public FocusOnEntityEffect
     {
     public:
-        AZ_RTTI(NotYetImplemented, "{9439177C-DDFA-4B90-A6A4-8F9BEF8E6E0C}", ValidationEvent);
+
+        AZ_RTTI(ParserValidation, "{1B91C6DC-B258-463C-B7EE-05338F6635E2}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
+        AZ_CLASS_ALLOCATOR(ParserValidation, AZ::SystemAllocator, 0);
+
+        ParserValidation(AZ::EntityId nodeId, ValidationSeverity severity, const AZStd::string_view& description)
+            : ValidationEvent(severity)
+            , m_nodeId(nodeId)
+        {
+            SetDescription(description);
+        }
+
+        AZStd::string_view GetTooltip() const override
+        {
+            return GetDescription();
+        }
+
+        // HighlightEntityEffect
+        AZ::EntityId GetHighlightTarget() const
+        {
+            return m_nodeId;
+        }
+        ////
+
+        // FocusOnEntityEffect
+        AZ::EntityId GetFocusTarget() const override
+        {
+            return m_nodeId;
+        }
+        ////
+
+    private:
+
+        AZ::EntityId m_nodeId;
+    };
+
+
+    // \todo this must be removed before it goes even into preview
+    class NotYetImplemented
+        : public ParserValidation
+    {
+    public:
+        AZ_RTTI(NotYetImplemented, "{9439177C-DDFA-4B90-A6A4-8F9BEF8E6E0C}", ParserValidation);
         AZ_CLASS_ALLOCATOR(NotYetImplemented, AZ::SystemAllocator, 0);
 
-        NotYetImplemented(const AZStd::string_view& description)
-            : ValidationEvent(ValidationSeverity::Error)
+        NotYetImplemented(AZ::EntityId nodeId, const AZStd::string_view& description)
+            : ParserValidation(nodeId, ValidationSeverity::Error, description)
         {
             SetDescription(AZStd::string::format("%s is not yet implemented", description.data()));
         }
@@ -42,23 +90,18 @@ namespace ScriptCanvas
             return NotYetImplementedCrc;
         }
 
-        AZStd::string_view GetTooltip() const override
-        {
-            return GetDescription();
-        }
     };
 
     class InactiveGraph
-        : public ValidationEvent
+        : public ParserValidation
     {
     public:
-        AZ_RTTI(InactiveGraph, "{315F5191-D990-40DA-9E92-1ADBA72CC00E}", ValidationEvent);
+        AZ_RTTI(InactiveGraph, "{315F5191-D990-40DA-9E92-1ADBA72CC00E}", ParserValidation);
         AZ_CLASS_ALLOCATOR(InactiveGraph, AZ::SystemAllocator, 0);
 
         InactiveGraph()
-            : ValidationEvent(ValidationSeverity::Warning)
+            : ParserValidation(AZ::EntityId(), ValidationSeverity::Warning, ParseErrors::InactiveGraph)
         {
-            SetDescription("This graph is not a library, but it is never activated and will never execute. Add a Start node or connect an event handler.");
         }
 
         AZStd::string GetIdentifier() const override
@@ -71,23 +114,18 @@ namespace ScriptCanvas
             return ParsingValidationIds::InactiveGraphCrc;
         }
 
-        AZStd::string_view GetTooltip() const override
-        {
-            return GetDescription();
-        }
     };
 
     class MultipleExecutionOutConnections
-        : public ValidationEvent
+        : public ParserValidation
     {
     public:
-        AZ_RTTI(MultipleExecutionOutConnections, "{2C7D74F0-382D-4C99-B2E8-A76C351B21DA}", ValidationEvent);
+        AZ_RTTI(MultipleExecutionOutConnections, "{2C7D74F0-382D-4C99-B2E8-A76C351B21DA}", ParserValidation);
         AZ_CLASS_ALLOCATOR(MultipleExecutionOutConnections, AZ::SystemAllocator, 0);
 
         MultipleExecutionOutConnections(AZ::EntityId nodeId)
-            : ValidationEvent(ValidationSeverity::Error)
+            : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::MultipleExecutionOutConnections)
         {
-            SetDescription("This node has multiple, unordered Excution Out connections");
         }
 
         AZStd::string GetIdentifier() const override
@@ -100,23 +138,18 @@ namespace ScriptCanvas
             return ParsingValidationIds::MultipleExecutionOutConnectionsCrc;
         }
 
-        AZStd::string_view GetTooltip() const override
-        {
-            return GetDescription();
-        }
     };
     
     class MultipleStartNodes
-        : public ValidationEvent
+        : public ParserValidation
     {
     public:
-        AZ_RTTI(MultipleStartNodes, "{C6623D43-1D8F-4932-A426-E243A3C85A93}", ValidationEvent);
+        AZ_RTTI(MultipleStartNodes, "{C6623D43-1D8F-4932-A426-E243A3C85A93}", ParserValidation);
         AZ_CLASS_ALLOCATOR(MultipleStartNodes, AZ::SystemAllocator, 0);
 
         MultipleStartNodes(AZ::EntityId nodeId)
-            : ValidationEvent(ValidationSeverity::Error)
+            : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::MultipleStartNodes)
         {
-            SetDescription("Multiple Start nodes in a single graph. Only one is allowed.");
         }
 
         AZStd::string GetIdentifier() const override
@@ -129,25 +162,23 @@ namespace ScriptCanvas
             return ParsingValidationIds::MultipleStartNodesCrc;
         }
 
-        AZStd::string_view GetTooltip() const override
-        {
-            return GetDescription();
-        }
     };
 
     namespace NodeCompatiliblity
     {
+        // TODO: fill link when page is ready
+        static const AZStd::string k_newBackendMigrationGuideLink = "";
+
         class DependencyRetrievalFailiure
-            : public ValidationEvent
+            : public ParserValidation
         {
         public:
-            AZ_RTTI(DependencyRetrievalFailiure, "{5EDBD642-2EC8-402E-AC9D-DA0DF444A208}", ValidationEvent);
+            AZ_RTTI(DependencyRetrievalFailiure, "{5EDBD642-2EC8-402E-AC9D-DA0DF444A208}", ParserValidation);
             AZ_CLASS_ALLOCATOR(DependencyRetrievalFailiure, AZ::SystemAllocator, 0);
 
             DependencyRetrievalFailiure(AZ::EntityId nodeId)
-                : ValidationEvent(ValidationSeverity::Error)
+                : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::DependencyRetrievalFailiure)
             {
-                SetDescription("A node failed to retrieve its dependencies.");
             }
 
             AZStd::string GetIdentifier() const override
@@ -159,27 +190,131 @@ namespace ScriptCanvas
             {
                 return ParsingValidationIds::DependencyRetrievalFailiureCrc;
             }
+        };
+
+        class NodeOutOfDate
+            : public ParserValidation
+        {
+        public:
+            AZ_RTTI(NodeOutOfDate, "{A4051A2D-E471-41C7-9D2C-A54418747AF8}", ParserValidation);
+            AZ_CLASS_ALLOCATOR(NodeOutOfDate, AZ::SystemAllocator, 0);
+
+            NodeOutOfDate(AZ::EntityId nodeId, const AZStd::string_view& nodeName)
+                : ParserValidation(nodeId, ValidationSeverity::Error, nodeName)
+            {
+                SetDescription(AZStd::string::format("Node (%s) is out of date.", nodeName.data()));
+            }
+
+            AZStd::string GetIdentifier() const override
+            {
+                return ParsingValidationIds::NodeOutOfDate;
+            }
+
+            AZ::Crc32 GetIdCrc() const override
+            {
+                return ParsingValidationIds::NodeOutOfDateCrc;
+            }
+
+        };
+
+        class NewBackendUnsupportedNode
+            : public ValidationEvent
+        {
+        public:
+            AZ_RTTI(NewBackendUnsupportedNode, "{A4051A2D-E471-41C7-9D2C-A54418747AF8}", ValidationEvent);
+            AZ_CLASS_ALLOCATOR(NewBackendUnsupportedNode, AZ::SystemAllocator, 0);
+
+            NewBackendUnsupportedNode(const AZ::EntityId& nodeId, const AZStd::string_view& nodeName)
+                : ValidationEvent(ValidationSeverity::Error)
+                , m_nodeId(nodeId)
+            {
+                SetDescription(AZStd::string::format("Node (%s) is not supported by new backend, please convert/remove it. %s", nodeName.data(), k_newBackendMigrationGuideLink.c_str()));
+            }
+
+            AZStd::string GetIdentifier() const override
+            {
+                return ParsingValidationIds::NewBackendUnsupportedNode;
+            }
+
+            AZ::Crc32 GetIdCrc() const override
+            {
+                return ParsingValidationIds::NewBackendUnsupportedNodeCrc;
+            }
+
+            const AZ::EntityId& GetNodeId() const
+            {
+                return m_nodeId;
+            }
 
             AZStd::string_view GetTooltip() const override
             {
                 return GetDescription();
             }
+
+        private:
+            AZ::EntityId m_nodeId;
         };
     }
 
     namespace Internal
     {
-        class DuplicateInputProcessed
-            : public ValidationEvent
+        class ParseError
+            : public ParserValidation
         {
         public:
-            AZ_RTTI(DuplicateInputProcessed, "{69B056F5-7E10-4067-A50E-BDCE26222BD7}", ValidationEvent);
+            AZ_RTTI(ParseError, "{1C36835A-2BAE-483A-BE13-5D1BEABB659B}", ParserValidation);
+            AZ_CLASS_ALLOCATOR(ParseError, AZ::SystemAllocator, 0);
+
+            ParseError(AZ::EntityId nodeId, const AZStd::string_view& description)
+                : ParserValidation(nodeId, ValidationSeverity::Error, description)
+            {
+            }
+
+            AZStd::string GetIdentifier() const override
+            {
+                return ParsingValidationIds::ParseError;
+            }
+
+            AZ::Crc32 GetIdCrc() const override
+            {
+                return ParsingValidationIds::ParseErrorCrc;
+            }
+
+        };
+
+        class AddOutputNameFailure
+            : public ParserValidation
+        {
+        public:
+            AZ_RTTI(AddOutputNameFailure, "{45BE27AA-A80B-45B1-BBD7-A174A5791764}", ParserValidation);
+            AZ_CLASS_ALLOCATOR(AddOutputNameFailure, AZ::SystemAllocator, 0);
+
+            AddOutputNameFailure(AZ::EntityId nodeId, const AZStd::string_view&)
+                : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::AddOutputNameFailure)
+            {
+            }
+
+            AZStd::string GetIdentifier() const override
+            {
+                return ParsingValidationIds::AddOutputNameFailure;
+            }
+
+            AZ::Crc32 GetIdCrc() const override
+            {
+                return ParsingValidationIds::AddOutputNameFailureCrc;
+            }
+        };
+
+        class DuplicateInputProcessed
+            : public ParserValidation
+        {
+        public:
+            AZ_RTTI(DuplicateInputProcessed, "{69B056F5-7E10-4067-A50E-BDCE26222BD7}", ParserValidation);
             AZ_CLASS_ALLOCATOR(DuplicateInputProcessed, AZ::SystemAllocator, 0);
 
-            DuplicateInputProcessed(AZ::EntityId nodeId)
-                : ValidationEvent(ValidationSeverity::Error)
+            DuplicateInputProcessed(AZ::EntityId nodeId, const AZStd::string_view&)
+                : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::DuplicateInputProcessed)
             {
-                SetDescription("input to the slot at this execution has already been found");
             }
 
             AZStd::string GetIdentifier() const override
@@ -191,24 +326,18 @@ namespace ScriptCanvas
             {
                 return ParsingValidationIds::DuplicateInputProcessedCrc;
             }
-
-            AZStd::string_view GetTooltip() const override
-            {
-                return GetDescription();
-            }
         };
 
         class NullEntityInGraph
-            : public ValidationEvent
+            : public ParserValidation
         {
         public:
-            AZ_RTTI(NullEntityInGraph, "{920C0FBE-ADC0-45FF-A0C1-84ABF050FCFC}", ValidationEvent);
+            AZ_RTTI(NullEntityInGraph, "{920C0FBE-ADC0-45FF-A0C1-84ABF050FCFC}", ParserValidation);
             AZ_CLASS_ALLOCATOR(NullEntityInGraph, AZ::SystemAllocator, 0);
 
             NullEntityInGraph()
-                : ValidationEvent(ValidationSeverity::Error)
+                : ParserValidation(AZ::EntityId(), ValidationSeverity::Error, ParseErrors::NullEntityInGraph)
             {
-                SetDescription("null entity pointer in graph");
             }
 
             AZStd::string GetIdentifier() const override
@@ -220,24 +349,19 @@ namespace ScriptCanvas
             {
                 return ParsingValidationIds::NullEntityInGraphCrc;
             }
-
-            AZStd::string_view GetTooltip() const override
-            {
-                return GetDescription();
-            }
         };
 
         class NullNodeInGraph
-            : public ValidationEvent
+            : public ParserValidation
         {
         public:
-            AZ_RTTI(NullNodeInGraph, "{D5945CEF-149B-4065-9E60-58C17CD11864}", ValidationEvent);
+            AZ_RTTI(NullNodeInGraph, "{D5945CEF-149B-4065-9E60-58C17CD11864}", ParserValidation);
             AZ_CLASS_ALLOCATOR(NullNodeInGraph, AZ::SystemAllocator, 0);
 
-            NullNodeInGraph(AZ::EntityId nodeId)
-                : ValidationEvent(ValidationSeverity::Error)
+            NullNodeInGraph(AZ::EntityId nodeId, AZStd::string_view nodeName)
+                : ParserValidation(nodeId, ValidationSeverity::Error, nodeName)
             {
-                SetDescription("null node pointer in graph");
+                SetDescription(AZStd::string::format("null node pointer in graph: %s", nodeName.data()));
             }
 
             AZStd::string GetIdentifier() const override
@@ -249,12 +373,7 @@ namespace ScriptCanvas
             {
                 return ParsingValidationIds::NullNodeInGraphCrc;
             }
-
-            AZStd::string_view GetTooltip() const override
-            {
-                return GetDescription();
-            }
         };
     }
 
-} // namespace ScriptCanvas
+} 

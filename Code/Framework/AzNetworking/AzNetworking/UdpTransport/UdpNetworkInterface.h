@@ -104,6 +104,12 @@ namespace AzNetworking
         //! @param endpoint   whether the disconnection was initiated locally or remotely
         void RequestDisconnect(UdpConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint);
 
+        //! Internal helper to check if a packet's type is for connection handshake
+        //! @param  endpoint   DTLS endpoint participating in the handshake
+        //! @param  packetType type of the packet
+        //! @return if the packet is for handshake
+        bool IsHandshakePacket(const DtlsEndpoint& endpoint, AzNetworking::PacketType packetType) const;
+
         AZ_DISABLE_COPY_MOVE(UdpNetworkInterface);
 
         struct ConnectionTimeoutFunctor final

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThanEqual.generated.h>
 #include <Include/ScriptCanvas/Libraries/UnitTesting/UnitTesting.h>
@@ -27,39 +26,13 @@ namespace ScriptCanvas
                 : public Node
             {
             public:
-                ScriptCanvas_Node(ExpectGreaterThanEqual,
-                    ScriptCanvas_Node::Name("Expect Greater Than Equal", "Expects lhs to be greater than rhs")
-                    ScriptCanvas_Node::Uuid("{8EB4E313-1479-4428-AE0C-75F233C5F5EB}")
-                    ScriptCanvas_Node::Icon("Editor/Icons/ScriptCanvas/ExpectGreaterThanEqual.png")
-                    ScriptCanvas_Node::Version(1, ScriptCanvas::UnitTesting::ExpectComparisonVersioner)
-                );
+
+                SCRIPTCANVAS_NODE(ExpectGreaterThanEqual);
 
                 void OnInit() override;
                 void OnInputSignal(const SlotId& slotId) override;
 
-                // Inputs
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", "Input signal"));
-
-                // Outputs
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-
-            private:
-                ScriptCanvas_DynamicDataSlot(DynamicDataType::Any,
-                                             ConnectionType::Input,
-                                             ScriptCanvas_DynamicDataSlot::Name("Candidate", "left of >=")
-                                             ScriptCanvas_DynamicDataSlot::DynamicGroup("DynamicGroup")
-                                         );
-                
-                ScriptCanvas_DynamicDataSlot(DynamicDataType::Any,
-                                             ConnectionType::Input,
-                                             ScriptCanvas_DynamicDataSlot::Name("Reference", "right of >")
-                                             ScriptCanvas_DynamicDataSlot::DynamicGroup("DynamicGroup")
-                                         );
-
-                ScriptCanvas_Property(AZStd::string,
-                    ScriptCanvas_Property::Name("Report", "additional notes for the test report")
-                    ScriptCanvas_Property::Input);
-            }; // class ExpectGreaterThanEqual
-        } // namespace UnitTesting
-    } // namespace Nodes
-} // namespace ScriptCanvas
+            };
+        }
+    }
+}

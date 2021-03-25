@@ -18,16 +18,6 @@
 
 namespace MaterialEditor
 {
-    void PanCameraBehavior::Start()
-    {
-        Behavior::Start();
-
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            m_cameraEntityId,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetCameraEntityId);
-        AZ_Assert(m_cameraEntityId.IsValid(), "Failed to find m_cameraEntityId");
-    }
-
     void PanCameraBehavior::End()
     {
         float distanceToTarget;
@@ -44,8 +34,10 @@ namespace MaterialEditor
             targetPosition);
     }
 
-    void PanCameraBehavior::TickInternal(float x, float y)
+    void PanCameraBehavior::TickInternal(float x, float y, float z)
     {
+        Behavior::TickInternal(x, y, z);
+
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
         AZ::Quaternion rotation = transform.GetRotation();

@@ -19,6 +19,7 @@
 #include "native/utilities/ByteArrayStream.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/Job.h>
+#include <AzTest/AzTest.h>
 #include <QThread>
 
 
@@ -65,7 +66,9 @@ namespace AssetProcessor
     };
 }
 
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 REGISTER_UNIT_TEST(UtilitiesUnitTests)
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
 void UtilitiesUnitTests::StartTest()
 {

@@ -917,11 +917,11 @@
            <widget class="AzQtComponents::TableView" name="connectionTreeView"/>
           </item>
           <item>
-           <widget class="QFrame" name="whiteListOuterFrame">
+           <widget class="QFrame" name="allowedListOuterFrame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
-            <layout class="QVBoxLayout" name="whiteListVerticalLayout">
+            <layout class="QVBoxLayout" name="allowedListVerticalLayout">
              <property name="spacing">
               <number>0</number>
              </property>
@@ -938,8 +938,8 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QWidget" name="whiteListTopBarWidget" native="true">
-               <layout class="QHBoxLayout" name="whiteListHorizontalBar">
+              <widget class="QWidget" name="allowedListTopBarWidget" native="true">
+               <layout class="QHBoxLayout" name="allowedListHorizontalBar">
                 <property name="spacing">
                  <number>6</number>
                 </property>
@@ -956,12 +956,12 @@
                  <number>4</number>
                 </property>
                 <item>
-                 <widget class="QCheckBox" name="whiteListEnableCheckBox">
+                 <widget class="QCheckBox" name="allowedListEnableCheckBox">
                   <property name="toolTip">
-                   <string>Enable or Disable white listing. White listing is a security feature which limits what can connect to the asset processor.</string>
+                   <string>Enable or Disable allowed listing. Allowed listing is a security feature which limits what can connect to the asset processor.</string>
                   </property>
                   <property name="text">
-                   <string>Enable white listing</string>
+                   <string>Enable allowed listing</string>
                   </property>
                   <property name="checked">
                    <bool>true</bool>
@@ -969,7 +969,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="whiteListBarSpacer">
+                 <spacer name="allowedListBarSpacer">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -982,7 +982,7 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="Line" name="whiteListSeparatorLine">
+                 <widget class="Line" name="allowedListSeparatorLine">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -992,8 +992,8 @@
               </widget>
              </item>
              <item>
-              <widget class="QWidget" name="whiteListBottomBarWidget" native="true">
-               <layout class="QHBoxLayout" name="whiteListHorizontalBar2">
+              <widget class="QWidget" name="allowedListBottomBarWidget" native="true">
+               <layout class="QHBoxLayout" name="allowedListHorizontalBar2">
                 <property name="leftMargin">
                  <number>4</number>
                 </property>
@@ -1007,9 +1007,9 @@
                  <number>4</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="whiteListAddHostNameLabel">
+                 <widget class="QLabel" name="allowedListAddHostNameLabel">
                   <property name="toolTip">
-                   <string>White list a hostname. EX. MyComputer321</string>
+                   <string>Allowed list a hostname. EX. MyComputer321</string>
                   </property>
                   <property name="text">
                    <string>Add Host Name</string>
@@ -1017,12 +1017,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="whiteListAddHostNameLineEdit"/>
+                 <widget class="QLineEdit" name="allowedListAddHostNameLineEdit"/>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="whiteListAddHostNameToolButton">
+                 <widget class="QToolButton" name="allowedListAddHostNameToolButton">
                   <property name="toolTip">
-                   <string>Add the hostname to the white list.</string>
+                   <string>Add the hostname to the allowed list.</string>
                   </property>
                   <property name="text">
                    <string/>
@@ -1037,7 +1037,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="whiteListHorizontalBar2Spacer">
+                 <spacer name="allowedListHorizontalBar2Spacer">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -1050,9 +1050,9 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QLabel" name="whiteListAddIPLabel">
+                 <widget class="QLabel" name="allowedListAddIPLabel">
                   <property name="toolTip">
-                   <string>White list an ipv4 or ipv6 address with or without a CIDR range. EX.  192.168.0.20 or 192.168.0.0/24 or 2001:db8:85a3:8d3:1319:8a2e:370:7348  or  2001:db8:85a3:8d3:1319:8a2e:370:7348/32</string>
+                   <string>Allowed list an ipv4 or ipv6 address with or without a CIDR range. EX.  192.168.0.20 or 192.168.0.0/24 or 2001:db8:85a3:8d3:1319:8a2e:370:7348  or  2001:db8:85a3:8d3:1319:8a2e:370:7348/32</string>
                   </property>
                   <property name="text">
                    <string>Add IP Address</string>
@@ -1060,12 +1060,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="whiteListAddIPLineEdit"/>
+                 <widget class="QLineEdit" name="allowedListAddIPLineEdit"/>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="whiteListAddIPToolButton">
+                 <widget class="QToolButton" name="allowedListAddIPToolButton">
                   <property name="toolTip">
-                   <string>Add the ip address to the white list.</string>
+                   <string>Add the ip address to the allowed list.</string>
                   </property>
                   <property name="text">
                    <string/>
@@ -1083,9 +1083,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="whiteListHorizontalBar3">
+              <layout class="QHBoxLayout" name="allowedListHorizontalBar3">
                <item>
-                <widget class="Line" name="whiteListLine">
+                <widget class="Line" name="allowedListLine">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1094,22 +1094,22 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="whiteListHorizontalLabelsLayout">
+              <layout class="QHBoxLayout" name="allowedListHorizontalLabelsLayout">
                <property name="leftMargin">
                 <number>4</number>
                </property>
                <item>
-                <widget class="QLabel" name="whiteListWhiteListedConnnectionListLabel">
+                <widget class="QLabel" name="allowedListAllowedListedConnnectionListLabel">
                  <property name="toolTip">
-                  <string>White listed connection are addresses, ranges and name that will be allowed to connect to the asset processor.</string>
+                  <string>Allowed listed connection are addresses, ranges and name that will be allowed to connect to the asset processor.</string>
                  </property>
                  <property name="text">
-                  <string>White Listed Connections</string>
+                  <string>Allowed Listed Connections</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <spacer name="whiteListHorizontalLabelSpacer1">
+                <spacer name="allowedListHorizontalLabelSpacer1">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1122,7 +1122,7 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLabel" name="whiteListRejectedConnectionListLabel">
+                <widget class="QLabel" name="allowedListRejectedConnectionListLabel">
                  <property name="toolTip">
                   <string>Rejected connections are addresses that failed to connect to the asset processor.</string>
                  </property>
@@ -1132,7 +1132,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="whiteListHorizontalLabelSpacer2">
+                <spacer name="allowedListHorizontalLabelSpacer2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1147,7 +1147,7 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="whiteListHorizontalViewsLayout">
+              <layout class="QHBoxLayout" name="allowedListHorizontalViewsLayout">
                <property name="spacing">
                 <number>9</number>
                </property>
@@ -1164,16 +1164,16 @@
                 <number>4</number>
                </property>
                <item>
-                <widget class="QListView" name="whiteListWhiteListedConnectionsListView">
+                <widget class="QListView" name="allowListAllowedListConnectionsListView">
                  <property name="showDropIndicator" stdset="0">
                   <bool>false</bool>
                  </property>
                 </widget>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="whiteListButtonVerticalLayout">
+                <layout class="QVBoxLayout" name="allowedListButtonVerticalLayout">
                  <item>
-                  <spacer name="whiteListVerticalSpacer1">
+                  <spacer name="allowedListVerticalSpacer1">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -1186,9 +1186,9 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="whiteListToWhiteListToolButton">
+                  <widget class="QToolButton" name="allowedListToAllowedListToolButton">
                    <property name="toolTip">
-                    <string>Move a entry from rejected to the white list.</string>
+                    <string>Move a entry from rejected to the allowed list.</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -1203,7 +1203,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="whiteListToRejectedListToolButton">
+                  <widget class="QToolButton" name="allowedListToRejectedListToolButton">
                    <property name="toolTip">
                     <string>Remove an entry from the whtie list.</string>
                    </property>
@@ -1220,7 +1220,7 @@
                   </widget>
                  </item>
                  <item>
-                  <spacer name="whiteListVerticalSpacer2">
+                  <spacer name="allowedListVerticalSpacer2">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -1235,7 +1235,7 @@
                 </layout>
                </item>
                <item>
-                <widget class="QListView" name="whiteListRejectedConnectionsListView">
+                <widget class="QListView" name="allowedListRejectedConnectionsListView">
                  <property name="showDropIndicator" stdset="0">
                   <bool>false</bool>
                  </property>

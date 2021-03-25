@@ -15,7 +15,7 @@
 #include <RC/ResourceCompilerScene/Common/ExportContextGlobal.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
-#include <RCExt/CoordinateSystemConverter.h>
+#include <SceneAPI/SceneCore/Utilities/CoordinateSystemConverter.h>
 
 #include <AzCore/RTTI/RTTI.h>
 
@@ -138,7 +138,7 @@ namespace EMotionFX
             AZ_RTTI(ActorMorphBuilderContext, "{A9D4B0B1-016B-4714-BD95-85A9DEFC254B}", AZ::SceneAPI::Events::ICallContext);
         
             ActorMorphBuilderContext(const AZ::SceneAPI::Containers::Scene& scene, AZStd::vector<AZ::u32>* meshNodeIndices,
-                const Group::IActorGroup& actorGroup, EMotionFX::Actor* actor, CoordinateSystemConverter& coordinateSystemConverter, AZ::RC::Phase phase);
+                const Group::IActorGroup& actorGroup, EMotionFX::Actor* actor, AZ::SceneAPI::CoordinateSystemConverter& coordinateSystemConverter, AZ::RC::Phase phase);
             ActorMorphBuilderContext(const ActorMorphBuilderContext& copyContext, AZ::RC::Phase phase);
             ActorMorphBuilderContext(const ActorMorphBuilderContext& copyContext) = delete;
             ~ActorMorphBuilderContext() override = default;
@@ -149,7 +149,7 @@ namespace EMotionFX
             AZStd::vector<AZ::u32>*                 m_meshNodeIndices;
             EMotionFX::Actor*                       m_actor;
             const Group::IActorGroup&               m_group;
-            CoordinateSystemConverter               m_coordinateSystemConverter;
+            AZ::SceneAPI::CoordinateSystemConverter m_coordinateSystemConverter;
             const AZ::RC::Phase                     m_phase;
         };
     }

@@ -50,11 +50,6 @@ namespace EMotionFX
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::SceneAPI::Events::ProcessingResult ProcessMorphTargets(ActorMorphBuilderContext& context);
-        protected:
-            void BuildMorphTargetMesh(EMotionFX::Actor* actor, EMotionFX::Node* emfxNode,
-                const AZStd::shared_ptr<const AZ::SceneAPI::DataTypes::IBlendShapeData>& morphTargetData,
-                const SceneAPIMatrixType& globalTransform, const SceneAPIMatrixType& globalTransformN,
-                CoordinateSystemConverter& coordinateSystemConverter);
         };
     }
 } // namespace EMotionFX

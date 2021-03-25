@@ -1,0 +1,149 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+// Original file Copyright Crytek GMBH or its affiliates, used under license.
+
+global proc int cryValidateFixCanFix(string $messageType)
+{
+	if( strcmp($messageType, "llShouldNotInheritTrans") == 0 )
+		return 1;
+	else if( strcmp($messageType, "exportNodeNotTopLevel") == 0 )
+		return 0;
+	else if( strcmp($messageType, "InvalidUDPChars") == 0 )
+		return 1;
+	else if( strcmp($messageType, "meshWeightsNot1") == 0 )
+		return 1;
+	else if( strcmp($messageType, "groupNodeNotOnGrid") == 0 )
+		return 1;
+	return 0;
+}
+
+global proc cryValidateFix( string $messageType, string $focusNode)
+{
+	if( `objExists $focusNode` == 0 )
+	{
+		return;
+	}
+
+	if( strcmp($messageType, "llShouldNotInheritTrans") == 0 )
+	{
+		cryValidateFixShouldNotInheritTransform $focusNode;
+	}
+	else if( strcmp($messageType, "exportNodeNotTopLevel") == 0 )
+	{
+		cryValidateFixExportNodeNotTopLevel $focusNode;
+	}
+	else if( strcmp($messageType, "InvalidUDPChars") == 0 )
+	{
+		cryValidateFixInvalidUDPChars $focusNode;
+	}
+	else if( strcmp($messageType, "meshWeightsNot1") == 0 )
+	{
+		cryValidateFixWeightsNotNormalised $focusNode;
+	}
+	else if( strcmp($messageType, "groupNodeNotOnGrid") == 0 )
+	{
+		cryValidateFixGroupNodeNotOnGrid $focusNode;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// Fix functions
+//////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+// Joint node should not inhert the trasform of it's parent. Used for locamotion locators etc.
+global proc cryValidateFixShouldNotInheritTransform(string $node)
+{
+	setAttr ($node+".inheritsTransform") 0;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Export node is not top level
+global proc cryValidateFixExportNodeNotTopLevel(string $node)
+{
+	string $pathTokens[];
+	$pathCount = `tokenize $node "|" $pathTokens`;
+
+	print("Path `"+$node+"` :: Count "+$pathCount);
+	if( $pathCount == 2 )
+	{
+		confirmDialog -title "Lumberyard Auto Fix" -message ("Should the node `"+$pathTokens[0]+"` be the scene root node. If so we can rename it to `SceneRoot`.") -button "OK";
+
+		// TODO: Finish this......
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// Invalid characters in the UDP
+global proc cryValidateFixInvalidUDPChars(string $node)
+{
+	string $udpAttributeName = "UDP";
+	if (`attributeExists $udpAttributeName $node`)
+	{
+		string $nodeUDP = `getAttr ($node+"."+$udpAttributeName)`;
+
+		// Remove both carriage return and linefeed
+		while( 1 )
+		{
+			string $newUDP = `substitute "&cr;&lf;" $nodeUDP "\n"`;
+			if( `strcmp $newUDP $nodeUDP` == 0 )
+				break;
+			$nodeUDP = $newUDP;
+		}
+
+		// Remove carriage return
+		while( 1 )
+		{
+			string $newUDP = `substitute "&cr;" $nodeUDP "\n"`;
+			if( `strcmp $newUDP $nodeUDP` == 0 )
+				break;
+			$nodeUDP = $newUDP;
+		}
+
+		// Remove linefeed
+		while( 1 )
+		{
+			string $newUDP = `substitute "&lf;" $nodeUDP "\n"`;
+			if( `strcmp $newUDP $nodeUDP` == 0 )
+				break;
+			$nodeUDP = $newUDP;
+		}
+
+		setAttr -type "string" ($node+"."+$udpAttributeName) $nodeUDP;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// Vertex weights not normalised, dont add up to 1.
+global proc cryValidateFixWeightsNotNormalised(string $focusNode)
+{
+	string $currentSelection[] = `ls -sl`;
+
+	eval("select -r "+$focusNode);
+	eval("doNormalizeWeightsArgList 1 {\"4\"}");
+	
+	select -r $currentSelection;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Group node is not aligned to the grid
+global proc cryValidateFixGroupNodeNotOnGrid(string $node)
+{
+	float $gridSize = 1.0;
+	vector $v = `xform -q -worldSpace -rotatePivot $node`;
+
+	float $xVal = floor($v.x+0.5);
+	float $yVal = floor($v.y+0.5);
+	float $zVal = floor($v.z+0.5);
+	
+	xform -worldSpace -rotatePivot $xVal $yVal $zVal $node;
+}

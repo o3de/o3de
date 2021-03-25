@@ -55,10 +55,14 @@ namespace GraphCanvas
             AZ::Outcome<DragDropState> OnDragEnterEvent(QGraphicsSceneDragDropEvent* dragDropEvent) override;
             void OnDragLeaveEvent(QGraphicsSceneDragDropEvent* dragDropEvent) override;
             void OnDropEvent(QGraphicsSceneDragDropEvent* dropEvent) override;
+            void OnDropCancelled() override;
 
         private:
 
             SlotId m_slotId;
+
+            ViewId  m_viewId;
+            ToastId m_toastId;
         };
 
         class DoubleClickSceneEventFilter
@@ -131,6 +135,8 @@ namespace GraphCanvas
         const DataSlotConnectionPin* GetConnectionPin() const override;
 
         void UpdateDisplay() override;
+
+        QRectF GetWidgetSceneBoundingRect() const override;
         ////
 
         // DataSlotNotificationBus
@@ -147,6 +153,11 @@ namespace GraphCanvas
         void OnDropEvent(QGraphicsSceneDragDropEvent* dragDropEvent);
 
     private:
+
+        void SetTextDecoration(const AZStd::string& textDecoration, const AZStd::string& toolTip);
+        void ClearTextDecoration();
+
+        void ApplyTextStyle(GraphCanvasLabel* graphCanvasLabel);
 
         void UpdateFilterState();
 
@@ -185,6 +196,8 @@ namespace GraphCanvas
         GraphCanvasLabel*                               m_slotText;
         DoubleClickSceneEventFilter*                    m_doubleClickFilter;
 
+        GraphCanvasLabel* m_textDecoration = nullptr;
+
         // track the last seen values of some members to prevent UpdateLayout doing unnecessary work
         struct
         {
@@ -193,6 +206,8 @@ namespace GraphCanvas
             GraphCanvasLabel* slotText = nullptr;
             NodePropertyDisplayWidget* nodePropertyDisplay = nullptr;
             QGraphicsWidget* spacer = nullptr;
+
+            GraphCanvasLabel* textDecoration = nullptr;
         } m_atLastUpdate;
     };
 

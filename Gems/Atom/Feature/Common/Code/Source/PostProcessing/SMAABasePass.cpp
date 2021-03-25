@@ -52,7 +52,7 @@ namespace AZ
             UpdateCurrentShaderVariant();
         }
 
-        void SMAABasePass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void SMAABasePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "SMAABasePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 

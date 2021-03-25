@@ -13,6 +13,7 @@
 #include <Libraries/Libraries.h>
 #include "Operators.h"
 #include <ScriptCanvas/Core/Attributes.h>
+#include <Libraries/Operators/Math/OperatorLerpNodeableNode.h>
 
 namespace ScriptCanvas
 {
@@ -39,6 +40,12 @@ namespace ScriptCanvas
                 }
             }
 
+            ScriptCanvas::Nodes::LerpBetweenNodeable<float>::Reflect(reflection);
+            ScriptCanvas::Nodes::LerpBetweenNodeable<Data::Vector2Type>::Reflect(reflection);
+            ScriptCanvas::Nodes::LerpBetweenNodeable<Data::Vector3Type>::Reflect(reflection);
+            ScriptCanvas::Nodes::LerpBetweenNodeable<Data::Vector4Type>::Reflect(reflection);
+            ScriptCanvas::Nodes::NodeableNodeOverloaded::Reflect(reflection);
+
             Nodes::Operators::OperatorBase::Reflect(reflection);
             Nodes::Operators::OperatorArithmetic::Reflect(reflection);
             Nodes::Operators::OperatorArithmeticUnary::Reflect(reflection);
@@ -56,6 +63,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Operators, OperatorLength>(nodeRegistry);
             AddNodeToRegistry<Operators, Nodes::LerpBetween>(nodeRegistry);
             AddNodeToRegistry<Operators, OperatorDivideByNumber>(nodeRegistry);
+            AddNodeToRegistry<Operators, ScriptCanvas::Nodes::NodeableNodeOverloadedLerp>(nodeRegistry, "LerpNodeable");
 
             // Containers
             AddNodeToRegistry<Operators, OperatorAt>(nodeRegistry);
@@ -82,6 +90,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Operators::OperatorLength::CreateDescriptor(),
                 ScriptCanvas::Nodes::LerpBetween::CreateDescriptor(),
                 ScriptCanvas::Nodes::Operators::OperatorDivideByNumber::CreateDescriptor(),
+                ScriptCanvas::Nodes::NodeableNodeOverloadedLerp::CreateDescriptor(),
 
                 // Containers
                 ScriptCanvas::Nodes::Operators::OperatorAt::CreateDescriptor(),
@@ -93,11 +102,9 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Operators::OperatorEmpty::CreateDescriptor(),
                 ScriptCanvas::Nodes::Operators::OperatorSize::CreateDescriptor(),
                 ScriptCanvas::Nodes::Operators::OperatorPushBack::CreateDescriptor(),
-
             };
+
             return descriptors;
         }
-
-    } // namespace Library
-
-} // namespace ScriptCavas
+    }
+}

@@ -148,7 +148,7 @@ namespace GraphCanvas
         return m_proxyWidget;
     }
 
-    void ComboBoxNodePropertyDisplay::OnPositionChanged([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] const AZ::Vector2& position)
+    void ComboBoxNodePropertyDisplay::OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& /*position*/)
     {
         GraphId graphId;
         SceneMemberRequestBus::EventResult(graphId, GetNodeId(), &SceneMemberRequests::GetScene);
@@ -159,7 +159,7 @@ namespace GraphCanvas
         UpdateMenuDisplay(viewId);
     }
 
-    void ComboBoxNodePropertyDisplay::OnZoomChanged([[maybe_unused]] qreal zoomLevel)
+    void ComboBoxNodePropertyDisplay::OnZoomChanged(qreal /*zoomLevel*/)
     {
         const ViewId* viewId = ViewNotificationBus::GetCurrentBusId();
 
@@ -169,7 +169,7 @@ namespace GraphCanvas
         }
     }
 
-    void ComboBoxNodePropertyDisplay::OnDisplayTypeChanged([[maybe_unused]] const AZ::Uuid& dataTypes, [[maybe_unused]] const AZStd::vector<AZ::Uuid>& containerTypes)
+    void ComboBoxNodePropertyDisplay::OnDisplayTypeChanged(const AZ::Uuid& /*dataTypes*/, const AZStd::vector<AZ::Uuid>& /*containerTypes*/)
     {
         UpdateOutlineColor();
     }
@@ -317,7 +317,7 @@ namespace GraphCanvas
 
             QObject::connect(m_comboBox, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { this->ShowContextMenu(pos); });
 
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this]([[maybe_unused]] const QModelIndex& index) { this->m_valueDirty = true; });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this](const QModelIndex& /*index*/) { this->m_valueDirty = true; });
 
             QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusIn, [this]() { this->EditStart();  });
             QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusOut, [this]() { this->EditFinished();  });
@@ -408,4 +408,6 @@ namespace GraphCanvas
             m_menuDisplayDirty = true;
         }
     }
+
+#include <Source/Components/NodePropertyDisplays/moc_ComboBoxNodePropertyDisplay.cpp>
 }

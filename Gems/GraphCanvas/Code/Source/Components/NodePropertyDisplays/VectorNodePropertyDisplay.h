@@ -11,8 +11,8 @@
 */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
+#if !defined(Q_MOC_RUN)
 #include <QEvent>
 #include <QGraphicsWidget>
 #include <QObject>

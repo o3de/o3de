@@ -600,7 +600,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         return {};
     }
 
-    QString ReadWhitelistFromSettingsRegistry(QString initialFolder /*= QString()*/)
+    QString ReadAllowedlistFromSettingsRegistry(QString initialFolder /*= QString()*/)
     {
         if (initialFolder.isEmpty())
         {
@@ -613,14 +613,14 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             initialFolder = assetRoot.absolutePath();
         }
 
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/white_list");
-        AZStd::fixed_string<BufferSize> whiteListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
-        whiteListKey += "/white_list";
+        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/allowed_list");
+        AZStd::fixed_string<BufferSize> allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        allowedListKey += "/allowed_list";
 
-        AZ::SettingsRegistryInterface::FixedValueString whiteListIp;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry && settingsRegistry->Get(whiteListIp, whiteListKey))
+        AZ::SettingsRegistryInterface::FixedValueString allowedListIp;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry && settingsRegistry->Get(allowedListIp, allowedListKey))
         {
-            return QString::fromUtf8(whiteListIp.c_str(), aznumeric_cast<int>(whiteListIp.size()));
+            return QString::fromUtf8(allowedListIp.c_str(), aznumeric_cast<int>(allowedListIp.size()));
         }
 
         return {};
@@ -651,7 +651,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         return {};
     }
 
-    bool WriteWhitelistToBootstrap(QStringList newWhiteList)
+    bool WriteAllowedlistToBootstrap(QStringList newAllowedList)
     {
         QDir assetRoot;
         ComputeAssetRoot(assetRoot);
@@ -669,21 +669,21 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return false;
         }
 
-        // regexp that matches either the beginning of the file, some whitespace, and white_list, or,
-        // matches a newline, then whitespace, then white_list it will not match comments.
-        QRegExp whiteListPattern("(^|\\n)\\s*white_list\\s*=\\s*(.+)", Qt::CaseInsensitive, QRegExp::RegExp);
+        // regexp that matches either the beginning of the file, some whitespace, and allowed_list, or,
+        // matches a newline, then whitespace, then allowed_list it will not match comments.
+        QRegExp allowedListPattern("(^|\\n)\\s*allowed_list\\s*=\\s*(.+)", Qt::CaseInsensitive, QRegExp::RegExp);
 
-        //read the file line by line and try to find the white_list line
-        QString readWhiteList;
-        QString whiteListline;
+        //read the file line by line and try to find the allowed_list line
+        QString readAllowedList;
+        QString allowedListline;
         while (!bootstrapFile.atEnd())
         {
             QString contents(bootstrapFile.readLine());
-            int matchIdx = whiteListPattern.indexIn(contents);
+            int matchIdx = allowedListPattern.indexIn(contents);
             if (matchIdx != -1)
             {
-                whiteListline = contents;
-                readWhiteList = whiteListPattern.cap(2);
+                allowedListline = contents;
+                readAllowedList = allowedListPattern.cap(2);
                 break;
             }
         }
@@ -694,15 +694,15 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         fileContents = bootstrapFile.readAll();
         bootstrapFile.close();
 
-        //format the new white list
-        QString formattedNewWhiteList = newWhiteList.join(", ");
+        //format the new allowed list
+        QString formattedNewAllowedList = newAllowedList.join(", ");
 
-        //if we didn't find a white_list entry then append one
-        if (whiteListline.isEmpty())
+        //if we didn't find a allowed_list entry then append one
+        if (allowedListline.isEmpty())
         {
-            fileContents.append("\nwhite_list = " + formattedNewWhiteList + "\n");
+            fileContents.append("\nallowed_list = " + formattedNewAllowedList + "\n");
         }
-        else if (QString::compare(formattedNewWhiteList, readWhiteList, Qt::CaseInsensitive) == 0)
+        else if (QString::compare(formattedNewAllowedList, readAllowedList, Qt::CaseInsensitive) == 0)
         {
             // no need to update, they match
             return true;
@@ -710,7 +710,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         else
         {
             //Replace the found line with a new one
-            fileContents.replace(whiteListline, "white_list = " + formattedNewWhiteList + "\n");
+            fileContents.replace(allowedListline, "allowed_list = " + formattedNewAllowedList + "\n");
         }
 
         // Make the bootstrap file writable

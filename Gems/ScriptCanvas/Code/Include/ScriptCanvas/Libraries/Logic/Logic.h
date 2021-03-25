@@ -18,6 +18,8 @@
 #include "And.h"
 #include "Any.h"
 #include "Boolean.h"
+#include "Break.h"
+#include "Cycle.h"
 #include "Gate.h"
 #include "Indexer.h"
 #include "IsNull.h"
@@ -29,5 +31,5 @@
 #include "Sequencer.h"
 #include "TargetedSequencer.h"
 #include "WeightedRandomSequencer.h"
-#include "Cycle.h"
+#include "While.h"
 

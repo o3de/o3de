@@ -23,7 +23,6 @@ namespace AZ
     {
         namespace Containers
         {
-
             size_t RuleContainer::GetRuleCount() const
             {
                 return m_rules.size();
@@ -57,6 +56,13 @@ namespace AZ
             }
 
 
+            void RuleContainer::InsertRule(const AZStd::shared_ptr<DataTypes::IRule>& rule, size_t position)
+            {
+                AZ_Assert(AZStd::find(m_rules.begin(), m_rules.end(), rule) == m_rules.end(), "Unable to insert rule as it has already been added.");
+                m_rules.insert(m_rules.begin() + position, rule);
+            }
+
+
             void RuleContainer::RemoveRule(size_t index)
             {
                 if (index < m_rules.size())
@@ -75,7 +81,6 @@ namespace AZ
                     m_rules.erase(it);
                 }
             }
-
 
             void RuleContainer::Reflect(ReflectContext* context)
             {

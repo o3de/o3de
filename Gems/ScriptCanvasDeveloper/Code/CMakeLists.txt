@@ -57,11 +57,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ScriptCanvasDeveloper.Editor MODULE
         NAMESPACE Gem
+        AUTOMOC
         OUTPUT_NAME Gem.ScriptCanvasDeveloperGem.Editor.f905c05883b94fd6bddc91052c3c5a86.v0.1.0
         FILES_CMAKE
             scriptcanvasdeveloper_gem_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                .
                 Source
                 Editor/Include
                 Editor/Source
@@ -75,7 +77,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::ScriptCanvasDeveloper.Static
-                Gem::ScriptCanvasGem.Editor.Static
+                Gem::ScriptCanvas.Editor.Static
                 Gem::GraphCanvasWidgets
     )
 endif()

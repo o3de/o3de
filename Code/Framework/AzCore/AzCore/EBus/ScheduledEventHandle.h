@@ -31,7 +31,8 @@ namespace AZ
         //! @param executeTimeMs  an absolute time in ms at which point the scheduled event should trigger
         //! @param durationTimeMs the interval time in ms used for prioritization as well as re-queueing
         //! @param scheduledEvent a scheduled event to run
-        ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent);
+        //! @param autoDelete if the event handle will be automatically deleted after execution completes
+        ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent, bool isAutoDelete);
 
         //! operator of comparing a scheduled event by execute time.
         //! @param a_Rhs a scheduled event handle to compare
@@ -58,6 +59,7 @@ namespace AZ
         TimeMs m_executeTimeMs = TimeMs{ 0 }; //< execution time of the scheduled event
         TimeMs m_durationMs = TimeMs{ 0 };    //< interval time of the scheduled event
         ScheduledEvent* m_event = nullptr;    //< pointer to the scheduled event
+        bool m_autoDelete = false;            //< if the handle manages the memory of its own event
     };
 }
 

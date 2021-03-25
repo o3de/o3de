@@ -10,18 +10,13 @@
 *
 */
 
-
-
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
-#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
-#include <AzCore/RTTI/AttributeReader.h>
 
 using namespace ScriptCanvasTests;
 using namespace ScriptCanvas;
- 
+  
 TEST_F(ScriptCanvasTestFixture, StringNodes)
 {
-    // Disabled until BE2.0 goes into main
-    //RunUnitTestGraph("LY_SC_UnitTest_StringNodes");
+    RunUnitTestGraph("LY_SC_UnitTest_StringNodes", ExecutionMode::Interpreted);
 }

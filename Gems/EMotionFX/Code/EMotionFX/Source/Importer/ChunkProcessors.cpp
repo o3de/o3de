@@ -33,19 +33,8 @@
 #include "../MotionSet.h"
 #include "../MotionManager.h"
 #include "../Actor.h"
-#include "../Mesh.h"
-#include "../MeshDeformerStack.h"
-#include "../SoftSkinDeformer.h"
-#include "../SubMesh.h"
-#include "../Material.h"
-#include "../StandardMaterial.h"
-#include "../SkinningInfoVertexAttributeLayer.h"
-#include "../SoftSkinManager.h"
-#include "../DualQuatSkinDeformer.h"
-#include "../VertexAttributeLayerAbstractData.h"
 #include "../MorphTarget.h"
 #include "../MorphSetup.h"
-#include "../MorphMeshDeformer.h"
 #include "../MorphTargetStandard.h"
 #include "../MotionEventTable.h"
 #include "../Skeleton.h"
@@ -63,6 +52,7 @@
 #include "../NodeMap.h"
 #include "LegacyAnimGraphNodeParser.h"
 
+#include <EMotionFX/Source/Importer/ActorFileFormat.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
@@ -622,452 +612,6 @@ namespace EMotionFX
 
     //=================================================================================================
 
-    bool ChunkProcessorActorMesh::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        Importer::ActorSettings* actorSettings = importParams.mActorSettings;
-
-        MCORE_ASSERT(actor);
-        Skeleton* skeleton = actor->GetSkeleton();
-
-        // read the mesh header
-        FileFormat::Actor_Mesh meshHeader;
-        file->Read(&meshHeader, sizeof(FileFormat::Actor_Mesh));
-
-        // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mNodeIndex,    endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mNumOrgVerts,  endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mNumSubMeshes, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mNumPolygons,  endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mNumLayers,    endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mTotalIndices, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mTotalVerts,   endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshHeader.mLOD,          endianType);
-
-        bool importMesh = true;
-        if (meshHeader.mLOD > 0 && importParams.mActorSettings->mLoadGeometryLODs == false)
-        {
-            importMesh = false;
-        }
-
-        // if we are dealing with a collision mesh, but don't want to load it, seek past this chunk
-        if ((meshHeader.mIsCollisionMesh && actorSettings->mLoadCollisionMeshes == false) || (meshHeader.mIsCollisionMesh == false && actorSettings->mLoadMeshes == false) || importMesh == false)
-        {
-            // first read back to the position where we can read the chunk header
-            size_t pos = file->GetPos();
-            file->Seek(pos - sizeof(FileFormat::Actor_Mesh) - sizeof(FileFormat::FileChunk));
-
-            // read the chunk header
-            FileFormat::FileChunk chunk;
-            file->Read(&chunk, sizeof(FileFormat::FileChunk));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mChunkID, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mVersion, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mSizeInBytes, endianType);
-
-            // make sure we're dealing with a mesh chunk to verify that this worked
-            MCORE_ASSERT(chunk.mChunkID == FileFormat::ACTOR_CHUNK_MESH);
-
-            // seek past the end of the mesh data chunk
-            file->Forward(chunk.mSizeInBytes);
-
-            // return success
-            return true;
-        }
-
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Mesh");
-            MCore::LogDetailedInfo("    + NodeIndex         = %d (%s)", meshHeader.mNodeIndex, skeleton->GetNode(meshHeader.mNodeIndex)->GetName());
-            MCore::LogDetailedInfo("    + LOD               = %d", meshHeader.mLOD);
-            MCore::LogDetailedInfo("    + NumOrgVerts       = %d", meshHeader.mNumOrgVerts);
-            MCore::LogDetailedInfo("    + NumVerts          = %d", meshHeader.mTotalVerts);
-            MCore::LogDetailedInfo("    + NumPolygons       = %d", meshHeader.mNumPolygons);
-            MCore::LogDetailedInfo("    + NumIndices        = %d (%d polygons)", meshHeader.mTotalIndices, meshHeader.mNumPolygons);
-            MCore::LogDetailedInfo("    + NumSubMeshes      = %d", meshHeader.mNumSubMeshes);
-            MCore::LogDetailedInfo("    + Num attrib layers = %d", meshHeader.mNumLayers);
-            MCore::LogDetailedInfo("    + IsCollisionMesh   = %s", meshHeader.mIsCollisionMesh ? "Yes" : "No");
-            MCore::LogDetailedInfo("    + IsTriangleMesh    = %d", meshHeader.mIsTriangleMesh ? "Yes" : "No");
-        }
-
-        // create the smartpointer to the mesh object
-        // we use a smartpointer here, because of the reference counting system needed for shared meshes.
-        Mesh* mesh = Mesh::Create(meshHeader.mTotalVerts, meshHeader.mTotalIndices, meshHeader.mNumPolygons, meshHeader.mNumOrgVerts, meshHeader.mIsCollisionMesh ? true : false);
-
-        // link the mesh to the correct node
-        Node* meshNode = skeleton->GetNode(meshHeader.mNodeIndex);
-        actor->SetMesh(meshHeader.mLOD, meshNode->GetNodeIndex(), mesh);
-
-        // read the layers
-        const uint32 numLayers = meshHeader.mNumLayers;
-        mesh->ReserveVertexAttributeLayerSpace(numLayers);
-        for (uint32 layerNr = 0; layerNr < numLayers; ++layerNr)
-        {
-            // read the layer header
-            FileFormat::Actor_VertexAttributeLayer fileLayer;
-            file->Read(&fileLayer, sizeof(FileFormat::Actor_VertexAttributeLayer));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&fileLayer.mLayerTypeID, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileLayer.mAttribSizeInBytes, endianType);
-
-            // read the layer name
-            const char* layerName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-
-            if (GetLogging())
-            {
-                MCore::LogDetailedInfo("   - Layer #%d:", layerNr);
-                MCore::LogDetailedInfo("     + Type ID:         %d (%s)", fileLayer.mLayerTypeID, Importer::ActorVertexAttributeLayerTypeToString(fileLayer.mLayerTypeID));
-                MCore::LogDetailedInfo("     + Attribute size:  %d bytes", fileLayer.mAttribSizeInBytes);
-                MCore::LogDetailedInfo("     + Keep originals:  %s", fileLayer.mEnableDeformations ? "Yes" : "No");
-                MCore::LogDetailedInfo("     + Is scale factor: %s", fileLayer.mIsScale ? "Yes" : "No");
-                MCore::LogDetailedInfo("     + Name:            %s", (layerName) ? layerName : "");
-            }
-
-            // check if we need to skip this layer or not
-            const uint32 numAttribs = meshHeader.mTotalVerts;
-            if (actorSettings->mLayerIDsToIgnore.Contains(fileLayer.mLayerTypeID))
-            {
-                if (GetLogging())
-                {
-                    MCore::LogDetailedInfo("     + Skipping layer data as this was specified in the actor import settings...");
-                }
-                file->Forward(fileLayer.mAttribSizeInBytes * numAttribs);
-                continue; // process the next layer
-            }
-
-            // create the layer
-            VertexAttributeLayerAbstractData* layer = VertexAttributeLayerAbstractData::Create(numAttribs, fileLayer.mLayerTypeID, fileLayer.mAttribSizeInBytes, (fileLayer.mEnableDeformations) != 0);
-            layer->SetName(layerName);
-
-            // read the data from disk into the layer
-            MCORE_ASSERT(layer->CalcTotalDataSizeInBytes(false) == (fileLayer.mAttribSizeInBytes * numAttribs));
-            file->Read(layer->GetOriginalData(), layer->CalcTotalDataSizeInBytes(false));
-
-            // convert endian and coordinate systems of all data
-            if (actorSettings->mLayerConvertFunction(layer, endianType) == false)
-            {
-                MCore::LogWarning("   + Don't know how to endian and/or coordinate system convert layer with type %d (%s)", fileLayer.mLayerTypeID, Importer::ActorVertexAttributeLayerTypeToString(fileLayer.mLayerTypeID));
-            }
-
-            // Check if we need to convert the layer from AZ::PackedVector3 to AZ::Vector3
-            switch (fileLayer.mLayerTypeID)
-            {
-            case Mesh::ATTRIB_NORMALS:
-            case Mesh::ATTRIB_POSITIONS:
-            case Mesh::ATTRIB_BITANGENTS:
-            {
-                if (sizeof(AZ::PackedVector3f) == fileLayer.mAttribSizeInBytes) // Only need to convert if we are loading a layer that was saved with AZ::PackedVector3f
-                {
-                    VertexAttributeLayerAbstractData* destinationLayer = VertexAttributeLayerAbstractData::Create(numAttribs, fileLayer.mLayerTypeID, sizeof(AZ::Vector3), (fileLayer.mEnableDeformations) != 0);
-                    destinationLayer->SetName(layerName);
-                    MCORE_ASSERT(destinationLayer->CalcTotalDataSizeInBytes(false) == (sizeof(AZ::Vector3) * numAttribs));
-
-                    const AZ::PackedVector3f* sourceLayerData = static_cast<AZ::PackedVector3f*>(layer->GetOriginalData());
-                    AZ::Vector3* destinationLayerData = static_cast<AZ::Vector3*>(destinationLayer->GetOriginalData());
-                    for (size_t i = 0; i < numAttribs; ++i)
-                    {
-                        destinationLayerData[i] = AZ::Vector3(sourceLayerData[i].GetX(), sourceLayerData[i].GetY(), sourceLayerData[i].GetZ());
-                    }
-                    layer->Destroy();
-                    layer = destinationLayer;
-                }
-                break;
-            }
-            default:
-                break;
-            }
-
-            // copy the original data over the current data values
-            layer->ResetToOriginalData();
-
-            mesh->AddVertexAttributeLayer(layer);
-        }
-
-        // submesh offsets
-        uint32 indexOffset  = 0;
-        uint32 vertexOffset = 0;
-        uint32 polyOffset   = 0;
-
-        // get a pointer to the index buffer
-        uint32* indices = mesh->GetIndices();
-        uint8* polyVertexCounts = mesh->GetPolygonVertexCounts();
-
-        // read the submeshes
-        const uint32 numSubMeshes = meshHeader.mNumSubMeshes;
-        mesh->SetNumSubMeshes(numSubMeshes);
-        for (uint32 s = 0; s < numSubMeshes; ++s)
-        {
-            // read the layer header
-            FileFormat::Actor_SubMesh fileSubMesh;
-            file->Read(&fileSubMesh, sizeof(FileFormat::Actor_SubMesh));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMesh.mMaterialIndex,   endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMesh.mNumVerts,        endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMesh.mNumIndices,      endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMesh.mNumPolygons,     endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMesh.mNumBones,        endianType);
-
-            if (GetLogging())
-            {
-                MCore::LogDetailedInfo("   - SubMesh #%d:", s);
-                MCore::LogDetailedInfo("     + Material:       %d (%s)", fileSubMesh.mMaterialIndex, actor->GetMaterial(0, fileSubMesh.mMaterialIndex)->GetName());
-                MCore::LogDetailedInfo("     + Num vertices:   %d", fileSubMesh.mNumVerts);
-                MCore::LogDetailedInfo("     + Num indices:    %d (%d polygons)", fileSubMesh.mNumIndices, fileSubMesh.mNumPolygons);
-                MCore::LogDetailedInfo("     + Num bones:      %d", fileSubMesh.mNumBones);
-            }
-
-            // create and add the submesh inside GetEMotionFX()
-            const uint32 numPolys = fileSubMesh.mNumPolygons;
-            SubMesh* subMesh = SubMesh::Create(mesh, vertexOffset, indexOffset, polyOffset, fileSubMesh.mNumVerts, fileSubMesh.mNumIndices, numPolys, fileSubMesh.mMaterialIndex, fileSubMesh.mNumBones);
-            mesh->SetSubMesh(s, subMesh);
-
-            // read the indices
-            uint32* fileIndices = (uint32*)MCore::Allocate(fileSubMesh.mNumIndices * sizeof(uint32), EMFX_MEMCATEGORY_IMPORTER);
-            file->Read(fileIndices, fileSubMesh.mNumIndices * sizeof(uint32));
-            MCore::Endian::ConvertUnsignedInt32(fileIndices, endianType, fileSubMesh.mNumIndices);
-            uint32 i;
-            for (i = 0; i < fileSubMesh.mNumIndices; ++i)
-            {
-                indices[indexOffset + i] = fileIndices[i] + vertexOffset;
-            }
-            MCore::Free(fileIndices);
-
-
-            // read the polygon vertex counts
-            uint8* filePolyVertexCounts = (uint8*)MCore::Allocate(numPolys * sizeof(uint8), EMFX_MEMCATEGORY_IMPORTER);
-            file->Read(filePolyVertexCounts, numPolys * sizeof(uint8));
-            for (i = 0; i < numPolys; ++i)
-            {
-                polyVertexCounts[polyOffset + i] = filePolyVertexCounts[i];
-            }
-            MCore::Free(filePolyVertexCounts);
-
-
-            // read the bone/node numbers
-            for (i = 0; i < fileSubMesh.mNumBones; ++i)
-            {
-                uint32 value;
-                file->Read(&value, sizeof(uint32));
-                MCore::Endian::ConvertUnsignedInt32(&value, endianType);
-                //LogDebug("bone #%d = %s", i, actor->GetNode(value)->GetName());
-                subMesh->SetBone(i, value);
-            }
-
-            // increase the offsets
-            indexOffset  += fileSubMesh.mNumIndices;
-            vertexOffset += fileSubMesh.mNumVerts;
-            polyOffset   += numPolys;
-        }
-
-        // calculate the tangents when we want tangents, but they aren't there
-        if (mesh->FindOriginalVertexData(Mesh::ATTRIB_TANGENTS) == nullptr && actorSettings->mAutoGenTangents)
-        {
-            if (GetLogging())
-            {
-                MCore::LogDetailedInfo("    + Generating tangents...");
-            }
-            mesh->CalcTangents();
-        }
-
-        return true;
-    }
-
-    //=================================================================================================
-
-    // the skinning information v4
-    bool ChunkProcessorActorSkinningInfo::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-
-        MCORE_ASSERT(actor);
-        Skeleton* skeleton = actor->GetSkeleton();
-
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Skinning Information (chunk v4)");
-        }
-
-        // read the node number this info belongs to
-        FileFormat::Actor_SkinningInfo fileInfo;
-        file->Read(&fileInfo, sizeof(FileFormat::Actor_SkinningInfo));
-
-        // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInfo.mNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInfo.mLOD, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInfo.mNumTotalInfluences, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInfo.mNumLocalBones, endianType);
-
-        const uint32 lodLevel = fileInfo.mLOD;
-
-        Mesh* mesh = nullptr;
-
-        bool skip = false;
-        if (lodLevel > 0 && importParams.mActorSettings->mLoadGeometryLODs == false)
-        {
-            skip = true;
-        }
-
-        FileFormat::Actor_SkinInfluence* fileInfluences = nullptr;
-        if (skip == false)
-        {
-            mesh = actor->GetMesh(lodLevel, fileInfo.mNodeIndex);
-        }
-
-        if (mesh == nullptr)
-        {
-            skip = true;
-        }
-
-        if (skip)
-        {
-            // first read back to the position where we can read the chunk header
-            size_t pos = file->GetPos();
-            file->Seek(pos - sizeof(FileFormat::Actor_SkinningInfo) - sizeof(FileFormat::FileChunk));
-
-            // read the chunk header
-            FileFormat::FileChunk chunk;
-            file->Read(&chunk, sizeof(FileFormat::FileChunk));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mChunkID, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mVersion, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mSizeInBytes, endianType);
-
-            // make sure we're dealing with a mesh chunk to verify that this worked
-            MCORE_ASSERT(chunk.mChunkID == FileFormat::ACTOR_CHUNK_SKINNINGINFO);
-
-            // seek past the end of the mesh data chunk
-            file->Forward(chunk.mSizeInBytes);
-
-            // return success
-            return true;
-        }
-
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("   + Node number      = %d", fileInfo.mNodeIndex);
-            MCore::LogDetailedInfo("   + LOD              = %d", fileInfo.mLOD);
-            MCore::LogDetailedInfo("   + Node name        = %s", skeleton->GetNode(fileInfo.mNodeIndex)->GetName());
-            MCore::LogDetailedInfo("   + Num local bones  = %d", fileInfo.mNumLocalBones);
-            MCore::LogDetailedInfo("   + Total influences = %d", fileInfo.mNumTotalInfluences);
-            MCore::LogDetailedInfo("   + For Col. Mesh    = %d", fileInfo.mIsForCollisionMesh);
-        }
-
-        // add the skinning info to the mesh
-        SkinningInfoVertexAttributeLayer* skinningLayer = SkinningInfoVertexAttributeLayer::Create(mesh->GetNumOrgVertices(), false);
-        mesh->AddSharedVertexAttributeLayer(skinningLayer);
-
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("   + Num org vertices = %d", mesh->GetNumOrgVertices());
-        }
-
-        // get the Array2D from the skinning layer
-        MCore::Array2D<SkinInfluence>& skinningArray = skinningLayer->GetArray2D();
-        MCore::Array<SkinInfluence>& skinningDataArray = skinningArray.GetData();
-
-        // make the skinning data array as big as we need
-        skinningDataArray.Resize(fileInfo.mNumTotalInfluences);
-
-        // allocate space for all influences
-        fileInfluences = (FileFormat::Actor_SkinInfluence*)MCore::Allocate(fileInfo.mNumTotalInfluences * sizeof(FileFormat::Actor_SkinInfluence), EMFX_MEMCATEGORY_IMPORTER);
-
-        // now read in all influences
-        file->Read(fileInfluences, fileInfo.mNumTotalInfluences * sizeof(FileFormat::Actor_SkinInfluence));
-
-        // init all influences
-        uint32 w;
-        const uint32 totalInfluences = fileInfo.mNumTotalInfluences;
-        for (w = 0; w < totalInfluences; ++w)
-        {
-            MCore::Endian::ConvertUnsignedInt16(&fileInfluences[w].mNodeNr, endianType);
-            MCore::Endian::ConvertFloat(&fileInfluences[w].mWeight, endianType);
-            skinningDataArray[w] = SkinInfluence(fileInfluences[w].mNodeNr, fileInfluences[w].mWeight);
-        }
-
-        // release temp influence data from memory
-        MCore::Free(fileInfluences);
-
-        // now read in the table entries
-        MCore::Array< MCore::Array2D<SkinInfluence>::TableEntry >& tableEntryArray = skinningArray.GetIndexTable();
-        tableEntryArray.Resize(mesh->GetNumOrgVertices());
-        MCORE_ASSERT(sizeof(FileFormat::Actor_SkinningInfoTableEntry) == sizeof(MCore::Array2D<SkinInfluence>::TableEntry));
-        file->Read(tableEntryArray.GetPtr(), sizeof(FileFormat::Actor_SkinningInfoTableEntry) * mesh->GetNumOrgVertices());
-
-        // convert all endians
-        // TODO: check if endian conversion is needed at all?
-        const uint32 totalEntries = mesh->GetNumOrgVertices();
-        for (w = 0; w < totalEntries; ++w)
-        {
-            MCore::Endian::ConvertUnsignedInt32(&tableEntryArray[w].mStartIndex, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&tableEntryArray[w].mNumElements, endianType);
-            //MCORE_ASSERT( tableEntryArray[w].mStartIndex < fileInfo.mNumTotalInfluences );
-            //MCORE_ASSERT( tableEntryArray[w].mNumElements < 5 );
-        }
-
-        // get the stack
-        Node* node = skeleton->GetNode(fileInfo.mNodeIndex);
-        /*  if (fileInfo.mIsForCollisionMesh)
-            {
-                MeshDeformerStack* stack = actor->GetCollisionMeshDeformerStack(lodLevel, node->GetNodeIndex());
-
-                // create the stack if it doesn't yet exist
-                if (stack == nullptr)
-                {
-                    stack = MeshDeformerStack::Create( actor->GetCollisionMesh(lodLevel, node->GetNodeIndex()) );
-                    actor->SetCollisionMeshDeformerStack(lodLevel, node->GetNodeIndex(), stack);
-                }
-
-                // add the skinning deformer to the stack
-                if (importParams.mActorSettings->mDualQuatSkinning)
-                {
-                    DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create( actor->GetCollisionMesh(lodLevel, node->GetNodeIndex()) );
-                    stack->AddDeformer( skinDeformer );
-                    skinDeformer->ReserveLocalBones( fileInfo.mNumLocalBones ); // pre-alloc data to prevent reallocs
-                }
-                else
-                {
-                    SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer( actor->GetCollisionMesh(lodLevel, node->GetNodeIndex()) );
-                    stack->AddDeformer( skinDeformer );
-                    skinDeformer->ReserveLocalBones( fileInfo.mNumLocalBones ); // pre-alloc data to prevent reallocs
-                }
-            }
-            else*/
-        {
-            MeshDeformerStack* stack = actor->GetMeshDeformerStack(lodLevel, node->GetNodeIndex());
-
-            // create the stack if it doesn't yet exist
-            if (stack == nullptr)
-            {
-                stack = MeshDeformerStack::Create(actor->GetMesh(lodLevel, node->GetNodeIndex()));
-                actor->SetMeshDeformerStack(lodLevel, node->GetNodeIndex(), stack);
-            }
-
-            // add the skinning deformer to the stack
-            if (importParams.mActorSettings->mDualQuatSkinning)
-            {
-                DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create(actor->GetMesh(lodLevel, node->GetNodeIndex()));
-                stack->AddDeformer(skinDeformer);
-                skinDeformer->ReserveLocalBones(fileInfo.mNumLocalBones); // pre-alloc data to prevent reallocs
-            }
-            else
-            {
-                SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer(actor->GetMesh(lodLevel, node->GetNodeIndex()));
-                stack->AddDeformer(skinDeformer);
-                skinDeformer->ReserveLocalBones(fileInfo.mNumLocalBones); // pre-alloc data to prevent reallocs
-            }
-        }
-
-        return true;
-    }
-
-    //=================================================================================================
-
     // read all submotions in one chunk
     bool ChunkProcessorMotionSubMotions::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
@@ -1347,264 +891,6 @@ namespace EMotionFX
 
     //=================================================================================================
 
-    // Actor Standard Material 3, with layers already inside it
-    bool ChunkProcessorActorStdMaterial::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        Importer::ActorSettings* actorSettings = importParams.mActorSettings;
-
-        MCORE_ASSERT(actor);
-
-        // read the material header
-        FileFormat::Actor_StandardMaterial material;
-        file->Read(&material, sizeof(FileFormat::Actor_StandardMaterial));
-
-        // convert the data into Core objects
-        MCore::RGBAColor ambient(material.mAmbient.mR, material.mAmbient.mG, material.mAmbient.mB);
-        MCore::RGBAColor diffuse(material.mDiffuse.mR, material.mDiffuse.mG, material.mDiffuse.mB);
-        MCore::RGBAColor specular(material.mSpecular.mR, material.mSpecular.mG, material.mSpecular.mB);
-        MCore::RGBAColor emissive(material.mEmissive.mR, material.mEmissive.mG, material.mEmissive.mB);
-
-        // convert endian
-        MCore::Endian::ConvertRGBAColor(&ambient, endianType);
-        MCore::Endian::ConvertRGBAColor(&diffuse, endianType);
-        MCore::Endian::ConvertRGBAColor(&specular, endianType);
-        MCore::Endian::ConvertRGBAColor(&emissive, endianType);
-        MCore::Endian::ConvertFloat(&material.mShine, endianType);
-        MCore::Endian::ConvertFloat(&material.mShineStrength, endianType);
-        MCore::Endian::ConvertFloat(&material.mOpacity, endianType);
-        MCore::Endian::ConvertFloat(&material.mIOR, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&material.mLOD, endianType);
-
-        // check if we want to import this material
-        if (material.mLOD > 0 && importParams.mActorSettings->mLoadGeometryLODs == false)
-        {
-            // first read back to the position where we can read the chunk header
-            size_t pos = file->GetPos();
-            file->Seek(pos - sizeof(FileFormat::Actor_StandardMaterial) - sizeof(FileFormat::FileChunk));
-
-            // read the chunk header
-            FileFormat::FileChunk chunk;
-            file->Read(&chunk, sizeof(FileFormat::FileChunk));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mChunkID, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mVersion, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mSizeInBytes, endianType);
-
-            // make sure we're dealing with the right chunk type to verify that this worked
-            MCORE_ASSERT(chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDMATERIAL);
-
-            // seek past the end of the mesh data chunk
-            file->Forward(chunk.mSizeInBytes);
-            return true;
-        }
-
-        // read the material name
-        const char* materialName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-
-        // print material information
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Material: Name = '%s'", materialName);
-            MCore::LogDetailedInfo("    + LOD           : %d", material.mLOD);
-            MCore::LogDetailedInfo("    + Ambient       : (%f, %f, %f)", ambient.r, ambient.g, ambient.b);
-            MCore::LogDetailedInfo("    + Diffuse       : (%f, %f, %f)", diffuse.r, diffuse.g, diffuse.b);
-            MCore::LogDetailedInfo("    + Specular      : (%f, %f, %f)", specular.r, specular.g, specular.b);
-            MCore::LogDetailedInfo("    + Emissive      : (%f, %f, %f)", emissive.r, emissive.g, emissive.b);
-            MCore::LogDetailedInfo("    + Shine         : %f", material.mShine);
-            MCore::LogDetailedInfo("    + Shine strength: %f", material.mShineStrength);
-            MCore::LogDetailedInfo("    + Opacity       : %f", material.mOpacity);
-            MCore::LogDetailedInfo("    + IOR           : %f", material.mIOR);
-            MCore::LogDetailedInfo("    + Double sided  : %d", material.mDoubleSided);
-            MCore::LogDetailedInfo("    + WireFrame     : %d", material.mWireFrame);
-            MCore::LogDetailedInfo("    + Num Layers    : %d", material.mNumLayers);
-        }
-
-        // create the material
-        Material* stdMat = StandardMaterial::Create(materialName);
-        StandardMaterial* mat = (StandardMaterial*)stdMat;
-
-        // setup its properties
-        mat->SetAmbient     (ambient);
-        mat->SetDiffuse     (diffuse);
-        mat->SetSpecular    (specular);
-        mat->SetEmissive    (emissive);
-        mat->SetDoubleSided (material.mDoubleSided != 0);
-        mat->SetIOR         (material.mIOR);
-        mat->SetOpacity     (material.mOpacity);
-        mat->SetShine       (material.mShine);
-        mat->SetWireFrame   (material.mWireFrame != 0);
-        mat->SetShineStrength(material.mShineStrength);
-
-        // add the material to the actor
-        actor->AddMaterial(material.mLOD,  stdMat);
-
-        // pre-alloc the number of layers
-        if (actorSettings->mLoadStandardMaterialLayers)
-        {
-            mat->ReserveLayers(material.mNumLayers);
-        }
-
-        // read all layers
-        for (uint32 i = 0; i < material.mNumLayers; ++i)
-        {
-            // read the layer from disk
-            FileFormat::Actor_StandardMaterialLayer matLayer;
-            file->Read(&matLayer, sizeof(FileFormat::Actor_StandardMaterialLayer));
-
-            // read the texture file name
-            const char* textureFileName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-
-            // if we should load the layers
-            if (actorSettings->mLoadStandardMaterialLayers)
-            {
-                // convert endian
-                MCore::Endian::ConvertUnsignedInt16(&matLayer.mMaterialNumber, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mAmount, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mRotationRadians, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mUOffset, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mVOffset, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mUTiling, endianType);
-                MCore::Endian::ConvertFloat(&matLayer.mVTiling, endianType);
-
-                // add the layer to the material
-                Material* baseMat = actor->GetMaterial(material.mLOD, matLayer.mMaterialNumber);
-                MCORE_ASSERT(baseMat->GetType() == StandardMaterial::TYPE_ID);
-                StandardMaterial* bmat = (StandardMaterial*)baseMat;
-                StandardMaterialLayer* layer = bmat->AddLayer(StandardMaterialLayer::Create(matLayer.mMapType, textureFileName, matLayer.mAmount));
-
-                // set the layer blend mode
-                layer->SetBlendMode(matLayer.mBlendMode);
-                layer->SetRotationRadians(matLayer.mRotationRadians);
-                layer->SetUOffset(matLayer.mUOffset);
-                layer->SetVOffset(matLayer.mVOffset);
-                layer->SetUTiling(matLayer.mUTiling);
-                layer->SetVTiling(matLayer.mVTiling);
-
-                if (GetLogging())
-                {
-                    MCore::LogDetailedInfo("    - Material Layer");
-                    MCore::LogDetailedInfo("       + Texture  = %s", textureFileName);
-                    MCore::LogDetailedInfo("       + Material = %s (number %d)", mat->GetName(), matLayer.mMaterialNumber);
-                    MCore::LogDetailedInfo("       + Amount   = %f", matLayer.mAmount);
-                    MCore::LogDetailedInfo("       + MapType  = %d", matLayer.mMapType);
-                    MCore::LogDetailedInfo("       + UOffset  = %f", matLayer.mUOffset);
-                    MCore::LogDetailedInfo("       + VOffset  = %f", matLayer.mVOffset);
-                    MCore::LogDetailedInfo("       + UTiling  = %f", matLayer.mUTiling);
-                    MCore::LogDetailedInfo("       + VTiling  = %f", matLayer.mVTiling);
-                    MCore::LogDetailedInfo("       + Rotation = %f (radians)", matLayer.mRotationRadians);
-                }
-            } // if we should load the layers
-        } // for all layers
-
-        return true;
-    }
-
-
-    //=================================================================================================
-
-    // Actor Generic Material
-    bool ChunkProcessorActorGenericMaterial::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        //Importer::ActorSettings* actorSettings = importParams.mActorSettings;
-
-        MCORE_ASSERT(actor);
-
-        // read the material header
-        FileFormat::Actor_GenericMaterial material;
-        file->Read(&material, sizeof(FileFormat::Actor_GenericMaterial));
-
-        MCore::Endian::ConvertUnsignedInt32(&material.mLOD, endianType);
-
-        // check if we want to import this material
-        if (material.mLOD > 0 && importParams.mActorSettings->mLoadGeometryLODs == false)
-        {
-            // first read back to the position where we can read the chunk header
-            size_t pos = file->GetPos();
-            file->Seek(pos - sizeof(FileFormat::Actor_GenericMaterial) - sizeof(FileFormat::FileChunk));
-
-            // read the chunk header
-            FileFormat::FileChunk chunk;
-            file->Read(&chunk, sizeof(FileFormat::FileChunk));
-
-            // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mChunkID, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mVersion, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&chunk.mSizeInBytes, endianType);
-
-            // make sure we're dealing with the right chunk type to verify that this worked
-            MCORE_ASSERT(chunk.mChunkID == FileFormat::ACTOR_CHUNK_GENERICMATERIAL);
-
-            // seek past the end of the mesh data chunk
-            file->Forward(chunk.mSizeInBytes);
-            return true;
-        }
-
-        // read the material name
-        const char* materialName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-
-        // print material information
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Generic Material: Name = '%s'", materialName);
-            MCore::LogDetailedInfo("    + LOD           : %d", material.mLOD);
-        }
-
-        // create the material
-        Material* genericMaterial = Material::Create(materialName);
-
-        // add the material to the actor
-        actor->AddMaterial(material.mLOD, genericMaterial);
-
-        return true;
-    }
-
-    //=================================================================================================
-
-    // Actor material attribute set
-    bool ChunkProcessorActorMaterialAttributeSet::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        Importer::ActorSettings* actorSettings = importParams.mActorSettings;
-
-        MCORE_ASSERT(actor);
-
-        // read the header so we know what material to apply the set to
-        FileFormat::Actor_MaterialAttributeSet setHeader;
-        file->Read(&setHeader, sizeof(FileFormat::Actor_MaterialAttributeSet));
-        MCore::Endian::ConvertUnsignedInt32(&setHeader.mMaterialIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&setHeader.mLODLevel, endianType);
-
-        // check if we really want to load this set
-        bool load = true;
-        if (actorSettings->mLoadGeometryLODs == false && setHeader.mLODLevel > 0)
-        {
-            load = false;
-        }
-
-        // There used to be an AttributeSet here, read to move the stream
-        ForwardAttributeSet(file, endianType);
-
-        if (actor->GetNumLODLevels() > setHeader.mLODLevel && load)
-        {
-            if (GetLogging())
-            {
-                MCore::LogInfo("- Material Attribute Set:");
-                MCore::LogInfo("   + Material Index: %d (%s)", setHeader.mMaterialIndex, actor->GetMaterial(setHeader.mLODLevel, setHeader.mMaterialIndex)->GetName());
-                MCore::LogInfo("   + Material LOD:   %d", setHeader.mLODLevel);
-            }
-        }
-
-        return true;
-    }
-
-    //=================================================================================================
-
     bool ChunkProcessorActorPhysicsSetup::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
         const MCore::Endian::EEndianType endianType = importParams.mEndianType;
@@ -1676,56 +962,25 @@ namespace EMotionFX
 
     //=================================================================================================
 
-
-    bool ChunkProcessorActorStdMaterialLayer::Process(MCore::File* file, Importer::ImportParameters& importParams)
+    bool ChunkProcessorMeshAsset::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
         const MCore::Endian::EEndianType endianType = importParams.mEndianType;
         Actor* actor = importParams.mActor;
+        AZ_Assert(actor, "Actor needs to be valid.");
 
-        MCORE_ASSERT(actor);
-
-        // read the layer from disk
-        FileFormat::Actor_StandardMaterialLayer matLayer;
-        file->Read(&matLayer, sizeof(FileFormat::Actor_StandardMaterialLayer));
-
-        // convert endian
-        MCore::Endian::ConvertUnsignedInt16(&matLayer.mMaterialNumber, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mAmount, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mRotationRadians, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mUOffset, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mVOffset, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mUTiling, endianType);
-        MCore::Endian::ConvertFloat(&matLayer.mVTiling, endianType);
-
-        // read the texture file name
-        const char* textureFileName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-
-        // add the layer to the material
-        Material* baseMat = actor->GetMaterial(0, matLayer.mMaterialNumber);
-        MCORE_ASSERT(baseMat->GetType() == StandardMaterial::TYPE_ID);
-        StandardMaterial* mat = (StandardMaterial*)baseMat;
-        StandardMaterialLayer* layer = mat->AddLayer(StandardMaterialLayer::Create(matLayer.mMapType, textureFileName, matLayer.mAmount));
-
-        // set the layer blend mode
-        layer->SetBlendMode(matLayer.mBlendMode);
-        layer->SetRotationRadians(matLayer.mRotationRadians);
-        layer->SetUOffset(matLayer.mUOffset);
-        layer->SetVOffset(matLayer.mVOffset);
-        layer->SetUTiling(matLayer.mUTiling);
-        layer->SetVTiling(matLayer.mVTiling);
+        EMotionFX::FileFormat::Actor_MeshAsset meshAssetChunk;
+        file->Read(&meshAssetChunk, sizeof(FileFormat::Actor_MeshAsset));
+        const char* meshAssetIdString = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const AZ::Data::AssetId meshAssetId = AZ::Data::AssetId::CreateString(meshAssetIdString);
+        if (meshAssetId.IsValid())
+        {
+            actor->SetMeshAssetId(meshAssetId);
+        }
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("    - Material Layer");
-            MCore::LogDetailedInfo("       + Texture  = %s", textureFileName);
-            MCore::LogDetailedInfo("       + Material = %s (number %d)", mat->GetName(), matLayer.mMaterialNumber);
-            MCore::LogDetailedInfo("       + Amount   = %f", matLayer.mAmount);
-            MCore::LogDetailedInfo("       + MapType  = %d", matLayer.mMapType);
-            MCore::LogDetailedInfo("       + UOffset  = %f", matLayer.mUOffset);
-            MCore::LogDetailedInfo("       + VOffset  = %f", matLayer.mVOffset);
-            MCore::LogDetailedInfo("       + UTiling  = %f", matLayer.mUTiling);
-            MCore::LogDetailedInfo("       + VTiling  = %f", matLayer.mVTiling);
-            MCore::LogDetailedInfo("       + Rotation = %f (radians)", matLayer.mRotationRadians);
+            MCore::LogDetailedInfo("    - Mesh asset");
+            MCore::LogDetailedInfo("       + AssetId  = %s", meshAssetIdString);
         }
 
         return true;
@@ -1972,15 +1227,6 @@ namespace EMotionFX
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
-        // preallocate memory for the lod level information that will follow
-        if (importParams.mActorSettings->mLoadGeometryLODs)
-        {
-            actor->SetNumLODLevels(fileInformation.mNumLODs);
-        }
-        else
-        {
-            actor->SetNumLODLevels(1);
-        }
         return true;
     }
 
@@ -2028,15 +1274,6 @@ namespace EMotionFX
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
-        // preallocate memory for the lod level information that will follow
-        if (importParams.mActorSettings->mLoadGeometryLODs)
-        {
-            actor->SetNumLODLevels(fileInformation.mNumLODs);
-        }
-        else
-        {
-            actor->SetNumLODLevels(1);
-        }
         return true;
     }
 
@@ -2085,69 +1322,10 @@ namespace EMotionFX
         actor->SetFileUnitType(actor->GetUnitType());
         actor->SetOptimizeSkeleton(fileInformation.mOptimizeSkeleton == 0? false : true);
 
-        // preallocate memory for the lod level information that will follow
-        if (importParams.mActorSettings->mLoadGeometryLODs)
-        {
-            actor->SetNumLODLevels(fileInformation.mNumLODs);
-        }
-        else
-        {
-            actor->SetNumLODLevels(1);
-        }
         return true;
     }
 
     //=================================================================================================
-
-    bool ChunkProcessorActorMeshLOD::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        Importer::ActorSettings actorSettings = *importParams.mActorSettings;
-        //actorSettings.mAutoRegisterLeaderEnabled = false;
-
-        MCORE_ASSERT(actor);
-
-        // read the chunk
-        FileFormat::Actor_MeshLODLevel meshLOD;
-        file->Read(&meshLOD, sizeof(FileFormat::Actor_MeshLODLevel));
-
-        // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&meshLOD.mLODLevel, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&meshLOD.mSizeInBytes, endianType);
-
-        // print motion LOD level information
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Mesh LOD Level %d", meshLOD.mLODLevel);
-            MCore::LogDetailedInfo("   + SizeInBytes: %d", meshLOD.mSizeInBytes);
-        }
-
-        // create and fill the buffer with the mesh LOD model
-        uint8* buffer = (uint8*)MCore::Allocate(meshLOD.mSizeInBytes, EMFX_MEMCATEGORY_IMPORTER);
-        file->Read(buffer, meshLOD.mSizeInBytes);
-
-        // load the lod model from memory and add it to the main actor
-        AZStd::unique_ptr<Actor> lodModel = GetImporter().LoadActor(buffer, meshLOD.mSizeInBytes, &actorSettings);
-        if (lodModel)
-        {
-            actor->AddLODLevel(false);
-            actor->CopyLODLevel(lodModel.get(), 0, actor->GetNumLODLevels() - 1, false);
-        }
-        else
-        {
-            MCore::LogError("LOD level loading failed!");
-        }
-
-        // get rid of the temporary buffer
-        MCore::Free(buffer);
-
-        return true;
-    }
-
-
-    //=================================================================================================
-
 
     // morph targets
     bool ChunkProcessorActorProgMorphTarget::Process(MCore::File* file, Importer::ImportParameters& importParams)
@@ -2166,7 +1344,6 @@ namespace EMotionFX
         MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
         MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
         MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumMeshDeformDeltas, endianType);
         MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
         MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
 
@@ -2183,7 +1360,6 @@ namespace EMotionFX
             MCore::LogDetailedInfo("    + LOD Level          = %d", morphTargetChunk.mLOD);
             MCore::LogDetailedInfo("    + RangeMin           = %f", morphTargetChunk.mRangeMin);
             MCore::LogDetailedInfo("    + RangeMax           = %f", morphTargetChunk.mRangeMax);
-            MCore::LogDetailedInfo("    + NumDeformDatas     = %d", morphTargetChunk.mNumMeshDeformDeltas);
             MCore::LogDetailedInfo("    + NumTransformations = %d", morphTargetChunk.mNumTransformations);
             MCore::LogDetailedInfo("    + PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
         }
@@ -2198,7 +1374,7 @@ namespace EMotionFX
             actor->SetMorphSetup(morphTargetLOD, morphSetup);
         }
 
-        // create the mesh morph target
+        // create the morph target
         MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
         // set the slider range
@@ -2211,154 +1387,8 @@ namespace EMotionFX
         // add the morph target
         actor->GetMorphSetup(morphTargetLOD)->AddMorphTarget(morphTarget);
 
-        // pre-allocate space in the array of deform datas inside the morph target
-        morphTarget->ReserveDeformDatas(morphTargetChunk.mNumMeshDeformDeltas);
-
-        // read all deform datas
-        // each node that gets deformed by the mesh morph results in a deform data object that we read here
-        // so if a given morph target affects 3 meshes, there are 3 deform datas
-        uint32 i;
-        for (i = 0; i < morphTargetChunk.mNumMeshDeformDeltas; ++i)
-        {
-            FileFormat::Actor_MorphTargetMeshDeltas meshDeformDataChunk;
-            file->Read(&meshDeformDataChunk, sizeof(FileFormat::Actor_MorphTargetMeshDeltas));
-
-            // convert endian
-            MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMinValue, endianType);
-            MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMaxValue, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNumVertices, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNodeIndex, endianType);
-
-            // get the deformation node
-            MCORE_ASSERT(meshDeformDataChunk.mNodeIndex < actor->GetNumNodes());
-            Node* deformNode = skeleton->GetNode(meshDeformDataChunk.mNodeIndex);
-            MCORE_ASSERT(deformNode);
-
-            if (GetLogging())
-            {
-                MCore::LogDetailedInfo("    + Deform data #%d: Node='%s' (index=%d)", i, deformNode->GetName(), deformNode->GetNodeIndex());
-                MCore::LogDetailedInfo("       - NumVertices = %d", meshDeformDataChunk.mNumVertices);
-                MCore::LogDetailedInfo("       - MinValue    = %f", meshDeformDataChunk.mMinValue);
-                MCore::LogDetailedInfo("       - MaxValue    = %f", meshDeformDataChunk.mMaxValue);
-            }
-
-            // if the node has no mesh, we can skip it
-            Mesh* mesh = actor->GetMesh(morphTargetLOD, deformNode->GetNodeIndex());
-            if (mesh)
-            {
-                // create and add the deform data object
-                MorphTargetStandard::DeformData* deformData = aznew MorphTargetStandard::DeformData(deformNode->GetNodeIndex(), meshDeformDataChunk.mNumVertices);
-                morphTarget->AddDeformData(deformData);
-
-                // set the min and max values, used to define the compression/quantitization range for the positions
-                deformData->mMinValue = meshDeformDataChunk.mMinValue;
-                deformData->mMaxValue = meshDeformDataChunk.mMaxValue;
-
-                // read the positions
-                uint32 d;
-                FileFormat::File16BitVector3 deltaPos;
-                FileFormat::File16BitVector3* filePosVectors = (FileFormat::File16BitVector3*)MCore::Allocate(sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                file->Read(filePosVectors, sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices);
-
-                float compressMin = meshDeformDataChunk.mMinValue;
-                float compressMax = meshDeformDataChunk.mMaxValue;
-                for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                {
-                    deltaPos = filePosVectors[d];
-
-                    // convert endian
-                    MCore::Endian::ConvertUnsignedInt16(&deltaPos.mX, endianType, 3);
-
-                    // decompress and convert coordinate system
-                    AZ::Vector3 tempPos = MCore::Compressed16BitVector3(deltaPos.mX, deltaPos.mY, deltaPos.mZ).ToVector3(meshDeformDataChunk.mMinValue, meshDeformDataChunk.mMaxValue);
-
-                    // compress the value after coordinate system conversion
-                    deformData->mDeltas[d].mPosition = MCore::Compressed16BitVector3(tempPos, compressMin, compressMax);
-                }
-                MCore::Free(filePosVectors);
-
-                // read the normals
-                FileFormat::File8BitVector3* file8BitVectors = (FileFormat::File8BitVector3*)MCore::Allocate(sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                FileFormat::File8BitVector3 delta;
-                for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                {
-                    delta = file8BitVectors[d];
-
-                    // decompress and convert coordinate system
-                    AZ::Vector3 temp = MCore::Compressed8BitVector3(delta.mX, delta.mY, delta.mZ).ToVector3(-2.0f, +2.0f);
-
-                    // compress the value after coordinate system conversion
-                    deformData->mDeltas[d].mNormal = MCore::Compressed8BitVector3(temp, -2.0f, +2.0f);
-                }
-
-                // read the tangents
-                file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                FileFormat::File8BitVector3 deltaT;
-                for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                {
-                    deltaT = file8BitVectors[d];
-
-                    // decompress and convert coordinate system
-                    AZ::Vector3 temp = MCore::Compressed8BitVector3(deltaT.mX, deltaT.mY, deltaT.mZ).ToVector3(-2.0f, +2.0f);
-
-                    // compress the value after coordinate system conversion
-                    deformData->mDeltas[d].mTangent = MCore::Compressed8BitVector3(temp, -2.0f, +2.0f);
-                }
-                MCore::Free(file8BitVectors);
-
-                // read the vertex numbers
-                uint32* fileIndices = (uint32*)MCore::Allocate(sizeof(uint32) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                file->Read(fileIndices, sizeof(uint32) * meshDeformDataChunk.mNumVertices);
-                MCore::Endian::ConvertUnsignedInt32(fileIndices, endianType, meshDeformDataChunk.mNumVertices);
-                for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                {
-                    deformData->mDeltas[d].mVertexNr = fileIndices[d];
-                }
-                MCore::Free(fileIndices);
-
-                //-------------------------------
-                // create the mesh deformer
-                MeshDeformerStack* stack = actor->GetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex());
-
-                // create the stack if it doesn't yet exist
-                if (stack == nullptr)
-                {
-                    stack = MeshDeformerStack::Create(mesh);
-                    actor->SetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex(), stack);
-                }
-
-                // try to see if there is already some  morph deformer
-                MorphMeshDeformer* deformer = nullptr;
-                MeshDeformerStack* stackPtr = stack;
-                deformer = (MorphMeshDeformer*)stackPtr->FindDeformerByType(MorphMeshDeformer::TYPE_ID);
-                if (deformer == nullptr) // there isn't one, so create and add one
-                {
-                    deformer = MorphMeshDeformer::Create(mesh);
-                    stack->InsertDeformer(0, deformer);
-                }
-
-                // add the deform pass to the mesh deformer
-                MorphMeshDeformer::DeformPass deformPass;
-                deformPass.mDeformDataNr = morphTarget->GetNumDeformDatas() - 1;
-                deformPass.mMorphTarget  = morphTarget;
-                deformer->AddDeformPass(deformPass);
-            }
-            else // if there is no mesh, skip this mesh morph target
-            {
-                const uint32 numBytes = (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File16BitVector3)) + // positions
-                    (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // normals
-                    (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // tangents
-                    (meshDeformDataChunk.mNumVertices * sizeof(uint32));                                        // vertex numbers
-
-                // seek forward in the file
-                file->Forward(numBytes);
-            }
-        }
-
-
         // read the facial transformations
-        for (i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+        for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
         {
             // read the facial transformation from disk
             FileFormat::Actor_MorphTargetTransform transformChunk;
@@ -2548,54 +1578,6 @@ namespace EMotionFX
 
     //----------------------------------------------------------------------------------------------------------
 
-    // the material info chunk
-    bool ChunkProcessorActorMaterialInfo::Process(MCore::File* file, Importer::ImportParameters& importParams)
-    {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-
-        MCORE_ASSERT(actor);
-
-        // read the file data
-        FileFormat::Actor_MaterialInfo matInfo;
-        file->Read(&matInfo, sizeof(FileFormat::Actor_MaterialInfo));
-
-        // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&matInfo.mLOD, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&matInfo.mNumTotalMaterials, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&matInfo.mNumStandardMaterials, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&matInfo.mNumFXMaterials, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&matInfo.mNumGenericMaterials, endianType);
-
-        // log details
-        if (GetLogging())
-        {
-            MCore::LogDetailedInfo("- Material Totals Information:");
-            MCore::LogDetailedInfo("   + LOD                    = %d", matInfo.mLOD);
-            MCore::LogDetailedInfo("   + Total materials        = %d", matInfo.mNumTotalMaterials);
-            MCore::LogDetailedInfo("   + Num generic materials  = %d", matInfo.mNumGenericMaterials);
-            MCore::LogDetailedInfo("   + Num standard materials = %d", matInfo.mNumStandardMaterials);
-            MCore::LogDetailedInfo("   + Num FX materials       = %d", matInfo.mNumFXMaterials);
-        }
-
-        // pre-allocate memory in the array of materials for the given LOD level
-        if (importParams.mActorSettings->mLoadGeometryLODs)
-        {
-            actor->ReserveMaterials(matInfo.mLOD, matInfo.mNumTotalMaterials);
-        }
-        else
-        {
-            if (matInfo.mLOD == 0)
-            {
-                actor->ReserveMaterials(0, matInfo.mNumTotalMaterials);
-            }
-        }
-
-        return true;
-    }
-
-    //------------------------------------------------------------------------------------------
-
     // morph targets
     bool ChunkProcessorActorProgMorphTargets::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
@@ -2643,7 +1625,6 @@ namespace EMotionFX
             MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
             MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumMeshDeformDeltas, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
 
@@ -2663,12 +1644,11 @@ namespace EMotionFX
                 MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.mLOD);
                 MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.mRangeMin);
                 MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.mRangeMax);
-                MCore::LogDetailedInfo("     - NumDeformDatas     = %d", morphTargetChunk.mNumMeshDeformDeltas);
                 MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.mNumTransformations);
                 MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
             }
 
-            // create the mesh morph target
+            // create the morph target
             MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
             // set the slider range
@@ -2681,161 +1661,11 @@ namespace EMotionFX
             // add the morph target
             setup->AddMorphTarget(morphTarget);
 
-            // pre-allocate space in the array of deform datas inside the morph target
-            morphTarget->ReserveDeformDatas(morphTargetChunk.mNumMeshDeformDeltas);
-
             // the same for the transformations
             morphTarget->ReserveTransformations(morphTargetChunk.mNumTransformations);
 
-            // read all deform datas
-            // each node that gets deformed by the mesh morph results in a deform data object that we read here
-            // so if a given morph target affects 3 meshes, there are 3 deform datas
-            uint32 i;
-            for (i = 0; i < morphTargetChunk.mNumMeshDeformDeltas; ++i)
-            {
-                FileFormat::Actor_MorphTargetMeshDeltas meshDeformDataChunk;
-                file->Read(&meshDeformDataChunk, sizeof(FileFormat::Actor_MorphTargetMeshDeltas));
-
-                // convert endian
-                MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMinValue, endianType);
-                MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMaxValue, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNumVertices, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNodeIndex, endianType);
-
-                // get the deformation node
-                MCORE_ASSERT(meshDeformDataChunk.mNodeIndex < actor->GetNumNodes());
-                Node* deformNode = skeleton->GetNode(meshDeformDataChunk.mNodeIndex);
-                MCORE_ASSERT(deformNode);
-
-                if (GetLogging())
-                {
-                    MCore::LogDetailedInfo("     - Deform data #%d: Node='%s' (index=%d)", i, deformNode->GetName(), deformNode->GetNodeIndex());
-                    MCore::LogDetailedInfo("        + NumVertices = %d", meshDeformDataChunk.mNumVertices);
-                    MCore::LogDetailedInfo("        + MinValue    = %f", meshDeformDataChunk.mMinValue);
-                    MCore::LogDetailedInfo("        + MaxValue    = %f", meshDeformDataChunk.mMaxValue);
-                }
-
-                // if the node has no mesh, we can skip it
-                Mesh* mesh = actor->GetMesh(morphTargetLOD, deformNode->GetNodeIndex());
-                if (mesh)
-                {
-                    // create and add the deform data object
-                    MorphTargetStandard::DeformData* deformData = aznew MorphTargetStandard::DeformData(deformNode->GetNodeIndex(), meshDeformDataChunk.mNumVertices);
-                    morphTarget->AddDeformData(deformData);
-
-                    // set the min and max values, used to define the compression/quantitization range for the positions
-                    deformData->mMinValue = meshDeformDataChunk.mMinValue;
-                    deformData->mMaxValue = meshDeformDataChunk.mMaxValue;
-
-                    // read the positions
-                    uint32 d;
-                    FileFormat::File16BitVector3 deltaPos;
-                    FileFormat::File16BitVector3* filePosVectors = (FileFormat::File16BitVector3*)MCore::Allocate(sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(filePosVectors, sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices);
-
-                    float compressMin = meshDeformDataChunk.mMinValue;
-                    float compressMax = meshDeformDataChunk.mMaxValue;
-
-                    // read and coordinate system convert the deltas
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deltaPos = filePosVectors[d];
-
-                        // convert endian
-                        MCore::Endian::ConvertUnsignedInt16(&deltaPos.mX, endianType, 3);
-
-                        // decompress and convert coordinate system
-                        AZ::Vector3 tempPos = MCore::Compressed16BitVector3(deltaPos.mX, deltaPos.mY, deltaPos.mZ).ToVector3(meshDeformDataChunk.mMinValue, meshDeformDataChunk.mMaxValue);
-
-                        // compress the value after coordinate system conversion
-                        deformData->mDeltas[d].mPosition = MCore::Compressed16BitVector3(tempPos, compressMin, compressMax);
-                    }
-                    MCore::Free(filePosVectors);
-
-                    // read the normals
-                    FileFormat::File8BitVector3* file8BitVectors = (FileFormat::File8BitVector3*)MCore::Allocate(sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                    FileFormat::File8BitVector3 delta;
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        delta = file8BitVectors[d];
-
-                        // decompress and convert coordinate system
-                        AZ::Vector3 temp = MCore::Compressed8BitVector3(delta.mX, delta.mY, delta.mZ).ToVector3(-1.0f, +1.0f);
-
-                        // compress the value after coordinate system conversion
-                        deformData->mDeltas[d].mNormal = MCore::Compressed8BitVector3(temp, -1.0f, +1.0f);
-                    }
-
-                    // read the tangents
-                    file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                    FileFormat::File8BitVector3 deltaT;
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deltaT = file8BitVectors[d];
-
-                        // decompress and convert coordinate system
-                        AZ::Vector3 temp = MCore::Compressed8BitVector3(deltaT.mX, deltaT.mY, deltaT.mZ).ToVector3(-1.0f, +1.0f);
-
-                        // compress the value after coordinate system conversion
-                        deformData->mDeltas[d].mTangent = MCore::Compressed8BitVector3(temp, -1.0f, +1.0f);
-                    }
-                    MCore::Free(file8BitVectors);
-
-                    // read the vertex numbers
-                    uint32* fileIndices = (uint32*)MCore::Allocate(sizeof(uint32) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(fileIndices, sizeof(uint32) * meshDeformDataChunk.mNumVertices);
-                    MCore::Endian::ConvertUnsignedInt32(fileIndices, endianType, meshDeformDataChunk.mNumVertices);
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deformData->mDeltas[d].mVertexNr = fileIndices[d];
-                    }
-                    MCore::Free(fileIndices);
-
-                    //-------------------------------
-                    // create the mesh deformer
-                    MeshDeformerStack* stack = actor->GetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex());
-
-                    // create the stack if it doesn't yet exist
-                    if (stack == nullptr)
-                    {
-                        stack = MeshDeformerStack::Create(mesh);
-                        actor->SetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex(), stack);
-                    }
-
-                    // try to see if there is already some  morph deformer
-                    MorphMeshDeformer* deformer = nullptr;
-                    MeshDeformerStack* stackPtr = stack;
-                    deformer = (MorphMeshDeformer*)stackPtr->FindDeformerByType(MorphMeshDeformer::TYPE_ID);
-                    if (deformer == nullptr) // there isn't one, so create and add one
-                    {
-                        deformer = MorphMeshDeformer::Create(mesh);
-                        stack->InsertDeformer(0, deformer);
-                        deformer->ReserveDeformPasses(morphTargetsHeader.mNumMorphTargets); // assume that this mesh is influenced by all morph targets
-                    }
-
-                    // add the deform pass to the mesh deformer
-                    MorphMeshDeformer::DeformPass deformPass;
-                    deformPass.mDeformDataNr = morphTarget->GetNumDeformDatas() - 1;
-                    deformPass.mMorphTarget  = morphTarget;
-                    deformer->AddDeformPass(deformPass);
-                    //-------------------------------
-                }
-                else // if there is no mesh, skip this mesh morph target
-                {
-                    const uint32 numBytes = (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File16BitVector3)) + // positions
-                        (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // normals
-                        (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // tangents
-                        (meshDeformDataChunk.mNumVertices * sizeof(uint32));                                        // vertex numbers
-
-                    // seek forward in the file
-                    file->Forward(numBytes);
-                }
-            }
-
-
             // read the facial transformations
-            for (i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+            for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;
@@ -2942,7 +1772,6 @@ namespace EMotionFX
             MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
             MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumMeshDeformDeltas, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
             MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
 
@@ -2962,12 +1791,11 @@ namespace EMotionFX
                 MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.mLOD);
                 MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.mRangeMin);
                 MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.mRangeMax);
-                MCore::LogDetailedInfo("     - NumDeformDatas     = %d", morphTargetChunk.mNumMeshDeformDeltas);
                 MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.mNumTransformations);
                 MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
             }
 
-            // create the mesh morph target
+            // create the morph target
             MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
             // set the slider range
@@ -2980,168 +1808,11 @@ namespace EMotionFX
             // add the morph target
             setup->AddMorphTarget(morphTarget);
 
-            // pre-allocate space in the array of deform datas inside the morph target
-            morphTarget->ReserveDeformDatas(morphTargetChunk.mNumMeshDeformDeltas);
-
             // the same for the transformations
             morphTarget->ReserveTransformations(morphTargetChunk.mNumTransformations);
 
-            // read all deform datas
-            // each node that gets deformed by the mesh morph results in a deform data object that we read here
-            // so if a given morph target affects 3 meshes, there are 3 deform datas
-            uint32 i;
-            for (i = 0; i < morphTargetChunk.mNumMeshDeformDeltas; ++i)
-            {
-                FileFormat::Actor_MorphTargetMeshDeltas2 meshDeformDataChunk;
-                file->Read(&meshDeformDataChunk, sizeof(FileFormat::Actor_MorphTargetMeshDeltas2));
-
-                // convert endian
-                MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMinValue, endianType);
-                MCore::Endian::ConvertFloat(&meshDeformDataChunk.mMaxValue, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNumVertices, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&meshDeformDataChunk.mNodeIndex, endianType);
-
-                // get the deformation node
-                MCORE_ASSERT(meshDeformDataChunk.mNodeIndex < actor->GetNumNodes());
-                Node* deformNode = skeleton->GetNode(meshDeformDataChunk.mNodeIndex);
-                MCORE_ASSERT(deformNode);
-
-                if (GetLogging())
-                {
-                    MCore::LogDetailedInfo("     - Deform data #%d: Node='%s' (index=%d)", i, deformNode->GetName(), deformNode->GetNodeIndex());
-                    MCore::LogDetailedInfo("        + NumVertices = %d", meshDeformDataChunk.mNumVertices);
-                    MCore::LogDetailedInfo("        + MinValue    = %f", meshDeformDataChunk.mMinValue);
-                    MCore::LogDetailedInfo("        + MaxValue    = %f", meshDeformDataChunk.mMaxValue);
-                }
-
-                // if the node has no mesh, we can skip it
-                Mesh* mesh = actor->GetMesh(morphTargetLOD, deformNode->GetNodeIndex());
-                if (mesh)
-                {
-                    // create and add the deform data object
-                    MorphTargetStandard::DeformData* deformData = aznew MorphTargetStandard::DeformData(deformNode->GetNodeIndex(), meshDeformDataChunk.mNumVertices);
-                    morphTarget->AddDeformData(deformData);
-
-                    // set the min and max values, used to define the compression/quantitization range for the positions
-                    deformData->mMinValue = meshDeformDataChunk.mMinValue;
-                    deformData->mMaxValue = meshDeformDataChunk.mMaxValue;
-
-                    // read the positions
-                    uint32 d;
-                    FileFormat::File16BitVector3 deltaPos;
-                    FileFormat::File16BitVector3* filePosVectors = (FileFormat::File16BitVector3*)MCore::Allocate(sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(filePosVectors, sizeof(FileFormat::File16BitVector3) * meshDeformDataChunk.mNumVertices);
-
-                    float compressMin = meshDeformDataChunk.mMinValue;
-                    float compressMax = meshDeformDataChunk.mMaxValue;
-
-                    // read and coordinate system convert the deltas
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deltaPos = filePosVectors[d];
-
-                        // convert endian
-                        MCore::Endian::ConvertUnsignedInt16(&deltaPos.mX, endianType, 3);
-
-                        // decompress and convert coordinate system
-                        AZ::Vector3 tempPos = MCore::Compressed16BitVector3(deltaPos.mX, deltaPos.mY, deltaPos.mZ).ToVector3(meshDeformDataChunk.mMinValue, meshDeformDataChunk.mMaxValue);
-
-                        // compress the value after coordinate system conversion
-                        deformData->mDeltas[d].mPosition = MCore::Compressed16BitVector3(tempPos, compressMin, compressMax);
-                    }
-                    MCore::Free(filePosVectors);
-
-                    // read the normals
-                    FileFormat::File8BitVector3* file8BitVectors = (FileFormat::File8BitVector3*)MCore::Allocate(sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                    FileFormat::File8BitVector3 delta;
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        delta = file8BitVectors[d];
-
-                        // decompress and convert coordinate system
-                        AZ::Vector3 temp = MCore::Compressed8BitVector3(delta.mX, delta.mY, delta.mZ).ToVector3(-2.0f, +2.0f);
-
-                        // compress the value after coordinate system conversion
-                        deformData->mDeltas[d].mNormal = MCore::Compressed8BitVector3(temp, -2.0f, +2.0f);
-                    }
-
-                    // read the tangents
-                    file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                    FileFormat::File8BitVector3 deltaT;
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deltaT = file8BitVectors[d];
-                        const AZ::Vector3 temp = MCore::Compressed8BitVector3(deltaT.mX, deltaT.mY, deltaT.mZ).ToVector3(-2.0f, +2.0f);
-                        deformData->mDeltas[d].mTangent = MCore::Compressed8BitVector3(temp, -2.0f, +2.0f);
-                    }
-
-                    // read the bitangents
-                    file->Read(file8BitVectors, sizeof(FileFormat::File8BitVector3) * meshDeformDataChunk.mNumVertices);
-                    FileFormat::File8BitVector3 deltaBT;
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deltaBT = file8BitVectors[d];
-                        const AZ::Vector3 temp = MCore::Compressed8BitVector3(deltaBT.mX, deltaBT.mY, deltaBT.mZ).ToVector3(-2.0f, +2.0f);
-                        deformData->mDeltas[d].mBitangent = MCore::Compressed8BitVector3(temp, -2.0f, +2.0f);
-                    }
-                    MCore::Free(file8BitVectors);
-
-                    // read the vertex numbers
-                    uint32* fileIndices = (uint32*)MCore::Allocate(sizeof(uint32) * meshDeformDataChunk.mNumVertices, EMFX_MEMCATEGORY_IMPORTER);
-                    file->Read(fileIndices, sizeof(uint32) * meshDeformDataChunk.mNumVertices);
-                    MCore::Endian::ConvertUnsignedInt32(fileIndices, endianType, meshDeformDataChunk.mNumVertices);
-                    for (d = 0; d < meshDeformDataChunk.mNumVertices; ++d)
-                    {
-                        deformData->mDeltas[d].mVertexNr = fileIndices[d];
-                    }
-                    MCore::Free(fileIndices);
-
-                    //-------------------------------
-                    // create the mesh deformer
-                    MeshDeformerStack* stack = actor->GetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex());
-
-                    // create the stack if it doesn't yet exist
-                    if (!stack)
-                    {
-                        stack = MeshDeformerStack::Create(mesh);
-                        actor->SetMeshDeformerStack(morphTargetLOD, deformNode->GetNodeIndex(), stack);
-                    }
-
-                    // try to see if there is already some  morph deformer
-                    MorphMeshDeformer* deformer = nullptr;
-                    MeshDeformerStack* stackPtr = stack;
-                    deformer = (MorphMeshDeformer*)stackPtr->FindDeformerByType(MorphMeshDeformer::TYPE_ID);
-                    if (!deformer) // there isn't one, so create and add one
-                    {
-                        deformer = MorphMeshDeformer::Create(mesh);
-                        stack->InsertDeformer(0, deformer);
-                        deformer->ReserveDeformPasses(morphTargetsHeader.mNumMorphTargets); // assume that this mesh is influenced by all morph targets
-                    }
-
-                    // add the deform pass to the mesh deformer
-                    MorphMeshDeformer::DeformPass deformPass;
-                    deformPass.mDeformDataNr = morphTarget->GetNumDeformDatas() - 1;
-                    deformPass.mMorphTarget  = morphTarget;
-                    deformer->AddDeformPass(deformPass);
-                    //-------------------------------
-                }
-                else // if there is no mesh, skip this mesh morph target
-                {
-                    const uint32 numBytes = (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File16BitVector3)) + // positions
-                        (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // normals
-                        (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // tangents
-                        (meshDeformDataChunk.mNumVertices * sizeof(FileFormat::File8BitVector3)) +                  // bitangents
-                        (meshDeformDataChunk.mNumVertices * sizeof(uint32));                                        // vertex numbers
-
-                    // seek forward in the file
-                    file->Forward(numBytes);
-                }
-            }
-
-
             // read the facial transformations
-            for (i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+            for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;

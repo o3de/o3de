@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -40,8 +40,13 @@ namespace ScriptCanvas
                         ;
                 }
             }
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
+            {
+                SCRIPT_CANVAS_GENERICS_TO_VM(StringNodes::Registrar, String, behaviorContext, StringNodes::k_categoryName);
+            }
 
             Nodes::Internal::StringFormatted::Reflect(reflection);
+            StringMethods::Reflect(reflection);
         }
 
         void String::InitNodeRegistry(NodeRegistry& nodeRegistry)

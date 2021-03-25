@@ -433,7 +433,7 @@ namespace GraphCanvas
         }
     }
 
-    void WrapperNodeLayoutComponent::OnAddedToScene([[maybe_unused]] const AZ::EntityId& sceneId)
+    void WrapperNodeLayoutComponent::OnAddedToScene(const AZ::EntityId& /*sceneId*/)
     {
         AZ::EntityId nodeId = (*NodeNotificationBus::GetCurrentBusId());
 
@@ -488,7 +488,7 @@ namespace GraphCanvas
         }
     }
 
-    void WrapperNodeLayoutComponent::OnSceneMemberDeserialized([[maybe_unused]] const AZ::EntityId& graphId, const GraphSerialization& sceneSerialization)
+    void WrapperNodeLayoutComponent::OnSceneMemberDeserialized(const AZ::EntityId& /*graphId*/, const GraphSerialization& sceneSerialization)
     {
         AZ::EntityId nodeId = (*SceneMemberNotificationBus::GetCurrentBusId());
 

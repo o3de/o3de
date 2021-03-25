@@ -47,7 +47,7 @@ namespace ScriptCanvas
             ScriptCanvas::Node::CreateDescriptor(),
             ScriptCanvas::Debugger::ServiceComponent::CreateDescriptor(),
             ScriptCanvas::Graph::CreateDescriptor(),
-            ScriptCanvas::ScriptCanvasFunctionDataComponent::CreateDescriptor(),
+            ScriptCanvasEditor::ScriptCanvasFunctionDataComponent::CreateDescriptor(),
             ScriptCanvas::PureData::CreateDescriptor(),
             ScriptCanvas::GraphVariableManagerComponent::CreateDescriptor(),
             ScriptCanvas::RuntimeComponent::CreateDescriptor(),

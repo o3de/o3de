@@ -22,7 +22,6 @@
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
 #include <Source/Window/MaterialEditorWindowComponent.h>
 #include <Source/Window/MaterialEditorWindow.h>
-#include <Source/Window/MaterialTypesLibrary.h>
 
 namespace MaterialEditor
 {
@@ -56,8 +55,6 @@ namespace MaterialEditor
                 ->Event("UnlockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::UnlockViewportRenderTargetSize)
                 ;
         }
-
-        MaterialTypesLibrary::Reflect(context);
     }
 
     void MaterialEditorWindowComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

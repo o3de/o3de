@@ -12,6 +12,7 @@
 #pragma once
 
 #include <type_traits>
+#include <AzCore/Platform.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QGraphicsSceneEvent>
@@ -22,6 +23,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <GraphCanvas/Components/GeometryBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -57,6 +59,8 @@ namespace GraphCanvas
     public:
 
         using GraphicsItem::setAcceptHoverEvents;
+        using GraphicsItem::setPos;
+        using GraphicsItem::pos;
 
         RootGraphicsItem(AZ::EntityId itemId)
             : m_resizeToGrid(false)
@@ -177,6 +181,7 @@ namespace GraphCanvas
             if (m_currentAnimationTime >= m_animationDuration)
             {
                 m_currentAnimationTime = m_animationDuration;
+                AZ::TickBus::Handler::BusDisconnect();
                 CleanUpAnimation();
             }
             else
@@ -192,6 +197,11 @@ namespace GraphCanvas
         // RootGraphicsItemRequestBus
         void AnimatePositionTo(const QPointF& scenePoint, const AZStd::chrono::milliseconds& duration)
         {
+            if (!IsAnimating())
+            {
+                StartAnimating();
+            }
+
             if (!AZ::TickBus::Handler::BusIsConnected())
             {
                 GeometryRequestBus::EventResult(m_startPoint, GetEntityId(), &GeometryRequests::GetPosition);
@@ -204,27 +214,86 @@ namespace GraphCanvas
                 m_startPoint = m_startPoint.Lerp(m_targetPoint, percentage);
             }
             
-            m_targetPoint = ConversionUtils::QPointToVector(scenePoint);
+            m_rawAnimationTarget = ConversionUtils::QPointToVector(scenePoint);
 
             if (m_snapToGrid)
-            {                
-                m_targetPoint = ConversionUtils::QPointToVector(CalculatePosition(ConversionUtils::AZToQPoint(m_targetPoint)));
+            {
+                m_targetPoint = ConversionUtils::QPointToVector(CalculatePosition(ConversionUtils::AZToQPoint(m_rawAnimationTarget)));
             }
-
-            VisualNotificationBus::Event(GetEntityId(), &VisualNotifications::OnPositionAnimateBegin, m_targetPoint);
+            else
+            {
+                m_targetPoint = m_rawAnimationTarget;
+            }
 
             // Maintain a certain 'velocity' for the nodes so they don't like slowly dribble around.
             float minimumDuration = (m_targetPoint - m_startPoint).GetLength();
             minimumDuration /= minimumAnimationPixelsPerSecond;
             
             m_animationDuration = AZStd::min(minimumDuration, duration.count() * 0.001f);
-            m_currentAnimationTime = 0.0f;            
+            m_currentAnimationTime = 0.0f;
+
+            GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetAnimationTarget, m_targetPoint);
         }
 
         void CancelAnimation()
         {
             m_currentAnimationTime = m_animationDuration;
             CleanUpAnimation();
+        }
+
+        void OffsetBy(const AZ::Vector2& delta) override
+        {
+            if (IsAnimating())
+            {
+                m_rawAnimationTarget += delta;
+
+                AZ::Vector2 newTarget = m_rawAnimationTarget;
+
+                if (m_snapToGrid)
+                {
+                    newTarget = ConversionUtils::QPointToVector(CalculatePosition(ConversionUtils::AZToQPoint(m_rawAnimationTarget)));
+                }
+
+                if (!newTarget.IsClose(m_targetPoint))
+                {
+                    m_targetPoint = newTarget;
+                    GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetAnimationTarget, m_targetPoint);
+                }
+
+                if (!AZ::TickBus::Handler::BusIsConnected())
+                {
+                    GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetPosition, m_rawAnimationTarget);
+                }
+            }
+            else
+            {
+                GeometryRequests* geometryRequests = GeometryRequestBus::FindFirstHandler(GetEntityId());
+
+                if (geometryRequests)
+                {
+                    geometryRequests->SetPosition(geometryRequests->GetPosition() + delta);
+                }
+            }
+        }
+
+        void SignalGroupAnimationStart(AZ::EntityId groupId) override
+        {
+            if (!IsAnimating())
+            {
+                StartAnimating();
+            }
+
+            m_groupAnimators.insert(groupId);
+        }
+
+        void SignalGroupAnimationEnd(AZ::EntityId groupId) override
+        {
+            size_t eraseCount = m_groupAnimators.erase(groupId);
+
+            if (eraseCount > 0)
+            {
+                CleanUpAnimation();
+            }
         }
 
         StateController<RootGraphicsItemDisplayState>* GetDisplayStateStateController() override
@@ -256,7 +325,7 @@ namespace GraphCanvas
         }
         ////
 
-    protected:        
+    protected:
         RootGraphicsItem(const RootGraphicsItem&) = delete;
 
         void SetDisplayState(RootGraphicsItemDisplayState displayState)
@@ -293,7 +362,7 @@ namespace GraphCanvas
 
             ViewSceneNotificationBus::Handler::BusConnect(sceneId);
 
-            if (hoverEvent->modifiers() & Qt::KeyboardModifier::AltModifier)
+            if ((hoverEvent->modifiers() & Qt::KeyboardModifier::AltModifier) && IsSelectable())
             {
                 SetDisplayState(RootGraphicsItemDisplayState::Deletion);
             }
@@ -316,7 +385,7 @@ namespace GraphCanvas
 
         void mousePressEvent(QGraphicsSceneMouseEvent* event) override
         {
-            if (event->modifiers() & Qt::KeyboardModifier::AltModifier)
+            if ((event->modifiers() & Qt::KeyboardModifier::AltModifier) && IsSelectable())
             {
                 OnDeleteItem();
             }
@@ -582,10 +651,36 @@ namespace GraphCanvas
             }
         }
 
+        bool IsAnimating() const
+        {
+            return !m_groupAnimators.empty() || !AZ::IsClose(m_animationDuration, m_currentAnimationTime, AZ::Constants::FloatEpsilon);
+        }
+
+        void StartAnimating()
+        {
+            VisualNotificationBus::Event(GetEntityId(), &VisualNotifications::OnPositionAnimateBegin);
+            GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetIsPositionAnimating, true);
+
+            GeometryRequestBus::EventResult(m_rawAnimationTarget, GetEntityId(), &GeometryRequests::GetPosition);
+            m_startPoint = m_rawAnimationTarget;
+        }
+
         void CleanUpAnimation()
         {
-            AZ::TickBus::Handler::BusDisconnect();
-            VisualNotificationBus::Event(GetEntityId(), &VisualNotifications::OnPositionAnimateEnd);
+            if (!IsAnimating())
+            {
+                AZ::TickBus::Handler::BusDisconnect();
+
+                GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetIsPositionAnimating, false);
+                VisualNotificationBus::Event(GetEntityId(), &VisualNotifications::OnPositionAnimateEnd);
+
+                setPos(CalculatePosition(ConversionUtils::AZToQPoint(m_rawAnimationTarget)));
+            }
+        }
+
+        bool IsSelectable() const
+        {
+            return GraphicsItem::flags().testFlag(GraphicsItem::GraphicsItemFlag::ItemIsSelectable);
         }
 
         bool m_resizeToGrid;
@@ -597,8 +692,12 @@ namespace GraphCanvas
         
         float m_animationDuration;
         float m_currentAnimationTime;
+
+        AZ::Vector2 m_rawAnimationTarget;
         AZ::Vector2 m_targetPoint;
         AZ::Vector2 m_startPoint;
+
+        AZStd::unordered_set<AZ::EntityId> m_groupAnimators;
 
         bool m_allowQuickDeletion;
 

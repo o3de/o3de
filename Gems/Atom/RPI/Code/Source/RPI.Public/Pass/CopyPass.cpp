@@ -111,34 +111,34 @@ namespace AZ
 
         // --- Scope producer functions ---
 
-        void CopyPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph, const PassScopeProducer& producer)
+        void CopyPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph, producer);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
         }
 
-        void CopyPass::CompileResources(const RHI::FrameGraphCompileContext& context, const PassScopeProducer& producer)
+        void CopyPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyItemType copyType = GetCopyItemType();
             switch (copyType)
             {
             case AZ::RHI::CopyItemType::Buffer:
-                CopyBuffer(context, producer);
+                CopyBuffer(context);
                 break;
             case AZ::RHI::CopyItemType::Image:
-                CopyImage(context, producer);
+                CopyImage(context);
                 break;
             case AZ::RHI::CopyItemType::BufferToImage:
-                CopyBufferToImage(context, producer);
+                CopyBufferToImage(context);
                 break;
             case AZ::RHI::CopyItemType::ImageToBuffer:
-                CopyImageToBuffer(context, producer);
+                CopyImageToBuffer(context);
                 break;
             default:
                 break;
             }
         }
 
-        void CopyPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void CopyPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             if (m_copyItem.m_type != RHI::CopyItemType::Invalid)
             {
@@ -148,7 +148,7 @@ namespace AZ
 
         // --- Copy setup functions ---
 
-        void CopyPass::CopyBuffer(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void CopyPass::CopyBuffer(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyBufferDescriptor copyDesc;
 
@@ -167,7 +167,7 @@ namespace AZ
             m_copyItem = copyDesc;
         }
 
-        void CopyPass::CopyImage(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void CopyPass::CopyImage(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyImageDescriptor copyDesc;
 
@@ -188,7 +188,7 @@ namespace AZ
             m_copyItem = copyDesc;
         }
 
-        void CopyPass::CopyBufferToImage(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void CopyPass::CopyBufferToImage(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyBufferToImageDescriptor copyDesc;
 
@@ -210,7 +210,7 @@ namespace AZ
             m_copyItem = copyDesc;
         }
 
-        void CopyPass::CopyImageToBuffer(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const PassScopeProducer& producer)
+        void CopyPass::CopyImageToBuffer(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyImageToBufferDescriptor copyDesc;
 

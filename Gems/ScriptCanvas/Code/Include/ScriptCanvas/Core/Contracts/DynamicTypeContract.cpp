@@ -22,7 +22,7 @@ namespace ScriptCanvas
     {
         Data::Type targetType = targetSlot.GetDataType();
 
-        bool acceptsType = sourceSlot.GetNode()->SlotAcceptsType(sourceSlot.GetId(), targetType);
+        AZ::Outcome<void, AZStd::string> acceptsType = sourceSlot.GetNode()->SlotAcceptsType(sourceSlot.GetId(), targetType);
         
         if (acceptsType)
         {

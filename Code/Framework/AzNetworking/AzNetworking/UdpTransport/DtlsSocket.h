@@ -46,9 +46,8 @@ namespace AzNetworking
         //! Accepts an encryption socket wrapper.
         //! @param dtlsEndpoint the encryption wrapper instance to create a connection over
         //! @param address      the IP address of the endpoint to connect to
-        //! @param dtlsData     data buffer containing the dtls handshake packet
         //! @return a connect result specifying whether the connection is still pending, failed, or complete
-        DtlsEndpoint::ConnectResult AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address, const UdpPacketEncodingBuffer& dtlsData) const override;
+        DtlsEndpoint::ConnectResult AcceptDtlsEndpoint(DtlsEndpoint& dtlsEndpoint, const IpAddress& address) const override;
 
         //! Opens the UDP socket on the given port.
         //! @param port      the port number to open the UDP socket on, 0 will bind to any available port

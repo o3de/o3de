@@ -13,6 +13,4 @@ set(FILES
     EMotionFX_Traits_Platform.h
     EMotionFX_Traits_Mac.h
     ../Common/Default/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindowEventFilter_Default.cpp
-    ../Common/Apple/EMotionFX/Rendering/OpenGL2/Source/GLInclude_Apple.h
-    EMotionFX/Rendering/OpenGL2/Source/GLInclude_Platform.h
 )

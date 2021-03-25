@@ -533,7 +533,7 @@ namespace GraphCanvas
         return nullptr;
     }
 
-    void EditorConstructPresets::InitializeConstructType([[maybe_unused]] ConstructType constructType)
+    void EditorConstructPresets::InitializeConstructType(ConstructType /*constructType*/)
     {
     }
 }

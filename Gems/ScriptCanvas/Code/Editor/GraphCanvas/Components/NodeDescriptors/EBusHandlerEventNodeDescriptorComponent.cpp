@@ -23,7 +23,7 @@
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/EBusNodeBus.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <Editor/Nodes/NodeUtils.h>
+#include <Editor/Nodes/NodeDisplayUtils.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
 #include <Editor/Translation/TranslationHelper.h>
 
@@ -193,7 +193,7 @@ namespace ScriptCanvasEditor
                         // Then from a clean slate, fully regenerate all of our slots.
                         ScriptCanvas::Slot* scriptCanvasSlot = eventHandler->GetSlot(myEvent.m_eventSlotId);
 
-                        if (scriptCanvasSlot)
+                        if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
                             AZ::EntityId slotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
 
@@ -211,7 +211,7 @@ namespace ScriptCanvasEditor
                         {
                             scriptCanvasSlot = eventHandler->GetSlot(slotId);
 
-                            if (scriptCanvasSlot)
+                            if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                             {
                                 AZ::EntityId graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
 
@@ -248,7 +248,7 @@ namespace ScriptCanvasEditor
                         {
                             scriptCanvasSlot = eventHandler->GetSlot(myEvent.m_resultSlotId);
 
-                            if (scriptCanvasSlot)
+                            if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                             {
                                 AZ::EntityId graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
 

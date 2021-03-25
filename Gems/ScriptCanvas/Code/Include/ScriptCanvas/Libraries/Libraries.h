@@ -77,10 +77,10 @@ namespace ScriptCanvas
         };
 
         template<typename NodeGroup, typename NodeType>
-        void AddNodeToRegistry(NodeRegistry& nodeRegistry)
+        void AddNodeToRegistry(NodeRegistry& nodeRegistry, const AZStd::string_view& nameOverride = {})
         {
             auto& nodes = nodeRegistry.m_nodeMap[AZ::AzTypeInfo<NodeGroup>::Uuid()];
-            nodes.push_back({ AZ::AzTypeInfo<NodeType>::Uuid(), AZ::AzTypeInfo<NodeType>::Name() });
+            nodes.push_back({ AZ::AzTypeInfo<NodeType>::Uuid(), nameOverride.empty() ? AZ::AzTypeInfo<NodeType>::Name() : nameOverride });
         }
 
         struct Core : public LibraryDefinition
@@ -177,7 +177,6 @@ namespace ScriptCanvas
             ~Operators() override = default;
 
         };
-
     }
 
     void ReflectLibraries(AZ::ReflectContext*);

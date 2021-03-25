@@ -16,7 +16,7 @@
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystemInterface2.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 
 #include <Atom/RPI.Public/View.h>
 
@@ -95,13 +95,13 @@ namespace AZ
         }
 
 
-        void DynamicDrawContext::InitShader(Data::Asset<ShaderAsset> shaderAsset)
+        void DynamicDrawContext::InitShader(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues)
         {
             Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
-            InitShader(shader);
+            InitShader(shader, optionAndValues);
         }
 
-        void DynamicDrawContext::InitShader(Data::Instance<Shader> shader)
+        void DynamicDrawContext::InitShader(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues)
         {
             AZ_Assert(!m_initialized, "Can't call InitShader after context was initialized (EndInit was called)");
 
@@ -112,7 +112,7 @@ namespace AZ
             }
 
             m_pipelineState = aznew RPI::PipelineStateForDraw;
-            m_pipelineState->Init(shader);
+            m_pipelineState->Init(shader, optionAndValues);
 
             // Set DrawListTag from shader only if it wasn't set
             if (!m_drawListTag.IsValid())
@@ -130,7 +130,8 @@ namespace AZ
             }
 
             // Save per draw srg asset which can be used to create draw srg later
-            m_drawSrgAsset = shaderAsset->FindShaderResourceGroupAsset(Name{ PerDrawSrgName });
+            m_drawSrgAsset = shaderAsset->FindShaderResourceGroupAsset(SrgBindingSlot::Draw);
+            m_hasShaderVariantKeyFallbackEntry = (m_drawSrgAsset && m_drawSrgAsset->GetLayout()->HasShaderVariantKeyFallbackEntry());
         }
 
         void DynamicDrawContext::InitVertexFormat(const AZStd::vector<VertexChannel>& vertexChannels)
@@ -145,7 +146,7 @@ namespace AZ
                 bufferBuilder->Channel(channel.m_channel, channel.m_format);
                 m_perVertexDataSize += RHI::GetFormatSize(channel.m_format);
             }
-            m_pipelineState->Descriptor().m_inputStreamLayout = layoutBuilder.End();
+            m_pipelineState->InputStreamLayout() = layoutBuilder.End();
         }
 
         void DynamicDrawContext::InitDrawListTag(RHI::DrawListTag drawListTag)
@@ -337,10 +338,10 @@ namespace AZ
             // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
             uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
             RHI::Ptr<DynamicBuffer> vertexBuffer;
-            vertexBuffer = DynamicDrawSystemInterface2::Get()->GetDynamicBuffer(vertexDataSize);
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
 
             uint32_t indexDataSize = indexCount * RHI::GetIndexFormatSize(indexFormat);
-            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawSystemInterface2::Get()->GetDynamicBuffer(indexDataSize);
+            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(indexDataSize);
 
             if (indexBuffer == nullptr || vertexBuffer == nullptr)
             {
@@ -401,6 +402,87 @@ namespace AZ
 
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
+                
+        void DynamicDrawContext::DrawLinear(void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
+        {
+            if (!m_initialized)
+            {
+                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                return;
+            }
+
+            if (m_drawSrgAsset.GetId().IsValid() && drawSrg == nullptr)
+            {
+                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                return;
+            }
+
+            if (vertexData == nullptr || vertexCount == 0)
+            {
+                AZ_Assert(false, "Failed to draw due to invalid vertex data");
+                return;
+            }
+
+            // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
+            uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
+            RHI::Ptr<DynamicBuffer> vertexBuffer;
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
+
+            if (vertexBuffer == nullptr)
+            {
+                return;
+            }
+
+            DrawItemInfo drawItemInfo;
+            RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
+
+            // Draw argument
+            RHI::DrawLinear drawLinear;
+            drawLinear.m_instanceCount = 1;
+            drawLinear.m_vertexCount = vertexCount;
+            drawItem.m_arguments = drawLinear;
+
+            // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
+            drawItem.m_pipelineState = GetCurrentPipelineState();
+
+            // Write data to vertex buffer and set up stream buffer views for DrawItem
+            // The stream buffer view need to be cached before the frame is end
+            vertexBuffer->Write(vertexData, vertexDataSize);
+            m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
+            drawItem.m_streamBufferViewCount = 1;
+            drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
+
+            // Setup per context srg if it exists
+            if (m_srgPerContext)
+            {
+                drawItem.m_shaderResourceGroupCount = 1;
+                drawItem.m_shaderResourceGroups = m_srgGroups;
+            }
+
+            // Setup per draw srg
+            if (drawSrg)
+            {
+                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                m_cachedDrawSrg.push_back(drawSrg);
+            }
+
+            // Set scissor per draw if scissor is enabled.
+            if (m_useScissor)
+            {
+                drawItem.m_scissorsCount = 1;
+                drawItem.m_scissors = &m_scissor;
+            }
+
+            // Set viewport per draw if viewport is enabled.
+            if (m_useViewport)
+            {
+                drawItem.m_viewportsCount = 1;
+                drawItem.m_viewports = &m_viewport;
+            }
+
+            m_cachedDrawItems.emplace_back(drawItemInfo);
+        }
+
 
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()
         {
@@ -408,7 +490,15 @@ namespace AZ
             {
                 return nullptr;
             }
-            return AZ::RPI::ShaderResourceGroup::Create(m_drawSrgAsset);
+            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_drawSrgAsset);
+
+            // set fallback value for shader variant
+            if (m_hasShaderVariantKeyFallbackEntry)
+            {
+                m_pipelineState->UpdateSrgVariantFallback(drawSrg);
+            }
+
+            return drawSrg;
         }
 
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::GetPerContextSrg()
@@ -485,27 +575,28 @@ namespace AZ
                 // Create pipelineState for current m_currentStates
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::PrimitiveType))
                 {
-                    if (m_pipelineState->Descriptor().m_inputStreamLayout.GetTopology() != m_currentStates.m_topology)
+                    if (m_pipelineState->ConstDescriptor().m_inputStreamLayout.GetTopology() != m_currentStates.m_topology)
                     {
-                        m_pipelineState->Descriptor().m_inputStreamLayout.SetTopology(m_currentStates.m_topology);
-                        m_pipelineState->Descriptor().m_inputStreamLayout.Finalize();
+                        RHI::InputStreamLayout& inputStreamLayout = m_pipelineState->InputStreamLayout();
+                        inputStreamLayout.SetTopology(m_currentStates.m_topology);
+                        inputStreamLayout.Finalize();
                     }
                 }
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::DepthState))
                 {
-                    m_pipelineState->Descriptor().m_renderStates.m_depthStencilState.m_depth = m_currentStates.m_depthState;
+                    m_pipelineState->RenderStatesOverlay().m_depthStencilState.m_depth = m_currentStates.m_depthState;
                 }
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::EnableStencil))
                 {
-                    m_pipelineState->Descriptor().m_renderStates.m_depthStencilState.m_stencil.m_enable = m_currentStates.m_enableStencil;
+                    m_pipelineState->RenderStatesOverlay().m_depthStencilState.m_stencil.m_enable = m_currentStates.m_enableStencil;
                 }
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::FaceCullMode))
                 {
-                    m_pipelineState->Descriptor().m_renderStates.m_rasterState.m_cullMode = m_currentStates.m_cullMode;
+                    m_pipelineState->RenderStatesOverlay().m_rasterState.m_cullMode = m_currentStates.m_cullMode;
                 }
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::BlendMode))
                 {
-                    m_pipelineState->Descriptor().m_renderStates.m_blendState.m_targets[0] = m_currentStates.m_blendState0;
+                    m_pipelineState->RenderStatesOverlay().m_blendState.m_targets[0] = m_currentStates.m_blendState0;
                 }
 
                 const RHI::PipelineState* pipelineState = m_pipelineState->Finalize();                

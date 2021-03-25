@@ -21,10 +21,6 @@
 #define STREAMENGINE_ENABLE_STATS
 #endif
 
-#ifdef SUPPORT_RSA_AND_STREAMCIPHER_PAK_ENCRYPTION  //Could check for INCLUDE_LIBTOMCRYPT here, but only decryption is implemented in the streaming engine, not signing
-#define STREAMENGINE_SUPPORT_DECRYPT
-#endif
-
 enum : unsigned int
 {
     ERROR_UNKNOWN_ERROR          = 0xF0000000,
@@ -41,7 +37,6 @@ enum : unsigned int
     ERROR_OUT_OF_MEMORY_QUOTA    = 0xF000000B,
     ERROR_ZIP_CACHE_FAILURE      = 0xF000000C,
     ERROR_USER_ABORT             = 0xF000000D,
-    ERROR_DECRYPTION_FAIL                = 0xF000000E,
     ERROR_MISSCHEDULED           = 0xF000000F,
     ERROR_VERIFICATION_FAIL          = 0xF0000010,
     ERROR_PREEMPTED                          = 0xF0000011,
@@ -141,16 +136,13 @@ struct SStreamEngineStatistics
     uint32 nTotalRequestCount;                      // Number of request from reset to the streaming engine.
     uint32 nTotalStreamingRequestCount;     // Number of request from reset which actually resulted in streaming data.
 
-    int nCurrentDecryptCount;               // Number of requests currently waiting to be decrypted
     int nCurrentDecompressCount;        // Number of requests currently waiting to be decompresses
     int nCurrentAsyncCount;                 // Number of requests currently waiting to be async callback
     int nCurrentFinishedCount;          // Number of requests currently waiting to be finished by mainthread
 
     uint32  nDecompressBandwidth;           // Bytes/second for last second
-    uint32  nDecryptBandwidth;          // Bytes/second for last second
     uint32  nVerifyBandwidth;           // Bytes/second for last second
     uint32  nDecompressBandwidthAverage; // Bytes/second in total.
-    uint32  nDecryptBandwidthAverage; // Bytes/second in total.
     uint32  nVerifyBandwidthAverage; // Bytes/second in total.
 
     bool bTempMemOutOfBudget;           // Was the temporary streaming memory out of budget during the last second

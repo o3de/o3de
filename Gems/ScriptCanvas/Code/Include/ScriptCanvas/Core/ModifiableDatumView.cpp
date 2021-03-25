@@ -71,7 +71,10 @@ namespace ScriptCanvas
 
     void ModifiableDatumView::SetLabel(const AZStd::string& label)
     {
-        m_datum->SetLabel(label);
+        if (m_datum)
+        {
+            m_datum->SetLabel(label);
+        }
     }
 
     void ModifiableDatumView::SetToDefaultValueOfType()

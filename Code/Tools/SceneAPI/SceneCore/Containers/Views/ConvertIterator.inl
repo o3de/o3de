@@ -46,7 +46,7 @@ namespace AZ
                 }
 
                 template<typename Iterator, typename ReturnType>
-                const Iterator& ConvertIterator<Iterator, ReturnType, void>::GetBaseIterator()
+                const Iterator& ConvertIterator<Iterator, ReturnType, void>::GetBaseIterator() const
                 {
                     return m_iterator;
                 }

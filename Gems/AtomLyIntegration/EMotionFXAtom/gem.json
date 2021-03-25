@@ -1,4 +1,5 @@
 {
+    "gem_name": "EMotionFX_Atom",
     "Dependencies": [
         {
             "Uuid": "b58e5eed0901428ca78544b04dbd61bd",

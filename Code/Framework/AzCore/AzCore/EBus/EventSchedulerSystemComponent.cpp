@@ -101,7 +101,7 @@ namespace AZ
         return AZ::TICK_ATTACHMENT;
     }
 
-    ScheduledEventHandle* EventSchedulerSystemComponent::Add(ScheduledEvent* timedEvent, TimeMs durationMs)
+    ScheduledEventHandle* EventSchedulerSystemComponent::AddEvent(ScheduledEvent* timedEvent, TimeMs durationMs)
     {
         if (durationMs < TimeMs{ 0 })
         {
@@ -116,6 +116,19 @@ namespace AZ
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
         return timedEvent->m_handle;
+    }
+
+    void EventSchedulerSystemComponent::AddCallback(const AZStd::function<void()>& callback, const Name& eventName, TimeMs durationMs)
+    {
+        if (durationMs < TimeMs{ 0 })
+        {
+            durationMs = TimeMs{ 0 };
+        }
+
+        TimeMs currentMilliseconds = GetElapsedTimeMs();
+        ScheduledEvent* timedEvent = AllocateManagedEvent(TimeMs(currentMilliseconds + durationMs), durationMs, callback, eventName);
+        timedEvent->m_timeInserted = currentMilliseconds;
+        m_queue.push(timedEvent->m_handle);
     }
 
     AZStd::size_t EventSchedulerSystemComponent::GetHandleCount() const
@@ -153,7 +166,26 @@ namespace AZ
             m_handles.resize(m_handles.size() + 1);
             result = &(m_handles.back());
         }
-        *result = ScheduledEventHandle(executeTimeMs, durationTimeMs, scheduledEvent);
+        *result = ScheduledEventHandle(executeTimeMs, durationTimeMs, scheduledEvent, false);
+        return result;
+    }
+
+    ScheduledEvent* EventSchedulerSystemComponent::AllocateManagedEvent(TimeMs executeTimeMs, TimeMs durationTimeMs, const AZStd::function<void()>& callback, const Name& eventName)
+    {
+        ScheduledEvent* result = new ScheduledEvent(callback, eventName);
+        ScheduledEventHandle* handle = nullptr;
+        if (!m_freeHandles.empty())
+        {
+            handle = m_freeHandles.back();
+            m_freeHandles.pop_back();
+        }
+        else
+        {
+            m_handles.resize(m_handles.size() + 1);
+            handle = &(m_handles.back());
+        }
+        *handle = ScheduledEventHandle(executeTimeMs, durationTimeMs, result, true);
+        result->m_handle = handle;
         return result;
     }
 

@@ -38,6 +38,6 @@ namespace GraphCanvas
 
         DataConnectionComponent(const DataConnectionComponent&) = delete;
         const DataConnectionComponent& operator=(const DataConnectionComponent&) = delete;
-        ConnectionMoveResult OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos) override;
+        ConnectionMoveResult OnConnectionMoveComplete(const QPointF& scenePos, const QPoint& screenPos, AZ::EntityId groupTarget) override;
     }; 
 }

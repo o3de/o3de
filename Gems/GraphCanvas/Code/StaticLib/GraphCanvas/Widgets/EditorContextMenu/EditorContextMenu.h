@@ -11,8 +11,9 @@
 */
 #pragma once
 
-#include <AzCore/PlatformDef.h>
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QMenu>
 AZ_POP_DISABLE_WARNING

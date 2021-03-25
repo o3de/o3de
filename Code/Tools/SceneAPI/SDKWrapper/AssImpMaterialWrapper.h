@@ -32,6 +32,16 @@ namespace AZ
             float GetOpacity() const override;
             float GetShininess() const override;
             AZStd::string GetTextureFileName(MaterialMapType textureType) const override;
+
+            bool GetUseColorMap() const;
+            AZ::Vector3 GetBaseColor() const;
+            bool GetUseMetallicMap() const;
+            float GetMetallicFactor() const;
+            bool GetUseRoughnessMap() const;
+            float GetRoughnessFactor() const;
+            bool GetUseEmissiveMap() const;
+            float GetEmissiveIntensity() const;
+            bool GetUseAOMap() const;
         };
     } // namespace AssImpSDKWrapper
 }// namespace AZ

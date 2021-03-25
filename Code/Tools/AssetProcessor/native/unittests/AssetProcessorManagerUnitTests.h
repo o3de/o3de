@@ -45,7 +45,7 @@ Q_SIGNALS:
         virtual void StartTest() override;
     };
 
-    class AssetProcessorManagerUnitTests_CheckOutputFolders
+class AssetProcessorManagerUnitTests_CheckOutputFolders
         : public UnitTestRun
     {
         Q_OBJECT

@@ -517,6 +517,104 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(0);
     }
 
+    TEST_F(BehaviorContextTestFixture, MethodWhichReturnsAzEvent_WithNoAzBehaviorAzEventDescription_FailsValidation)
+    {
+        using TestAzEvent = AZ::Event<float>;
+        auto TestMethodWhichReturnsAzEvent = [](TestAzEvent& testEvent) -> TestAzEvent&
+        {
+            return testEvent;
+        };
+
+        UnitTest::TestRunner::Instance().StartAssertTests();
+        // Test reflecting function which returns AZ::Event
+        m_behaviorContext.Method("TestMethodWhichReturnsAzEvent", TestMethodWhichReturnsAzEvent);
+        int numErrors = UnitTest::TestRunner::Instance().StopAssertTests();
+        EXPECT_EQ(1, numErrors);
+    }
+
+    TEST_F(BehaviorContextTestFixture, MethodWhichReturnsAzEvent_WithEmptyEventName_FailsValidation)
+    {
+        using TestAzEvent = AZ::Event<float>;
+        auto TestMethodWhichReturnsAzEvent = [](TestAzEvent& testEvent) -> TestAzEvent&
+        {
+            return testEvent;
+        };
+
+        // Test reflecting function which returns AZ::Event
+        AZ::BehaviorAzEventDescription behaviorEventDesc;
+        // m_eventName member is not set, validation should fail
+        behaviorEventDesc.m_parameterNames.push_back("Scale");
+
+        UnitTest::TestRunner::Instance().StartAssertTests();
+        m_behaviorContext.Method("TestMethodWhichReturnsAzEvent", TestMethodWhichReturnsAzEvent)
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move(behaviorEventDesc));
+        int numErrors = UnitTest::TestRunner::Instance().StopAssertTests();
+        EXPECT_EQ(1, numErrors);
+    }
+
+    TEST_F(BehaviorContextTestFixture, MethodWhichReturnsAzEvent_WithParameterNameWhichIsEmpty_FailsValidation)
+    {
+        using TestAzEvent = AZ::Event<float>;
+        auto TestMethodWhichReturnsAzEvent = [](TestAzEvent& testEvent) -> TestAzEvent&
+        {
+            return testEvent;
+        };
+
+        // Test reflecting function which returns AZ::Event
+        AZ::BehaviorAzEventDescription behaviorEventDesc;
+        behaviorEventDesc.m_eventName = "TestAzEvent";
+        behaviorEventDesc.m_parameterNames.push_back(""); // Parameter name is empty, validation should fail
+
+        UnitTest::TestRunner::Instance().StartAssertTests();
+        m_behaviorContext.Method("TestMethodWhichReturnsAzEvent", TestMethodWhichReturnsAzEvent)
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move(behaviorEventDesc));
+        int numErrors = UnitTest::TestRunner::Instance().StopAssertTests();
+        EXPECT_EQ(1, numErrors);
+    }
+
+    TEST_F(BehaviorContextTestFixture, MethodWhichReturnsAzEvent_WithMismatchNumberOfParameters_FailsValidation)
+    {
+        using TestAzEvent = AZ::Event<float>;
+        auto TestMethodWhichReturnsAzEvent = [](TestAzEvent& testEvent) -> TestAzEvent&
+        {
+            return testEvent;
+        };
+
+        // Test reflecting function which returns AZ::Event
+        AZ::BehaviorAzEventDescription behaviorEventDesc;
+        behaviorEventDesc.m_eventName = "TestAzEvent";
+        // The AZ Event accepts one parameters.
+        // Two parameter names are being added here
+        behaviorEventDesc.m_parameterNames.push_back("Scale");
+        behaviorEventDesc.m_parameterNames.push_back("Size");
+
+        UnitTest::TestRunner::Instance().StartAssertTests();
+        m_behaviorContext.Method("TestMethodWhichReturnsAzEvent", TestMethodWhichReturnsAzEvent)
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move(behaviorEventDesc));
+        int numErrors = UnitTest::TestRunner::Instance().StopAssertTests();
+        EXPECT_LE(1, numErrors);
+    }
+
+    TEST_F(BehaviorContextTestFixture, MethodWhichReturnsAzEvent_WithCompleteAzBehaviorAzEventDescriptionription_PassesValidation)
+    {
+        using TestAzEvent = AZ::Event<float>;
+        auto TestMethodWhichReturnsAzEvent = [](TestAzEvent& testEvent) -> TestAzEvent&
+        {
+            return testEvent;
+        };
+
+        // Test reflecting function which returns AZ::Event
+        AZ::BehaviorAzEventDescription behaviorEventDesc;
+        behaviorEventDesc.m_eventName = "TestAzEvent";
+        behaviorEventDesc.m_parameterNames.push_back("Scale");
+
+        UnitTest::TestRunner::Instance().StartAssertTests();
+        m_behaviorContext.Method("TestMethodWhichReturnsAzEvent", TestMethodWhichReturnsAzEvent)
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move(behaviorEventDesc));
+        int numErrors = UnitTest::TestRunner::Instance().StopAssertTests();
+        EXPECT_EQ(0, numErrors);
+    }
+
     class ClassWithEnumClass
     {
     public:

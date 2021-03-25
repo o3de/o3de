@@ -41,7 +41,6 @@ namespace EMStudio
 
     private:
         unsigned int    m_lod;
-        bool            m_isDeformable;
         unsigned int    m_verticesCount;
         unsigned int    m_indicesCount;
         unsigned int    m_polygonsCount;
@@ -49,7 +48,7 @@ namespace EMStudio
         bool            m_isQuadMesh;
         unsigned int    m_orgVerticesCount;
         float           m_vertexDupeRatio;
-        AZStd::vector<unsigned int> m_verticesByInfluences;
+        AZStd::vector<uint32> m_verticesByInfluences;
         AZStd::vector<SubMeshInfo> m_submeshes;
         AZStd::vector<NamedPropertyStringValue> m_attributeLayers;
         AZStd::vector<NamedPropertyStringValue> m_sharedAttributeLayers;

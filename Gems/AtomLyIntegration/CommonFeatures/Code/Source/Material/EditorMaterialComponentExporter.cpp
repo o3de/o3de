@@ -25,11 +25,14 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QFileDialog>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
@@ -103,54 +106,36 @@ namespace AZ
             QString GetExportItemStatusMessage(const ExportItem& exportItem)
             {
                 QFileInfo fileInfo(exportItem.m_exportPath.c_str());
-                switch (exportItem.m_exportAction)
+                if (!exportItem.m_enabled)
                 {
-                case ExportAction::Nothing:
-                    return QString("Do not generate a new material. Use the existing one.");
+                    return QString("Do not generate a new material.");
+                }
 
-                case ExportAction::UseExisting:
-                    if (fileInfo == QFileInfo())
-                    {
-                        return QString("A valid material file path is required.");
-                    }
+                if (fileInfo == QFileInfo())
+                {
+                    return QString("A valid material file path is required.");
+                }
 
-                    if (!fileInfo.exists())
-                    {
-                        return QString("\"%1\" does not exist.").arg(fileInfo.fileName());
-                    }
-
-                    return QString("Use existing \"%1\".").arg(fileInfo.fileName());
-
-                case ExportAction::GenerateNew:
-                    if (fileInfo == QFileInfo())
-                    {
-                        return QString("A valid material file path is required.");
-                    }
-
-                    if (!fileInfo.exists())
-                    {
-                        return QString("\"%1\" will be generated in the designated folder.").arg(fileInfo.fileName());
-                    }
-
+                if (fileInfo.exists())
+                {
                     return QString("\"%1\" will be replaced in the designated folder.").arg(fileInfo.fileName());
                 }
 
-                QString errorMessage = QString("Unable to determine status for \"%1\".").arg(fileInfo.fileName());
-                AZ_Error("AZ::Render::EditorMaterialComponentExporter", false, errorMessage.toUtf8().constData());
-                return errorMessage;
+                return QString("\"%1\" will be generated in the designated folder.").arg(fileInfo.fileName());
             }
 
             bool OpenExportDialog(ExportItemsContainer& exportItems)
             {
-                // Constructing a dialog with a table to display all configurable material export items
-                QDialog dialog(QApplication::activeWindow());
-                dialog.setWindowTitle("Generate Editable Materials");
-                dialog.setFixedSize(1000, 200);
+                QWidget* activeWindow = nullptr;
+                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
 
-                const QStringList actionLabels = { "Do Nothing", "Use Existing", "Generate New" };
-                const QStringList headerLabels = { "Material", "Action", "Editable source file", "Status" };
-                const int MaterialColumn = 0;
-                const int ActionColumn = 1;
+                // Constructing a dialog with a table to display all configurable material export items
+                QDialog dialog(activeWindow);
+                dialog.setWindowTitle("Generate Source Materials");
+
+                const QStringList headerLabels = { "Enable", "Material Slot", "Material Filename", "Status" };
+                const int EnableColumn = 0;
+                const int MaterialColumn = 1;
                 const int FileColumn = 2;
                 const int StatusColumn = 3;
 
@@ -171,6 +156,9 @@ namespace AZ
                 tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
                 tableWidget->horizontalHeader()->setStretchLastSection(true);
 
+                // Hide row numbers
+                tableWidget->verticalHeader()->setVisible(false);
+
                 int row = 0;
                 for (ExportItem& exportItem : exportItems)
                 {
@@ -178,21 +166,26 @@ namespace AZ
 
                     // Configuring initial settings based on whether or not the target file already exists
                     exportItem.m_exportPath = fileInfo.absoluteFilePath().toUtf8().constData();
-                    exportItem.m_exportAction = fileInfo.exists() ? ExportAction::UseExisting : ExportAction::GenerateNew;
 
                     // Populate the table with data for every column
+                    tableWidget->setItem(row, EnableColumn, new QTableWidgetItem(exportItem.m_enabled));
                     tableWidget->setItem(row, MaterialColumn, new QTableWidgetItem(GetLabelByAssetId(exportItem.m_assetId).c_str()));
-                    tableWidget->setItem(row, ActionColumn, new QTableWidgetItem(actionLabels[(int)exportItem.m_exportAction]));
                     tableWidget->setItem(row, FileColumn, new QTableWidgetItem(fileInfo.fileName()));
 
-                    // Create a combo box that will be used for displaying and selecting which action will be performed for each material
-                    QComboBox* actionComboBox = new QComboBox(tableWidget);
-                    actionComboBox->setEditable(false);
-                    actionComboBox->addItems(actionLabels);
-                    actionComboBox->setCurrentIndex((int)exportItem.m_exportAction);
-                    tableWidget->setCellWidget(row, ActionColumn, actionComboBox);
+                    // Create a check box for toggling the enabled state of this item
+                    QWidget* enableCheckBoxParent = new QWidget(tableWidget);
+                    QCheckBox* enableCheckBox = new QCheckBox(enableCheckBoxParent);
+                    enableCheckBox->setChecked(exportItem.m_enabled);
 
-                    // Create a file picker widget that will be used for selecting the save path for the exported material
+                    // Center checkbox in cell
+                    QHBoxLayout* enableCheckBoxLayout = new QHBoxLayout(enableCheckBoxParent);
+                    enableCheckBoxLayout->setAlignment(Qt::AlignCenter);
+                    enableCheckBoxLayout->addWidget(enableCheckBox);
+                    enableCheckBoxParent->setLayout(enableCheckBoxLayout);
+
+                    tableWidget->setCellWidget(row, EnableColumn, enableCheckBoxParent);
+
+                    // Create a file picker widget for selecting the save path for the exported material
                     AzQtComponents::BrowseEdit* fileWidget = new AzQtComponents::BrowseEdit(tableWidget);
                     fileWidget->setLineEditReadOnly(true);
                     fileWidget->setClearButtonEnabled(false);
@@ -205,30 +198,28 @@ namespace AZ
                     tableWidget->setCellWidget(row, StatusColumn, statusWidget);
 
                     // Whenever the selection is updated, automatically apply the change to the export item
-                    QObject::connect(actionComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), actionComboBox, [&dialog, &exportItem, actionComboBox, fileWidget, statusWidget]([[maybe_unused]] int index) {
-                        exportItem.m_exportAction = (ExportAction)actionComboBox->currentIndex();
-                        fileWidget->setEnabled(exportItem.m_exportAction != ExportAction::Nothing);
+                    QObject::connect(enableCheckBox, &QCheckBox::stateChanged, enableCheckBox, [&dialog, &exportItem, enableCheckBox, fileWidget, statusWidget]([[maybe_unused]] int state) {
+                        exportItem.m_enabled = enableCheckBox->isChecked();
+                        fileWidget->setEnabled(exportItem.m_enabled);
                         statusWidget->setText(GetExportItemStatusMessage(exportItem));
                     });
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
-                    QObject::connect(fileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, fileWidget, [&dialog, &exportItem, actionComboBox, fileWidget, statusWidget]() {
+                    QObject::connect(fileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, fileWidget, [&dialog, &exportItem, enableCheckBox, fileWidget, statusWidget]() {
                         QFileInfo fileInfo = QFileDialog::getSaveFileName(&dialog,
-                            QString("Choose Export Filename"),
+                            QString("Select Material Filename"),
                             exportItem.m_exportPath.c_str(),
-                            QString("Material (*.material)"));
+                            QString("Material (*.material)"),
+                            nullptr,
+                            QFileDialog::DontConfirmOverwrite);
 
                         if (fileInfo != QFileInfo())
                         {
                             // Only update the export data if a valid path and filename was selected
                             exportItem.m_exportPath = fileInfo.absoluteFilePath().toUtf8().constData();
 
-                            // We will automatically update the action based on whether or not the file exists
-                            exportItem.m_exportAction = fileInfo.exists() ? ExportAction::UseExisting : ExportAction::GenerateNew;
-
                             // Update the controls to display the new state
                             fileWidget->setText(fileInfo.fileName());
-                            actionComboBox->setCurrentIndex((int)exportItem.m_exportAction);
                             statusWidget->setText(GetExportItemStatusMessage(exportItem));
                         }
                     });
@@ -243,10 +234,10 @@ namespace AZ
                 buttonRow->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
                 QPushButton* confirmButton = new QPushButton("Confirm", buttonRow);
-                QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] { dialog.done(1); });
+                QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] { dialog.accept(); });
 
                 QPushButton* cancelButton = new QPushButton("Cancel", buttonRow);
-                QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [&dialog] { dialog.done(0); });
+                QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [&dialog] { dialog.reject(); });
 
                 QHBoxLayout* buttonLayout = new QHBoxLayout(buttonRow);
                 buttonLayout->addStretch();
@@ -254,7 +245,7 @@ namespace AZ
                 buttonLayout->addWidget(cancelButton);
 
                 // Create a heading label for the top of the dialog
-                QLabel* labelWidget = new QLabel("Select the actions to generate the editable material source files", &dialog);
+                QLabel* labelWidget = new QLabel("Select the material slots that you want to generate new source materials for. Edit the material file name and location using the file picker.", &dialog);
 
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
                 dialogLayout->addWidget(labelWidget);
@@ -262,12 +253,28 @@ namespace AZ
                 dialogLayout->addWidget(buttonRow);
                 dialog.setLayout(dialogLayout);
 
+                // Forcing the initial dialog size to accomodate typical content.
+                // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.
+                // This forces the dialog to be centered and sized based on the layout of content.
+                // Resizing the dialog after show will not be centered and moving the dialog programatically doesn't m0ve the custmk frame. 
+                dialog.setFixedSize(1000, 200);
+                dialog.show();
+
+                // Removing fixed size to allow drag resizing
+                dialog.setMinimumSize(0, 0);
+                dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
                 // Return true if the user press the export button
-                return dialog.exec() == 1;
+                return dialog.exec() == QDialog::Accepted;
             }
 
             bool ExportMaterialSourceData(const ExportItem& exportItem)
             {
+                if (!exportItem.m_enabled || exportItem.m_exportPath.empty())
+                {
+                    return false;
+                }
+
                 // Load the originating product asset from which the new source has set will be generated
                 auto materialAssetOutcome = AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::MaterialAsset>(exportItem.m_assetId);
                 if (!materialAssetOutcome)
@@ -300,12 +307,13 @@ namespace AZ
                 }
 
                 // At this point, we should be ready to attempt to load the material type data
-                AZ::RPI::MaterialTypeSourceData materialTypeSourceData;
-                if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypePath, materialTypeSourceData))
+                auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(materialTypePath);
+                if (!materialTypeOutcome.IsSuccess())
                 {
-                    AZ_Error("AZ::Render::EditorMaterialComponentExporter", false, "Failed to get load material type source data: %s", materialTypePath.c_str());
+                    AZ_Error("AZ::Render::EditorMaterialComponentExporter", false, "Failed to load material type source data: %s", materialTypePath.c_str());
                     return false;
                 }
+                AZ::RPI::MaterialTypeSourceData materialTypeSourceData = materialTypeOutcome.GetValue();
 
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;

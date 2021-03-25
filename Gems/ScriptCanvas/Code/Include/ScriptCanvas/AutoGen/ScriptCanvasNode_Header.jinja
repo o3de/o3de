@@ -28,7 +28,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 // The following will be injected directly into the source header file for which AzCodeGenerator is being run.
 // You must #include the generated header into the source header
-#define AZ_GENERATED_{{ Class.attrib['Name'] }} \
+#define SCRIPTCANVAS_NODE_{{ Class.attrib['Name'] }} \
 public: \
     AZ_COMPONENT({{ Class.attrib['Name'] }}, "{{ Class.attrib['Uuid'] }}"{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}); \
     static void Reflect(AZ::ReflectContext* reflection); \
@@ -47,12 +47,12 @@ struct {{ Class.attrib['Name'] | replace(' ','') }}Property
 {%         for Property in Class.iter('Out') %}
 {% if Property.attrib['Description'] is defined %}    // {{ Property.attrib['Description'] }}{% endif %}
 
-    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(ScriptCanvas::Node* owner)
+    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(const ScriptCanvas::Node* owner)
     {
-        return owner->GetSlotId("{{ Property.attrib['Name'] | replace(' ','') }}");
+        return owner->GetSlotId("{{ Property.attrib['Name'] }}");
     }
     
-    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(ScriptCanvas::Node* owner)
+    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlot(Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(owner));
     }
@@ -61,12 +61,12 @@ struct {{ Class.attrib['Name'] | replace(' ','') }}Property
 {%         for Property in Class.iter('OutLatent') %}
 {% if Property.attrib['Description'] is defined %}    // {{ Property.attrib['Description'] }}{% endif %}
 
-    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(ScriptCanvas::Node* owner)
+    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(const ScriptCanvas::Node* owner)
     {
-        return owner->GetSlotId("{{ Property.attrib['Name'] | replace(' ','') }}");
+        return owner->GetSlotId("{{ Property.attrib['Name'] }}");
     }
     
-    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(ScriptCanvas::Node* owner)
+    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlot(Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(owner));
     }
@@ -75,12 +75,12 @@ struct {{ Class.attrib['Name'] | replace(' ','') }}Property
 {%         for Property in Class.iter('In') %}
 {% if Property.attrib['Description'] is defined %}    // {{ Property.attrib['Description'] }}{% endif %}
 
-    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(ScriptCanvas::Node* owner)
+    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(const ScriptCanvas::Node* owner)
     {
-        return owner->GetSlotId("{{ Property.attrib['Name'] | replace(' ','') }}");
+        return owner->GetSlotId("{{ Property.attrib['Name'] }}");
     }
 
-    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(ScriptCanvas::Node* owner)
+    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlot(Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(owner));
     }
@@ -89,12 +89,12 @@ struct {{ Class.attrib['Name'] | replace(' ','') }}Property
 {%         for Property in Class.iter('Property') %}
 {% if Property.attrib['Description'] is defined %}    // {{ Property.attrib['Description'] }}{% endif %}
 
-    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(ScriptCanvas::Node* owner)
+    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlotId("{{ Property.attrib['Name'] }}");
     }
 
-    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(ScriptCanvas::Node* owner)
+    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] | replace(' ','') }}Slot(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlot(Get{{ Property.attrib['Name'] | replace(' ','') }}SlotId(owner));
     }
@@ -105,12 +105,12 @@ struct {{ Class.attrib['Name'] | replace(' ','') }}Property
 {%         for Property in Class.iter('DynamicDataSlot') %}
 {% if Property.attrib['Description'] is defined %}    // {{ Property.attrib['Description'] }}{% endif %}
 
-    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] }}SlotId(ScriptCanvas::Node* owner)
+    static ScriptCanvas::SlotId Get{{ Property.attrib['Name'] }}SlotId(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlotId("{{ Property.attrib['Name'] }}");
     }
 
-    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] }}Slot(ScriptCanvas::Node* owner)
+    static ScriptCanvas::Slot* Get{{ Property.attrib['Name'] }}Slot(const ScriptCanvas::Node* owner)
     {
         return owner->GetSlot(Get{{ Property.attrib['Name'] }}SlotId(owner));
     }

@@ -60,7 +60,7 @@ AZRequestReadStream* AZRequestReadStream::Allocate(const EStreamTaskType tSource
     //REMARK: if params->pBuffer is NOT NULL, then retReq->m_buffer
     //should become params->pBuffer, this is called stream-in-place.
     //The only reason we are not doing this here is because
-    //platforms like Xenia support stream-in-place to WRITE ONLY buffers.
+    //some platforms support stream-in-place to WRITE ONLY buffers.
     //Because there are no guarantees that low level streaming and decompression apis
     //would treat the output buffer as WRITE ONLY, we still allocate the buffer and memcpy
     //to  params->pBuffer upon the completion callback being called.
@@ -351,8 +351,8 @@ void AZRequestReadStream::OnRequestComplete(AZ::IO::SizeType numBytesRead, [[may
             m_isError = false;
             if (m_params.pBuffer)
             {
-                //In some systems like Xenia, streaming-in-place is supported. The caveat
-                //is that in Xenia's case, the destination buffer is write-only. This is why
+                //In some systems, streaming-in-place is supported. The caveat
+                //is that in some cases, the destination buffer is write-only. This is why
                 //a final memcpy must be done here until support is added to AZ::IO::Streamer API
                 //to decompress/load data into write-only buffers. SEE: LY-98089
                 AZ_Assert(m_params.pBuffer != m_buffer, "Streaming-In-Place requires destination and source buffers to be different");

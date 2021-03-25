@@ -10,20 +10,19 @@
 *
 */
 
-#include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
-
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-
-#include <AzCore/IO/GenericStreams.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/GenericStreams.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 namespace ScriptCanvas
 {
@@ -54,7 +53,7 @@ namespace ScriptCanvas
 
     const char* RuntimeAssetHandler::GetGroup() const
     {
-        return "Script";
+        return "Script Canvas";
     }
 
     const char* RuntimeAssetHandler::GetBrowserIcon() const
@@ -76,7 +75,7 @@ namespace ScriptCanvas
         }
     }
 
-    bool RuntimeAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+    bool RuntimeAssetHandler::CanCreateComponent(const AZ::Data::AssetId&) const
     {
         // This is a runtime component so we shouldn't be making components at edit time for this
         return false;
@@ -90,10 +89,20 @@ namespace ScriptCanvas
         return aznew RuntimeAsset(id);
     }
 
-    AZ::Data::AssetHandler::LoadResult RuntimeAssetHandler::LoadAssetData(
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-        const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+    void RuntimeAssetHandler::InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload)
+    {
+        AssetHandler::InitAsset(asset, loadStageSucceeded, isReload);
+
+        if (loadStageSucceeded && !isReload)
+        {
+            RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
+            AZ_Assert(runtimeAsset, "RuntimeAssetHandler::InitAsset This should be a Script Canvas runtime asset, as this is the only type this handler processes!");
+            Execution::Context::IntializeAssetData(runtimeAsset->GetData());
+            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+        }
+    }
+
+    AZ::Data::AssetHandler::LoadResult RuntimeAssetHandler::LoadAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZStd::shared_ptr<AZ::Data::AssetDataStream> stream, const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
         RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
         AZ_Assert(runtimeAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
@@ -123,6 +132,8 @@ namespace ScriptCanvas
 
     void RuntimeAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
+        RuntimeAsset* runtimeAsset = azrtti_cast<RuntimeAsset*>(ptr);
+        Execution::Context::UnloadData(runtimeAsset->GetData());
         delete ptr;
     }
 
@@ -150,4 +161,4 @@ namespace ScriptCanvas
             }
         }
     }
-} // namespace AZ
+}

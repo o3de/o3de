@@ -29,7 +29,7 @@
 #include "ExpectNotEqual.h"
 #include "ExpectTrue.h"
 #include "MarkComplete.h"
-#include "Auxiliary/AuxiliaryGenerics.h"
+#include "UnitTestBus.h"
 #include "Auxiliary/Auxiliary.h"
 
 #endif

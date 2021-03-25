@@ -152,17 +152,35 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         levelInspectorOptions);
 
-    ViewPaneOptions outlinerOptions;
-    outlinerOptions.canHaveMultipleInstances = true;
-    outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+    if (GetIEditor()->IsPrefabSystemEnabled())
+    {
+        // Add the new Outliner to the Tools Menu
 
-    // this pane was originally introduced with this name, so layout settings are all saved with that name, despite the preview label being removed.
-    outlinerOptions.saveKeyName = "Entity Outliner (PREVIEW)";
-    
-    RegisterViewPane<QComponentEntityEditorOutlinerWindow>(
-        LyViewPane::EntityOutliner,
-        LyViewPane::CategoryTools,
-        outlinerOptions);
+        ViewPaneOptions outlinerOptions;
+        outlinerOptions.canHaveMultipleInstances = true;
+        outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+
+        RegisterViewPane<QEntityOutlinerWindow>(
+            LyViewPane::EntityOutliner,
+            LyViewPane::CategoryTools,
+            outlinerOptions);
+    }
+    else
+    {
+        // Add the Legacy Outliner to the Tools Menu
+
+        ViewPaneOptions outlinerOptions;
+        outlinerOptions.canHaveMultipleInstances = true;
+        outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+
+        // this pane was originally introduced with this name, so layout settings are all saved with that name, despite the preview label being removed.
+        outlinerOptions.saveKeyName = "Entity Outliner (PREVIEW)";
+
+        RegisterViewPane<QComponentEntityEditorOutlinerWindow>(
+            LyViewPane::EntityOutliner,
+            LyViewPane::CategoryTools,
+            outlinerOptions);
+    }
 
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::NoDockWidgetArea;

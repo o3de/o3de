@@ -71,121 +71,49 @@ namespace AZ
 {
     namespace Render
     {
-        // Helper function for building buffers
-        static Data::Asset<RPI::BufferAsset> BuildInputAssemblyBuffer(const void* rawData, const RHI::BufferViewDescriptor& viewDescriptor, RHI::BufferBindFlags bindFlags = RHI::BufferBindFlags::InputAssembly)
-        {
-            const AZ::u32 bufferSize = viewDescriptor.m_elementCount * viewDescriptor.m_elementSize;
-
-            Data::Asset<RPI::ResourcePoolAsset> bufferPoolAsset;
-            {
-                auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
-                bufferPoolDesc->m_bindFlags = bindFlags;
-                bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-
-                RPI::ResourcePoolAssetCreator creator;
-                creator.Begin(Uuid::CreateRandom());
-                creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
-                creator.SetPoolName("ActorPool");
-                creator.End(bufferPoolAsset);
-            }
-
-            Data::Asset<RPI::BufferAsset> asset;
-            {
-                RHI::BufferDescriptor bufferDescriptor;
-                bufferDescriptor.m_bindFlags = bindFlags;
-
-                bufferDescriptor.m_byteCount = bufferSize;
-
-                RPI::BufferAssetCreator creator;
-                creator.Begin(Uuid::CreateRandom());                
-
-                creator.SetPoolAsset(bufferPoolAsset);
-                creator.SetBuffer(rawData, bufferDescriptor.m_byteCount, bufferDescriptor);
-                creator.SetBufferViewDescriptor(viewDescriptor);
-
-                creator.End(asset);
-            }
-
-            return AZStd::move(asset);
-        }
-
-        //// Helper function for adding buffers to a modelLodCreator
-        //static void CreateAndAddMeshStreamBufferToLOD(RPI::ModelLodAssetCreator& modelLodCreator, size_t count, const void* data, const RHI::Format& format, const RHI::ShaderSemantic& semantic, RHI::BufferBindFlags bindFlags = RHI::BufferBindFlags::InputAssembly)
-        //{
-        //    RHI::BufferViewDescriptor viewDescriptor = RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(count), format);
-        //    Data::Asset<RPI::BufferAsset> buffer = BuildInputAssemblyBuffer(data, viewDescriptor, bindFlags);
-        //    modelLodCreator.AddMeshStreamBuffer(semantic, AZ::Name(), { buffer, viewDescriptor });
-        //}
-
-        //static Data::Asset<RPI::MaterialAsset> GetDefaultMaterialAsset()
-        //{
-        //    // Get the default material
-        //    Data::AssetId defaultMaterialId;
-        //    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-        //        defaultMaterialId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-        //        "Materials/Default.azmaterial", azrtti_typeid<AZ::RPI::MaterialAsset>(), false
-        //    );
-
-        //    // Create a material asset
-        //    Data::Asset<RPI::MaterialAsset> materialAsset;
-        //    materialAsset.Create(defaultMaterialId, true);
-
-        //    return materialAsset;
-        //}
-
         static bool IsVertexCountWithinSupportedRange(size_t vertexOffset, size_t vertexCount)
         {
             return vertexOffset + vertexCount <= aznumeric_cast<size_t>(SkinnedMeshVertexStreamPropertyInterface::Get()->GetMaxSupportedVertexCount());
         }
 
-        static void CalculateSubmeshPropertiesForLod(const Data::AssetId& actorAssetId, const EMotionFX::Actor* actor, size_t lodIndex, size_t numJoints, AZStd::vector<SkinnedSubMeshProperties>& subMeshes, uint32_t& lodIndexCount, uint32_t& lodVertexCount)
+        static void CalculateSubmeshPropertiesForLod(const Data::AssetId& actorAssetId, const EMotionFX::Actor* actor, size_t lodIndex, AZStd::vector<SkinnedSubMeshProperties>& subMeshes, uint32_t& lodIndexCount, uint32_t& lodVertexCount)
         {
             lodIndexCount = 0;
             lodVertexCount = 0;
 
             uint32_t subMeshIndexOffset = 0;
-            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            const Data::Asset<RPI::ModelLodAsset>& lodAsset = actor->GetMeshAsset()->GetLodAssets()[lodIndex];
+            const AZStd::array_view<RPI::ModelLodAsset::Mesh> modelMeshes = lodAsset->GetMeshes();
+            for (const RPI::ModelLodAsset::Mesh& modelMesh : modelMeshes)
             {
-                const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
-                if (!mesh || mesh->GetIsCollisionMesh())
+                const size_t subMeshIndexCount = modelMesh.GetIndexCount();
+                const size_t subMeshVertexCount = modelMesh.GetVertexCount();
+                if (subMeshVertexCount > 0)
                 {
-                    continue;
-                }
-
-                const size_t numSubMeshes = mesh->GetNumSubMeshes();
-                for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
-                {
-                    const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
-                    const size_t subMeshIndexCount = subMesh->GetNumIndices();
-                    const size_t subMeshVertexCount = subMesh->GetNumVertices();
-
-                    if (subMeshVertexCount > 0)
+                    if (IsVertexCountWithinSupportedRange(lodVertexCount, subMeshVertexCount))
                     {
-                        if (IsVertexCountWithinSupportedRange(lodVertexCount, subMeshVertexCount))
-                        {
-                            SkinnedSubMeshProperties skinnedSubMesh{};
-                            skinnedSubMesh.m_indexOffset = lodIndexCount;
-                            skinnedSubMesh.m_indexCount = aznumeric_cast<uint32_t>(subMeshIndexCount);
-                            lodIndexCount += aznumeric_cast<uint32_t>(subMeshIndexCount);
+                        SkinnedSubMeshProperties skinnedSubMesh{};
+                        skinnedSubMesh.m_indexOffset = lodIndexCount;
+                        skinnedSubMesh.m_indexCount = aznumeric_cast<uint32_t>(subMeshIndexCount);
+                        lodIndexCount += aznumeric_cast<uint32_t>(subMeshIndexCount);
 
-                            skinnedSubMesh.m_vertexOffset = lodVertexCount;
-                            skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
-                            lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
+                        skinnedSubMesh.m_vertexOffset = lodVertexCount;
+                        skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
+                        lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
 
-                            // The default material id used by a sub-mesh is the guid of the source .fbx plus the subId which is a unique material ID from the scene API
-                            AZ::u32 subId = subMesh->GetMaterial();
-                            AZ::Data::AssetId materialId{ actorAssetId.m_guid, subId };
+                        // The default material id used by a sub-mesh is the guid of the source .fbx plus the subId which is a unique material ID from the scene API
+                        AZ::u32 subId = modelMesh.GetMaterialAsset().GetId().m_subId;
+                        AZ::Data::AssetId materialId{ actorAssetId.m_guid, subId };
 
-                            // Queue the material asset - the ModelLod seems to handle delayed material loads
-                            skinnedSubMesh.m_material = Data::AssetManager::Instance().GetAsset(materialId, azrtti_typeid<RPI::MaterialAsset>(), skinnedSubMesh.m_material.GetAutoLoadBehavior());
-                            subMeshes.push_back(skinnedSubMesh);
-                        }
-                        else
-                        {
-                            AZStd::string assetPath;
-                            Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, actorAssetId);
-                            AZ_Error("ActorAsset", false, "Lod '%d' for actor '%s' has greater than %d, the maximum supported number of vertices for a skinned sub-mesh. Sub-mesh will be ignored and not all vertices will be rendered.", lodIndex, assetPath.c_str(), SkinnedMeshVertexStreamPropertyInterface::Get()->GetMaxSupportedVertexCount());
-                        }
+                        // Queue the material asset - the ModelLod seems to handle delayed material loads
+                        skinnedSubMesh.m_material = Data::AssetManager::Instance().GetAsset(materialId, azrtti_typeid<RPI::MaterialAsset>(), skinnedSubMesh.m_material.GetAutoLoadBehavior());
+                        subMeshes.push_back(skinnedSubMesh);
+                    }
+                    else
+                    {
+                        AZStd::string assetPath;
+                        Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, actorAssetId);
+                        AZ_Error("ActorAsset", false, "Lod '%d' for actor '%s' has greater than %d, the maximum supported number of vertices for a skinned sub-mesh. Sub-mesh will be ignored and not all vertices will be rendered.", lodIndex, assetPath.c_str(), SkinnedMeshVertexStreamPropertyInterface::Get()->GetMaxSupportedVertexCount());
                     }
                 }
             }
@@ -272,7 +200,7 @@ namespace AZ
             const EMotionFX::Mesh* mesh,
             const EMotionFX::SubMesh* subMesh,
             size_t atomVertexBufferOffset,
-            AZStd::vector<AZStd::array<uint32_t, MaxSupportedSkinInfluences>>& blendIndexBufferData,
+            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]>& blendIndexBufferData,
             AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>>& blendWeightBufferData,
             bool hasClothData)
         {
@@ -291,10 +219,11 @@ namespace AZ
                 uint32_t influenceIndex = 0;
                 float weightError = 1.0f;
 
+                AZStd::vector<uint32_t> localIndices;
                 for (; influenceIndex < influenceCount; ++influenceIndex)
                 {
                     EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
-                    blendIndexBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = static_cast<uint32_t>(influence->GetNodeNr());
+                    localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
                     blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
                     weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
                 }
@@ -302,8 +231,23 @@ namespace AZ
                 // Zero out any unused ids/weights
                 for (; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
                 {
-                    blendIndexBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0;
+                    localIndices.push_back(0);
                     blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0.0f;
+                }
+
+                // Now that we have the 16-bit indices, pack them into 32-bit uints
+                for (size_t i = 0; i < localIndices.size(); ++i)
+                {
+                    if (i % 2 == 0)
+                    {
+                        // Put the first/even ids in the most significant bits
+                        blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i/2] = localIndices[i] << 16;
+                    }
+                    else
+                    {
+                        // Put the next/odd ids in the least significant bits
+                        blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] |= localIndices[i];
+                    }
                 }
             }
 
@@ -347,12 +291,9 @@ namespace AZ
                 // We're going to split the data into separate streams with 4byte elements,
                 // which allows for a coalesced read in the morph target compute shader when each thread is loading 4 adjacent bytes at the same time
 
-                // The first stream has just the x and y position deltas, which take 2 bytes each
-                AZStd::vector<uint32_t> positionXYDeltas;
-                // The second stream has the z position deltas, plus padding
-                AZStd::vector<uint32_t> positionZPadDeltas;
-                // The vertex number stream has the target vertex index that each compute thread will write to
-                AZStd::vector<uint32_t> vertexIndices;
+                // Packed, interleaved vertex deltas
+                AZStd::vector<uint32_t> deltaData;
+
                 uint32_t totalDeformDataCount = 0;
 
                 for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
@@ -382,38 +323,57 @@ namespace AZ
                         {
                             const EMotionFX::MorphTargetStandard::DeformData::VertexDelta& delta = deformData->mDeltas[vertexIndex];
 
-                            // Combine the x and y components into 4 bytes with x in the most-significant 16 bits and y in the least significant 16 bits
-                            uint32_t xy = static_cast<uint32_t>(delta.mPosition.mX);
-                            xy <<= 16;
-                            xy |= static_cast<uint32_t>(delta.mPosition.mY);
-                            positionXYDeltas.push_back(xy);
-
-                            // Combine the z component with padding, putting the z component in the most significant 16 bits and padding in the least significant 16 bits
-                            uint32_t zpad = static_cast<uint32_t>(delta.mPosition.mZ);
-                            zpad <<= 16;
-                            positionZPadDeltas.push_back(zpad);
+                            // TODO: Modify the builder to pack data the way it's expected to be read on the GPU instead of packing it here [ATOM-14698]
 
                             // Add the target vertex index
-                            vertexIndices.push_back(delta.mVertexNr);
-                        }
+                            deltaData.push_back(delta.mVertexNr);
 
-                        // Now that we have individual elements adjacent to each other, combine the deltas into one long buffer
-                        positionXYDeltas.insert(positionXYDeltas.end(), positionZPadDeltas.begin(), positionZPadDeltas.end());
+                            // Combine the position x in the most-significant 16 bits and position y in the least significant 16 bits
+                            uint32_t xy = 0;
+                            xy |= (static_cast<uint32_t>(delta.mPosition.mX) << 16);
+                            xy |= static_cast<uint32_t>(delta.mPosition.mY);
+                            deltaData.push_back(xy);
+
+                            // Combine the position z in the most significant 16 bits with the normal x and y in the least significant 16 bits
+                            uint32_t positionZnormalXY = 0;
+                            positionZnormalXY |= static_cast<uint32_t>(delta.mPosition.mZ) << 16;
+                            positionZnormalXY |= static_cast<uint32_t>(delta.mNormal.mX) << 8;
+                            positionZnormalXY |= static_cast<uint32_t>(delta.mNormal.mY);
+                            deltaData.push_back(positionZnormalXY);
+
+                            // Combine the normal z in the most significant 8 bits with the tangent in the least significant 24 bits
+                            uint32_t normalZTangent = 0;
+                            normalZTangent |= (static_cast<uint32_t>(delta.mNormal.mZ) << 24);
+                            normalZTangent |= (static_cast<uint32_t>(delta.mTangent.mX) << 16);
+                            normalZTangent |= (static_cast<uint32_t>(delta.mTangent.mY) << 8);
+                            normalZTangent |= static_cast<uint32_t>(delta.mTangent.mZ);
+                            deltaData.push_back(normalZTangent);
+
+                            // Combine padding in most significant 8 bits with the bitangent in the least significant 24 bits
+                            uint32_t padBitangent = 0;
+                            padBitangent |= static_cast<uint32_t>(delta.mBitangent.mX) << 16;
+                            padBitangent |= (static_cast<uint32_t>(delta.mBitangent.mY) << 8);
+                            padBitangent |= static_cast<uint32_t>(delta.mBitangent.mZ);
+                            deltaData.push_back(padBitangent);
+
+                            // Extra padding so each structured element of the buffer is 16 byte aligned
+                            deltaData.push_back(0);
+                            deltaData.push_back(0);
+                            deltaData.push_back(0);
+                        }
 
                         if (deformData->mNumVerts > 0)
                         {
                             // The skinned mesh lod gets a unique morph for each deform data, since each one has unique min/max delta values to use for decompression
                             AZStd::string morphString = AZStd::string::format("_Lod%u_Morph%u", lodIndex, totalDeformDataCount);
-                            skinnedMeshLod.AddMorphTarget(minWeight, maxWeight, deformData->mMinValue, deformData->mMaxValue, deformData->mNumVerts, vertexIndices, positionXYDeltas, fullFileName + morphString);
+                            skinnedMeshLod.AddMorphTarget(minWeight, maxWeight, deformData->mMinValue, deformData->mMaxValue, deformData->mNumVerts, deltaData, fullFileName + morphString);
                             totalDeformDataCount++;
                         }
                         else
                         {
                             AZ_Warning("ProcessMorphsForLod", false, "EMotionFX deform data '%u' in morph target '%u' for lod '%u' in '%s' modifies zero vertices and will be skipped.", deformDataIndex, morphTargetIndex, lodIndex, fullFileName.c_str());
                         }
-                        positionXYDeltas.clear();
-                        positionZPadDeltas.clear();
-                        vertexIndices.clear();
+                        deltaData.clear();
                     }
                 }
             }
@@ -421,6 +381,14 @@ namespace AZ
 
         AZStd::intrusive_ptr<SkinnedMeshInputBuffers> CreateSkinnedMeshInputFromActor(const Data::AssetId& actorAssetId, const EMotionFX::Actor* actor)
         {
+
+            Data::Asset<RPI::ModelAsset> modelAsset = actor->GetMeshAsset();
+            if (!modelAsset.IsReady())
+            {
+                AZ_Error("CreateSkinnedMeshInputFromActor", false, "Attempting to create skinned mesh input buffers for an actor that doesn't have a loaded model.");
+                return nullptr;
+            }
+
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> skinnedMeshInputBuffers = aznew SkinnedMeshInputBuffers;
 
             skinnedMeshInputBuffers->SetAssetId(actorAssetId);
@@ -441,7 +409,7 @@ namespace AZ
             AZStd::vector<PackedVector3f> normalBufferData;
             AZStd::vector<Vector4> tangentBufferData;
             AZStd::vector<PackedVector3f> bitangentBufferData;
-            AZStd::vector<AZStd::array<uint32_t, MaxSupportedSkinInfluences>> blendIndexBufferData;
+            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]> blendIndexBufferData;
             AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>> blendWeightBufferData;
             AZStd::vector<float[2]> uvBufferData;
 
@@ -450,10 +418,17 @@ namespace AZ
             //
 
             skinnedMeshInputBuffers->SetLodCount(numLODs);
+            AZ_Assert(numLODs == modelAsset->GetLodCount(), "The lod count of the EMotionFX mesh and Atom model are out of sync for '%s'", fullFileName.c_str());
             for (size_t lodIndex = 0; lodIndex < numLODs; ++lodIndex)
             {
                 // Create a single LOD
                 SkinnedMeshInputLod skinnedMeshLod;
+
+                Data::Asset<RPI::ModelLodAsset> modelLodAsset = modelAsset->GetLodAssets()[lodIndex];
+
+                // Each mesh vertex stream is packed into a single buffer for the whole lod. Get the first mesh, which can be used to retrieve the underlying buffer assets
+                AZ_Assert(modelLodAsset->GetMeshes().size() > 0, "ModelLod '%d' for model '%s' has 0 meshes", lodIndex, fullFileName.c_str());
+                const RPI::ModelLodAsset::Mesh& mesh0 = modelLodAsset->GetMeshes()[0];
 
                 // Get the amount of vertices and indices
                 // Get the meshes to process
@@ -468,7 +443,7 @@ namespace AZ
                 uint32_t lodVertexCount = 0;
                 uint32_t lodIndexCount = 0;
                 AZStd::vector<SkinnedSubMeshProperties> subMeshes;
-                CalculateSubmeshPropertiesForLod(actorAssetId, actor, lodIndex, numJoints, subMeshes, lodIndexCount, lodVertexCount);
+                CalculateSubmeshPropertiesForLod(actorAssetId, actor, lodIndex, subMeshes, lodIndexCount, lodVertexCount);
 
                 skinnedMeshLod.SetIndexCount(lodIndexCount);
                 skinnedMeshLod.SetVertexCount(lodVertexCount);
@@ -531,7 +506,7 @@ namespace AZ
                             ProcessPositionsForSubmesh(vertexCount, vertexBufferOffset, vertexStart, sourcePositions, positionBufferData, subMeshes[skinnedMeshSubmeshIndex]);
                             ProcessNormalsForSubmesh(vertexCount, vertexBufferOffset, vertexStart, sourceNormals, normalBufferData);
 
-                            AZ_Assert(hasUVs, "ActorAsset missing uvs. Downstream code is assuming all actors have uvs");
+                            AZ_Assert(hasUVs, "ActorAsset '%s' lod '%d' missing uvs. Downstream code is assuming all actors have uvs", fullFileName.c_str(), lodIndex);
                             if (hasUVs)
                             {
                                 ProcessUVsForSubmesh(vertexCount, vertexBufferOffset, vertexStart, sourceUVs, uvBufferData);
@@ -539,7 +514,7 @@ namespace AZ
                             // ATOM-3623 Support multiple UV sets in actors
 
                             // ATOM-3972 Support actors that don't have tangents
-                            AZ_Assert(hasTangents, "ActorAsset missing tangents. Downstream code is assuming all actors have tangents");
+                            AZ_Assert(hasTangents, "ActorAsset '%s' lod '%d'  missing tangents. Downstream code is assuming all actors have tangents", fullFileName.c_str(), lodIndex);
                             if (hasTangents)
                             {
                                 ProcessTangentsForSubmesh(vertexCount, vertexBufferOffset, vertexStart, sourceTangents, tangentBufferData);
@@ -567,15 +542,32 @@ namespace AZ
 
                 // Create read-only buffers and views for input buffers that are shared across all instances
                 AZStd::string lodString = AZStd::string::format("_Lod%zu", lodIndex);
-                skinnedMeshLod.CreateSkinningInputBuffer(positionBufferData.data(), SkinnedMeshInputVertexStreams::Position, fullFileName + lodString + "_SkinnedMeshInputPositions");
-                skinnedMeshLod.CreateSkinningInputBuffer(normalBufferData.data(), SkinnedMeshInputVertexStreams::Normal, fullFileName + lodString + "_SkinnedMeshInputNormals");
-                skinnedMeshLod.CreateSkinningInputBuffer(tangentBufferData.data(), SkinnedMeshInputVertexStreams::Tangent, fullFileName + lodString + "_SkinnedMeshInputTangents");
-                skinnedMeshLod.CreateSkinningInputBuffer(bitangentBufferData.data(), SkinnedMeshInputVertexStreams::BiTangent, fullFileName + lodString + "_SkinnedMeshInputBiTangents");
-                skinnedMeshLod.CreateSkinningInputBuffer(blendIndexBufferData.data(), SkinnedMeshInputVertexStreams::BlendIndices, fullFileName + lodString + "_SkinnedMeshInputBlendIndices");
-                skinnedMeshLod.CreateSkinningInputBuffer(blendWeightBufferData.data(), SkinnedMeshInputVertexStreams::BlendWeights, fullFileName + lodString + "_SkinnedMeshInputBlendWeights");
+                skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "POSITION" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Position);
+                skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "NORMAL" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Normal);
+                skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "TANGENT" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Tangent);
+                skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "BITANGENT" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::BiTangent);
+                
+                Data::Asset<RPI::BufferAsset> jointIndicesBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" })->GetBufferAsset();
+                skinnedMeshLod.SetSkinningInputBufferAsset(jointIndicesBufferAsset, SkinnedMeshInputVertexStreams::BlendIndices);
+                Data::Asset<RPI::BufferAsset> skinWeightsBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" })->GetBufferAsset();
+                skinnedMeshLod.SetSkinningInputBufferAsset(skinWeightsBufferAsset, SkinnedMeshInputVertexStreams::BlendWeights);
+
+                // We're using the indices/weights buffers directly from the model.
+                // However, EMFX has done some re-mapping of the id's, so we need to update the GPU buffer for it to have the correct data.
+                size_t remappedJointIndexBufferSizeInBytes = blendIndexBufferData.size() * sizeof(blendIndexBufferData[0]);
+                size_t remappedSkinWeightsBufferSizeInBytes = blendWeightBufferData.size() * sizeof(blendWeightBufferData[0]);
+
+                AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+                AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+
+                Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset);
+                jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset);
+                skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                
 
                 // Create read-only input assembly buffers that are not modified during skinning and shared across all instances
-                skinnedMeshLod.CreateIndexBuffer(indexBufferData.data(), fullFileName + lodString + "_SkinnedMeshIndexBuffer");
+                skinnedMeshLod.SetIndexBuffer(mesh0.GetIndexBufferAssetView().GetBufferAsset());
                 skinnedMeshLod.CreateStaticBuffer(uvBufferData.data(), SkinnedMeshStaticVertexStreams::UV_0, fullFileName + lodString + "_SkinnedMeshStaticUVs");
 
                 // Set the data that needs to be tracked on a per-sub-mesh basis
@@ -640,9 +632,13 @@ namespace AZ
             }
 
             // Create a buffer and populate it with the transforms
-            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, aznumeric_cast<uint32_t>(boneTransforms.size() / floatsPerBone), floatsPerBone * sizeof(float));
-            Data::Asset<RPI::BufferAsset> bufferAsset = BuildInputAssemblyBuffer(static_cast<void*>(boneTransforms.data()), bufferViewDescriptor, RHI::BufferBindFlags::ShaderRead);
-            return RPI::Buffer::FindOrCreate(bufferAsset);
+            RPI::CommonBufferDescriptor descriptor;
+            descriptor.m_bufferData = boneTransforms.data();
+            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s_%s", actorInstance->GetActor()->GetName(), Uuid::CreateRandom().ToString<AZStd::string>().c_str());
+            descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
+            descriptor.m_elementSize = floatsPerBone * sizeof(float);
+            descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+            return RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(descriptor);
         }
 
     } //namespace Render

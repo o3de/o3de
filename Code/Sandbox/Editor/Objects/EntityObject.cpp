@@ -238,6 +238,27 @@ CEntityObject::CEntityObject()
     m_physicsState = 0;
 
     m_attachmentType = eAT_Pivot;
+
+    // cache all the variable callbacks, must match order of enum defined in header
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaHeightChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightSizeChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaWidthChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxHeightChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxLengthChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxProjectionChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeXChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeYChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeZChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxWidthChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnColorChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnInnerRadiusChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnOuterRadiusChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectInAllDirsChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorFOVChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorTextureChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnPropertyChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnRadiusChange, this, AZStd::placeholders::_1));
 }
 
 CEntityObject::~CEntityObject()
@@ -930,7 +951,8 @@ void CEntityObject::Serialize(CObjectArchive& ar)
                 m_eventTargets.push_back(et);
                 if (targetId != GUID_NULL)
                 {
-                    ar.SetResolveCallback(this, targetId, functor(*this, &CEntityObject::ResolveEventTarget), i);
+                    using namespace AZStd::placeholders;
+                    ar.SetResolveCallback(this, targetId, AZStd::bind(&CEntityObject::ResolveEventTarget, this, _1, _2), i);
                 }
             }
         }
@@ -1410,7 +1432,7 @@ void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
     assert(index >= 0 && index < m_eventTargets.size());
     if (object)
     {
-        object->AddEventListener(functor(*this, &CEntityObject::OnEventTargetEvent));
+        object->AddEventListener(this);
     }
     m_eventTargets[index].target = object;
 
@@ -1522,7 +1544,7 @@ void CEntityObject::SaveLink(XmlNodeRef xmlNode)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnEventTargetEvent(CBaseObject* target, int event)
+void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
 {
     // When event target is deleted.
     if (event == CBaseObject::ON_DELETE)
@@ -1566,7 +1588,7 @@ int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, con
     // Assign event target.
     if (et.target)
     {
-        et.target->AddEventListener(functor(*this, &CEntityObject::OnEventTargetEvent));
+        et.target->AddEventListener(this);
     }
 
     if (target)
@@ -1600,7 +1622,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 
         if (m_eventTargets[index].target)
         {
-            m_eventTargets[index].target->RemoveEventListener(functor(*this, &CEntityObject::OnEventTargetEvent));
+            m_eventTargets[index].target->RemoveEventListener(this);
         }
         m_eventTargets.erase(m_eventTargets.begin() + index);
 
@@ -1634,7 +1656,7 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
     // Assign event target.
     if (target)
     {
-        target->AddEventListener(functor(*this, &CEntityObject::OnEventTargetEvent));
+        target->AddEventListener(this);
 
         // Make line gizmo.
         pLineGizmo = new CLineGizmo;
@@ -1684,7 +1706,7 @@ void CEntityObject::RemoveEntityLink(int index)
 
         if (link.target)
         {
-            link.target->RemoveEventListener(functor(*this, &CEntityObject::OnEventTargetEvent));
+            link.target->RemoveEventListener(this);
             link.target->EntityUnlinked(link.name, GetId());
         }
         m_links.erase(m_links.begin() + index);
@@ -2188,7 +2210,7 @@ void CEntityObject::ResetCallbacks()
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_proximityRadius);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnRadiusChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnRadiusChange]);
         }
         else
         {
@@ -2196,7 +2218,7 @@ void CEntityObject::ResetCallbacks()
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_proximityRadius);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnRadiusChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnRadiusChange]);
             }
         }
 
@@ -2204,39 +2226,39 @@ void CEntityObject::ResetCallbacks()
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_innerRadius);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnInnerRadiusChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnInnerRadiusChange]);
         }
         var = pProperties->FindVariable("OuterRadius", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_outerRadius);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnOuterRadiusChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnOuterRadiusChange]);
         }
 
         var = pProperties->FindVariable("BoxSizeX", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_boxSizeX);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxSizeXChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxSizeXChange]);
         }
         var = pProperties->FindVariable("BoxSizeY", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_boxSizeY);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxSizeYChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxSizeYChange]);
         }
         var = pProperties->FindVariable("BoxSizeZ", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_boxSizeZ);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxSizeZChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxSizeZChange]);
         }
 
         var = pProperties->FindVariable("fAttenuationBulbSize");
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
             var->Get(m_fAreaLightSize);
-            SetVariableCallback(var, functor(*this, &CEntityObject::OnAreaLightSizeChange));
+            SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnAreaLightSizeChange]);
         }
 
         IVariable* pProjector = pProperties->FindVariable("Projector");
@@ -2246,7 +2268,7 @@ void CEntityObject::ResetCallbacks()
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_projectorFOV);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnProjectorFOVChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnProjectorFOVChange]);
             }
             var = pProjector->FindVariable("bProjectInAllDirs");
             if (var && var->GetType() == IVariable::BOOL)
@@ -2254,7 +2276,7 @@ void CEntityObject::ResetCallbacks()
                 int value;
                 var->Get(value);
                 m_bProjectInAllDirs = value;
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnProjectInAllDirsChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnProjectInAllDirsChange]);
             }
             var = pProjector->FindVariable("texture_Texture");
             if (var && var->GetType() == IVariable::STRING)
@@ -2262,7 +2284,7 @@ void CEntityObject::ResetCallbacks()
                 QString projectorTexture;
                 var->Get(projectorTexture);
                 m_bProjectorHasTexture = !projectorTexture.isEmpty();
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnProjectorTextureChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnProjectorTextureChange]);
             }
         }
 
@@ -2282,7 +2304,7 @@ void CEntityObject::ResetCallbacks()
                 if (name == "clrDiffuse")
                 {
                     pChild->Get(m_lightColor);
-                    SetVariableCallback(pChild, functor(*this, &CEntityObject::OnColorChange));
+                    SetVariableCallback(pChild, &m_onSetCallbacksCache[VariableCallbackIndex::OnColorChange]);
                     break;
                 }
             }
@@ -2297,19 +2319,19 @@ void CEntityObject::ResetCallbacks()
                 int value;
                 var->Get(value);
                 m_bAreaLight = value;
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnAreaLightChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnAreaLightChange]);
             }
             var = pType->FindVariable("fPlaneWidth");
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_fAreaWidth);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnAreaWidthChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnAreaWidthChange]);
             }
             var = pType->FindVariable("fPlaneHeight");
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_fAreaHeight);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnAreaHeightChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnAreaHeightChange]);
             }
         }
 
@@ -2322,40 +2344,40 @@ void CEntityObject::ResetCallbacks()
                 int value;
                 var->Get(value);
                 m_bBoxProjectedCM = value;
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxProjectionChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxProjectionChange]);
             }
             var = pProjection->FindVariable("fBoxWidth");
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_fBoxWidth);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxWidthChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxWidthChange]);
             }
             var = pProjection->FindVariable("fBoxHeight");
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_fBoxHeight);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxHeightChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxHeightChange]);
             }
             var = pProjection->FindVariable("fBoxLength");
             if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
             {
                 var->Get(m_fBoxLength);
-                SetVariableCallback(var, functor(*this, &CEntityObject::OnBoxLengthChange));
+                SetVariableCallback(var, &m_onSetCallbacksCache[VariableCallbackIndex::OnBoxLengthChange]);
             }
         }
 
         // Each property must have callback to our OnPropertyChange.
-        pProperties->AddOnSetCallback(functor(*this, &CEntityObject::OnPropertyChange));
+        pProperties->AddOnSetCallback(&m_onSetCallbacksCache[VariableCallbackIndex::OnPropertyChange]);
     }
 
     if (pProperties2)
     {
-        pProperties2->AddOnSetCallback(functor(*this, &CEntityObject::OnPropertyChange));
+        pProperties2->AddOnSetCallback(&m_onSetCallbacksCache[VariableCallbackIndex::OnPropertyChange]);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetVariableCallback(IVariable* pVar, IVariable::OnSetCallback func)
+void CEntityObject::SetVariableCallback(IVariable* pVar, IVariable::OnSetCallback* func)
 {
     pVar->AddOnSetCallback(func);
     m_callbacks.push_back(std::make_pair(pVar, func));
@@ -2366,12 +2388,12 @@ void CEntityObject::ClearCallbacks()
 {
     if (m_pProperties)
     {
-        m_pProperties->RemoveOnSetCallback(functor(*this, &CEntityObject::OnPropertyChange));
+        m_pProperties->RemoveOnSetCallback(&m_onSetCallbacksCache[VariableCallbackIndex::OnPropertyChange]);
     }
 
     if (m_pProperties2)
     {
-        m_pProperties2->RemoveOnSetCallback(functor(*this, &CEntityObject::OnPropertyChange));
+        m_pProperties2->RemoveOnSetCallback(&m_onSetCallbacksCache[VariableCallbackIndex::OnPropertyChange]);
     }
 
     for (auto iter = m_callbacks.begin(); iter != m_callbacks.end(); ++iter)

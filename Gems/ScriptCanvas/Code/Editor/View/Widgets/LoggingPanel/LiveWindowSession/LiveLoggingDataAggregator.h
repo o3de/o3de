@@ -63,7 +63,6 @@ namespace ScriptCanvasEditor
         void NodeStateChanged(const ScriptCanvas::NodeStateChange& stateChange) override;
         void SignaledInput(const ScriptCanvas::InputSignal& inputSignal) override;
         void SignaledOutput(const ScriptCanvas::OutputSignal& outputSignal) override;
-        void SignaledDataOutput(const ScriptCanvas::OutputDataSignal&) override;
         void AnnotateNode(const ScriptCanvas::AnnotateNodeSignal& annotateNode) override;
 
         void VariableChanged(const ScriptCanvas::VariableChange& variableChanged) override;

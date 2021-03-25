@@ -31,9 +31,9 @@ public:
     ReflectedPropertiesPanel(QWidget* pParent = nullptr);   // standard constructor
 
     void DeleteVars();
-    void AddVars(class CVarBlock* vb, const ReflectedPropertyControl::UpdateVarCallback& func = nullptr, const char* category = nullptr);
+    void AddVars(class CVarBlock* vb, ReflectedPropertyControl::UpdateVarCallback* func = nullptr, const char* category = nullptr);
 
-    void SetVarBlock(class CVarBlock* vb, const ReflectedPropertyControl::UpdateVarCallback& func = nullptr, const char* category = nullptr);
+    void SetVarBlock(class CVarBlock* vb, ReflectedPropertyControl::UpdateVarCallback* func = nullptr, const char* category = nullptr);
 
 protected:
     void OnPropertyChanged(IVariable* pVar);
@@ -42,7 +42,7 @@ protected:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     TSmartPtr<CVarBlock> m_varBlock;
 
-    std::list<ReflectedPropertyControl::UpdateVarCallback> m_updateCallbacks;
+    std::list<ReflectedPropertyControl::UpdateVarCallback*> m_updateCallbacks;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

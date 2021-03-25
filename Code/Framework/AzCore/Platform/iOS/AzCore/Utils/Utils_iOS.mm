@@ -24,4 +24,29 @@ namespace AZ::Utils
         const char* pathToResources = [[[NSBundle mainBundle] resourcePath] UTF8String];
         return AZStd::fixed_string<MaxPathLength>::format("%s/assets", pathToResources);
     }
+
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+    {
+        NSArray* appSupportDirectoryPaths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+        if ([appSupportDirectoryPaths count] == 0)
+        {
+            return AZStd::nullopt;
+        }
+
+        NSString* appSupportDir = static_cast<NSString*>([appSupportDirectoryPaths objectAtIndex:0]);
+        if (!appSupportDir)
+        {
+            return AZStd::nullopt;
+        }
+
+        const char* src = [appSupportDir UTF8String];
+        const size_t srcLen = strlen(src);
+        if (srcLen > MaxPathLength - 1)
+        {
+            return AZStd::nullopt;
+        }
+
+        return AZStd::make_optional<AZ::IO::FixedMaxPathString>(src);
+    }
+
 }

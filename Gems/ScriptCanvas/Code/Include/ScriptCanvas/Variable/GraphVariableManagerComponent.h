@@ -73,7 +73,7 @@ namespace ScriptCanvas
 
         GraphVariable* FindVariable(AZStd::string_view propName) override;
         GraphVariable* FindVariableById(const VariableId& variableId) override;
-        GraphVariable* FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& blacklistId) override;
+        GraphVariable* FindFirstVariableWithType(const Data::Type& dataType, const AZStd::unordered_set< ScriptCanvas::VariableId >& excludedVariableIds) override;
 
         Data::Type GetVariableType(const VariableId& variableId) override;
         

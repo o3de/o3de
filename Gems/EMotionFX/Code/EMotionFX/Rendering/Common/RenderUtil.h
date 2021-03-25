@@ -69,6 +69,8 @@ namespace MCommon
          */
         virtual ~RenderUtil();
 
+        virtual void Validate() {};
+
         /**
          * Render simple finite grid.
          * @param start The start vector for the grid area to render.

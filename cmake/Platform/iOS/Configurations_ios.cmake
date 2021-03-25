@@ -31,7 +31,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
             -lpthread
     )
-    set(CMAKE_CXX_EXTENSIONS OFF)
+    ly_set(CMAKE_CXX_EXTENSIONS OFF)
 else()
 
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
@@ -39,10 +39,10 @@ else()
 endif()
 
 # Signing
-set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep)
+ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep)
 
 # Generate scheme files for Xcode
-set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
+ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
 # Make modules have the dylib extension
-set(CMAKE_SHARED_MODULE_SUFFIX .dylib)
+ly_set(CMAKE_SHARED_MODULE_SUFFIX .dylib)

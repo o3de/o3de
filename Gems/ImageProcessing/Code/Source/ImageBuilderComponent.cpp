@@ -72,13 +72,10 @@ namespace ImageProcessing
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
-
-        ImageProcessingRequestBus::Handler::BusConnect();
     }
 
     void BuilderPluginComponent::Deactivate()
     {
-        ImageProcessingRequestBus::Handler::BusDisconnect();
         m_imageBuilder.BusDisconnect();
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
@@ -112,11 +109,6 @@ namespace ImageProcessing
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
-    }
-
-    IImageObject* BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
-    {
-        return LoadImageFromFile(filePath);
     }
 
     void ImageBuilderWorker::ShutDown()

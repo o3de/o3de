@@ -8,6 +8,7 @@
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
            Category="Timing"
            Version="0"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
            GeneratePropertyFriend="True"
            Description="While active, will signal the output at the given interval.">
         <In Name="Start" Description=""/>

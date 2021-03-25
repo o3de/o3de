@@ -242,7 +242,6 @@ enum EShaderLanguage
 {
     eSL_Unknown,
     eSL_Orbis,
-    eSL_Durango,
     eSL_D3D11,
     eSL_GL4_1,
     eSL_GL4_4,

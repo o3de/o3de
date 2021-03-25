@@ -1,0 +1,1 @@
+This is the place where you must put all your python scripts that you want to add to lumberyard python variable in maya.env  

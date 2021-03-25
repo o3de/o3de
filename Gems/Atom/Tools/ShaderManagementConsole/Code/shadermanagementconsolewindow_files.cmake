@@ -13,6 +13,7 @@ set(FILES
     Include/Atom/Window/ShaderManagementConsoleWindowModule.h
     Include/Atom/Window/ShaderManagementConsoleWindowNotificationBus.h
     Include/Atom/Window/ShaderManagementConsoleWindowRequestBus.h
+    Include/Atom/Core/ShaderManagementConsoleRequestBus.h
     Source/Window/ShaderManagementConsoleBrowserInteractions.h
     Source/Window/ShaderManagementConsoleBrowserInteractions.cpp
     Source/Window/ShaderManagementConsoleWindow.h

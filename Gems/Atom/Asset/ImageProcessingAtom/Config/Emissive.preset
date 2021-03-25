@@ -57,16 +57,6 @@
                 ],
                 "PixelFormat": "BC7",
                 "DiscardAlpha": true
-            },
-            "xenia": {
-                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
-                "Name": "Emissive",
-                "RGB_Weight": "CIEXYZ",
-                "FileMasks": [
-                    "_emissive"
-                ],
-                "PixelFormat": "BC7",
-                "DiscardAlpha": true
             }
         }
     }

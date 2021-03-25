@@ -20,11 +20,11 @@ if (NOT GET_IOS_SDK_RESULT EQUAL 0)
 endif()
 string(STRIP ${LY_IOS_SDK_PATH} LY_IOS_SDK_PATH)
 
-set(CMAKE_SYSROOT ${LY_IOS_SDK_PATH})
+ly_set(CMAKE_SYSROOT ${LY_IOS_SDK_PATH})
 
-set(SDKROOT "iphoneos")
+ly_set(SDKROOT "iphoneos")
 
-set(DEVROOT "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer")
+ly_set(DEVROOT "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer")
 
-set(CMAKE_OSX_SYSROOT "${SDKROOT}")
+ly_set(CMAKE_OSX_SYSROOT "${SDKROOT}")
 

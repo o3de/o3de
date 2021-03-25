@@ -44,6 +44,26 @@ namespace GraphCanvas
         AZStd::shared_ptr<ConstructPreset> m_preset;
     };
 
+    class ApplyPresetMenuAction
+        : public ConstructContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ApplyPresetMenuAction, AZ::SystemAllocator, 0);
+
+        ApplyPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset, AZStd::string_view subMenuPath);
+        virtual ~ApplyPresetMenuAction() = default;
+
+        bool IsInSubMenu() const override;
+        AZStd::string GetSubMenuPath() const override;
+
+        SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
+
+    private:
+
+        AZStd::string                      m_subMenuPath;
+        AZStd::shared_ptr<ConstructPreset> m_preset;
+    };
+
     class CreatePresetFromSelection
         : public ContextMenuAction
     {
@@ -78,7 +98,7 @@ namespace GraphCanvas
         void PopulateMenu(EditorContextMenu* contextMenu);
         void RefreshPresets();
 
-        virtual AddPresetMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) = 0;
+        virtual ConstructContextMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) = 0;
 
         // PresetsMenuActionGroup
         void OnPresetsChanged() override;
@@ -98,6 +118,22 @@ namespace GraphCanvas
         bool m_isDirty;
     };
 
+    class ApplyPresetMenuActionGroup
+        : public PresetsMenuActionGroup
+    {
+    protected:
+        ApplyPresetMenuActionGroup(ConstructType constructType);
+
+    public:
+        ~ApplyPresetMenuActionGroup();
+
+        void RefreshActionGroup(const GraphId& graphId, const AZ::EntityId& targetId);
+
+        // PresetsMenuActionGroup
+        ConstructContextMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) override;
+        ////
+    };
+
     ////////////////////
     // Comment Presets
     ////////////////////
@@ -114,15 +150,27 @@ namespace GraphCanvas
         void AddEntityToGraph(const GraphId& graphId, AZ::Entity* graphCanvasEntity, const AZ::Vector2& scenePos) const override;
     };
 
-    class CommentPresetsMenuActionGroup
+    class CreateCommentPresetMenuActionGroup
         : public PresetsMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommentPresetsMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCommentPresetMenuActionGroup, AZ::SystemAllocator, 0);
 
-        CommentPresetsMenuActionGroup();
+        CreateCommentPresetMenuActionGroup();
 
-        AddPresetMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) override;
+        ConstructContextMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) override;
+    };
+
+    class ApplyCommentPresetMenuActionGroup
+        : public ApplyPresetMenuActionGroup
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ApplyCommentPresetMenuActionGroup, AZ::SystemAllocator, 0);
+
+        ApplyCommentPresetMenuActionGroup()
+            : ApplyPresetMenuActionGroup(ConstructType::CommentNode)
+        {
+        }
     };
 
     ///////////////////////
@@ -141,14 +189,26 @@ namespace GraphCanvas
         void AddEntityToGraph(const GraphId& graphId, AZ::Entity* graphCanvasEntity, const AZ::Vector2& scenePos) const override;
     };
 
-    class NodeGroupPresetsMenuActionGroup
+    class CreateNodeGroupPresetMenuActionGroup
         : public PresetsMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodeGroupPresetsMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupPresetMenuActionGroup, AZ::SystemAllocator, 0);
 
-        NodeGroupPresetsMenuActionGroup();
+        CreateNodeGroupPresetMenuActionGroup();
 
-        AddPresetMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) override;        
+        ConstructContextMenuAction* CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset) override;
+    };
+
+    class ApplyNodeGroupPresetMenuActionGroup
+        : public ApplyPresetMenuActionGroup
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ApplyNodeGroupPresetMenuActionGroup, AZ::SystemAllocator, 0);
+
+        ApplyNodeGroupPresetMenuActionGroup()
+            : ApplyPresetMenuActionGroup(ConstructType::NodeGroup)
+        {
+        }
     };
 }

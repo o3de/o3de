@@ -67,7 +67,10 @@ namespace AZ
 
             //! Returns an immutable reference to the mip chain associated by index into the array of mip chains.
             const Data::Asset<ImageMipChainAsset>& GetMipChainAsset(size_t mipChainIndex) const; 
-            
+
+            //! Release referenced ImageMipChainAssets
+            void ReleaseMipChainAssets();
+
             //! Get the last mip chain asset data which contains lowest level of mips.
             const ImageMipChainAsset& GetTailMipChain() const;
 

@@ -13,6 +13,7 @@
 #include <RHI/CommandListBase.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/NsightAftermath.h>
 #include <AzCore/std/string/conversions.h>
 
 namespace AZ
@@ -28,11 +29,16 @@ namespace AZ
 
             AssertSuccess(device.GetDevice()->CreateCommandList(1, ConvertHardwareQueueClass(hardwareQueueClass), commandAllocator, nullptr, IID_GRAPHICS_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
             m_isRecording = true;
+
+            if (device.IsAftermathInitialized())
+            {
+                m_aftermathCommandListContext = Aftermath::CreateAftermathContextHandle(GetCommandList(), device.GetAftermathGPUCrashTracker());
+            }
         }
 
         void CommandListBase::Reset(ID3D12CommandAllocator* commandAllocator)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);  
             AZ_Assert(m_queuedBarriers.empty(), "Unflushed barriers in command list.");
 
             m_commandList->Reset(commandAllocator, nullptr);
@@ -82,6 +88,12 @@ namespace AZ
         RHI::HardwareQueueClass CommandListBase::GetHardwareQueueClass() const
         {
             return m_hardwareQueueClass;
+        }
+
+        void CommandListBase::SetAftermathEventMarker(const AZStd::string& markerData)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            Aftermath::SetAftermathEventMarker(m_aftermathCommandListContext, markerData, device.IsAftermathInitialized());
         }
 
         void CommandListBase::FlushBarriers()

@@ -16,8 +16,8 @@
 
 namespace AZ
 {
-    AZ_TYPE_SAFE_INTEGRAL(HashValue32, uint32_t);
-    AZ_TYPE_SAFE_INTEGRAL(HashValue64, uint64_t);
+    AZ_TYPE_SAFE_INTEGRAL(HashValue32, u32);
+    AZ_TYPE_SAFE_INTEGRAL(HashValue64, u64);
 
     //! Hashes a contiguous array of bytes starting at buffer and ending at buffer + length
     //! @param[in] buffer pointer to the memory to be hashed

@@ -1,4 +1,4 @@
-﻿/*
+/*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
 *
@@ -111,23 +111,6 @@ namespace ScriptCanvas
                 static void Reflect(AZ::ReflectContext* reflection);
             };
 
-            class ProduceOutcome
-            {
-            public:
-                AZ_TYPE_INFO(ProduceOutcome, "{4EB96892-76B7-4E14-8C55-5546BE6E7027}");
-
-                static void Reflect(AZ::ReflectContext* reflection);
-
-                static AZ::Outcome<Data::StringType, Data::StringType> FailureVE(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<void, Data::StringType> FailureE(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<Data::StringType, void> FailureV(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<void, void> Failure(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<Data::StringType, Data::StringType> SuccessVE(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<void, Data::StringType> SuccessE(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<Data::StringType, void> SuccessV(Data::StringType success, Data::StringType failure);
-                static AZ::Outcome<void, void> Success(Data::StringType success, Data::StringType failure);
-            };
-
             class TypeExposition
             {
             public:
@@ -139,6 +122,6 @@ namespace ScriptCanvas
                 AZStd::array<AZ::Vector3, 2> m_arrayVector3_2;
                 AZ::Outcome<AZ::Vector3> m_outcomeVector3Void;
             };
-        } // namespace Auxiliary
-    } // namespace UnitTesting
-} // namespace ScriptCanvas
+        }
+    } 
+} 

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <Include/ScriptCanvas/Libraries/Operators/Containers/OperatorEmpty.generated.h>
@@ -23,45 +22,26 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Is Empty"
             class OperatorEmpty : public Node
             {
             public:
 
-                ScriptCanvas_Node(OperatorEmpty,
-                    ScriptCanvas_Node::Name("Is Empty")
-                    ScriptCanvas_Node::Uuid("{670FCD62-BAA8-4812-9CF2-C3F2EC5F54F5}")
-                    ScriptCanvas_Node::Description("Returns whether the container is empty")
-                    ScriptCanvas_Node::Version(1, OperatorEmptyVersionConverter)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+                SCRIPTCANVAS_NODE(OperatorEmpty);
+
+
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 static bool OperatorEmptyVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
                 OperatorEmpty() = default;
 
-                // Node
+                // Node...
                 void OnInit() override;
                 ////
 
                 void OnInputSignal(const SlotId& slotId) override;
 
-            protected:
-
-                ScriptCanvas_In(ScriptCanvas_In::Name("In", ""));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Out", ""));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("True", "The container is empty"));
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("False", "The container is not empty"));
-
-                ScriptCanvas_DynamicDataSlot(ScriptCanvas::DynamicDataType::Container
-                    , ScriptCanvas::ConnectionType::Input
-                    , ScriptCanvas_DynamicDataSlot::Name("Source", "The container to check if its empty.")
-                    , ScriptCanvas_DynamicDataSlot::SupportsMethodContractTag("Empty")
-                );
-
-                ScriptCanvas_Property(bool,
-                    ScriptCanvas_Property::Name("Is Empty", "True if the container is empty, false if it's not.")
-                    ScriptCanvas_Property::Output
-                );
             };
         }
     }

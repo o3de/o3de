@@ -22,11 +22,6 @@ namespace AZ
             //
             // NodeIndex
             //
-            SceneGraph::NodeIndex::NodeIndex()
-                : m_value(NodeIndex::INVALID_INDEX)
-            {
-            }
-            
             bool SceneGraph::NodeIndex::IsValid() const
             {
                 return m_value != NodeIndex::INVALID_INDEX;

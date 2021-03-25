@@ -28,7 +28,7 @@ namespace GraphCanvas
         ComponentSaveData() = default;
         virtual ~ComponentSaveData() = default;
         
-        void operator=([[maybe_unused]] const ComponentSaveData& other)
+        void operator=(const ComponentSaveData&)
         {
             // Don't want to copy over anything, as the owner/graphid will vary from element to element and we want to maintain
             // whichever one we were created with

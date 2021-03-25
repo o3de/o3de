@@ -129,6 +129,11 @@ AzQtComponents--TabBar.Secondary::tab
     color: #959595;
 }
 
+AzQtComponents--TabBar.Secondary::close-button
+{
+    image: url(":/stylesheet/img/close_small.svg");
+}
+
 AzQtComponents--TabBar.Secondary::tab:hover
 {
     background: rgba(255,255,255,0.15);

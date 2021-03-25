@@ -21,18 +21,12 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Insert"
             class OperatorInsert : public OperatorBase
             {
             public:
 
-                ScriptCanvas_Node(OperatorInsert,
-                    ScriptCanvas_Node::Name("Insert")
-                    ScriptCanvas_Node::Uuid("{122B30C9-30A6-4CAF-B4E3-327A6C1A1E38}")
-                    ScriptCanvas_Node::Description("Inserts an element into the container at the specified Index or Key")
-                    ScriptCanvas_Node::Version(0)
-                    ScriptCanvas_Node::Category("Containers")
-                );
-
+                SCRIPTCANVAS_NODE(OperatorInsert);
 
 
                 OperatorInsert()

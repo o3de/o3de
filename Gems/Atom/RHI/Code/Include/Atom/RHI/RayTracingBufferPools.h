@@ -12,6 +12,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/BufferPool.h>
 
 namespace AZ
 {
@@ -25,11 +26,13 @@ namespace AZ
         //! This class encapsulates all of the BufferPools needed for ray tracing, freeing the application
         //! from setting up and managing the buffers pools individually.
         //!
-        class RayTracingBufferPools final
+        class RayTracingBufferPools
+            : public DeviceObject
         {
         public:
-            RayTracingBufferPools() = default;
-            ~RayTracingBufferPools() = default;
+            virtual ~RayTracingBufferPools() = default;
+
+            static RHI::Ptr<RHI::RayTracingBufferPools> CreateRHIRayTracingBufferPools();
 
             // accessors
             const RHI::Ptr<RHI::BufferPool>& GetShaderTableBufferPool() const;
@@ -40,6 +43,15 @@ namespace AZ
 
             // operations
             void Init(RHI::Ptr<RHI::Device>& device);
+
+        protected:
+            RayTracingBufferPools() = default;
+
+            virtual RHI::BufferBindFlags GetShaderTableBufferBindFlags() const { return RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable; }
+            virtual RHI::BufferBindFlags GetScratchBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite; }
+            virtual RHI::BufferBindFlags GetBlasBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
+            virtual RHI::BufferBindFlags GetTlasInstancesBufferBindFlags() const { return RHI::BufferBindFlags::ShaderRead; }
+            virtual RHI::BufferBindFlags GetTlasBufferBindFlags() const { return RHI::BufferBindFlags::RayTracingAccelerationStructure; }
 
         private:
             bool m_initialized = false;

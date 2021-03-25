@@ -22,12 +22,18 @@ namespace AZ
         ModelAssetBuilderContext::ModelAssetBuilderContext(
             const AZ::SceneAPI::Containers::Scene& scene,
             const AZ::SceneAPI::DataTypes::IMeshGroup& group,
+            const AZ::SceneAPI::CoordinateSystemConverter coordSysConverter,
             const MaterialAssetsByUid& materialsByUid,
-            Data::Asset<ModelAsset>& outputModelAsset)
+            Data::Asset<ModelAsset>& outputModelAsset,
+            Data::Asset<SkinMetaAsset>& outputSkinMetaAsset,
+            Data::Asset<MorphTargetMetaAsset>& outputMorphTargetMetaAsset)
             : m_scene(scene)
             , m_group(group)
+            , m_coordSysConverter(coordSysConverter)
             , m_materialsByUid(materialsByUid)
             , m_outputModelAsset(outputModelAsset)
+            , m_outputSkinMetaAsset(outputSkinMetaAsset)
+            , m_outputMorphTargetMetaAsset(outputMorphTargetMetaAsset)
         {}
 
         MaterialAssetBuilderContext::MaterialAssetBuilderContext(

@@ -10,27 +10,40 @@
 *
 */
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/Utils.h>
+#include <iostream>
+
 #include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 
 #include <Libraries/Libraries.h>
-#include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Contract.h>
-#include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/Nodeable.h>
+#include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/SystemComponent.h>
+#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
 
-namespace
+namespace ScriptCanvasSystemComponentCpp
 {
+#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+    const int k_infiniteLoopDetectionMaxIterations = 3000;
+    const int k_maxHandlerStackDepth = 25;
+#else
+    const int k_infiniteLoopDetectionMaxIterations = 10000;
+    const int k_maxHandlerStackDepth = 100;
+#endif
+
     bool IsDeprecated(const AZ::AttributeArray& attributes)
     {
         bool isDeprecated{};
@@ -42,13 +55,14 @@ namespace
 
         return isDeprecated;
     }
-
 }
 
 namespace ScriptCanvas
 {
+
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        Nodeable::Reflect(context);
         ReflectLibraries(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -58,6 +72,7 @@ namespace ScriptCanvas
                 // ScriptCanvas avoids a use dependency on the AssetBuilderSDK. Therefore the Crc is used directly to register this component with the Gem builder
                 ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
                 ->Field("m_infiniteLoopDetectionMaxIterations", &SystemComponent::m_infiniteLoopDetectionMaxIterations)
+                ->Field("maxHandlerStackDepth", &SystemComponent::m_maxHandlerStackDepth)
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -68,6 +83,8 @@ namespace ScriptCanvas
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_infiniteLoopDetectionMaxIterations, "Infinite Loop Protection Max Iterations", "Script Canvas will avoid infinite loops by detecting potentially re-entrant conditions that execute up to this number of iterations.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_maxHandlerStackDepth, "Max Handler Stack Depth", "Script Canvas will avoid infinite loops at run-time by detecting sending Ebus Events while handling said Events. This limits the stack depth of the broadcast.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1000) // Safeguard user given value is valid
                     ;
             }
         }
@@ -91,6 +108,9 @@ namespace ScriptCanvas
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        // \todo configure the application to require these services
+        // required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        // required.push_back(AZ_CRC("ScriptService", 0x787235ab));
     }
 
     void SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -100,6 +120,9 @@ namespace ScriptCanvas
     void SystemComponent::Init()
     {
         RegisterCreatableTypes();
+
+        m_infiniteLoopDetectionMaxIterations = ScriptCanvasSystemComponentCpp::k_infiniteLoopDetectionMaxIterations;
+        m_maxHandlerStackDepth = ScriptCanvasSystemComponentCpp::k_maxHandlerStackDepth;
     }
 
     void SystemComponent::Activate()
@@ -111,12 +134,50 @@ namespace ScriptCanvas
         {
             AZ::BehaviorContextBus::Handler::BusConnect(behaviorContext);
         }
+
+        if (IsAnyScriptInterpreted()) // or if is the editor...
+        {
+            Execution::ActivateInterpreted();
+        }
+
+        SafeRegisterPerformanceTracker();
     }
 
     void SystemComponent::Deactivate()
     {
         AZ::BehaviorContextBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
+
+        ModPerformanceTracker()->CalculateReports();
+        Execution::PerformanceTrackingReport report = ModPerformanceTracker()->GetGlobalReport();
+        
+        const double ready = aznumeric_caster(report.timing.initializationTime);
+        const double instant = aznumeric_caster(report.timing.executionTime);
+        const double latent = aznumeric_caster(report.timing.latentTime);
+        const double total = aznumeric_caster(report.timing.totalTime);
+
+        std::cerr << "Global ScriptCanvas Performance Report:\n";
+        std::cerr << "[ INITIALIZE] " << AZStd::string::format("%7.3f ms \n", ready / 1000.0).c_str();
+        std::cerr << "[  EXECUTION] " << AZStd::string::format("%7.3f ms \n", instant / 1000.0).c_str();
+        std::cerr << "[     LATENT] " << AZStd::string::format("%7.3f ms \n", latent / 1000.0).c_str();
+        std::cerr << "[      TOTAL] " << AZStd::string::format("%7.3f ms \n", total / 1000.0).c_str();
+
+        SafeUnregisterPerformanceTracker();
+    }
+
+    bool SystemComponent::IsScriptUnitTestingInProgress()
+    {
+        return m_scriptBasedUnitTestingInProgress;
+    }
+
+    void SystemComponent::MarkScriptUnitTestBegin()
+    {
+        m_scriptBasedUnitTestingInProgress = true;
+    }
+
+    void SystemComponent::MarkScriptUnitTestEnd()
+    {
+        m_scriptBasedUnitTestingInProgress = false;
     }
 
     void SystemComponent::CreateEngineComponentsOnEntity(AZ::Entity* entity)
@@ -249,7 +310,7 @@ namespace ScriptCanvas
 
             canCreate = listOnly || (!excludeClassAttributeData || (!(flags & exclusionFlags)));
             canCreate = canCreate && (serializeContext->FindClassData(behaviorClass->m_typeId));
-            canCreate = canCreate && !IsDeprecated(behaviorClass->m_attributes);
+            canCreate = canCreate && !ScriptCanvasSystemComponentCpp::IsDeprecated(behaviorClass->m_attributes);
 
             if (AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes))
             {
@@ -291,7 +352,7 @@ namespace ScriptCanvas
         auto excludeClassAttributeData = azrtti_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes));
         bool canCreate = !excludeClassAttributeData || !(excludeClassAttributeData->Get(nullptr) & exclusionFlags);
         canCreate = canCreate && (serializeContext->FindClassData(behaviorClass->m_typeId) || AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes));
-        canCreate = canCreate && !IsDeprecated(behaviorClass->m_attributes);
+        canCreate = canCreate && !ScriptCanvasSystemComponentCpp::IsDeprecated(behaviorClass->m_attributes);
         
         // create able variables must have full memory support
         canCreate = canCreate &&
@@ -316,5 +377,60 @@ namespace ScriptCanvas
         {
             dataRegistry->UnregisterType(behaviorClass->m_typeId);
         }
+    }
+
+    void SystemComponent::SetInterpretedBuildConfiguration(BuildConfiguration config)
+    {
+        Execution::SetInterpretedExecutionMode(config);
+    }
+
+    AZ::EnvironmentVariable<Execution::PerformanceTracker*> SystemComponent::s_perfTracker;
+    AZStd::shared_mutex SystemComponent::s_perfTrackerMutex;
+
+    Execution::PerformanceTracker* SystemComponent::ModPerformanceTracker()
+    {
+        // First attempt to use the module-static reference; take a read lock to check it.
+        // This is the fast path which won't block.
+        {
+            AZStd::shared_lock<AZStd::shared_mutex> lock(s_perfTrackerMutex);
+            if (s_perfTracker)
+            {
+                return s_perfTracker.Get();
+            }
+        }
+
+        // If the instance doesn't exist (which means we could be in a different module),
+        // take the full lock and request it.
+        AZStd::unique_lock<AZStd::shared_mutex> lock(s_perfTrackerMutex);
+        s_perfTracker = AZ::Environment::FindVariable<Execution::PerformanceTracker*>(s_trackerName);
+        return s_perfTracker ? s_perfTracker.Get() : nullptr;
+    }
+
+    void SystemComponent::SafeRegisterPerformanceTracker()
+    {
+        if (ModPerformanceTracker())
+        {
+            return;
+        }
+
+        AZStd::unique_lock<AZStd::shared_mutex> lock(s_perfTrackerMutex);
+
+        auto tracker = aznew Execution::PerformanceTracker();
+        s_perfTracker = AZ::Environment::CreateVariable<Execution::PerformanceTracker*>(s_trackerName);
+        s_perfTracker.Get() = tracker;
+    }
+
+    void SystemComponent::SafeUnregisterPerformanceTracker()
+    {
+        auto performanceTracker = ModPerformanceTracker();
+        if (!performanceTracker)
+        {
+            return;
+        }
+
+        AZStd::unique_lock<AZStd::shared_mutex> lock(s_perfTrackerMutex);
+        *s_perfTracker = nullptr;
+        s_perfTracker.Reset();
+        delete performanceTracker;
     }
 }

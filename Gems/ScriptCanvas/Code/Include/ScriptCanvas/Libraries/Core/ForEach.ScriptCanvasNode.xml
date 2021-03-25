@@ -9,7 +9,7 @@
            Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
            Category="Containers"
            Version="2"
-           VersionConverter="VersionConverter"
+           VersionConverter="ScriptCanvas::VersionConverters::ForEachVersionConverter"
            GeneratePropertyFriend="True"
            Description="Node for iterating through a container">
         <In Name="In" Description="Signaled upon node entry"/>

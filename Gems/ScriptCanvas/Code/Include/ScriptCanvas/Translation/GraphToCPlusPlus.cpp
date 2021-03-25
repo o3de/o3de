@@ -10,10 +10,10 @@
 *
 */
 
-#include "precompiled.h"
 #include "GraphToCPlusPlus.h"
 
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
 
 namespace ScriptCanvas
 {
@@ -50,7 +50,6 @@ namespace ScriptCanvas
                     TranslateHandlers();
                     TranslateConstruction();
                     TranslateDestruction();
-                    TranslateFunctions();
                     TranslateStartNode();
                 }
                 TranslateClassClose();
@@ -58,18 +57,20 @@ namespace ScriptCanvas
             TranslateNamespaceClose();
         }
 
-        AZ::Outcome<void, AZStd::string> GraphToCPlusPlus::Translate(const Grammar::AbstractCodeModel& model, AZStd::string& dotH, AZStd::string& dotCPP)
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> GraphToCPlusPlus::Translate(const Grammar::AbstractCodeModel& model, AZStd::string& dotH, AZStd::string& dotCPP)
         {
             GraphToCPlusPlus translation(model);
-            auto outcome = translation.m_outcome;
 
-            if (outcome.IsSuccess())
+            if (translation.IsSuccessfull())
             {
                 dotH = AZStd::move(translation.m_dotH.MoveOutput());
                 dotCPP = AZStd::move(translation.m_dotCPP.MoveOutput());
+                return AZ::Success();
             }
-
-            return outcome;
+            else
+            {
+                return AZ::Failure(AZStd::make_pair(AZStd::string(".h errors"), AZStd::string(".cpp errors")));
+            }
         }
 
         void GraphToCPlusPlus::TranslateClassClose()
@@ -80,13 +81,13 @@ namespace ScriptCanvas
             m_dotH.WriteSpace();
             SingleLineComment(m_dotH);
             m_dotH.WriteSpace();
-            m_dotH.WriteLine("class %s", GetGraphName());
+            m_dotH.WriteLine("class %s", GetGraphName().data());
         }
 
         void GraphToCPlusPlus::TranslateClassOpen()
         {
             m_dotH.WriteIndent();
-            m_dotH.WriteLine("class %s", GetGraphName());
+            m_dotH.WriteLine("class %s", GetGraphName().data());
             m_dotH.WriteIndent();
             m_dotH.WriteLine("{");
             m_dotH.Indent();
@@ -117,18 +118,7 @@ namespace ScriptCanvas
         {
 
         }
-
-        void GraphToCPlusPlus::TranslateFunctions()
-        {
-            const Grammar::Functions& functions = m_model.GetFunctions();
-
-            for (const auto& functionsEntry : functions)
-            {
-                const Grammar::Function& function = functionsEntry.second;
-                // TranslateFunction(function);
-            }
-        }
-
+                
         void GraphToCPlusPlus::TranslateHandlers()
         {
 
@@ -153,16 +143,18 @@ namespace ScriptCanvas
         void GraphToCPlusPlus::TranslateStartNode()
         {
             // write a start function
-            if (const Node* startNode = m_model.GetStartNode())
+            const Node* startNode = nullptr;
+            
+            if (startNode)
             {
                 { // .h
                     m_dotH.WriteIndent();
-                    m_dotH.WriteLine("public: static void OnGraphStart(const RuntimeContext& context);");
+                    m_dotH.WriteLine("public: static void %s(const RuntimeContext& context);", Grammar::k_OnGraphStartFunctionName);
                 }
                 
                 { // .cpp
                     m_dotCPP.WriteIndent();
-                    m_dotCPP.WriteLine("void %s::OnGraphStart(const RuntimeContext& context)", GetGraphName());
+                    m_dotCPP.WriteLine("void %s::%s(const RuntimeContext& context)", GetGraphName().data(), Grammar::k_OnGraphStartFunctionName);
                     OpenScope(m_dotCPP);
                     {
                         m_dotCPP.WriteIndent();
@@ -181,7 +173,7 @@ namespace ScriptCanvas
 
         }
 
-        void GraphToCPlusPlus::WriterHeader()
+        void GraphToCPlusPlus::WriteHeader()
         {
             WriteHeaderDotH();
             WriteHeaderDotCPP();
@@ -194,7 +186,7 @@ namespace ScriptCanvas
             WriteDoNotModify(m_dotCPP);
             m_dotCPP.WriteNewLine();
             m_dotCPP.WriteLine("#include \"precompiled.h\"");
-            m_dotCPP.WriteLine("#include \"%s.h\"", GetGraphName());
+            m_dotCPP.WriteLine("#include \"%s.h\"", GetGraphName().data());
             m_dotCPP.WriteNewLine();
         }
 
@@ -210,5 +202,5 @@ namespace ScriptCanvas
             m_dotH.WriteNewLine();
         }
 
-    } // namespace Translation
-} // namespace ScriptCanvas
+    } 
+} 

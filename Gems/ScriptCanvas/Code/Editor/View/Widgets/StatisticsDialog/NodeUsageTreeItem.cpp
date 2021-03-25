@@ -132,14 +132,14 @@ namespace ScriptCanvasEditor
         return QVariant();
     }
 
-    Qt::ItemFlags ScriptCanvasAssetNodeUsageTreeItem::Flags([[maybe_unused]] const QModelIndex& index) const
+    Qt::ItemFlags ScriptCanvasAssetNodeUsageTreeItem::Flags(const QModelIndex&) const
     {
         Qt::ItemFlags baseFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
         return baseFlags;
     }
 
-    void ScriptCanvasAssetNodeUsageTreeItem::SetAssetId(const AZ::Data::AssetId& assetId)
+    void ScriptCanvasAssetNodeUsageTreeItem::SetAssetId(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType)
     {
         // If we are setting up a new assetId, we wantt o register for the bus.
         // Otherwise we just want to reload the asset to scrape some data from it.
@@ -155,14 +155,12 @@ namespace ScriptCanvasEditor
             AZ::Data::AssetBus::Handler::BusConnect(assetId);
         }
 
-        AZ::Data::Asset<ScriptCanvasAsset> newAsset;
+        m_assetType = assetType;
 
         const bool loadBlocking = false;
 
         auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
-        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, azrtti_typeid<ScriptCanvasAsset>(), onAssetReady);
-
-        ProcessAsset(newAsset);
+        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
     }
 
     const AZ::Data::AssetId& ScriptCanvasAssetNodeUsageTreeItem::GetAssetId() const
@@ -215,7 +213,7 @@ namespace ScriptCanvasEditor
         ProcessAsset(asset);
     }
 
-    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<ScriptCanvasAsset>& scriptCanvasAsset)
+    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset)
     {
         if (scriptCanvasAsset.IsReady())
         {
@@ -248,9 +246,10 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void ScriptCanvasAssetNodeUsageTreeItemRoot::RegisterAsset(const AZ::Data::AssetId& assetId)
+    void ScriptCanvasAssetNodeUsageTreeItemRoot::RegisterAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType)
     {
-        auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::Default);
+        auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::PreLoad);
+        asset.BlockUntilLoadComplete();
         if (!asset.IsReady())
         {
             // The asset must be loaded before it an be registered. We will connect to the AssetBus and wait for it to be ready.
@@ -267,7 +266,7 @@ namespace ScriptCanvasEditor
             AZStd::string rootFilePath;
             bool foundPath = false;
 
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundPath, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetInfoById, assetId, azrtti_typeid<ScriptCanvasAsset>(), platformName, assetInfo, rootFilePath);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundPath, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetInfoById, assetId, assetType, platformName, assetInfo, rootFilePath);
 
             if (foundPath)
             {
@@ -288,7 +287,7 @@ namespace ScriptCanvasEditor
                         {
                             ScriptCanvasAssetNodeUsageTreeItem* usageTreeItem = treeItem2->CreateChildNode<ScriptCanvasAssetNodeUsageTreeItem>(fileName);
 
-                            usageTreeItem->SetAssetId(assetId);
+                            usageTreeItem->SetAssetId(assetId, assetType);
 
                             m_scriptCanvasAssetItems[assetId] = usageTreeItem;
                         }
@@ -298,7 +297,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            treeItem->SetAssetId(assetId);
+            treeItem->SetAssetId(assetId, assetType);
         }
     }
 
@@ -327,7 +326,7 @@ namespace ScriptCanvasEditor
         return nullptr;
     }
 
-    GraphCanvas::GraphCanvasTreeItem* ScriptCanvasAssetNodeUsageTreeItemRoot::CreateCategoryNode([[maybe_unused]] AZStd::string_view categoryPath, AZStd::string_view categoryName, GraphCanvasTreeItem* parent) const
+    GraphCanvas::GraphCanvasTreeItem* ScriptCanvasAssetNodeUsageTreeItemRoot::CreateCategoryNode(AZStd::string_view, AZStd::string_view categoryName, GraphCanvasTreeItem* parent) const
     {
         return parent->CreateChildNode<ScriptCanvasAssetNodeUsageTreeItem>(categoryName);
     }
@@ -340,6 +339,6 @@ namespace ScriptCanvasEditor
     void ScriptCanvasAssetNodeUsageTreeItemRoot::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ::Data::AssetBus::MultiHandler::BusDisconnect(*AZ::Data::AssetBus::GetCurrentBusId());
-        RegisterAsset(asset.GetId());
+        RegisterAsset(asset.GetId(), asset.GetType());
     }
 }

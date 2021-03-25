@@ -128,7 +128,11 @@ namespace UnitTest
             QTemporaryDir m_tempDir {QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath("ArchiveTests-")};
         };
 
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveTest, DISABLED_CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
+#else
         TEST_F(ArchiveTest, CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.isValid());
             CreateArchiveFolder();
@@ -138,7 +142,11 @@ namespace UnitTest
             EXPECT_EQ(createResult, true);
         }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveTest, DISABLED_ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
+#else
         TEST_F(ArchiveTest, ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.isValid());
             CreateArchiveFolder();
@@ -152,7 +160,11 @@ namespace UnitTest
             EXPECT_EQ(fileList.size(), 6);
         }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveTest, DISABLED_CreateDeltaCatalog_AssetsNotRegistered_Failure)
+#else
         TEST_F(ArchiveTest, CreateDeltaCatalog_AssetsNotRegistered_Failure)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
 
@@ -169,7 +181,11 @@ namespace UnitTest
             EXPECT_EQ(catalogCreated, false);
         }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveTest, DISABLED_CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
+#else
         TEST_F(ArchiveTest, CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
 

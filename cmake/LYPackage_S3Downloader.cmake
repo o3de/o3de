@@ -32,16 +32,16 @@ set(LY_AWS_PROFILE "" CACHE STRING
         "Profile to use for 'aws' CLI.  Blank means do not use a profile.  You can also use LY_AWS_PROFILE or AWS_PROFILE environment variables.")
 
 if (LY_AWS_PROFILE)
-    set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" ${LY_AWS_PROFILE})
+    ly_set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" ${LY_AWS_PROFILE})
 elseif (DEFINED ENV{LY_AWS_PROFILE}) # if the CMake var isn't set (from the above cache), try the environment.
-    set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" $ENV{LY_AWS_PROFILE})
+    ly_set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" $ENV{LY_AWS_PROFILE})
 elseif (DEFINED ENV{AWS_PROFILE})
-    set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" $ENV{AWS_PROFILE})
+    ly_set(LY_PACKAGE_AWS_PROFILE_COMMAND "--profile" $ENV{AWS_PROFILE})
 endif()
 
 # not a cache variable, but a tweakable.  We can use really short-lived credentials
 # and urls becuase we intend to presign and then immediately fetch.
-set(LY_PACKAGE_PRESIGN_URL_EXPIRATION_TIME 120)
+ly_set(LY_PACKAGE_PRESIGN_URL_EXPIRATION_TIME 120)
 
 # ly_is_s3_url
 # if the given URL is a s3 url of thr form "s3://(stuff)" then sets
@@ -58,11 +58,11 @@ endfunction()
 # however, we dont want to cache the path in case the env var changes:
 if (NOT LY_AWS_COMMAND)
     if (DEFINED ENV{LY_AWS_COMMAND})
-        set(LY_AWS_COMMAND $ENV{LY_AWS_COMMAND})
+        ly_set(LY_AWS_COMMAND $ENV{LY_AWS_COMMAND})
     else()
         find_program(LY_AWS_COMMAND_FIND "aws")
         if (NOT "${LY_AWS_COMMAND_FIND}" STREQUAL "LY_AWS_COMMAND_FIND-NOTFOUND")
-            set(LY_AWS_COMMAND ${LY_AWS_COMMAND_FIND})
+            ly_set(LY_AWS_COMMAND ${LY_AWS_COMMAND_FIND})
         endif()
         unset(LY_AWS_COMMAND_FIND CACHE)
     endif()

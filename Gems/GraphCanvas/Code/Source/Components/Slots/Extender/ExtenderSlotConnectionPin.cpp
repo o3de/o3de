@@ -42,7 +42,7 @@ namespace GraphCanvas
         update();
     }
     
-    void ExtenderSlotConnectionPin::DrawConnectionPin(QPainter *painter, QRectF drawRect, [[maybe_unused]] bool isConnected)
+    void ExtenderSlotConnectionPin::DrawConnectionPin(QPainter *painter, QRectF drawRect, bool /*isConnected*/)
     {
         qreal radius = (AZ::GetMin(drawRect.width(), drawRect.height()) * 0.5) - m_style.GetBorder().width();
 

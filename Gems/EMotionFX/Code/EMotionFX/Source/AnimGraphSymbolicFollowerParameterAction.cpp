@@ -144,7 +144,9 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            // Convert 'servantParameterName' into 'followerParameterName'.
+            // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project’s related
+            // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
+            // for assets/materials created prior to the change. These will be deprecated in the future.
             int index = classElement.FindElement(AZ_CRC("servantParameterName", 0xe6070940));
             if (index > 0)
             {
@@ -159,7 +161,9 @@ namespace EMotionFX
                 classElement.AddElementWithData(context, "followerParameterName", oldValue);
             }
 
-            // Convert 'masterParameterName' into 'leaderParameterName'.
+            // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project’s related
+            // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility for
+            // assets/materials created prior to the change. These will be deprecated in the future.
             index = classElement.FindElement(AZ_CRC("masterParameterName", 0xd0d333e3));
             if (index > 0)
             {

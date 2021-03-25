@@ -79,7 +79,6 @@ namespace MaterialEditor
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void SetupMenu();
-        void SetupMenu_New();
 
         void SetupTabs();
         void AddTabForDocumentId(const AZ::Uuid& documentId);
@@ -104,8 +103,7 @@ namespace MaterialEditor
         AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
         QMenu* m_menuFile = {};
-        QMenu* m_menuNew = {};
-        QAction* m_actionNewFromOther = {};
+        QAction* m_actionNew = {};
         QAction* m_actionOpen = {};
         QAction* m_actionOpenRecent = {};
         QAction* m_actionClose = {};

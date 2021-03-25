@@ -16,6 +16,7 @@
 #include <AzCore/Component/EntityBus.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
 
 namespace GraphCanvas
 {
@@ -23,14 +24,16 @@ namespace GraphCanvas
     class SceneMemberComponent
         : public AZ::Component
         , public SceneMemberRequestBus::Handler
+        , public GroupableSceneMemberRequestBus::Handler
         , public AZ::EntityBus::Handler
     {
     public:
         AZ_COMPONENT(SceneMemberComponent, "{C431F18F-22FB-4D3E-8E1A-2F8E4E30F7FB}");
 
-        static void Reflect(AZ::ReflectContext* reflectContext);        
+        static void Reflect(AZ::ReflectContext* reflectContext);
 
         SceneMemberComponent();
+        explicit SceneMemberComponent(bool isGroupable);
         ~SceneMemberComponent() = default;
 
         // AZ::Component
@@ -46,8 +49,12 @@ namespace GraphCanvas
 
         AZ::EntityId GetScene() const override;
 
-        bool LockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
-        void UnlockForExternalMovement(const AZ::EntityId& sceneMemberId) override;
+        bool IsGrouped() const override;
+        const AZ::EntityId& GetGroupId() const override;
+
+        void RegisterToGroup(const AZ::EntityId& groupId) override;
+        void UnregisterFromGroup(const AZ::EntityId& groupId) override;
+        void RemoveFromGroup() override;
         ////
 
         // EntityBus
@@ -56,7 +63,10 @@ namespace GraphCanvas
 
     private:
 
-        AZ::EntityId m_lockedSceneMember;
+        bool m_isGroupable;
+        
         AZ::EntityId m_sceneId;
+
+        AZ::EntityId m_groupId;
     };
 }

@@ -548,7 +548,7 @@ ASSET_SYNC_MODE_FUNCTION = {
 
 
 def main(args):
-    parser = argparse.ArgumentParser(description="Synchronize a game's assets to a Xenia layout folder")
+    parser = argparse.ArgumentParser(description="Synchronize a game's assets to a layout folder")
 
     parser.add_argument('--dev-root',
                         help='The path to the dev root',

@@ -29,7 +29,7 @@
 
 #include <Editor/View/Windows/MainWindow.h>
 #include <Editor/View/Dialogs/NewGraphDialog.h>
-#include <Editor/View/Dialogs/Settings.h>
+#include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/Settings.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
@@ -43,10 +43,16 @@
 #include <LyViewPaneNames.h>
 
 #include <QMenu>
+#include <QMessageBox>
 
 #include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+
+#include <AzFramework/IO/FileOperations.h>
+#include <AzCore/Serialization/Utils.h>
+
+#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -54,12 +60,15 @@ namespace ScriptCanvasEditor
 
     SystemComponent::SystemComponent()
     {
+        AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusConnect();
     }
 
     SystemComponent::~SystemComponent()
     {
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
     }
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
@@ -131,6 +140,23 @@ namespace ScriptCanvasEditor
         ScriptCanvasExecutionBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        if (userSettings)
+        {
+            if (userSettings->m_showUpgradeDialog)
+            {
+                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            }
+            else
+            {
+                m_upgradeDisabled = true;
+            }
+        }
+        else
+        {
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+        }
     }
 
     void SystemComponent::NotifyRegisterViews()
@@ -149,6 +175,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
         for (auto&& propertyHandler : m_propertyHandlers)
         {
@@ -370,11 +397,89 @@ namespace ScriptCanvasEditor
         }
     }
 
-    Reporter SystemComponent::RunGraph(AZStd::string_view path)
+    Reporter SystemComponent::RunGraph(AZStd::string_view path, ScriptCanvas::ExecutionMode mode)
+    {
+        RunGraphSpec runGraphSpec;
+        runGraphSpec.graphPath = path;
+        runGraphSpec.runSpec.execution = mode;
+        return ScriptCanvasEditor::RunGraph(runGraphSpec).front();
+    }
+
+    Reporter SystemComponent::RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData> asset, ScriptCanvas::ExecutionMode mode)
     {
         Reporter reporter;
-        ScriptCanvasEditor::RunGraph(path, ExecutionMode::Interpreted, DurationSpec(), reporter);
+        RunEditorAsset(asset, reporter, mode);
         return reporter;
+    }
+
+    void SystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+    {
+        // Enumerate all ScriptCanvas assets
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets,
+            nullptr,
+            [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& assetInfo) {
+
+                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>() || assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
+                {
+                    AddAssetToUpgrade(assetInfo);
+                }
+            },
+            nullptr
+            );
+    }
+
+    void SystemComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    {
+        if (IsUpgrading())
+        {
+            return;
+        }
+
+        auto assetInfo = ScriptCanvasEditor::AssetHelpers::GetAssetInfo(assetId);
+        AddAssetToUpgrade(assetInfo);
+    }
+
+    void SystemComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
+    {
+        if (IsUpgrading())
+        {
+            return;
+        }
+
+        AZStd::erase_if(m_assetsToConvert, [assetId](const AZ::Data::AssetInfo& assetToConvert)
+            {
+                return assetToConvert.m_assetId == assetId;
+            }
+        );
+    }
+
+    void SystemComponent::AddAssetToUpgrade(const AZ::Data::AssetInfo& assetInfo)
+    {
+        auto query = AZStd::find_if(m_assetsToConvert.begin(), m_assetsToConvert.end(), [assetInfo](const AZ::Data::AssetInfo& assetToConvert)
+            {
+                return assetToConvert.m_assetId == assetInfo.m_assetId;
+            }
+        );
+
+        if (query == m_assetsToConvert.end())
+        {
+            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
+            {
+                m_assetsToConvert.push_front(assetInfo);
+            }
+            else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
+            {
+                m_assetsToConvert.push_back(assetInfo);
+            }
+        }
+    }
+
+    AzToolsFramework::AssetSeedManagerRequests::AssetTypePairs SystemComponent::GetAssetTypeMapping()
+    {
+        return {
+            { "scriptcanvas", "scriptcanvas_compiled" },
+            { "scriptcanvas_fn", "scriptcanvas_fn_compiled" }
+        };
     }
 
 }

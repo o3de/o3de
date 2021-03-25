@@ -63,18 +63,6 @@
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
-            },
-            "xenia": {
-                "UUID": "{88D07159-2FC0-4CBE-82CC-A9DC258C9351}",
-                "Name": "Terrain_Albedo",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "PixelFormat": "BC1",
-                "IsPowerOf2": true,
-                "HighPassMip": 5,
-                "MipMapSetting": {
-                    "MipGenType": "Box"
-                }
             }
         }
     }

@@ -68,11 +68,7 @@ struct IRenderer;
 struct IProcess;
 struct I3DEngine;
 struct ITimer;
-struct INetwork;
-struct IOnline;
-struct ICryLobby;
 struct ICryFont;
-class ICrypto;
 struct IMovieSystem;
 struct IMemoryManager;
 namespace Audio
@@ -197,7 +193,6 @@ enum ESystemConfigPlatform
     CONFIG_OSX_METAL = 3,
     CONFIG_ANDROID = 4,
     CONFIG_IOS = 5,
-    CONFIG_XENIA = 6,
     CONFIG_PROVO = 7,
     CONFIG_SALEM = 8,
     CONFIG_JASPER = 9,
@@ -879,7 +874,6 @@ struct SSystemUpdateStats
 struct SSystemGlobalEnvironment
 {
     I3DEngine*                 p3DEngine;
-    INetwork*                  pNetwork;
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
     IFileChangeMonitor*        pFileChangeMonitor;
@@ -1323,7 +1317,6 @@ struct ISystem
     virtual I3DEngine* GetI3DEngine() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    virtual ICrypto* GetCrypto() = 0;
     // Returns:
     //   Can be NULL, because it only exists when running through the editor, not in pure game mode.
     virtual IResourceManager* GetIResourceManager() = 0;
@@ -1340,9 +1333,6 @@ struct ISystem
     virtual IThreadManager* GetIThreadManager() = 0;
 
     //irtual IThreadManager* GetIThreadManager() = 0;
-
-
-    virtual INetwork* GetINetwork() = 0;
 
     virtual void SetLoadingProgressListener(ILoadingProgressListener* pListener) = 0;
     virtual ISystem::ILoadingProgressListener* GetLoadingProgressListener() const = 0;

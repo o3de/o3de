@@ -25,6 +25,7 @@ struct DisplayContext;
 */
 class CLineGizmo
     : public CGizmo
+    , public CBaseObject::EventListener
 {
 public:
     CLineGizmo();
@@ -43,7 +44,7 @@ public:
     void SetColor(const Vec3& color1, const Vec3& color2, float alpha1 = 1.0f, float alpha2 = 1.0f);
 
 private:
-    void OnObjectEvent(CBaseObject* object, int event);
+    void OnObjectEvent(CBaseObject* object, int event) override;
     void CalcBounds();
 
     CBaseObjectPtr m_object[2];

@@ -56,13 +56,18 @@ namespace ScriptCanvas
                 SignalOutput(GetSlotId("Out"));
             }
 
-            bool Assign::SlotAcceptsType(const SlotId& slotID, const Data::Type& type) const 
+            AZStd::Outcome<void, AZStd::string> Assign::SlotAcceptsType(const SlotId& slotID, const Data::Type& type) const 
             {
                 Slot* sourceSlot = GetSlot(GetSlotId("Source"));
                 Slot* targetSlot = GetSlot(GetSlotId("Target"));
-                return sourceSlot 
-                    && targetSlot
-                    && DynamicSlotAcceptsType(slotID, type, Node::DynamicTypeArity::Single, *targetSlot, AZStd::vector<Slot*>{sourceSlot});
+
+                if (sourceSlot == nullptr
+                    || targetSlot == nullptr)
+                {
+                    return AZ::Failure(AZStd::string("Unable to find all necessary slots on node");)
+                }
+
+                return DynamicSlotAcceptsType(slotID, type, Node::DynamicTypeArity::Single, *targetSlot, AZStd::vector<Slot*>{sourceSlot});
             }
 
             void Assign::Reflect(AZ::ReflectContext* reflectContext)

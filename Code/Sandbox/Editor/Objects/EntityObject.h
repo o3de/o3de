@@ -76,6 +76,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
  */
 class CRYEDIT_API CEntityObject
     : public CBaseObject
+    , public CBaseObject::EventListener
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -267,7 +268,7 @@ protected:
     void OnPropertyChange(IVariable* var);
 
     //////////////////////////////////////////////////////////////////////////
-    virtual void OnEventTargetEvent(CBaseObject* target, int event);
+    void OnObjectEvent(CBaseObject* target, int event) override;
     void ResolveEventTarget(CBaseObject* object, unsigned int index);
     void ReleaseEventTargets();
 
@@ -424,15 +425,45 @@ protected:
     QString m_attachmentTarget;
 
 private:
+    struct VariableCallbackIndex
+    {
+        enum : unsigned char
+        {
+            OnAreaHeightChange = 0,
+            OnAreaLightChange,
+            OnAreaLightSizeChange,
+            OnAreaWidthChange,
+            OnBoxHeightChange,
+            OnBoxLengthChange,
+            OnBoxProjectionChange,
+            OnBoxSizeXChange,
+            OnBoxSizeYChange,
+            OnBoxSizeZChange,
+            OnBoxWidthChange,
+            OnColorChange,
+            OnInnerRadiusChange,
+            OnOuterRadiusChange,
+            OnProjectInAllDirsChange,
+            OnProjectorFOVChange,
+            OnProjectorTextureChange,
+            OnPropertyChange,
+            OnRadiusChange,
+
+            // must be at the end
+            Count,
+        };
+    };
+
     void ResetCallbacks();
-    void SetVariableCallback(IVariable* pVar, IVariable::OnSetCallback func);
+    void SetVariableCallback(IVariable* pVar, IVariable::OnSetCallback* func);
     void ClearCallbacks();
 
     void ForceVariableUpdate();
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     CListenerSet<IEntityObjectListener*> m_listeners;
-    std::vector< std::pair<IVariable*, IVariable::OnSetCallback> > m_callbacks;
+    std::vector< std::pair<IVariable*, IVariable::OnSetCallback*> > m_callbacks;
+    AZStd::fixed_vector< IVariable::OnSetCallback, VariableCallbackIndex::Count > m_onSetCallbacksCache;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

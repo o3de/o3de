@@ -133,7 +133,7 @@ namespace AZ
             {
                 LuaMaterialFunctorRuntimeContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
                 AZ::ScriptDataContext call;
-                if (m_scriptContext->Call("Process", call, false))
+                if (m_scriptContext->Call("Process", call))
                 {
                     call.PushArg(luaContext);
                     call.CallExecute();
@@ -151,7 +151,7 @@ namespace AZ
             {
                 LuaMaterialFunctorEditorContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
                 AZ::ScriptDataContext call;
-                if (m_scriptContext->Call("ProcessEditor", call, false))
+                if (m_scriptContext->Call("ProcessEditor", call))
                 {
                     call.PushArg(luaContext);
                     call.CallExecute();

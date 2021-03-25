@@ -58,14 +58,6 @@ set(FILES
     Source/Mesh.cpp
     Source/Mesh.h
     Source/Mesh.inl
-    Source/MeshBuilder.cpp
-    Source/MeshBuilder.h
-    Source/MeshBuilderSkinningInfo.cpp
-    Source/MeshBuilderSkinningInfo.h
-    Source/MeshBuilderSubMesh.cpp
-    Source/MeshBuilderSubMesh.h
-    Source/MeshBuilderVertexAttributeLayers.cpp
-    Source/MeshBuilderVertexAttributeLayers.h
     Source/MeshDeformer.cpp
     Source/MeshDeformer.h
     Source/MeshDeformerStack.cpp

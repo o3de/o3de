@@ -322,7 +322,12 @@ namespace GraphCanvas
         return m_ui->treeView;
     }
 
-    bool NodePaletteWidget::eventFilter([[maybe_unused]] QObject* object, QEvent* qEvent)
+    QLineEdit* NodePaletteWidget::GetSearchFilter() const
+    {
+        return m_ui->searchFilter;
+    }
+
+    bool NodePaletteWidget::eventFilter(QObject* /*object*/, QEvent* qEvent)
     {
         if (qEvent->type() == QEvent::KeyPress)
         {            
@@ -490,6 +495,51 @@ namespace GraphCanvas
         return false;
     }
 
+    NodePaletteSortFilterProxyModel* NodePaletteWidget::GetFilterModel()
+    {
+        return m_model;
+    }
+
+    GraphCanvasTreeItem* NodePaletteWidget::FindItemWithName(QString name)
+    {
+        GraphCanvasTreeItem* foundItem = nullptr;
+
+        GraphCanvas::GraphCanvasTreeItem* item = ModTreeRoot();
+
+        AZStd::unordered_set< GraphCanvas::GraphCanvasTreeItem* > unexploredItems = { item };
+
+        while (!unexploredItems.empty())
+        {
+            GraphCanvasTreeItem* currentItem = (*unexploredItems.begin());
+            unexploredItems.erase(unexploredItems.begin());
+
+            NodePaletteTreeItem* treeItem = azrtti_cast<NodePaletteTreeItem*>(currentItem);
+
+            if (treeItem == nullptr)
+            {
+                continue;
+            }
+
+            if (treeItem->GetName().compare(name, Qt::CaseInsensitive) == 0)
+            {
+                foundItem = treeItem;
+                break;
+            }
+
+            for (int i = 0; i < treeItem->GetChildCount(); ++i)
+            {
+                GraphCanvasTreeItem* childItem = treeItem->FindChildByRow(i);
+
+                if (childItem)
+                {
+                    unexploredItems.insert(childItem);
+                }
+            }
+        }
+
+        return foundItem;
+    }
+
     GraphCanvasTreeItem* NodePaletteWidget::ModTreeRoot()
     {
         return static_cast<GraphCanvasTreeModel*>(m_model->sourceModel())->ModTreeRoot();
@@ -500,7 +550,7 @@ namespace GraphCanvas
         return nullptr;
     }
 
-    void NodePaletteWidget::OnSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+    void NodePaletteWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
     {
         if (selected.indexes().empty())
         {
@@ -534,7 +584,7 @@ namespace GraphCanvas
         HandleSelectedItem(nodePaletteItem);
     }
 
-    void NodePaletteWidget::OnScrollChanged([[maybe_unused]] int scrollPosition)
+    void NodePaletteWidget::OnScrollChanged(int /*scrollPosition*/)
     {
         RefreshFloatingHeader();
     }
@@ -626,7 +676,7 @@ namespace GraphCanvas
         UpdateFilter();
     }
 
-    void NodePaletteWidget::OnRowsAboutToBeRemoved([[maybe_unused]] const QModelIndex& parent, [[maybe_unused]] int first, [[maybe_unused]] int last)
+    void NodePaletteWidget::OnRowsAboutToBeRemoved(const QModelIndex& /*parent*/, int /*first*/, int /*last*/)
     {
         m_ui->treeView->clearSelection();
     }

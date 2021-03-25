@@ -2075,7 +2075,6 @@ public:
     static int CV_r_shadersdx11;
     static int CV_r_shadersGL4;
     static int CV_r_shadersGLES3;
-    static int CV_r_shadersdurango;
     static int CV_r_shadersMETAL;
     
 #if defined(AZ_RESTRICTED_PLATFORM)

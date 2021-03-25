@@ -52,6 +52,7 @@ namespace GraphCanvas
         ////
 
         // SlotUIRequestBus
+        QPointF GetPinCenter() const override;
         QPointF GetConnectionPoint() const override;
         QPointF GetJutDirection() const override;
         ////

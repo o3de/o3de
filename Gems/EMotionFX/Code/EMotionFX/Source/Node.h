@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/containers/vector.h>
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
 #include <MCore/Source/Array.h>
@@ -54,7 +55,7 @@ namespace EMotionFX
         /**
          * The node flags (options).
          */
-        enum ENodeFlags
+        enum ENodeFlags : AZ::u8
         {
             FLAG_INCLUDEINBOUNDSCALC = 1 << 0,           /**< Specifies whether we have to include this node in the bounds calculation or not (true on default). */
             FLAG_ATTACHMENT = 1 << 1,           /**< Indicates if this node is an attachment node or not (false on default). */
@@ -108,7 +109,7 @@ namespace EMotionFX
          * @param parents The array to which parent and the parents of the parents of the node will be added.
          * @param clearParentsArray When true the given parents array will be cleared before filling it.
          */
-        void RecursiveCollectParents(MCore::Array<uint32>& parents, bool clearParentsArray = true) const;
+        void RecursiveCollectParents(AZStd::vector<uint32>& parents, bool clearParentsArray = true) const;
 
         /**
          * Set the node name.

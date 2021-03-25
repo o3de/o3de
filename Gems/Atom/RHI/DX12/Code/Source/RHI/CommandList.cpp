@@ -350,23 +350,14 @@ namespace AZ
             const ShaderResourceGroup* globalSrg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_globalSrg);
             const ShaderResourceGroupCompiledData& compiledData = globalSrg->GetCompiledData();
 
-            // get the global root signature descriptor from the RayTracingPipelineState
-            // we need this to find the root parameter binding indices
-            const RHI::RayTracingRootSignature& globalRootSignature = dispatchRaysItem.m_rayTracingPipelineState->GetDescriptor().GetGlobalRootSignature();
-
-            // set resources and constant buffers
             if (binding.m_resourceTable.IsValid())
             {
-                AZ_Assert(globalRootSignature.m_descriptorTableParam.m_addedToRootSignature, "Missing descriptor table in the ray tracing global root signature");
-                uint32_t rootParameterIndex = globalRootSignature.m_descriptorTableParam.m_rootParameterIndex;
-                GetCommandList()->SetComputeRootDescriptorTable(rootParameterIndex, compiledData.m_gpuViewsDescriptorHandle);
+                GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
             }
 
             if (binding.m_constantBuffer.IsValid())
             {
-                AZ_Assert(globalRootSignature.m_cbvParam.m_addedToRootSignature, "Missing Cbv in the ray tracing global root signature");
-                uint32_t rootParameterIndex = globalRootSignature.m_cbvParam.m_rootParameterIndex;
-                GetCommandList()->SetComputeRootConstantBufferView(rootParameterIndex, compiledData.m_gpuConstantAddress);
+                GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
             }
 
             // set RayTracing pipeline state

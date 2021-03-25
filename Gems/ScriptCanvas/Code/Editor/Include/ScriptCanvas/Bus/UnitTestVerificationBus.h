@@ -16,27 +16,25 @@
 
 namespace ScriptCanvasEditor
 {
-
     struct UnitTestResult
     {   
-        bool m_success;
-        bool m_running;
-        AZStd::string m_consoleOutput;
-        bool m_latestTestingRound;
+        bool m_compiled = false;
+        bool m_running = false;
+        bool m_completed = false;
+        bool m_latestTestingRound = true;
 
-        UnitTestResult()
-            : m_success(true)
-            , m_running(false)
-            , m_latestTestingRound(true)
+        AZStd::string m_consoleOutput;
+
+        AZ_INLINE static UnitTestResult AssumeFailure()
         {
+            return UnitTestResult();
         }
-        
-        UnitTestResult(bool newRunning, bool newSuccess, AZStd::string_view newConsoleOutput)
-            : m_success(newSuccess)
-            , m_running(newRunning)
-            , m_consoleOutput(newConsoleOutput)
-            , m_latestTestingRound(true)
+
+        AZ_INLINE static UnitTestResult AssumeSuccess()
         {
+            UnitTestResult u;
+            u.m_compiled = u.m_completed = u.m_running = true;
+            return u;
         }
     };
 
@@ -57,9 +55,9 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        virtual void OnTestStart([[maybe_unused]] const AZ::Uuid& sourceID) {}
-        virtual void OnTestResult([[maybe_unused]] const AZ::Uuid& sourceID, UnitTestResult result) {}
-        virtual void OnCheckStateCountChange([[maybe_unused]] const int count) {}
+        virtual void OnTestStart(const AZ::Uuid&) {}
+        virtual void OnTestResult(const AZ::Uuid&, const UnitTestResult&) {}
+        virtual void OnCheckStateCountChange(const int) {}
     };
     using UnitTestWidgetNotificationBus = AZ::EBus<UnitTestWidgetNotifications>;
 }

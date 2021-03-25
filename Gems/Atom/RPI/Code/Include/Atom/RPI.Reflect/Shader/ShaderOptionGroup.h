@@ -29,6 +29,8 @@ namespace AZ
             AZ_TYPE_INFO(ShaderOptionGroup, "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}");
             AZ_CLASS_ALLOCATOR(ShaderOptionGroup, AZ::ThreadPoolAllocator, 0);
 
+            static void Reflect(AZ::ReflectContext* context);
+
             ShaderOptionGroup() = default;
             ShaderOptionGroup(const ShaderOptionGroup& rhs);
             explicit ShaderOptionGroup(const ConstPtr<ShaderOptionGroupLayout>& shaderOptionGroupLayout);
@@ -100,6 +102,9 @@ namespace AZ
 
             //! Returns the shader option layout used to build the key.
             const ShaderOptionGroupLayout* GetShaderOptionLayout() const;
+
+            //! Returns the shader option descriptors.
+            const AZStd::vector<ShaderOptionDescriptor>& GetShaderOptionDescriptors() const;
 
             //! The fallback value for this shader option group, to be used in ShaderResourceGroup::SetShaderVariantKeyFallbackValue.
             //! Any unspecified shader option values will be set to their defaults.

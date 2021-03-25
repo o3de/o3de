@@ -1,4 +1,5 @@
 {
+    "gem_name": "AtomLyIntegration_CommonFeatures",
     "Dependencies": [
         {
             "Uuid": "3e0ee0c27f204f5188146baac822d020",

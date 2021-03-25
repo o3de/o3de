@@ -24,10 +24,12 @@ namespace ScriptCanvasEditor
     UnitTestBrowserFilterModel::UnitTestBrowserFilterModel(QObject* parent)
         : AssetBrowserFilterModel(parent)
         , m_iconRunning("Editor/Icons/AssetBrowser/in_progress.gif")
-        , m_iconPassed(":/ScriptCanvasEditorResources/Resources/valid_icon.png")
-        , m_iconPassedOld(":/ScriptCanvasEditorResources/Resources/valid_icon_grey.png")
-        , m_iconFailed(":/ScriptCanvasEditorResources/Resources/error_icon.png")
-        , m_iconFailedOld(":/ScriptCanvasEditorResources/Resources/error_icon_grey.png")
+        , m_iconFailedToCompile     (":/ScriptCanvasEditorResources/Resources/warning_symbol.png")
+        , m_iconFailedToCompileOld  (":/ScriptCanvasEditorResources/Resources/warning_symbol_grey.png")
+        , m_iconPassed              (":/ScriptCanvasEditorResources/Resources/valid_icon.png")
+        , m_iconPassedOld           (":/ScriptCanvasEditorResources/Resources/valid_icon_grey.png")
+        , m_iconFailed              (":/ScriptCanvasEditorResources/Resources/error_icon.png")
+        , m_iconFailedOld           (":/ScriptCanvasEditorResources/Resources/error_icon_grey.png")
         , m_hoveredIndex(QModelIndex())
     {
         setDynamicSortFilter(true);
@@ -81,27 +83,17 @@ namespace ScriptCanvasEditor
                     }
                     else
                     {
-                        if (testResult.m_success)
+                        if (!testResult.m_compiled)
                         {
-                            if (testResult.m_latestTestingRound)
-                            {
-                                return m_iconPassed;
-                            }
-                            else
-                            {
-                                return m_iconPassedOld;
-                            }
+                            return testResult.m_latestTestingRound ? m_iconFailedToCompile : m_iconFailedToCompileOld;
+                        }
+                        else if (testResult.m_completed)
+                        {
+                            return testResult.m_latestTestingRound ? m_iconPassed : m_iconPassedOld;
                         }
                         else
                         {
-                            if (testResult.m_latestTestingRound)
-                            {
-                                return m_iconFailed;
-                            }
-                            else
-                            {
-                                return m_iconFailedOld;
-                            }
+                            return testResult.m_latestTestingRound ? m_iconFailed : m_iconFailedOld;
                         }
                     }
                 }
@@ -162,7 +154,9 @@ namespace ScriptCanvasEditor
 
     void UnitTestBrowserFilterModel::OnTestStart(const AZ::Uuid& sourceID)
     {
-        UnitTestResult testRunning = UnitTestResult(true, false, "Test is running...");
+        UnitTestResult testRunning;
+        testRunning.m_running = true;
+        testRunning.m_consoleOutput = "Test is running...";
 
         if (HasTestResults(sourceID))
         {
@@ -174,7 +168,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void UnitTestBrowserFilterModel::OnTestResult(const AZ::Uuid& sourceID, UnitTestResult result)
+    void UnitTestBrowserFilterModel::OnTestResult(const AZ::Uuid& sourceID, const UnitTestResult& result)
     {
         m_testResults[sourceID] = result;
     }

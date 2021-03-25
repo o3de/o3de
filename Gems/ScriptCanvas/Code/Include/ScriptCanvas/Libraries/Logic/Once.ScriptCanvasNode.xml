@@ -2,8 +2,8 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/Once.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Once"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::Once"
-	       PreferredClassName="Once"
+           QualifiedName="ScriptCanvas::Nodes::Logic::Once"
+           PreferredClassName="Once"
            Uuid="{0E37D3CA-2862-4667-BFDB-7393DD48241B}"
            Base="ScriptCanvas::Node"
            Icon="Editor/Icons/ScriptCanvas/Print.png"
@@ -13,5 +13,6 @@
         <In Name="In" Description="Input signal"/>
         <In Name="Reset" Description="Reset signal"/>
         <Out Name="Out" Description="Output signal"/>
+        <Out Name="On Reset" Description ="Triggered when Reset"/>
     </Class>
 </ScriptCanvas>

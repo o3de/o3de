@@ -99,6 +99,8 @@ namespace GraphCanvas
         virtual bool IsHidingUnusedSlots() const = 0;
         virtual void ShowAllSlots() = 0;
         virtual void HideUnusedSlots() = 0;
+
+        virtual void SignalNodeAboutToBeDeleted() = 0;
     };
 
     using NodeRequestBus = AZ::EBus<NodeRequests>;
@@ -113,10 +115,10 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
 
         //! Emitted when the node is added to a scene
-        virtual void OnAddedToScene([[maybe_unused]] const AZ::EntityId& sceneId) {};
+        virtual void OnAddedToScene(const AZ::EntityId& /*sceneId*/) {}
 
         //! Emitted when a node is about to be deleted
-        virtual void OnNodeAboutToBeDeleted() {};
+        virtual void OnNodeAboutToBeDeleted() {}
 
         //! Emitted when the name of a node changes.
         virtual void OnNameChanged(const AZStd::string&) {}
@@ -137,8 +139,8 @@ namespace GraphCanvas
 
         virtual void OnNodeActivated() {}
 
-        virtual void OnNodeWrapped([[maybe_unused]] const AZ::EntityId& wrappingNode) {}
-        virtual void OnNodeUnwrapped([[maybe_unused]] const AZ::EntityId& wrappingNode) {}
+        virtual void OnNodeWrapped(const AZ::EntityId& /*wrappingNode*/) {}
+        virtual void OnNodeUnwrapped(const AZ::EntityId& /*wrappingNode*/) {}
 
         //! Signals that some batched connection manipulation operation is going on involving this node
         virtual void OnBatchedConnectionManipulationBegin() {};

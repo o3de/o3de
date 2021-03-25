@@ -80,7 +80,7 @@ namespace ScriptCanvasEditor
         }
 
         // NodeNotificationsBus
-        void OnInputChanged(const ScriptCanvas::SlotId& slotId) override
+        void OnSlotInputChanged(const ScriptCanvas::SlotId& slotId) override
         {
             if (slotId == m_slotId)
             {

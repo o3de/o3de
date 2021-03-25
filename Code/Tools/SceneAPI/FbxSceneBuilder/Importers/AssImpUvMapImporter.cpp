@@ -59,10 +59,10 @@ namespace AZ
 
                 AZStd::shared_ptr<DataTypes::IGraphObject> parentData =
                     context.m_scene.GetGraph().GetNodeContent(context.m_currentGraphPosition);
-                AZ_Assert(parentData && parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()),
-                    "Tried to construct uv stream attribute for invalid or non-mesh parent data");
                 if (!parentData || !parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
                 {
+                    AZ_Error(Utilities::ErrorWindow, false,
+                        "Tried to construct uv stream attribute for invalid or non-mesh parent data");
                     return Events::ProcessingResult::Failure;
                 }
                 const SceneData::GraphData::MeshData* const parentMeshData =
@@ -75,39 +75,43 @@ namespace AZ
 
                 aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                if (!mesh->mTextureCoords[0])
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
-
                 Events::ProcessingResultCombiner combinedUvMapResults;
-
-                AZStd::shared_ptr<SceneData::GraphData::MeshVertexUVData> uvMap =
-                    AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexUVData>();
-                uvMap->ReserveContainerSpace(vertexCount);
-                uvMap->SetCustomName(m_defaultNodeName);
-
-                for (int v = 0; v < mesh->mNumVertices; ++v)
+                for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
                 {
-                    AZ::Vector2 vertexUV(
-                        mesh->mTextureCoords[0][v].x,
-                        mesh->mTextureCoords[0][v].y);
-                    uvMap->AppendUV(vertexUV);
+                    if (!mesh->mTextureCoords[texCoordIndex])
+                    {
+                        continue;
+                    }
+
+                    AZStd::shared_ptr<SceneData::GraphData::MeshVertexUVData> uvMap =
+                        AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexUVData>();
+                    uvMap->ReserveContainerSpace(vertexCount);
+                    AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
+                    uvMap->SetCustomName(name.c_str());
+
+                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    {
+                        AZ::Vector2 vertexUV(
+                            mesh->mTextureCoords[texCoordIndex][v].x,
+                            // The engine's V coordinate is reverse of how it's stored in the FBX file.
+                            1.0f - mesh->mTextureCoords[texCoordIndex][v].y);
+                        uvMap->AppendUV(vertexUV);
+                    }
+
+                    Containers::SceneGraph::NodeIndex newIndex =
+                        context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, name.c_str());
+
+                    Events::ProcessingResult uvMapResults;
+                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, uvMap, newIndex, name);
+                    uvMapResults = Events::Process(dataPopulated);
+
+                    if (uvMapResults != Events::ProcessingResult::Failure)
+                    {
+                        uvMapResults = AddAttributeDataNodeWithContexts(dataPopulated);
+                    }
+
+                    combinedUvMapResults += uvMapResults;
                 }
-
-                Containers::SceneGraph::NodeIndex newIndex =
-                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
-
-                Events::ProcessingResult uvMapResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, uvMap, newIndex, m_defaultNodeName);
-                uvMapResults = Events::Process(dataPopulated);
-
-                if (uvMapResults != Events::ProcessingResult::Failure)
-                {
-                    uvMapResults = AddAttributeDataNodeWithContexts(dataPopulated);
-                }
-
-                combinedUvMapResults += uvMapResults;
 
                 return combinedUvMapResults.GetResult();
             }

@@ -56,6 +56,8 @@ namespace ScriptCanvasEditor
         void AddDataType(const AZ::TypeId& dataType);
         void RemoveDataType(const AZ::TypeId& dataType);
 
+        bool HasType(const AZ::TypeId& dataType) const;
+
         AZ::TypeId FindTypeIdForIndex(const QModelIndex& index) const;
         AZ::TypeId FindTypeIdForTypeName(const AZStd::string& typeName) const;
 

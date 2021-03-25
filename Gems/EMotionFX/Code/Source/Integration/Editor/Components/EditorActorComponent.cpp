@@ -119,12 +119,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorActorComponent::m_forceUpdateJointsOOV,
                             "Force update joints", "Force update the joint transforms of actor, even when the character is out of the camera view.")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorActorComponent::m_lodLevel,
-                            "LOD Level", "Preview the LOD Level of the current actor.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::IsAtomDisabled)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnLODLevelChanged)
+
                         ;
                 }
             }
@@ -163,7 +158,9 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
-            CreateActorInstance();
+            EMotionFX::ActorNotificationBus::Handler::BusConnect();
+
+            LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
             AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
@@ -190,6 +187,8 @@ namespace EMotionFX
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
+
+            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActorInstance();
             m_actorAsset.Release();
@@ -229,15 +228,21 @@ namespace EMotionFX
             return m_skinningMethod;
         }
         //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::CreateActorInstance()
+        void EditorActorComponent::LoadActorAsset()
         {
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-
             // Queue actor asset load. Instantiation occurs in OnAssetReady.
             if (m_actorAsset.GetId().IsValid())
             {
+                AZ::Data::AssetBus::Handler::BusDisconnect();
                 AZ::Data::AssetBus::Handler::BusConnect(m_actorAsset.GetId());
                 m_actorAsset.QueueLoad();
+
+                // In case the asset was already loaded fully, create the actor directly.
+                if (m_actorAsset.IsReady() &&
+                    m_actorAsset->GetActor())
+                {
+                    m_actorAsset->GetActor()->LoadRemainingAssets();
+                }
             }
             else
             {
@@ -288,7 +293,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         AZ::Crc32 EditorActorComponent::OnAssetSelected()
         {
-            CreateActorInstance();
+            LoadActorAsset();
 
             if (!m_actorAsset.GetId().IsValid())
             {
@@ -321,15 +326,6 @@ namespace EMotionFX
                 }
             }
             OnMaterialChanged();
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::OnLODLevelChanged()
-        {
-            if (m_actorInstance)
-            {
-                m_actorInstance->SetLODLevel(m_lodLevel);
-            }
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -479,120 +475,45 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            OnAssetReady(asset);
-        }
 
-        //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_actorAsset = asset;
+            Actor* actor = m_actorAsset->GetActor();
+            AZ_Assert(m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
 
-            // Enable/disable debug drawing.
-            OnDebugDrawFlagChanged();
+            actor->LoadRemainingAssets();
+            actor->CheckFinalizeActor();
+        }
 
-            // Create actor instance.
-            auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
-            AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
-            if (!actorAsset)
+        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            DestroyActorInstance();
+
+            const Actor* oldActor = m_actorAsset->GetActor();
+            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
+            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
+            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
+
+            m_actorAsset = asset;
+            Actor* newActor = m_actorAsset->GetActor();
+            AZ_Assert(m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
+
+            newActor->SetMeshAsset(meshAsset);
+            newActor->SetSkinMetaAsset(skinMetaAsset);
+            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
+            newActor->CheckFinalizeActor();
+        }
+
+        void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
+        {
+            m_actorAsset = actorAsset;
+
+            Actor* actor = m_actorAsset->GetActor();
+            if (actor)
             {
-                return;
+                OnActorReady(actor);
             }
-
-            if (m_actorInstance)
-            {
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
-
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
-            }
-
-            m_actorInstance = actorAsset->CreateInstance(GetEntity());
-            if (!m_actorInstance)
-            {
-                AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
-                return;
-            }
-
-            // If we are loading the actor for the first time, automatically add the material
-            // per lod information. If the amount of lods between different actors that are assigned
-            // to this component differ, then reinit the materials.
-            if (m_materialPerActor.GetAssetPath().empty())
-            {
-                InitializeMaterial(*actorAsset);
-            }
-            OnMaterialPerActorChanged();
-
-            // Assign entity Id to user data field, so we can extract owning entity from an EMFX actor pointer.
-            m_actorInstance->SetCustomData(reinterpret_cast<void*>(static_cast<AZ::u64>(GetEntityId())));
-
-            // Notify listeners that an actor instance has been created.
-            ActorComponentNotificationBus::Event(
-                GetEntityId(),
-                &ActorComponentNotificationBus::Events::OnActorInstanceCreated,
-                m_actorInstance.get());
-
-            // Setup initial transform and listen for transform changes.
-            AZ::Transform transform;
-            AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            OnTransformChanged(transform, transform);
-            AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-
-            // Force an update of node transforms so we can get an accurate bounding box.
-            m_actorInstance->UpdateTransformations(0.0f, true, false);
-
-            RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
-
-            // If there is already a RenderActorInstance, destroy it before creating the new one so there are not two instances potentially handling events for the same entityId
-            m_renderActorInstance.reset(nullptr);
-            // Create the new RenderActorInstance
-            m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
-                m_actorInstance,
-                m_actorAsset,
-                m_materialPerLOD,
-                m_skinningMethod,
-                transform));
-
-            if (m_renderActorInstance)
-            {
-                m_renderActorInstance->SetIsVisible(m_entityVisible && m_renderCharacter);
-
-                m_renderActorInstance->SetOnMaterialChangedCallback([this](const AZStd::string& materialName)
-                    {
-                        m_materialPerLOD.clear();
-
-                        if (!materialName.empty())
-                        {
-                            m_materialPerActor.SetAssetPath(materialName.c_str());
-                        }
-                        else
-                        {
-                            m_materialPerActor.SetAssetPath("");
-                            InitializeMaterial(*m_actorAsset.GetAs<ActorAsset>());
-                        }
-
-                        // Update the rendernode and the property grid
-                        OnMaterialPerActorChanged();
-                        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                            AzToolsFramework::Refresh_AttributesAndValues);
-                    });
-            }
-
-            // Reattach all attachments
-            for (AZ::EntityId& attachment : m_attachments)
-            {
-                LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
-            }
-
-            // Send general mesh creation notification to interested parties.
-            LmbrCentral::MeshComponentNotificationBus::Event(GetEntityId(), &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_actorAsset);
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -746,31 +667,29 @@ namespace EMotionFX
             const Pose* currentPose = transformData->GetCurrentPose();
 
             // Iterate through the meshes in the actor, looking for the closest hit
+            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
             const uint32 numNodes = actor->GetNumNodes();
             const uint32 numLods = actor->GetNumLODLevels();
-            for (uint32 lod = 0; lod < numLods; ++lod)
+            for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
-                for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+                Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
+                if (!mesh || mesh->GetIsCollisionMesh())
                 {
-                    Mesh* mesh = actor->GetMesh(lod, nodeIndex);
-                    if (!mesh || mesh->GetIsCollisionMesh())
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // Use the actor instance transform for skinned meshes (as the vertices are pre-transformed and in model space) and the node world transform otherwise.
-                    const Transform meshTransform = currentPose->GetMeshNodeWorldSpaceTransform(lod, nodeIndex);
+                // Use the actor instance transform for skinned meshes (as the vertices are pre-transformed and in model space) and the node world transform otherwise.
+                const Transform meshTransform = currentPose->GetMeshNodeWorldSpaceTransform(lodLevel, nodeIndex);
 
-                    AZ::Vector3 hitPoint;
-                    if (mesh->Intersects(meshTransform, ray, &hitPoint))
+                AZ::Vector3 hitPoint;
+                if (mesh->Intersects(meshTransform, ray, &hitPoint))
+                {
+                    isHit = true;
+                    float hitDistance = (src - hitPoint).GetLength();
+                    if (hitDistance < distance)
                     {
-                        isHit = true;
-                        float hitDistance = (src - hitPoint).GetLength();
-                        if (hitDistance < distance)
-                        {
-                            distance = hitDistance;
-                        }
+                        distance = hitDistance;
                     }
                 }
             }
@@ -904,6 +823,127 @@ namespace EMotionFX
         bool EditorActorComponent::IsAtomDisabled() const
         {
             return !AZ::Interface<AzFramework::AtomActiveInterface>::Get();
+        }
+
+        void EditorActorComponent::OnActorReady(Actor* actor)
+        {
+            if (m_actorAsset && m_actorAsset->GetActor() == actor)
+            {
+                CheckActorCreation();
+            }
+        }
+
+        void EditorActorComponent::CheckActorCreation()
+        {
+            // Enable/disable debug drawing.
+            OnDebugDrawFlagChanged();
+
+            // Create actor instance.
+            auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
+            AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
+            if (!actorAsset)
+            {
+                return;
+            }
+
+            if (m_actorInstance)
+            {
+                // Send general mesh destruction notification to interested parties.
+                LmbrCentral::MeshComponentNotificationBus::Event(
+                    GetEntityId(),
+                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
+
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(),
+                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
+                    m_actorInstance.get());
+            }
+
+            m_actorInstance = actorAsset->CreateInstance(GetEntity());
+            if (!m_actorInstance)
+            {
+                AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
+                return;
+            }
+
+            // If we are loading the actor for the first time, automatically add the material
+            // per lod information. If the amount of lods between different actors that are assigned
+            // to this component differ, then reinit the materials.
+            if (m_materialPerActor.GetAssetPath().empty())
+            {
+                InitializeMaterial(*actorAsset);
+            }
+            OnMaterialPerActorChanged();
+
+            // Assign entity Id to user data field, so we can extract owning entity from an EMFX actor pointer.
+            m_actorInstance->SetCustomData(reinterpret_cast<void*>(static_cast<AZ::u64>(GetEntityId())));
+
+            // Notify listeners that an actor instance has been created.
+            ActorComponentNotificationBus::Event(
+                GetEntityId(),
+                &ActorComponentNotificationBus::Events::OnActorInstanceCreated,
+                m_actorInstance.get());
+
+            // Setup initial transform and listen for transform changes.
+            AZ::Transform transform;
+            AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            OnTransformChanged(transform, transform);
+            AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+
+            // Force an update of node transforms so we can get an accurate bounding box.
+            m_actorInstance->UpdateTransformations(0.0f, true, false);
+
+            // Creating the render actor AFTER both actor asset and mesh asset loaded.
+            RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
+            if (renderBackend)
+            {
+                m_actorAsset->InitRenderActor();
+
+                // If there is already a RenderActorInstance, destroy it before creating the new one so there are not two instances potentially handling events for the same entityId
+                m_renderActorInstance.reset(nullptr);
+                // Create the new RenderActorInstance
+                m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
+                    m_actorInstance,
+                    m_actorAsset,
+                    m_materialPerLOD,
+                    m_skinningMethod,
+                    transform));
+
+                if (m_renderActorInstance)
+                {
+                    m_renderActorInstance->SetIsVisible(m_entityVisible && m_renderCharacter);
+
+                    m_renderActorInstance->SetOnMaterialChangedCallback([this](const AZStd::string& materialName)
+                        {
+                            m_materialPerLOD.clear();
+
+                            if (!materialName.empty())
+                            {
+                                m_materialPerActor.SetAssetPath(materialName.c_str());
+                            }
+                            else
+                            {
+                                m_materialPerActor.SetAssetPath("");
+                                InitializeMaterial(*m_actorAsset.GetAs<ActorAsset>());
+                            }
+
+                            // Update the rendernode and the property grid
+                            OnMaterialPerActorChanged();
+                            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                                AzToolsFramework::Refresh_AttributesAndValues);
+                        });
+                }
+            }
+
+            // Reattach all attachments
+            for (AZ::EntityId& attachment : m_attachments)
+            {
+                LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+            }
+
+            // Send general mesh creation notification to interested parties.
+            LmbrCentral::MeshComponentNotificationBus::Event(GetEntityId(), &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_actorAsset);
         }
     } //namespace Integration
 } // namespace EMotionFX

@@ -56,6 +56,6 @@ namespace ScriptCanvas
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasGem, ScriptCanvas::ScriptCanvasModule)
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvas, ScriptCanvas::ScriptCanvasModule)
 
 #endif // !SCRIPTCANVAS_EDITOR

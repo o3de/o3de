@@ -16,6 +16,7 @@
 
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -48,6 +49,15 @@ namespace AZ
 
             //! Returns the default image view instance, mapping the full (resident) image.
             const RHI::ImageView* GetImageView() const;
+
+            //! Returns the image descriptor which contains some image information
+            const RHI::ImageDescriptor& GetDescriptor() const;
+
+            //! Returns the number of mip levels of this image
+            uint16_t GetMipLevelCount();
+                        
+            //! Updates content of a single sub-resource in the image from the CPU.
+            virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
             
         protected:
             // This is a base class for a derived instance variant.

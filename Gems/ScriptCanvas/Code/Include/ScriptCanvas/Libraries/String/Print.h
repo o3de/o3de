@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <ScriptCanvas/CodeGen/CodeGen.h>
 #include <ScriptCanvas/Core/Node.h>
 
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
@@ -29,18 +28,10 @@ namespace ScriptCanvas
             class Print
                 : public Internal::StringFormatted
             {
-            public:
-                ScriptCanvas_Node(Print,
-                    ScriptCanvas_Node::Name("Print", "Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node.")
-                    ScriptCanvas_Node::Uuid("{E1940FB4-83FE-4594-9AFF-375FF7603338}")
-                    ScriptCanvas_Node::Category("Utilities/Debug")
-                    ScriptCanvas_Node::EditAttributes(AZ::Edit::Attributes::CategoryStyle(".string"), ScriptCanvas::Attributes::Node::TitlePaletteOverride("StringNodeTitlePalette"))
-                    ScriptCanvas_Node::DynamicSlotOrdering(true)
-                    ScriptCanvas_Node::Version(0)
-                );
-
             protected:
 
+                SCRIPTCANVAS_NODE(Print);
+                
                 void OnInputSignal(const SlotId&) override;
 
             };

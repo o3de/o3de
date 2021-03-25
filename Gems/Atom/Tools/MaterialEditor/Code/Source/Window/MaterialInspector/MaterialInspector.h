@@ -60,8 +60,6 @@ namespace MaterialEditor
         void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
 
-        const AtomToolsFramework::DynamicProperty* FindPropertyForNode(AzToolsFramework::InstanceDataNode* pNode) const;
-
         // Tracking the property that is activiley being edited in the inspector
         const AtomToolsFramework::DynamicProperty* m_activeProperty = nullptr;
 

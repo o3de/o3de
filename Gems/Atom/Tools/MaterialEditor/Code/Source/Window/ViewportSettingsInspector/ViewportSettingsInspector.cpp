@@ -45,7 +45,7 @@ namespace MaterialEditor
             const AZStd::string groupDescription = "Model";
 
             AddGroup(groupNameId, groupDisplayName, groupDescription,
-                new AtomToolsFramework::InspectorPropertyGroupWidget(m_modelPreset.get(), m_modelPreset.get()->TYPEINFO_Uuid(), this));
+                new AtomToolsFramework::InspectorPropertyGroupWidget(m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this));
         }
 
         m_lightingPreset.reset();
@@ -58,7 +58,7 @@ namespace MaterialEditor
             const AZStd::string groupDescription = "Lighting";
 
             AddGroup(groupNameId, groupDisplayName, groupDescription,
-                new AtomToolsFramework::InspectorPropertyGroupWidget(m_lightingPreset.get(), m_lightingPreset.get()->TYPEINFO_Uuid(), this));
+                new AtomToolsFramework::InspectorPropertyGroupWidget(m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this));
         }
 
         AddGroupsEnd();

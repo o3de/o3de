@@ -11,18 +11,63 @@
 */
 
 
-#include "Core.h"
-#include "Attributes.h"
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
+
+#include "Core.h"
+#include "Attributes.h"
 
 namespace ScriptCanvas
 {
-    
+    bool IsNamespacePathEqual(const NamespacePath& lhs, const NamespacePath& rhs)
+    {
+        if (lhs.size() != rhs.size())
+        {
+            return false;
+        }
+        auto lhsIter = lhs.begin();
+        auto rhsIter = rhs.begin();
 
-    static bool SlotIdVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        const bool isCaseSensitive = false;
+
+        for (; lhsIter != lhs.end(); ++lhsIter, ++rhsIter)
+        {
+            if (!AZ::StringFunc::Equal(lhsIter->c_str(), rhsIter->c_str()))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void DependencyReport::MergeWith(const DependencyReport& other)
+    {
+        auto unite = [](auto& target, const auto& source)
+        {
+            for (const auto& entry : source)
+            {
+                target.insert(entry);
+            }
+        };
+
+        unite(nativeLibraries, other.nativeLibraries);
+        unite(userSubgraphs, other.userSubgraphs);
+        unite(scriptEventsAssetIds, other.scriptEventsAssetIds);
+        unite(userSubgraphAssetIds, other.userSubgraphAssetIds);
+    }
+
+    DependencyReport DependencyReport::NativeLibrary(const AZStd::string& library)
+    {
+        DependencyReport report;
+        report.nativeLibraries.insert({ library });
+        return report;
+    }
+
+    bool SlotIdVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         //! Version 1: Slot Ids contained a Crc32 hash of the name given
         //! Version 2+: Slot Ids now contain a random Uuid
@@ -62,6 +107,30 @@ namespace ScriptCanvas
             behaviorContext->Class<SlotId>("SlotId")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
+    }
+
+    void VersionData::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<VersionData>()
+                ->Field("_grammarVersion", &VersionData::grammarVersion)
+                ->Field("_runtimeVersion", &VersionData::runtimeVersion)
+                ;
+        }
+    }
+
+    VersionData VersionData::Latest()
+    {
+        VersionData data;
+        data.MarkLatest();
+        return data;
+    }
+
+    void VersionData::MarkLatest()
+    {
+        grammarVersion = GrammarVersion::Current;
+        runtimeVersion = RuntimeVersion::Current;
     }
 }
 

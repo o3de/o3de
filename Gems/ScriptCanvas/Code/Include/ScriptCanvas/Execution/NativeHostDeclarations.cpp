@@ -17,4 +17,4 @@ namespace ScriptCanvas
     RuntimeContext::RuntimeContext(AZ::EntityId graphId)
         : m_graphId(graphId)
     {}
-} // namespace ScriptCanvas
+} 

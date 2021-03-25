@@ -26,17 +26,15 @@
 #define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
 #define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphActivated, arg);
 #define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphDeactivated, arg);
-#define SC_EXECUTION_TRACE_SIGNAL_DATA_OUTPUT(node, arg) if (node.GetRuntimeBus()->IsGraphObserved()) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledDataOuput, arg); }
-#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) if (node.GetRuntimeBus()->IsGraphObserved()) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledInput, arg); }
-#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) if (node.GetRuntimeBus()->IsGraphObserved()) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledOutput, arg); }
-#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) if (GetRuntimeBus()->IsGraphObserved()) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::VariableChanged, arg); } 
-#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) if (node.GetRuntimeBus()->IsGraphObserved()) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::AnnotateNode, arg); }
+#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledInput, arg); }
+#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledOutput, arg); }
+#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) if (IsVariableObserved(id)) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::VariableChanged, arg); } 
+#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::AnnotateNode, arg); }
 #else
 #define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
 #define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
 #define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ;
 #define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ;
-#define SC_EXECUTION_TRACE_SIGNAL_DATA_OUTPUT(node, arg) ;
 #define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) ;
 #define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) ;
 #define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) ;
@@ -50,26 +48,6 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    struct GraphIdentifier final
-    {
-        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(GraphIdentifier, "{0DAFC7EF-D23A-4353-8DA5-7D0CC186D8E3}");
-        
-        AZ::ComponentId   m_componentId = 0;
-        AZ::Data::AssetId m_assetId;
-
-        GraphIdentifier() = default;
-        
-        GraphIdentifier(const AZ::Data::AssetId assetId, const AZ::ComponentId& componentId)
-            : m_componentId(componentId)
-            , m_assetId(assetId)
-        {}
-
-        bool operator==(const GraphIdentifier& other) const;
-
-        AZStd::string ToString() const;
-    };
-
     struct GraphInfo
     {
         AZ_CLASS_ALLOCATOR(GraphInfo, AZ::SystemAllocator, 0);
@@ -336,6 +314,8 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(DatumValue, AZ::SystemAllocator, 0);
         AZ_RTTI(DatumValue, "{5B4C8EA8-747E-4557-A10A-0EA0ADB387CA}");
         
+        static DatumValue Create(const Datum& value);
+
         static DatumValue Create(const GraphVariable& value);
 
         // if valid, the datum will contain a string result of BCO->ToString()
@@ -396,10 +376,13 @@ namespace ScriptCanvas
         NamedEndpoint m_endpoint;
         SlotDataMap m_data;
         
-
         Signal() = default;
 
         Signal(const Signal& signal) = default;
+
+        Signal(const GraphInfo& graphInfo)
+            : GraphInfo(graphInfo)
+        {}
 
         Signal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& endpoint)
             : GraphInfo(graphInfo)
@@ -590,43 +573,21 @@ namespace ScriptCanvas
         
         AZ::NamedEntityId m_assetNodeId;
     };
-
-    class OutputDataSignal
-        : public GraphInfoEventBase
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(OutputDataSignal, AZ::SystemAllocator, 0);
-        AZ_RTTI(OutputDataSignal, "{CA05C19C-BE83-4158-9E28-36F1D55BD146}", GraphInfoEventBase);
-
-        OutputDataSignal() = default;
-        OutputDataSignal(const OutputDataSignal& outputDataSignal) = default;
-        OutputDataSignal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& namedEndpoint, const DatumValue& value);
-
-        LoggableEvent* Duplicate() const override;
-
-        AZStd::string ToString() const override;
-
-        void Visit(LoggableEventVisitor& visitor) override;
-
-        NodeTypeIdentifier m_nodeType;
-        NamedEndpoint m_endpoint;
-        DatumValue    m_outputValue;
-    };
-        
+            
     class ExecutionNotifications
         : public AZ::EBusTraits
     {
     public:
+        virtual void AnnotateNode(const AnnotateNodeSignal&) = 0;
         virtual void GraphActivated(const GraphActivation&) = 0;
         virtual void GraphDeactivated(const GraphActivation&) = 0;
-        virtual bool IsNodeObserved(const Node&) = 0;
+        virtual void RuntimeError(const AZ::EntityId& entityId, const GraphIdentifier& identifier, const AZStd::string_view& description) = 0;
+        virtual bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) = 0;
         virtual bool IsVariableObserved(const VariableId&) = 0;
         virtual void NodeSignaledOutput(const OutputSignal&) = 0;
         virtual void NodeSignaledInput(const InputSignal&) = 0;
-        virtual void NodeSignaledDataOuput(const OutputDataSignal&) = 0;
         virtual void NodeStateUpdated(const NodeStateChange&) = 0;
         virtual void VariableChanged(const VariableChange&) = 0;
-        virtual void AnnotateNode(const AnnotateNodeSignal&) = 0;
     };
     using ExecutionNotificationsBus = AZ::EBus<ExecutionNotifications>;   
         
@@ -643,7 +604,6 @@ namespace ScriptCanvas
         virtual void Visit(NodeStateChange&) = 0;
         virtual void Visit(InputSignal&) = 0;
         virtual void Visit(OutputSignal&) = 0;
-        virtual void Visit(OutputDataSignal&) = 0;
         virtual void Visit(VariableChange&) = 0;
         virtual void Visit(AnnotateNodeSignal&) = 0;
 

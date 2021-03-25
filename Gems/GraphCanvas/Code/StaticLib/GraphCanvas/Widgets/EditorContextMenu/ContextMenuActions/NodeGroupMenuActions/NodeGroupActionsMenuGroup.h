@@ -35,7 +35,7 @@ namespace GraphCanvas
         
     private:
     
-        NodeGroupPresetsMenuActionGroup m_nodeGroupPresets;
+        CreateNodeGroupPresetMenuActionGroup m_createNodeGroupPreset;
         ContextMenuAction* m_ungroupAction;
         ContextMenuAction* m_collapseAction;
         ContextMenuAction* m_expandAction;

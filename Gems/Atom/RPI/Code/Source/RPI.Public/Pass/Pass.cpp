@@ -485,7 +485,7 @@ namespace AZ
 
             if (m_parent)
             {
-                if (connectedPassName == PassNameParent || connectedPassName == m_parent->GetName())
+                if (connectedPassName == PassNameParent)
                 {
                     foundPass = true;
 

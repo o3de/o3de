@@ -12,10 +12,8 @@
 
 #pragma once
 
-// include the required headers
-#include "StandardHeaders.h"
-#include "MemoryManager.h"
-
+#include <AzCore/base.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace MCore
 {
@@ -23,21 +21,15 @@ namespace MCore
      * The triangle list optimizer.
      * This can be used to improve cache efficiency. It reorders the index buffers to maximize the number of cache hits.
      */
-    class MCORE_API TriangleListOptimizer
+    template<typename IndexType>
+    class TriangleListOptimizer
     {
-        MCORE_MEMORYOBJECTCATEGORY(TriangleListOptimizer, MCORE_DEFAULT_ALIGNMENT, MCORE_MEMCATEGORY_TRILISTOPTIMIZER)
-
     public:
         /**
          * The constructor.
          * @param numCacheEntries The cache size in number of elements. Smaller values often result in better optimizations.
          */
-        TriangleListOptimizer(uint32 numCacheEntries = 8);
-
-        /**
-         * The destructor.
-         */
-        ~TriangleListOptimizer();
+        TriangleListOptimizer(size_t numCacheEntries = 8);
 
         /**
          * Optimizes an index buffer.
@@ -46,7 +38,7 @@ namespace MCore
          * @param triangleList The index buffer.
          * @param numIndices The number of indices inside the specified index buffer.
          */
-        void OptimizeIndexBuffer(uint32* triangleList, uint32 numIndices);
+        void OptimizeIndexBuffer(IndexType* triangleList, size_t numIndices);
 
         /**
          * Calculate the number of cache hits that the a given triange list would get.
@@ -55,27 +47,14 @@ namespace MCore
          * @param numIndices The number of indices.
          * @result The number of cache hits.
          */
-        uint32 CalcNumCacheHits(uint32* triangleList, uint32 numIndices);
-
+        size_t CalcNumCacheHits(IndexType* triangleList, size_t numIndices);
 
     private:
-        uint32* mEntries;           /**< The cache entries. */
-        uint32  mNumEntries;        /**< The number of cache entries. */
-        uint32  mNumUsedEntries;    /**< The number of used cache entries. */
-        uint32  mOldestEntry;       /**< The index to the oldest entry, which will be overwritten first when the cache is full. */
+        AZStd::vector<IndexType> m_entries{};
+        size_t m_numUsedEntries = 0; /**< The number of used cache entries. */
+        size_t m_oldestEntry = 0; /**< The index to the oldest entry, which will be overwritten first when the cache is full. */
 
-        /**
-         * Flush the cache.
-         * This empties the cache.
-         */
         void Flush();
-
-        /**
-         * Find the cache entry number/index for a given index value.
-         * @param index The index buffer index value (vertex number) to search for.
-         * @result Returns the cache entry number that stores this index value, or MCORE_INVALIDINDEX32 in case it hasn't been found in the cache.
-         */
-        uint32 FindEntryNumber(uint32 index) const;
 
         /**
          * Calculate the number of cache hits for a given triangle.
@@ -84,14 +63,165 @@ namespace MCore
          * @param indexC The third vertex index.
          * @result The number of cache hits that this triangle would give.
          */
-        uint32 CalcNumCacheHits(uint32 indexA, uint32 indexB, uint32 indexC) const;
+        size_t CalcNumCacheHits(IndexType indexA, IndexType indexB, IndexType indexC) const;
 
         /**
-         * Get an index value from the cache.
-         * If the vertex index isn't inside the cache yet, it will be loaded into the cache.
+         * Add an index value to the cache.
          * @param vertexIndex The vertex index value.
-         * @result Returns the same value as the vertexIndex parameter.
          */
-        uint32 GetFromCache(uint32 vertexIndex);
+        void AddToCache(IndexType vertexIndex);
     };
-}   // namespace MCore
+
+    template<typename IndexType>
+    TriangleListOptimizer<IndexType>::TriangleListOptimizer(size_t numCacheEntries)
+    {
+        // We never push more items than this capacity. The vector stores the
+        // max number of entries for us in its capacity() method.
+        m_entries.set_capacity(numCacheEntries);
+    }
+
+    template<typename IndexType>
+    void TriangleListOptimizer<IndexType>::OptimizeIndexBuffer(IndexType* triangleList, size_t numIndices)
+    {
+        Flush();
+
+        // create a temporary buffer
+        AZStd::vector<IndexType> newBuffer(numIndices);
+        size_t maxIndices = numIndices;
+
+        // for all triangles in the triangle list
+        for (size_t f = 0; f < numIndices; f += 3)
+        {
+            size_t mostEfficient = 0;
+            size_t mostHits = 0;
+
+            for (size_t i = 0; i < maxIndices; i += 3)
+            {
+                // get the triangle indices
+                const IndexType indexA = triangleList[i];
+                const IndexType indexB = triangleList[i + 1];
+                const IndexType indexC = triangleList[i + 2];
+
+                // calculate how many hits this triangle would give
+                size_t numHits = CalcNumCacheHits(indexA, indexB, indexC);
+
+                // if the number of hits is the maximum hits we can score, use this triangle
+                if (numHits == 3)
+                {
+                    mostHits = numHits;
+                    mostEfficient = i;
+                    break;
+                }
+
+                // check if this gives more hits than any other triangle we tested before
+                if (numHits > mostHits)
+                {
+                    mostHits = numHits;
+                    mostEfficient = i;
+                }
+            }
+
+            // insert the triangle that gave most cache hits to the new triangle list
+            AddToCache(triangleList[mostEfficient]);
+            AddToCache(triangleList[mostEfficient + 1]);
+            AddToCache(triangleList[mostEfficient + 2]);
+            newBuffer[f] = triangleList[mostEfficient];
+            newBuffer[f + 1] = triangleList[mostEfficient + 1];
+            newBuffer[f + 2] = triangleList[mostEfficient + 2];
+
+            // remove the triangle from the old list, so that we don't test it anymore next time, since we already inserted it inside the new optimized list
+            AZStd::move(
+                /*input first*/ triangleList + mostEfficient + 3,
+                /*input last*/ triangleList + maxIndices,
+                /*output first*/ triangleList + mostEfficient);
+
+            // we need to test one less triangle next time, since we just added one of the triangles to the new list
+            // so there is one less left
+            maxIndices -= 3;
+        }
+
+        // copy the results
+        AZStd::copy(begin(newBuffer), end(newBuffer), triangleList);
+    }
+
+    // calculate the number of cache hits
+    template<typename IndexType>
+    size_t TriangleListOptimizer<IndexType>::CalcNumCacheHits(IndexType* triangleList, size_t numIndices)
+    {
+        // clear the cache
+        Flush();
+
+        size_t totalHits = 0;
+
+        // for all triangles in the triangle list
+        for (size_t f = 0; f < numIndices; f += 3)
+        {
+            const IndexType indexA = triangleList[f];
+            const IndexType indexB = triangleList[f + 1];
+            const IndexType indexC = triangleList[f + 2];
+
+            totalHits += CalcNumCacheHits(indexA, indexB, indexC);
+
+            AddToCache(indexA);
+            AddToCache(indexB);
+            AddToCache(indexC);
+        }
+
+        return totalHits;
+    }
+
+    template<typename IndexType>
+    void TriangleListOptimizer<IndexType>::Flush()
+    {
+        m_numUsedEntries = 0;
+        m_oldestEntry = 0;
+        m_entries.clear();
+    }
+
+    // calculate the number of cache hits for a triangle
+    template<typename IndexType>
+    size_t TriangleListOptimizer<IndexType>::CalcNumCacheHits(IndexType indexA, IndexType indexB, IndexType indexC) const
+    {
+        size_t total = 0;
+
+        // check all cache entries
+        for (IndexType entryValue : m_entries)
+        {
+            if (entryValue == indexA || entryValue == indexB || entryValue == indexC)
+            {
+                total++;
+            }
+            if (total == 3)
+            {
+                break;
+            }
+        }
+
+        return total;
+    }
+
+    // get a value from the cache
+    template<typename IndexType>
+    void TriangleListOptimizer<IndexType>::AddToCache(IndexType vertexIndex)
+    {
+        // check if this entry is already in the cache, if so we have a cache hit and can quit
+        const auto entryIt = AZStd::find(m_entries.begin(), m_entries.end(), vertexIndex);
+        if (entryIt != m_entries.end())
+        {
+            return;
+        }
+
+        // the entry is not inside the cache and the cache is not full yet, we can simply insert the cache entry and return
+        if (m_numUsedEntries < m_entries.capacity())
+        {
+            m_entries.emplace_back(vertexIndex);
+            ++m_numUsedEntries;
+            return;
+        }
+
+        // the cache is full, remove one of the entries
+        // since we simulate a FIFO cache, we have to remove the oldest entry
+        m_entries[m_oldestEntry] = vertexIndex;
+        ++m_oldestEntry %= m_entries.capacity();
+    }
+} // namespace MCore

@@ -277,9 +277,9 @@ namespace
         {
             return Styling::Attribute::MinimumRepetitions;
         }
-        else if (attribute == Styling::Attributes::ZValue)
+        else if (attribute == Styling::Attributes::Layer)
         {
-            return Styling::Attribute::ZValue;
+            return Styling::Attribute::Layer;
         }
         else if (attribute == Styling::Attributes::Opacity)
         {
@@ -771,7 +771,7 @@ namespace GraphCanvas
                 case Attribute::ConnectionDragPercent:
                 case Attribute::ConnectionDragMoveBuffer:
                 case Attribute::ConnectionDefaultMarquee:
-                case Attribute::ZValue:
+                case Attribute::Layer:
                 case Attribute::MaximumStripeSize:
                 case Attribute::MinimumStripes:
                 case Attribute::StripeAngle:

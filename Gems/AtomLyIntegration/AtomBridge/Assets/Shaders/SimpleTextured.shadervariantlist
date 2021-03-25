@@ -4,21 +4,6 @@
         {
             "StableId": 1,
             "Options": {
-                "o_clamp": "true",
-                "o_useColorChannels": "false"
-            }
-        },
-        {
-            "StableId": 2,
-            "Options": {
-                "o_clamp": "true",
-                "o_useColorChannels": "true"
-            }
-        },
-        {
-            "StableId": 3,
-            "Options": {
-                "o_clamp": "false",
                 "o_useColorChannels": "true"
             }
         }

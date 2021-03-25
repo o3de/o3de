@@ -24,7 +24,8 @@ namespace PhysX
     AZ_CLASS_ALLOCATOR_IMPL(ColliderOffsetMode, AZ::SystemAllocator, 0);
 
     ColliderOffsetMode::ColliderOffsetMode()
-        : m_translationManipulators(AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::Identity())
+        : m_translationManipulators(AzToolsFramework::TranslationManipulators::Dimensions::Three,
+            AZ::Transform::Identity(), AZ::Vector3::CreateOne())
     {
     }
 

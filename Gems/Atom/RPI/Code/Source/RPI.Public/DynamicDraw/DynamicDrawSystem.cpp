@@ -25,9 +25,9 @@ namespace AZ
 {
     namespace RPI
     {
-        DynamicDrawSystemInterface2* DynamicDrawSystemInterface2::Get()
+        DynamicDrawInterface* DynamicDrawInterface::Get()
         {
-            return Interface<DynamicDrawSystemInterface2>::Get();
+            return Interface<DynamicDrawInterface>::Get();
         }
 
         void DynamicDrawSystem::Init(const DynamicDrawSystemDescriptor& descriptor)
@@ -36,7 +36,7 @@ namespace AZ
             if (m_bufferAlloc)
             {
                 m_bufferAlloc->Init(descriptor.m_dynamicBufferPoolSize);
-                Interface<DynamicDrawSystemInterface2>::Register(this);
+                Interface<DynamicDrawInterface>::Register(this);
             }
         }
 
@@ -44,7 +44,7 @@ namespace AZ
         {
             if (m_bufferAlloc)
             {
-                Interface<DynamicDrawSystemInterface2>::Unregister(this);
+                Interface<DynamicDrawInterface>::Unregister(this);
                 m_bufferAlloc->Shutdown();
                 m_bufferAlloc = nullptr;
             }
@@ -53,6 +53,7 @@ namespace AZ
 
         RHI::Ptr<DynamicBuffer> DynamicDrawSystem::GetDynamicBuffer(uint32_t size, uint32_t alignment)
         {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexBufferAlloc);
             return m_bufferAlloc->Allocate(size, alignment);
         }
 
@@ -60,6 +61,8 @@ namespace AZ
         {
             RHI::Ptr<DynamicDrawContext> drawContext = aznew DynamicDrawContext();
             drawContext->m_scene = scene;
+
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             m_dynamicDrawContexts.push_back(drawContext);
             return drawContext;
         }
@@ -77,15 +80,35 @@ namespace AZ
             AZ_Error("RPI", false, "Unimplemented function");
         }
 
+        void DynamicDrawSystem::AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket)
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
+            m_drawPackets[scene].emplace_back(AZStd::move(drawPacket));
+        }
+
         void DynamicDrawSystem::SubmitDrawData(Scene* scene, AZStd::vector<ViewPtr> views)
         {
-            for (RHI::Ptr<DynamicDrawContext> drawContext : m_dynamicDrawContexts)
             {
-                if (drawContext->m_scene == scene)
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
+                for (RHI::Ptr<DynamicDrawContext> drawContext : m_dynamicDrawContexts)
+                {
+                    if (drawContext->m_scene == scene)
+                    {
+                        for (auto& view : views)
+                        {
+                            drawContext->SubmitDrawData(view);
+                        }
+                    }
+                }
+            }
+
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
+                for (auto& dp : m_drawPackets[scene])
                 {
                     for (auto& view : views)
                     {
-                        drawContext->SubmitDrawData(view);
+                        view->AddDrawPacket(dp.get());
                     }
                 }
             }
@@ -93,22 +116,31 @@ namespace AZ
 
         void DynamicDrawSystem::FrameEnd()
         {
-            m_bufferAlloc->FrameEnd();
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutexBufferAlloc);
+                m_bufferAlloc->FrameEnd();
+            }
 
             // Clean up released dynamic draw contexts (which use count is 1)
-            auto unused = AZStd::remove_if(m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(),
-                [](const RHI::Ptr<DynamicDrawContext>& drawContext)
-                {
-                    return drawContext->use_count() == 1;
-                });
-            m_dynamicDrawContexts.erase(unused, m_dynamicDrawContexts.end());
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
+                auto unused = AZStd::remove_if(
+                    m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(), [](const RHI::Ptr<DynamicDrawContext>& drawContext) {
+                        return drawContext->use_count() == 1;
+                    });
+                m_dynamicDrawContexts.erase(unused, m_dynamicDrawContexts.end());
 
-            // Call FrameEnd for each DynamicDrawContext;
-            AZStd::for_each(m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(),
-                [](const RHI::Ptr<DynamicDrawContext>& drawContext)
-                {
-                    drawContext->FrameEnd();
-                });
+                // Call FrameEnd for each DynamicDrawContext;
+                AZStd::for_each(
+                    m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(), [](const RHI::Ptr<DynamicDrawContext>& drawContext) {
+                        drawContext->FrameEnd();
+                    });
+            }
+
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
+                m_drawPackets.clear();
+            }
         }
     }
 }

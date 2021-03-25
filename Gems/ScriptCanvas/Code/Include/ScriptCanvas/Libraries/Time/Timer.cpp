@@ -12,6 +12,8 @@
 
 #include "Timer.h"
 
+#include <ScriptCanvas/Utils/VersionConverters.h>
+
 namespace ScriptCanvas
 {
     namespace Nodes

@@ -23,7 +23,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
@@ -32,11 +32,7 @@ namespace AZ
                     ->Field("ProgramSettings", &ShaderSourceData::m_programSettings)
                     ->Field("CompilerHints", &ShaderSourceData::m_compiler)
                     ->Field("ShaderVariantHints", &ShaderSourceData::m_shaderOptionGroupHints)
-                    ;
-
-                serializeContext->Class<ShaderSourceData::Variant>()
-                    ->Version(1)
-                    ->Field("Options", &Variant::m_options)
+                    ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
                     ;
 
                 serializeContext->Class<ShaderSourceData::ProgramSettings>()
@@ -50,6 +46,14 @@ namespace AZ
                     ->Field("Type", &EntryPoint::m_type)
                     ;
             }
+        }
+
+        bool ShaderSourceData::IsRhiBackendDisabled(const AZ::Name& rhiName)
+        {
+            return AZStd::any_of(m_disabledRhiBackends.begin(), m_disabledRhiBackends.end(), [&](const AZStd::string& currentRhiName)
+                {
+                    return currentRhiName == rhiName.GetStringView();
+                });
         }
     } // namespace RPI
 } // namespace AZ

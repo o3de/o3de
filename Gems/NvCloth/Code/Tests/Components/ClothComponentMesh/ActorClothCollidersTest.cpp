@@ -88,7 +88,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -108,7 +108,7 @@ namespace UnitTest
             actor->AddClothCollider(collider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         // ActorClothColliders only supports spheres or capsules, other shapes will not be taken into account.
@@ -133,7 +133,7 @@ namespace UnitTest
             actor->AddClothCollider(collider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -176,7 +176,7 @@ namespace UnitTest
             actor->AddClothCollider(collider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -227,7 +227,7 @@ namespace UnitTest
             actor->AddClothCollider(capsuleCollider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -258,7 +258,7 @@ namespace UnitTest
             }
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -288,7 +288,7 @@ namespace UnitTest
             }
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -319,7 +319,7 @@ namespace UnitTest
             actor->AddClothCollider(capsuleCollider); // This last capsule will not fit because it cannot add 2 additional spheres
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());
@@ -350,7 +350,7 @@ namespace UnitTest
             actor->AddClothCollider(capsuleCollider);
             actor->FinishSetup();
 
-            m_actorComponent->OnAssetReady(CreateAssetFromActor(AZStd::move(actor)));
+            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothColliders> actorClothColliders = NvCloth::ActorClothColliders::Create(m_actorComponent->GetEntityId());

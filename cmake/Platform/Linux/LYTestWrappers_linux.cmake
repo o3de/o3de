@@ -10,5 +10,5 @@
 #
 
 if(${ly_add_test_TEST_LIBRARY} MATCHES "google(test|benchmark)" )
-    set(PAL_TEST_COMMAND_ARGS --platform minimal)
+    ly_set(PAL_TEST_COMMAND_ARGS --platform minimal)
 endif()

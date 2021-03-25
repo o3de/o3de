@@ -165,8 +165,6 @@ struct IStreamEngineListener
     virtual void OnStreamEndIO(const void* pReq) = 0;
     virtual void OnStreamBeginInflate(const void* pReq) = 0;
     virtual void OnStreamEndInflate(const void* pReq) = 0;
-    virtual void OnStreamBeginDecrypt(const void* pReq) = 0;
-    virtual void OnStreamEndDecrypt(const void* pReq) = 0;
     virtual void OnStreamBeginAsyncCallback(const void* pReq) = 0;
     virtual void OnStreamEndAsyncCallback(const void* pReq) = 0;
     virtual void OnStreamDone(const void* pReq) = 0;

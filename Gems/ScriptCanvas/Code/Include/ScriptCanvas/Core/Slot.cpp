@@ -19,16 +19,21 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 
-#include <ScriptCanvas/Core/Contracts/ExclusivePureDataContract.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 #include <ScriptCanvas/Utils/DataUtils.h>
 
 namespace ScriptCanvas
 {
-    /////////
-    // Slot
-    /////////
+    enum SlotVersion
+    {
+        AddOverload = 17,
+        AddVisibility,
+        MergeScriptFunctions,
+        CorrectDynamicDataTypeForExecution,
+        // Add your version above
+        Current
+    };
 
     static bool SlotVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
@@ -146,6 +151,21 @@ namespace ScriptCanvas
             classElement.RemoveElementByName(AZ_CRC("nodeId", 0x9ce63325));
         }
 
+        if (classElement.GetVersion() <= SlotVersion::CorrectDynamicDataTypeForExecution)
+        {
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+
+            SlotDescriptor slotDescriptor;
+            if (subElement && subElement->GetData(slotDescriptor))
+            {
+                if (slotDescriptor.IsExecution())
+                {
+                    classElement.RemoveElementByName(AZ_CRC("DynamicTypeOverride", 0x4652de8e));
+                    classElement.AddElementWithData(context, "DynamicTypeOverride", DynamicDataType::None);
+                }
+            }
+        }
+
         return true;
     }
 
@@ -164,6 +184,8 @@ namespace ScriptCanvas
         SlotMetadata::Reflect(reflection);
         SupportsMethodContract::Reflect(reflection);
         MathOperatorContract::Reflect(reflection);
+        OverloadContract::Reflect(reflection);
+        RestrictedNodeContract::Reflect(reflection);
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
@@ -174,7 +196,9 @@ namespace ScriptCanvas
                 ->Field("SlotType", &SlotDescriptor::m_slotType)
             ;
             serializeContext->Class<Slot>()
-                ->Version(18, &SlotVersionConverter)
+                ->Version(SlotVersion::Current, &SlotVersionConverter)
+                ->Field("IsOverload", &Slot::m_isOverload)
+                ->Field("isVisibile", &Slot::m_isVisible)
                 ->Field("id", &Slot::m_id)                
                 ->Field("DynamicTypeOverride", &Slot::m_dynamicDataType)
                 ->Field("contracts", &Slot::m_contracts)
@@ -199,7 +223,8 @@ namespace ScriptCanvas
         , m_isLatentSlot(slotConfiguration.m_isLatent)
         , m_descriptor(slotConfiguration.GetSlotDescriptor())
         , m_dynamicDataType(DynamicDataType::None)
-        , m_id(slotConfiguration.m_slotId)       
+        , m_id(slotConfiguration.m_slotId)
+        , m_isVisible(slotConfiguration.m_isVisible)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -325,6 +350,22 @@ namespace ScriptCanvas
         }
     }
 
+    CombinedSlotType Slot::GetType() const
+    {
+        if (IsLatent())
+        {
+            return CombinedSlotType::LatentOut;
+        }
+        else if (IsOutput())
+        {
+            return IsExecution() ? CombinedSlotType::ExecutionOut : CombinedSlotType::DataOut;
+        }
+        else
+        {
+            return IsExecution() ? CombinedSlotType::ExecutionIn : CombinedSlotType::DataIn;
+        }
+    }
+
     AZ::EntityId Slot::GetNodeId() const
     {
         return GetNode()->GetEntityId();
@@ -354,7 +395,7 @@ namespace ScriptCanvas
             {
                 SCRIPTCANVAS_REPORT_ERROR((*m_node), "Node (%s) is attempting to execute using an invalid Variable Reference", m_node->GetNodeName().c_str());
             }
-        }        
+        }
     }
 
     Endpoint Slot::GetEndpoint() const
@@ -472,10 +513,7 @@ namespace ScriptCanvas
 
                 if (dynamicGroup != AZ::Crc32())
                 {
-                    if (m_node->HasConcreteDisplayType(dynamicGroup))
-                    {
-                        m_node->SetDisplayType(dynamicGroup, displayType);
-                    }
+                    m_node->SetDisplayType(dynamicGroup, displayType);
                 }
                 else
                 {
@@ -493,7 +531,7 @@ namespace ScriptCanvas
             InitializeVariables();
         }
 
-        NodeNotificationsBus::Event(m_node->GetEntityId(), &NodeNotifications::OnInputChanged, GetId());
+        NodeNotificationsBus::Event(m_node->GetEntityId(), &NodeNotifications::OnSlotInputChanged, GetId());
         EndpointNotificationBus::Event(Endpoint(m_node->GetEntityId(), GetId()), &EndpointNotifications::OnEndpointReferenceChanged, m_variableReference);
     }
 
@@ -517,6 +555,11 @@ namespace ScriptCanvas
         return m_descriptor.IsExecution();
     }
 
+    bool Slot::IsVisible() const
+    {
+        return m_isVisible;
+    }
+    
     bool Slot::IsInput() const
     {
         return m_descriptor.IsInput();
@@ -560,7 +603,7 @@ namespace ScriptCanvas
     void Slot::SetDisplayType(ScriptCanvas::Data::Type displayType)
     {
         if ((m_displayDataType.IsValid() && !displayType.IsValid())
-            || (!m_displayDataType.IsValid() && displayType.IsValid()))
+        || (!m_displayDataType.IsValid() && displayType.IsValid()))
         {
             // Confirm that the type we are display as conforms to what our underlying type says we
             // should be.
@@ -639,6 +682,11 @@ namespace ScriptCanvas
         return m_displayDataType.IsValid();
     }
 
+    bool Slot::IsSanityCheckRequired() const
+    {
+        return IsDynamicSlot() && !HasDisplayType() && IsConnected();
+    }
+
     AZ::Crc32 Slot::GetDisplayGroup() const
     {
         return m_displayGroup;
@@ -657,15 +705,14 @@ namespace ScriptCanvas
     AZ::Outcome<void, AZStd::string> Slot::IsTypeMatchFor(const Slot& otherSlot) const
     {
         AZ::Outcome<void, AZStd::string> matchForOutcome;
-
         ScriptCanvas::Data::Type myType = GetDataType();
         ScriptCanvas::Data::Type otherType = otherSlot.GetDataType();
 
         if (otherType.IsValid())
         {
-            if (IsDynamicSlot() && GetDynamicGroup() != AZ::Crc32())
+            if (IsDynamicSlot())
             {
-                matchForOutcome = m_node->IsValidTypeForGroup(GetDynamicGroup(), otherType);
+                matchForOutcome = m_node->IsValidTypeForSlot(GetId(), otherType);
 
                 if (!matchForOutcome.IsSuccess())
                 {
@@ -673,11 +720,14 @@ namespace ScriptCanvas
                 }
             }
 
-            matchForOutcome = IsTypeMatchFor(otherType);
-
-            if (!matchForOutcome)
+            if (IsOutput())
             {
-                return matchForOutcome;
+                matchForOutcome = IsTypeMatchFor(otherType);
+
+                if (!matchForOutcome)
+                {
+                    return matchForOutcome;
+                }
             }
         }
 
@@ -693,11 +743,14 @@ namespace ScriptCanvas
                 }
             }
 
-            matchForOutcome = otherSlot.IsTypeMatchFor(myType);
-
-            if (!matchForOutcome)
+            if (otherSlot.IsOutput())
             {
-                return matchForOutcome;
+                matchForOutcome = otherSlot.IsTypeMatchFor(myType);
+
+                if (!matchForOutcome)
+                {
+                    return matchForOutcome;
+                }
             }
         }
 
@@ -808,12 +861,19 @@ namespace ScriptCanvas
         }
 
         // At this point we need to confirm the types are a match.
-        if (GetDataType().IS_A(dataType))
+        const auto& thisType = GetDataType();
+
+        if (thisType.IS_A(dataType))
         {
             return AZ::Success();
         }
 
         return AZ::Failure(AZStd::string::format("%s is not a type match for %s", ScriptCanvas::Data::GetName(GetDataType()).c_str(), ScriptCanvas::Data::GetName(dataType).c_str()));
+    }
+
+    void Slot::SetToolTip(const AZStd::string& toolTip)
+    {
+        m_toolTip = toolTip;
     }
 
     void Slot::Rename(AZStd::string_view newName)
@@ -822,19 +882,17 @@ namespace ScriptCanvas
         {
             m_name = newName;
 
-            ModifiableDatumView datumView;
-
             if (m_node)
             {
+                ModifiableDatumView datumView;
                 m_node->ModifyUnderlyingSlotDatum(GetId(), datumView);
 
                 if (datumView.IsValid())
                 {
                     datumView.SetLabel(m_name);
                 }
+                SignalRenamed();
             }
-
-            SignalRenamed();
         }
     }
 
@@ -853,7 +911,9 @@ namespace ScriptCanvas
         ScriptCanvas::ModifiableDatumView datumView;
         GetNode()->ModifyUnderlyingSlotDatum(GetId(), datumView);
 
-        datumView.SetVisibility(IsConnected() ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        bool isVisible = !IsConnected() && datumView.GetDataType().IsValid();
+
+        datumView.SetVisibility(isVisible ? AZ::Edit::PropertyVisibility::ShowChildrenOnly : AZ::Edit::PropertyVisibility::Hide);
     }
 
     TransientSlotIdentifier Slot::GetTransientIdentifier() const

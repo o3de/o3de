@@ -29,9 +29,11 @@
 namespace LmbrCentral
 {
     /// Generates solid polygon prism mesh.
+    /// Applies non-uniform scale, but does not apply any scale from the transform, which is assumed to be applied separately elsewhere.
     static void GenerateSolidPolygonPrismMesh(
         const AZStd::vector<AZ::Vector2>& vertices,
         const float height,
+        const AZ::Vector3& nonUniformScale,
         AZStd::vector<AZ::Vector3>& meshTriangles)
     {
         // must have at least one triangle
@@ -40,6 +42,13 @@ namespace LmbrCentral
             meshTriangles.clear();
             return;
         }
+
+        // deal with the possibility that the scaled height is negative
+        const float scaledHeight = height * nonUniformScale.GetZ();
+        const float top = AZ::GetMax(0.0f, scaledHeight);
+        const float bottom = AZ::GetMin(0.0f, scaledHeight);
+        const AZ::Vector3 topVector = AZ::Vector3::CreateAxisZ(top);
+        const AZ::Vector3 bottomVector = AZ::Vector3::CreateAxisZ(bottom);
 
         // generate triangles for one face of polygon prism
         const AZStd::vector<AZ::Vector3> faceTriangles = GenerateTriangles(vertices);
@@ -53,17 +62,12 @@ namespace LmbrCentral
 
         // copy vertices into triangle list
         const typename AZStd::vector<AZ::Vector3>::iterator midFace = meshTriangles.begin() + halfTriangleCount;
-        AZStd::copy(faceTriangles.begin(), faceTriangles.end(), meshTriangles.begin());
+
+        AZStd::transform(faceTriangles.cbegin(), faceTriangles.cend(), meshTriangles.begin(),
+            [&nonUniformScale, &topVector](AZ::Vector3 vertex) { return nonUniformScale * vertex + topVector; });
         // due to winding order, reverse copy triangles for other face/polygon
-        AZStd::reverse_copy(faceTriangles.begin(), faceTriangles.end(), midFace);
-
-        const AZ::Vector3 heightOffset = AZ::Vector3(0.0f, 0.0f, height);
-
-        // top face/polygon
-        for (size_t i = 0; i < halfTriangleCount; ++i)
-        {
-            meshTriangles[i] += heightOffset;
-        }
+        AZStd::transform(faceTriangles.crbegin(), faceTriangles.crend(), midFace,
+            [&nonUniformScale, &bottomVector](AZ::Vector3 vertex) { return nonUniformScale * vertex + bottomVector; });
 
         // end of face/polygon vertices is start of side/wall vertices
         const typename AZStd::vector<AZ::Vector3>::iterator endFaceIt = meshTriangles.begin() + fullTriangleCount;
@@ -87,10 +91,12 @@ namespace LmbrCentral
         for (size_t i = 0; i < vertexCount; ++i)
         {
             // local vertex positions
-            const AZ::Vector3 p1 = AZ::Vector2ToVector3(vertices[i]);
-            const AZ::Vector3 p2 = AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
-            const AZ::Vector3 p3 = (p1 + heightOffset);
-            const AZ::Vector3 p4 = (p2 + heightOffset);
+            const AZ::Vector3 currentPoint = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
+            const AZ::Vector3 nextPoint = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+            const AZ::Vector3 p1 = currentPoint + bottomVector;
+            const AZ::Vector3 p2 = nextPoint + bottomVector;
+            const AZ::Vector3 p3 = currentPoint + topVector;
+            const AZ::Vector3 p4 = nextPoint + topVector;
 
             // generate triangles for wall quad
             if (clockwise)
@@ -107,6 +113,7 @@ namespace LmbrCentral
     static void GenerateWirePolygonPrismMesh(
         const AZStd::vector<AZ::Vector2>& vertices,
         const float height,
+        const AZ::Vector3& nonUniformScale,
         AZStd::vector<AZ::Vector3>& lines)
     {
         const size_t vertexCount = vertices.size();
@@ -123,37 +130,40 @@ namespace LmbrCentral
         for (size_t i = 0; i < verticalLineCount; ++i)
         {
             // vertical line
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[i]);
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[i], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i], height);
         }
 
         for (size_t i = 0; i < horizontalLineCount; ++i)
         {
             // bottom line
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[i]);
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i]);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
         }
 
         for (size_t i = 0; i < horizontalLineCount; ++i)
         {
             // top line
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[i], height);
-            lines[lineVertIndex++] = Vector2ToVector3(vertices[(i + 1) % vertexCount], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[i], height);
+            lines[lineVertIndex++] = nonUniformScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount], height);
         }
     }
 
     void GeneratePolygonPrismMesh(
-        const AZStd::vector<AZ::Vector2>& vertices, const float height,
+        const AZStd::vector<AZ::Vector2>& vertices, const float height, const AZ::Vector3& nonUniformScale,
         PolygonPrismMesh& polygonPrismMeshOut)
     {
         GenerateSolidPolygonPrismMesh(
-            vertices, height, polygonPrismMeshOut.m_triangles);
+            vertices, height, nonUniformScale, polygonPrismMeshOut.m_triangles);
         GenerateWirePolygonPrismMesh(
-            vertices, height, polygonPrismMeshOut.m_lines);
+            vertices, height, nonUniformScale, polygonPrismMeshOut.m_lines);
     }
 
     PolygonPrismShape::PolygonPrismShape()
-        : m_polygonPrism(AZStd::make_shared<AZ::PolygonPrism>()) {}
+        : m_polygonPrism(AZStd::make_shared<AZ::PolygonPrism>())
+        , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {this->OnNonUniformScaleChanged(scale); })
+    {
+    }
 
     PolygonPrismShape::PolygonPrismShape(const PolygonPrismShape& other)
         : m_polygonPrism(other.m_polygonPrism)
@@ -163,7 +173,7 @@ namespace LmbrCentral
     {
 
     }
-    
+
     PolygonPrismShape& PolygonPrismShape::operator=(const PolygonPrismShape& other)
     {
         m_polygonPrism = other.m_polygonPrism;
@@ -205,6 +215,8 @@ namespace LmbrCentral
         m_entityId = entityId;
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
+        m_currentNonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
         m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
@@ -212,6 +224,9 @@ namespace LmbrCentral
         PolygonPrismShapeComponentRequestBus::Handler::BusConnect(entityId);
         AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
         AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
+
+        AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+            m_nonUniformScaleChangedHandler);
 
         const auto polygonPrismChanged = [this]()
         {
@@ -221,11 +236,13 @@ namespace LmbrCentral
         m_polygonPrism->SetCallbacks(
             polygonPrismChanged,
             polygonPrismChanged,
+            polygonPrismChanged,
             polygonPrismChanged);
     }
 
     void PolygonPrismShape::Deactivate()
     {
+        m_nonUniformScaleChangedHandler.Disconnect();
         PolygonPrismShapeComponentRequestBus::Handler::BusDisconnect();
         AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
         AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
@@ -245,6 +262,16 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+    }
+
+    void PolygonPrismShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
+    {
+        m_currentNonUniformScale = scale;
+        m_polygonPrism->SetNonUniformScale(scale);
+        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        ShapeComponentNotificationsBus::Event(
+            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void PolygonPrismShape::ShapeChanged()
@@ -315,7 +342,7 @@ namespace LmbrCentral
 
     AZ::Aabb PolygonPrismShape::GetEncompassingAabb()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_aabb;
     }
@@ -331,7 +358,7 @@ namespace LmbrCentral
     /// @param point Position in world space to test against.
     bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
 
         // initial early aabb rejection test
         // note: will implicitly do height test too
@@ -345,26 +372,26 @@ namespace LmbrCentral
 
     float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
 
         return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);;
     }
 
     bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
 
         return PolygonPrismUtil::IntersectRay(m_intersectionDataCache.m_triangles, m_currentTransform, src, dir, distance);
     }
 
     void PolygonPrismShape::PolygonPrismIntersectionDataCache::UpdateIntersectionParamsImpl(
         const AZ::Transform& currentTransform, const AZ::PolygonPrism& polygonPrism,
-        [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
+        const AZ::Vector3& currentNonUniformScale)
     {
         m_aabb = PolygonPrismUtil::CalculateAabb(polygonPrism, currentTransform);
         GenerateSolidPolygonPrismMesh(
             polygonPrism.m_vertexContainer.GetVertices(),
-            polygonPrism.GetHeight(), m_triangles);
+            polygonPrism.GetHeight(), currentNonUniformScale, m_triangles);
     }
 
     void DrawPolygonPrismShape(
@@ -407,6 +434,7 @@ namespace LmbrCentral
             const AZ::VertexContainer<AZ::Vector2>& vertexContainer = polygonPrism.m_vertexContainer;
 
             const float height = polygonPrism.GetHeight();
+            const AZ::Vector3& nonUniformScale = polygonPrism.GetNonUniformScale();
 
             AZ::Transform worldFromLocalUniformScale = worldFromLocal;
             const float entityScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
@@ -416,14 +444,14 @@ namespace LmbrCentral
             // check base of prism
             for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
             {
-                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(AZ::Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
+                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
             }
 
             // check top of prism
             // set aabb to be height of prism - ensure entire polygon prism shape is enclosed in aabb
             for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
             {
-                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(AZ::Vector3(vertex.GetX(), vertex.GetY(), height)));
+                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), height)));
             }
 
             return aabb;
@@ -439,12 +467,14 @@ namespace LmbrCentral
             const AZStd::vector<AZ::Vector2>& vertices = polygonPrism.m_vertexContainer.GetVertices();
             const size_t vertexCount = vertices.size();
 
-            AZ::Transform worldFromLocalUniformScale = worldFromLocal;
-            const float entityScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(entityScale));
+            AZ::Transform worldFromLocalWithUniformScale = worldFromLocal;
+            const float transformScale = worldFromLocalWithUniformScale.ExtractScale().GetMaxElement();
+            worldFromLocalWithUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(transformScale));
 
             // transform point to local space
-            const AZ::Vector3 localPoint = worldFromLocalUniformScale.GetInverse().TransformPoint(point);
+            // it's fine to invert the transform including scale here, because it won't affect whether the point is inside the prism
+            const AZ::Vector3 localPoint =
+                worldFromLocalWithUniformScale.GetInverse().TransformPoint(point) / polygonPrism.GetNonUniformScale();
 
             // ensure the point is not above or below the prism (in its local space)
             if (localPoint.GetZ() < 0.0f || localPoint.GetZ() > polygonPrism.GetHeight())
@@ -497,29 +527,39 @@ namespace LmbrCentral
         float DistanceSquaredFromPoint(const AZ::PolygonPrism& polygonPrism, const AZ::Vector3& point, const AZ::Transform& worldFromLocal)
         {
             const float height = polygonPrism.GetHeight();
+            const AZ::Vector3& nonUniformScale = polygonPrism.GetNonUniformScale();
 
-            AZ::Transform worldFromLocalUniformScale = worldFromLocal;
-            const float entityScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(entityScale));
+            // we want to invert the rotation and translation from the transform to get the point into the local space of the prism
+            // but inverting any scale in the transform would mess up the distance, so extract that first and apply scale separately to the
+            // prism
+            AZ::Transform worldFromLocalNoScale = worldFromLocal;
+            const float transformScale = worldFromLocalNoScale.ExtractScale().GetMaxElement();
+            const AZ::Vector3 combinedScale = transformScale * nonUniformScale;
+            const float scaledHeight = height * combinedScale.GetZ();
 
-            const AZ::Vector3 localPoint = worldFromLocalUniformScale.GetInverse().TransformPoint(point);
-            const AZ::Vector3 localPointFlattened = AZ::Vector3(localPoint.GetX(), localPoint.GetY(), 0.0f);
-            const AZ::Vector3 worldPointFlattened = worldFromLocalUniformScale.TransformPoint(localPointFlattened);
+            // find the bottom and top which may be reversed from the usual order if the height or Z component of the scale is negative
+            const float bottom = AZ::GetMin(scaledHeight, 0.0f);
+            const float top = AZ::GetMax(scaledHeight, 0.0f);
+
+            // translate and rotate (but don't scale) the point into the local space of the prism
+            const AZ::Vector3 localPoint = worldFromLocalNoScale.GetInverse().TransformPoint(point);
+            const AZ::Vector3 localPointFlattened = AZ::Vector3(localPoint.GetX(), localPoint.GetY(), 0.5f * (bottom + top));
+            const AZ::Vector3 worldPointFlattened = worldFromLocalNoScale.TransformPoint(localPointFlattened);
 
             // first test if the point is contained within the polygon (flatten)
-            if (IsPointInside(polygonPrism, worldPointFlattened, worldFromLocalUniformScale))
+            if (IsPointInside(polygonPrism, worldPointFlattened, worldFromLocal))
             {
-                if (localPoint.GetZ() < 0.0f)
+                if (localPoint.GetZ() < bottom)
                 {
                     // if it's inside the 2d polygon but below the volume
-                    const float distance = std::fabs(localPoint.GetZ());
+                    const float distance = bottom - localPoint.GetZ();
                     return distance * distance;
                 }
 
-                if (localPoint.GetZ() > height)
+                if (localPoint.GetZ() > top)
                 {
                     // if it's inside the 2d polygon but above the volume
-                    const float distance = localPoint.GetZ() - height;
+                    const float distance = localPoint.GetZ() - top;
                     return distance * distance;
                 }
 
@@ -535,8 +575,8 @@ namespace LmbrCentral
             float minDistanceSq = std::numeric_limits<float>::max();
             for (size_t i = 0; i < vertexCount; ++i)
             {
-                const AZ::Vector3 segmentStart = AZ::Vector2ToVector3(vertices[i]);
-                const AZ::Vector3 segmentEnd = AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
+                const AZ::Vector3 segmentStart = combinedScale * AZ::Vector2ToVector3(vertices[i]);
+                const AZ::Vector3 segmentEnd = combinedScale * AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]);
 
                 AZ::Vector3 position;
                 float proportion;
@@ -550,8 +590,8 @@ namespace LmbrCentral
                 }
             }
 
-            // constrain closest pos to [0, height] of volume
-            closestPos += AZ::Vector3(0.0f, 0.0f, AZ::GetClamp<float>(localPoint.GetZ(), 0.0f, height));
+            // constrain closest pos to [bottom, top] of volume
+            closestPos += AZ::Vector3(0.0f, 0.0f, AZ::GetClamp<float>(localPoint.GetZ(), bottom, top));
 
             // return distanceSq from closest pos on prism
             return (closestPos - localPoint).GetLengthSq();

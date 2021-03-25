@@ -41,7 +41,7 @@ ly_add_target(
             3rdParty::Qt::Network
             3rdParty::RapidJSON
             3rdParty::SQLite
-            3rdParty::XXHash
+            3rdParty::xxhash
             AZ::AzCore
             AZ::AzFramework
             AZ::AzQtComponents
@@ -81,11 +81,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessor.Static
-)
-ly_add_source_properties(
-    SOURCES native/utilities/BatchApplicationManager.cpp
-    PROPERTY COMPILE_DEFINITIONS 
-    VALUES LY_METRICS_BUILD_TIME=${LY_METRICS_BUILD_TIME}
 )
 
 # Adds the AssetProcessor target as a C preprocessor define so that it can be used as a Settings Registry

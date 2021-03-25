@@ -199,7 +199,7 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     if(o_layer1_o_useDepthMap)
     {
         float2 layerUv = uv;
-        if(MaterialSrg::m_parallaxUvIndex == 0) // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
+        if(MaterialSrg::m_parallaxUvIndex == 0)
         {
             layerUv = mul(MaterialSrg::m_layer1_m_uvMatrix, float3(uv, 1.0)).xy;
         }
@@ -211,7 +211,7 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     if(o_layer2_o_useDepthMap)
     {
         float2 layerUv = uv;
-        if(MaterialSrg::m_parallaxUvIndex == 0) // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
+        if(MaterialSrg::m_parallaxUvIndex == 0)
         {
             layerUv = mul(MaterialSrg::m_layer2_m_uvMatrix, float3(uv, 1.0)).xy;
         }
@@ -223,7 +223,7 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     if(o_layer3_o_useDepthMap)
     {
         float2 layerUv = uv;
-        if(MaterialSrg::m_parallaxUvIndex == 0) // [GFX TODO][ATOM-5620] Figure out what we want to do about transforms on the second UV set
+        if(MaterialSrg::m_parallaxUvIndex == 0)
         {
             layerUv = mul(MaterialSrg::m_layer3_m_uvMatrix, float3(uv, 1.0)).xy;
         }

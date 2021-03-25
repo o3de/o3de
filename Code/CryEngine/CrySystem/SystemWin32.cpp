@@ -15,7 +15,6 @@
 #include "System.h"
 #include <time.h>
 
-#include <INetwork.h>
 #include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
@@ -91,11 +90,7 @@ static AZStd::vector<AZStd::string> GetModuleNames()
 
         moduleNames.push_back("Cry3DEngine" MODULE_EXTENSION);
         moduleNames.push_back("CryFont" MODULE_EXTENSION);
-        moduleNames.push_back("CryNetwork" MODULE_EXTENSION);
-        moduleNames.push_back("CryPhysics" MODULE_EXTENSION);
         moduleNames.push_back("CrySystem" MODULE_EXTENSION);
-        // K01
-        moduleNames.push_back("CryOnline" MODULE_EXTENSION);
 
         if (gEnv && gEnv->pConsole)
         {
@@ -135,14 +130,7 @@ const char g_szGroupCore[] = "CryEngine";
 const char* g_szModuleGroups[][2] = {
     {"Editor.exe", g_szGroupCore},
     {"CrySystem.dll", g_szGroupCore},
-    {"CryNetwork.dll", g_szGroupCore},
-    {"CryPhysics.dll", g_szGroupCore},
     {"CryFont.dll", g_szGroupCore},
-    {"Cry3DEngine.dll", g_szGroupCore},
-    {"CryRenderD3D9.dll", g_szGroupCore},
-    {"CryRenderD3D10.dll", g_szGroupCore},
-    {"CryRenderOGL.dll", g_szGroupCore},
-    {"CryRenderNULL.dll", g_szGroupCore}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -380,21 +368,6 @@ void CSystem::CollectMemStats (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose, 
             // m_pIFont and m_pIFontUi are both counted in pCryFont sizing if they exist.
             // no need to manually add them here.
         }
-    }
-
-    if (m_env.pNetwork)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Network");
-        {
-            SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-            const SmallModuleInfo* info = FindModuleInfo(stats, "CryNetwork.dll");
-            if (info)
-            {
-                pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-            }
-        }
-
-        m_env.pNetwork->GetMemoryStatistics(pSizer);
     }
 
     {

@@ -90,7 +90,7 @@ namespace AZ
             RPI::FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        void DepthOfFieldMaskPass::CompileResources(const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const RPI::PassScopeProducer& producer)
+        void DepthOfFieldMaskPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // Update resolution size
             const RPI::PassAttachmentBinding& attachmentBinding = GetAttachmentBindings()[0];

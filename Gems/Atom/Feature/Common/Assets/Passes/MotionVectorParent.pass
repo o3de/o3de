@@ -1,0 +1,64 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MotionVectorParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "CameraMotionVectorPass",
+                    "TemplateName": "CameraMotionVectorPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "MeshMotionVectorPass",
+                    "TemplateName": "MeshMotionVectorPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "motion",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                }
+            ]
+        }
+    }
+}

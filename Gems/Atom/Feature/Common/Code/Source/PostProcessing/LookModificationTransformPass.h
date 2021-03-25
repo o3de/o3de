@@ -41,7 +41,7 @@ namespace AZ
         public:
             AZ_RTTI(LookModificationPass, "{68C3A664-FB97-40ED-9638-21938D6692B3}", RPI::ParentPass);
             AZ_CLASS_ALLOCATOR(LookModificationPass, SystemAllocator, 0);
-            virtual ~LookModificationPass();
+            virtual ~LookModificationPass() = default;
 
             //! Creates a LookModificationPass
             static RPI::Ptr<LookModificationPass> Create(const RPI::PassDescriptor& descriptor);
@@ -50,10 +50,11 @@ namespace AZ
             LookModificationPass(const RPI::PassDescriptor& descriptor);
 
             //! Pass overrides ...
-            void BuildAttachmentsInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             RHI::ShaderInputConstantIndex   m_exposureControlEnabledFlagIndex;
+
+            void BuildAttachmentsInternal() override;
 
         private:
             const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;

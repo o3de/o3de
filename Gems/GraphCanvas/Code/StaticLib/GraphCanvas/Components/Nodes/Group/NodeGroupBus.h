@@ -11,7 +11,10 @@
 */
 #pragma once
 
+#include <QRect>
+
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Color.h>
 
 #include <GraphCanvas/Components/Nodes/NodeConfiguration.h>
 #include <GraphCanvas/Types/Endpoint.h>
@@ -45,10 +48,6 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        //! State controller signals whether or not the Node Group is externally moved or not.
-        //! Basically a signal of whether or not it should update the elements inside of it or not.
-        virtual StateController< bool >* GetExternallyControlledStateController() = 0;
-
         virtual void SetGroupSize(QRectF blockRectangle) = 0;
         virtual QRectF GetGroupBoundingBox() const = 0;
         virtual AZ::Color GetGroupColor() const = 0;
@@ -60,9 +59,21 @@ namespace GraphCanvas
         virtual bool IsCollapsed() const = 0;
         virtual AZ::EntityId GetCollapsedNodeId() const = 0;
 
+        virtual void AddElementToGroup(const AZ::EntityId& groupableElement) = 0;
+        virtual void AddElementsToGroup(const AZStd::unordered_set<AZ::EntityId>& groupableElements) = 0;
+        virtual void AddElementsVectorToGroup(const AZStd::vector<AZ::EntityId>& groupableElements) = 0;
+
+        virtual void RemoveElementFromGroup(const AZ::EntityId& groupableElement) = 0;
+        virtual void RemoveElementsFromGroup(const AZStd::unordered_set<AZ::EntityId>& groupableElements) = 0;
+        virtual void RemoveElementsVectorFromGroup(const AZStd::vector<AZ::EntityId>& groupableElements) = 0;
+
         virtual void FindGroupedElements(AZStd::vector< NodeId >& interiorElements) = 0;
 
+        virtual void ResizeGroupToElements(bool growGroupOnly) = 0;
+
         virtual bool IsInTitle(const QPointF& scenePoint) const = 0;
+        
+        virtual void AdjustTitleSize() = 0;
     };
     
     using NodeGroupRequestBus = AZ::EBus<NodeGroupRequests>;
@@ -75,6 +86,7 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
         
         virtual void OnCollapsed([[maybe_unused]] const NodeId& collapsedNodeId) {}
+        virtual void OnExpanded() {}
     };
 
     using NodeGroupNotificationBus = AZ::EBus<NodeGroupNotifications>;
@@ -89,7 +101,51 @@ namespace GraphCanvas
         virtual void ExpandGroup() = 0;
 
         virtual AZ::EntityId GetSourceGroup() const = 0;
+
+        virtual AZStd::vector< Endpoint > GetRedirectedEndpoints() const = 0;
+        virtual void ForceEndpointRedirection(const AZStd::vector< Endpoint >& redirections) = 0;
     };
     
     using CollapsedNodeGroupRequestBus = AZ::EBus<CollapsedNodeGroupRequests>;
+
+    class CollapsedNodeGroupNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
+
+        virtual void OnExpansionComplete() {}
+    };
+
+    using CollapsedNodeGroupNotificationBus = AZ::EBus<CollapsedNodeGroupNotifications>;
+
+    class GroupableSceneMemberRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
+
+        virtual bool IsGrouped() const = 0;
+        virtual const AZ::EntityId& GetGroupId() const = 0;
+
+        virtual void RegisterToGroup(const AZ::EntityId& groupId) = 0;
+        virtual void UnregisterFromGroup(const AZ::EntityId& groupId) = 0;
+        virtual void RemoveFromGroup() = 0;
+    };
+
+    using GroupableSceneMemberRequestBus = AZ::EBus<GroupableSceneMemberRequests>;
+
+    class GroupableSceneMemberNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
+
+        virtual void OnGroupChanged() = 0;
+    };
+
+    using GroupableSceneMemberNotificationBus = AZ::EBus<GroupableSceneMemberNotifications>;
 }

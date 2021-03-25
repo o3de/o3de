@@ -31,7 +31,6 @@ platform_macros = [
     'WIN32',
     'WIN32_LEAN_AND_MEAN',
     'WIN64',
-    'XENIA',
     '_WIN32',
     '_WIN32_WINDOWS',
     '_WIN32_WINNT',

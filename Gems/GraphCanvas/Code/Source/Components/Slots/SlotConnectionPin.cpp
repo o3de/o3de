@@ -74,6 +74,11 @@ namespace GraphCanvas
         setCacheMode(QGraphicsItem::CacheMode::ItemCoordinateCache);
     }
 
+    QPointF SlotConnectionPin::GetPinCenter() const
+    {
+        return mapToScene(boundingRect().center());
+    }
+
     QPointF SlotConnectionPin::GetConnectionPoint() const
     {
         qreal padding = m_style.GetAttribute(Styling::Attribute::Padding, 2.0);
@@ -116,7 +121,7 @@ namespace GraphCanvas
         return{ {0, 0} , geometry().size() };
     }
 
-    void SlotConnectionPin::paint(QPainter *painter, [[maybe_unused]] const QStyleOptionGraphicsItem *option, [[maybe_unused]] QWidget *widget /*= nullptr*/)
+    void SlotConnectionPin::paint(QPainter* painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/ /*= nullptr*/)
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
         qreal decorationPadding = m_style.GetAttribute(Styling::Attribute::Padding, 2.);
@@ -165,7 +170,7 @@ namespace GraphCanvas
         OnMouseEnter(hoverEvent->modifiers() & Qt::KeyboardModifier::AltModifier);
     }
 
-    void SlotConnectionPin::hoverLeaveEvent([[maybe_unused]] QGraphicsSceneHoverEvent* hoverEvent)
+    void SlotConnectionPin::hoverLeaveEvent(QGraphicsSceneHoverEvent* /*hoverEvent*/)
     {
         OnMouseLeave();
     }    
@@ -173,7 +178,6 @@ namespace GraphCanvas
     void SlotConnectionPin::OnMouseEnter(bool hasAltModifier)
     {
         m_hovered = true;
-        grabKeyboard();
 
         if (hasAltModifier)
         {
@@ -192,7 +196,6 @@ namespace GraphCanvas
         m_nodeDisplayStateStateSetter.ReleaseState();
 
         m_hovered = false;
-        ungrabKeyboard();
 
         AZ::EntityId nodeId;
         SlotRequestBus::EventResult(nodeId, m_slotId, &SlotRequests::GetNode);
@@ -264,7 +267,7 @@ namespace GraphCanvas
         updateGeometry();
     }
 
-    QSizeF SlotConnectionPin::sizeHint(Qt::SizeHint which, [[maybe_unused]] const QSizeF& constraint) const
+    QSizeF SlotConnectionPin::sizeHint(Qt::SizeHint which, const QSizeF& /*constraint*/) const
     {
         const qreal decorationPadding = m_style.GetAttribute(Styling::Attribute::Padding, 2.);
 

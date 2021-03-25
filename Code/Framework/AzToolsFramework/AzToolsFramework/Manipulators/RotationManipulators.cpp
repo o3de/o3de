@@ -25,7 +25,7 @@ namespace AzToolsFramework
 
         m_viewAngularManipulator = AngularManipulator::MakeShared(worldFromLocal);
 
-        m_space = worldFromLocal;
+        m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
     }
 
     void RotationManipulators::InstallLeftMouseDownCallback(
@@ -61,7 +61,7 @@ namespace AzToolsFramework
         m_viewAngularManipulator->InstallLeftMouseUpCallback(onMouseUpCallback);
     }
 
-    void RotationManipulators::SetLocalTransform(const AZ::Transform& localTransform)
+    void RotationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
     {
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
@@ -69,11 +69,9 @@ namespace AzToolsFramework
         }
 
         m_viewAngularManipulator->SetLocalTransform(localTransform);
-
-        m_localTransform = localTransform;
     }
 
-    void RotationManipulators::SetLocalPosition(const AZ::Vector3& localPosition)
+    void RotationManipulators::SetLocalPositionImpl(const AZ::Vector3& localPosition)
     {
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
@@ -81,11 +79,9 @@ namespace AzToolsFramework
         }
 
         m_viewAngularManipulator->SetLocalPosition(localPosition);
-
-        m_localTransform.SetTranslation(localPosition);
     }
 
-    void RotationManipulators::SetLocalOrientation(const AZ::Quaternion& localOrientation)
+    void RotationManipulators::SetLocalOrientationImpl(const AZ::Quaternion& localOrientation)
     {
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
@@ -93,9 +89,6 @@ namespace AzToolsFramework
         }
 
         m_viewAngularManipulator->SetLocalOrientation(localOrientation);
-
-        m_localTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            localOrientation, m_localTransform.GetTranslation());
     }
 
     void RotationManipulators::RefreshView(const AZ::Vector3& worldViewPosition)
@@ -106,7 +99,7 @@ namespace AzToolsFramework
         }
     }
 
-    void RotationManipulators::SetSpace(const AZ::Transform& worldFromLocal)
+    void RotationManipulators::SetSpaceImpl(const AZ::Transform& worldFromLocal)
     {
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
@@ -114,8 +107,6 @@ namespace AzToolsFramework
         }
 
         m_viewAngularManipulator->SetSpace(worldFromLocal);
-
-        m_space = worldFromLocal;
     }
 
     void RotationManipulators::SetLocalAxes(

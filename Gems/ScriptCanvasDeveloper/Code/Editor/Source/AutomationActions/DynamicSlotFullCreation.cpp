@@ -11,6 +11,8 @@
 */
 #include "precompiled.h"
 
+#include <QMenu>
+
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -42,6 +44,12 @@ namespace ScriptCanvasDeveloperEditor
         {
         public:
 
+            DynamicSlotFullCreationInterface(DeveloperUtils::ConnectionStyle connectionStyle)                
+            {
+                m_chainConfig.m_connectionStyle = connectionStyle;
+                m_chainConfig.m_skipHandlers = true;
+            }
+
             void SetupInterface(const AZ::EntityId& activeGraphCanvasGraphId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
             {
                 m_graphCanvasGraphId = activeGraphCanvasGraphId;
@@ -51,6 +59,17 @@ namespace ScriptCanvasDeveloperEditor
                 GraphCanvas::SceneRequestBus::EventResult(m_gridId, activeGraphCanvasGraphId, &GraphCanvas::SceneRequests::GetGrid);
 
                 GraphCanvas::GridRequestBus::EventResult(m_minorPitch, m_gridId, &GraphCanvas::GridRequests::GetMinorPitch);
+
+                QGraphicsScene* graphicsScene = nullptr;
+                GraphCanvas::SceneRequestBus::EventResult(graphicsScene, activeGraphCanvasGraphId, &GraphCanvas::SceneRequests::AsQGraphicsScene);
+
+                if (graphicsScene)
+                {
+                    QRectF sceneArea = graphicsScene->sceneRect();
+                    sceneArea.adjust(m_minorPitch.GetX(), m_minorPitch.GetY(), -m_minorPitch.GetX(), -m_minorPitch.GetY());
+                    GraphCanvas::ViewRequestBus::Event(m_viewId, &GraphCanvas::ViewRequests::CenterOnArea, sceneArea);
+                    QApplication::processEvents();
+                }
 
                 GraphCanvas::ViewRequestBus::EventResult(m_nodeCreationPos, m_viewId, &GraphCanvas::ViewRequests::GetViewSceneCenter);
 
@@ -78,6 +97,52 @@ namespace ScriptCanvasDeveloperEditor
                             m_availableVariableIds.emplace_back(variablePair.first);
                             m_variableTypeMapping[variablePair.first] = variablePair.second.GetDataType();
                         }
+                    }
+                }
+
+                // Temporary work around until the extra automation tools can be merged over that have better ways of doing this.
+                const GraphCanvas::GraphCanvasTreeItem* treeItem = nullptr;
+                ScriptCanvasEditor::AutomationRequestBus::BroadcastResult(treeItem, &ScriptCanvasEditor::AutomationRequests::GetNodePaletteRoot);
+
+                const GraphCanvas::NodePaletteTreeItem* onGraphStartItem = nullptr;
+
+                if (treeItem)
+                {
+                    AZStd::unordered_set< const GraphCanvas::GraphCanvasTreeItem* > unexploredSet = { treeItem };
+
+                    while (!unexploredSet.empty())
+                    {
+                        const GraphCanvas::GraphCanvasTreeItem* treeItem2 = (*unexploredSet.begin());
+                        unexploredSet.erase(unexploredSet.begin());
+
+                        const GraphCanvas::NodePaletteTreeItem* nodePaletteTreeItem = azrtti_cast<const GraphCanvas::NodePaletteTreeItem*>(treeItem2);
+
+                        if (nodePaletteTreeItem && nodePaletteTreeItem->GetName().compare("On Graph Start") == 0)
+                        {
+                            onGraphStartItem = nodePaletteTreeItem;
+                            break;
+                        }
+
+                        for (int i = 0; i < treeItem2->GetChildCount(); ++i)
+                        {
+                            const GraphCanvas::GraphCanvasTreeItem* childItem = treeItem2->FindChildByRow(i);
+
+                            if (childItem)
+                            {
+                                unexploredSet.insert(childItem);
+                            }
+                        }
+                    }
+                }
+
+                if (onGraphStartItem)
+                {
+                    GraphCanvas::GraphCanvasMimeEvent* mimeEvent = onGraphStartItem->CreateMimeEvent();
+
+                    if (mimeEvent)
+                    {
+                        ScriptCanvasEditor::NodeIdPair createdPair = DeveloperUtils::HandleMimeEvent(mimeEvent, m_graphCanvasGraphId, m_viewportRectangle, m_widthOffset, m_heightOffset, m_maxRowHeight, m_minorPitch);
+                        DeveloperUtils::CreateConnectedChain(createdPair, m_chainConfig);
                     }
                 }
             }
@@ -256,6 +321,7 @@ namespace ScriptCanvasDeveloperEditor
                     // If we succeeded, we need to update our offsets, and create a new node.
                     if (i >= slotOrdering.size())
                     {
+                        DeveloperUtils::CreateConnectedChain(nodeIdPair, m_chainConfig);
                         usedGraphCanvasNodeIds.emplace_back(nodeIdPair.m_graphCanvasId);
 
                         DeveloperUtils::UpdateViewportPositionOffsetForNode(nodeIdPair.m_graphCanvasId, m_viewportRectangle, m_widthOffset, m_heightOffset, m_maxRowHeight, m_minorPitch);
@@ -434,6 +500,8 @@ namespace ScriptCanvasDeveloperEditor
 
             ScriptCanvas::Graph* m_graph = nullptr;
 
+            DeveloperUtils::CreateConnectedChainConfig m_chainConfig;
+
             AZStd::vector<ScriptCanvas::VariableId> m_availableVariableIds;
             AZStd::unordered_map<ScriptCanvas::VariableId, ScriptCanvas::Data::Type> m_variableTypeMapping;
         };
@@ -442,28 +510,49 @@ namespace ScriptCanvasDeveloperEditor
         {
             ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationBegin);
 
-            DynamicSlotFullCreationInterface fullCreationInterface;
+            DynamicSlotFullCreationInterface fullCreationInterface(DeveloperUtils::NoConnections);
             DeveloperUtils::ProcessNodePalette(fullCreationInterface);
 
             ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationEnd);
         }
 
-        QAction* CreateDynamicSlotFullCreationAction(QWidget* mainWindow)
+        void VariablePaletteFullyConnectionCreationAction()
         {
-            QAction* createVariablePaletteAction = nullptr;
+            ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationBegin);
 
-            if (mainWindow)
+            DynamicSlotFullCreationInterface fullCreationInterface(DeveloperUtils::SingleExecutionConnection);
+            DeveloperUtils::ProcessNodePalette(fullCreationInterface);
+
+            ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationEnd);
+        }
+
+        QAction* CreateDynamicSlotFullCreationAction(QMenu* mainMenu)
+        {
+            QAction* dynamicSlotFullCreationAction = nullptr;
+
+            if (mainMenu)
             {
-                createVariablePaletteAction = new QAction(QAction::tr("Create Dynamic Node Range"), mainWindow);
-                createVariablePaletteAction->setAutoRepeat(false);
-                createVariablePaletteAction->setToolTip("Tries to create every node in the node palette with dynamic slots. And will generate variations of the node with variables assigned to each slot in each combination depending on what variables are available in the Variable Manager.");
-                createVariablePaletteAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Shift+k", "Debug|Create Variable Palette")));
+                mainMenu->addSeparator();
 
-                mainWindow->addAction(createVariablePaletteAction);
-                mainWindow->connect(createVariablePaletteAction, &QAction::triggered, &VariablePaletteFullCreationAction);
+                {
+                    dynamicSlotFullCreationAction = mainMenu->addAction(QAction::tr("Mass Populate Dynamic Nodes"));
+                    dynamicSlotFullCreationAction->setAutoRepeat(false);
+                    dynamicSlotFullCreationAction->setToolTip("Tries to create every node in the node palette with dynamic slots.\nAnd will generate variations of the node with variables assigned to each slot in each combination depending on what variables are available in the Variable Manager.");
+                    dynamicSlotFullCreationAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Shift+k", "Debug|Create Variable Palette")));
+
+                    QObject::connect(dynamicSlotFullCreationAction, &QAction::triggered, &VariablePaletteFullCreationAction);
+                }
+
+                {
+                    dynamicSlotFullCreationAction = mainMenu->addAction(QAction::tr("Mass Populate and Connect Dynamic Nodes"));
+                    dynamicSlotFullCreationAction->setAutoRepeat(false);
+                    dynamicSlotFullCreationAction->setToolTip("Tries to create and connect every node in the node palette with dynamic slots.\nAnd will generate variations of the node with variables assigned to each slot in each combination depending on what variables are available in the Variable Manager.");
+
+                    QObject::connect(dynamicSlotFullCreationAction, &QAction::triggered, &VariablePaletteFullyConnectionCreationAction);
+                }
             }
 
-            return createVariablePaletteAction;
+            return dynamicSlotFullCreationAction;
         }
     }
 }

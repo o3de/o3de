@@ -20,6 +20,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <Core/Node.h>
 
+#include <GraphCanvas/Components/GraphCanvasPropertyBus.h>
+
 #include <ScriptCanvas/Core/GraphBus.h>
 
 #include "PropertyGridBus.h"
@@ -49,6 +51,7 @@ namespace ScriptCanvasEditor
             , public PropertyGridRequestBus::Handler
             , public ScriptCanvas::EndpointNotificationBus::MultiHandler
             , public ScriptCanvas::NodeNotificationsBus::MultiHandler
+            , public GraphCanvas::GraphCanvasPropertyInterfaceNotificationBus::MultiHandler
         {
             Q_OBJECT
 
@@ -76,6 +79,10 @@ namespace ScriptCanvasEditor
             void ClearSelection() override;
             ////
 
+            // GraphCanvasPropertyInterfaceNotificationBus
+            void OnPropertyComponentChanged() override;
+            ////
+
             void SealUndoStack() override {};
 
             void OnNodeUpdate(const AZ::EntityId&);
@@ -89,6 +96,9 @@ namespace ScriptCanvasEditor
                 AZStd::list<AZ::Component*> m_gcInstances;
                 AZStd::list<AZ::Component*> m_scInstances;
             };
+
+            void DisableGrid();
+            void EnableGrid();
 
         private slots:
             void UpdateContents(const AZStd::vector<AZ::EntityId>& selectedEntityIds);
@@ -105,6 +115,8 @@ namespace ScriptCanvasEditor
 
         private:
 
+            void SignalUndo(AzToolsFramework::InstanceDataNode* pNode);
+
             void SetVisibility(const AZStd::vector<AZ::EntityId>& selectedEntityIds);
             void DisplayInstances(const InstancesToDisplay& instances);
             ScriptCanvas::ScriptCanvasId GetScriptCanvasId(AZ::Component* component);
@@ -118,6 +130,8 @@ namespace ScriptCanvasEditor
 
             QScrollArea* m_scrollArea = nullptr;
             QWidget* m_host = nullptr;
+
+            bool m_propertyModified = false;
         };
     }
 }

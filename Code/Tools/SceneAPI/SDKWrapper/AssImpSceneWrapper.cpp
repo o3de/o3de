@@ -38,12 +38,11 @@ namespace AZ
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
+            m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+            m_sceneFileName = fileName;
             m_assImpScene = m_importer.ReadFile(fileName,
-                aiProcess_CalcTangentSpace //Calculates the tangents and bitangents for the imported meshes
-                | aiProcess_Triangulate //Triangulates all faces of all meshes
+                aiProcess_Triangulate //Triangulates all faces of all meshes
                 | aiProcess_JoinIdenticalVertices //Identifies and joins identical vertex data sets for the imported meshes
-                | aiProcess_SortByPType //Splits meshes with more than one primitive type into homogeneous sub - meshes
-                | aiProcess_FixInfacingNormals //Fixes inward facing normals, AssImp documentation recommends setting this
                 | aiProcess_GenNormals); //Generate normals for meshes
             if (!m_assImpScene)
             {

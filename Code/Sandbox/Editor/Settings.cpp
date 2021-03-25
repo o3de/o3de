@@ -21,7 +21,9 @@
 #include <QScreen>
 
 // AzCore
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 // AzFramework
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -33,7 +35,8 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-
+// Editor Preferences Settings Registry keys
+constexpr char prefabSystemKey[] = "/Amazon/Editor/Preferences/EnablePrefabSystem";
 
 #pragma comment(lib, "Gdi32.lib")
 
@@ -259,13 +262,15 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
+}
 
+void SEditorSettings::Connect()
+{
     new QtApplicationListener(); // Deletes itself when it's done.
-
     AzToolsFramework::EditorSettingsAPIBus::Handler::BusConnect();
 }
 
-SEditorSettings::~SEditorSettings()
+void SEditorSettings::Disconnect()
 {
     AzToolsFramework::EditorSettingsAPIBus::Handler::BusDisconnect();
 }
@@ -686,6 +691,13 @@ void SEditorSettings::Save()
     */
 
     s_editorSettings()->sync();
+
+    // --- Settings Registry values
+
+    // Prefab System UI
+    SetSettingsRegistry_Bool(prefabSystemKey, prefabSystem);
+
+    SaveSettingsRegistryFile();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -930,6 +942,9 @@ void SEditorSettings::Load()
             searchPaths[id].push_back(path);
         }
     }
+
+    // Load from Settings Registry
+    GetSettingsRegistry_Bool(prefabSystemKey, prefabSystem);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1147,6 +1162,71 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
     Load();
 
     return { value };
+}
+
+void SEditorSettings::SaveSettingsRegistryFile()
+{
+    auto fileIo = AZ::IO::FileIOBase::GetInstance();
+
+    // Resolve path to editorpreferences.setreg
+    AZ::IO::FixedMaxPath editorPreferencesFilePath = "user/Registry/editorpreferences.setreg";
+    if (fileIo == nullptr || !fileIo->ResolvePath(editorPreferencesFilePath, "@devroot@/user/Registry/editorpreferences.setreg"))
+    {
+        AZ_Warning("SEditorSettings", false, R"(Unable to resolve path "%s" to the Editor Preferences registry file\n)",
+            editorPreferencesFilePath.c_str());
+        return;
+    }
+
+    AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+    dumperSettings.m_prettifyOutput = true;
+    dumperSettings.m_includeFilter = [](AZStd::string_view path)
+    {
+        AZStd::string_view prefixPath("/Amazon/Editor/Preferences");
+        return prefixPath.starts_with(path.substr(0, prefixPath.size()));
+    };
+    AZStd::string stringBuffer;
+    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+    {
+        AZ::IO::ByteContainerStream stringStream(&stringBuffer);
+        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
+        {
+            AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
+                editorPreferencesFilePath.c_str());
+            return;
+        }
+    }
+
+    bool saved{};
+    constexpr auto configurationMode = AZ::IO::SystemFile::SF_OPEN_CREATE
+        | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
+        | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+    if (AZ::IO::SystemFile outputFile; outputFile.Open(editorPreferencesFilePath.c_str(), configurationMode))
+    {
+        saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+    }
+
+    AZ_Warning("SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)",
+        editorPreferencesFilePath.c_str());
+}
+
+bool SEditorSettings::SetSettingsRegistry_Bool(const char* key, bool value)
+{
+    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+    {
+        return registry->Set(key, value);
+    }
+
+    return false;
+}
+
+bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
+{
+    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+    {
+        return registry->Get(value, key);
+    }
+
+    return false;
 }
 
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const

@@ -11,8 +11,6 @@
 
 set(LY_BUILD_DEPENDENCIES
     PUBLIC
-        3rdParty::nvapi
-        3rdParty::AMD
         d3d12
         dxgi
 )

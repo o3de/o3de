@@ -32,8 +32,6 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
-    class MainWindow;
-
     namespace EditorSettings
     {
         class ScriptCanvasConstructPresets
@@ -53,25 +51,39 @@ namespace ScriptCanvasEditor
             : public AZ::UserSettings
         {
         public:
+            struct WorkspaceAssetSaveData
+            {
+                AZ_RTTI(WorkspaceAssetSaveData, "{927368CA-096F-4CF1-B2E0-1B9E4A93EA57}");
+
+                WorkspaceAssetSaveData();
+                WorkspaceAssetSaveData(const AZ::Data::AssetId& assetId);
+                virtual ~WorkspaceAssetSaveData() = default;
+
+                AZ::Data::AssetId m_assetId;
+                AZ::Data::AssetType m_assetType;
+            };
+
+        
             AZ_RTTI(EditorWorkspace, "{67DACC4D-B92C-4B5A-8884-6AF7C7B74246}", AZ::UserSettings);
             AZ_CLASS_ALLOCATOR(EditorWorkspace, AZ::SystemAllocator, 0);
 
+            static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootDataElementNode);
             static void Reflect(AZ::ReflectContext* context);
 
             EditorWorkspace() = default;
 
-            void ConfigureActiveAssets(AZ::Data::AssetId focusedAssetId, const AZStd::vector< AZ::Data::AssetId >& activeAssetIds);
+            void ConfigureActiveAssets(AZ::Data::AssetId focusedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetIds);
             
             AZ::Data::AssetId GetFocusedAssetId() const;
-            AZStd::vector< AZ::Data::AssetId > GetActiveAssetIds() const;
+            AZStd::vector< WorkspaceAssetSaveData > GetActiveAssetData() const;
 
-            void Init(const QByteArray& windowState);
-            void Restore(MainWindow* window);
+            void Init(const QByteArray& windowState, const QByteArray& windowGeometry);
+            void Restore(QMainWindow* window);
 
             void Clear()
             {
                 m_focusedAssetId.SetInvalid();
-                m_activeAssetIds.clear();
+                m_activeAssetData.clear();
             }
 
         private:
@@ -83,7 +95,7 @@ namespace ScriptCanvasEditor
             AZStd::vector<AZ::u8> m_windowState;
 
             AZ::Data::AssetId m_focusedAssetId;
-            AZStd::vector< AZ::Data::AssetId > m_activeAssetIds;
+            AZStd::vector< WorkspaceAssetSaveData > m_activeAssetData;
 
         };
 
@@ -236,6 +248,34 @@ namespace ScriptCanvasEditor
             float m_edgeScrollSpeed;
         };
 
+        //! Container object for any experimental features, or in-development features
+        //! in Script Canvas that we want to make available for users to try, but that may
+        //! not be complete, working as expected, or covering every use case.
+        class ExperimentalSettings
+        {
+            friend class ScriptCanvasEditorSettings;
+        public:
+            AZ_RTTI(ExperimentalSettings, "{13B275AF-A2D4-4D18-8236-CC0D19043C85}");
+            AZ_CLASS_ALLOCATOR(ExperimentalSettings, AZ::SystemAllocator, 0);
+
+            ExperimentalSettings()
+                : m_showNetworkProperties(false)
+            {
+            }
+
+            virtual ~ExperimentalSettings() = default;
+
+            float GetShowNetworkProperties() const
+            {
+                return m_showNetworkProperties;
+            }
+
+        private:
+
+            //! Currently variable network properties are experimental and disabled by default
+            bool m_showNetworkProperties;
+        };
+
         class StylingSettings
         {
         public:
@@ -283,10 +323,14 @@ namespace ScriptCanvasEditor
 
             double m_snapDistance;
 
+            bool m_enableGroupDoubleClickCollapse;
+
             bool m_allowBookmarkViewpointControl;
             bool m_allowNodeNudging;
 
             bool m_rememberOpenCanvases;
+
+            bool m_showUpgradeDialog;
 
             ToggleableConfiguration m_dragNodeCouplingConfig;
             ToggleableConfiguration m_dragNodeSplicingConfig;
@@ -299,6 +343,7 @@ namespace ScriptCanvasEditor
 
             ZoomSettings            m_zoomSettings;
             EdgePanningSettings     m_edgePanningSettings;
+            ExperimentalSettings    m_experimentalSettings;
 
             AZStd::unordered_set<AZ::Uuid> m_pinnedDataTypes;
 
@@ -308,6 +353,9 @@ namespace ScriptCanvasEditor
 
             bool m_showValidationWarnings;
             bool m_showValidationErrors;
+
+            bool m_saveRawTranslationOuputToFile = false;
+            bool m_printAbstractCodeModel = false;
 
             AZ::u32 m_alignmentTimeMS;
 

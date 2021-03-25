@@ -105,29 +105,29 @@ def test_get_bootstrap_values_fail():
 TEST_AP_CONFIG_1 = """
 [Platforms]
 ;pc=enabled
-;xenia=enabled
+;ios=enabled
 """
 
 TEST_AP_CONFIG_2 = """
 [Platforms]
 ;pc=enabled
-xenia=enabled
+ios=enabled
 """
 
 TEST_AP_CONFIG_3 = """
 [Platforms]
 pc=disabled
-xenia=enabled
+ios=enabled
 """
 
 
 @pytest.mark.parametrize(
     "contents, check_asset_type, expected_result", [
-        pytest.param(TEST_AP_CONFIG_1, 'xenia', False, id='XeniaDisabled'),
-        pytest.param(TEST_AP_CONFIG_2, 'xenia', True, id='XeniaEnabled'),
-        pytest.param(TEST_AP_CONFIG_3, 'xenia', True, id='XeniaEnabled'),
-        pytest.param(TEST_AP_CONFIG_1, 'pc', True, id='XeniaDisabled'),
-        pytest.param(TEST_AP_CONFIG_3, 'pc', False, id='XeniaDisabled'),
+        pytest.param(TEST_AP_CONFIG_1, 'ios', False, id='IosDisabled'),
+        pytest.param(TEST_AP_CONFIG_2, 'ios', True, id='IosEnabled'),
+        pytest.param(TEST_AP_CONFIG_3, 'ios', True, id='IosEnabled'),
+        pytest.param(TEST_AP_CONFIG_1, 'pc', True, id='PCEnabled'),
+        pytest.param(TEST_AP_CONFIG_3, 'pc', False, id='PCDisabled'),
     ]
 )
 def test_validate_ap_config_asset_type_enabled(tmpdir, contents, check_asset_type, expected_result):
@@ -234,12 +234,6 @@ TEST_GAME_PROJECT_JSON_FORMAT = """
         "version_number" : 1,
         "version_name" : "1.0.0.0",
         "orientation" : "landscape"
-    }},
-
-    "xenia_settings" : {{
-    }},
-
-    "provo_settings": {{
     }}
 }}
 """

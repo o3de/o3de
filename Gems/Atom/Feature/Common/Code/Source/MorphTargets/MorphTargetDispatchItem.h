@@ -52,7 +52,7 @@ namespace AZ
                 const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
                 const MorphTargetMetaData& morphTargetMetaData,
                 RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
-                uint32_t accumulatedDeltaOffsetInBytes,
+                MorphTargetInstanceMetaData morphInstanceMetaData,
                 float accumulatedDeltaRange
             );
             ~MorphTargetDispatchItem();
@@ -89,8 +89,8 @@ namespace AZ
 
             AZ::RHI::ConstantsData m_rootConstantData;
 
-            // Byte offset into the SkinnedMeshOutputVertexStream buffer to a location to write the accumulated morph target deltas
-            uint32_t m_accumulatedDeltaOffsetInBytes;
+            // Per-SkinnedMeshInstancenstance constants for morph targets
+            MorphTargetInstanceMetaData m_morphInstanceMetaData;
             // A conservative value for encoding/decoding the accumulated deltas
             float m_accumulatedDeltaIntegerEncoding;
 

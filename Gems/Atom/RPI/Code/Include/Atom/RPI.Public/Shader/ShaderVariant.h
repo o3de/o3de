@@ -51,6 +51,10 @@ namespace AZ
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
             AZStd::sys_time_t GetShaderAssetBuildTimestamp() const { return m_shaderVariantAsset->GetShaderAssetBuildTimestamp(); }
 
+            bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
+
+            ShaderVariantStableId GetStableId() const { return m_shaderVariantAsset->GetStableId(); }
+
         private:
             // Called by Shader. Initializes runtime data from asset data. Returns whether the call succeeded.
             bool Init(

@@ -14,7 +14,6 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
-#include <ScriptCanvas/Libraries/Math/ArithmeticFunctions.h>
 
 namespace ScriptCanvas
 {
@@ -51,6 +50,13 @@ namespace ScriptCanvas
                     }
                 }
 
+                ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override
+                {
+                    ScriptCanvas::NodeConfiguration nodeConfig{};
+                    nodeConfig.m_type = AZ::Uuid("DC17E19F-3829-410D-9A0B-AD60C6066DAA");
+                    return nodeConfig;
+                }
+
             protected:
                 Datum Evaluate(const Datum& lhs, const Datum& rhs) override
                 {
@@ -67,23 +73,6 @@ namespace ScriptCanvas
                 }
             };
 
-#if defined(EXPRESSION_TEMPLATES_ENABLED)
-            class Divide
-                : public BinaryOperatorGeneric<Divide, ArithmeticOperator<OperatorType::Div>>
-            {
-            public:
-
-                using BaseType = BinaryOperatorGeneric<Divide, ArithmeticOperator<OperatorType::Div>>;
-                AZ_COMPONENT(Divide, "{A8573017-E81E-47A6-BE1A-F019ED7F55E4}", BaseType);
-
-                static const char* GetOperatorName() { return "Divide"; }
-                static const char* GetOperatorDesc() { return "Perform division between two numbers"; }
-                static const char* GetIconPath() { return "Editor/Icons/ScriptCanvas/Divide.png"; }
-
-                
-
-            };
-#endif // #if defined(EXPRESSION_TEMPLATES_ENABLED)
         }
     }
 }

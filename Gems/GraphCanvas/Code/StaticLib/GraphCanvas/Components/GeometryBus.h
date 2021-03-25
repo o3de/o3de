@@ -37,6 +37,9 @@ namespace GraphCanvas
         virtual void SetPosition(const AZ::Vector2&) = 0;
 
         virtual void SignalBoundsChanged() = 0;
+
+        virtual void SetIsPositionAnimating(bool animating) = 0;
+        virtual void SetAnimationTarget(const AZ::Vector2& targetPoint) = 0;
     };
 
     using GeometryRequestBus = AZ::EBus<GeometryRequests>;
@@ -53,6 +56,11 @@ namespace GraphCanvas
         virtual void OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& /*position*/) {}
 
         virtual void OnBoundsChanged() {}
+
+        virtual void OnProxyAnimationBegin() {}
+        virtual void OnProxyAnimationEnd() {}
+
+        virtual void OnOffsetBy([[maybe_unused]] const AZ::Vector2& offset) {}
     };
 
     using GeometryNotificationBus = AZ::EBus<GeometryNotifications>;

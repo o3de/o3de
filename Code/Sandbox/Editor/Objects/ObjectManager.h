@@ -315,8 +315,8 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // ObjectManager notification Callbacks.
     //////////////////////////////////////////////////////////////////////////
-    void AddObjectEventListener(const EventCallback& cb);
-    void RemoveObjectEventListener(const EventCallback& cb);
+    void AddObjectEventListener(EventListener* listener);
+    void RemoveObjectEventListener(EventListener* listener);
 
     //////////////////////////////////////////////////////////////////////////
     // Used to indicate starting and ending of objects loading.
@@ -445,7 +445,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////
     // Listeners.
-    std::list<EventCallback> m_objectEventListeners;
+    std::list<EventListener*> m_objectEventListeners;
 
     bool m_bExiting;
 

@@ -334,7 +334,7 @@ namespace LyShine
         }
 
         // create a new canvas entity that will contain the game components rather than editor components
-        exportCanvasEntity = sourceCanvasEntity->GetName().c_str();
+        exportCanvasEntity = AZ::Entity{ sourceCanvasEntity->GetName() };
         exportCanvasEntity.SetId(sourceCanvasEntity->GetId());
 
         const AZ::Entity::ComponentArrayType& editorCanvasComponents = sourceCanvasEntity->GetComponents();

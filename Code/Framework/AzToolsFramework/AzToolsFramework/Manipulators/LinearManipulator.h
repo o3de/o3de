@@ -26,6 +26,7 @@ namespace AzToolsFramework
     /// in one dimension on an axis defined in 3D space.
     class LinearManipulator
         : public BaseManipulator
+        , public ManipulatorSpaceWithLocalTransform
     {
         /// Private constructor.
         explicit LinearManipulator(const AZ::Transform& worldFromLocal);
@@ -116,12 +117,6 @@ namespace AzToolsFramework
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
         void SetAxis(const AZ::Vector3& axis);
-        void SetSpace(const AZ::Transform& worldFromLocal);
-        void SetLocalTransform(const AZ::Transform& localTransform);
-        void SetLocalPosition(const AZ::Vector3& localPosition);
-        void SetLocalOrientation(const AZ::Quaternion& localOrientation);
-
-        AZ::Vector3 GetPosition() const { return m_localTransform.GetTranslation(); }
         const AZ::Vector3& GetAxis() const { return m_fixed.m_axis; }
 
         template<typename Views>
@@ -151,9 +146,6 @@ namespace AzToolsFramework
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
 
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); ///< Local transform of the manipulator.
-        AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in (identity is world space).
-
         bool m_useVisualsOverride = false; // Set this to true to use the Visual Quaternion Override (decoupled from logical axis).
         AZ::Quaternion m_visualOrientationOverride = AZ::Quaternion::CreateIdentity(); // Quaternion to use only for visuals.
 
@@ -168,12 +160,12 @@ namespace AzToolsFramework
     };
 
     LinearManipulator::Starter CalculateLinearManipulationDataStart(
-        const LinearManipulator::Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform,
-        const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction,
+        const LinearManipulator::Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+        const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction,
         float intersectionDistance, const AzFramework::CameraState& cameraState);
 
     LinearManipulator::Action CalculateLinearManipulationDataAction(
         const LinearManipulator::Fixed& fixed, const LinearManipulator::Starter& starter,
-        const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
-        const ViewportInteraction::MouseInteraction& interaction);
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
+        const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction);
 } // namespace AzToolsFramework

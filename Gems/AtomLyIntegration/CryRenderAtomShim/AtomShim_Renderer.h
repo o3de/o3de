@@ -35,6 +35,7 @@ The NULLRenderer interface Class
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/ImageView.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
 #include <AzFramework/Components/CameraBus.h>
@@ -433,16 +434,24 @@ public:
     virtual ITexture* Create2DTexture(const char* name, int width, int height, int numMips, int flags, unsigned char* data, ETEX_Format format);
 
     //////////////////////////////////////////////////////////////////////
-    // Replacement functions for the Font engine ( vlad: for font can be used old functions )
-    virtual bool FontUploadTexture(class CFBitmap*, ETEX_Format eTF = eTF_R8G8B8A8);
-    virtual int  FontCreateTexture(int Width, int Height, byte* pData, ETEX_Format eTF = eTF_R8G8B8A8, bool genMips = false, const char* textureName = nullptr);
-    virtual bool FontUpdateTexture(int nTexId, int X, int Y, int USize, int VSize, byte* pData);
-    virtual void FontReleaseTexture(class CFBitmap* pBmp);
-    virtual void FontSetTexture(class CFBitmap*, int nFilterMode);
-    virtual void FontSetTexture(int nTexId, int nFilterMode);
-    virtual void FontSetRenderingState(bool overrideViewProjMatrices, TransformationMatrices& backupMatrices);
-    virtual void FontSetBlending(int src, int dst, int baseState);
-    virtual void FontRestoreRenderingState(bool overrideViewProjMatrices, const TransformationMatrices& restoringMatrices);
+    // All font functions are not implemented since the font is rendered by AtomFont
+    int FontCreateTexture(
+        [[maybe_unused]] int Width, [[maybe_unused]] int Height, [[maybe_unused]] byte* pData,
+        [[maybe_unused]] ETEX_Format eTF = eTF_R8G8B8A8, [[maybe_unused]] bool genMips = false,
+        [[maybe_unused]] const char* textureName = nullptr) override
+    {
+        return -1;
+    }
+    bool FontUpdateTexture(
+        [[maybe_unused]] int nTexId, [[maybe_unused]] int X, [[maybe_unused]] int Y, [[maybe_unused]] int USize, [[maybe_unused]] int VSize,
+        [[maybe_unused]] byte* pData) override
+    {
+        return true;
+    }
+    void FontSetTexture([[maybe_unused]] int nTexId, [[maybe_unused]] int nFilterMode) override { }
+    void FontSetRenderingState([[maybe_unused]] bool overrideViewProjMatrices, [[maybe_unused]] TransformationMatrices& backupMatrices) override { }
+    void FontSetBlending([[maybe_unused]] int src, [[maybe_unused]] int dst, [[maybe_unused]] int baseState) override { }
+    void FontRestoreRenderingState([[maybe_unused]] bool overrideViewProjMatrices, [[maybe_unused]] const TransformationMatrices& restoringMatrices) override { }
 
     virtual void GetLogVBuffers(void) {}
 
@@ -559,8 +568,11 @@ private:
     IColorGradingController* m_pAtomShimColorGradingController;
     IStereoRenderer* m_pAtomShimStereoRenderer;
 
-    AZStd::unique_ptr<class CAtomShimDynamicDraw> m_pAtomShimDynamicDraw;
-    int m_isInFontMode = 0;    
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
+    // cached input indices for dynamic draw's draw srg
+    AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
+    AZ::RHI::ShaderInputSamplerIndex m_samplerInputIndex;
+    AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
 
     AZStd::unordered_map<WIN_HWND, AtomShimViewContext*> m_viewContexts;
     AtomShimViewContext* m_currContext = nullptr;

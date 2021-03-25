@@ -58,7 +58,10 @@ namespace AZ
             Indirect        = AZ_BIT(7),
 
             /// Supports ray tracing acceleration structure usage.
-            RayTracingAccelerationStructure = AZ_BIT(8)
+            RayTracingAccelerationStructure = AZ_BIT(8),
+
+            /// Supports ray tracing shader table usage.
+            RayTracingShaderTable = AZ_BIT(9)
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);

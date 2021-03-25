@@ -18,12 +18,12 @@
 struct IAIPathAgent;
 
 #include <INavigationSystem.h>
-#include "functor.h"
 #include <IMNM.h>
 #include <ISerialize.h>
 #include <SerializeFwd.h>
 #include <Cry_Geo.h>
 
+#include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <limits>
 
@@ -688,7 +688,7 @@ namespace MNM
 
 struct MNMPathRequest
 {
-    typedef Functor2<const MNM::QueuedPathID&, MNMPathRequestResult&> Callback;
+    using Callback = AZStd::function<void(const MNM::QueuedPathID&, MNMPathRequestResult&)>;
 
     MNMPathRequest()
         : resultCallback(0)

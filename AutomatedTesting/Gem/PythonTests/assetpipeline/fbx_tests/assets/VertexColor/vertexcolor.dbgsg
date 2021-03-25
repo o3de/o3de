@@ -1,0 +1,38 @@
+ProductName: vertexcolor.dbgsg
+debugSceneGraphVersion: 1
+vertexcolor
+Node Path: RootNode.Suzanne
+Node Type: MeshData
+	Positions: Count 1968. Hash: 3015384011524461480
+	Normals: Count 1968. Hash: 14837001273673585886
+	FaceList: Count 968. Hash: 11474783464320275329
+	FaceMaterialIds: Count 968. Hash: 7264756278256548576
+
+Node Path: RootNode.Suzanne.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Path: RootNode.Suzanne.Col
+Node Type: MeshVertexColorData
+	Colors: Count 1968. Hash: 3952468802357285186
+
+Node Path: RootNode.Suzanne.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 1968. Hash: 4040959288360698272
+	UVCustomName: UVMap
+
+Node Path: RootNode.Suzanne.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 1968. Hash: 17894327294721432452
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.Suzanne.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 1968. Hash: 8975256745659816606
+	TangentSpace: 1
+

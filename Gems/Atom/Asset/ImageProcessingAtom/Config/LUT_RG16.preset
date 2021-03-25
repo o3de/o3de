@@ -38,13 +38,6 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "PixelFormat": "R16G16"
-            },
-            "xenia": {
-                "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
-                "Name": "LUT_RG16",
-                "SourceColor": "Linear",
-                "DestColor": "Linear",
-                "PixelFormat": "R16G16"
             }
         }
     }

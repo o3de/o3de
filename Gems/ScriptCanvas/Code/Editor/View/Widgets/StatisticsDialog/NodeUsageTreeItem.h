@@ -90,7 +90,7 @@ namespace ScriptCanvasEditor
         QVariant Data(const QModelIndex& index, int role) const override final;
         Qt::ItemFlags Flags(const QModelIndex& index) const override final;
 
-        void SetAssetId(const AZ::Data::AssetId& assetId);
+        void SetAssetId(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType);
         const AZ::Data::AssetId& GetAssetId() const;
 
         const QString& GetName() const;
@@ -106,13 +106,14 @@ namespace ScriptCanvasEditor
 
     private:
 
-        void ProcessAsset(const AZ::Data::Asset<ScriptCanvasAsset>& scriptCanvasAsset);
+        void ProcessAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset);
 
         QString m_name;
         QIcon   m_icon;
 
         ScriptCanvas::NodeTypeIdentifier m_activeIdentifier;
         AZ::Data::AssetId m_assetId;
+        AZ::Data::AssetType m_assetType;
 
         GraphStatisticsHelper m_statisticsHelper;
     };
@@ -131,7 +132,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasAssetNodeUsageTreeItemRoot();
         ~ScriptCanvasAssetNodeUsageTreeItemRoot() = default;
 
-        void RegisterAsset(const AZ::Data::AssetId& assetId);
+        void RegisterAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType);
         void RemoveAsset(const AZ::Data::AssetId& assetId);
 
         ScriptCanvasAssetNodeUsageTreeItem* GetAssetItem(const AZ::Data::AssetId& assetId);

@@ -35,6 +35,7 @@ namespace AzToolsFramework
         protected:
             // Only the Instance class is allowed to register and unregister entities
             friend class Instance;
+            friend class JsonInstanceSerializer;
 
             virtual bool RegisterEntityToInstance(const AZ::EntityId& entityId, Prefab::Instance& instance) = 0;
             virtual bool UnregisterEntity(const AZ::EntityId& entityId) = 0;

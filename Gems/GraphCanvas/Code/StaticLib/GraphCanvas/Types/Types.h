@@ -51,6 +51,7 @@ namespace GraphCanvas
 
     enum RootGraphicsItemEnabledState
     {
+        ES_Unknown = -1,
         ES_Enabled = 0,
 
         // Partial Disabled implies that the node will not be acted upon in the current 

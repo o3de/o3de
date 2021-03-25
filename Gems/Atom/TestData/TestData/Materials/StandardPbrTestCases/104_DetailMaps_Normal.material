@@ -1,0 +1,18 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/EnhancedPBR.materialtype",
+    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_LucyBaseNoDetailMaps.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "detailLayerGroup": {
+            "enableDetailLayer": true,
+            "enableNormals": true,
+            "normalDetailFlipY": true,
+            "normalDetailMap": "TestData/Textures/test_dome_normal.tiff",
+            "normalDetailStrength": 0.30000001192092898
+        },
+        "detailUV": {
+            "scale": 40.0
+        }
+    }
+}

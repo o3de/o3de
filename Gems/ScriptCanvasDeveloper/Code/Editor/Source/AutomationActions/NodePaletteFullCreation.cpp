@@ -11,6 +11,8 @@
 */
 #include "precompiled.h"
 
+#include <QMenu>
+
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
@@ -109,19 +111,18 @@ namespace ScriptCanvasDeveloperEditor
             ScriptCanvasEditor::AutomationRequestBus::Broadcast(&ScriptCanvasEditor::AutomationRequests::SignalAutomationEnd);
         }
 
-        QAction* CreateNodePaletteFullCreationAction(QWidget* mainWindow)
+        QAction* CreateNodePaletteFullCreationAction(QMenu* mainMenu)
         {
             QAction* createNodePaletteAction = nullptr;
 
-            if (mainWindow)
+            if (mainMenu)
             {
-                createNodePaletteAction = new QAction(QAction::tr("Create Node Palette"), mainWindow);
+                createNodePaletteAction = mainMenu->addAction(QAction::tr("Create Node Palette"));
                 createNodePaletteAction->setAutoRepeat(false);
                 createNodePaletteAction->setToolTip("Tries to create every node in the node palette. All of them. At once.");
                 createNodePaletteAction->setShortcut(QKeySequence(QAction::tr("Ctrl+Shift+h", "Debug|Create Node Palette")));
 
-                mainWindow->addAction(createNodePaletteAction);
-                mainWindow->connect(createNodePaletteAction, &QAction::triggered, &NodePaletteFullCreationAction);
+                QObject::connect(createNodePaletteAction, &QAction::triggered, &NodePaletteFullCreationAction);
             }
 
             return createNodePaletteAction;

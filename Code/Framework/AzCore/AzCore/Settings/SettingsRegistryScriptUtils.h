@@ -12,11 +12,13 @@
 
 #pragma once
 
+#include <AzCore/Settings/SettingsRegistry.h>
+
 namespace AZ
 {
     class BehaviorContext;
-    class SettingsRegistryInterface;
 }
+
 
 namespace AZ::SettingsRegistryScriptUtils
 {
@@ -34,6 +36,18 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         AZ_CLASS_ALLOCATOR(SettingsRegistryScriptProxy, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(SettingsRegistryScriptProxy, "{795C80A0-D243-473B-972A-C32CA487BAA5}");
 
+        // NotifyEventProxy is used to forward an update to an entry in the SettingsRegistry 
+        // using the RegisterNotifier function to the BehaviorContext in order to create
+        // a behavior method that returns an AZ::Event reference or pointer
+        // This allows ScriptCanvas to create an AZ Event Handler using the information
+        // reflected to the BehaviorMethod
+        using ScriptNotifyEvent = AZ::Event<AZStd::string_view>;
+        struct NotifyEventProxy
+        {
+            ScriptNotifyEvent m_scriptNotifyEvent;
+            AZ::SettingsRegistryInterface::NotifyEventHandler m_settingsUpdatedHandler;
+        };
+
         SettingsRegistryScriptProxy();
         // Stores a SettingsRegistryInterface which will use the provided shared_ptr deleter when the reference count hits zero
         SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry);
@@ -44,5 +58,6 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         bool IsValid() const;
 
         AZStd::shared_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        AZStd::shared_ptr<NotifyEventProxy> m_notifyEventProxy;
     };
 }

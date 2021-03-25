@@ -12,12 +12,13 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
+#include <ScriptCanvas/Utils/VersioningUtils.h>
 
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasVariableDataInterface.h>
 
@@ -36,6 +37,12 @@
 
 #include <GraphCanvas/Widgets/NodePropertyBus.h>
 
+#include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
+
+namespace ScriptCanvas
+{
+    struct NodeConfiguration;
+}
 
 namespace ScriptCanvasEditor
 {
@@ -50,8 +57,26 @@ namespace ScriptCanvasEditor
         , private GraphItemCommandNotificationBus::Handler
         , private GraphCanvas::ToastNotificationBus::MultiHandler
         , private GeneralEditorNotificationBus::Handler
+        , private AZ::SystemTickBus::Handler
     {
     private:
+
+        friend class Start;
+        friend class PreRequisites;
+        friend class PreventUndo;
+        friend class CollectData;
+        friend class ReplaceDeprecatedNodes;
+        friend class RemapConnections;
+        friend class VerifySaveDataVersion;
+        friend class SanityChecks;
+        friend class UpgradeScriptEvents;
+        friend class UpdateOutOfDateNodes;
+        friend class BuildGraphCanvasMapping;
+        friend class FixLeakedData;
+        friend class RestoreUndo;
+        friend class DisplayReport;
+        friend class Finalize;
+
         typedef AZStd::unordered_map< AZ::EntityId, AZ::EntityId > WrappedNodeGroupingMap;
 
         static void ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
@@ -87,13 +112,14 @@ namespace ScriptCanvasEditor
             , m_graphCanvasSceneEntity(nullptr)
             , m_ignoreSaveRequests(false)
             , m_graphCanvasSaveVersion(GraphCanvas::EntitySaveDataContainer::CurrentVersion)
+            , m_upgradeSM(this)
         {}
         
         ~Graph() override;
 
         void Activate() override;
         void Deactivate() override;
-
+        
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             ScriptCanvas::Graph::GetProvidedServices(provided);
@@ -128,8 +154,8 @@ namespace ScriptCanvasEditor
         void TriggerUndo() override;
         void TriggerRedo() override;
 
-        bool EnableNodes(const AZStd::unordered_set< GraphCanvas::NodeId >& nodeIds) override;
-        bool DisableNodes(const AZStd::unordered_set< GraphCanvas::NodeId >& nodeIds) override;
+        void EnableNodes(const AZStd::unordered_set< GraphCanvas::NodeId >& nodeIds) override;
+        void DisableNodes(const AZStd::unordered_set< GraphCanvas::NodeId >& nodeIds) override;
 
         GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(const AZ::Uuid& dataType, const AZ::EntityId& nodeId, const AZ::EntityId& slotId) const override;
         GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(const AZ::Crc32& propertyId, const AZ::EntityId& nodeId, const AZ::EntityId& slotId) const override;
@@ -159,7 +185,7 @@ namespace ScriptCanvasEditor
 
         bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
         bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
+        GraphCanvas::CanHandleMimeEventOutcome CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const override;
         bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint) override;
@@ -167,7 +193,7 @@ namespace ScriptCanvasEditor
 
         bool ConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
         bool CanConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanHandleValueMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
+        GraphCanvas::CanHandleMimeEventOutcome CanHandleValueMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleValueMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
 
         GraphCanvas::SlotId RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId) override;
@@ -209,6 +235,17 @@ namespace ScriptCanvasEditor
         void ClearGraphCanvasScene() override;
         void DisplayGraphCanvasScene() override;
 
+        /////
+        EditorGraphUpgradeMachine m_upgradeSM;
+        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void ConnectGraphCanvasBuses();
+        void DisconnectGraphCanvasBuses();
+        ///////
+
+        // SystemTickBus
+        void OnSystemTick() override;
+        ////
+
         void OnGraphCanvasSceneVisible() override;
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
@@ -232,14 +269,17 @@ namespace ScriptCanvasEditor
         
         void RemoveUnusedVariables() override;
 
+        bool CanConvertVariableNodeToReference(const GraphCanvas::NodeId& nodeId) override;
         bool ConvertVariableNodeToReference(const GraphCanvas::NodeId& nodeId) override;
         bool ConvertReferenceToVariableNode(const GraphCanvas::Endpoint& endpoint) override;
 
         void QueueVersionUpdate(const AZ::EntityId& graphCanvasNodeId) override;
-
+        
         bool IsRuntimeGraph() const override;
         bool IsFunctionGraph() const override;
 
+        bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) override;
+        
         ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoint) const override;
         GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const override;
         ////
@@ -294,7 +334,6 @@ namespace ScriptCanvasEditor
 
         void UnregisterToast(const GraphCanvas::ToastId& toastId);
 
-    private:
         Graph(const Graph&) = delete;
 
         void DisplayUpdateToast();
@@ -319,6 +358,10 @@ namespace ScriptCanvasEditor
         AZStd::unordered_map< GraphCanvas::ToastId, AZ::EntityId > m_toastNodeIds;
 
         //// Version Update code
+        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::ReplacementConnectionMap&);
+        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>&);
+
+        bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;
         AZStd::unordered_set< AZ::EntityId > m_convertingNodes;
         AZStd::unordered_multimap< AZ::EntityId, ScriptCanvas::SlotId > m_versionedSlots;

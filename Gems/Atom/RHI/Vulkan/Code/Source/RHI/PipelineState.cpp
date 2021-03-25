@@ -16,6 +16,7 @@
 #include <RHI/Device.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ComputePipeline.h>
+#include <RHI/RayTracingPipeline.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
@@ -72,11 +73,18 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode PipelineState::InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary)
         {
-            // [GFX TODO][ATOM-5151] Implement Vulkan-RT
-            AZ_Assert(false, "Not implemented");
-            return RHI::ResultCode::Fail;
+            Pipeline::Descriptor pipelineDescriptor;
+            pipelineDescriptor.m_pipelineDescritor = &descriptor;
+            pipelineDescriptor.m_device = static_cast<Device*>(&device);
+            pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
+            RHI::Ptr<RayTracingPipeline> pipeline = RayTracingPipeline::Create();
+            RHI::ResultCode result = pipeline->Init(pipelineDescriptor);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            m_pipeline = pipeline;
+            return result;
         }
 
         void PipelineState::ShutdownInternal()

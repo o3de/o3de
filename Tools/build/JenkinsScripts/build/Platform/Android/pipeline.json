@@ -1,9 +1,15 @@
 {
-    "GRADLE_HOME": "C:/Gradle/gradle-5.6.4", 
-    "JOB_NAME": "ANDROID",
-    "LABEL": "windows",
-    "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
-    "TIMEOUT": 30,
-    "WORKSPACE": "D:/workspace",
-    "MOUNT_VOLUME": true
+    "ENV": {
+        "GRADLE_HOME": "C:/Gradle/gradle-5.6.4",
+        "NODE_LABEL": "windows",
+        "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
+        "TIMEOUT": 30,
+        "WORKSPACE": "D:/workspace",
+        "MOUNT_VOLUME": true
+    },
+    "PIPELINE_ENV_OVERRIDE": {
+        "daily-pipeline-metrics": {
+            "CLEAN_WORKSPACE": true
+        }
+    }
 }

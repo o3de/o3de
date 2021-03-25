@@ -50,6 +50,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey = 0;
             RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_useForwardPassIblSpecular = false;
         };
 
         class MeshComponentController final

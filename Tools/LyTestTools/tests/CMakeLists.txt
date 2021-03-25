@@ -16,9 +16,10 @@ ly_add_pytest(
     NAME LyTestTools_UnitTests
     TEST_SUITE smoke
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
+    COMPONENT TestTools
 )
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_NAME)
     # Integration tests.
     ly_add_pytest(
         NAME LyTestTools_IntegTests_Sanity_smoke_no_gpu
@@ -31,6 +32,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+            COMPONENT TestTools
     )
 
     ly_add_pytest(
@@ -38,6 +40,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils.py
         TEST_SERIAL
         TEST_SUITE smoke
+        COMPONENT TestTools
     )
 
     ly_add_pytest(
@@ -50,6 +53,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+            COMPONENT TestTools
     )
 
     # Regression tests.
@@ -64,5 +68,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+            COMPONENT TestTools
     )
 endif()

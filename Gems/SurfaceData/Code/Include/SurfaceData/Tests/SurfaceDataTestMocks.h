@@ -141,6 +141,26 @@ namespace UnitTest
             AZ::TransformBus::Handler::BusDisconnect();
         }
 
+        void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler&) override
+        {
+            ;
+        }
+
+        void BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler&) override
+        {
+            ;
+        }
+
+        void BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler&) override
+        {
+            ;
+        }
+
+        void NotifyChildChangedEvent(AZ::ChildChangeType, AZ::EntityId) override
+        {
+            ;
+        }
+
         AZ::Transform m_GetLocalTMOutput = AZ::Transform::CreateIdentity();
         const AZ::Transform & GetLocalTM() override
         {
@@ -154,16 +174,6 @@ namespace UnitTest
         }
 
         bool IsStaticTransform() override
-        {
-            return false;
-        }
-
-        bool IsPositionInterpolated() override
-        {
-            return false;
-        }
-
-        bool IsRotationInterpolated() override
         {
             return false;
         }

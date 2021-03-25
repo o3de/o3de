@@ -40,7 +40,7 @@ namespace EMotionFX
     public:
         explicit PlaneActor(const char* name = "Test actor");
     private:
-        Mesh* CreatePlane(uint32 nodeIndex, const AZStd::vector<AZ::Vector3>& points) const;
+        Mesh* CreatePlane(const AZStd::vector<AZ::Vector3>& points) const;
     };
 
     class PlaneActorWithJoints

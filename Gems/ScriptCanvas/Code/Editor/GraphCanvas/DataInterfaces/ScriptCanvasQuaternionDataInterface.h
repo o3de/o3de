@@ -109,14 +109,14 @@ namespace ScriptCanvasEditor
             return " deg";
         }
 
-        void OnInputChanged(const ScriptCanvas::SlotId& slotId) override
+        void OnSlotInputChanged(const ScriptCanvas::SlotId& slotId) override
         {
             if (slotId == GetSlotId())
             {
                 ConvertToEulerValues();
             }
 
-            ScriptCanvasDataInterface::OnInputChanged(slotId);
+            ScriptCanvasDataInterface::OnSlotInputChanged(slotId);
         }
 
     private:

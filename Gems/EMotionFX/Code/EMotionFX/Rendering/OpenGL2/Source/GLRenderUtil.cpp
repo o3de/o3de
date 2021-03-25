@@ -12,7 +12,6 @@
 
 #include <MCore/Source/Config.h>
 #include <MCore/Source/AzCoreConversions.h>
-#include "GLInclude.h"
 
 #include "GLRenderUtil.h"
 #include "VertexBuffer.h"
@@ -125,6 +124,16 @@ namespace RenderGL
         CleanUp();
     }
 
+    void GLRenderUtil::Init()
+    {
+        initializeOpenGLFunctions();
+    }
+
+    void GLRenderUtil::Validate()
+    {
+        mLineShader->Validate();
+        mMeshShader->Validate();
+    }
 
     // destroy the allocated memory
     void GLRenderUtil::CleanUp()
@@ -578,12 +587,12 @@ namespace RenderGL
     {
         if (cullingEnabled)
         {
-            glCullFace(GL_FRONT);
+            glCullFace(GL_BACK);
             glEnable(GL_CULL_FACE);
         }
         else
         {
-            glCullFace(GL_FRONT);
+            glCullFace(GL_BACK);
             glDisable(GL_CULL_FACE);
         }
     }

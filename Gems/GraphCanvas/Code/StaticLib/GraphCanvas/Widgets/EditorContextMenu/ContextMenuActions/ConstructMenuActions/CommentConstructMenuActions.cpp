@@ -43,7 +43,7 @@ namespace GraphCanvas
 
         if (graphCanvasEntity)
         {
-            SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos);
+            SceneRequestBus::Event(graphId, &SceneRequests::AddNode, graphCanvasEntity->GetId(), scenePos, false);
             CommentUIRequestBus::Event(graphCanvasEntity->GetId(), &CommentUIRequests::SetEditable, true);
         }
         

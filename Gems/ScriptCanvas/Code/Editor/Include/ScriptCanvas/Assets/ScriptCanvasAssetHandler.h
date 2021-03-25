@@ -74,7 +74,12 @@ namespace ScriptCanvasEditor
 
         static AZ::Data::AssetType GetAssetTypeStatic();
 
+        // protected AZ::AssetTypeInfoBus::MultiHandler...
+        const char* GetGroup() const override;
+        const char* GetBrowserIcon() const override;
+
+
     protected:
         AZ::SerializeContext* m_serializeContext;
     };
-} // namespace ScriptCanvasEditor
+}

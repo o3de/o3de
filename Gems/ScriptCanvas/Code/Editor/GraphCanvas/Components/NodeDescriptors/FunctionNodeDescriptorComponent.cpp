@@ -76,37 +76,25 @@ namespace ScriptCanvasEditor
 
     void FunctionNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::EntityId graphCanvasGraphId;
-        GraphCanvas::SceneMemberRequestBus::EventResult(graphCanvasGraphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
+        TriggerUpdate();
+    }
 
-        ScriptCanvas::ScriptCanvasId scriptCanvasId;
-        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
+    void FunctionNodeDescriptorComponent::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        TriggerUpdate();
+    }
 
-        EditorGraphRequestBus::Event(scriptCanvasId, &EditorGraphRequests::QueueVersionUpdate, GetEntityId());
+    void FunctionNodeDescriptorComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        TriggerUpdate();
     }
 
     void FunctionNodeDescriptorComponent::OnVersionConversionEnd()
-    {
-        AZ::Data::Asset<ScriptCanvas::RuntimeFunctionAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvas::RuntimeFunctionAsset>(m_assetId, AZ::Data::AssetLoadBehavior::Default);
-
-        asset.BlockUntilLoadComplete();
-
-        if (asset.IsReady())
-        {
-            //UpdateTitles();
-
-            // For reference:
-            //if (!asset.Get()->m_definition.HasMethod(m_eventId))
-            //{
-            //    AZStd::unordered_set< AZ::EntityId > deleteNodes = { GetEntityId() };
-            //    GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, deleteNodes);
-            //}
-        }
-    }
+    {}
 
     bool FunctionNodeDescriptorComponent::OnMouseDoubleClick(const QGraphicsSceneMouseEvent*)
     {
-        AZ::Data::AssetInfo assetInfo = AssetHelpers::GetSourceInfoByProductId(m_assetId, azrtti_typeid< ScriptCanvas::RuntimeFunctionAsset>());
+        AZ::Data::AssetInfo assetInfo = AssetHelpers::GetSourceInfoByProductId(m_assetId, azrtti_typeid< ScriptCanvas::SubgraphInterfaceAsset>());
 
         if (!assetInfo.m_assetId.IsValid())
         {
@@ -118,10 +106,30 @@ namespace ScriptCanvasEditor
         return openOutcome.IsSuccess();
     }
 
-    void FunctionNodeDescriptorComponent::OnAddedToGraphCanvasGraph([[maybe_unused]] const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId)
+    void FunctionNodeDescriptorComponent::OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId&, const AZ::EntityId& scriptCanvasNodeId)
     {
         m_scriptCanvasId = scriptCanvasNodeId;
         EditorNodeNotificationBus::Handler::BusConnect(m_scriptCanvasId);
+    }
+
+    void FunctionNodeDescriptorComponent::TriggerUpdate()
+    {
+        AZ::EntityId graphCanvasGraphId;
+        GraphCanvas::SceneMemberRequestBus::EventResult(graphCanvasGraphId, GetEntityId(), &GraphCanvas::SceneMemberRequests::GetScene);
+
+        if (graphCanvasGraphId.IsValid())
+        {
+            bool isInUndoRedo = false;
+            GeneralRequestBus::BroadcastResult(isInUndoRedo, &GeneralRequests::IsInUndoRedo, graphCanvasGraphId);
+
+            if (!isInUndoRedo)
+            {
+                ScriptCanvas::ScriptCanvasId scriptCanvasId;
+                GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
+
+                EditorGraphRequestBus::Event(scriptCanvasId, &EditorGraphRequests::QueueVersionUpdate, GetEntityId());
+            }
+        }
     }
 
     void FunctionNodeDescriptorComponent::UpdateTitles()

@@ -1,0 +1,170 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+* This software contains source code provided by NVIDIA Corporation.
+*/
+
+#pragma once
+
+#include <Atom/RHI.Reflect/Base.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <RHI/DX12.h>
+
+#if defined(USE_NSIGHT_AFTERMATH)
+#include <RHI/NsightAftermathHelpers.h>
+
+//! Implements GPU crash dump tracking using the Nsight
+//! Aftermath API. It lets you add markers which can be used to identify
+//! the scope that was executing on the GPU at the time of TDR/crash
+class GpuCrashTracker
+{
+public:
+    GpuCrashTracker() = default;
+    ~GpuCrashTracker();
+
+    //! Initialize the GPU crash dump tracker.
+    void EnableGPUCrashDumps();
+
+    //! Cache all context handles which can be used to check the status of them in case of a gpu crash/TDR
+    void AddContext(GFSDK_Aftermath_ContextHandle cntxHndl);
+
+    //! Return the handles
+    const AZStd::vector<GFSDK_Aftermath_ContextHandle>& GetContextHandles() { return m_contextHandles; }
+
+private:
+
+    //! *********************************************************
+    //! Callback handlers for GPU crash dumps and related data.
+    //!
+
+    //! Handler for GPU crash dump callbacks.
+    void OnCrashDump(const void* pGpuCrashDump, const uint32_t gpuCrashDumpSize);
+
+    //! Handler for shader debug information callbacks.
+    void OnShaderDebugInfo(const void* pShaderDebugInfo, const uint32_t shaderDebugInfoSize);
+
+    //! Handler for GPU crash dump description callbacks.
+    void OnDescription(PFN_GFSDK_Aftermath_AddGpuCrashDumpDescription addDescription);
+
+    //! *********************************************************
+    //! Helpers for writing a GPU crash dump and debug information
+    //! data to files.
+    //!
+
+    //! Helper for writing a GPU crash dump to a file.
+    void WriteGpuCrashDumpToFile(const void* pGpuCrashDump, const uint32_t gpuCrashDumpSize);
+
+    //! Helper for writing shader debug information to a file
+    void WriteShaderDebugInformationToFile(
+        GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier,
+        const void* pShaderDebugInfo,
+        const uint32_t shaderDebugInfoSize);
+
+    //! *********************************************************
+    //! Helpers for decoding GPU crash dump to JSON.
+    //!
+
+    //! Handler for shader debug information lookup callbacks.
+    //! This is used by the JSON decoder for mapping shader instruction
+    //! addresses to DXIL lines or HLSl source lines.
+    void OnShaderDebugInfoLookup(
+        const GFSDK_Aftermath_ShaderDebugInfoIdentifier& identifier,
+        PFN_GFSDK_Aftermath_SetData setShaderDebugInfo) const;
+
+    //! Handler for shader lookup callbacks.
+    //! This is used by the JSON decoder for mapping shader instruction
+    //! addresses to DXIL lines or HLSL source lines.
+    //! NOTE: If the application loads stripped shader binaries (-Qstrip_debug),
+    //! Aftermath will require access to both the stripped and the not stripped
+    //! shader binaries.
+    void OnShaderLookup(
+        const GFSDK_Aftermath_ShaderHash& shaderHash,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary) const;
+
+    //! Handler for shader instructions lookup callbacks.
+    //! This is used by the JSON decoder for mapping shader instruction
+    //! addresses to DXIL lines or HLSL source lines.
+    //! NOTE: If the application loads stripped shader binaries (-Qstrip_debug),
+    //! Aftermath will require access to both the stripped and the not stripped
+    //! shader binaries.
+    void OnShaderInstructionsLookup(
+        const GFSDK_Aftermath_ShaderInstructionsHash& shaderInstructionsHash,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary) const;
+
+    //! Handler for shader source debug info lookup callbacks.
+    //! This is used by the JSON decoder for mapping shader instruction addresses to
+    //! HLSL source lines, if the shaders used by the application were compiled with
+    //! separate debug info data files.
+    void OnShaderSourceDebugInfoLookup(
+        const GFSDK_Aftermath_ShaderDebugName& shaderDebugName,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary) const;
+
+    //! *********************************************************
+    //! Static callback wrappers.
+    //!
+
+    //! GPU crash dump callback.
+    static void GpuCrashDumpCallback(
+        const void* pGpuCrashDump,
+        const uint32_t gpuCrashDumpSize,
+        void* pUserData);
+
+    //! Shader debug information callback.
+    static void ShaderDebugInfoCallback(
+        const void* pShaderDebugInfo,
+        const uint32_t shaderDebugInfoSize,
+        void* pUserData);
+
+    //! GPU crash dump description callback.
+    static void CrashDumpDescriptionCallback(
+        PFN_GFSDK_Aftermath_AddGpuCrashDumpDescription addDescription,
+        void* pUserData);
+
+    //! Shader debug information lookup callback.
+    static void ShaderDebugInfoLookupCallback(
+        const GFSDK_Aftermath_ShaderDebugInfoIdentifier* pIdentifier,
+        PFN_GFSDK_Aftermath_SetData setShaderDebugInfo,
+        void* pUserData);
+
+    //! Shader lookup callback.
+    static void ShaderLookupCallback(
+        const GFSDK_Aftermath_ShaderHash* pShaderHash,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary,
+        void* pUserData);
+
+    //! Shader instructions lookup callback.
+    static void ShaderInstructionsLookupCallback(
+        const GFSDK_Aftermath_ShaderInstructionsHash* pShaderInstructionsHash,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary,
+        void* pUserData);
+
+    //! Shader source debug info lookup callback.
+    static void ShaderSourceDebugInfoLookupCallback(
+        const GFSDK_Aftermath_ShaderDebugName* pShaderDebugName,
+        PFN_GFSDK_Aftermath_SetData setShaderBinary,
+        void* pUserData);
+
+    //! *********************************************************
+    //! GPU crash tracker state.
+    //!
+
+    //! Is the GPU crash dump tracker initialized?
+    bool m_initialized = false;
+
+    //! For thread-safe access of GPU crash tracker state.
+    mutable AZStd::mutex m_mutex;
+
+    //! Cache the handles which can be used to output the name of the last executing scope
+    AZStd::vector<GFSDK_Aftermath_ContextHandle> m_contextHandles;
+
+};
+
+#endif

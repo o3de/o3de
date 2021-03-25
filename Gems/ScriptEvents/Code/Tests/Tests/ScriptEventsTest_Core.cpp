@@ -277,6 +277,7 @@ namespace ScriptEventsTests
         while (!condition())
         {
             AZ::Data::AssetBus::ExecuteQueuedEvents();
+            AZ::SystemTickBus::ExecuteQueuedEvents();
 
             AZ::Data::AssetManager::Instance().DispatchEvents();
             AZStd::this_thread::yield();
@@ -335,7 +336,7 @@ namespace ScriptEventsTests
 
         assetHandler.BusDisconnect();
 
-        ScriptEvents::Internal::ScriptEvent scriptEventV0;
+        ScriptEvents::Internal::ScriptEventRegistration scriptEventV0;
 
         assetData = AZ::Data::AssetManager::Instance().FindOrCreateAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
 
@@ -406,7 +407,8 @@ namespace ScriptEventsTests
         }
 
         handler->Disconnect();
-        scriptEventV0.BusDisconnect();
+        AZ::SystemTickBus::Handler* systemTickBus = &scriptEventV0;
+        systemTickBus->BusDisconnect();
 
         EXPECT_TRUE(behaviorEbus->m_destroyHandler->Invoke(handler));
 

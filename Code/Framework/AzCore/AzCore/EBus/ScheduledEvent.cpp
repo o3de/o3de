@@ -36,7 +36,7 @@ namespace AZ
             RemoveFromQueue();
             m_durationMs = durationMs;
             m_autoRequeue = autoRequeue;
-            m_handle = eventScheduler->Add(this, durationMs);
+            m_handle = eventScheduler->AddEvent(this, durationMs);
         }
     }
 
@@ -59,7 +59,7 @@ namespace AZ
         IEventScheduler* eventScheduler = Interface<IEventScheduler>::Get();
         if (eventScheduler)
         {
-            m_handle = eventScheduler->Add(this, m_durationMs);
+            m_handle = eventScheduler->AddEvent(this, m_durationMs);
         }
     }
 

@@ -1,0 +1,19 @@
+<Material MtlFlags="557312" DccMaterialHash="348589923" vertModifType="0">
+ <SubMaterials>
+  <Material Name="texture" MtlFlags="524416" DccMaterialHash="616763991" Shader="Illum" GenMask="800080000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%FX_DISSOLVE%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="0.52941197,0.52941197,0.52941197,1" Specular="0.33000001,0.33000001,0.33000001,0.078431375" Opacity="1" Shininess="20" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="EngineAssets/Textures/white.dds"/>
+   </Textures>
+  </Material>
+  <Material Name="FrontColor" MtlFlags="524416" DccMaterialHash="3469321271" Shader="Illum" GenMask="800080000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%FX_DISSOLVE%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0.33000001,0.33000001,0.33000001,0.078431375" Opacity="1" Shininess="20" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="EngineAssets/Textures/white.dds"/>
+   </Textures>
+  </Material>
+  <Material Name="Color_C07" MtlFlags="524416" DccMaterialHash="4172057750" Shader="Illum" GenMask="800080000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%FX_DISSOLVE%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="0.4793202,0.1221388,0.021219011,1" Specular="0.046665091,0.018500222,0.002731743,1" Opacity="1" Shininess="180" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="engineassets/textures/white.dds"/>
+   </Textures>
+  </Material>
+ </SubMaterials>
+</Material>

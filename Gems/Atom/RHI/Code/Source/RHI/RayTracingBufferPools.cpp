@@ -11,7 +11,6 @@
 */
 
 #include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 
@@ -19,6 +18,13 @@ namespace AZ
 {
     namespace RHI
     {
+        RHI::Ptr<RHI::RayTracingBufferPools> RayTracingBufferPools::CreateRHIRayTracingBufferPools()
+        {
+            RHI::Ptr<RHI::RayTracingBufferPools> rayTracingBufferPools = RHI::Factory::Get().CreateRayTracingBufferPools();
+            AZ_Error("RayTracingBufferPools", rayTracingBufferPools.get(), "Failed to create RHI::RayTracingBufferPools");
+            return rayTracingBufferPools;
+        }
+
         const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetShaderTableBufferPool() const
         {
             AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
@@ -60,7 +66,7 @@ namespace AZ
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderRead;
+                bufferPoolDesc.m_bindFlags = GetShaderTableBufferBindFlags();
 
                 m_shaderTableBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_shaderTableBufferPool->SetName(Name("RayTracingShaderTableBufferPool"));
@@ -72,7 +78,7 @@ namespace AZ
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+                bufferPoolDesc.m_bindFlags = GetScratchBufferBindFlags();
 
                 m_scratchBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_scratchBufferPool->SetName(Name("RayTracingScratchBufferPool"));
@@ -84,7 +90,7 @@ namespace AZ
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                bufferPoolDesc.m_bindFlags = GetBlasBufferBindFlags();
 
                 m_blasBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_blasBufferPool->SetName(Name("RayTracingBlasBufferPool"));
@@ -96,7 +102,7 @@ namespace AZ
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderRead;
+                bufferPoolDesc.m_bindFlags = GetTlasInstancesBufferBindFlags();
 
                 m_tlasInstancesBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_tlasInstancesBufferPool->SetName(Name("RayTracingTlasInstancesBufferPool"));
@@ -108,7 +114,7 @@ namespace AZ
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                bufferPoolDesc.m_bindFlags = GetTlasBufferBindFlags();
 
                 m_tlasBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_tlasBufferPool->SetName(Name("RayTracingTLASBufferPool"));

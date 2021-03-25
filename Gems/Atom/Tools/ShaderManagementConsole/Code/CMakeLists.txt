@@ -98,9 +98,9 @@ ly_add_target_dependencies(
     TARGETS
         ShaderManagementConsole
     DEPENDENCIES_FILES
-        shadermanagementconsole_dependencies.cmake
+        tool_dependencies.cmake
+        Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 )
-
 
 # Adds the ShaderManagementConsole target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies

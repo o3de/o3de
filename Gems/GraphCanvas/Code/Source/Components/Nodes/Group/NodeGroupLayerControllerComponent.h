@@ -34,7 +34,7 @@ namespace GraphCanvas
         AZ_COMPONENT(NodeGroupLayerControllerComponent, "{7EAA5B66-D918-4284-B25C-E0811809CA05}", LayerControllerComponent);
 
         NodeGroupLayerControllerComponent()
-            : LayerControllerComponent("NodeGroupLayer")
+            : LayerControllerComponent("NodeGroupLayer", NodeGroupOffset)
         {
 
         }

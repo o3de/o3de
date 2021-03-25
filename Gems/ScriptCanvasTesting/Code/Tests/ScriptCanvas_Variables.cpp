@@ -85,7 +85,6 @@ TEST_F(ScriptCanvasTestFixture, CreateVariableTest)
     TestBehaviorContextObject::Reflect(m_behaviorContext);
     {
         using namespace ScriptCanvas;
-        using namespace Nodes;
 
         ScriptCanvas::ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
 
@@ -155,10 +154,7 @@ TEST_F(ScriptCanvasTestFixture, CreateVariableTest)
 
 TEST_F(ScriptCanvasTestFixture, AddVariableFailTest)
 {
-    
-
     using namespace ScriptCanvas;
-    using namespace Nodes;
 
     ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
 
@@ -186,17 +182,13 @@ TEST_F(ScriptCanvasTestFixture, AddVariableFailTest)
 
 TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
 {
-    
-
     StringArray::Reflect(m_serializeContext);
     StringArray::Reflect(m_behaviorContext);
     TestBehaviorContextObject::Reflect(m_serializeContext);
     TestBehaviorContextObject::Reflect(m_behaviorContext);
+
     {
-
-
         using namespace ScriptCanvas;
-        using namespace Nodes;
 
         ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
 
@@ -313,6 +305,7 @@ TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
 
         propertyEntity.reset();
     }
+
     m_serializeContext->EnableRemoveReflection();
     m_behaviorContext->EnableRemoveReflection();
     StringArray::Reflect(m_serializeContext);
@@ -325,10 +318,7 @@ TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
 
 TEST_F(ScriptCanvasTestFixture, FindVariableTest)
 {
-    
-
     using namespace ScriptCanvas;
-    using namespace Nodes;
 
     ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
 
@@ -387,10 +377,7 @@ TEST_F(ScriptCanvasTestFixture, FindVariableTest)
 
 TEST_F(ScriptCanvasTestFixture, ModifyVariableTest)
 {
-    
-
     using namespace ScriptCanvas;
-    using namespace Nodes;
 
     ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
 
@@ -445,13 +432,11 @@ TEST_F(ScriptCanvasTestFixture, ModifyVariableTest)
 
 TEST_F(ScriptCanvasTestFixture, SerializationTest)
 {
-    
-
     StringArray::Reflect(m_serializeContext);
     StringArray::Reflect(m_behaviorContext);
 
     using namespace ScriptCanvas;
-    using namespace Nodes;
+
     {
 
         ScriptCanvasId scriptCanvasId = AZ::Entity::MakeId();
@@ -529,216 +514,17 @@ TEST_F(ScriptCanvasTestFixture, SerializationTest)
     m_behaviorContext->DisableRemoveReflection();
 }
 
-TEST_F(ScriptCanvasTestFixture, GetVariableNodeTest)
-{
-    
-    using namespace ScriptCanvas;
-    using namespace Nodes;
-    using namespace TestNodes;
-
-    AZStd::unique_ptr<AZ::Entity> graphEntity = AZStd::make_unique<AZ::Entity>("VariableGraph");
-    SystemRequestBus::Broadcast(&SystemRequests::CreateEngineComponentsOnEntity, graphEntity.get());
-    Graph* graph = AZ::EntityUtils::FindFirstDerivedComponent<Graph>(graphEntity.get());
-    ASSERT_NE(nullptr, graph);
-
-    AZ::EntityId graphEntityId = graphEntity->GetId();
-    ScriptCanvasId graphUniqueId = graph->GetScriptCanvasId();
-
-    graphEntity->Init();
-
-    Datum planeDatum(Data::PlaneType::CreateFromCoefficients(3.0f, -1.0f, 2.0f, 0.0f));
-
-    // Add in Plane Variable to Variable Component
-    AZStd::string_view variableName = "TestPlane";
-    AZ::Outcome<VariableId, AZStd::string> addVariableOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-    GraphVariableManagerRequestBus::EventResult(addVariableOutcome, graphUniqueId, &GraphVariableManagerRequests::AddVariable, variableName, planeDatum);
-    EXPECT_TRUE(addVariableOutcome);
-    EXPECT_TRUE(addVariableOutcome.GetValue().IsValid());
-    const VariableId planeVariableId = addVariableOutcome.GetValue();
-
-    // Create Get Variable Node
-    AZ::EntityId outID;
-    auto startNode = CreateTestNode<Nodes::Core::Start>(graphUniqueId, outID);
-    auto getVariableNode = CreateTestNode<Nodes::Core::GetVariableNode>(graphUniqueId, outID);
-    auto getNormalNode = CreateTestNode<PlaneNodes::GetNormalNode>(graphUniqueId, outID);
-
-    auto vector3ResultNode = CreateDataNode(graphUniqueId, Data::Vector3Type::CreateZero(), outID);
-
-    auto printNode = CreateTestNode<TestResult>(graphUniqueId, outID);
-    auto normalResultTestResultNode = CreateTestNode<TestResult>(graphUniqueId, outID);
-    auto planeDistanceTestResultNode = CreateTestNode<TestResult>(graphUniqueId, outID);
-
-    // data
-    // This should fail to connect until the variableNode has a valid Variable associated with it
-    {
-        ScopedOutputSuppression supressOutput;
-        EXPECT_FALSE(graph->Connect(getVariableNode->GetEntityId(), getVariableNode->GetDataOutSlotId(), getNormalNode->GetEntityId(), getNormalNode->GetSlotId("Plane: Source")));
-    }
-    EXPECT_FALSE(getVariableNode->GetId().IsValid());
-    EXPECT_FALSE(getVariableNode->GetDataOutSlotId().IsValid());
-    getVariableNode->SetId(planeVariableId); // This associates the variable with the node and adds the input slot
-    auto variableDataOutSlotId = getVariableNode->GetDataOutSlotId();
-    EXPECT_TRUE(graph->Connect(getVariableNode->GetEntityId(), variableDataOutSlotId, getNormalNode->GetEntityId(), getNormalNode->GetSlotId("Plane: Source")));
-    EXPECT_TRUE(graph->Connect(getVariableNode->GetEntityId(), variableDataOutSlotId, printNode->GetEntityId(), printNode->GetSlotId("Value")));
-
-    // Connects Get Variable Node(normal: Vector3) data output slot to the TestResult Node(Set) data input slot
-    // Connects Get Variable Node(distance: Vector3) data output slot to the TestResult Node(Set) data input slot
-    auto normalDataOutSlotId = getVariableNode->GetSlotId("normal: Vector3");
-    EXPECT_TRUE(graph->Connect(getVariableNode->GetEntityId(), normalDataOutSlotId, normalResultTestResultNode->GetEntityId(), normalResultTestResultNode->GetSlotId("Value")));
-    auto distanceDataOutSlotId = getVariableNode->GetSlotId("distance: Number");
-    EXPECT_TRUE(graph->Connect(getVariableNode->GetEntityId(), distanceDataOutSlotId, planeDistanceTestResultNode->GetEntityId(), planeDistanceTestResultNode->GetSlotId("Value")));
-
-    EXPECT_TRUE(Connect(*graph, getNormalNode->GetEntityId(), "Result: Vector3", vector3ResultNode->GetEntityId(), "Set"));
-
-    // logic
-    EXPECT_TRUE(Connect(*graph, startNode->GetEntityId(), "Out", getVariableNode->GetEntityId(), "In"));
-    EXPECT_TRUE(Connect(*graph, getVariableNode->GetEntityId(), "Out", getNormalNode->GetEntityId(), "In"));
-    EXPECT_TRUE(Connect(*graph, getVariableNode->GetEntityId(), "Out", printNode->GetEntityId(), "In"));
-    EXPECT_TRUE(Connect(*graph, getVariableNode->GetEntityId(), "Out", normalResultTestResultNode->GetEntityId(), "In"));
-    EXPECT_TRUE(Connect(*graph, getVariableNode->GetEntityId(), "Out", planeDistanceTestResultNode->GetEntityId(), "In"));
-
-    // execute
-    {
-        ScopedOutputSuppression suppressOutput;
-        graphEntity->Activate();
-    }
-
-    EXPECT_FALSE(graph->IsInErrorState());
-    graphEntity->Deactivate();
-
-    GraphVariable* graphVariable = nullptr;    
-    GraphVariableManagerRequestBus::EventResult(graphVariable, graphUniqueId, &GraphVariableManagerRequests::FindVariable, variableName);
-    ASSERT_NE(nullptr, graphVariable);
-
-    auto variablePlane = graphVariable->GetDatum()->GetAs<Data::PlaneType>();
-    ASSERT_NE(nullptr, variablePlane);
-
-    auto getResultPlane = GetInput_UNIT_TEST<Data::PlaneType>(printNode, "Value");
-    ASSERT_NE(nullptr, getResultPlane);
-    EXPECT_EQ(*variablePlane, *getResultPlane);
-
-    auto resultNormal = GetInput_UNIT_TEST<Data::Vector3Type>(vector3ResultNode, "Set");
-    ASSERT_NE(nullptr, resultNormal);
-    auto expectedNormal = variablePlane->GetNormal();
-    EXPECT_EQ(expectedNormal, *resultNormal);
-
-    auto planeNormalPropertyVector3 = GetInput_UNIT_TEST<Data::Vector3Type>(normalResultTestResultNode, "Value");
-    ASSERT_NE(nullptr, planeNormalPropertyVector3);
-    EXPECT_EQ(Data::Vector3Type(3.0f, -1.0f, 2.0f), *planeNormalPropertyVector3);
-
-    auto planeDistancePropertyNumber = GetInput_UNIT_TEST<Data::NumberType>(planeDistanceTestResultNode, "Value");
-    ASSERT_NE(nullptr, planeDistancePropertyNumber);
-    EXPECT_EQ(0.0f, *planeDistancePropertyNumber);
-
-    AZ::Entity* connectionEntity{};
-    EXPECT_TRUE(graph->FindConnection(connectionEntity, { getVariableNode->GetEntityId(), variableDataOutSlotId }, { getNormalNode->GetEntityId(), getNormalNode->GetSlotId("Plane: Source") }));
-    getVariableNode->SetId({});
-    EXPECT_FALSE(graph->FindConnection(connectionEntity, { getVariableNode->GetEntityId(), variableDataOutSlotId }, { getNormalNode->GetEntityId(), getNormalNode->GetSlotId("Plane: Source") }));
-    EXPECT_FALSE(getVariableNode->GetId().IsValid());
-    EXPECT_FALSE(getVariableNode->GetDataOutSlotId().IsValid());
-}
-
-TEST_F(ScriptCanvasTestFixture, SetVariableNodeTest)
-{
-    
-
-    using namespace ScriptCanvas;
-    using namespace Nodes;
-
-    AZStd::unique_ptr<AZ::Entity> graphEntity = AZStd::make_unique<AZ::Entity>("VariableGraph");
-    SystemRequestBus::Broadcast(&SystemRequests::CreateEngineComponentsOnEntity, graphEntity.get());
-    Graph* graph = AZ::EntityUtils::FindFirstDerivedComponent<Graph>(graphEntity.get());
-    ASSERT_NE(nullptr, graph);
-
-    AZ::EntityId graphEntityId = graphEntity->GetId();
-    ScriptCanvasId graphUniqueId = graph->GetScriptCanvasId();
-
-    graphEntity->Init();
-
-    Datum planeDatum(Data::PlaneType::CreateFromCoefficients(0.0f, 0.0f, 0.0f, 0.0f));
-
-    // Add in Plane Variable to Variable Component
-    AZStd::string_view varName = "TestPlane";
-    AZ::Outcome<VariableId, AZStd::string> addVariableOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-    GraphVariableManagerRequestBus::EventResult(addVariableOutcome, graphUniqueId, &GraphVariableManagerRequests::AddVariable, varName, planeDatum);
-    EXPECT_TRUE(addVariableOutcome);
-    EXPECT_TRUE(addVariableOutcome.GetValue().IsValid());
-    const VariableId planeVariableId = addVariableOutcome.GetValue();
-
-    // Create Set Variable Node
-    AZ::EntityId outID;
-    auto startNode = CreateTestNode<Nodes::Core::Start>(graphUniqueId, outID);
-    auto setVariableNode = CreateTestNode<Nodes::Core::SetVariableNode>(graphUniqueId, outID);
-    auto fromNormalAndPointNode = CreateTestNode<PlaneNodes::FromNormalAndPointNode>(graphUniqueId, outID);
-
-    auto testPlane = Data::PlaneType::CreateFromNormalAndPoint(Data::Vector3Type(3.0f, -1.0f, 2.0f), Data::Vector3Type::CreateZero());
-    auto vector3NormalNode = CreateDataNode(graphUniqueId, testPlane.GetNormal(), outID);
-    auto vector3PointNode = CreateDataNode(graphUniqueId, Data::Vector3Type::CreateZero(), outID);
-    auto planeResultNode = CreateDataNode(graphUniqueId, Data::PlaneType::CreateFromNormalAndPoint(Data::Vector3Type(3.0f, -1.0f, 2.0f), Data::Vector3Type::CreateZero()), outID);
-
-    // data
-    EXPECT_TRUE(Connect(*graph, vector3NormalNode->GetEntityId(), "Get", fromNormalAndPointNode->GetEntityId(), "Vector3: Normal"));
-    EXPECT_TRUE(Connect(*graph, vector3PointNode->GetEntityId(), "Get", fromNormalAndPointNode->GetEntityId(), "Vector3: Point"));
-
-    // This should fail to connect until the SetVariableNode has a valid Variable associated with it
-    {
-        ScopedOutputSuppression suppressOutput;
-        EXPECT_FALSE(graph->Connect(fromNormalAndPointNode->GetEntityId(), fromNormalAndPointNode->GetSlotId("Plane: Result"), setVariableNode->GetEntityId(), setVariableNode->GetDataInSlotId()));
-    }
-    EXPECT_FALSE(setVariableNode->GetId().IsValid());
-    EXPECT_FALSE(setVariableNode->GetDataInSlotId().IsValid());
-    setVariableNode->SetId(planeVariableId); // This associates the variable with the node and adds the input slot
-    auto dataInputSlotId = setVariableNode->GetDataInSlotId();
-    EXPECT_TRUE(graph->Connect(fromNormalAndPointNode->GetEntityId(), fromNormalAndPointNode->GetSlotId("Result: Plane"), setVariableNode->GetEntityId(), dataInputSlotId));
-
-    auto dataOutputSlotId = setVariableNode->GetDataOutSlotId();
-    EXPECT_TRUE(graph->Connect(setVariableNode->GetEntityId(), dataOutputSlotId, planeResultNode->GetEntityId(), planeResultNode->GetSlotId("Set")));
-
-    // logic
-    EXPECT_TRUE(Connect(*graph, startNode->GetEntityId(), "Out", fromNormalAndPointNode->GetEntityId(), "In"));
-    EXPECT_TRUE(Connect(*graph, fromNormalAndPointNode->GetEntityId(), "Out", setVariableNode->GetEntityId(), "In"));
-
-    // execute
-    graphEntity->Activate();
-    EXPECT_FALSE(graph->IsInErrorState());
-    graphEntity->Deactivate();
-
-    AZ::Entity* connectionEntity{};
-    EXPECT_TRUE(graph->FindConnection(connectionEntity, { fromNormalAndPointNode->GetEntityId(), fromNormalAndPointNode->GetSlotId("Result: Plane") }, { setVariableNode->GetEntityId(), dataInputSlotId }));
-    setVariableNode->SetId({});
-    EXPECT_FALSE(graph->FindConnection(connectionEntity, { fromNormalAndPointNode->GetEntityId(), fromNormalAndPointNode->GetSlotId("Result: Plane") }, { setVariableNode->GetEntityId(), dataInputSlotId }));
-    EXPECT_FALSE(setVariableNode->GetId().IsValid());
-    EXPECT_FALSE(setVariableNode->GetDataInSlotId().IsValid());
-
-    GraphVariable* graphVariable = nullptr;
-    GraphVariableManagerRequestBus::EventResult(graphVariable, graphUniqueId, &GraphVariableManagerRequests::FindVariable, varName);
-    ASSERT_NE(nullptr, graphVariable);
-
-    // Get Variable Plane and verify that it is the same as the plane created from
-    auto variablePlane = graphVariable->GetDatum()->GetAs<Data::PlaneType>();
-    ASSERT_NE(nullptr, variablePlane);
-
-    EXPECT_EQ(testPlane, *variablePlane);
-
-    auto resultPlane = GetInput_UNIT_TEST<Data::PlaneType>(planeResultNode, "Set");
-    ASSERT_NE(nullptr, resultPlane);
-
-    auto expectedNormal = variablePlane->GetNormal();
-    EXPECT_EQ(expectedNormal, resultPlane->GetNormal());
-
-}
-
 TEST_F(ScriptCanvasTestFixture, Vector2AllNodes)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_Vector2_AllNodes");
+    RunUnitTestGraph("LY_SC_UnitTest_Vector2_AllNodes", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, Vector3_GetNode)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_Vector3_Variable_GetNode");
+    RunUnitTestGraph("LY_SC_UnitTest_Vector3_Variable_GetNode", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, Vector3_SetNode)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_Vector3_Variable_SetNode");
+    RunUnitTestGraph("LY_SC_UnitTest_Vector3_Variable_SetNode", ExecutionMode::Interpreted);
 }

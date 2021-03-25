@@ -16,10 +16,11 @@
 
 namespace AZ
 {
-    ScheduledEventHandle::ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent)
+    ScheduledEventHandle::ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent, bool isAutoDelete)
         : m_executeTimeMs(executeTimeMs)
         , m_durationMs(durationTimeMs)
         , m_event(scheduledEvent)
+        , m_autoDelete(isAutoDelete)
     {
         ;
     }
@@ -48,6 +49,10 @@ namespace AZ
                     else // Not configured to auto-requeue, so remove the handle
                     {
                         m_event->ClearHandle();
+                        if (m_autoDelete)
+                        {
+                            delete m_event;
+                        }
                         m_event = nullptr;
                     }
                 }

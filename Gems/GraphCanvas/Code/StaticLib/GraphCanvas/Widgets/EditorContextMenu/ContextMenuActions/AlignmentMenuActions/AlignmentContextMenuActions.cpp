@@ -41,7 +41,7 @@ namespace GraphCanvas
         return "Align";
     }
     
-    ContextMenuAction::SceneReaction AlignSelectionMenuAction::TriggerAction([[maybe_unused]] const AZ::Vector2& scenePos)
+    ContextMenuAction::SceneReaction AlignSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const GraphId& graphId = GetGraphId();
         EditorId editorId = GetEditorId();       

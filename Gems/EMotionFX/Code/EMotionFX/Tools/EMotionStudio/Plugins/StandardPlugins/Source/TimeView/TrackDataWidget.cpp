@@ -1482,15 +1482,10 @@ namespace EMStudio
                     }
 
                     // store the last clicked position
-                    mDragging           = false;
                     mMouseLeftClicked   = true;
                     mLastLeftClickedX   = event->x();
                 }
             }
-        }
-        else
-        {
-            mDragging = false;
         }
 
         const bool isZooming = mMouseLeftClicked == false && mMouseRightClicked && altPressed;
@@ -1552,10 +1547,10 @@ namespace EMStudio
                 emit MotionEventChanged(mDraggingElement, mDraggingElement->GetStartTime(), mDraggingElement->GetEndTime());
             }
 
-            mMouseLeftClicked   = false;
-            mDragging           = false;
-            mResizing           = false;
-            mIsScrolling        = false;
+            mMouseLeftClicked = false;
+            mDragging = false;
+            mResizing = false;
+            mIsScrolling = false;
 
             // rect selection
             if (mRectSelecting)
@@ -1609,11 +1604,6 @@ namespace EMStudio
             // disable rect selection mode again
             mRectSelecting  = false;
             return;
-        }
-        else
-        {
-            mResizing = false;
-            mDragging = false;
         }
 
         // disable rect selection mode again
@@ -1717,11 +1707,12 @@ namespace EMStudio
     // the context menu event
     void TrackDataWidget::contextMenuEvent(QContextMenuEvent* event)
     {
-        mPlugin->SetRedrawFlag();
-        if (mAllowContextMenu == false)
+        if (mIsScrolling || mDragging  || mResizing || !mAllowContextMenu)
         {
             return;
         }
+
+        mPlugin->SetRedrawFlag();
 
         if (EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon)
         {

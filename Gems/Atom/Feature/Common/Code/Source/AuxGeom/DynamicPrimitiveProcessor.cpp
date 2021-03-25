@@ -151,6 +151,16 @@ namespace AZ
                 for (auto& primitive : srcPrimitives.m_primitiveBuffer)
                 {
                     bool useManualViewProjectionOverride = primitive.m_viewProjOverrideIndex != -1;
+
+                    PipelineStateOptions pipelineStateOptions;
+                    pipelineStateOptions.m_perpectiveType = useManualViewProjectionOverride? PerspectiveType_ManualOverride : PerspectiveType_ViewProjection;
+                    pipelineStateOptions.m_blendMode = primitive.m_blendMode;
+                    pipelineStateOptions.m_primitiveType = primitive.m_primitiveType;
+                    pipelineStateOptions.m_depthReadType = primitive.m_depthReadType;
+                    pipelineStateOptions.m_depthWriteType = primitive.m_depthWriteType;
+                    pipelineStateOptions.m_faceCullMode = primitive.m_faceCullMode;
+                    RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
+
                     Data::Instance<RPI::ShaderResourceGroup> srg;
                     if (useManualViewProjectionOverride || primitive.m_primitiveType == PrimitiveType_PointList)
                     {
@@ -168,6 +178,7 @@ namespace AZ
                         {
                             srg->SetConstant(m_shaderData.m_pointSizeIndex, aznumeric_cast<float>(primitive.m_width));
                         }
+                        pipelineState->UpdateSrgVariantFallback(srg);
                         srg->Compile();
                     }
                     else
@@ -179,17 +190,10 @@ namespace AZ
                     {
                         RHI::DrawItemSortKey sortKey = primitive.m_blendMode == BlendMode_Off ? 0 : view->GetSortKeyForPosition(primitive.m_center);
 
-                        PipelineStateOptions pipelineStateOptions;
-                        pipelineStateOptions.m_perpectiveType = useManualViewProjectionOverride? PerspectiveType_ManualOverride : PerspectiveType_ViewProjection;
-                        pipelineStateOptions.m_blendMode = primitive.m_blendMode;
-                        pipelineStateOptions.m_primitiveType = primitive.m_primitiveType;
-                        pipelineStateOptions.m_depthReadType = primitive.m_depthReadType;
-                        pipelineStateOptions.m_depthWriteType = primitive.m_depthWriteType;
-                        pipelineStateOptions.m_faceCullMode = primitive.m_faceCullMode;
 
                         const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
                             m_primitiveBuffers,
-                            pipelineStateOptions,
+                            pipelineState,
                             srg,
                             primitive.m_indexCount,
                             primitive.m_indexOffset,
@@ -359,8 +363,8 @@ namespace AZ
                 Name perspectiveTypeManualOverride = Name("ViewProjectionMode::ManualOverride");
                 Name optionViewProjectionModeName = Name("o_viewProjMode");
 
-                AZStd::vector<AZStd::pair<Name, Name>> shaderOptionAndValues;
-                shaderOptionAndValues.push_back(AZStd::pair<Name, Name>(optionViewProjectionModeName,
+                RPI::ShaderOptionList shaderOptionAndValues;
+                shaderOptionAndValues.push_back(RPI::ShaderOption(optionViewProjectionModeName,
                     (pipelineStateOptions.m_perpectiveType == AuxGeomShapePerpectiveType::PerspectiveType_ViewProjection)?perspectiveTypeViewProjection: perspectiveTypeManualOverride));
                 basePipelineState->Init(m_shader, &shaderOptionAndValues);
 
@@ -377,27 +381,28 @@ namespace AZ
             }
 
             // blendMode
-            RHI::TargetBlendState& blendState = destPipelineState->Descriptor().m_renderStates.m_blendState.m_targets[0];
+            RHI::TargetBlendState& blendState = destPipelineState->RenderStatesOverlay().m_blendState.m_targets[0];
             blendState.m_enable = pipelineStateOptions.m_blendMode == AuxGeomBlendMode::BlendMode_Alpha;
             blendState.m_blendSource = RHI::BlendFactor::AlphaSource;
             blendState.m_blendDest = RHI::BlendFactor::AlphaSourceInverse;
 
             // primitiveType
-            destPipelineState->Descriptor().m_inputStreamLayout = m_inputStreamLayout[pipelineStateOptions.m_primitiveType];
+            destPipelineState->InputStreamLayout() = m_inputStreamLayout[pipelineStateOptions.m_primitiveType];
 
             // depthReadType
             // Keep the default depth comparison function and only set it when depth read is off
             // Note: since the default PipelineStateOptions::m_depthReadType is DepthRead_On, the basePipelineState keeps the comparison function read from shader variant
             if (pipelineStateOptions.m_depthReadType == AuxGeomDepthReadType::DepthRead_Off)
             {
-                destPipelineState->Descriptor().m_renderStates.m_depthStencilState.m_depth.m_func = RHI::ComparisonFunc::Always;
+                destPipelineState->RenderStatesOverlay().m_depthStencilState.m_depth.m_func = RHI::ComparisonFunc::Always;
             }
 
             // depthWriteType
-            destPipelineState->Descriptor().m_renderStates.m_depthStencilState.m_depth.m_writeMask = ConvertToRHIDepthWriteMask(pipelineStateOptions.m_depthWriteType);
+            destPipelineState->RenderStatesOverlay().m_depthStencilState.m_depth.m_writeMask =
+                ConvertToRHIDepthWriteMask(pipelineStateOptions.m_depthWriteType);
 
             // faceCullMode
-            destPipelineState->Descriptor().m_renderStates.m_rasterState.m_cullMode = ConvertToRHICullMode(pipelineStateOptions.m_faceCullMode);
+            destPipelineState->RenderStatesOverlay().m_rasterState.m_cullMode = ConvertToRHICullMode(pipelineStateOptions.m_faceCullMode);
 
             destPipelineState->SetOutputFromScene(m_scene);
             destPipelineState->Finalize();
@@ -474,16 +479,13 @@ namespace AZ
 
         const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
             DynamicBufferGroup& group,
-            const PipelineStateOptions& pipelineStateOptions,
+            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
             uint32_t indexCount,
             uint32_t indexOffset,
             RHI::DrawPacketBuilder& drawPacketBuilder,
             RHI::DrawItemSortKey sortKey)
         {
-            // Skip building packet if the RHI::PipelineState is empty which could happen if there is no rendering pass for auxgeom
-            RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
-
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
             drawIndexed.m_indexOffset = indexOffset;

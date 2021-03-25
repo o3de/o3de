@@ -33,7 +33,6 @@ namespace ScriptCanvas
                 GraphActivated::Reflect(context);
                 GraphDeactivated::Reflect(context);
                 AnnotateNode::Reflect(context);
-                SignaledDataOutput::Reflect(context);
 
                 serializeContext->Class<BreakpointAdded, Notification>()
                     ->Field("breakpoint", &BreakpointAdded::m_breakpoint)
@@ -64,5 +63,5 @@ namespace ScriptCanvas
             }
         }
 
-    } // namespace Debugger
-} // namespace ScriptCanvas
+    }
+} 

@@ -567,10 +567,6 @@ bool CImageDDSFile::SetHeaderFromMemory(byte* pFileStart, byte* pFileAfterHeader
     #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_ISNATIVE
     #include AZ_RESTRICTED_FILE_EXPLICIT(Textures/Image/DDSImage_cpp, provo)
 #endif
-#if defined(AZ_PLATFORM_XENIA) || defined(TOOLS_SUPPORT_XENIA)
-    #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_ISNATIVE
-    #include AZ_RESTRICTED_FILE_EXPLICIT(Textures/Image/DDSImage_cpp, xenia)
-#endif
 #if defined(AZ_PLATFORM_JASPER) || defined(TOOLS_SUPPORT_JASPER)
     #define AZ_RESTRICTED_SECTION IMAGEEXTENSIONHELPER_H_SECTION_ISNATIVE
     #include AZ_RESTRICTED_FILE_EXPLICIT(Textures/Image/DDSImage_cpp, jasper)

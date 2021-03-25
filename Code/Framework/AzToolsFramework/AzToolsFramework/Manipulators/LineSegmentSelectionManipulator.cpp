@@ -20,18 +20,18 @@
 namespace AzToolsFramework
 {
     LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection,
-        const float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd)
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection, const float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd)
     {
         AZ::Vector3 worldClosestPositionRay, worldClosestPositionLineSegment;
         float rayProportion, lineSegmentProportion;
         AZ::Intersect::ClosestSegmentSegment(
             rayOrigin, rayOrigin + rayDirection * rayLength,
-            worldFromLocal.TransformPoint(localStart), worldFromLocal.TransformPoint(localEnd),
+            worldFromLocal.TransformPoint(nonUniformScale * localStart), worldFromLocal.TransformPoint(nonUniformScale * localEnd),
             rayProportion, lineSegmentProportion, worldClosestPositionRay, worldClosestPositionLineSegment);
 
         AZ::Transform worldFromLocalNormalized = worldFromLocal;
-        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractScale();
+        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractScale() * nonUniformScale;
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
 
         return { (localFromWorldNormalized.TransformPoint(worldClosestPositionLineSegment)) / scale };
@@ -75,7 +75,7 @@ namespace AzToolsFramework
                 &ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                TransformUniformScale(m_worldFromLocal), interaction.m_mousePick.m_rayOrigin,
+                TransformUniformScale(GetSpace()), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin,
                 interaction.m_mousePick.m_rayDirection, cameraState.m_farClip, m_localStart, m_localEnd));
         }
     }
@@ -90,8 +90,8 @@ namespace AzToolsFramework
                 &ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                TransformUniformScale(m_worldFromLocal), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
-                cameraState.m_farClip, m_localStart, m_localEnd));
+                TransformUniformScale(GetSpace()), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin,
+                interaction.m_mousePick.m_rayDirection, cameraState.m_farClip, m_localStart, m_localEnd));
         }
     }
 
@@ -114,7 +114,7 @@ namespace AzToolsFramework
             m_manipulatorView->Draw(
                 GetManipulatorManagerId(), managerState,
                 GetManipulatorId(), {
-                    TransformUniformScale(m_worldFromLocal),
+                    TransformUniformScale(GetSpace()), GetNonUniformScale(),
                     m_localStart, MouseOver()
                 },
                 debugDisplay, cameraState, mouseInteraction);

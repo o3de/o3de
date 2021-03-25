@@ -29,6 +29,7 @@
 #include <RHI/PhysicalDevice.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
+#include <RHI/RayTracingBufferPools.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -213,6 +214,11 @@ namespace AZ
         RHI::Ptr<RHI::IndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
         {
             return IndirectBufferWriter::Create();
+        }
+
+        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        {
+            return RayTracingBufferPools::Create();
         }
 
         RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()

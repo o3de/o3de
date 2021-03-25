@@ -642,6 +642,10 @@ namespace Blast
             AZ::TransformBus::MultiHandler::BusDisconnect();
         }
 
+        MOCK_METHOD1(BindTransformChangedEventHandler, void(AZ::TransformChangedEvent::Handler&));
+        MOCK_METHOD1(BindParentChangedEventHandler, void(AZ::ParentChangedEvent::Handler&));
+        MOCK_METHOD1(BindChildChangedEventHandler, void(AZ::ChildChangedEvent::Handler&));
+        MOCK_METHOD2(NotifyChildChangedEvent, void(AZ::ChildChangeType, AZ::EntityId));
         MOCK_METHOD0(GetLocalTM, const AZ::Transform&());
         MOCK_METHOD1(SetLocalTM, void(const AZ::Transform&));
         MOCK_METHOD0(GetWorldTM, const AZ::Transform&());
@@ -709,8 +713,6 @@ namespace Blast
         MOCK_METHOD0(GetEntityAndAllDescendants, AZStd::vector<AZ::EntityId>());
         MOCK_METHOD0(IsStaticTransform, bool());
         MOCK_METHOD1(SetIsStaticTransform, void(bool));
-        MOCK_METHOD0(IsPositionInterpolated, bool());
-        MOCK_METHOD0(IsRotationInterpolated, bool());
     };
 
     class MockRigidBodyRequestBusHandler : public Physics::RigidBodyRequestBus::MultiHandler

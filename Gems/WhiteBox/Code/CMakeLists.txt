@@ -94,6 +94,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             whitebox_editor_supported_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_tools.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -107,7 +109,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 WHITE_BOX_EDITOR
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::OpenMesh
                 AZ::AzToolsFramework
                 Legacy::CryCommon
                 Legacy::EditorCommon

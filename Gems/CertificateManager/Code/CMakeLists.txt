@@ -24,7 +24,6 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             Legacy::CryCommon
-            Legacy::CryNetwork.Static
 )
 
 ly_add_target(

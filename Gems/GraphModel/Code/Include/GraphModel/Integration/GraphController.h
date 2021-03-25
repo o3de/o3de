@@ -137,7 +137,7 @@ namespace GraphModelIntegration
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::SceneNotificationBus, connections
-        void OnNodeAdded(const AZ::EntityId& nodeUiId) override;
+        void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
         void PreOnNodeRemoved(const AZ::EntityId& nodeUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
@@ -169,8 +169,8 @@ namespace GraphModelIntegration
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, other
 
-        bool EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
-        bool DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
+        void EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
+        void DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
 
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId);
 
@@ -196,7 +196,7 @@ namespace GraphModelIntegration
         // GraphCanvas::GraphModelRequestBus, node properties
 
         //! Creates a GraphCanvas::NodePropertyDisplay and a data interface for editing input values
-        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(const AZ::Uuid& dataTypeUuid, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
+        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(const AZ::Uuid& dataType, const GraphCanvas::NodeId& nodeId, const GraphCanvas::SlotId& slotId) const override;
         GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(const AZ::Crc32& propertyId, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
 
         //! Common implementation for CreateDataSlotPropertyDisplay and CreatePropertySlotPropertyDisplay

@@ -9,8 +9,8 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #pragma once
-#include <INetwork.h>
 
 struct NetworkMock : public INetwork
 {

@@ -14,7 +14,7 @@ set(FILES
     Editor/precompiled.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
-    Editor/EditorSettings.cpp
+    Editor/Settings.cpp
     Editor/ReflectComponent.h
     Editor/ReflectComponent.cpp
     Editor/SystemComponent.h
@@ -43,6 +43,8 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetReferenceContainer.h
     Editor/Assets/ScriptCanvasMemoryAsset.h
     Editor/Assets/ScriptCanvasMemoryAsset.cpp
+    Editor/Assets/ScriptCanvasUndoHelper.h
+    Editor/Assets/ScriptCanvasUndoHelper.cpp
     Editor/Include/ScriptCanvas/Bus/RequestBus.h
     Editor/Include/ScriptCanvas/Bus/NodeIdPair.h
     Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h
@@ -53,10 +55,12 @@ set(FILES
     Editor/Include/ScriptCanvas/Bus/EditorSceneVariableManagerBus.h
     Editor/Include/ScriptCanvas/Bus/ScriptCanvasExecutionBus.h
     Editor/Include/ScriptCanvas/Bus/UnitTestVerificationBus.h
+    Editor/Include/ScriptCanvas/Components/GraphUpgrade.h
     Editor/Include/ScriptCanvas/Components/EditorGraph.h
     Editor/Include/ScriptCanvas/Components/EditorUtils.h
     Editor/Components/EditorGraph.cpp
     Editor/Components/EditorUtils.cpp
+    Editor/Components/GraphUpgrade.cpp
     Editor/Include/ScriptCanvas/Components/EditorGraphVariableManagerComponent.h
     Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
@@ -66,6 +70,7 @@ set(FILES
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h
     Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h
     Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h
+    Editor/GraphCanvas/AutomationIds.h
     Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h
     Editor/GraphCanvas/PropertySlotIds.h
     Editor/GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.cpp
@@ -76,6 +81,8 @@ set(FILES
     Editor/GraphCanvas/Components/MappingComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/ClassMethodNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/ClassMethodNodeDescriptorComponent.h
+    Editor/GraphCanvas/Components/NodeDescriptors/AzEventHandlerNodeDescriptorComponent.cpp
+    Editor/GraphCanvas/Components/NodeDescriptors/AzEventHandlerNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerEventNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerEventNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerNodeDescriptorComponent.cpp
@@ -127,6 +134,10 @@ set(FILES
     Editor/Model/UnitTestBrowserFilterModel.cpp
     Editor/Nodes/EditorLibrary.h
     Editor/Nodes/EditorLibrary.cpp
+    Editor/Nodes/NodeCreateUtils.h
+    Editor/Nodes/NodeCreateUtils.cpp
+    Editor/Nodes/NodeDisplayUtils.h
+    Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
     Editor/Nodes/ScriptCanvasAssetNode.h
@@ -147,9 +158,9 @@ set(FILES
     Editor/View/Dialogs/NewGraphDialog.h
     Editor/View/Dialogs/NewGraphDialog.cpp
     Editor/View/Dialogs/NewGraphDialog.ui
-    Editor/View/Dialogs/Settings.h
-    Editor/View/Dialogs/Settings.cpp
-    Editor/View/Dialogs/Settings.ui
+    Editor/View/Dialogs/SettingsDialog.h
+    Editor/View/Dialogs/SettingsDialog.cpp
+    Editor/View/Dialogs/SettingsDialog.ui
     Editor/View/Dialogs/UnsavedChangesDialog.h
     Editor/View/Dialogs/UnsavedChangesDialog.cpp
     Editor/View/Dialogs/UnsavedChangesDialog.ui
@@ -259,10 +270,15 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
-    Editor/View/Windows/Tools/BatchOperatorTool.cpp
-    Editor/View/Windows/Tools/BatchOperatorTool.h
-    Editor/View/Windows/Tools/BatchConverter/BatchConverter.cpp
-    Editor/View/Windows/Tools/BatchConverter/BatchConverter.h
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.cpp
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.cpp
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.ui
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.cpp
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.ui
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

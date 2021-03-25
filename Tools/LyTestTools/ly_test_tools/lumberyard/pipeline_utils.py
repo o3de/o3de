@@ -220,7 +220,7 @@ def platform_enabled(workspace: pytest.fixture, platform: str) -> bool:
     Checks to see if the platform specified is enabled for the current build of LY.
 
     :param workspace: The current testing workspace
-    :param platform: The name of the platform to lookup. Example Platforms: 'Xenia', 'Provo', 'Salem'
+    :param platform: The name of the platform to lookup.
     :return: True if the platform is enabled, False if not.
     """
     user_settings_file = os.path.join(workspace.paths.dev(), "_WAF_", "user_settings.options")

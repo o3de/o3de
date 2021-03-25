@@ -1,0 +1,17 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/EnhancedPBR.materialtype",
+    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_LucyBaseNoDetailMaps.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "detailLayerGroup": {
+            "baseColorDetailBlend": 0.800000011920929,
+            "baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+            "enableBaseColor": true,
+            "enableDetailLayer": true
+        },
+        "detailUV": {
+            "scale": 20.0
+        }
+    }
+}

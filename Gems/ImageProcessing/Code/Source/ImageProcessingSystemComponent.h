@@ -23,6 +23,7 @@ namespace ImageProcessing
 {
     class ImageProcessingSystemComponent
         : public AZ::Component
+        , protected ImageProcessingRequestBus::Handler
         , protected ImageProcessingEditor::ImageProcessingEditorRequestBus::Handler
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         , protected AzToolsFramework::AssetBrowser::AssetBrowserTexturePreviewRequestsBus::Handler
@@ -41,6 +42,12 @@ namespace ImageProcessing
         ////////////////////////////////////////////////////////////////////////
         // ImageProcessingEditorRequestBus interface implementation
         void OpenSourceTextureFile(const AZ::Uuid& textureSourceID) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ImageProcessingRequestBus interface implementation
+        IImageObjectPtr LoadImage(const AZStd::string& filePath) override;
+        IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

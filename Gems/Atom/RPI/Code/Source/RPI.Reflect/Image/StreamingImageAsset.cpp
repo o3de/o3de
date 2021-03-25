@@ -48,6 +48,15 @@ namespace AZ
             return m_mipChains[mipChainIndex].m_asset;
         }
 
+        void StreamingImageAsset::ReleaseMipChainAssets()
+        {
+            // Release loaded mipChain asset
+            for (uint32_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
+            {
+                m_mipChains[mipChainIndex].m_asset.Release();
+            }
+        }
+
         const ImageMipChainAsset& StreamingImageAsset::GetTailMipChain() const
         {
             return m_tailMipChain;

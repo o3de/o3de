@@ -151,7 +151,7 @@ namespace GraphCanvas
         OnStyleChanged();
     }
 
-    void ExtenderSlotLayout::OnRegisteredToNode([[maybe_unused]] const AZ::EntityId& nodeId)
+    void ExtenderSlotLayout::OnRegisteredToNode(const AZ::EntityId& /*nodeId*/)
     {
         OnStyleChanged();
     }

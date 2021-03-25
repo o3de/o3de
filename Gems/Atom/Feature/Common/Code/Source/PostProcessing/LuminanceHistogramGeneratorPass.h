@@ -38,7 +38,7 @@ namespace AZ
             ~LuminanceHistogramGeneratorPass() = default;
 
             static RPI::Ptr<LuminanceHistogramGeneratorPass> Create(const RPI::PassDescriptor& descriptor);
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         protected:
             LuminanceHistogramGeneratorPass(const RPI::PassDescriptor& descriptor);

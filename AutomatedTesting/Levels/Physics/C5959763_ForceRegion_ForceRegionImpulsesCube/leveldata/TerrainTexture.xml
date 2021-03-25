@@ -1,0 +1,70 @@
+<TerrainTexture TileCountX="8" TileCountY="8" TileResolution="512">
+ <RGBLayer>
+  <Tiles>
+   <tile X="0" Y="0" Size="512"/>
+   <tile X="1" Y="0" Size="512"/>
+   <tile X="2" Y="0" Size="512"/>
+   <tile X="3" Y="0" Size="512"/>
+   <tile X="4" Y="0" Size="512"/>
+   <tile X="5" Y="0" Size="512"/>
+   <tile X="6" Y="0" Size="512"/>
+   <tile X="7" Y="0" Size="512"/>
+   <tile X="0" Y="1" Size="512"/>
+   <tile X="1" Y="1" Size="512"/>
+   <tile X="2" Y="1" Size="512"/>
+   <tile X="3" Y="1" Size="512"/>
+   <tile X="4" Y="1" Size="512"/>
+   <tile X="5" Y="1" Size="512"/>
+   <tile X="6" Y="1" Size="512"/>
+   <tile X="7" Y="1" Size="512"/>
+   <tile X="0" Y="2" Size="512"/>
+   <tile X="1" Y="2" Size="512"/>
+   <tile X="2" Y="2" Size="512"/>
+   <tile X="3" Y="2" Size="512"/>
+   <tile X="4" Y="2" Size="512"/>
+   <tile X="5" Y="2" Size="512"/>
+   <tile X="6" Y="2" Size="512"/>
+   <tile X="7" Y="2" Size="512"/>
+   <tile X="0" Y="3" Size="512"/>
+   <tile X="1" Y="3" Size="512"/>
+   <tile X="2" Y="3" Size="512"/>
+   <tile X="3" Y="3" Size="512"/>
+   <tile X="4" Y="3" Size="512"/>
+   <tile X="5" Y="3" Size="512"/>
+   <tile X="6" Y="3" Size="512"/>
+   <tile X="7" Y="3" Size="512"/>
+   <tile X="0" Y="4" Size="512"/>
+   <tile X="1" Y="4" Size="512"/>
+   <tile X="2" Y="4" Size="512"/>
+   <tile X="3" Y="4" Size="512"/>
+   <tile X="4" Y="4" Size="512"/>
+   <tile X="5" Y="4" Size="512"/>
+   <tile X="6" Y="4" Size="512"/>
+   <tile X="7" Y="4" Size="512"/>
+   <tile X="0" Y="5" Size="512"/>
+   <tile X="1" Y="5" Size="512"/>
+   <tile X="2" Y="5" Size="512"/>
+   <tile X="3" Y="5" Size="512"/>
+   <tile X="4" Y="5" Size="512"/>
+   <tile X="5" Y="5" Size="512"/>
+   <tile X="6" Y="5" Size="512"/>
+   <tile X="7" Y="5" Size="512"/>
+   <tile X="0" Y="6" Size="512"/>
+   <tile X="1" Y="6" Size="512"/>
+   <tile X="2" Y="6" Size="512"/>
+   <tile X="3" Y="6" Size="512"/>
+   <tile X="4" Y="6" Size="512"/>
+   <tile X="5" Y="6" Size="512"/>
+   <tile X="6" Y="6" Size="512"/>
+   <tile X="7" Y="6" Size="512"/>
+   <tile X="0" Y="7" Size="512"/>
+   <tile X="1" Y="7" Size="512"/>
+   <tile X="2" Y="7" Size="512"/>
+   <tile X="3" Y="7" Size="512"/>
+   <tile X="4" Y="7" Size="512"/>
+   <tile X="5" Y="7" Size="512"/>
+   <tile X="6" Y="7" Size="512"/>
+   <tile X="7" Y="7" Size="512"/>
+  </Tiles>
+ </RGBLayer>
+</TerrainTexture>

@@ -278,7 +278,7 @@
     "border-radius": 0
   },
   {
-    "selectors": [ "blockComment" ],
+    "selectors": [ "nodeGroup" ],
 
     "background-color": "#00000077",
 
@@ -293,40 +293,40 @@
     "spacing": 1
   },
   {
-    "selectors": [ "blockComment:hovered" ],
+    "selectors": [ "nodeGroup:hovered" ],
 
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment:editing" ],
+    "selectors": [ "nodeGroup:editing" ],
 
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment:selected" ],
+    "selectors": [ "nodeGroup:selected" ],
 
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment:highlighted" ],
+    "selectors": [ "nodeGroup:highlighted" ],
 
     "background-color": "#000000",
     "border-color": "#f3811d"
   },
   {
-    "selectors": [ "blockComment:deletion" ],
+    "selectors": [ "nodeGroup:deletion" ],
 
     "background-color": "#000000",
     "border-color": "#EF1713"
   },
   {
-    "selectors": [ "blockComment > .commentText" ],
+    "selectors": [ "nodeGroup > .commentText" ],
 
     "min-width": 100,
     "padding": 6
   },
   {
-    "selectors": [ "blockComment:editing > .commentText" ],
+    "selectors": [ "nodeGroup:editing > .commentText" ],
 
     "border-width": 2,
     "border-style": "solid",
@@ -334,7 +334,7 @@
     "border-radius": 0
   },
   {
-    "selectors": [ "blockComment > titleBox" ],
+    "selectors": [ "nodeGroup > titleBox" ],
     "color": "#000000",
     "background-color": "#000000",
 
@@ -346,19 +346,19 @@
     "padding": 0
   },
   {
-    "selectors": [ "blockComment:hovered > titleBox" ],
+    "selectors": [ "nodeGroup:hovered > titleBox" ],
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment:selected > titleBox" ],
+    "selectors": [ "nodeGroup:selected > titleBox" ],
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment:inspection_transparent > titleBox" ],
+    "selectors": [ "nodeGroup:inspection_transparent > titleBox" ],
     "background-color": "#000000"
   },
   {
-    "selectors": [ "blockComment > blockArea" ],
+    "selectors": [ "nodeGroup > blockArea" ],
     "color": "#000000",
     "background-color": "#00000020",
 
@@ -369,6 +369,41 @@
 
     "min-height": 40
   },
+  {
+    "selectors": [ "nodeGroup > border" ],
+    
+    "border-width": 3,
+    "border-color": "#000000",
+    "border-style": "dashed"
+  },
+  {
+    "selectors": [ "nodeGroup:selected > border" ],
+    
+    "border-width": 3,
+    "border-color": "#17A3CD",
+    "border-style": "dashed"
+  },
+  {
+    "selectors": [ "nodeGroup:deletion > border" ],
+    
+    "border-width": 3,
+    "border-color": "#EF1713",
+    "border-style": "dashed"
+  },
+  {
+    "selectors": [ "nodeGroup:hovered > border" ],
+    
+    "border-width": 3,
+    "border-color": "#4285f4",
+    "border-style": "dashed"
+  },
+  {
+    "selectors": [ "nodeGroup:highlighted > border" ],
+    
+    "border-width": 3,
+    "border-color": "#4285f4",
+    "border-style": "dashed"
+  },  
   {
     "selectors": [ "wrapperNode" ],
 
@@ -2304,72 +2339,27 @@
   },
   {
     "selectors": [ "UnknownLayer" ],
-    "z-value": -3
+    "layer": -3    
   },
   {
-    "selectors": [ "NodeGroupLayer" ],
-    "z-value": -2
+    "selectors": ["neutral"],
+    "layer": 0
   },
   {
-    "selectors": [ "NodeGroupLayer_interactive" ],
-
-    "z-value": -2
+    "selectors": ["interactive"],
+    "layer": 1
   },
   {
-    "selectors": [ "ConnectionLayer" ],
-    "z-value": -1
+    "selectors": ["dropTarget"],
+    "layer": 1
   },
   {
-    "selectors": [ "ConnectionLayer_interactive" ],
-    "z-value": 0
+    "selectors": ["editing"],
+    "layer": 1
   },
   {
-    "selectors": [ "NodeLayer" ],
-    "z-value": 1
-  },
-  {
-    "selectors": [ "CommentLayer" ],
-    "z-value": 2
-  },
-  {
-    "selectors": [ "ConnectionLayer_editing" ],
-    "z-value": 3
-  },
-  {
-    "selectors": [ "NodeLayer_interactive" ],
-    "z-value": 3
-  },
-  {
-    "selectors": [ "CommentLayer_interactive" ],
-    "z-value": 4
-  },
-  {
-    "selectors": [ "BookmarkAnchor" ],
-    "z-value": 4
-  },
-  {
-    "selectors": [ "BookmarkAnchor_interactive" ],
-    "z-value": 4
-  },
-  {
-    "selectors": [ "NodeGroupLayer_grouped" ],
-    "z-value": 5
-  },
-  {
-    "selectors": [ "ConnectionLayer_grouped" ],
-    "z-value": 6
-  },
-  {
-    "selectors": [ "NodeLayer_grouped" ],
-    "z-value": 7
-  },
-  {
-    "selectors": [ "CommentLayer_grouped" ],
-    "z-value": 8
-  },
-  {
-    "selectors": [ "BookmarkAnchor_grouped" ],
-    "z-value": 9
+    "selectors": ["groupHighlight"],
+    "layer": 2
   },
   {
     "selectors": [ "Sizing_WidthSteps" ],

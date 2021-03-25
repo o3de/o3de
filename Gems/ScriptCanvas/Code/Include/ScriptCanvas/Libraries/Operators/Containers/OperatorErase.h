@@ -23,23 +23,20 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
+            //! Deprecated: see MethodOverloaded for "Erase"
             class OperatorErase : public OperatorBase
             {
             public:
-                ScriptCanvas_Node(OperatorErase,
-                    ScriptCanvas_Node::Name("Erase")
-                    ScriptCanvas_Node::Uuid("{F1A891C9-81D4-4675-A57A-F11AB415F95F}")
-                    ScriptCanvas_Node::Description("Erase the element at the specified Index or with the specified Key")
-                    ScriptCanvas_Node::Version(1)
-                    ScriptCanvas_Node::Category("Containers")
-                );
+
+                SCRIPTCANVAS_NODE(OperatorErase);
+
+
+                void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 OperatorErase()
                     : OperatorBase(DefaultContainerManipulationOperatorConfiguration())
                 {
                 }
-
-                ScriptCanvas_Out(ScriptCanvas_Out::Name("Element Not Found", "Triggered if the specified element was not found"));
 
             protected:
 
@@ -50,6 +47,8 @@ namespace ScriptCanvas
                 void OnInputSignal(const SlotId& slotId) override;
                 void InvokeOperator();
 
+            private:
+                bool m_missedElementNotFound = false;
             };
 
         }

@@ -207,5 +207,28 @@ namespace AzToolsFramework
             virtual void OnNewLayerEntity(const AZ::EntityId& entityId, AZStd::vector<AZ::Component*>& componentsToAdd) = 0;
         };
         using EditorLayerCreationBus = AZ::EBus<EditorLayerCreationNotification>;
+
+        /**
+        * This is a single bus with multiple listeners, for allowing systems to listen when specific layer component events occur.
+        */
+        class EditorLayerComponentNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // multi listener
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+
+            /**
+             * Called when a layer component is activated on a layer entity
+             * \param entityId The id of the entity whose layer component has been activated.
+             */
+            virtual void OnLayerComponentActivated(AZ::EntityId entityId) = 0;
+            /**
+             * Called when a layer component is deactivated on a layer entity
+             * \param entityId The id of the entity whose layer component has been deactivated.
+             */
+            virtual void OnLayerComponentDeactivated(AZ::EntityId entityId) = 0;
+        };
+        using EditorLayerComponentNotificationBus = AZ::EBus<EditorLayerComponentNotifications>;
     }
 }

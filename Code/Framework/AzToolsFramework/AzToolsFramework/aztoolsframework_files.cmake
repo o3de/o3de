@@ -114,6 +114,7 @@ set(FILES
     Component/EditorLevelComponentAPIBus.h
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
+    Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
@@ -141,6 +142,7 @@ set(FILES
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
     Entity/EditorEntityTransformBus.h
+    Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
     Entity/PrefabEditorEntityOwnershipService.cpp
     Entity/SliceEditorEntityOwnershipService.h
@@ -173,6 +175,8 @@ set(FILES
     Manipulators/ManipulatorView.h
     Manipulators/ManipulatorSnapping.cpp
     Manipulators/ManipulatorSnapping.h
+    Manipulators/ManipulatorSpace.cpp
+    Manipulators/ManipulatorSpace.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -293,6 +297,8 @@ set(FILES
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
+    ToolsComponents/TransformScalePropertyHandler.cpp
+    ToolsComponents/TransformScalePropertyHandler.h
     ToolsComponents/ScriptEditorComponent.cpp
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp
@@ -532,6 +538,7 @@ set(FILES
     ViewportSelection/EditorVisibleEntityDataCache.cpp
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
+    AssetBrowser/AssetBrowserSourceDropBus.h
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntry.h
@@ -637,8 +644,66 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Spawnable/ComponentRequirementsValidator.h
+    Prefab/Spawnable/ComponentRequirementsValidator.cpp
+    Prefab/Spawnable/EditorInfoRemover.h
+    Prefab/Spawnable/EditorInfoRemover.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/PrefabCatchmentProcessor.h
+    Prefab/Spawnable/PrefabCatchmentProcessor.cpp
+    Prefab/Spawnable/PrefabConversionPipeline.h
+    Prefab/Spawnable/PrefabConversionPipeline.cpp
+    Prefab/Spawnable/ProcesedObjectStore.h
+    Prefab/Spawnable/ProcesedObjectStore.cpp
+    Prefab/Spawnable/PrefabProcessor.h
+    Prefab/Spawnable/PrefabProcessorContext.h
+    Prefab/Spawnable/PrefabProcessorContext.cpp
+    Prefab/Spawnable/SpawnableMetaDataBuilder.h
+    Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
+    Prefab/Spawnable/SpawnableUtils.h
+    Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
+    Prefab/PrefabUndo.h
+    Prefab/PrefabUndo.cpp
+    Prefab/PrefabPublicHandler.h
+    Prefab/PrefabPublicHandler.cpp
+    Prefab/PrefabPublicInterface.h
+    UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
+    UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
+    UI/Outliner/EntityOutlinerTreeView.hxx
+    UI/Outliner/EntityOutlinerTreeView.cpp
+    UI/Outliner/EntityOutlinerWidget.hxx
+    UI/Outliner/EntityOutlinerWidget.cpp
+    UI/Outliner/EntityOutlinerCacheBus.h
+    UI/Outliner/EntityOutlinerListModel.hxx
+    UI/Outliner/EntityOutlinerListModel.cpp
+    UI/Outliner/EntityOutlinerSearchWidget.h
+    UI/Outliner/EntityOutlinerSearchWidget.cpp
+    UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx
+    UI/Outliner/EntityOutlinerSortFilterProxyModel.cpp
+    UI/Outliner/EntityOutlinerWidget.ui
+    UI/Outliner/EntityOutliner.qss
+    UI/Outliner/resources.qrc
+    UI/EditorEntityUi/EditorEntityUiInterface.h
+    UI/EditorEntityUi/EditorEntityUiHandlerBase.h
+    UI/EditorEntityUi/EditorEntityUiHandlerBase.cpp
+    UI/EditorEntityUi/EditorEntityUiSystemComponent.h
+    UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
+    UI/Layer/LayerUiHandler.h
+    UI/Layer/LayerUiHandler.cpp
+    UI/Prefab/PrefabEditInterface.h
+    UI/Prefab/PrefabEditManager.h
+    UI/Prefab/PrefabEditManager.cpp
+    UI/Prefab/PrefabIntegrationManager.h
+    UI/Prefab/PrefabIntegrationManager.cpp
+    UI/Prefab/PrefabUiHandler.h
+    UI/Prefab/PrefabUiHandler.cpp
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

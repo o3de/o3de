@@ -17,25 +17,23 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzFramework/Network/NetBindingHandlerBus.h>
-#include <AzFramework/Network/NetBindingSystemBus.h>
-#include <AzFramework/Network/NetworkContext.h>
-
-#include <GridMate/Replica/ReplicaChunk.h>
-#include <GridMate/Replica/ReplicaFunctions.h>
-#include <GridMate/Replica/DataSet.h>
-#include <GridMate/Serialize/CompressionMarshal.h>
 
 namespace AZ
 {
-    class BehaviorTransformNotificationBusHandler : public TransformNotificationBus::Handler, public AZ::BehaviorEBusHandler
+    class BehaviorTransformNotificationBusHandler
+        : public TransformNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER(BehaviorTransformNotificationBusHandler, "{9CEF4DAB-F359-4A3E-9856-7780281E0DAA}", AZ::SystemAllocator
-            , OnTransformChanged
-            , OnParentChanged
-            , OnChildAdded
-            , OnChildRemoved
+        AZ_EBUS_BEHAVIOR_BINDER
+        (
+            BehaviorTransformNotificationBusHandler,
+            "{9CEF4DAB-F359-4A3E-9856-7780281E0DAA}",
+            AZ::SystemAllocator, 
+            OnTransformChanged, 
+            OnParentChanged, 
+            OnChildAdded, 
+            OnChildRemoved
         );
 
         void OnTransformChanged(const Transform& localTM, const Transform& worldTM) override
@@ -80,109 +78,10 @@ namespace AZ
             new(self) TransformConfig();
         }
     }
-
 } // namespace AZ
 
 namespace AzFramework
 {
-    //=========================================================================
-    // TransformReplicaChunk
-    // [3/9/2016]
-    //=========================================================================
-    class TransformReplicaChunk
-        : public GridMate::ReplicaChunkBase
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(TransformReplicaChunk, AZ::SystemAllocator, 0);
-
-        static const char* GetChunkName() { return "TransformReplicaChunk"; }
-
-        TransformReplicaChunk()
-            : m_parentId("ParentId")
-            , m_localTranslation("LocalTranslationData")
-            , m_localRotation("LocalRotationData")
-            , m_localScale("LocalScaleData")
-        {
-            m_localTranslation.GetThrottler().SetThreshold(AZ::Vector3(0.005f, 0.005f, 0.005f));
-            m_localScale.GetThrottler().SetThreshold(AZ::Vector3(0.001f, 0.001f, 0.001f));
-        }
-
-        bool IsReplicaMigratable() override
-        {
-            return true;
-        }
-
-        void SetInitialTM(const AZ::Transform& t)
-        {
-            m_initialWorldTM = t;
-        }
-
-        void SetLocalTM(const AZ::Transform& t)
-        {
-            m_localScale.Set(t.GetScale());
-            m_localTranslation.Set(t.GetTranslation());
-            m_localRotation.Set(t.GetRotation());
-        }
-
-        AZ::Transform GetLocalTransform() const
-        {
-            AZ::Transform newXform;
-            newXform.SetTranslation(m_localTranslation.Get());
-            newXform.SetRotation(m_localRotation.Get());
-            newXform.SetScale(m_localScale.Get());
-            return newXform;
-        }
-
-        unsigned int GetLocalTime()
-        {
-            return GetReplicaManager()->GetTime().m_localTime;
-        }
-
-        // parentId (can have no parent)
-        DataSet<AZ::u64>::BindInterface<TransformComponent, &TransformComponent::OnNewNetParentData> m_parentId;
-
-        // transform
-        DataSet<AZ::Vector3, GridMate::Marshaler<AZ::Vector3>, GridMate::EpsilonThrottle<AZ::Vector3>>::BindInterface<TransformComponent, &TransformComponent::OnNewPositionData> m_localTranslation;
-        DataSet<AZ::Quaternion, GridMate::Marshaler<AZ::Quaternion>, GridMate::BasicThrottle<AZ::Quaternion>>::BindInterface<TransformComponent, &TransformComponent::OnNewRotationData> m_localRotation;
-        DataSet<AZ::Vector3, GridMate::Marshaler<AZ::Vector3>, GridMate::EpsilonThrottle<AZ::Vector3>>::BindInterface<TransformComponent, &TransformComponent::OnNewScaleData> m_localScale;
-
-        AZ::Transform m_initialWorldTM;
-
-        class Descriptor
-            : public ExternalChunkDescriptor<TransformReplicaChunk>
-        {
-        public:
-            ReplicaChunkBase* CreateFromStream(UnmarshalContext& context) override
-            {
-                // Pre/Post construct allow DataSets and RPCs to bind to the chunk.
-                TransformReplicaChunk* transformChunk = aznew TransformReplicaChunk;
-                context.m_iBuf->Read(transformChunk->m_initialWorldTM);
-                return transformChunk;
-            }
-
-            void DiscardCtorStream(UnmarshalContext& context) override
-            {
-                AZ::Transform discard;
-                context.m_iBuf->Read(discard);
-            }
-
-            void MarshalCtorData(ReplicaChunkBase* chunk, WriteBuffer& wb) override
-            {
-                TransformReplicaChunk* transformChunk = static_cast<TransformReplicaChunk*>(chunk);
-                TransformComponent* transformComponent = static_cast<TransformComponent*>(transformChunk->GetHandler());
-                if (transformComponent)
-                {
-                    wb.Write(transformComponent->GetWorldTM());
-                }
-                else
-                {
-                    wb.Write(transformChunk->m_initialWorldTM);
-                }
-            }
-        };
-    };
-
-    //=========================================================================
     bool TransformComponentVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         if (classElement.GetVersion() < 3)
@@ -204,26 +103,8 @@ namespace AzFramework
             // future re-additions of it won't remove it (as long as they bump the version number.)
             classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
         }
-        
 
         return true;
-    }
-
-    //=========================================================================
-    // TransformComponent
-    // [8/9/2013]
-    //=========================================================================
-    TransformComponent::TransformComponent()
-        : m_parentTM(nullptr)
-        , m_parentActive(false)
-        , m_onNewParentKeepWorldTM(true)
-        , m_parentActivationTransformMode(ParentActivationTransformMode::MaintainOriginalRelativeTransform)
-        , m_isStatic(false)
-        , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
-        , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
-    {
-        m_localTM = AZ::Transform::CreateIdentity();
-        m_worldTM = AZ::Transform::CreateIdentity();
     }
 
     TransformComponent::TransformComponent(const TransformComponent& copy)
@@ -235,89 +116,9 @@ namespace AzFramework
         , m_notificationBus(nullptr)
         , m_onNewParentKeepWorldTM(copy.m_onNewParentKeepWorldTM)
         , m_parentActivationTransformMode(copy.m_parentActivationTransformMode)
-        , m_replicaChunk(nullptr)
         , m_isStatic(copy.m_isStatic)
-        , m_interpolatePosition(copy.m_interpolatePosition)
-        , m_interpolateRotation(copy.m_interpolateRotation)
-        , m_netTargetTranslation()
-        , m_netTargetRotation()
-        , m_netTargetScale(copy.m_netTargetScale)
     {
-        CreateSamples();
-        if (copy.m_netTargetTranslation)
-        {
-            m_netTargetTranslation->SetNewTarget(copy.m_netTargetTranslation->GetTargetValue(), copy.m_netTargetTranslation->GetTargetTimestamp());
-        }
-        if (copy.m_netTargetRotation)
-        {
-            m_netTargetRotation->SetNewTarget(copy.m_netTargetRotation->GetTargetValue(), copy.m_netTargetRotation->GetTargetTimestamp());
-        }
-
-        SetSyncEnabled(copy.m_isSyncEnabled);
-    }
-
-
-    void TransformComponent::CreateTranslationSample()
-    {
-        switch(m_interpolatePosition)
-        {
-        case AZ::InterpolationMode::LinearInterpolation:
-            m_netTargetTranslation = AZStd::make_unique<AZ::LinearlyInterpolatedSample<AZ::Vector3>>();
-            break;
-        case AZ::InterpolationMode::NoInterpolation:
-        default:
-            m_netTargetTranslation = AZStd::make_unique<AZ::UninterpolatedSample<AZ::Vector3>>();
-            break;
-        }
-    }
-
-    void TransformComponent::CreateRotationSample()
-    {
-        switch (m_interpolateRotation)
-        {
-        case AZ::InterpolationMode::LinearInterpolation:
-            m_netTargetRotation = AZStd::make_unique<AZ::LinearlyInterpolatedSample<AZ::Quaternion>>();
-            break;
-        case AZ::InterpolationMode::NoInterpolation:
-        default:
-            m_netTargetRotation = AZStd::make_unique<AZ::UninterpolatedSample<AZ::Quaternion>>();
-            break;
-        }
-    }
-
-    void TransformComponent::CreateSamples()
-    {
-        if (m_netTargetTranslation)
-        {
-            auto target = m_netTargetTranslation->GetTargetValue();
-            auto timeStamp = m_netTargetTranslation->GetTargetTimestamp();
-
-            CreateTranslationSample();
-
-            m_netTargetTranslation->SetNewTarget(target, timeStamp);
-        }
-        else
-        {
-            CreateTranslationSample();
-        }
-
-        if (m_netTargetRotation)
-        {
-            auto target = m_netTargetRotation->GetTargetValue();
-            auto timeStamp = m_netTargetRotation->GetTargetTimestamp();
-
-            CreateRotationSample();
-
-            m_netTargetRotation->SetNewTarget(target, timeStamp);
-        }
-        else
-        {
-            CreateRotationSample();
-        }
-    }
-
-    TransformComponent::~TransformComponent()
-    {
+        ;
     }
 
     bool TransformComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -328,9 +129,6 @@ namespace AzFramework
             m_worldTM = config->m_worldTransform;
             m_parentId = config->m_parentId;
             m_parentActivationTransformMode = config->m_parentActivationTransformMode;
-            SetSyncEnabled(config->m_netSyncEnabled);
-            m_interpolatePosition = config->m_interpolatePosition;
-            m_interpolateRotation = config->m_interpolateRotation;
             m_isStatic = config->m_isStatic;
             return true;
         }
@@ -345,9 +143,6 @@ namespace AzFramework
             config->m_worldTransform = m_worldTM;
             config->m_parentId = m_parentId;
             config->m_parentActivationTransformMode = m_parentActivationTransformMode;
-            config->m_netSyncEnabled = IsSyncEnabled();
-            config->m_interpolatePosition = m_interpolatePosition;
-            config->m_interpolateRotation = m_interpolateRotation;
             config->m_isStatic = m_isStatic;
             return true;
         }
@@ -366,8 +161,11 @@ namespace AzFramework
     void TransformComponent::Deactivate()
     {
         EBUS_EVENT_ID(m_parentId, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
-
-        UnbindFromNetwork();
+        auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
+        if (parentTransform)
+        {
+            parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+        }
 
         m_notificationBus = nullptr;
         if (m_parentId.IsValid())
@@ -379,12 +177,31 @@ namespace AzFramework
         AZ::TransformBus::Handler::BusDisconnect();
     }
 
+    void TransformComponent::BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_transformChangedEvent);
+    }
+
+    void TransformComponent::BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_parentChangedEvent);
+    }
+
+    void TransformComponent::BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_childChangedEvent);
+    }
+
+    void TransformComponent::NotifyChildChangedEvent(AZ::ChildChangeType changeType, AZ::EntityId entityId)
+    {
+        m_childChangedEvent.Signal(changeType, entityId);
+    }
+
     void TransformComponent::SetLocalTM(const AZ::Transform& tm)
     {
         if (AreMoveRequestsAllowed())
         {
             SetLocalTMImpl(tm);
-            UpdateReplicaChunk();
         }
     }
 
@@ -393,28 +210,17 @@ namespace AzFramework
         if (AreMoveRequestsAllowed())
         {
             SetWorldTMImpl(tm);
-            UpdateReplicaChunk();
         }
     }
 
     void TransformComponent::SetParent(AZ::EntityId id)
     {
-        if (!IsNetworkControlled())
-        {
-            SetParentImpl(id, true);
-
-            UpdateReplicaChunk();
-        }
+        SetParentImpl(id, true);
     }
 
     void TransformComponent::SetParentRelative(AZ::EntityId id)
     {
-        if (!IsNetworkControlled())
-        {
-            SetParentImpl(id, m_isStatic);
-
-            UpdateReplicaChunk();
-        }
+        SetParentImpl(id, m_isStatic);
     }
 
     void TransformComponent::SetWorldTranslation(const AZ::Vector3& newPosition)
@@ -861,267 +667,6 @@ namespace AzFramework
 
     void TransformComponent::OnEntityActivated(const AZ::EntityId& parentEntityId)
     {
-        OnEntityActivatedImpl(parentEntityId);
-        UpdateReplicaChunk();
-    }
-
-    void TransformComponent::OnEntityDeactivated(const AZ::EntityId& parentEntityId)
-    {
-        if (!IsNetworkControlled())
-        {
-            OnEntityDeactivateImpl(parentEntityId);
-            UpdateReplicaChunk();
-        }
-        else
-        {
-            // If this transform is network controlled, then the localTM is updated by the network,
-            // so update m_parentTM and compute worldTM instead.
-            AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-            m_parentTM = nullptr;
-            m_parentActive = false;
-            ComputeWorldTM();
-        }
-    }
-
-    GridMate::ReplicaChunkPtr TransformComponent::GetNetworkBinding()
-    {
-        TransformReplicaChunk* replicaChunk = GridMate::CreateReplicaChunk<TransformReplicaChunk>();
-        replicaChunk->SetHandler(this);
-        m_replicaChunk = replicaChunk;
-
-        UpdateReplicaChunk();
-
-        return m_replicaChunk;
-    }
-
-    void TransformComponent::SetNetworkBinding(GridMate::ReplicaChunkPtr replicaChunk)
-    {
-        AZ_Assert(m_replicaChunk == nullptr, "Being bound to two ReplicaChunks");
-
-        bool isTransformChunk = replicaChunk != nullptr;
-
-        AZ_Assert(isTransformChunk, "Being bound to invalid chunk type");
-        if (isTransformChunk)
-        {
-            replicaChunk->SetHandler(this);
-            m_replicaChunk = replicaChunk;
-
-            TransformReplicaChunk* transformReplicaChunk = static_cast<TransformReplicaChunk*>(m_replicaChunk.get());
-
-            m_parentId = AZ::EntityId(transformReplicaChunk->m_parentId.Get());
-
-            m_worldTM = transformReplicaChunk->m_initialWorldTM;
-            m_localTM = transformReplicaChunk->GetLocalTransform();
-
-            CreateSamples();
-
-            m_netTargetTranslation->SetNewTarget(
-                transformReplicaChunk->m_localTranslation.Get(),
-                transformReplicaChunk->m_localTranslation.GetLastUpdateTime());
-            m_netTargetRotation->SetNewTarget(
-                transformReplicaChunk->m_localRotation.Get(),
-                transformReplicaChunk->m_localRotation.GetLastUpdateTime());
-            m_netTargetScale = transformReplicaChunk->m_localScale.Get();
-
-            if (HasAnyInterpolation())
-            {
-                // only connect if interpolation was selected for either position or rotation
-                AZ::TickBus::Handler::BusConnect();
-            }
-        }
-
-        m_onNewParentKeepWorldTM = false;
-    }
-
-    void TransformComponent::UnbindFromNetwork()
-    {
-        if (HasAnyInterpolation())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
-
-        if (m_replicaChunk)
-        {
-            m_replicaChunk->SetHandler(nullptr);
-            m_replicaChunk = nullptr;
-        }
-    }
-
-    void TransformComponent::OnNewNetTransformData(const AZ::Transform& transform, const GridMate::TimeContext& /*tc*/)
-    {
-        SetLocalTMImpl(transform);
-    }
-
-    void TransformComponent::OnNewNetParentData(const AZ::u64& parentId, const GridMate::TimeContext& /*tc*/)
-    {
-        SetParentImpl(AZ::EntityId(parentId), false);
-    }
-
-    bool TransformComponent::IsNetworkControlled() const
-    {
-        return m_replicaChunk && m_replicaChunk->GetReplica() && !m_replicaChunk->IsMaster();
-    }
-
-    bool TransformComponent::IsPositionInterpolated()
-    {
-        return m_interpolatePosition != AZ::InterpolationMode::NoInterpolation;
-    }
-
-    bool TransformComponent::IsRotationInterpolated()
-    {
-        return m_interpolateRotation != AZ::InterpolationMode::NoInterpolation;
-    }
-
-    bool TransformComponent::HasAnyInterpolation()
-    {
-        return IsPositionInterpolated() || IsRotationInterpolated();
-    }
-
-    void TransformComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*currentTime*/)
-    {
-        if (GetEntity() && GetEntity()->GetState() == AZ::Entity::State::Active)
-        {
-            if (m_replicaChunk && m_replicaChunk->IsProxy())
-            {
-                const unsigned int localTime = m_replicaChunk->GetReplicaManager()->GetTime().m_localTime;
-                const AZ::Transform newXform = GetInterpolatedTransform(localTime);
-                SetLocalTMImpl(newXform);
-            }
-        }
-    }
-
-    AZ::Transform TransformComponent::GetInterpolatedTransform(unsigned localTime)
-    {
-        const AZ::Vector3 newTranslation = m_netTargetTranslation->GetInterpolatedValue(localTime);
-        const AZ::Quaternion newRotation = m_netTargetRotation->GetInterpolatedValue(localTime);
-        AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newTranslation);
-        newXform.MultiplyByScale(m_netTargetScale);
-
-        return newXform;
-    }
-
-    void TransformComponent::OnNewPositionData(const AZ::Vector3& translation, const GridMate::TimeContext& tc)
-    {
-        m_netTargetTranslation->SetNewTarget(translation, tc.m_realTime);
-        if (!HasAnyInterpolation())
-        {
-            unsigned int localTime = m_replicaChunk->GetReplicaManager()->GetTime().m_localTime;
-            AZ::Transform newXform = GetInterpolatedTransform(localTime);
-            SetLocalTMImpl(newXform);
-        }
-    };
-
-    void TransformComponent::OnNewRotationData(const AZ::Quaternion& rotation, const GridMate::TimeContext& tc)
-    {
-        m_netTargetRotation->SetNewTarget(rotation, tc.m_realTime);
-        if (!HasAnyInterpolation())
-        {
-            unsigned int localTime = m_replicaChunk->GetReplicaManager()->GetTime().m_localTime;
-            AZ::Transform newXform = GetInterpolatedTransform(localTime);
-            SetLocalTMImpl(newXform);
-        }
-    }
-
-    void TransformComponent::OnNewScaleData(const AZ::Vector3& scale, const GridMate::TimeContext& /*tc*/)
-    {
-        // no interpolation of scale by design, very unlikely somebody needs it
-        m_netTargetScale = scale;
-    }
-
-    void TransformComponent::UpdateReplicaChunk()
-    {
-        if (!IsNetworkControlled() && m_replicaChunk)
-        {
-            TransformReplicaChunk* transformReplicaChunk = static_cast<TransformReplicaChunk*>(m_replicaChunk.get());
-            transformReplicaChunk->SetLocalTM(GetLocalTM());
-            transformReplicaChunk->m_parentId.Set(static_cast<AZ::u64>(GetParentId()));
-        }
-    }
-
-    void TransformComponent::SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
-    {
-        if (parentId == GetEntityId())
-        {
-            AZ_Warning("TransformComponent", false, "An entity can not be set as its own parent.");
-            return;
-        }
-
-        AZ::EntityId oldParent = m_parentId;
-        if (m_parentId.IsValid())
-        {
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
-            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
-            AZ::EntityBus::Handler::BusDisconnect();
-            m_parentActive = false;
-        }
-
-        m_parentId = parentId;
-        if (m_parentId.IsValid())
-        {
-            AZ::Entity* parentEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_parentId);
-            m_parentActive = parentEntity && (parentEntity->GetState() == AZ::Entity::State::Active);
-
-            m_onNewParentKeepWorldTM = isKeepWorldTM;
-
-            AZ::TransformNotificationBus::Handler::BusConnect(m_parentId);
-            AZ::TransformHierarchyInformationBus::Handler::BusConnect(m_parentId);
-            AZ::EntityBus::Handler::BusConnect(m_parentId);
-        }
-        else
-        {
-            m_parentTM = nullptr;
-
-            if (isKeepWorldTM)
-            {
-                SetWorldTM(m_worldTM);
-            }
-            else
-            {
-                SetLocalTM(m_localTM);
-            }
-
-            if (oldParent.IsValid())
-            {
-                EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
-            }
-        }
-
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
-
-        if (oldParent != parentId) // Don't send removal notification while activating.
-        {
-            EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
-        }
-
-        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
-    }
-
-    void TransformComponent::SetLocalTMImpl(const AZ::Transform& tm)
-    {
-        m_localTM = tm;
-        ComputeWorldTM();  // We can user dirty flags and compute it later on demand
-    }
-
-    void TransformComponent::SetWorldTMImpl(const AZ::Transform& tm)
-    {
-        m_worldTM = tm;
-        ComputeLocalTM(); // We can user dirty flags and compute it later on demand
-    }
-
-    void TransformComponent::OnTransformChangedImpl(const AZ::Transform& /*parentLocalTM*/, const AZ::Transform& parentWorldTM)
-    {
-        // Called when our parent transform changes
-        // Ignore the event until we've already derived our local transform.
-        if (m_parentTM)
-        {
-            m_worldTM = parentWorldTM * m_localTM;
-            EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
-        }
-    }
-
-    void TransformComponent::OnEntityActivatedImpl(const AZ::EntityId& parentEntityId)
-    {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
         m_parentActive = true;
@@ -1171,13 +716,107 @@ namespace AzFramework
         }
     }
 
-    void TransformComponent::OnEntityDeactivateImpl(const AZ::EntityId& parentEntityId)
+    void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
     {
-        (void)parentEntityId;
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
         m_parentTM = nullptr;
         m_parentActive = false;
         ComputeLocalTM();
+    }
+
+    void TransformComponent::SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
+    {
+        if (parentId == GetEntityId())
+        {
+            AZ_Warning("TransformComponent", false, "An entity can not be set as its own parent.");
+            return;
+        }
+
+        AZ::EntityId oldParent = m_parentId;
+        if (m_parentId.IsValid())
+        {
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
+            AZ::EntityBus::Handler::BusDisconnect();
+            m_parentActive = false;
+        }
+
+        m_parentId = parentId;
+        if (m_parentId.IsValid())
+        {
+            AZ::Entity* parentEntity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_parentId);
+            m_parentActive = parentEntity && (parentEntity->GetState() == AZ::Entity::State::Active);
+
+            m_onNewParentKeepWorldTM = isKeepWorldTM;
+
+            AZ::TransformNotificationBus::Handler::BusConnect(m_parentId);
+            AZ::TransformHierarchyInformationBus::Handler::BusConnect(m_parentId);
+            AZ::EntityBus::Handler::BusConnect(m_parentId);
+        }
+        else
+        {
+            m_parentTM = nullptr;
+
+            if (isKeepWorldTM)
+            {
+                SetWorldTM(m_worldTM);
+            }
+            else
+            {
+                SetLocalTM(m_localTM);
+            }
+
+            if (oldParent.IsValid())
+            {
+                EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+                m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+            }
+        }
+
+        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
+        m_parentChangedEvent.Signal(oldParent, parentId);
+
+        if (oldParent != parentId) // Don't send removal notification while activating.
+        {
+            EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+            auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
+            if (oldParentTransform)
+            {
+                oldParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+            }
+        }
+
+        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+        auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
+        if (newParentTransform)
+        {
+            newParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
+        }
+    }
+
+    void TransformComponent::SetLocalTMImpl(const AZ::Transform& tm)
+    {
+        m_localTM = tm;
+        ComputeWorldTM();  // We can user dirty flags and compute it later on demand
+    }
+
+    void TransformComponent::SetWorldTMImpl(const AZ::Transform& tm)
+    {
+        m_worldTM = tm;
+        ComputeLocalTM(); // We can user dirty flags and compute it later on demand
+    }
+
+    void TransformComponent::OnTransformChangedImpl(const AZ::Transform& /*parentLocalTM*/, const AZ::Transform& parentWorldTM)
+    {
+        // Called when our parent transform changes
+        // Ignore the event until we've already derived our local transform.
+        if (m_parentTM)
+        {
+            m_worldTM = parentWorldTM * m_localTM;
+            EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+            m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+        }
     }
 
     void TransformComponent::ComputeLocalTM()
@@ -1192,6 +831,7 @@ namespace AzFramework
         }
 
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        m_transformChangedEvent.Signal(m_localTM, m_worldTM);
     }
 
     void TransformComponent::ComputeWorldTM()
@@ -1206,15 +846,11 @@ namespace AzFramework
         }
 
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        m_transformChangedEvent.Signal(m_localTM, m_worldTM);
     }
 
     bool TransformComponent::AreMoveRequestsAllowed() const
     {
-        if (IsNetworkControlled())
-        {
-            return false;
-        }
-
         // Don't allow static transform to be moved while entity is activated.
         // But do allow a static transform to be moved when the entity is deactivated.
         if (m_isStatic && m_entity && (m_entity->GetState() > AZ::Entity::State::Init))
@@ -1248,7 +884,7 @@ namespace AzFramework
         }
 
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection);
-        if(behaviorContext)
+        if (behaviorContext)
         {
             behaviorContext->EBus<AZ::TransformNotificationBus>("TransformNotificationBus")->
                 Handler<AZ::BehaviorTransformNotificationBusHandler>();
@@ -1396,26 +1032,8 @@ namespace AzFramework
                 ->Property("parentActivationTransformMode",
                     [](AZ::TransformConfig* config) { return (int&)(config->m_parentActivationTransformMode); },
                     [](AZ::TransformConfig* config, const int& i) { config->m_parentActivationTransformMode = (AZ::TransformConfig::ParentActivationTransformMode)i; })
-                ->Property("netSyncEnabled", BehaviorValueProperty(&AZ::TransformConfig::m_netSyncEnabled))
-                ->Property("interpolatePosition",
-                    [](AZ::TransformConfig* config) { return (int&)(config->m_interpolatePosition); },
-                    [](AZ::TransformConfig* config, const int& i) { config->m_interpolatePosition = (AZ::InterpolationMode)i; })
-                ->Property("interpolateRotation",
-                    [](AZ::TransformConfig* config) { return (int&)(config->m_interpolateRotation); },
-                    [](AZ::TransformConfig* config, const int& i) { config->m_interpolateRotation = (AZ::InterpolationMode)i; })
                 ->Property("isStatic", BehaviorValueProperty(&AZ::TransformConfig::m_isStatic))
                 ;
-        }
-
-        NetworkContext* netContext = azrtti_cast<NetworkContext*>(reflection);
-        if (netContext)
-        {
-            netContext->Class<TransformComponent>()
-                ->Chunk<TransformReplicaChunk, TransformReplicaChunk::Descriptor>()
-                    ->Field("ParentId", &TransformReplicaChunk::m_parentId)
-                    ->Field("LocalTranslationData", &TransformReplicaChunk::m_localTranslation)
-                    ->Field("LocalRotationData", &TransformReplicaChunk::m_localRotation)
-                    ->Field("LocalScaleData", &TransformReplicaChunk::m_localScale);
         }
     }
 } // namespace AZ

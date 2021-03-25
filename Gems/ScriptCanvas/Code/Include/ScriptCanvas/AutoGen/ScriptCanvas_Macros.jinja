@@ -1,0 +1,310 @@
+{#
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#}
+
+
+{# ------------------------------------------------------------------------------------- #}
+{# Error Globals #}
+
+{% set global_Errors = [] %}
+
+{% macro Required(attribute, element, Class) %}
+{% set name = "unknown" %}
+{% if element.attrib['Name'] is defined %}{% set name = element.attrib['Name'] %}{% endif %}
+{% if element.attrib[attribute] is not defined %}
+{{ AddError(Class, "| You must specify the attribute: " + attribute + " for " + name) }}
+{% endif %}
+{% endmacro %}
+
+{% macro AddError(Class, error) %}
+{%      if global_Errors.append(Class.attrib['Name'] + ": " + error) %}{% endif %}
+{% endmacro %}
+
+{% macro ReportErrors() %}
+{%  for error in global_Errors %}
+#pragma error("{{ error }}");
+{%  endfor %}
+{% endmacro %}
+
+{# ------------------------------------------------------------------------------------- #}
+
+{# ------------------------------------------------------------------------------------- #}
+{# Macros #}
+
+
+{# CleanName #}
+{# Returns a clean name without quotations, commas, slashes or white space #}
+
+{%- macro CleanName(name) -%}
+{{name|replace(' ','')|replace('"','')|replace('/','')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+{%- macro SlotName(slotName) -%}
+{{slotName|replace("\\", '')|replace("\"", '')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+{# GetAttributeAsString #}
+{# If an attribute is defined, return it, otherwise return an empty string #}
+
+{%- macro GetAttributeAsString(attributes, attributeName) -%}
+{%- if attributes[attributeName] is defined -%}
+{{attributes[attributeName]}}
+{%- else -%}
+""
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{%- macro AddAttribute(attribute, tags) -%}
+{%- set value = tags.attrib[attribute] -%}
+{%- if value is defined -%} 
+->Attribute(AZ::Edit::Attributes::{{attribute}}, {{value}})
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{%- macro IsPropertyInterface(propertyData) -%}
+{%- if propertyData is defined
+    and propertyData.attrib['Data'] is defined
+    and propertyData.attrib['PropertyInterface'] is defined
+    and propertyData.attrib['Type'] == "Input" -%}
+true
+{%- else -%}
+false
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{# IsPropertyDataInput #}
+{# Determines based on the attributes if this property is for DATA INPUT #}
+
+{%- macro IsPropertyDataInput(propertyData) -%}
+{%- if propertyData is defined
+    and propertyData['Data'] is defined
+    and propertyData['PropertyReference'] is defined
+    and propertyData['Input'] is defined -%}
+true
+{%- else -%}
+false
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{# IsPropertyDataOutput #}
+{# Determines based on the attributes if this property is for DATA OUTPUT #}
+
+{%- macro IsPropertyDataOutput(propertyData) -%}
+{%- if propertyData is defined
+    and propertyData['Data'] is defined
+    and propertyData['PropertyReference'] is defined
+    and propertyData['Output'] is defined -%}
+true
+{%- else -%}
+false
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+{%- macro GetDisplayGroup(item) -%}
+{%- if item.attrib['DisplayGroup'] is defined -%}
+{{SlotName(item.attrib['DisplayGroup'])}}
+{%- elif item.attrib['Name'] is defined -%}
+{{SlotName(item.attrib['Name'])}}
+{%- else -%}
+""
+{%- endif -%}
+{%- endmacro -%}
+
+
+{# ------- #}
+
+{# StandardExecutionReturnType #}
+{# Produces the necessary code for a Standard Execution return #}
+
+{%- macro StandardExecutionReturnType(root) -%}	
+{%- set returnTypes = [] -%}
+{%- for field in root.iter('ExecutionOut') -%} if IsPropertyDataOutput(field) == "true" -%}
+{%- if returnTypes.append(field['Type']) %}{% endif -%}
+{%- endfor -%}
+{%- if returnTypes|length() == 0 -%}
+void
+{%- elif returnTypes|length() == 1 -%}
+{{returnTypes[0]}}
+{%- else -%}
+AZStd::tuple<{{returnTypes|join(", ")}}>
+{%- endif -%}
+{%- endmacro -%}
+
+{# ------- #}
+
+
+{# StandardExecutionParameters #}
+{# Produces the necessary code for execution parameters #}
+
+{%- macro StandardExecutionParameters(root) -%}
+{%- set parameterTypes = [] -%}
+{%- for field in root.iter('Execution')
+    if IsPropertyDataInput(field) == "true" -%}
+{%- if parameterTypes.append(field['Type']) %}{% endif -%}
+{%- endfor -%}
+{%- if parameterTypes|length > 0 -%}
+{{parameterTypes|join(", ")}}
+{%- endif -%}
+{%- endmacro -%}
+
+
+{# ------- #}
+
+{%- macro SlotName(slotName) -%}
+{{slotName|replace("\\", '')|replace("\"", '')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+
+{# ------------------------------------------------------------------------------------- #}
+{# NODEABLES #}
+
+{# TODO-LS: This macro lacks parsing the parameters provided to a Contract tag #}
+{%- macro AddContract(configurationName, item) -%}
+
+{% set contracts = [] %}
+{% for contract in item.iter('Contract') %}
+{% if contracts.append(contract) %}{% endif %}
+{% endfor %}
+
+{% if contracts|length() > 0 %}
+{{configurationName}}.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>{
+{% for contract in item.iter('Contract') %}
+    { []() { return aznew {{contract.attrib['Type']}}() },
+};
+{% endfor %}
+{% endif %}
+{%- endmacro -%}
+
+{%- macro GenerateSlotsAndExecutionMapForInputMethod(method, groups) %}
+// {{SlotName(method.attrib['Name'])}}
+{
+    SlotExecution::In in;
+    ExecutionSlotConfiguration inSlotConfiguration;
+    {% set methodName = SlotName(method.attrib['Name']) %}
+    inSlotConfiguration.m_name = "{{methodName}}";
+    inSlotConfiguration.m_toolTip = "{{SlotName(method.attrib['Description'])}}";
+
+    inSlotConfiguration.SetConnectionType(ConnectionType::Input);
+    inSlotConfiguration.m_isLatent = false;
+    inSlotConfiguration.m_displayGroup = "{{GetDisplayGroup(method)}}";
+
+    {{ AddContract("inSlotConfiguration", method) }}
+
+    SlotId inSlotId = AddSlot(inSlotConfiguration);
+    AZ_Assert(inSlotId.IsValid(), "ExecutionInput slot is not created successfully.");
+    in.slotId = inSlotId;
+
+{#
+    {%- set params = [] -%}
+    {%- set paramOverrides = [] -%}
+    {%- set sharedParamOverrides = [] -%}
+
+    {% for param in method.iter('Parameter') %}
+        {% if params.append(param) %}{% endif %}
+    {% endfor %}
+
+    {%- for dataField in class.fields if IsDataInput(dataField.annotations.SlotTags) == "true" %}
+        {%- if SlotName(dataField.annotations.SlotTags.DisplayGroup) == SlotName(method.annotations.SlotTags.Name) %}
+        {%- if paramOverrides.append(dataField.annotations.SlotTags) %}{% endif %}
+        {%- elif method.annotations.SlotTags.DisplayGroup is defined and SlotName(dataField.annotations.SlotTags.DisplayGroup) == SlotName(method.annotations.SlotTags.DisplayGroup) %}
+        {%- if sharedParamOverrides.append(dataField.annotations.SlotTags) %}{% endif %}
+        {%- endif %}
+    {% endfor %}
+
+    {%- if sharedParamOverrides|length() > 0 and paramOverrides|length() + sharedParamOverrides|length() != params|length() %}
+    {## raise "%s - Shared data inputs have to match with method arguments in order."|format(method.name) }
+    {%- endif %}
+
+    {% set finalParamOverrides = paramOverrides + sharedParamOverrides %}
+    {% for param in params %}
+    {% if finalParamOverrides|length() >= loop.index and finalParamOverrides[loop.index - 1] is defined %}
+    {% if finalParamOverrides[loop.index - 1].DisplayGroup == method.annotations.SlotTags.Name %}
+    {{AddDataSlot("true", "in.inputs", GetDisplayGroup(method.annotations.SlotTags), SlotName(finalParamOverrides[loop.index - 1].Name), SlotName(finalParamOverrides[loop.index - 1].Description), finalParamOverrides[loop.index - 1].DefaultValue, finalParamOverrides[loop.index - 1].Type)}}
+    {% endif %}
+    {% else %}
+    {{AddDataSlot("true", "in.inputs", GetDisplayGroup(method.annotations.SlotTags), methodName + ": " + param.name, "", undefined, param.type)}}
+    {% endif %}
+    {% endfor %}
+
+    SlotExecution::Out out;
+    ExecutionSlotConfiguration outSlotConfiguration;
+    outSlotConfiguration.m_name = "On {{methodName}}";
+    outSlotConfiguration.m_toolTip = "{{SlotName(method.annotations.SlotTags.Description)}}";
+    outSlotConfiguration.m_displayGroup = "{{GetDisplayGroup(method.annotations.SlotTags)}}";
+    outSlotConfiguration.SetConnectionType(ConnectionType::Output);
+    outSlotConfiguration.m_isLatent = false;
+    out.name = outSlotConfiguration.m_name;
+    SlotId outSlotId = AddSlot(outSlotConfiguration);
+    AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
+    out.slotId = outSlotId;
+
+    {%- if method.return_type is defined and method.return_type != "void" %}
+    {%- if HasNestedTupleResults(method.return_type) == "true" %}
+    AZ_Assert(false, "ScriptCanvas doesn't support nested tuple return type yet.");
+    {% endif %}
+
+    {%- set results = UnpackTupleResultsType(method.return_type).split(',') -%}
+    {%- set resultOverrides = [] -%}
+    {%- set sharedResultOverrides = [] -%}
+
+    {%- for dataField in class.fields if IsDataOutput(dataField.annotations.SlotTags) == "true" %}
+        {%- if SlotName(dataField.annotations.SlotTags.DisplayGroup) == SlotName(method.annotations.SlotTags.Name) %}
+        {%- if resultOverrides.append(dataField.annotations.SlotTags) %}{% endif %}
+        {%- elif method.annotations.SlotTags.DisplayGroup is defined and SlotName(dataField.annotations.SlotTags.DisplayGroup) == SlotName(method.annotations.SlotTags.DisplayGroup) %}
+        {%- if sharedResultOverrides.append(dataField.annotations.SlotTags) %}{% endif %}
+        {%- endif %}
+    {% endfor %}
+
+    {%- if sharedResultOverrides|length() > 0 and resultOverrides|length() + sharedResultOverrides|length() != results|length() %}
+    {# raise "%s - Shared data inputs have to match with method arguments in order."|format(method.name) }
+    {%- endif %}
+
+    {% set finalResultOverrides = resultOverrides + sharedResultOverrides %}
+    {% for result in results %}
+    {% if finalResultOverrides|length() >= loop.index and finalResultOverrides[loop.index - 1] is defined %}
+    {% if finalResultOverrides[loop.index - 1].DisplayGroup == method.annotations.SlotTags.Name %}
+    {{AddDataSlot("false", "out.outputs", GetDisplayGroup(method.annotations.SlotTags), SlotName(finalResultOverrides[loop.index - 1].Name), SlotName(finalResultOverrides[loop.index - 1].Description), finalResultOverrides[loop.index - 1].DefaultValue, finalResultOverrides[loop.index - 1].Type)}}
+    {% endif %}
+    {% else %}
+    {{AddDataSlot("false", "out.outputs", GetDisplayGroup(method.annotations.SlotTags), methodName + ": Result" + loop.index|string, "", undefined, result)}}
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+
+    in.outs.push_back(out);
+
+    {% if method.annotations.SlotTags.DisplayGroup is defined %}{% if groups.append(method.annotations.SlotTags.DisplayGroup) %}{% endif %}{% endif %}
+    if (inputMethodsInGroup.find("{{GetDisplayGroup(method.annotations.SlotTags)}}") != inputMethodsInGroup.end())
+    {
+        inputMethodsInGroup["{{GetDisplayGroup(method.annotations.SlotTags)}}"].push_back(in);
+    }
+    else
+    {
+        inputMethodsInGroup["{{GetDisplayGroup(method.annotations.SlotTags)}}"] = { in };
+    }
+#}
+}
+{% endmacro -%}

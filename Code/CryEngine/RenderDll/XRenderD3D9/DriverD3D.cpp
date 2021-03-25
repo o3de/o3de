@@ -56,10 +56,6 @@
 #include "D3D_SVO.h"
 #endif
 
-#if defined(WIN32) && !defined(OPENGL)
-    #include <nvapi.h>                // NVAPI
-#endif
-
 #if (defined (WIN32) || defined(WIN64)) && !defined(OPENGL)
 #   include <D3Dcompiler.h>
 #endif

@@ -17,7 +17,7 @@
 
 #include <ScriptCanvas/Data/Data.h>
 
-class QWidget;
+class QMainWindow;
 
 namespace ScriptCanvasEditor
 {
@@ -42,7 +42,7 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual QWidget* GetMainWindow() = 0;
+        virtual QMainWindow* GetMainWindow() = 0;
 
         virtual void OpenValidationPanel() = 0;
     };
@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual void MainWindowCreationEvent(QWidget* /*mainWindow*/) {};
+        virtual void MainWindowCreationEvent(QMainWindow* /*mainWindow*/) {};
     };
 
     using UINotificationBus = AZ::EBus<UINotifications>;

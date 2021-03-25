@@ -92,11 +92,17 @@ CModelViewport::CModelViewport(const char* settingsPath, QWidget* parent)
     m_arrRunStrafeSmoothing.resize(0x100);
     SetPlayerPos();
 
+    // cache all the variable callbacks, must match order of enum defined in header
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CModelViewport::OnCharPhysics, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CModelViewport::OnLightColor, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CModelViewport::OnLightMultiplier, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.push_back(AZStd::bind(&CModelViewport::OnShowShaders, this, AZStd::placeholders::_1));
+
     //--------------------------------------------------
     // Register variables.
     //--------------------------------------------------
     m_vars.AddVariable(mv_showPhysics, "Display Physics");
-    m_vars.AddVariable(mv_useCharPhysics, "Use Character Physics", functor(*this, &CModelViewport::OnCharPhysics));
+    m_vars.AddVariable(mv_useCharPhysics, "Use Character Physics", &m_onSetCallbacksCache[VariableCallbackIndex::OnCharPhysics]);
     mv_useCharPhysics = true;
     m_vars.AddVariable(mv_showGrid, "ShowGrid");
     mv_showGrid = true;
@@ -113,14 +119,14 @@ CModelViewport::CModelViewport(const char* settingsPath, QWidget* parent)
     mv_lighting = true;
     m_vars.AddVariable(mv_animateLights, "AnimLights");
 
-    m_vars.AddVariable(mv_backgroundColor, "BackgroundColor", functor(*this, &CModelViewport::OnLightColor), IVariable::DT_COLOR);
-    m_vars.AddVariable(mv_objectAmbientColor, "ObjectAmbient", functor(*this, &CModelViewport::OnLightColor), IVariable::DT_COLOR);
+    m_vars.AddVariable(mv_backgroundColor, "BackgroundColor", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightColor], IVariable::DT_COLOR);
+    m_vars.AddVariable(mv_objectAmbientColor, "ObjectAmbient", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightColor], IVariable::DT_COLOR);
 
-    m_vars.AddVariable(mv_lightDiffuseColor, "LightDiffuse", functor(*this, &CModelViewport::OnLightColor), IVariable::DT_COLOR);
-    m_vars.AddVariable(mv_lightMultiplier, "Light Multiplier", functor(*this, &CModelViewport::OnLightMultiplier), IVariable::DT_SIMPLE);
-    m_vars.AddVariable(mv_lightSpecMultiplier, "Light Specular Multiplier", functor(*this, &CModelViewport::OnLightMultiplier), IVariable::DT_SIMPLE);
-    m_vars.AddVariable(mv_lightRadius, "Light Radius", functor(*this, &CModelViewport::OnLightMultiplier), IVariable::DT_SIMPLE);
-    m_vars.AddVariable(mv_lightOrbit, "Light Orbit", functor(*this, &CModelViewport::OnLightMultiplier), IVariable::DT_SIMPLE);
+    m_vars.AddVariable(mv_lightDiffuseColor, "LightDiffuse", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightColor], IVariable::DT_COLOR);
+    m_vars.AddVariable(mv_lightMultiplier, "Light Multiplier", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightMultiplier], IVariable::DT_SIMPLE);
+    m_vars.AddVariable(mv_lightSpecMultiplier, "Light Specular Multiplier", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightMultiplier], IVariable::DT_SIMPLE);
+    m_vars.AddVariable(mv_lightRadius, "Light Radius", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightMultiplier], IVariable::DT_SIMPLE);
+    m_vars.AddVariable(mv_lightOrbit, "Light Orbit", &m_onSetCallbacksCache[VariableCallbackIndex::OnLightMultiplier], IVariable::DT_SIMPLE);
 
     m_vars.AddVariable(mv_showWireframe1, "ShowWireframe1");
     m_vars.AddVariable(mv_showWireframe2, "ShowWireframe2");
@@ -141,7 +147,7 @@ CModelViewport::CModelViewport(const char* settingsPath, QWidget* parent)
     m_vars.AddVariable(mv_forceLODNum, "ForceLODNum");
     mv_forceLODNum = 0;
     mv_forceLODNum.SetLimits(0, 10);
-    m_vars.AddVariable(mv_showShaders, "ShowShaders", functor(*this, &CModelViewport::OnShowShaders));
+    m_vars.AddVariable(mv_showShaders, "ShowShaders", &m_onSetCallbacksCache[VariableCallbackIndex::OnShowShaders]);
     m_vars.AddVariable(mv_AttachCamera, "AttachCamera");
 
     m_vars.AddVariable(mv_fov, "FOV");

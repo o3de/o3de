@@ -63,7 +63,7 @@ namespace AZ
                 {
                     // platform specific shader build user configuration
                     static constexpr char ConfigFileName[] = "AtomShaderCapabilities.json";
-                    static constexpr char ConfigPalFolder[] = "Assets/Config/Platform";
+                    static constexpr char ConfigPalFolder[] = "Config/Platform";
                     AZStd::string assetRoot = ConfigPalFolder;
                     if (MutateToFirstAbsoluteFolderThatExists(assetRoot, scanFoldersVector))
                     {

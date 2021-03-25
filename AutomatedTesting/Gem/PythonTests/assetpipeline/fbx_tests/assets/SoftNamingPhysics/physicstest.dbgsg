@@ -1,0 +1,65 @@
+ProductName: physicstest.dbgsg
+debugSceneGraphVersion: 1
+physicstest
+Node Path: RootNode.Cone
+Node Type: MeshData
+	Positions: Count 128. Hash: 7714223793259938211
+	Normals: Count 128. Hash: 2352668179264002707
+	FaceList: Count 62. Hash: 501739282148426083
+	FaceMaterialIds: Count 62. Hash: 12234218120113875284
+
+Node Path: RootNode.Cube_phys
+Node Type: MeshData
+	Positions: Count 24. Hash: 3478903613105670818
+	Normals: Count 24. Hash: 7251512570672401149
+	FaceList: Count 12. Hash: 17730128541777770264
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Path: RootNode.Cone.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Path: RootNode.Cone.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 128. Hash: 10171083346831193808
+	UVCustomName: UVMap
+
+Node Path: RootNode.Cone.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 128. Hash: 7061767882345696031
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.Cone.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 128. Hash: 12648628819656324550
+	TangentSpace: 1
+
+Node Path: RootNode.Cube_phys.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Path: RootNode.Cube_phys.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 13623018071435219250
+	UVCustomName: UVMap
+
+Node Path: RootNode.Cube_phys.TangentSet_MikkT_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 11965897353301448436
+	TangentSpace: 1
+	SetIndex: 0
+
+Node Path: RootNode.Cube_phys.BitangentSet_MikkT_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 17515781720544086759
+	TangentSpace: 1
+

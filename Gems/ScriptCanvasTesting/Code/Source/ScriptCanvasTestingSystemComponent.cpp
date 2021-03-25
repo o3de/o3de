@@ -12,11 +12,13 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <Framework/ScriptCanvasTestVerify.h>
 
 #include "ScriptCanvasTestingSystemComponent.h"
+#include "ScriptCanvasTestBus.h"
+#include "Framework/ScriptCanvasTestVerify.h"
+#include "Nodes/BehaviorContextObjectTestNode.h"
 
-#include <Nodes/BehaviorContextObjectTestNode.h>
+#include <Source/Nodes/Nodeables/NodeableTestingLibrary.h>
 
 namespace ScriptCanvasTesting
 {
@@ -38,7 +40,13 @@ namespace ScriptCanvasTesting
             }
         }
 
+        NodeableTestingLibrary::Reflect(context);
+
         ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+        ScriptCanvasTesting::GlobalBusTraits::Reflect(context);
+        ScriptCanvasTesting::LocalBusTraits::Reflect(context);
+        ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(context);
+        ScriptCanvasTesting::TestTupleMethods::Reflect(context);
     }
 
     void ScriptCanvasTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -63,6 +71,7 @@ namespace ScriptCanvasTesting
 
     void ScriptCanvasTestingSystemComponent::Init()
     {
+        NodeableTestingLibrary::InitNodeRegistry(ScriptCanvas::GetNodeRegistry().Get());
     }
 
     void ScriptCanvasTestingSystemComponent::Activate()

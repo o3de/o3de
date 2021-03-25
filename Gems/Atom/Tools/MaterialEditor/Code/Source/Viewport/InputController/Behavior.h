@@ -30,12 +30,14 @@ namespace MaterialEditor
         virtual void End();
         virtual void MoveX(float value);
         virtual void MoveY(float value);
+        virtual void MoveZ(float value);
 
     protected:
         bool HasDelta() const;
-        virtual void TickInternal([[maybe_unused]] float x, [[maybe_unused]] float y) {}
+        virtual void TickInternal(float x, float y, float z);
         virtual float GetSensitivityX();
         virtual float GetSensitivityY();
+        virtual float GetSensitivityZ();
 
         //! Calculate rotation quaternion towards a forward vector along world up axis
         static AZ::Quaternion LookRotation(AZ::Vector3 forward);
@@ -50,6 +52,12 @@ namespace MaterialEditor
         float m_x = 0;
         //! delta y movement accumulated during current frame
         float m_y = 0;
+        //! delta scroll wheel accumulated during current frame
+        float m_z = 0;
+
+        AZ::EntityId m_cameraEntityId;
+        AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();
+        float m_distanceToTarget = 0;
 
     private:
         // AZ::TickBus::Handler interface overrides...

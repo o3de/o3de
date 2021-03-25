@@ -34,10 +34,16 @@ namespace ScriptCanvas
     class Graph;
     class BehaviorContextObject;
 
+    namespace Execution
+    {
+        class PerformanceTracker;
+    }
+
     struct SystemComponentConfiguration
     {
         //! Script Canvas offers infinite loop protection, this allows to specify the max number of iterations to attempt before deciding execution is likely an infinite loop
-        int m_maxIterationsForInfiniteLoopDetection;
+        int m_maxIterationsForInfiniteLoopDetection; 
+        int m_maxHandlerStackDepth;
     };
 
     ////////////////////////////////////////////////////////////////
@@ -49,7 +55,11 @@ namespace ScriptCanvas
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         using MutexType = AZStd::recursive_mutex;
         static const bool LocklessDispatch = true;
-        
+
+        virtual bool IsScriptUnitTestingInProgress() = 0;
+        virtual void MarkScriptUnitTestBegin() = 0;
+        virtual void MarkScriptUnitTestEnd() = 0;
+
         //! Create all the components that entity requires to execute the Script Canvas engine
         virtual void CreateEngineComponentsOnEntity(AZ::Entity* entity) = 0;
         //! Create a graph and attach it to the supplied Entity
@@ -88,6 +98,8 @@ namespace ScriptCanvas
         //! Removes a mapping of the raw address of an object created by the behavior context to a BehaviorContextObject node
         virtual void RemoveOwnedObjectReference(const void* object) = 0;
 
+        virtual void SetInterpretedBuildConfiguration(BuildConfiguration config) = 0;
+        
         virtual SystemComponentConfiguration GetSystemComponentConfiguration() = 0;
     };
 

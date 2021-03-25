@@ -33,6 +33,7 @@ namespace AZ
             virtual ~MaterialFunctorSourceDataRegistration() = default;
 
             //! Get the Interface singleton for the registration.
+            //! On some host platforms shader processing is not supported and this interface is not available, so this may return nullptr.
             static MaterialFunctorSourceDataRegistration* Get();
 
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not

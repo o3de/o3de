@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>MaterialEditor.qss</file>
         <file>Icons/material.svg</file>
         <file>Icons/materialtype.svg</file>
         <file>Icons/mesh.svg</file>

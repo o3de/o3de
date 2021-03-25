@@ -62,7 +62,6 @@ public:
     CGameExporter();
     ~CGameExporter();
     static const char* GetLevelPakFilename() { return "level.pak"; }
-    static void EncryptPakFile(QString& rPakFilename);
     SGameExporterSettings& GetSettings() { return m_settings; }
 
     SLevelPakHelper& GetLevelPack() { return m_levelPak; }
@@ -80,6 +79,7 @@ private:
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 
+    void ExportVisAreas(const char* pszGamePath, EEndian eExportEndian);
     void ExportOcclusionMesh(const char* pszGamePath);
     void ExportMapInfo(XmlNodeRef& node);
 

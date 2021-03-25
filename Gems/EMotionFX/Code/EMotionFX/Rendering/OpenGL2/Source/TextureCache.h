@@ -17,10 +17,13 @@
 #include <MCore/Source/Array.h>
 #include "RenderGLConfig.h"
 
+#include <AzCore/PlatformIncl.h>
+#include <QOpenGLExtraFunctions>
 
 namespace RenderGL
 {
     class RENDERGL_API Texture
+        : protected QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(Texture, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 
@@ -45,6 +48,7 @@ namespace RenderGL
      * This is some storage container for texture, which prevents them from being loaded multiple times.
      */
     class RENDERGL_API TextureCache
+        : protected QOpenGLExtraFunctions
     {
         MCORE_MEMORYOBJECTCATEGORY(TextureCache, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
 

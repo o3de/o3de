@@ -98,19 +98,23 @@ namespace GraphCanvas
         void HandleLeave(const AZ::EntityId& sceneId, const QMimeData* mimeData) override;
         ////
 
-    private:
+        void SignalNodeCreated(const NodeId& nodeId);
 
+    private:
+        
         void OnTrySplice();
         void CancelSplice();
 
         void PushUndoBlock();
         void PopUndoBlock();
 
+        void AssignLastCreationToGroup();
+
         QString m_mimeType;
 
         NodeNudgingController m_nudgingController;
 
-        QTimer m_spliceTimer;        
+        QTimer m_spliceTimer;
 
         AZ::EntityId m_targetConnection;
 
@@ -130,6 +134,11 @@ namespace GraphCanvas
         bool m_pushedUndoBlock;
         
         StateSetter<RootGraphicsItemDisplayState> m_displayStateStateSetter;
+
+        AZ::EntityId m_groupTarget;
+        StateSetter<RootGraphicsItemDisplayState> m_groupTargetStateSetter;
+
+        AZStd::unordered_set< NodeId > m_lastCreationGroup;
     };
 
     // Handles identifying Gestures for the Scene.
@@ -296,12 +305,11 @@ namespace GraphCanvas
             incombatible.push_back(AZ_CRC("GraphCanvas_MimeDataHandlerService", 0x7a6beb5a));
         }
 
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
         {
-            (void)dependent;
         }
 
-        static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
         }
 
@@ -354,7 +362,7 @@ namespace GraphCanvas
 
         void CancelGraphicsEffect(const GraphicsEffectId& effectId) override;
 
-        bool AddNode(const AZ::EntityId& nodeId, const AZ::Vector2& position) override;
+        bool AddNode(const AZ::EntityId& nodeId, const AZ::Vector2& position, bool isPaste) override;
         void AddNodes(const AZStd::vector<AZ::EntityId>& nodeIds) override;
         bool RemoveNode(const AZ::EntityId& nodeId) override;
 
@@ -385,16 +393,20 @@ namespace GraphCanvas
         bool AddBookmarkAnchor(const AZ::EntityId& bookmarkAnchorId, const AZ::Vector2& position) override;
         bool RemoveBookmarkAnchor(const AZ::EntityId& bookmarkAnchorId) override;
 
-        bool Add(const AZ::EntityId& entity) override;
+        bool Add(const AZ::EntityId& entity, bool isPaste = false) override;
         bool Remove(const AZ::EntityId& entity) override;
 
         bool Show(const AZ::EntityId& graphMemeber) override;
         bool Hide(const AZ::EntityId& graphMemeber) override;
 
+        bool IsHidden(const AZ::EntityId& graphMember) const override;
+
         bool Enable(const NodeId& nodeId) override;
+        void EnableVisualState(const NodeId& nodeId) override;
         void EnableSelection() override;
 
         bool Disable(const NodeId& nodeId) override;
+        void DisableVisualState(const NodeId& nodeId) override;
         void DisableSelection() override;
 
         void ProcessEnableDisableQueue() override;
@@ -463,8 +475,12 @@ namespace GraphCanvas
         void SignalDragSelectStart() override;
         void SignalDragSelectEnd() override;
 
+        bool IsDragSelecting() const override;
+
         void SignalConnectionDragBegin() override;
         void SignalConnectionDragEnd() override;
+
+        bool IsDraggingConnection() const override;
 
         void SignalDesplice() override;
 
@@ -478,16 +494,20 @@ namespace GraphCanvas
 
         void RemoveUnusedNodes() override;
         void RemoveUnusedElements() override;
+
+        void HandleProposalDaisyChainWithGroup(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint, AZ::EntityId targetId) override;
         
         void StartNudging(const AZStd::unordered_set<AZ::EntityId>& fixedNodes) override;
         void FinalizeNudging() override;
         void CancelNudging() override;
 
-        void HandleProposalDaisyChain(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint) override;
+        AZ::EntityId FindTopmostGroupAtPoint(QPointF scenePoint) override;
 
         QPointF SignalGenericAddPositionUseBegin() override;
         void SignalGenericAddPositionUseEnd() override;
         ////
+
+        bool AllowContextMenu() const;
 
         // VisualNotificationBus
         bool OnMousePress(const AZ::EntityId& sourceId, const QGraphicsSceneMouseEvent* mouseEvent) override;
@@ -556,13 +576,17 @@ namespace GraphCanvas
         void UnregisterSelectionItem(const AZ::EntityId& itemId);
 
         void AddSceneMember(const AZ::EntityId& item, bool positionItem = false, const AZ::Vector2& position = AZ::Vector2());
+        void RemoveItemFromScene(QGraphicsItem* item);
 
         //! Seives a set of entity id's into a node, connection and group entityId set based on if they are in the scene
         void SieveSceneMembers(const AZStd::unordered_set<AZ::EntityId>& itemIds, SceneMemberBuckets& buckets) const;
 
         QPointF GetViewCenterScenePoint() const;
 
-        void OnCursorMoveForSplice();
+        void OnDragCursorMove(const QPointF& mousePosition);
+        void DetermineDragGroupTarget(const QPointF& cursorPoint);
+        AZ::EntityId FindGroupTarget(const QPointF& scenePoint, const AZStd::unordered_set<AZ::EntityId>& ignoreElement = {});
+
         void OnTrySplice();
 
         void InitiateSpliceToNode(const NodeId& nodeId);
@@ -585,13 +609,24 @@ namespace GraphCanvas
 
         AZStd::unordered_set< QGraphicsItem* > m_hiddenElements;
         GraphData m_graphData;
+        
+        AZStd::vector< GraphicsEffectId > m_activeParticles;
 
         AZStd::unordered_set<NodeId> m_queuedEnable;
         AZStd::unordered_set<NodeId> m_queuedDisable;
 
+        AZStd::unordered_set<NodeId> m_queuedVisualEnable;
+        AZStd::unordered_set<NodeId> m_queuedVisualDisable;
+
         AZStd::unordered_set<AZ::EntityId> m_delegates;
         AZStd::unordered_set<AZ::EntityId> m_activeDelegates;
         AZStd::unordered_set<AZ::EntityId> m_interestedDelegates;
+
+        AZStd::unordered_set<AZ::EntityId> m_ignoredDragTargets;
+        AZStd::unordered_set<AZ::EntityId> m_draggedGroupableElements;
+        AZ::EntityId                       m_dragTargetGroup;
+        StateSetter< RootGraphicsItemDisplayState > m_forcedGroupDisplayStateStateSetter;
+        StateSetter< AZStd::string > m_forcedLayerStateSetter;
 
         bool m_isLoading;
         bool m_isPasting;
@@ -613,6 +648,8 @@ namespace GraphCanvas
 
         bool m_forceDragReleaseUndo;
         bool m_isDraggingEntity;
+
+        bool m_isDraggingConnection;
 
         // Elements for handling with the drag onto objects
         QTimer m_spliceTimer;
@@ -677,7 +714,15 @@ namespace GraphCanvas
     private:
         GraphCanvasGraphicsScene(const GraphCanvasGraphicsScene&) = delete;
 
+        void SignalGroupHighlight();
+        void CleanupHighlight();
+
         SceneComponent& m_scene;
         bool m_suppressContextMenu;
+
+        // Elements to make the group highlighting correct.
+        AZ::EntityId                       m_contextMenuGroupTarget;
+        StateSetter< RootGraphicsItemDisplayState > m_forcedGroupDisplayStateStateSetter;
+        StateSetter< AZStd::string > m_forcedLayerStateSetter;
     };
 }

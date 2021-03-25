@@ -171,6 +171,12 @@ namespace AZ
         void SetTranslation(const Vector3& v);
         //! @}
 
+        Matrix4x4 operator+(const Matrix4x4& rhs) const;
+        Matrix4x4& operator+=(const Matrix4x4& rhs);
+
+        Matrix4x4 operator-(const Matrix4x4& rhs) const;
+        Matrix4x4& operator-=(const Matrix4x4& rhs);
+
         Matrix4x4 operator*(const Matrix4x4& rhs) const;
         Matrix4x4& operator*=(const Matrix4x4& rhs);
 

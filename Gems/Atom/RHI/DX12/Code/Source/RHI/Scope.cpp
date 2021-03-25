@@ -316,6 +316,9 @@ namespace AZ
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
             PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
 
+
+            commandList.SetAftermathEventMarker(GetId().GetCStr());
+            
             const bool isPrologue = commandListIndex == 0;
             if (isPrologue)
             {

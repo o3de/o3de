@@ -39,7 +39,7 @@ namespace AZ
             RPI::ShaderOptionGroup CreateShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
 
         private:
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context, const RPI::PassScopeProducer& producer) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // ShaderReloadNotificationBus::Handler overrides...
             void OnShaderReinitialized(const RPI::Shader& shader) override;

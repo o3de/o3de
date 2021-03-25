@@ -100,7 +100,7 @@ namespace AZ
             uint32_t GetRevision() const { return m_revision; }
 
             //! Retrieves the buffer pools used for ray tracing operations.
-            RHI::RayTracingBufferPools& GetBufferPools() { return m_bufferPools; }
+            RHI::RayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
 
             //! Retrieves the total number of ray tracing meshes.
             uint32_t GetSubMeshCount() const { return m_subMeshCount; }
@@ -120,7 +120,7 @@ namespace AZ
             MeshMap m_meshes;
 
             // buffer pools used in ray tracing operations
-            RHI::RayTracingBufferPools m_bufferPools;
+            RHI::Ptr<RHI::RayTracingBufferPools> m_bufferPools;
 
             // ray tracing acceleration structure (TLAS)
             RHI::Ptr<RHI::RayTracingTlas> m_tlas;

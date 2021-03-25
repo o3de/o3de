@@ -52,6 +52,8 @@ namespace ScriptCanvas
         // Called by the asset database to create a new asset. No loading should during this call
         AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override;
 
+        void InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload) override;
+
         // Called by the asset database to perform actual asset load.
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,

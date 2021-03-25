@@ -12,13 +12,16 @@
 
 #pragma once
 
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Variable/VariableCore.h>
+
 #include <AzCore/Component/Component.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Variable/VariableCore.h>
+#include <ScriptCanvas/PerformanceTracker.h>
 
 namespace AZ
 {
@@ -32,13 +35,14 @@ namespace ScriptCanvas
 {
     class SystemComponent
         : public AZ::Component
+        // , public AZ::Interface<Execution::PerformanceTracker>::Registrar -- this class is double constructed, so Interface can't be used, yet. workaround below
         , protected SystemRequestBus::Handler
         , protected AZ::BehaviorContextBus::Handler
     {
     public:
         AZ_COMPONENT(SystemComponent, "{CCCCE7AE-AEC7-43F8-969C-ED592C264560}");
 
-        SystemComponent() = default;
+        static Execution::PerformanceTracker* ModPerformanceTracker();
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,7 +51,7 @@ namespace ScriptCanvas
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // AZ::Component interface implementation
+        // AZ::Component...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
@@ -58,7 +62,13 @@ namespace ScriptCanvas
         void RemoveOwnedObjectReference(const void* object) override;
         
     protected:
-        // SystemRequestBus::Handler
+
+        inline bool IsAnyScriptInterpreted() const { return true; }
+
+        // SystemRequestBus::Handler...
+        bool IsScriptUnitTestingInProgress() override;
+        void MarkScriptUnitTestBegin() override;
+        void MarkScriptUnitTestEnd() override;
         void CreateEngineComponentsOnEntity(AZ::Entity* entity) override;
         Graph* CreateGraphOnEntity(AZ::Entity* entity) override;
         ScriptCanvas::Graph* MakeGraph() override;
@@ -69,25 +79,36 @@ namespace ScriptCanvas
         {
             SystemComponentConfiguration configuration;
             configuration.m_maxIterationsForInfiniteLoopDetection = m_infiniteLoopDetectionMaxIterations;
+            configuration.m_maxHandlerStackDepth = m_maxHandlerStackDepth;
             return configuration;
         }
+
+        void SetInterpretedBuildConfiguration(BuildConfiguration config) override;
         ////
 
-        // BehaviorEventBus::Handler
+        // BehaviorEventBus::Handler...
         void OnAddClass(const char* className, AZ::BehaviorClass* behaviorClass) override;
         void OnRemoveClass(const char* className, AZ::BehaviorClass* behaviorClass) override;
         ////
 
     private:
         void RegisterCreatableTypes();
-        
-        // excruciatingly meticulous ScriptCanvas memory tracking
+
+        bool m_scriptBasedUnitTestingInProgress = false;
+
         using MutexType = AZStd::recursive_mutex;
         using LockType = AZStd::lock_guard<MutexType>;
         AZStd::unordered_map<const void*, BehaviorContextObject*> m_ownedObjectsByAddress;
         MutexType m_ownedObjectsByAddressMutex;
-
         int m_infiniteLoopDetectionMaxIterations = 3000;
+        int m_maxHandlerStackDepth = 50;
 
+        static void SafeRegisterPerformanceTracker();
+        static void SafeUnregisterPerformanceTracker();
+
+        Execution::PerformanceTracker* m_registeredTracker = nullptr;
+        static AZ::EnvironmentVariable<Execution::PerformanceTracker*> s_perfTracker;
+        static AZStd::shared_mutex s_perfTrackerMutex;
+        static constexpr const char* s_trackerName = "ScriptCanvasPerformanceTracker";
     };
 }

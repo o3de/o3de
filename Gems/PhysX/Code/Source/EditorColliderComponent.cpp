@@ -695,6 +695,7 @@ namespace PhysX
 
             if (shape &&
                 shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH &&
+                entityRigidbody->GetRigidBody() &&
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();

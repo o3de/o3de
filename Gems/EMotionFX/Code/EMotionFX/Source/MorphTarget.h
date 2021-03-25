@@ -206,11 +206,10 @@ namespace EMotionFX
          * store this information on a specific way so it can be used to accumulate multiple morph targets
          * together and apply them to the actor to which this morph target is attached to.
          * @param captureTransforms Set this to true if you want this morph target to capture rigid transformations (changes in pos/rot/scale).
-         * @param captureMeshDeforms Set this to true if you want this morph target to capture mesh deformations (changes in vertex positions).
          * @param neutralPose The actor that contains the neutral pose.
          * @param targetPose The actor representing the pose of the character when the weight value would equal 1.
          */
-        virtual void InitFromPose(bool captureTransforms, bool captureMeshDeforms, Actor* neutralPose, Actor* targetPose) = 0;
+        virtual void InitFromPose(bool captureTransforms, Actor* neutralPose, Actor* targetPose) = 0;
 
         /**
          * Checks if this morph target would influence a given node.

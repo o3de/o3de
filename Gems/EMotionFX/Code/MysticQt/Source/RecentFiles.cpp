@@ -163,7 +163,7 @@ namespace MysticQt
             };
 
             AZ::IO::PathView folderPathView(folder);
-            AZ::IO::PathView assetSourceView(cacheFolder);
+            AZ::IO::PathView assetSourceView(sourceFolder);
             AZ::IO::PathView assetCacheView(cacheFolder);
             // The source folder is case-sensitive, so use the normal path compare
             auto [folderPathIter, assetSourceIter] = AZStd::mismatch(folderPathView.begin(), folderPathView.end(),

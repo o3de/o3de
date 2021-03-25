@@ -35,7 +35,8 @@ set(FILES
     OpenGL2/Source/GBuffer.h
     OpenGL2/Source/GLActor.cpp
     OpenGL2/Source/glactor.h
-    OpenGL2/Source/GLInclude.h
+    OpenGL2/Source/GLExtensions.h
+    OpenGL2/Source/GLExtensions.cpp
     OpenGL2/Source/GLRenderUtil.cpp
     OpenGL2/Source/GLRenderUtil.h
     OpenGL2/Source/GLSLShader.cpp

@@ -619,5 +619,10 @@ namespace AZ
         {
             return *m_descriptorContext;
         }
+
+        bool Device::IsAftermathInitialized() const
+        {
+            return m_isAftermathInitialized;
+        }
     }
 }
