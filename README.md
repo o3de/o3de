@@ -84,7 +84,6 @@ If you have the Git credential manager core installed, you should not be prompte
     3.  Select a path where to build binaries under "Where to build the binaries"
     4.  Click "Configure"
     5.  Wait for the key values to populate. Fill in the fields that are relevant, including `LY_3RDPARTY_PATH`, `LY_PACKAGE_SERVER_URLS`, and `LY_PROJECTS`
-    6.  
     
 7.  After some time, the compile will complete and binaries will be available in the build path you've specified
     
