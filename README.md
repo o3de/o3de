@@ -54,12 +54,12 @@ If you have the Git credential manager core installed, you should not be prompte
         *   MSVC v142 - VS 2019 C++ x64/x86
 *   Visual C++ redistributable: [https://visualstudio.microsoft.com/downloads/#other-family](https://visualstudio.microsoft.com/downloads/#other-family)
 *   FBXSDK for VS2015: [https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2016-1-2](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2016-1-2)
-*   WWise - 2019.2.8.7432: https://www.audiokinetic.com/download/
+*   WWise - 2019.2.8.7432: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
 *   CMake 3.19.1: [https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi](https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi)
 
 ### Build Steps
 
-1.  Download the 3rdParty zip file from here: **https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev4.zip**
+1.  Download the 3rdParty zip file from here: **[https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev4.zip](https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev4.zip])**
 2.  Unzip this file into a writable folder. This will also act as a cache location for the 3rdParty downloader by default (configurable with the `LY_PACKAGE_DOWNLOAD_CACHE_LOCATION` environment variable)
 3.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
@@ -72,7 +72,7 @@ If you have the Git credential manager core installed, you should not be prompte
     set LY_PACKAGE_SERVER_URLS="https://d2c171ws20a1rv.cloudfront.net"
     ```
     
-5.  Compile the source into a binary using this command line, replacing <your build location> to a path you've created
+5.  Configure and build the source into a binary using this command line, replacing <your build location> to a path you've created
     ```
     cmake -B <your build location>\windows_10 -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH% -DLY_PROJECTS=CMakeTestbed -DLY_MONOLITHIC_GAME=1
     ```
