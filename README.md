@@ -54,7 +54,7 @@ If you have the Git credential manager core installed, you should not be prompte
         *   MSVC v142 - VS 2019 C++ x64/x86
 *   Visual C++ redistributable: [https://visualstudio.microsoft.com/downloads/#other-family](https://visualstudio.microsoft.com/downloads/#other-family)
 *   FBXSDK for VS2015: [https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2016-1-2](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2016-1-2)
-*   WWise -2019.2.8.7432: https://www.audiokinetic.com/download/
+*   WWise - 2019.2.8.7432: https://www.audiokinetic.com/download/
 *   CMake 3.19.1: [https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi](https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi)
 
 ### Build Steps
@@ -65,7 +65,7 @@ If you have the Git credential manager core installed, you should not be prompte
     - Visual Studio and VC++ redistributable can be installed to any location
     - FBXSDK should be installed to `<3rdParty path>\FbxSdk\2016.1.2-az.1`. See the README in this folder for details
     - WWise should be installed to: `<3rdPartyPath>\Wwise\2019.2.8.7432`
-    - CMake should be installed to: `<3rdPartyPath>\Wwise\3.19.1`
+    - CMake should be installed to: `<3rdPartyPath>\CMake\3.19.1`
 4.  Add the following environment variables through the command line
     ```
     set LY_3RDPARTY_PATH=<Location of the unzipped 3rdParty zip>
