@@ -166,13 +166,6 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
     return pipelineConfig
 }
 
-def GetPipelineRegion() {
-    def gitUrl = scm.getUserRemoteConfigs()[0].getUrl()
-    def gitUrlList = gitUrl.tokenize('.') as String[]
-    def pipelineRegion = gitUrlList[1]
-    return pipelineRegion
-}
-
 def GetSCMType() {
     def gitUrl = scm.getUserRemoteConfigs()[0].getUrl()
     if (gitUrl ==~ /https:\/\/git-codecommit.*/) {
@@ -494,7 +487,6 @@ def CreateTeardownStage(Map environmentVars) {
 }
 
 def pipelineName = ''
-def pipelineRegion = ''
 def branchName = ''
 def pipelineConfig = {}
 
@@ -509,7 +501,6 @@ try {
             withEnv(envVarList) {
                 timestamps {
                     pipelineName = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-                    pipelineRegion = GetPipelineRegion()
                     scmType = GetSCMType()
 
                     if(env.BRANCH_NAME) {
@@ -520,7 +511,7 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running \"${pipelineName}\" for \"${branchName}\", region: \"${pipelineRegion}\"..."
+                    echo "Running \"${pipelineName}\" for \"${branchName}\"..."
 
                     if (scmType == 'github') {
                         CheckoutBootstrapScripts(branchName)
@@ -566,7 +557,7 @@ try {
                 def nodeLabel = envVars['NODE_LABEL']
 
                 buildConfigs["${platform.key} [${build_job.key}]"] = { 
-                    node("${nodeLabel}-${pipelineRegion}") {
+                    node("${nodeLabel}") {
                         if(isUnix()) { // Has to happen inside a node
                             envVars['IS_UNIX'] = 1
                         }                 
