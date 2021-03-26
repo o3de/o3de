@@ -325,7 +325,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
         if(fileExists(indexLockFile)) { // if it is still there, remove it
             palRm(indexLockFile, 'Remove index.lock')
         }
-        palSh('git remote prune origin', 'Git reset')
     }
 
     def random = new Random()
