@@ -74,7 +74,7 @@ If you have the Git credential manager core installed, you should not be prompte
     
 5.  Configure the source into a solution using this command line, replacing <your build location> to a path you've created
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting -DLY_MONOLITHIC_GAME=1
+    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting
     ```
 
 6.  Alternatively, you can do this through the CMake GUI:
