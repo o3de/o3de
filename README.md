@@ -59,7 +59,7 @@ If you have the Git credential manager core installed, you should not be prompte
 
 ### Build Steps
 
-1.  Download the 3rdParty zip file from here: **[https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev7.zip](https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev7.zip)**
+1.  Download the 3rdParty zip file from here: **[https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev8.zip](https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev8.zip)**
 2.  Unzip this file into a writable folder. This will also act as a cache location for the 3rdParty downloader by default (configurable with the `LY_PACKAGE_DOWNLOAD_CACHE_LOCATION` environment variable)
 3.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
@@ -74,7 +74,7 @@ If you have the Git credential manager core installed, you should not be prompte
     
 5.  Configure the source into a solution using this command line, replacing <your build location> to a path you've created
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting -DLY_MONOLITHIC_GAME=1
+    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting
     ```
 
 6.  Alternatively, you can do this through the CMake GUI:
