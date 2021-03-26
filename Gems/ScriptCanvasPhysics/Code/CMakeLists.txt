@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME ScriptCanvasPhysics ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptCanvasPhysics.1c27519a4dda4ffaaeebf91514e5b1e8.v0.1.0
     FILES_CMAKE
         scriptcanvas_physics_shared_files.cmake
     INCLUDE_DIRECTORIES

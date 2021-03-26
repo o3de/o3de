@@ -64,7 +64,7 @@ class TestWindowsResourceLocator(object):
 
     def test_ProjectLog_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            windows_resource_locator.platform_cache(),
+            windows_resource_locator.project(),
             'user',
             'log')
 
@@ -72,7 +72,7 @@ class TestWindowsResourceLocator(object):
 
     def test_ProjectScreenshots_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            windows_resource_locator.platform_cache(),
+            windows_resource_locator.project(),
             'user',
             'ScreenShots')
 

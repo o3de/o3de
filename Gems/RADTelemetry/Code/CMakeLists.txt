@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target(
     NAME RADTelemetry ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.RADTelemetry.bdaf32823406492686e35200afc555b3.v0.1.0
     FILES_CMAKE
         radtelemetry_shared_files.cmake
     INCLUDE_DIRECTORIES

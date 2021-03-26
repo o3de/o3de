@@ -176,6 +176,71 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         VALUES LY_CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
     )
 
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_badplatform/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_broken_badplatform
+        )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noscans/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_broken_noscans
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_recognizers/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_broken_recognizers
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noplatform/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_broken_noplatform
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_regular
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/config_regular_platform_scanfolder
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/EmptyDummyProject
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/DummyProject/AssetProcessorGamePlatformConfig.ini
+        OUTPUT_SUBDIRECTORY
+            testdata/DummyProject
+    )
+
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose
     # of looking up the generated cmake build dependencies settings registry .setreg file
     # It is tied to the UnitTestRunner.cpp file

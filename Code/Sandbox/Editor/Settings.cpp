@@ -24,9 +24,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-
-// AzFramework
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -997,7 +996,7 @@ void SEditorSettings::LoadDefaultGamePaths()
     }
 
     AZStd::string iconsPath;
-    AzFramework::StringFunc::Path::Join(Path::GetEditingRootFolder().c_str(), "Editor/UI/Icons", iconsPath);
+    AZ::StringFunc::Path::Join(Path::GetEditingRootFolder().c_str(), "Editor/UI/Icons", iconsPath);
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
 }
 
@@ -1166,34 +1165,28 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
 
 void SEditorSettings::SaveSettingsRegistryFile()
 {
-    auto fileIo = AZ::IO::FileIOBase::GetInstance();
-
-    // Resolve path to editorpreferences.setreg
-    AZ::IO::FixedMaxPath editorPreferencesFilePath = "user/Registry/editorpreferences.setreg";
-    if (fileIo == nullptr || !fileIo->ResolvePath(editorPreferencesFilePath, "@devroot@/user/Registry/editorpreferences.setreg"))
+    auto registry = AZ::SettingsRegistry::Get();
+    if (registry == nullptr)
     {
-        AZ_Warning("SEditorSettings", false, R"(Unable to resolve path "%s" to the Editor Preferences registry file\n)",
-            editorPreferencesFilePath.c_str());
+        AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
         return;
     }
 
+    // Resolve path to editorpreferences.setreg
+    AZ::IO::FixedMaxPath editorPreferencesFilePath = AZ::Utils::GetProjectPath();
+    editorPreferencesFilePath /= "user/Registry/editorpreferences.setreg";
+
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_includeFilter = [](AZStd::string_view path)
-    {
-        AZStd::string_view prefixPath("/Amazon/Editor/Preferences");
-        return prefixPath.starts_with(path.substr(0, prefixPath.size()));
-    };
+    dumperSettings.m_jsonPointerPrefix = "/Amazon/Editor/Preferences";
+
     AZStd::string stringBuffer;
-    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+    AZ::IO::ByteContainerStream stringStream(&stringBuffer);
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Editor/Preferences", stringStream, dumperSettings))
     {
-        AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
-        {
-            AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
-                editorPreferencesFilePath.c_str());
-            return;
-        }
+        AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
+            editorPreferencesFilePath.c_str());
+        return;
     }
 
     bool saved{};

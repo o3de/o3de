@@ -53,7 +53,6 @@ namespace ImageProcessingAtom
         IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) override;
         ////////////////////////////////////////////////////////////////////////
 
-
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;

@@ -461,7 +461,7 @@ void C3DEngine::UnloadLevel()
     m_ptexIconLowMemoryUsage = nullptr;
     m_ptexIconHighMemoryUsage = nullptr;
     m_ptexIconEditorConnectedToConsole = nullptr;
-    
+
     if (m_pOpticsManager && !gEnv->IsEditor())
     {
         m_pOpticsManager->Reset();
@@ -656,7 +656,7 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
         // set default render parameters.
         // for some reason this is not done later???
         m_pSkyLightManager->UpdateRenderParams();
-    }    
+    }
 
     // Load LevelData.xml File.
     XmlNodeRef xmlLevelData = GetSystem()->LoadXmlFromFile(GetLevelFilePath(LEVEL_DATA_FILE));
@@ -687,17 +687,7 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
     // preload level cgfs
     if (GetCVars()->e_StatObjPreload && !gEnv->IsEditor())
     {
-        if (GetCVars()->e_StatObjPreload == 2)
-        {
-            GetSystem()->OutputLoadingTimeStats();
-        }
-
         m_pObjManager->PreloadLevelObjects();
-
-        if (GetCVars()->e_StatObjPreload == 2)
-        {
-            GetSystem()->OutputLoadingTimeStats();
-        }
     }
 
     std::vector<struct IStatObj*>* pStatObjTable = NULL;

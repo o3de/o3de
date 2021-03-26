@@ -10,8 +10,7 @@
   },
   "debug_vs2019_pipe": {
     "TAGS": [
-      "default",
-      "weekly-build-metrics"
+      "nightly"
     ],
     "steps": [
       "debug_vs2019",
@@ -20,9 +19,7 @@
   },
   "profile_vs2019_pipe": {
     "TAGS": [
-      "default",
-      "daily-pipeline-metrics",
-      "weekly-build-metrics"
+      "default"
     ],
     "steps": [
       "profile_vs2019",
@@ -31,7 +28,9 @@
     ]
   },
   "scrubbing": {
-    "TAGS": [],
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/scrubbing_job.py"
@@ -39,7 +38,7 @@
   },
   "validation": {
     "TAGS": [
-      ""
+      "weekly-build-metrics"
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
@@ -77,7 +76,9 @@
     }
   },
   "debug_vs2019": {
-    "TAGS": [],
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "debug",
@@ -89,7 +90,9 @@
     }
   },
   "test_debug_vs2019": {
-    "TAGS": [],
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "debug",
@@ -98,12 +101,14 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -T Test"
     }
   },
   "profile_vs2019": {
     "TAGS": [
-      "project"
+      "project",
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
@@ -117,7 +122,7 @@
   },
   "profile_vs2019_nounity": {
     "TAGS": [
-      "default",
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -131,7 +136,10 @@
     }
   },
   "test_cpu_profile_vs2019": {
-    "TAGS": [],
+    "TAGS": [
+        "daily-pipeline-metrics",
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -140,7 +148,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test"
     }
   },
   "test_gpu_profile_vs2019": {
@@ -156,11 +164,13 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test"
     }
   },
   "asset_profile_vs2019": {
-    "TAGS": [],
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -207,7 +217,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test"
     }
   },
   "sandbox_test_profile_vs2019": {
@@ -226,7 +236,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test"
     }
   },
   "benchmark_test_profile_vs2019": {
@@ -242,7 +252,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test"
     }
   },
   "release_vs2019": {
@@ -262,7 +272,7 @@
   },
   "monolithic_release_vs2019": {
     "TAGS": [
-      "default",
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",

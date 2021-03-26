@@ -110,8 +110,9 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_context.get(); }
         BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetExecutableFolder() const override { return nullptr; }
         const char* GetAppRoot() const override { return nullptr; }
+        const char* GetEngineRoot() const override { return nullptr; }
+        const char* GetExecutableFolder() const override { return nullptr; }
         Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
@@ -159,7 +160,7 @@ namespace UnitTest
             m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
-            
+
             // Startup default local FileIO (hits OSAllocator) if not already setup.
             if (AZ::IO::FileIOBase::GetInstance() == nullptr)
             {
@@ -171,7 +172,7 @@ namespace UnitTest
 
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
             s_gemFolder = m_gemFolder.c_str();
-       
+
             m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
 
@@ -192,7 +193,7 @@ namespace UnitTest
 
             delete AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
-            
+
             m_jsonRegistrationContext->EnableRemoveReflection();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
@@ -916,7 +917,7 @@ namespace UnitTest
         imageToProcess.LinearToGamma();
         SaveImageToFile(imageToProcess.Get(), "LinearToGamma_DeGamma", 1);
     }
-    
+
     TEST_F(ImageProcessingTest, VerifyRestrictedPlatform)
     {
         auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
@@ -1005,7 +1006,7 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, DISABLED_TestLoadDdsImage)
     {
         IImageObjectPtr originImage, alphaImage;
-        AZStd::string inputFolder = "../Cache/SamplesProject/pc/samplesproject/engineassets/texturemsg/";
+        AZStd::string inputFolder = "../SamplesProject/Cache/pc/engineassets/texturemsg/";
         AZStd::string inputFile;
 
         inputFile = "E:/Javelin_NWLYDev/dev/Cache/Assets/pc/assets/textures/blend_maps/moss/jav_moss_ddn.dds";
@@ -1074,7 +1075,7 @@ namespace UnitTest
         }
         f.close();
     }
- 
+
     TEST_F(ImageProcessingTest, TextureSettingReflect_SerializingModernDataInAndOut_WritesAndParsesFileAccurately)
     {
         AZStd::string filepath = "test.xml";

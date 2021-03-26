@@ -44,7 +44,6 @@
 #include <CryCommon/IDeferredCollisionEvent.h>
 #include <CryCommon/ITimeOfDay.h>
 #include <CryCommon/LyShine/ILyShine.h>
-#include <CryCommon/ParseEngineConfig.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -415,24 +414,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
         (PFNCREATESYSTEMINTERFACE)CryGetProcAddress(m_hSystemHandle, "CreateSystemInterface");
 
 
-    // Locate the root path
-    const char* calcRootPath = nullptr;
-    EBUS_EVENT_RESULT(calcRootPath, AZ::ComponentApplicationBus, GetAppRoot);
-    if (calcRootPath == nullptr)
-    {
-        // If the app root isnt available, default to the engine root
-        EBUS_EVENT_RESULT(calcRootPath, AzToolsFramework::ToolsApplicationRequestBus, GetEngineRootPath);
-    }
-    const char* searchPath[] = { calcRootPath };
-    CEngineConfig engineConfig(searchPath,AZ_ARRAY_SIZE(searchPath)); // read the engine config also to see what game is running, and what folder(s) there are.
-
     SSystemInitParams sip;
-    engineConfig.CopyToStartupParams(sip);
-
-    sip.connectToRemote = true; // editor always connects
-    sip.waitForConnection = true; // editor REQUIRES connect.
-    const char localIP[10] = "127.0.0.1";
-    azstrncpy(sip.remoteIP, AZ_ARRAY_SIZE(sip.remoteIP), localIP, AZ_ARRAY_SIZE(localIP)); // editor ONLY connects to the local asset processor
 
     sip.bEditor = true;
     sip.bDedicatedServer = false;
@@ -457,15 +439,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     sip.pUserCallback = m_pSystemUserCallback;
     sip.pValidator = GetIEditor()->GetErrorReport(); // Assign validator from Editor.
 
-    // Calculate the branch token first based on the app root path if possible
-    if (calcRootPath!=nullptr)
-    {
-        AZStd::string appRoot(calcRootPath);
-        AZStd::string branchToken;
-        AzFramework::StringFunc::AssetPath::CalculateBranchToken(appRoot, branchToken);
-        azstrncpy(sip.branchToken, AZ_ARRAY_SIZE(sip.branchToken), branchToken.c_str(), branchToken.length());
-    }
-
     if (sInCmdLine)
     {
         azstrncpy(sip.szSystemCmdLine, AZ_COMMAND_LINE_LEN, sInCmdLine, AZ_COMMAND_LINE_LEN);
@@ -484,7 +457,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     {
         sip.bSkipFont = true;
     }
-    AssetProcessConnectionStatus    apConnectionStatus;
+    AssetProcessConnectionStatus apConnectionStatus;
 
     m_pISystem = pfnCreateSystemInterface(sip);
 
@@ -512,31 +485,14 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     if (apConnectionStatus.CheckConnectionFailed())
     {
+        AzFramework::AssetSystem::ConnectionSettings connectionSettings;
+        AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         auto errorMessage = AZStd::string::format("Unable to connect to the local Asset Processor.\n\n"
-                                                  "The Asset Processor is either not running locally or not accepting connections on port %d. "
+                                                  "The Asset Processor is either not running locally or not accepting connections on port %hu. "
                                                   "Check your remote_port settings in bootstrap.cfg or view the Asset Processor's \"Logs\" tab "
-                                                  "for any errors.", sip.remotePort);
+                                                  "for any errors.", connectionSettings.m_assetProcessorPort);
         gEnv = nullptr;
         return AZ::Failure(errorMessage);
-    }
-
-    // because we're the editor here, we also give tool aliases to the original, unaltered roots:
-    string devAssetsFolder = engineConfig.m_rootFolder + "/" + engineConfig.m_gameFolder;
-    if (gEnv && gEnv->pFileIO)
-    {
-        const char* engineRoot = nullptr;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(engineRoot, &AzToolsFramework::ToolsApplicationRequests::GetEngineRootPath);
-        if (engineRoot != nullptr)
-        {
-            gEnv->pFileIO->SetAlias("@engroot@", engineRoot);
-        }
-        else
-        {
-            gEnv->pFileIO->SetAlias("@engroot@", engineConfig.m_rootFolder.c_str());
-        }
-
-        gEnv->pFileIO->SetAlias("@devroot@", engineConfig.m_rootFolder.c_str());
-        gEnv->pFileIO->SetAlias("@devassets@", devAssetsFolder.c_str());
     }
 
     SetEditorCoreEnvironment(gEnv);

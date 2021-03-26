@@ -13,6 +13,8 @@
 #include <QHash>
 
 #include "native/tests/AssetProcessorTest.h"
+#include <native/utilities/PlatformConfiguration.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzTest/AzTest.h>
 
@@ -519,11 +521,18 @@ TEST_F(AssetUtilitiesTest, GetServerAddress_ReadFromConfig_Valid)
     QTemporaryDir tempDir;
     QDir tempPath(tempDir.path());
     QString assetServerAddress("T:/AssetServerCacheDummyFolder");
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("AssetProcessorPlatformConfig.ini"), QString("[Server]\ncacheServerAddress=%1\n").arg(assetServerAddress));
+    QString assetProcesorPlatformConfigPath = tempPath.absoluteFilePath("AssetProcessorPlatformConfig.ini");
+    UnitTestUtils::CreateDummyFile(assetProcesorPlatformConfigPath, QString("[Server]\ncacheServerAddress=%1\n").arg(assetServerAddress));
 
     AssetUtilities::ResetAssetRoot();
     QDir newRoot;
     AssetUtilities::ComputeEngineRoot(newRoot, &tempPath);
+
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
+    configParserSettings.m_registryRootPointerPath = AssetProcessor::AssetProcessorSettingsKey;
+    AssetProcessor::PlatformConfiguration::MergeConfigFileToSettingsRegistry(*settingsRegistry,
+        assetProcesorPlatformConfigPath.toUtf8().data());
     QString assetServerAddressReturned = AssetUtilities::ServerAddress();
     EXPECT_STREQ(assetServerAddressReturned.toUtf8().data(), assetServerAddress.toUtf8().data());
 }

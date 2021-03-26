@@ -12,7 +12,6 @@
 ly_add_target(
     NAME GraphCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.GraphCanvas.875b6fcbdeea44deaae7984ad9bb6cdc.v0.1.0
     FILES_CMAKE
         GraphCanvas_game_files.cmake
     INCLUDE_DIRECTORIES
@@ -51,9 +50,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME GraphCanvas.Editor MODULE
+        NAME GraphCanvas.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.GraphCanvas.Editor.875b6fcbdeea44deaae7984ad9bb6cdc.v0.1.0
         AUTOMOC
         AUTORCC
         FILES_CMAKE

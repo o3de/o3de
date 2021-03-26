@@ -41,68 +41,197 @@ namespace AZ::Internal
 
         return value;
     }
-}
+
+    AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
+        SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
+    {
+        // projectPath needs to be an absolute path here.
+        using namespace AZ::SettingsRegistryMergeUtils;
+        bool projectJsonMerged = false;
+        auto projectJsonPath = projectPath / "project.json";
+        if (AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
+        {
+            projectJsonMerged = settingsRegistry.MergeSettingsFile(
+                projectJsonPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ProjectSettingsRootKey);
+        }
+
+        AZ::SettingsRegistryInterface::FixedValueString engineMoniker;
+        if (projectJsonMerged)
+        {
+            // In project.json look for the "engine" key.
+            auto engineMonikerKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/engine", ProjectSettingsRootKey);
+            settingsRegistry.Get(engineMoniker, engineMonikerKey);
+        }
+
+        return engineMoniker;
+    }
+
+    AZ::IO::FixedMaxPath ReconcileEngineRootFromProjectPath(SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
+    {
+        // Find the engine root via the engine manifest file and project.json
+        // Locate the engine manifest file and merge it to settings registry.
+        // Visit over the engine paths list and merge the engine.json files to settings registry.
+        // Merge project.json to settings registry.  That will give us an "engine" key.
+        // When we find a match for "engine_name" value against the "engine" value from before, we can stop and use that engine root.
+        // Finally set the BootstrapSettingsRootKey/engine_path setting so that subsequent calls to GetEngineRoot will use that
+        // and avoid all this logic.
+
+        using namespace AZ::SettingsRegistryMergeUtils;
+
+        AZ::IO::FixedMaxPath engineRoot;
+        if (auto engineManifestPath = AZ::Utils::GetEngineManifestPath(); !engineManifestPath.empty())
+        {
+            bool manifestLoaded{false};
+
+            if (AZ::IO::SystemFile::Exists(engineManifestPath.c_str()))
+            {
+                manifestLoaded = settingsRegistry.MergeSettingsFile(
+                    engineManifestPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, EngineManifestRootKey);
+            }
+
+            struct EngineInfo
+            {
+                AZ::IO::FixedMaxPath m_path;
+                AZ::SettingsRegistryInterface::FixedValueString m_moniker;
+            };
+
+            struct EnginePathsVisitor : public AZ::SettingsRegistryInterface::Visitor
+            {
+                void Visit(
+                    [[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
+                    [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
+                {
+                    m_enginePaths.emplace_back(EngineInfo{AZ::IO::FixedMaxPath{value}.LexicallyNormal(), {}});
+                }
+
+                AZStd::vector<EngineInfo> m_enginePaths{};
+            };
+
+            EnginePathsVisitor pathVisitor;
+            if (manifestLoaded)
+            {
+                auto enginePathsKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/engines", EngineManifestRootKey);
+                settingsRegistry.Visit(pathVisitor, enginePathsKey);
+            }
+
+            const auto engineMonikerKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
+
+            for (EngineInfo& engineInfo : pathVisitor.m_enginePaths)
+            {
+                AZ::IO::FixedMaxPath engineSettingsPath{engineInfo.m_path};
+                engineSettingsPath /= "engine.json";
+
+                if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
+                {
+                    if (settingsRegistry.MergeSettingsFile(
+                            engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, EngineSettingsRootKey))
+                    {
+                        settingsRegistry.Get(engineInfo.m_moniker, engineMonikerKey);
+                    }
+                }
+
+                auto engineMoniker = Internal::GetEngineMonikerForProject(settingsRegistry, engineInfo.m_path / projectPath);
+                if (!engineMoniker.empty() && engineMoniker == engineInfo.m_moniker)
+                {
+                    engineRoot = engineInfo.m_path;
+                    break;
+                }
+            }
+        }
+
+        return engineRoot;
+    }
+
+    AZ::IO::FixedMaxPath ScanUpRootLocator(AZStd::string_view rootFileToLocate)
+    {
+
+        AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
+        if (Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
+        {
+            // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string
+            // stored within it
+            executableDir.resize_no_construct(AZStd::char_traits<char>::length(executableDir.data()));
+        }
+
+        AZ::IO::FixedMaxPath engineRootCandidate{ executableDir };
+
+        bool rootPathVisited = false;
+        do
+        {
+            if (AZ::IO::SystemFile::Exists((engineRootCandidate / rootFileToLocate).c_str()))
+            {
+                return engineRootCandidate;
+            }
+
+            // Note for posix filesystems the parent directory of '/' is '/' and for windows
+            // the parent directory of 'C:\\' is 'C:\\'
+
+            // Validate that the parent directory isn't itself, that would imply
+            // that it is the filesystem root path
+            AZ::IO::PathView parentPath = engineRootCandidate.ParentPath();
+            rootPathVisited = (engineRootCandidate == parentPath);
+            // Recurse upwards one directory
+            engineRootCandidate = AZStd::move(parentPath);
+
+        } while (!rootPathVisited);
+
+        return {};
+    }
+
+} // namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
 {
-    AZ::IO::FixedMaxPath GetAppRoot(SettingsRegistryInterface* settingsRegistry)
+    AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry)
     {
-        constexpr size_t MaxAppRootPathsToScan = 16;
-        AZStd::fixed_vector<AZStd::string_view, MaxAppRootPathsToScan> appRootScanPaths;
+        AZ::IO::FixedMaxPath engineRoot;
 
-        // Check the commandLine for --app-root parameter
-        // If it exist use that instead
-        auto appRootOverrideKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/app-root", AZ::SettingsRegistryMergeUtils::CommandLineSwitchRootKey);
-        if (settingsRegistry)
+        // This is the 'external' engine root key, as in passed from command-line or .setreg files.
+        auto engineRootKey = SettingsRegistryInterface::FixedValueString::format("%s/engine_path", BootstrapSettingsRootKey);
+        if (settingsRegistry.Get(engineRoot.Native(), engineRootKey); !engineRoot.empty())
         {
-            AZ::IO::FixedMaxPath appRootOverridePath;
-            if (settingsRegistry->Get(appRootOverridePath.Native(), appRootOverrideKey))
-            {
-                return appRootOverridePath;
-            }
+            return engineRoot;
         }
 
-        AZStd::optional<AZStd::fixed_string<AZ::IO::MaxPathLength>> appRootPath = Utils::GetDefaultAppRootPath();
-        if (appRootPath.has_value())
+        // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
+        if (engineRoot = Internal::ScanUpRootLocator("engine.json"); !engineRoot.empty())
         {
-            appRootScanPaths.push_back(*appRootPath);
+            settingsRegistry.Set(engineRootKey, engineRoot.c_str());
+            return engineRoot;
         }
-        AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
-        AZ::Utils::ExecutablePathResult pathResult = Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity());
-        if (pathResult == Utils::ExecutablePathResult::Success)
+
+        AZ::IO::FixedMaxPath projectRoot = FindProjectRoot(settingsRegistry);
+        if (projectRoot.empty())
         {
-            // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string stored within it
-            executableDir.resize_no_construct(AZStd::char_traits<char>::length(executableDir.data()));
-            if (auto foundIt = AZStd::find(appRootScanPaths.begin(), appRootScanPaths.end(), executableDir);
-                foundIt == appRootScanPaths.end())
-            {
-                appRootScanPaths.push_back(executableDir);
-            }
+            return {};
         }
-        for (AZStd::string_view appRootScanPath : appRootScanPaths)
+
+        // Use the project.json and engine manifest to locate the engine root.
+        if (engineRoot = Internal::ReconcileEngineRootFromProjectPath(settingsRegistry, projectRoot); !engineRoot.empty())
         {
-            AZ::IO::FixedMaxPath appRootCandidate{ appRootScanPath };
-
-            // Search for the application root
-            bool rootPathVisited = false;
-            do
-            {
-                if (AZ::IO::SystemFile::Exists((appRootCandidate / "bootstrap.cfg").c_str()))
-                {
-                    return appRootCandidate;
-                }
-
-                // Validate that the parent directory isn't itself, that would imply
-                // that it is the root path
-                AZ::IO::PathView parentPath = appRootCandidate.ParentPath();
-                rootPathVisited = appRootCandidate == parentPath;
-                // Recurse upwards one directory
-                appRootCandidate = AZStd::move(parentPath);
-
-            } while (!rootPathVisited);
-            // Note for posix filesystems the parent directory of '/' is '/' and for windows
-            // the parent directory of 'C:\\' is 'C:\\'
+            settingsRegistry.Set(engineRootKey, engineRoot.c_str());
+            return engineRoot;
         }
+
+        return {};
+    }
+
+    AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
+    {
+        AZ::IO::FixedMaxPath projectRoot;
+        // This is the 'external' project root key, as in passed from command-line or .setreg files.
+        auto projectRootKey = SettingsRegistryInterface::FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
+        if (settingsRegistry.Get(projectRoot.Native(), projectRootKey))
+        {
+            return projectRoot;
+        }
+
+        if (projectRoot = Internal::ScanUpRootLocator("project.json"); !projectRoot.empty())
+        {
+            settingsRegistry.Set(projectRootKey, projectRoot.c_str());
+            return projectRoot;
+        }
+
         return {};
     }
 
@@ -111,9 +240,9 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr AZStd::string_view commentPrefixes = ";#";
         for (char commentPrefix : commentPrefixes)
         {
-            if (line.starts_with(commentPrefix))
+            if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
             {
-                return {};
+                return line.substr(0, commentOffset);
             }
         }
 
@@ -123,7 +252,7 @@ namespace AZ::SettingsRegistryMergeUtils
     AZStd::string_view ConfigParserSettings::DefaultSectionHeaderFilter(AZStd::string_view line)
     {
         AZStd::string_view sectionName;
-        constexpr char sectionHeaderStart= '[';
+        constexpr char sectionHeaderStart = '[';
         constexpr char sectionHeaderEnd = ']';
         if (line.starts_with(sectionHeaderStart) && line.ends_with(sectionHeaderEnd))
         {
@@ -184,7 +313,7 @@ namespace AZ::SettingsRegistryMergeUtils
 
     void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations)
     {
-         // Append any specializations stored in the registry
+        // Append any specializations stored in the registry
         struct SpecializationsVisitor
             : AZ::SettingsRegistryInterface::Visitor
         {
@@ -222,7 +351,7 @@ namespace AZ::SettingsRegistryMergeUtils
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings)
     {
-        auto configPath = GetAppRoot(&registry) / filePath;
+        auto configPath = FindEngineRoot(registry) / filePath;
         IO::SystemFile configFile;
         if (!configFile.Open(configPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
         {
@@ -348,9 +477,13 @@ namespace AZ::SettingsRegistryMergeUtils
         ConfigParserSettings parserSettings;
         parserSettings.m_commentPrefixFunc = [](AZStd::string_view line) -> AZStd::string_view
         {
-            if (line.starts_with("--") || line.starts_with(';') || line.starts_with('#'))
+            constexpr AZStd::string_view commentPrefixes[]{ "--", ";","#" };
+            for (AZStd::string_view commentPrefix : commentPrefixes)
             {
-                return {};
+                if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
+                {
+                    return line.substr(0, commentOffset);
+                }
             }
             return line;
         };
@@ -365,71 +498,104 @@ namespace AZ::SettingsRegistryMergeUtils
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
-        AZ::IO::FixedMaxPath appRoot = GetAppRoot(&registry);
-        registry.Set(FilePathKey_EngineRootFolder, appRoot.LexicallyNormal().Native());
+        AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
+        registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
         constexpr size_t bufferSize = 64;
-        auto buffer = AZStd::fixed_string<bufferSize>::format("%s/sys_game_folder", BootstrapSettingsRootKey);
+        auto buffer = AZStd::fixed_string<bufferSize>::format("%s/project_path", BootstrapSettingsRootKey);
 
-        AZStd::string_view projectPath(buffer);
+        AZ::SettingsRegistryInterface::FixedValueString projectPathKey(buffer);
         SettingsRegistryInterface::FixedValueString projectPathValue;
-        if (registry.Get(projectPathValue, projectPath))
+        if (registry.Get(projectPathValue, projectPathKey))
         {
             // Cache folder
             // Get the name of the asset platform assigned by the bootstrap. First check for platform version such as "windows_assets"
-            // and if that's missing just get "asset".
+            // and if that's missing just get "assets".
             constexpr char platformName[] = AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
 
             SettingsRegistryInterface::FixedValueString assetPlatform;
             buffer = AZStd::fixed_string<bufferSize>::format("%s/%s_assets", BootstrapSettingsRootKey, platformName);
-            AZStd::string_view assetPlatformatPath(buffer);
-            if (!registry.Get(assetPlatform, assetPlatformatPath))
+            AZStd::string_view assetPlatformKey(buffer);
+            if (!registry.Get(assetPlatform, assetPlatformKey))
             {
                 buffer = AZStd::fixed_string<bufferSize>::format("%s/assets", BootstrapSettingsRootKey);
-                assetPlatformatPath = AZStd::string_view(buffer);
-                if (!registry.Get(assetPlatform, assetPlatformatPath))
-                {
-                    return;
-                }
+                assetPlatformKey = AZStd::string_view(buffer);
+                registry.Get(assetPlatform, assetPlatformKey);
             }
 
-            // Source game folder - corresponds to the @devassets@ alias
-            path = appRoot / projectPathValue;
+            // Project path - corresponds to the @devassets@ alias
+            // NOTE: Here we append to engineRoot, but if projectPathValue is absolute then engineRoot is discarded.
+            path = engineRoot / projectPathValue;
+
             AZ_Warning("SettingsRegistryMergeUtils", AZ::IO::SystemFile::Exists(path.c_str()),
-                R"(Project Path "%s" does not exist. Is the "sys_game_folder" entry set to valid project folder?)"
-                , path.c_str());
-            registry.Set(FilePathKey_SourceGameFolder, path.LexicallyNormal().Native());
+                R"(Project path "%s" does not exist. Is the "%.*s" registry setting set to valid absolute path?)"
+                , path.c_str(), aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
 
-            // Source game name - The filename of the project directory and the name of the project
-            registry.Set(FilePathKey_SourceGameName, path.Filename().Native());
+            AZ::IO::FixedMaxPath normalizedProjectPath = path.LexicallyNormal();
+            registry.Set(FilePathKey_ProjectPath, normalizedProjectPath.Native());
 
-            // Cache root folder - corresponds to the @root@ alias
-#if AZ_TRAIT_USE_ASSET_CACHE_FOLDER
-            path = appRoot / "Cache" / projectPathValue / assetPlatform;
-#else
-            // Use the Engine Root/App Root as the Asset root directory in this case
-            path = appRoot;
-#endif
-            registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
-
-            // check for a default write storage path, fall back to the cache root if not
+            // Add an alias to the project "user" directory
+            AZ::IO::FixedMaxPath projectUserPath = (normalizedProjectPath / "user").LexicallyNormal();
+            registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
+            // check for a default write storage path, fall back to the project's user/ directory if not
             AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
-            registry.Set(FilePathKey_DevWriteStorage,
-                devWriteStorage.has_value() ?
-                    devWriteStorage.value() :
-                    path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_DevWriteStorage, devWriteStorage.has_value()
+                ? devWriteStorage.value()
+                : projectUserPath.Native());
 
-            // Cache game folder - corresponds to the @assets@ alias
-            AZStd::to_lower(projectPathValue.begin(), projectPathValue.end());
-            path /= projectPathValue;
-            registry.Set(FilePathKey_CacheGameFolder, path.LexicallyNormal().Native());
+            // Project name - if it was set via merging project.json use that value, otherwise use the project path's folder name.
+            auto projectNameKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
+                + "/project_name";
+
+            AZ::SettingsRegistryInterface::FixedValueString projectName;
+            if (!registry.Get(projectName, projectNameKey))
+            {
+                projectName = path.Filename().Native();
+                registry.Set(projectNameKey, projectName);
+            }
+
+            // Cache folders - sets up various paths in registry for the cache.
+            // Make sure the asset platform is set before setting these cache paths.
+            if (!assetPlatform.empty())
+            {
+                // Cache: project root - no corresponding fileIO alias, but this is where the asset database lives.
+                // A registry override is accepted using the "project_cache_path" key.
+                buffer = AZStd::fixed_string<bufferSize>::format("%s/project_cache_path", BootstrapSettingsRootKey);
+                AZStd::string_view projectCacheRootOverrideKey(buffer);
+                // Clear path to make sure that the `project_cache_path` value isn't concatenated to the project path
+                path.clear();
+                if (registry.Get(path.Native(), projectCacheRootOverrideKey))
+                {
+                    registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+                    path /= assetPlatform;
+                    registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+                }
+                else
+                {
+                    // Cache: root - same as the @root@ alias, this is the starting path for cache files.
+                    path = normalizedProjectPath / "Cache";
+                    registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+                    path /= assetPlatform;
+                    registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+                }
+            }
         }
         else
         {
             AZ_TracePrintf("SettingsRegistryMergeUtils",
-                R"(Current Project game folder "%.*s" isn't set in the Settings Registry. Project-related filepaths will not be set)" "\n",
-                aznumeric_cast<int>(projectPath.size()), projectPath.data());
+                R"(Project path isn't set in the Settings Registry at "%.*s". Project-related filepaths will not be set)" "\n",
+                aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
         }
+
+#if !AZ_TRAIT_USE_ASSET_CACHE_FOLDER
+        // Setup the cache and user paths for Platforms where the Asset Cache Folder isn't used
+        path = engineRoot;
+        registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+        registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+        registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+        registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
+#endif // AZ_TRAIT_USE_ASSET_CACHE_FOLDER
     }
 
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
@@ -535,7 +701,7 @@ namespace AZ::SettingsRegistryMergeUtils
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
         AZ::SettingsRegistryInterface::FixedValueString sourceGamePath;
-        if (registry.Get(sourceGamePath, FilePathKey_SourceGameFolder))
+        if (registry.Get(sourceGamePath, FilePathKey_ProjectPath))
         {
             AZ::IO::FixedMaxPath mergePath{ sourceGamePath };
             mergePath /= SettingsRegistryInterface::RegistryFolder;
@@ -543,26 +709,41 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_DevRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    void MergeSettingsToRegistry_UserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
         // Unlike other paths, the path can't be overwritten by the dev settings because that would create a circular dependency.
-        auto mergePath = GetAppRoot(&registry);
-        mergePath /= SettingsRegistryInterface::DevUserRegistryFolder;
-        registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
+        AZ::IO::FixedMaxPath projectUserPath;
+        if (registry.Get(projectUserPath.Native(), FilePathKey_ProjectPath))
+        {
+            projectUserPath /= SettingsRegistryInterface::DevUserRegistryFolder;
+            registry.MergeSettingsFolder(projectUserPath.Native(), specializations, platform, "", scratchBuffer);
+        }
     }
 
     void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands)
     {
-        const size_t regsetSwitchValues = commandLine.GetNumSwitchValues("regset");
-        for (size_t regsetIndex = 0; regsetIndex < regsetSwitchValues; ++regsetIndex)
+        // Iterate over all the command line options in order to parse the --regset and --regremove
+        // arguments in the order they were supplied
+        for (const CommandLine::CommandArgument& commandArgument : commandLine)
         {
-            AZStd::string_view regsetValue = commandLine.GetSwitchValue("regset", regsetIndex);
-            if (!registry.MergeCommandLineArgument(regsetValue, AZStd::string_view{}))
+            if (commandArgument.m_option == "regset")
             {
-                AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to parse argument for --regset with value of %.*s.",
-                    aznumeric_cast<int>(regsetValue.size()), regsetValue.data());
-                continue;
+                if (!registry.MergeCommandLineArgument(commandArgument.m_value, AZStd::string_view{}))
+                {
+                    AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to parse argument for --regset with value of %s.",
+                        commandArgument.m_value.c_str());
+                    continue;
+                }
+            }
+            if (commandArgument.m_option == "regremove")
+            {
+                if (!registry.Remove(commandArgument.m_value))
+                {
+                    AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to remove value at JSON Pointer %s for --regremove.",
+                        commandArgument.m_value.data());
+                    continue;
+                }
             }
         }
 
@@ -585,16 +766,8 @@ namespace AZ::SettingsRegistryMergeUtils
                 DumpSettingsRegistryToStream(registry, regdumpValue, outputStream, dumperSettings);
             }
 
-            const size_t regdumpallSwitchValues = commandLine.GetNumSwitchValues("regdumpall");
-            if (regdumpallSwitchValues > 0)
+            if (commandLine.HasSwitch("regdumpall"))
             {
-                AZStd::string_view regdumpallValue = commandLine.GetSwitchValue("regdumpall", 0);
-                if (regdumpallValue.empty())
-                {
-                    AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to parse argument for --regdumpall with value of %.*s.",
-                        aznumeric_cast<int>(regdumpallValue.size()), regdumpallValue.data());
-                }
-
                 DumperSettings dumperSettings{ prettifyOutput };
                 AZ::IO::StdoutStream outputStream;
                 DumpSettingsRegistryToStream(registry, "", outputStream, dumperSettings);
@@ -602,45 +775,54 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_StoreCommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine)
+    void StoreCommandLineToRegistry(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine)
     {
         // Clear out any existing CommandLine settings
         registry.Remove(CommandLineRootKey);
-        // Add the positional arguments into the Settings Registry
-        AZ::SettingsRegistryInterface::FixedValueString miscValueKey{ CommandLineMiscValuesRootKey };
-        size_t miscKeyRootSize = miscValueKey.size();
-        for (size_t miscIndex = 0; miscIndex < commandLine.GetNumMiscValues(); ++miscIndex)
-        {
-            // Push an array for each positional entry
-            miscValueKey += AZ::SettingsRegistryInterface::FixedValueString::format("/%zu", miscIndex);
-            registry.Set(miscValueKey, commandLine.GetMiscValue(miscIndex));
-            miscValueKey.resize(miscKeyRootSize);
-        }
-        // Add the option arguments into the SettingsRegistry
-        for (const auto& [commandOption, value] : commandLine.GetSwitchList())
-        {
-            AZ::SettingsRegistryInterface::FixedValueString switchKey{ CommandLineSwitchRootKey };
-            switchKey += '/';
-            switchKey += commandOption;
-            size_t switchKeyRootSize = switchKey.size();
-            // Associate an empty array with the commandOption by default
-            rapidjson::Document commandSwitchDocument;
-            rapidjson::Pointer pointer(switchKey.c_str(), switchKey.length());
-            pointer.Set(commandSwitchDocument, rapidjson::Value(rapidjson::kArrayType));;
-            rapidjson::StringBuffer documentBuffer;
-            rapidjson::Writer documentWriter(documentBuffer);
-            commandSwitchDocument.Accept(documentWriter);
-            registry.MergeSettings(AZStd::string_view{ documentBuffer.GetString(), documentBuffer.GetSize() },
-                AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
-            for (size_t switchIndex = 0; switchIndex < value.size(); ++switchIndex)
-            {
-                // Push an array for each positional entry
-                switchKey += AZ::SettingsRegistryInterface::FixedValueString::format("/%zu", switchIndex);
-                registry.Set(switchKey, value[switchIndex]);
-                switchKey.resize(switchKeyRootSize);
-            }
+        AZ::SettingsRegistryInterface::FixedValueString commandLinePath{ CommandLineRootKey };
+        const size_t commandLineRootSize = commandLinePath.size();
+        size_t argumentIndex{};
+        for (const CommandLine::CommandArgument& commandArgument : commandLine)
+        {
+            commandLinePath += AZ::SettingsRegistryInterface::FixedValueString::format("/%zu", argumentIndex);
+            registry.Set(commandLinePath + "/Option", commandArgument.m_option);
+            registry.Set(commandLinePath + "/Value", commandArgument.m_value);
+            ++argumentIndex;
+            commandLinePath.resize(commandLineRootSize);
         }
+    }
+
+    bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
+    {
+        struct CommandLineVisitor
+            : AZ::SettingsRegistryInterface::Visitor
+        {
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type
+                , AZStd::string_view value) override
+            {
+                if (valueName == "Option" && !value.empty())
+                {
+                    m_arguments.push_back(AZStd::string::format("--%.*s", aznumeric_cast<int>(value.size()), value.data()));
+                }
+                else if (valueName == "Value" && !value.empty())
+                {
+                    m_arguments.push_back(value);
+                }
+            }
+
+            // The first parameter is skipped by the ComamndLine::Parse function so initialize
+            // the container with one empty element
+            AZ::CommandLine::ParamContainer m_arguments{ 1 };
+        };
+
+        CommandLineVisitor commandLineVisitor;
+        if (!registry.Visit(commandLineVisitor, AZ::SettingsRegistryMergeUtils::CommandLineRootKey))
+        {
+            return false;
+        }
+        commandLine.Parse(commandLineVisitor.m_arguments);
+        return true;
     }
 
     bool DumpSettingsRegistryToStream(SettingsRegistryInterface& registry, AZStd::string_view key,
@@ -649,38 +831,21 @@ namespace AZ::SettingsRegistryMergeUtils
         struct SettingsExportVisitor
             : SettingsRegistryInterface::Visitor
         {
-            using SettingsWriter = AZStd::variant<
-                rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter>,
-                rapidjson::Writer<AZ::IO::RapidJSONStreamWriter>>;
-            SettingsWriter m_writer;
-            AZ::IO::RapidJSONStreamWriter m_rapidJsonStream;
-            DumperSettings m_dumperSettings;
-            AZStd::stack<bool> m_includeNameStack;
-            bool m_includeName{};
-            bool m_result{ true };
-
             SettingsExportVisitor(AZ::IO::GenericStream& stream, const DumperSettings& dumperSettings)
                 : m_rapidJsonStream{ &stream }
                 , m_dumperSettings{ dumperSettings }
+                , m_writer{ m_stringBuffer }
             {
-                if (m_dumperSettings.m_prettifyOutput)
-                {
-                    m_writer.emplace<rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter>>(m_rapidJsonStream);
-                }
-                else
-                {
-                    m_writer.emplace<rapidjson::Writer<AZ::IO::RapidJSONStreamWriter>>(m_rapidJsonStream);
-                }
             }
-            void WriteName(AZStd::string_view name)
+            bool WriteName(AZStd::string_view name)
             {
-                if (m_includeName)
+                // Write the Key if the include name stack the top element is true
+                if (!m_includeNameStack.empty() && m_includeNameStack.top())
                 {
-                    AZStd::visit([&name](auto&& writer)
-                    {
-                        writer.Key(name.data(), aznumeric_caster(name.size()));
-                    }, m_writer);
+                    return m_writer.Key(name.data(), aznumeric_caster(name.size()), false);
                 }
+
+                return true;
             }
             AZ::SettingsRegistryInterface::VisitResponse Traverse(
                 AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::VisitAction action,
@@ -694,60 +859,43 @@ namespace AZ::SettingsRegistryMergeUtils
 
                 if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
                 {
-                    AZ_Assert(type == AZ::SettingsRegistryInterface::Type::Object || type == AZ::SettingsRegistryInterface::Type::Array,
-                        "Unexpected type visited: %i.", type);
-                    WriteName(valueName);
+                    m_result = m_result && WriteName(valueName);
                     if (type == AZ::SettingsRegistryInterface::Type::Object)
                     {
-                        auto StartObject = [](auto&& writer)
+                        m_result = m_result && m_writer.StartObject();
+                        if (m_result)
                         {
-                            return writer.StartObject();
-                        };
-                        m_result = m_result && AZStd::visit(StartObject, m_writer);
-                        m_includeNameStack.push(true);
-                        m_includeName = true;
+                            m_includeNameStack.push(true);
+                        }
                     }
                     else
                     {
-                        auto StartArray = [](auto&& writer)
+                        m_result = m_result && m_writer.StartArray();
+                        if (m_result)
                         {
-                            return writer.StartArray();
-                        };
-                        m_result = m_result && AZStd::visit(StartArray, m_writer);
-                        m_includeNameStack.push(false);
-                        m_includeName = false;
+                            m_includeNameStack.push(false);
+                        }
                     }
                 }
                 else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
                 {
                     if (type == AZ::SettingsRegistryInterface::Type::Object)
                     {
-                        auto EndObject = [](auto&& writer)
-                        {
-                            return writer.EndObject();
-                        };
-                        m_result = m_result && AZStd::visit(EndObject, m_writer);
+                        m_result = m_result && m_writer.EndObject();
                     }
                     else
                     {
-                        auto EndArray = [](auto&& writer)
-                        {
-                            return writer.EndArray();
-                        };
-                        m_result = m_result && AZStd::visit(EndArray, m_writer);
+                        m_result = m_result && m_writer.EndArray();
                     }
                     AZ_Assert(!m_includeNameStack.empty(), "Attempting to close a json array or object that wasn't started.");
                     m_includeNameStack.pop();
-                    m_includeName = !m_includeNameStack.empty() ? m_includeNameStack.top() : true;
                 }
-                else if (type == AZ::SettingsRegistryInterface::Type::Null)
+                else
                 {
-                    WriteName(valueName);
-                    auto WriteNull = [](auto&& writer)
+                    if (type == AZ::SettingsRegistryInterface::Type::Null)
                     {
-                        return writer.Null();
-                    };
-                    m_result = m_result && AZStd::visit(WriteNull, m_writer);
+                        m_result = m_result && WriteName(valueName) && m_writer.Null();
+                    }
                 }
 
                 return m_result ?
@@ -757,42 +905,27 @@ namespace AZ::SettingsRegistryMergeUtils
 
             void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
             {
-                WriteName(valueName);
-                auto WriteBool = [value](auto&& writer)
-                {
-                    return writer.Bool(value);
-                };
-                m_result = m_result && AZStd::visit(WriteBool, m_writer);
+                m_result = m_result && WriteName(valueName) && m_writer.Bool(value);
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override
             {
-                WriteName(valueName);
-                auto WriteInt64 = [value](auto&& writer)
-                {
-                    return writer.Int64(value);
-                };
-                m_result = m_result && AZStd::visit(WriteInt64, m_writer);
+                m_result = m_result && WriteName(valueName) && m_writer.Int64(value);
+            }
+
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::u64 value) override
+            {
+                m_result = m_result && WriteName(valueName) && m_writer.Uint64(value);
             }
 
             void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value)
             {
-                WriteName(valueName);
-                auto WriteDouble = [value](auto&& writer)
-                {
-                    return writer.Double(value);
-                };
-                m_result = m_result && AZStd::visit(WriteDouble, m_writer);
+                m_result = m_result && WriteName(valueName) && m_writer.Double(value);
             }
 
             void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
             {
-                WriteName(valueName);
-                auto WriteString = [&value](auto&& writer)
-                {
-                    return writer.String(value.data(), aznumeric_caster(value.size()));
-                };
-                m_result = m_result && AZStd::visit(WriteString, m_writer);
+                m_result = m_result && WriteName(valueName) && m_writer.String(value.data(), aznumeric_caster(value.size()));
             }
 
             bool Finalize()
@@ -802,8 +935,46 @@ namespace AZ::SettingsRegistryMergeUtils
                     AZ_Assert(false, "m_includeNameStack is expected to be empty. This means that there was an object or array what wasn't closed.");
                     return false;
                 }
-                return m_result;
+
+                // Root the JSON document underneath the JSON pointer prefix if non-empty
+                // Parse non-anchored JSON data into a document and then re-root
+                // that document under the prefix value
+                rapidjson::Document document;
+                document.Parse(m_stringBuffer.GetString(), m_stringBuffer.GetSize());
+
+                rapidjson::Document rootDocument;
+                AZStd::string_view jsonPrefix{ m_dumperSettings.m_jsonPointerPrefix };
+                if (!jsonPrefix.empty())
+                {
+                    rapidjson::Pointer rootPointer(jsonPrefix.data(), jsonPrefix.size());
+                    rapidjson::SetValueByPointer(rootDocument, rootPointer, document);
+                }
+                else
+                {
+                    rootDocument = AZStd::move(document);
+                }
+
+                if (m_dumperSettings.m_prettifyOutput)
+                {
+                    rapidjson::PrettyWriter settingsWriter(m_rapidJsonStream);
+                    rootDocument.Accept(settingsWriter);
+                }
+                else
+                {
+                    rapidjson::Writer settingsWriter(m_rapidJsonStream);
+                    rootDocument.Accept(settingsWriter);
+                }
+
+                return true;
             }
+
+            rapidjson::StringBuffer m_stringBuffer;
+            rapidjson::Writer<rapidjson::StringBuffer> m_writer;
+
+            AZ::IO::RapidJSONStreamWriter m_rapidJsonStream;
+            DumperSettings m_dumperSettings;
+            AZStd::stack<bool> m_includeNameStack;
+            bool m_result{ true };
         };
 
         SettingsExportVisitor visitor(stream, dumperSettings);

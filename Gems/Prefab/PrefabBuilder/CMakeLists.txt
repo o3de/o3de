@@ -16,7 +16,6 @@ endif()
 ly_add_target(
     NAME Prefab.PrefabBuilder MODULE
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Prefab.PrefabBuilder
     FILES_CMAKE
         prefabbuilder_files.cmake
     BUILD_DEPENDENCIES
@@ -31,6 +30,6 @@ ly_add_target_dependencies(
         AssetBuilder
         AssetProcessor
         AssetProcessorBatch
-    DEPENDENCIES_FILES
-        prefabbuilder_dependencies.cmake
+    DEPENDENT_TARGETS
+        Gem::Prefab.PrefabBuilder
 )

@@ -249,6 +249,11 @@ namespace AZStd
 
         constexpr auto swap(basic_fixed_string& rhs) -> void;
 
+        // C++23 contains
+        constexpr auto contains(const basic_fixed_string& other) const -> bool;
+        constexpr auto contains(Element ch) const -> bool;
+        constexpr auto contains(const_pointer s) const -> bool;
+
         constexpr auto find(const basic_fixed_string& rhs, size_type offset = 0) const -> size_type;
         constexpr auto find(const_pointer ptr, size_type offset, size_type count) const -> size_type;
         constexpr auto find(const_pointer ptr, size_type offset = 0) const -> size_type;

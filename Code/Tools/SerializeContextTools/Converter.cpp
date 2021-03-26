@@ -14,13 +14,14 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Module/Module.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <Application.h>
 #include <Converter.h>
 #include <Utilities.h>
@@ -33,7 +34,7 @@ namespace AZ
         {
             using namespace AZ::JsonSerializationResult;
 
-            const AzFramework::CommandLine* commandLine = application.GetCommandLine();
+            const AZ::CommandLine* commandLine = application.GetAzCommandLine();
             if (!commandLine)
             {
                 AZ_Error("SerializeContextTools", false, "Command line not available.");
@@ -123,7 +124,7 @@ namespace AZ
                 }
                 
                 // If there's only one file, then use the original name instead of the extended name
-                AzFramework::StringFunc::Path::ReplaceExtension(filePath, extension.c_str());
+                AZ::StringFunc::Path::ReplaceExtension(filePath, extension.c_str());
                 if (documents.size() == 1)
                 {
                     AZ_Printf("Convert", "  Exporting to '%s'\n", filePath.c_str());
@@ -142,7 +143,7 @@ namespace AZ
                 else
                 {
                     AZStd::string fileName;
-                    AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName);
+                    AZ::StringFunc::Path::GetFileName(filePath.c_str(), fileName);
                     for (PathDocumentPair& document : documents)
                     {
                         AZStd::string fileNameExtended = fileName;
@@ -150,7 +151,7 @@ namespace AZ
                         fileNameExtended += document.first;
                         Utilities::SanitizeFilePath(fileNameExtended);
                         AZStd::string finalFilePath = filePath;
-                        AzFramework::StringFunc::Path::ReplaceFullName(finalFilePath, fileNameExtended.c_str(), extension.c_str());
+                        AZ::StringFunc::Path::ReplaceFullName(finalFilePath, fileNameExtended.c_str(), extension.c_str());
 
                         AZ_Printf("Convert", "  Exporting to '%s'\n", finalFilePath.c_str());
                         if (!isDryRun)
@@ -172,7 +173,7 @@ namespace AZ
 
         bool Converter::ConvertApplicationDescriptor(Application& application)
         {
-            const AzFramework::CommandLine* commandLine = application.GetCommandLine();
+            const AZ::CommandLine* commandLine = application.GetAzCommandLine();
             if (!commandLine)
             {
                 AZ_Error("SerializeContextTools", false, "Command line not available.");
@@ -212,7 +213,7 @@ namespace AZ
             const AZStd::string& filePath = application.GetConfigFilePath();
             AZ_Printf("Convert", "Reading '%s' for conversion.\n", filePath.c_str());
             AZStd::string configurationName;
-            if (!AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), configurationName) ||
+            if (!AZ::StringFunc::Path::GetFileName(filePath.c_str(), configurationName) ||
                 configurationName.empty())
             {
                 AZ_Error("Convert", false, "Unable to extract configuration from '%s'.", filePath.c_str());
@@ -225,7 +226,7 @@ namespace AZ
             AZ::IO::FixedMaxPath sourceGameFolder;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get();
                 !settingsRegistry
-                || !settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder))
+                || !settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
             {
                 AZ_Error("Serialize Context Tools", false, "Unable to determine the game root automatically. "
                     "Make sure a default project has been set or provide a default option on the command line. (See -help for more info.)");
@@ -314,7 +315,7 @@ namespace AZ
         bool Converter::ConvertConfigFile(Application& application)
         {
             bool result = true;
-            const AzFramework::CommandLine* commandLine = application.GetCommandLine();
+            const AZ::CommandLine* commandLine = application.GetAzCommandLine();
             if (!commandLine)
             {
                 AZ_Error("SerializeContextTools", false, "Command line not available.");
@@ -334,13 +335,6 @@ namespace AZ
 
             const bool isDryRun = commandLine->HasSwitch("dryrun");
 
-            // Use the Engine Root Folder from the Global Settings Registry
-            AZ::IO::FixedMaxPath engineRootPath;
-            if (auto globalSettingsRegistry = AZ::SettingsRegistry::Get(); globalSettingsRegistry != nullptr)
-            {
-                globalSettingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            }
-
             // The AZ CommandLine internally splits switches on <comma> and semicolon
             AZStd::vector<AZStd::string_view> fileList;
             size_t filesToConvert = commandLine->GetNumSwitchValues("files");
@@ -353,10 +347,9 @@ namespace AZ
             PathDocumentContainer documents;
             for (AZStd::string_view configFileView : fileList)
             {
-                // Appends the paths in "files" argument to the EngineRootPath
-                // If the "files" argument is absolute AZ::IO::Path follows the python os.join logic
-                // and replaces the paths before it with the absolute path
-                AZ::IO::FixedMaxPath configFilePath = engineRootPath / configFileView;
+                // Convert the supplied file list to an absolute path
+                AZStd::optional<AZ::IO::FixedMaxPathString> absFilePath = AZ::Utils::ConvertToAbsolutePath(configFileView);
+                AZ::IO::FixedMaxPath configFilePath = absFilePath ? *absFilePath : configFileView;
                 auto callback = [&documents, &outputExtension, &configFilePath](AZ::IO::PathView configFileView, bool isFile) -> bool
                 {
                     if (configFileView == "." || configFileView == "..")
@@ -866,7 +859,7 @@ namespace AZ
         }
 
         void Converter::SetupLogging(AZStd::string& scratchBuffer, JsonSerializationResult::JsonIssueCallback& callback,
-            const AzFramework::CommandLine& commandLine)
+            const AZ::CommandLine& commandLine)
         {
             if (commandLine.HasSwitch("verbose"))
             {

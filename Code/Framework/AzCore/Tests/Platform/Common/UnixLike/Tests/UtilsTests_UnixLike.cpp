@@ -27,16 +27,16 @@ namespace UnitTest
 
     TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnRelativePath_Succeeds)
     {
-        AZStd::optional<AZStd::fixed_string<AZ::Utils::MaxPathLength>> absolutePath = AZ::Utils::ConvertToAbsolutePath("./");
+        AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath("./");
         EXPECT_TRUE(absolutePath);
     }
 
     TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnAbsolutePath_Succeeds)
     {
-        char executableDirectory[AZ::Utils::MaxPathLength];
+        char executableDirectory[AZ::IO::MaxPathLength];
         AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(executableDirectory, AZ_ARRAY_SIZE(executableDirectory));
         EXPECT_EQ(AZ::Utils::ExecutablePathResult::Success, result);
-        AZStd::optional<AZStd::fixed_string<AZ::Utils::MaxPathLength>> absolutePath = AZ::Utils::ConvertToAbsolutePath(executableDirectory);
+        AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath(executableDirectory);
         ASSERT_TRUE(absolutePath);
         EXPECT_STRCASEEQ(executableDirectory, absolutePath->c_str());
     }

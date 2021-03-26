@@ -165,6 +165,7 @@ SOURCE_AND_SCRIPT_FILE_EXTENSIONS: Tuple[str, ...] = SOURCE_FILE_EXTENSIONS + SC
 
 BUILD_FILE_PATTERNS: Tuple[re.Pattern, ...] = (
     re.compile(r'.*CMakeLists\.txt'),
+    re.compile(r'.*Jenkinsfile')
 )
 """File patterns for build files"""
 
@@ -180,7 +181,6 @@ EXCLUDED_VALIDATION_PATTERNS = [
     'Code/Tools/CryFXC',
     'Code/Tools/HLSLCrossCompiler',
     'Code/Tools/HLSLCrossCompilerMETAL',
-    'Code/Tools/ProfVis',
     'Code/Tools/UniversalRemoteConsole',
     'Docs',
     'python/runtime',

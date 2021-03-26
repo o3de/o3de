@@ -290,15 +290,15 @@ namespace AzToolsFramework
         }
 
         // Initialize the engine config object based on the current
-        bool Initialize(const char* currentAppRoot)
+        bool Initialize(const char* currentEngineRoot)
         {
             // Start with the app root as the engine root (legacy), but check to see if the engine root
             // is external to the app root
-            azstrncpy(m_engineRoot, AZ_ARRAY_SIZE(m_engineRoot), currentAppRoot, strlen(currentAppRoot) + 1);
+            azstrncpy(m_engineRoot, AZ_ARRAY_SIZE(m_engineRoot), currentEngineRoot, strlen(currentEngineRoot) + 1);
 
             // From the appRoot, check and see if we can read any external engine reference in engine.json
             QString engineJsonFileName = QString(m_fileName);
-            QString engineJsonFilePath = QDir(currentAppRoot).absoluteFilePath(engineJsonFileName);
+            QString engineJsonFilePath = QDir(currentEngineRoot).absoluteFilePath(engineJsonFileName);
 
             // From the appRoot, check and see if we can read any external engine reference in engine.json
             if (!QFile::exists(engineJsonFilePath))
@@ -308,7 +308,7 @@ namespace AzToolsFramework
             }
             if (!ReadEngineConfigIntoMap(engineJsonFilePath, m_engineConfigMap))
             {
-                AZ_Warning(m_logWindow, false, "Defaulting root engine path to '%s'", currentAppRoot);
+                AZ_Warning(m_logWindow, false, "Defaulting root engine path to '%s'", currentEngineRoot);
                 return false;
             }
 
@@ -397,9 +397,9 @@ namespace AzToolsFramework
 
     void ToolsApplication::InitializeEngineConfig()
     {
-        if (!m_engineConfigImpl->Initialize(GetAppRoot()))
+        if (!m_engineConfigImpl->Initialize(GetEngineRoot()))
         {
-            AZ_Warning(AzToolsFramework::Internal::s_startupLogWindow, false, "Defaulting engine root path to '%s'", GetAppRoot());
+            AZ_Warning(AzToolsFramework::Internal::s_startupLogWindow, false, "Defaulting engine root path to '%s'", GetEngineRoot());
         }
     }
 

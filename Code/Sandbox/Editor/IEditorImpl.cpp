@@ -655,17 +655,6 @@ QString CEditorImpl::GetResolvedUserFolder()
     return m_userFolder;
 }
 
-QString CEditorImpl::GetProjectName()
-{
-    ICVar* pCVar = (gEnv && gEnv->pConsole) ? gEnv->pConsole->GetCVar("sys_game_folder") : nullptr;
-    if (pCVar && pCVar->GetString())
-    {
-        return QString(pCVar->GetString());
-    }
-
-    return tr("unknown");
-}
-
 void CEditorImpl::SetDataModified()
 {
     GetDocument()->SetModifiedFlag(TRUE);

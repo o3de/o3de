@@ -16,6 +16,7 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <Atom/ImageProcessing/ImageProcessingBus.h>
 
 namespace ImageProcessingAtom
 {
@@ -45,6 +46,7 @@ namespace ImageProcessingAtom
     //! BuilderPluginComponent is to handle the lifecycle of ImageBuilder module.
     class BuilderPluginComponent
         : public AZ::Component
+        , protected ImageProcessingRequestBus::Handler
     {
     public:
         AZ_COMPONENT(BuilderPluginComponent, "{A227F803-D2E4-406E-93EC-121EF45A64A1}")
@@ -62,6 +64,12 @@ namespace ImageProcessingAtom
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         //////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // AtomImageProcessingRequestBus interface implementation
+        IImageObjectPtr LoadImage(const AZStd::string& filePath) override;
+        IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) override;
+        ////////////////////////////////////////////////////////////////////////
 
     private:
         BuilderPluginComponent(const BuilderPluginComponent&) = delete;

@@ -60,6 +60,7 @@ namespace AZ
             MOCK_CONST_METHOD2(ConvertToAlias, bool(AZ::IO::FixedMaxPath& aliasPath, const AZ::IO::PathView& path));
             MOCK_CONST_METHOD3(ResolvePath, bool(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize));
             MOCK_CONST_METHOD2(ResolvePath, bool(AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path));
+            MOCK_CONST_METHOD2(ReplaceAlias, bool(AZ::IO::FixedMaxPath& replacedAliasPath, const AZ::IO::PathView& path));
             MOCK_CONST_METHOD3(GetFilename, bool(HandleType fileHandle, char* filename, AZ::u64 filenameSize));
             using FileIOBase::ConvertToAlias;
             using FileIOBase::ResolvePath;

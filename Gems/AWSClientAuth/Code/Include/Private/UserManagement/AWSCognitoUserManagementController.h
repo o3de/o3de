@@ -13,7 +13,6 @@
 #pragma once
 
 #include <UserManagement/AWSCognitoUserManagementBus.h>
-#include <UserManagement/AWSCognitoUserManagementTypes.h>
 
 namespace AWSClientAuth
 {
@@ -27,7 +26,7 @@ namespace AWSClientAuth
         virtual ~AWSCognitoUserManagementController();
 
         // AWSCognitoUserManagementRequestsBus interface methods
-        bool Initialize(const AZStd::string& settingsRegistryPath);
+        bool Initialize() override;
         void EmailSignUpAsync(const AZStd::string& username, const AZStd::string& password, const AZStd::string& email) override;
         void PhoneSignUpAsync(const AZStd::string& username, const AZStd::string& password, const AZStd::string& phoneNumber) override;
         void ConfirmSignUpAsync(const AZStd::string& username, const AZStd::string& confirmationCode) override;
@@ -35,8 +34,13 @@ namespace AWSClientAuth
         void ConfirmForgotPasswordAsync(const AZStd::string& userName, const AZStd::string& confirmationCode, const AZStd::string& newPassword) override;
         void EnableMFAAsync(const AZStd::string& accessToken) override;
 
-    protected:
-        AZStd::unique_ptr<AWSCognitoUserManagementSetting> m_settings;
+        inline const AZStd::string& GetCognitoAppClientId() const
+        {
+            return m_cognitoAppClientId;
+        }
+
+    private:
+        AZStd::string m_cognitoAppClientId;
     };
 
 } // namespace AWSClientAuth

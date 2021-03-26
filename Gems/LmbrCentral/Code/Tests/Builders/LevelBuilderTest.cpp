@@ -14,14 +14,15 @@
 #include <AzTest/AzTest.h>
 #include <Builders/LevelBuilder/LevelBuilderWorker.h>
 #include <AzTest/Utils.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
-#include "AzCore/Slice/SliceAssetHandler.h"
-#include <AzCore/IO/Path/Path.h>
 
 using namespace LevelBuilder;
 using namespace AZ;
@@ -107,7 +108,7 @@ protected:
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
 
-        AZ::IO::Path assetRoot(engineRoot);
+        AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
 

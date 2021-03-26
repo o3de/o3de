@@ -244,9 +244,9 @@ namespace AzFramework
         AZStd::string FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType fileTagType)
         {
             AZStd::string destinationFilePath;
-            const char* appRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AzFramework::StringFunc::Path::ConstructFull(appRoot, EngineName, fileTagType == FileTagType::Exclude ? ExcludeFileName : IncludeFileName, AzFramework::FileTag::FileTagAsset::Extension(), destinationFilePath, true);
+            const char* engineRoot = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+            AzFramework::StringFunc::Path::ConstructFull(engineRoot, EngineName, fileTagType == FileTagType::Exclude ? ExcludeFileName : IncludeFileName, AzFramework::FileTag::FileTagAsset::Extension(), destinationFilePath, true);
             return destinationFilePath;
         }
 

@@ -156,7 +156,7 @@ namespace AZ
                 // get project folder
                 auto settingsRegistry = AZ::SettingsRegistry::Get();
                 AZ::IO::FixedMaxPath projectPath;
-                if (!settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder))
+                if (!settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
                 {
                     return Events::ProcessingResult::Ignored;
                 }

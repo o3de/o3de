@@ -268,7 +268,7 @@ namespace UnitTestUtils
 
             m_localFileIO->SetAlias("@assets@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
             m_localFileIO->SetAlias("@log@", (newDir + QString("/ALIAS/logs")).toUtf8().constData());
-            m_localFileIO->SetAlias("@cache@", (newDir + QString("/ALIAS/cache")).toUtf8().constData());
+            m_localFileIO->SetAlias("@usercache@", (newDir + QString("/ALIAS/cache")).toUtf8().constData());
             m_localFileIO->SetAlias("@user@", (newDir + QString("/ALIAS/user")).toUtf8().constData());
             m_localFileIO->SetAlias("@root@", (newDir + QString("/ALIAS/root")).toUtf8().constData());
         }

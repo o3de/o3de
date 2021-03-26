@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <Authorization/AWSCognitoAuthorizationTypes.h>
 #include <aws/identity-management/auth/PersistentCognitoIdentityProvider.h>
 
 namespace AWSClientAuth

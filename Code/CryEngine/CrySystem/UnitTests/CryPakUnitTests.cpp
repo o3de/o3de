@@ -60,7 +60,7 @@ namespace CryPakUnitTests
         AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
         ASSERT_NE(nullptr, fileIo);
 
-        constexpr const char* testPakPath = "@cache@/archivecontainerlevel.pak";
+        constexpr const char* testPakPath = "@usercache@/archivecontainerlevel.pak";
 
         char resolvedArchivePath[AZ_MAX_PATH_LEN] = { 0 };
         EXPECT_TRUE(fileIo->ResolvePath(testPakPath, resolvedArchivePath, AZ_MAX_PATH_LEN));
@@ -116,7 +116,7 @@ namespace CryPakUnitTests
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds{ 100 });
 
             // helper paths and strings
-            AZStd::string gameFolder = fileIo->GetAlias("@cache@");
+            AZStd::string gameFolder = fileIo->GetAlias("@usercache@");
 
             AZStd::string testFile = "unittest.bin";
             AZStd::string testFilePath = gameFolder + "\\" + testFile;

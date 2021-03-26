@@ -12,12 +12,12 @@
 #pragma once
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <QCoreApplication>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -79,16 +79,14 @@ namespace UnitTest
         void SetUp() override
         {
             // fetch the Engine Root folder
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                int argc = 0;
-                char** argv = nullptr;
-                QCoreApplication qtApp(argc, argv);
-                azsnprintf(m_engineRoot, sizeof(m_engineRoot), AzQtComponents::FindEngineRootDir(nullptr).toLocal8Bit().data());
+                settingsRegistry->Get(m_engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
             }
 
             m_fileIOHelper = AZStd::make_unique<FileIOHelper>();
-            m_fileIOHelper->m_fileIO.SetAlias("@devroot@", m_engineRoot);
-            m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot);
+            m_fileIOHelper->m_fileIO.SetAlias("@devroot@", m_engineRoot.c_str());
+            m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;
             appDesc.m_enableDrilling = false;
@@ -141,15 +139,15 @@ namespace UnitTest
         // required pure virtual overrides
         void NormalizePath(AZStd::string& ) override {}
         void NormalizePathKeepCase(AZStd::string& ) override {}
-        void CalculateBranchTokenForAppRoot(AZStd::string& ) const override {}
+        void CalculateBranchTokenForEngineRoot(AZStd::string& ) const override {}
         // Gets the engine root path for testing
-        const char* GetEngineRoot() const override { return m_engineRoot; }
+        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
         // Retrieves the app root path for testing
-        const char* GetAppRoot() const override { return m_engineRoot; }
+        const char* GetAppRoot() const override { return m_engineRoot.c_str(); }
 
         AZ::ComponentApplication m_app;
         AZStd::unique_ptr<FileIOHelper> m_fileIOHelper;
         AZStd::unique_ptr<CommandRegistrationBusSupression> m_commandRegistrationBusSupression;
-        char m_engineRoot[1024];
+        AZ::IO::FixedMaxPath m_engineRoot;
     };
 }

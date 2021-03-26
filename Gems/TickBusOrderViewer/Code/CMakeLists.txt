@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME TickBusOrderViewer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.TickBusOrderViewer.937fc4d2b2a94291bdeea06261c501b3.v0.1.0
     FILES_CMAKE
         tickbusorderviewer_shared_files.cmake
     INCLUDE_DIRECTORIES

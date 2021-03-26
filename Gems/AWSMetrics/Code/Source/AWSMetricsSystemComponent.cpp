@@ -145,11 +145,11 @@ namespace AWSMetrics
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
 
-        AZ_Printf("AWSMetrics", " - Total number of metrics events sent to the backend: %u", stats.m_numEvents.load());
-        AZ_Printf("AWSMetrics", " - Total number of metrics events sent to the backend successfully: %u", stats.m_numSuccesses.load());
-        AZ_Printf("AWSMetrics", " - Total size of metrics events sent to the backend successfully: %u bytes", stats.m_sendSizeInBytes.load());
-        AZ_Printf("AWSMetrics", " - Total number of metrics events failed to be processed by the backend: %u", stats.m_numErrors.load());
-        AZ_Printf("AWSMetrics", " - Total number of metrics events which failed the JSON schema validation or reached the maximum number of retries : %u", stats.m_numDropped.load());
+        AZ_Printf("AWSMetrics", "Total number of metrics events sent to the backend: %u", stats.m_numEvents.load());
+        AZ_Printf("AWSMetrics", "Total number of metrics events sent to the backend successfully: %u", stats.m_numSuccesses.load());
+        AZ_Printf("AWSMetrics", "Total size of metrics events sent to the backend successfully: %u bytes", stats.m_sendSizeInBytes.load());
+        AZ_Printf("AWSMetrics", "Total number of metrics events failed to be processed by the backend: %u", stats.m_numErrors.load());
+        AZ_Printf("AWSMetrics", "Total number of metrics events which failed the JSON schema validation or reached the maximum number of retries : %u", stats.m_numDropped.load());
     }
 
     void AWSMetricsSystemComponent::EnableOfflineRecording(const AZ::ConsoleCommandContainer& arguments)

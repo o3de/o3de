@@ -43,6 +43,8 @@ namespace AZ
             m_assImpScene = m_importer.ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
                 | aiProcess_JoinIdenticalVertices //Identifies and joins identical vertex data sets for the imported meshes
+                | aiProcess_LimitBoneWeights //Limits the number of bones that can affect a vertex to a maximum value
+                                             //dropping the least important and re-normalizing
                 | aiProcess_GenNormals); //Generate normals for meshes
             if (!m_assImpScene)
             {

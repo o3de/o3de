@@ -59,7 +59,6 @@ namespace AzFramework
     namespace
     {
         const char* suffix = ".log";
-        const char* loggingDirectoryName = "logs";
         const int maxLogFiles = 5;
 
         void TimeNowAsString(char* buffer, size_t len)
@@ -155,7 +154,7 @@ namespace AzFramework
         m_directoryName = AZStd::string(baseDirectory);
 
         //Construct the file path
-        if (!AzFramework::StringFunc::Path::ConstructFull(baseDirectory, loggingDirectoryName, fileName, suffix, m_filePath))
+        if (!AzFramework::StringFunc::Path::ConstructFull(baseDirectory, fileName, suffix, m_filePath))
         {
             return;
         }
@@ -193,7 +192,7 @@ namespace AzFramework
         AZStd::string backupFileName;
 
         //Construct the backup file path
-        if (!AzFramework::StringFunc::Path::ConstructFull(m_directoryName.c_str(), loggingDirectoryName, m_fileName.c_str(), newSuffix.c_str(), backupFileName))
+        if (!AzFramework::StringFunc::Path::ConstructFull(m_directoryName.c_str(), m_fileName.c_str(), newSuffix.c_str(), backupFileName))
         {
             AZ_Warning("Log Component", false, "Unable to construct the backup file path");
             return "";

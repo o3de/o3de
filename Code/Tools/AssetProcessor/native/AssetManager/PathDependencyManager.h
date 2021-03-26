@@ -76,9 +76,6 @@ namespace AssetProcessor
         /// Returns false if a path contains wildcards, true otherwise
         static bool IsExactDependency(AZStd::string_view path);
 
-        /// Removes /platform/project/ from the start of a product path
-        static AZStd::string StripPlatformAndProject(AZStd::string_view relativeProductPath);
-
         /// Prefixes the scanFolderId to the relativePath
         AZStd::string ToScanFolderPrefixedPath(int scanFolderId, const char* relativePath) const;
 

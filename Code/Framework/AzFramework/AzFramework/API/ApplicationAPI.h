@@ -70,17 +70,11 @@ namespace AzFramework
         /// Make path relative to the provided root.
         virtual void MakePathRelative(AZStd::string& /*fullPath*/, const char* /*rootPath*/) {}
 
-        /// Retrieves the asset root path for the application.
-        virtual const char* GetAssetRoot() const { return nullptr; }
-
         /// Gets the engine root path where the modules for the current engine are located.
         virtual const char* GetEngineRoot() const { return nullptr; }
 
         /// Retrieves the app root path for the application.
         virtual const char* GetAppRoot() const { return nullptr; }
-
-        /// Sets the asset root path for the application.
-        virtual void SetAssetRoot(const char* /*assetRoot*/) {}
 
 #pragma push_macro("GetCommandLine")
 #undef GetCommandLine
@@ -117,8 +111,8 @@ namespace AzFramework
         /// Resolve a path thats relative to the engine folder to an absolute path
         virtual void ResolveEnginePath(AZStd::string& /*engineRelativePath*/) const {}
 
-        /// Calculate the branch token from the current application's asset root
-        virtual void CalculateBranchTokenForAppRoot(AZStd::string& token) const = 0;
+        /// Calculate the branch token from the current application's engine root
+        virtual void CalculateBranchTokenForEngineRoot(AZStd::string& token) const = 0;
 
         /*!
         * Returns a Type Uuid of the component for the given componentId and entityId.

@@ -902,7 +902,7 @@ void ShadersOptimizeHelper(CallableT setupParserBin, const char* logString)
 {
     setupParserBin();
     CryLogAlways("\nStarting shaders optimizing for %s...", logString);
-    AZStd::string str = "@cache@/" + gRenDev->m_cEF.m_ShadersCache;
+    AZStd::string str = "@usercache@/" + gRenDev->m_cEF.m_ShadersCache;
     iLog->Log("Optimize shader cache folder: '%s'", gRenDev->m_cEF.m_ShadersCache.c_str());
     gRenDev->m_cEF.mfOptimiseShaders(str.c_str(), false);
 }
@@ -2396,7 +2396,7 @@ void CRenderer::InitRenderer()
 
     CV_r_ShaderCompilerFolderSuffix = REGISTER_STRING("r_ShaderCompilerFolderSuffix", "", VF_NULL,
             "Usage: r_ShaderCompilerFolderSuffix suffix \n"
-            "Default is empty. Set to some other value to append this suffix to the sys_game_folder when compiling shaders");
+            "Default is empty. Set to some other value to append this suffix to the project name when compiling shaders");
 
     {
         const SFileVersion& ver = gEnv->pSystem->GetFileVersion();

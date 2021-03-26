@@ -24,7 +24,7 @@ endif()
 include(cmake/Version.cmake)
 
 if(NOT PROJECT_NAME)
-    project(Lumberyard 
+    project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
@@ -83,13 +83,30 @@ endif()
 # Post-processing
 ################################################################################
 
+# Loop over the additional external subdirectories and invoke add_subdirectory on them
+foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
+    # This is to deal with potential situations where multiple external directories has the same last directory name
+    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+    file(REAL_PATH ${external_directory} full_directory_path)
+    string(SHA256 full_directory_hash ${full_directory_path})
+    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+    # when the external subdirectory contains relative paths of significant length
+    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+    # Use the last directory as the suffix path to use for the Binary Directory
+    get_filename_component(directory_name ${external_directory} NAME)
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+endforeach()
+
 # The following steps have to be done after all targets were registered:
-# 1. link targets where the dependency was yet not declared, we need to have the declaration so we do different
+# 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
+#    to provide applications with the filenames of gem modules to load
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
+ly_delayed_generate_settings_registry()
+# 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
 #    linking logic depending on the type of target
 ly_delayed_target_link_libraries()
-# 2. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
-#    to provide applications with the filenames of gem modules to load
-ly_delayed_generate_settings_registry()
 # 3. generate a registry file for unit testing for platforms that support unit testing
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()

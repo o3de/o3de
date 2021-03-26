@@ -19,6 +19,8 @@
 #include <AzCore/Module/Module.h>                               // for AZ::ModuleData
 #include <AzCore/Module/ModuleManagerBus.h>                     // for AZ::ModuleManagerRequestBus
 #include <AzCore/Module/DynamicModuleHandle.h>                  // for AZ::DynamicModuleHandle
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ViewPaneOptions.h>               // for AzToolsFramework::ViewPaneOptions
@@ -88,26 +90,64 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
         }
     }
 
-    ScanFolderForScripts(QString("@devroot@/%1/Editor/Scripts").arg(GetIEditor()->GetProjectName()), scriptFolders);
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    ScanFolderForScripts(QString("%1/Editor/Scripts").arg(projectPath.c_str()), scriptFolders);
 
-    auto moduleCallback = [this, &scriptFolders](const AZ::ModuleData& moduleData) -> bool
+    struct GetGemSourcePathsVisitor
+        : AZ::SettingsRegistryInterface::Visitor
     {
-        if (moduleData.GetDynamicModuleHandle())
+        GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
+            : m_settingsRegistry(settingsRegistry)
+        {}
+        void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
+            AZStd::string_view value) override
         {
-            const AZ::OSString& modulePath = moduleData.GetDynamicModuleHandle()->GetFilename();
-            AZStd::string fileName;
-            AzFramework::StringFunc::Path::GetFileName(modulePath.c_str(), fileName);
-
-            AZStd::vector<AZStd::string> tokens;
-            AzFramework::StringFunc::Tokenize(fileName.c_str(), tokens, '.');
-            if (tokens.size() > 2 && tokens[0] == "Gem")
+            AZStd::string_view jsonSourcePathPointer{ path };
+            // Remove the array index from the path and check if the JSON path ends with "/SourcePaths"
+            AZ::StringFunc::TokenizeLast(jsonSourcePathPointer, "/");
+            if (jsonSourcePathPointer.ends_with("/SourcePaths"))
             {
-                ScanFolderForScripts(QString("@engroot@/Gems/%1/Editor/Scripts").arg(tokens[1].c_str()), scriptFolders);
+                AZ::IO::Path newSourcePath = jsonSourcePathPointer;
+                // Resolve any file aliases first - Do not use ResolvePath() as that assumes
+                // any relative path is underneath the @assets@ alias
+                if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+                {
+                    AZ::IO::FixedMaxPath replacedAliasPath;
+                    if (fileIoBase->ReplaceAlias(replacedAliasPath, value))
+                    {
+                        newSourcePath = AZ::IO::PathView(replacedAliasPath);
+                    }
+                }
+
+                // The current assumption is that the gem source path is the relative to the engine root
+                AZ::IO::Path engineRootPath;
+                m_settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                newSourcePath = (engineRootPath / newSourcePath).LexicallyNormal();
+
+                if (auto gemSourcePathIter = AZStd::find(m_gemSourcePaths.begin(), m_gemSourcePaths.end(), newSourcePath);
+                    gemSourcePathIter == m_gemSourcePaths.end())
+                {
+                    m_gemSourcePaths.emplace_back(AZStd::move(newSourcePath));
+                }
             }
         }
-        return true;
+
+        AZStd::vector<AZ::IO::Path> m_gemSourcePaths;
+    private:
+        AZ::SettingsRegistryInterface& m_settingsRegistry;
     };
-    AZ::ModuleManagerRequestBus::Broadcast(&AZ::ModuleManagerRequestBus::Events::EnumerateModules, moduleCallback);
+
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        GetGemSourcePathsVisitor visitor{ *settingsRegistry };
+        constexpr auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
+            + "/Gems";
+        settingsRegistry->Visit(visitor, gemListKey);
+        for (const AZ::IO::Path& gemSourcePath : visitor.m_gemSourcePaths)
+        {
+            ScanFolderForScripts(QString("%1/Editor/Scripts").arg(gemSourcePath.c_str()), scriptFolders);
+        }
+    }
 
     ui->treeView->init(scriptFolders, s_kPythonFileNameSpec, s_kRootElementName, false, false);
     QObject::connect(ui->treeView, &CFolderTreeCtrl::ItemDoubleClicked, this, &CPythonScriptsDialog::OnExecute);

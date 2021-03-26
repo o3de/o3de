@@ -14,9 +14,11 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
+#include <native/utilities/PlatformConfiguration.h>
 
 namespace AssetProcessor
 {
@@ -210,6 +212,8 @@ namespace AssetProcessor
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
 
         AZStd::vector<AZStd::string> excludes = ReadExcludesFromRegistry();
+        // Exclude the AssetProcessor settings from the game regsitry
+        excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey); 
         
         AZStd::vector<char> scratchBuffer;
         scratchBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
@@ -228,19 +232,16 @@ namespace AssetProcessor
         };
 
         // Add the project specific specializations
-        if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry)
+        auto projectName = AZ::Utils::GetProjectName();
+        if (!projectName.empty())
         {
-            auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-            if (AZ::SettingsRegistryInterface::FixedValueString projectName; settingsRegistry->Get(projectName, projectKey))
+            for (AZ::SettingsRegistryInterface::Specializations& specialization : specializations)
             {
-                for (AZ::SettingsRegistryInterface::Specializations& specialization : specializations)
-                {
-                    specialization.Append(projectName);
-                    // The Game Launcher normally has a build target name of <ProjectName>Launcher
-                    // Add that as a specialization to pick up the gem dependencies files that are specialized
-                    // on a the Game Launcher target if the asset platform isn't "server"
-                    specialization.Append(projectName + launcherType);
-                }
+                specialization.Append(projectName);
+                // The Game Launcher normally has a build target name of <ProjectName>Launcher
+                // Add that as a specialization to pick up the gem dependencies files that are specialized
+                // on a the Game Launcher target if the asset platform isn't "server"
+                specialization.Append(projectName + launcherType);
             }
         }
 
@@ -255,8 +256,9 @@ namespace AssetProcessor
         for (AZStd::string_view platform : platformCodes)
         {
             AZ::u32 productSubID = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(platform)); // Deliberately ignoring half the bits.
-            for (size_t i = 0; i < AZ_ARRAY_SIZE(specializations); ++i)
+            for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
+                const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
                 if (m_isShuttingDown)
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -269,12 +271,12 @@ namespace AssetProcessor
                 if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
                 {
                     AZStd::array settingsToCopy{
-                        AZStd::string::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey),
+                        AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey),
                         AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_BinaryFolder},
                         AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder},
-                        AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder},
+                        AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath},
+                        AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder},
                         AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder},
-                        AZStd::string{AZ::SettingsRegistryMergeUtils::FilePathKey_CacheGameFolder}
                     };
 
                     for (const auto& settingsKey : settingsToCopy)
@@ -288,14 +290,14 @@ namespace AssetProcessor
                 }
 
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(registry);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specializations[i], &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specializations[i], &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specializations[i], &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
 
                 // Merge the Developer User settings registry only in non-release builds
-                if (!specializations->Contains("release"))
+                if (!specialization.Contains("release"))
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_DevRegistry(registry, platform, specializations[i], &scratchBuffer);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_UserRegistry(registry, platform, specialization, &scratchBuffer);
                 }
 
                 AZ::ComponentApplicationBus::Broadcast([&registry](AZ::ComponentApplicationRequests* appRequests)
@@ -314,7 +316,7 @@ namespace AssetProcessor
                         return;
                     }
 
-                    outputPath += specializations[i].GetSpecialization(0); // Append configuration
+                    outputPath += specialization.GetSpecialization(0); // Append configuration
                     outputPath += '.';
                     outputPath += platform;
                     outputPath += ".setreg";

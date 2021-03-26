@@ -24,6 +24,7 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
@@ -815,22 +816,18 @@ bool CStatCGFCompiler::CompileCGF(AssetBuilderSDK::ProcessJobResponse& response,
 #endif
 
     // If no game project was specified, then query it from the Settings Registry
-    if (gameFolder.length() == 0)
+    if (gameFolder.empty())
     {
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        auto gameFolderKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::ProjectName);
-        if (settingsRegistry)
-        {
-            settingsRegistry->Get(gameFolder, gameFolderKey);
-        }
+        gameFolder = AZ::Utils::GetProjectName();
     }
 
     // If no asset root was specified, then query it from the application
-    if (assetRoot.length() == 0)
+    if (assetRoot.empty())
     {
-        EBUS_EVENT_RESULT(assetRoot, AzFramework::ApplicationRequests::Bus, GetAssetRoot);
-        assetRoot += gameFolder;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+        }
     }
     
     const string sourceFile = m_CC.GetSourcePath();

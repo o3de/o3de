@@ -41,6 +41,7 @@ namespace AZ
 
                 SCENE_DATA_API void ResizeContainerSpace(size_t size);
                 SCENE_DATA_API void AppendLink(size_t vertexIndex, const SceneAPI::DataTypes::ISkinWeightData::Link& link);
+                SCENE_DATA_API void AddAndSortLink(size_t vertexIndex, const SceneAPI::DataTypes::ISkinWeightData::Link& link);
 
                 SCENE_DATA_API int GetBoneId(const AZStd::string& boneName);
 

@@ -82,23 +82,25 @@ namespace SettingsRegistryMergeUtilsTests
         DumpSettings,
         SettingsRegistryMergeUtilsParamFixture,
         ::testing::Values(
-            DumpSettingsRegistryParams{ AZ::SettingsRegistryInterface::Format::JsonPatch,
-                R"( [
-                        { "op": "add", "path": "/Test", "value": { "Object": {} } },
-
-                        { "op": "add", "path": "/Test/Object/NullType", "value": null },
-                        { "op": "add", "path": "/Test/Object/TrueType", "value": true },
-                        { "op": "add", "path": "/Test/Object/FalseType", "value": false },
-                        { "op": "add", "path": "/Test/Object/IntType", "value": -42 },
-                        { "op": "add", "path": "/Test/Object/UIntType", "value": 42 },
-                        { "op": "add", "path": "/Test/Object/DoubleType", "value": 42.0 },
-                        { "op": "add", "path": "/Test/Object/StringType", "value": "Hello world" },
-
-                        { "op": "add", "path": "/Test/Array", "value": [ null, true, false, -42, 42, 42.0, "Hello world" ] }
-                    ])",
+            DumpSettingsRegistryParams
+            {
+                AZ::SettingsRegistryInterface::Format::JsonPatch,
+                R"([)" "\n"
+                R"(    { "op": "add", "path": "/Test", "value": { "Object": {} } },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/NullType", "value": null },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/TrueType", "value": true },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/FalseType", "value": false },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/IntType", "value": -42 },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/UIntType", "value": 42 },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/DoubleType", "value": 42.0 },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Object/StringType", "value": "Hello world" },)" "\n"
+                R"(    { "op": "add", "path": "/Test/Array", "value": [ null, true, false, -42, 42, 42.0, "Hello world" ] })" "\n"
+                R"(])" "\n",
                 R"({"Test":{"Object":{"NullType":null,"TrueType":true,"FalseType":false,"IntType":-42,"UIntType":42)"
                 R"(,"DoubleType":42.0,"StringType":"Hello world"},"Array":[null,true,false,-42,42,42.0,"Hello world"]}})",
-                { false,
+                AZ::SettingsRegistryMergeUtils::DumperSettings
+                {
+                    false,
                     [](AZStd::string_view path)
                     {
                         AZStd::string_view prefixPath("/Test");
@@ -106,26 +108,30 @@ namespace SettingsRegistryMergeUtilsTests
                     }
                 }
             },
-            DumpSettingsRegistryParams{ AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-                R"({
-                        "Test":
-                        {
-                            "Array0": [ 142, 188 ],
-                            "Array1": [ 242, 288 ],
-                            "Array2": [ 342, 388 ]
-                        }
-                    })",
+            DumpSettingsRegistryParams
+            {
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                R"({)" "\n"
+                R"(    "Test":)" "\n"
+                R"(    {)" "\n"
+                R"(        "Array0": [ 142, 188 ], )" "\n"
+                R"(        "Array1": [ 242, 288 ], )" "\n"
+                R"(        "Array2": [ 342, 388 ] )" "\n"
+                R"(    })" "\n"
+                R"(})" "\n",
                 R"({"Test":{"Array0":[142,188],"Array1":[242,288],"Array2":[342,388]}})",
-                { false,
+                AZ::SettingsRegistryMergeUtils::DumperSettings{ false,
                     [](AZStd::string_view path)
                     {
                         AZStd::string_view prefixPath("/Test");
                         return prefixPath.starts_with(path.substr(0, prefixPath.size()));
                     }
                 }
-                    },
-                        DumpSettingsRegistryParams{ AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-                            R"({
+            },
+            DumpSettingsRegistryParams
+            {
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                R"({
                     "Test":
                     {
                         "Array0": [ 142, 188 ],
@@ -149,23 +155,27 @@ namespace SettingsRegistryMergeUtilsTests
                 R"(        ])""\n"
                 R"(    })""\n"
                 R"(})",
-                { true,
+                AZ::SettingsRegistryMergeUtils::DumperSettings
+                {
+                    true,
                     [](AZStd::string_view path)
                     {
                         AZStd::string_view prefixPath("/Test");
                         return prefixPath.starts_with(path.substr(0, prefixPath.size()));
                     }
                 }
-                    },
-                        DumpSettingsRegistryParams{ AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-                            R"({
+            },
+            DumpSettingsRegistryParams
+            {
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                R"({
                     "Test":
                     {
                         "Array0": [ 142, 188 ],
                         "Array1": [ 242, 288 ],
                         "Array2": [ 342, 388 ]
                     }
-                    })",
+                })",
                 R"({)""\n"
                 R"(    "Array0": [)""\n"
                 R"(        142,)""\n"
@@ -180,7 +190,9 @@ namespace SettingsRegistryMergeUtilsTests
                 R"(        388)""\n"
                 R"(    ])""\n"
                 R"(})",
-                { true,
+                AZ::SettingsRegistryMergeUtils::DumperSettings
+                {
+                    true,
                     [](AZStd::string_view path)
                     {
                         AZStd::string_view prefixPath("/Test");
@@ -188,8 +200,19 @@ namespace SettingsRegistryMergeUtilsTests
                     }
                 },
                 "/Test"
-                    }
-                        )
+            },
+            DumpSettingsRegistryParams{
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                R"({)" "\n"
+                R"(    "Test":)" "\n"
+                R"(    {)" "\n"
+                R"(        "Array0": [ 142, 188 ])" "\n"
+                R"(    })" "\n"
+                R"(})",
+                R"({"Root":{"Path":{"Test":{"Array0":[142,188]}}}})",
+                AZ::SettingsRegistryMergeUtils::DumperSettings{ false, {}, "/Root/Path/Test" },
+                "/Test"
+            })
     );
 
     //! ConfigFile MergeUtils Test
@@ -281,9 +304,13 @@ namespace SettingsRegistryMergeUtilsTests
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings parserSettings;
         parserSettings.m_commentPrefixFunc = [](AZStd::string_view line) -> AZStd::string_view
         {
-            if (line.starts_with("--") || line.starts_with(';') || line.starts_with('#'))
+            constexpr AZStd::string_view commentPrefixes[]{ "--", ";","#" };
+            for (AZStd::string_view commentPrefix : commentPrefixes)
             {
-                return {};
+                if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
+                {
+                    return line.substr(0, commentOffset);
+                }
             }
             return line;
         };
@@ -330,7 +357,7 @@ INSTANTIATE_TEST_CASE_P(
 -- android, ios, mac, linux, windows, etc...
 -- or left unprefixed, to set all platforms not specified. The rules apply in the order they're declared
 
-sys_game_folder=TestProject
+project_path=TestProject
 
 -- remote_filesystem - enable Virtual File System (VFS)
 -- This feature allows a remote instance of the game to run off assets
@@ -363,7 +390,7 @@ mac_assets = osx_gl
 -- Example: 192.168.1.0/24 will allow any address starting with 192.168.1.
 -- Example: 192.168.0.0/16 will allow any address starting with 192.168.
 -- Example: 192.168.0.0/8 will allow any address starting with 192.
--- white_list =
+-- allowed_list =
 
 -- IP address and optionally port of the asset processor.
 -- Set your PC IP here: (and uncomment the next line)
@@ -405,7 +432,7 @@ mac_wait_for_connect=0
 
 )"
         , AZStd::fixed_vector<ConfigFileParams::SettingsKeyValuePair, 20>{
-            ConfigFileParams::SettingsKeyValuePair{"/sys_game_folder", AZStd::string_view{"TestProject"}},
+            ConfigFileParams::SettingsKeyValuePair{"/project_path", AZStd::string_view{"TestProject"}},
             ConfigFileParams::SettingsKeyValuePair{"/remote_filesystem", AZ::s64{0}},
             ConfigFileParams::SettingsKeyValuePair{"/android_remote_filesystem", AZ::s64{0}},
             ConfigFileParams::SettingsKeyValuePair{"/ios_remote_filesystem", AZ::s64{0}},
@@ -428,7 +455,7 @@ mac_wait_for_connect=0
         // Parses a fake AssetProcessorPlatformConfig file which contains sections headers
         // and does not end with a newline
             ConfigFileParams{ "fake_AssetProcessorPlatformConfig.ini", R"(
-; ---- Enable/Disable platforms for the entire project. AssetProcessor will automatically add the current platform by default. 
+; ---- Enable/Disable platforms for the entire project. AssetProcessor will automatically add the current platform by default.
 
 ; PLATFORM DEFINITIONS
 ; [Platform (unique identifier)]
@@ -452,7 +479,7 @@ test_asset_processor_tag = test_value
 tags=tools,renderer,dx12,vulkan
 
 [Platform es3]
-tags=android,mobile,renderer,vulkan
+tags=android,mobile,renderer,vulkan ; With Comments at the end
 
 [Platform ios]
 tags=mobile,renderer,metal
@@ -489,76 +516,30 @@ tags=tools,renderer,metal)"
     TEST_F(SettingsRegistryMergeUtilsCommandLineFixture, CommandLineArguments_MergeToSettingsRegistry_Success)
     {
         AZ::CommandLine commandLine;
-        commandLine.Parse({ "programname.exe", "--gamefolder", "--RemoteIp", "10.0.0.1", "--ScanFolders", R"(\a\b\c,\d\e\f)", "Foo", "Bat" });
+        commandLine.Parse({ "programname.exe", "--project-path", "--RemoteIp", "10.0.0.1", "--ScanFolders", R"(\a\b\c,\d\e\f)", "Foo", "Bat" });
 
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_StoreCommandLine(*m_registry, commandLine);
+        AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_registry, commandLine);
+        // Clear the CommandLine instance
+        commandLine = {};
 
-        struct CommandLineVisitor
-            : AZ::SettingsRegistryInterface::Visitor
-        {
-            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPointer, AZStd::string_view,
-                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override
-            {
-                if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
-                {
-                    // Strip off the last key of the jsonPointer and check if the path is the command line root switch key
-                    // i.e "/../CommandLine/Switches
-                    AZStd::optional<AZStd::string_view> optionName = AZ::StringFunc::TokenizeLast(jsonPointer, '/');
-                    if (jsonPointer == AZ::SettingsRegistryMergeUtils::CommandLineSwitchRootKey && optionName && !optionName->empty())
-                    {
-                        // Add a empty mapping of option name to values if it is not in the map already
-                        m_optionArguments[*optionName];
-                    }
-                }
+        EXPECT_TRUE(AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(*m_registry, commandLine));
 
-                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-            }
+        ASSERT_TRUE(commandLine.HasSwitch("project-path"));
+        EXPECT_EQ(1, commandLine.GetNumSwitchValues("project-path"));
+        EXPECT_STREQ("", commandLine.GetSwitchValue("project-path", 0).c_str());
 
-            void Visit(AZStd::string_view jsonPointer, AZStd::string_view, AZ::SettingsRegistryInterface::Type
-                , AZStd::string_view value) override
-            {
-                // Strip off the last key from the jsonPointer and return that in the option name parameter
-                AZStd::optional<AZStd::string_view> optionName = AZ::StringFunc::TokenizeLast(jsonPointer, '/');
-                if (jsonPointer == AZ::SettingsRegistryMergeUtils::CommandLineMiscValuesRootKey)
-                {
-                    m_positionalArguments.push_back(value);
-                }
-                else if (jsonPointer.starts_with(AZ::SettingsRegistryMergeUtils::CommandLineSwitchRootKey) && optionName)
-                {
-                    // Option arguments are stored in array indices, underneath the option key
-                    // Therefore remove another token from the jsonPointer to retrieve the actual option name
-                    if (optionName = AZ::StringFunc::TokenizeLast(jsonPointer, '/'); optionName && !optionName->empty())
-                    {
-                        // Add an entry for the option with the specified value
-                        m_optionArguments[*optionName].push_back(value);
-                    }
-                }
-            }
+        ASSERT_TRUE(commandLine.HasSwitch("remoteip"));
+        ASSERT_EQ(1, commandLine.GetNumSwitchValues("remoteip"));
+        EXPECT_STREQ("10.0.0.1", commandLine.GetSwitchValue("remoteip", 0).c_str());
 
-            AZ::CommandLine::ParamMap m_optionArguments;
-            AZ::CommandLine::ParamContainer m_positionalArguments;
-        };
+        ASSERT_TRUE(commandLine.HasSwitch("scanfolders"));
+        ASSERT_EQ(2, commandLine.GetNumSwitchValues("scanfolders"));
+        EXPECT_STREQ(R"(\a\b\c)", commandLine.GetSwitchValue("scanfolders", 0).c_str());
+        EXPECT_STREQ(R"(\d\e\f)", commandLine.GetSwitchValue("scanfolders", 1).c_str());
 
-        CommandLineVisitor commandLineVisitor;
-        EXPECT_TRUE(m_registry->Visit(commandLineVisitor, AZ::SettingsRegistryMergeUtils::CommandLineRootKey));
-        EXPECT_EQ(3, commandLineVisitor.m_optionArguments.size());
-        auto optionIter = commandLineVisitor.m_optionArguments.find("gamefolder");
-        ASSERT_NE(commandLineVisitor.m_optionArguments.end(), optionIter);
-        EXPECT_EQ(0, optionIter->second.size());
-
-        optionIter = commandLineVisitor.m_optionArguments.find("remoteip");
-        ASSERT_NE(commandLineVisitor.m_optionArguments.end(), optionIter);
-        ASSERT_EQ(1, optionIter->second.size());
-        EXPECT_STREQ("10.0.0.1", optionIter->second[0].c_str());
-
-        optionIter = commandLineVisitor.m_optionArguments.find("scanfolders");
-        ASSERT_NE(commandLineVisitor.m_optionArguments.end(), optionIter);
-        ASSERT_EQ(2, optionIter->second.size());
-        EXPECT_STREQ(R"(\a\b\c)", optionIter->second[0].c_str());
-        EXPECT_STREQ(R"(\d\e\f)", optionIter->second[1].c_str());
-
-        ASSERT_EQ(2, commandLineVisitor.m_positionalArguments.size());
-        EXPECT_STREQ("Foo", commandLineVisitor.m_positionalArguments[0].c_str());
-        EXPECT_STREQ("Bat", commandLineVisitor.m_positionalArguments[1].c_str());
+        ASSERT_EQ(3, commandLine.GetNumMiscValues());
+        EXPECT_STREQ("programname.exe", commandLine.GetMiscValue(0).c_str());
+        EXPECT_STREQ("Foo", commandLine.GetMiscValue(1).c_str());
+        EXPECT_STREQ("Bat", commandLine.GetMiscValue(2).c_str());
     }
-} 
+}

@@ -117,10 +117,6 @@ CMatInfo::CMatInfo()
 
     ZeroStruct(m_streamZoneInfo);
 
-#ifdef TRACE_MATERIAL_LEAKS
-    m_sLoadingCallstack = GetSystem()->GetLoadingProfilerCallstack();
-#endif
-
     // Used to know when a .dccmtl file has been changed,
     // requiring the source material to be updated
     m_dccMaterialHash = 0;
@@ -341,7 +337,7 @@ ISurfaceType* CMatInfo::GetSurfaceType()
 //////////////////////////////////////////////////////////////////////////
 void CMatInfo::SetSubMtlCount(int numSubMtl)
 {
-    AUTO_LOCK(GetSubMaterialResizeLock());    
+    AUTO_LOCK(GetSubMaterialResizeLock());
     if (numSubMtl > 0)
     {
         m_Flags |= MTL_FLAG_MULTI_SUBMTL;
@@ -1109,15 +1105,6 @@ void CMatInfo::SetTexelDensityDebug([[maybe_unused]] int mode)
             m_subMtls[i]->SetTexelDensityDebug(mode);
         }
     }
-#endif
-}
-
-const char* CMatInfo::GetLoadingCallstack()
-{
-#ifdef TRACE_MATERIAL_LEAKS
-    return m_sLoadingCallstack.c_str();
-#else
-    return "";
 #endif
 }
 

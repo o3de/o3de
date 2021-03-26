@@ -41,7 +41,6 @@ ly_add_target(
 ly_add_target(
     NAME Multiplayer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Multiplayer.9524EBD3E64D4D13A9764A18DB9A564F.v1.0.0
     FILES_CMAKE
         multiplayer_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -53,6 +52,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Multiplayer.Static
+    RUNTIME_DEPENDENCIES
+        Gem::CertificateManager
 )
 
 ################################################################################

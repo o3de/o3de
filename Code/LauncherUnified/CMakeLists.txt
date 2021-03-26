@@ -67,8 +67,12 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 
 endif()
 
-foreach(project ${LY_PROJECTS_NAME})
-
+get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+    # Computes the realpath to the project
+    # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
+    # Otherwise the the absolute project_path is returned with symlinks resolved
+    file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
     ################################################################################
     # Monolithic game
     ################################################################################
@@ -77,7 +81,7 @@ foreach(project ${LY_PROJECTS_NAME})
         # In the monolithic case, we need to register the gem modules, to do so we will generate a StaticModules.inl
         # file from StaticModules.in
 
-        get_property(game_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project}.GameLauncher)
+        get_property(game_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.GameLauncher)
         
         unset(extern_module_declarations)
         unset(module_invocations)
@@ -96,7 +100,7 @@ foreach(project ${LY_PROJECTS_NAME})
         endforeach()
 
         configure_file(StaticModules.in
-            ${CMAKE_CURRENT_BINARY_DIR}/${project}.GameLauncher/Includes/StaticModules.inl
+            ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes/StaticModules.inl
         )
 
         set(game_build_dependencies 
@@ -107,7 +111,7 @@ foreach(project ${LY_PROJECTS_NAME})
         )
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-            get_property(server_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project}.ServerLauncher)
+            get_property(server_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.ServerLauncher)
         
             unset(extern_module_declarations)
             unset(module_invocations)
@@ -126,7 +130,7 @@ foreach(project ${LY_PROJECTS_NAME})
             endforeach()
 
             configure_file(StaticModules.in
-                ${CMAKE_CURRENT_BINARY_DIR}/${project}.ServerLauncher/Includes/StaticModules.inl
+                ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes/StaticModules.inl
             )
 
             set(server_build_dependencies 
@@ -156,7 +160,7 @@ foreach(project ${LY_PROJECTS_NAME})
     # Game
     ################################################################################
     ly_add_target(
-        NAME ${project}.GameLauncher ${PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE}
+        NAME ${project_name}.GameLauncher ${PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE}
         NAMESPACE AZ
         FILES_CMAKE
             launcher_project_files.cmake
@@ -165,15 +169,18 @@ foreach(project ${LY_PROJECTS_NAME})
         COMPILE_DEFINITIONS
             PRIVATE
                 # Adds the name of the project/game
-                LY_GAME_PROJECT_NAME="${project}"
-                # Adds the ${project}_GameLauncher target as a define so for the Settings Registry to use
+                LY_PROJECT_NAME="${project_name}"
+                # Adds the project path supplied to CMake during configuration
+                # This is used as a fallback to launch the AssetProcessor
+                LY_PROJECT_CMAKE_PATH="${project_path}"
+                # Adds the ${project_name}_GameLauncher target as a define so for the Settings Registry to use
                 # when loading .setreg file specializations
                 # This is needed so that only gems for the project game launcher are loaded
-                LY_CMAKE_TARGET="${project}_GameLauncher"
+                LY_CMAKE_TARGET="${project_name}_GameLauncher"
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
-                ${CMAKE_CURRENT_BINARY_DIR}/${project}.GameLauncher/Includes # required for StaticModules.inl
+                ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes # required for StaticModules.inl
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::Launcher.Static
@@ -183,9 +190,9 @@ foreach(project ${LY_PROJECTS_NAME})
             ${game_runtime_dependencies}
     )
     # Needs to be set manually after ly_add_target to prevent the default location overriding it
-    set_target_properties(${project}.GameLauncher
+    set_target_properties(${project_name}.GameLauncher
         PROPERTIES 
-            FOLDER ${project}
+            FOLDER ${project_name}
     )
 
     ################################################################################
@@ -194,10 +201,10 @@ foreach(project ${LY_PROJECTS_NAME})
     if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 
         get_property(server_projects GLOBAL PROPERTY LY_LAUNCHER_SERVER_PROJECTS)
-        if(${project} IN_LIST server_projects)
+        if(${project_name} IN_LIST server_projects)
 
             ly_add_target(
-                NAME ${project}.ServerLauncher APPLICATION
+                NAME ${project_name}.ServerLauncher APPLICATION
                 NAMESPACE AZ
                 FILES_CMAKE
                     launcher_project_files.cmake
@@ -206,15 +213,18 @@ foreach(project ${LY_PROJECTS_NAME})
                 COMPILE_DEFINITIONS
                     PRIVATE
                         # Adds the name of the project/game
-                        LY_GAME_PROJECT_NAME="${project}"
-                        # Adds the ${project}_ServerLauncher target as a define so for the Settings Registry to use
+                        LY_PROJECT_NAME="${project_name}"
+                        # Adds the project path supplied to CMake during configuration
+                        # This is used as a fallback to launch the AssetProcessor
+                        LY_PROJECT_CMAKE_PATH="${project_path}"
+                        # Adds the ${project_name}_ServerLauncher target as a define so for the Settings Registry to use
                         # when loading .setreg file specializations
                         # This is needed so that only gems for the project server launcher are loaded
-                        LY_CMAKE_TARGET="${project}_ServerLauncher"
+                        LY_CMAKE_TARGET="${project_name}_ServerLauncher"
                 INCLUDE_DIRECTORIES
                     PRIVATE
                         .
-                        ${CMAKE_CURRENT_BINARY_DIR}/${project}.ServerLauncher/Includes # required for StaticModules.inl
+                        ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes # required for StaticModules.inl
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::Launcher.Static
@@ -224,9 +234,9 @@ foreach(project ${LY_PROJECTS_NAME})
                     ${server_runtime_dependencies}
             )
             # Needs to be set manually after ly_add_target to prevent the default location overriding it
-            set_target_properties(${project}.ServerLauncher
+            set_target_properties(${project_name}.ServerLauncher
                 PROPERTIES 
-                    FOLDER ${project}
+                    FOLDER ${project_name}
             )
         endif()
 

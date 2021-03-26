@@ -25,8 +25,9 @@ namespace AzFramework::AssetSystem::Platform
 {
     void AllowAssetProcessorToForeground()
     {}
-    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view appRoot,
-        AZStd::string_view gameProjectName)
+
+    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view engineRoot,
+        AZStd::string_view projectPath)
     {
         pid_t firstChildPid = fork();
         if (firstChildPid == 0)
@@ -55,22 +56,22 @@ namespace AzFramework::AssetSystem::Platform
                 };
                 int optionalArgPos = 3;
 
-                // Add the app-root to the launch command if not empty
-                AZ::IO::FixedMaxPathString appRootArg;
-                if (!appRoot.empty())
+                // Add the engine path to the launch command if not empty
+                AZ::IO::FixedMaxPathString engineRootArg;
+                if (!engineRoot.empty())
                 {
-                    appRootArg = AZ::IO::FixedMaxPathString::format(R"(--app-root="%.*s")", 
-                        aznumeric_cast<int>(appRoot.size()), appRoot.data());
-                    args[optionalArgPos++] = appRootArg.data();
+                    engineRootArg = AZ::IO::FixedMaxPathString::format(R"(--engine-path="%.*s")", 
+                        aznumeric_cast<int>(engineRoot.size()), engineRoot.data());
+                    args[optionalArgPos++] = engineRootArg.data();
                 }
 
-                // Add the active game project to the launch command if not empty
-                AZ::IO::FixedMaxPathString projectArg;
-                if (!gameProjectName.empty())
+                // Add the active project path to the launch command if not empty
+                AZ::IO::FixedMaxPathString projectPathArg;
+                if (!projectPath.empty())
                 {
-                    projectArg = AZ::IO::FixedMaxPathString::format(R"(--regset="/Amazon/AzCore/Bootstrap/sys_game_folder=%.*s")",
-                        aznumeric_cast<int>(gameProjectName.size()), gameProjectName.data());
-                    args[optionalArgPos++] = projectArg.data();
+                    projectPathArg = AZ::IO::FixedMaxPathString::format(R"(--regset="/Amazon/AzCore/Bootstrap/project_path=%.*s")",
+                        aznumeric_cast<int>(projectPath.size()), projectPath.data());
+                    args[optionalArgPos++] = projectPathArg.data();
                 }
 
                 AZStd::apply(execl, args);

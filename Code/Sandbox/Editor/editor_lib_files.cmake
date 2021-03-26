@@ -807,6 +807,8 @@ set(FILES
     EnvironmentPanel.cpp
     EnvironmentPanel.h
     EnvironmentPanel.ui
+    TrackView/AtomOutputFrameCapture.cpp
+    TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
     TrackView/TrackViewDialog.cpp
     TrackView/TrackViewDialog.h

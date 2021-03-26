@@ -30,7 +30,6 @@ ly_add_target(
 ly_add_target(
     NAME VideoPlaybackFramework ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.VideoPlaybackFramework.560d69cbaafd40bea8a09bccfe7f77e6.v0.1.0
     FILES_CMAKE
         videoplaybackframework_shared_files.cmake
     INCLUDE_DIRECTORIES

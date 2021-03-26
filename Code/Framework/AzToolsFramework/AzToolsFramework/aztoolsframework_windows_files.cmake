@@ -33,8 +33,5 @@ set(FILES
     UI/UICore/SaveChangesDialog.hxx
     UI/UICore/SaveChangesDialog.cpp
     UI/UICore/SaveChangesDialog.ui
-    Process/internal/ProcessWatcher_Win.cpp
-    Process/internal/ProcessCommon_Win.h
-    Process/internal/ProcessCommunicator_Win.cpp
     ToolsFileUtils/ToolsFileUtils_win.cpp
 )

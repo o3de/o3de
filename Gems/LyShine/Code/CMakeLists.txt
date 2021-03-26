@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME LyShine ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.LyShine.0fefab3f13364722b2eab3b96ce2bf20.v0.1.0
     FILES_CMAKE
         lyshine_common_module_files.cmake
     INCLUDE_DIRECTORIES
@@ -48,6 +47,9 @@ ly_add_target(
             Legacy::CryCommon
             Gem::LmbrCentral
             Gem::TextureAtlas
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
+        Gem::TextureAtlas
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -85,9 +87,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME LyShine.Editor MODULE
+        NAME LyShine.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.LyShine.Editor.0fefab3f13364722b2eab3b96ce2bf20.v0.1.0
         FILES_CMAKE
             lyshine_common_module_files.cmake
         COMPILE_DEFINITIONS
@@ -107,6 +109,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LyShine.Editor.Static
                 Gem::LmbrCentral
                 Gem::TextureAtlas
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
+            Gem::TextureAtlas
 )
 endif()
 

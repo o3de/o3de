@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME StartingPointMovement ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.StartingPointMovement.73d8779dc28a4123b7c9ed76217464af.v0.1.0
     FILES_CMAKE
         startingpointmovement_shared_files.cmake
     INCLUDE_DIRECTORIES

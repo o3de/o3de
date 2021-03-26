@@ -70,7 +70,7 @@ set(test_json_template [[
 set(test_module_template [[
         "@stripped_test_target@":
         {
-            "Module":"$<TARGET_FILE_NAME:@namespace_and_target@>"
+            "Modules":["$<TARGET_FILE_NAME:@namespace_and_target@>"]
         }]]
 )
 

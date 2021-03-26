@@ -1589,7 +1589,7 @@ void CShaderMan::mfInit (void)
 #else
         m_ShadersCache = CONCAT_PATHS(g_shaderCache, "D3D11");
 #endif
-        m_szCachePath = "@cache@/";
+        m_szCachePath = "@usercache@/";
         
         if (CRenderer::CV_r_shadersImport == 3)
         {

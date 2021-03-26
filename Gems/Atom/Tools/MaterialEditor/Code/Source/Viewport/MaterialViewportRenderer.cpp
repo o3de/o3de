@@ -318,6 +318,9 @@ namespace MaterialEditor
         Camera::Configuration cameraConfig;
         Camera::CameraRequestBus::EventResult(cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
 
+        bool enableAlternateSkybox = false;
+        MaterialViewportRequestBus::BroadcastResult(enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
+
         preset->ApplyLightingPreset(
             iblFeatureProcessor,
             m_skyboxFeatureProcessor,
@@ -326,7 +329,8 @@ namespace MaterialEditor
             cameraConfig,
             m_lightHandles,
             m_shadowCatcherMaterial,
-            m_shadowCatcherOpacityPropertyIndex);
+            m_shadowCatcherOpacityPropertyIndex,
+            enableAlternateSkybox);
     }
 
     void MaterialViewportRenderer::OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset)
@@ -392,12 +396,24 @@ namespace MaterialEditor
         }
     }
 
+    void MaterialViewportRenderer::OnAlternateSkyboxEnabledChanged(bool enable)
+    {
+        AZ_UNUSED(enable);
+        AZ::Render::LightingPresetPtr selectedPreset;
+        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
+        OnLightingPresetSelected(selectedPreset);
+    }
+
+    void MaterialViewportRenderer::OnFieldOfViewChanged(float fieldOfView)
+    {
+        MaterialEditorViewportInputControllerRequestBus::Broadcast(&MaterialEditorViewportInputControllerRequestBus::Handler::SetFieldOfView, fieldOfView);
+    }
+
     void MaterialViewportRenderer::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (m_modelAssetId == asset.GetId())
         {
-            MaterialEditorViewportInputControllerRequestBus::Broadcast(
-                &MaterialEditorViewportInputControllerRequestBus::Handler::Reset);
+            MaterialEditorViewportInputControllerRequestBus::Broadcast(&MaterialEditorViewportInputControllerRequestBus::Handler::Reset);
             AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
         }
     }

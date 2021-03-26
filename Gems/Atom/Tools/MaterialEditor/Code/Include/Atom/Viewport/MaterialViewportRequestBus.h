@@ -16,6 +16,7 @@
 #include <AzCore/std/string/string.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <QImage>
 
 namespace MaterialEditor
 {
@@ -42,7 +43,7 @@ namespace MaterialEditor
 
         //! Save lighting preset
         //! @returns true if preset was saved, otherwise false
-        virtual bool SaveLightingPresetSelection(const AZStd::string& path) const = 0;
+        virtual bool SaveLightingPreset(AZ::Render::LightingPresetPtr preset, const AZStd::string& path) const = 0;
 
         //! Get lighting preset by name
         //! @param name preset name to search for
@@ -54,7 +55,7 @@ namespace MaterialEditor
         virtual AZ::Render::LightingPresetPtr GetLightingPresetSelection() const = 0;
 
         //! Select lighting preset
-        //! @param name preset to select
+        //! @param preset to select
         virtual void SelectLightingPreset(AZ::Render::LightingPresetPtr preset) = 0;
 
         //! Select lighting preset by name
@@ -63,6 +64,19 @@ namespace MaterialEditor
 
         //! Get set of lighting preset names
         virtual MaterialViewportPresetNameSet GetLightingPresetNames() const = 0;
+
+        //! Set lighting preset preview image
+        //! @param preset used to set preview image
+        //! @param preview image
+        virtual void SetLightingPresetPreview(AZ::Render::LightingPresetPtr preset, const QImage& image) = 0;
+
+        //! Get lighting preset preview image
+        //! @param preset used to find preview image
+        virtual QImage GetLightingPresetPreview(AZ::Render::LightingPresetPtr preset) const = 0;
+
+        //! Get model preset last save path
+        //! @param preset to lookup last save path
+        virtual AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const = 0;
 
         //! Add model preset
         //! @param preset model preset to add for selection
@@ -75,7 +89,7 @@ namespace MaterialEditor
 
         //! Save Model preset
         //! @returns true if preset was saved, otherwise false
-        virtual bool SaveModelPresetSelection(const AZStd::string& path) const = 0;
+        virtual bool SaveModelPreset(AZ::Render::ModelPresetPtr preset, const AZStd::string& path) const = 0;
 
         //! Get model preset by name
         //! @param name preset name to search for
@@ -97,6 +111,19 @@ namespace MaterialEditor
         //! Get set of model preset names
         virtual MaterialViewportPresetNameSet GetModelPresetNames() const = 0;
 
+        //! Set model preset preview image
+        //! @param preset used to set preview image
+        //! @param preview image
+        virtual void SetModelPresetPreview(AZ::Render::ModelPresetPtr preset, const QImage& image) = 0;
+
+        //! Get model preset preview image
+        //! @param preset used to find preview image
+        virtual QImage GetModelPresetPreview(AZ::Render::ModelPresetPtr preset) const = 0;
+
+        //! Get model preset last save path
+        //! @param preset to lookup last save path
+        virtual AZStd::string GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const = 0;
+
         //! Set enabled state for shadow catcher
         virtual void SetShadowCatcherEnabled(bool enable) = 0;
 
@@ -108,6 +135,18 @@ namespace MaterialEditor
 
         //! Get enabled state for grid
         virtual bool GetGridEnabled() const = 0;
+
+        //! Set enabled state for alternate skybox
+        virtual void SetAlternateSkyboxEnabled(bool enable) = 0;
+
+        //! Get enabled state for alternate skybox
+        virtual bool GetAlternateSkyboxEnabled() const = 0;
+
+        //! Set field of view
+        virtual void SetFieldOfView(float fieldOfView) = 0;
+
+        //! Get field of view
+        virtual float GetFieldOfView() const = 0;
     };
 
     using MaterialViewportRequestBus = AZ::EBus<MaterialViewportRequests>;

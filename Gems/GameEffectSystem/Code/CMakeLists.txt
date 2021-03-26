@@ -26,7 +26,6 @@ ly_add_target(
 ly_add_target(
     NAME GameEffectSystem ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.GameEffectSystem.d378b5a7b47747d0a7aa741945df58f3.v1.0.0
     FILES_CMAKE
         gameeffectsystem_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -69,6 +69,8 @@ namespace MaterialEditor
         void OnModelPresetChanged(AZ::Render::ModelPresetPtr preset) override;
         void OnShadowCatcherEnabledChanged(bool enable) override;
         void OnGridEnabledChanged(bool enable) override;
+        void OnAlternateSkyboxEnabledChanged(bool enable) override;
+        void OnFieldOfViewChanged(float fieldOfView) override;
 
         // AZ::Data::AssetBus::Handler interface overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

@@ -35,7 +35,7 @@ using namespace AssetProcessor;
 namespace AssetProcessor
 {
     const char* const TEST_BOOTSTRAP_DATA =
-        "sys_game_folder = TestProject                                                      \r\n\
+        "project_path = TestProject                                                         \r\n\
         assets = pc                                                                         \r\n\
         -- ip and port of the asset processor.Only if you need to change defaults           \r\n\
         -- remote_ip = 127.0.0.1                                                            \r\n\

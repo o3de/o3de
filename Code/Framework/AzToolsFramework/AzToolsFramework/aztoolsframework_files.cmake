@@ -194,11 +194,6 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
-    Process/ProcessCommunicator.cpp
-    Process/ProcessCommunicator.h
-    Process/ProcessWatcher.cpp
-    Process/ProcessWatcher.h
-    Process/ProcessCommon_fwd.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp

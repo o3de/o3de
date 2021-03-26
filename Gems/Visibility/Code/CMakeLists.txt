@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME Visibility ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Visibility.3b4ab3f54c2749328934c5b864355a61.v0.1.0
     FILES_CMAKE
         visibility_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -64,9 +63,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Visibility.Editor MODULE
+        NAME Visibility.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Visibility.Editor.3b4ab3f54c2749328934c5b864355a61.v0.1.0
         FILES_CMAKE
             visibility_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

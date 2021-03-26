@@ -70,6 +70,7 @@
 #endif
 
 #include "../Common/RenderCapabilities.h"
+#include <AzCore/Utils/Utils.h>
 
 #ifdef WIN32
 // Count monitors helper
@@ -1634,8 +1635,8 @@ WIN_HWND CD3D9Renderer::Init([[maybe_unused]] int x, [[maybe_unused]] int y, int
     iLog->Log ("Direct3D driver is creating...");
     iLog->Log ("Crytek Direct3D driver version %4.2f (%s <%s>)", VERSION_D3D, __DATE__, __TIME__);
 
-    const char* sGameName = iConsole->GetCVar("sys_game_name")->GetString();
-    cry_strcpy(m_WinTitle, sGameName);
+    auto projectName = AZ::Utils::GetProjectName();
+    cry_strcpy(m_WinTitle, projectName.c_str());
 
     iLog->Log ("Creating window called '%s' (%dx%d)", m_WinTitle, width, height);
 

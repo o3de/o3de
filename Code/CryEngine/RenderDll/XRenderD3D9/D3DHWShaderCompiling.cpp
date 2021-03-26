@@ -3490,7 +3490,7 @@ void CHWShader_D3D::mfSaveCGFile(const char* scr, const char* path)
     }
     else
     {
-        sprintf_s(name, "@cache@/shaders/fxerror/%s(GL%llx)/(LT%x)(RT%llx)/(MD%x)(MDV%x)(PSS%llx)(ST%llx).cg", GetName(), m_pCurInst->m_Ident.m_GLMask, m_pCurInst->m_Ident.m_LightMask, m_pCurInst->m_Ident.m_RTMask, m_pCurInst->m_Ident.m_MDMask, m_pCurInst->m_Ident.m_MDVMask, m_pCurInst->m_Ident.m_pipelineState.opaque, m_pCurInst->m_Ident.m_STMask);
+        sprintf_s(name, "@usercache@/shaders/fxerror/%s(GL%llx)/(LT%x)(RT%llx)/(MD%x)(MDV%x)(PSS%llx)(ST%llx).cg", GetName(), m_pCurInst->m_Ident.m_GLMask, m_pCurInst->m_Ident.m_LightMask, m_pCurInst->m_Ident.m_RTMask, m_pCurInst->m_Ident.m_MDMask, m_pCurInst->m_Ident.m_MDVMask, m_pCurInst->m_Ident.m_pipelineState.opaque, m_pCurInst->m_Ident.m_STMask);
     }
 
     AZ::IO::HandleType fileHandle;
@@ -4672,7 +4672,7 @@ bool CAsyncShaderTask::CompileAsyncShader(SShaderAsyncInfo* pAsync)
         CryFixedStringT<1024> hlslPath;
 
         // Create a directory for this shader type, strip the .fxcb extension from the folder name
-        shaderSourceOutputFolder.Format("@cache@/%s",pAsync->m_pShader->m_pDevCache->m_Name.c_str());
+        shaderSourceOutputFolder.Format("@usercache@/%s",pAsync->m_pShader->m_pDevCache->m_Name.c_str());
         PathUtil::RemoveExtension(shaderSourceOutputFolder);
         gEnv->pFileIO->CreatePath(shaderSourceOutputFolder);
 

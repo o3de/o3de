@@ -28,6 +28,8 @@
 #include <QFontMetrics>
 #include <QSettings>
 
+#include <AzCore/Utils/Utils.h>
+
 // AzFramework
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
@@ -975,8 +977,9 @@ void GraphicsSettingsDialog::accept()
 
 void GraphicsSettingsDialog::OpenCustomSpecDialog()
 {
-    QString projectName = GetIEditor()->GetProjectName();
-    QString settingsPath = projectName + "/" + SETTINGS_FILE_PATH;
+    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+    projectPath /= SETTINGS_FILE_PATH.toUtf8().constData();
+    QString settingsPath = QString::fromUtf8(projectPath.c_str(), aznumeric_cast<int>(projectPath.Native().size()));
 
     CAutoDirectoryRestoreFileDialog importCustomSpecDialog(QFileDialog::AcceptOpen, QFileDialog::ExistingFile, ".cfg", settingsPath, CFG_FILEFILTER, {}, {}, this);
 
@@ -1189,8 +1192,9 @@ void GraphicsSettingsDialog::SaveSystemSettings()
 
         // Adding the project name to the path so that the file is created there if it doesn't already exist
         // as we don't want to modify the version in Engine/config.
-        QString projectName = GetIEditor()->GetProjectName();
-        QString settingsPath = projectName + "/" + SETTINGS_FILE_PATH;
+        AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+        projectPath /= SETTINGS_FILE_PATH.toUtf8().constData();
+        QString settingsPath = QString::fromUtf8(projectPath.c_str(), aznumeric_cast<int>(projectPath.Native().size()));
 
         QString settingsFile = settingsPath + m_cfgFiles[m_currentPlatform][cfgFileIndex].c_str();
 

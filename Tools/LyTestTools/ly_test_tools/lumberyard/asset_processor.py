@@ -49,6 +49,7 @@ ASSET_PROCESSOR_PLATFORM_MAP = {
     'windows': 'pc',
 }
 
+ASSET_PROCESSOR_SETTINGS_ROOT_KEY='/Amazon/AssetProcessor/Settings'
 
 class AssetProcessorError(Exception):
     """ Indicates that the AssetProcessor raised an error """
@@ -69,6 +70,7 @@ class AssetProcessor(object):
         self._ap_proc = None
         self._temp_asset_directory = None
         self._temp_asset_root = None
+        self._project_path = self._workspace.project
         self._override_scan_folders = []
         self._test_assets_source_folder = None
         self._cache_folder = None
@@ -76,6 +78,8 @@ class AssetProcessor(object):
         self._control_connection = None
         self._function_name = None
         self._failed_log_root = None
+        self._disable_all_platforms = False
+        self._enabled_platform_overrides = dict()
 
     # Starts AP but does not by default run until idle.
     def start(self, connection_timeout=30, quitonidle=False, add_gem_scan_folders=None, add_config_scan_folders=None,
@@ -445,7 +449,10 @@ class AssetProcessor(object):
             extra_gui_params.append(ap_platform)
 
         if extra_params:
-            extra_gui_params.append(extra_params)
+            if isinstance(extra_params, list):
+                extra_gui_params.extend(extra_params)
+            else:
+                extra_gui_params.append(extra_params)
 
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_gui_params, add_gem_scan_folders=add_gem_scan_folders,
@@ -508,9 +515,8 @@ class AssetProcessor(object):
         if fastscan:
             command.append("--zeroAnalysisMode")
 
-        if self._workspace.project:
-            command.append("--gamefolder")
-            command.append(self._workspace.project)
+        if self._project_path:
+            command.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self._project_path}"')
 
         # When using a scratch workspace we will set several options.  The asset root controls where our
         # cache lives, gives us a unique directory to place our logs in, and indicates we wish to randomize our
@@ -520,6 +526,7 @@ class AssetProcessor(object):
             command.append(f"{self._temp_asset_root}")
             command.append("--logDir")
             command.append(f"{self._temp_asset_root}")
+            command.append(f'--regset="/Amazon/AzCore/Bootstrap/project_cache_path={self.temp_project_cache_path()}"')
             command.append("--randomListeningPort")
         if self._override_scan_folders:
             command.append("--scanfolders")
@@ -537,10 +544,16 @@ class AssetProcessor(object):
             if not isinstance(scan_folder_pattern, list):
                 scan_folder_pattern = [scan_folder_pattern]
             command.append(f"{','.join(scan_folder_pattern)}")
+
+        if self._disable_all_platforms:
+            command.append(f'--regremove="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms"')
         if platforms:
             if isinstance(platforms, list):
                 platforms = ','.join(platforms)
-            command.append(f'/platforms={platforms}')
+            command.append(f'--platforms={platforms}')
+        for key, value in self._enabled_platform_overrides:
+            command.append(f'--regset="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{key}={value}"')
+
         if extra_params:
             if isinstance(extra_params, list):
                 command.extend(extra_params)
@@ -602,84 +615,21 @@ class AssetProcessor(object):
 
     def disable_all_asset_processor_platforms(self):
         """
-        Modify the AssetProcessorPlatformConfig file to enable asset procesing for the target platform.
-        This is done by commenting the line containing the platform name.
+        Disables all platforms via the SettingsRegistry --regremove option
         
         :return: None
         """
-        if not os.path.isfile(self._workspace.paths.asset_processor_config_file()):
-            raise IOError("Unable to find a file at {}".format(self._workspace.paths.asset_processor_config_file()))
-        else:
-            # AssetProcessorPlatformConfig.ini is generally in read only mode on fresh checkouts
-            file_system.unlock_file(self._workspace.paths.asset_processor_config_file())
-            with open(self._workspace.paths.asset_processor_config_file(), 'r+') as config_file:
-                data = config_file.readlines()
-
-                section_end = None
-                section_begin = None
-
-                # configParser is useless here because it strips commented lines.
-                for lineNmber, configRow in enumerate(data):
-                    if "[Platforms]" in configRow:
-                        section_begin = lineNmber
-                    # First instance of an open bracket after the platform's section will be the start of a section
-                    elif "[" in configRow and section_begin is not None:
-                        section_end = lineNmber
-                    if section_begin is not None and section_end is not None:
-                        break
-
-                offsetFromPlatformsHeader = 0
-                for line in itertools.islice(data, section_begin + 1, section_end):
-                    offsetFromPlatformsHeader += 1
-                    data[section_begin + offsetFromPlatformsHeader] = f";{line}"
-
-                config_file.seek(0)
-                config_file.truncate()
-                config_file.writelines(data)
+        self._disable_all_platforms = True
 
     def enable_asset_processor_platform(self, platform):
         # type: (str) -> None
         """
-        Modify the AssetProcessorPlatformConfig file to enable asset processing for the target platform.
-        This is done by uncommenting the line containing the platform name.
+        Add the platform to the dict of platforms to enable via the SettingsRegistry --regset option
         
         :param platform: The platform to enable
         :return: None
         """
-        config_file_path = self._workspace.paths.asset_processor_config_file()
-        if self._temp_asset_root:
-            config_file_path = os.path.join(self._temp_asset_root, "AssetProcessorPlatformConfig.ini")
-        if not os.path.isfile(config_file_path):
-            raise IOError(f"Unable to find a file at {config_file_path}")
-        else:
-            # AssetProcessorPlatformConfig.ini is generally in read only mode on fresh checkouts
-            file_system.unlock_file(config_file_path)
-            with open(config_file_path, 'r+') as config_file:
-                data = config_file.readlines()
-
-                section_end = None
-                section_begin = None
-
-                # configParser is useless here because it strips commented lines.
-                for lineNmber, configRow in enumerate(data):
-                    if "[Platforms]" in configRow:
-                        section_begin = lineNmber
-                    # First instance of an open bracket after the platform's section will be the start of a section
-                    elif "[" in configRow and section_begin is not None:
-                        section_end = lineNmber
-                    if section_begin is not None and section_end is not None:
-                        break
-
-                offsetFromPlatformsHeader = 0
-                for line in itertools.islice(data, section_begin + 1, section_end):
-                    offsetFromPlatformsHeader += 1
-                    if platform in line:
-                        data[section_begin + offsetFromPlatformsHeader] = line.replace(';', '')
-                        break
-
-                config_file.seek(0)
-                config_file.truncate()
-                config_file.writelines(data)
+        self._enabled_platform_overrides[platform] = 'enabled'
 
     def temp_asset_root(self):
         """
@@ -697,13 +647,11 @@ class AssetProcessor(object):
 
         :return: None
         """
-        for copy_dir in [os.path.join(self._workspace.project, 'Config'), 'Engine']:
+        for copy_dir in [self._workspace.project, 'Engine']:
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
-        for copyfile_name in ['bootstrap.cfg', 'AssetProcessorPlatformConfig.ini', 'engine.json',
-                              os.path.join(self._workspace.project, 'Config', 'Editor.xml'),
-                              os.path.join(self._workspace.project, "gems.json"),
+        for copyfile_name in ['bootstrap.cfg', 'AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
                               os.path.join('Engine', 'exclude.filetag')]:
             shutil.copyfile(os.path.join(self._workspace.paths.dev(), copyfile_name),
@@ -752,9 +700,9 @@ class AssetProcessor(object):
         self._temp_asset_root = self._temp_asset_directory.name
         self._copy_asset_root_files()
         self._workspace.paths.set_ap_log_root(self._temp_asset_root)
+        self._project_path = os.path.join(self._temp_asset_root, self._workspace.project)
         if project_scan_folder:
-            project_dir = os.path.join(self._temp_asset_root, self._workspace.project)
-            self.add_scan_folder(project_dir)
+            self.add_scan_folder(self._project_path)
 
     def add_scan_folder(self, folder_name) -> str:
         """
@@ -834,9 +782,8 @@ class AssetProcessor(object):
         self._function_name = function_name
         self._assets_source_folder = utils.prepare_test_assets(assets_path, function_name, test_folder)
         self._test_assets_source_folder = test_folder
-        self._cache_folder = os.path.join(self._temp_asset_root, 'Cache', self._workspace.project, cache_platform or
+        self._cache_folder = os.path.join(self._temp_asset_root, 'Cache', cache_platform or
                                           ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform],
-                                          self._workspace.project.lower(),
                                           function_name.lower() if existing_function_name is None
                                           else existing_function_name)
 
@@ -938,10 +885,20 @@ class AssetProcessor(object):
         :param asset_platform: Asset platform to use.  Workspace's asset platform if not supplied
         :return: path to project cache
         """
-        project_name = project_name or self._workspace.project
         asset_platform = asset_platform or ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform]
-        return os.path.join(self._temp_asset_root, 'Cache', project_name,
-                            asset_platform.lower(), project_name.lower())
+        return os.path.join(self._temp_asset_root, 'Cache',
+                            asset_platform.lower())
+
+    def temp_project_cache_path(self, project_name=None):
+        """
+        Get the project cache root folder from a test run using prepare_test_environment
+        The project cache root folder does not include the asset platform
+
+        :param project_name: Project name to use, defaults to workspace's project name
+
+        :return: path to project cache root folder
+        """
+        return os.path.join(self._temp_asset_root, 'Cache')
 
     def clear_readonly(self, relative_dest):
         """
@@ -991,13 +948,19 @@ class AssetProcessor(object):
 
 
 def _build_ap_batch_call_params(ap_path, project, platforms, extra_params=None):
-    project_str = f"/gamefolder={project}"
+    project_str = f"--regset=/Amazon/AzCore/Bootstrap/project_path={project}"
     project_str.rstrip(' ')
     param_list = [ap_path, project_str]
+
+    if self._disable_all_platforms:
+        command.append(f'--regremove="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms"')
     if platforms:
         if isinstance(platforms, list):
             platforms = ','.join(platforms)
-        param_list.append(f'/platforms={platforms}')
+        param_list.append(f'--platforms={platforms}')
+    for key, value in self._enabled_platform_overrides:
+        param_list.append(f'--regset="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{key}={value}"')
+
     if extra_params:
         if isinstance(extra_params, list):
             param_list.extend(extra_params)

@@ -14,6 +14,8 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -151,7 +153,12 @@ int main(int argc, char **argv)
     app.installEventFilter(globalEventFilter);
 
     AzQtComponents::StyleManager styleManager(&app);
-    styleManager.Initialize(&app);
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    styleManager.initialize(&app, engineRootPath);
 
     auto wrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionNone);
     auto widget = new ComponentDemoWidget(wrapper);

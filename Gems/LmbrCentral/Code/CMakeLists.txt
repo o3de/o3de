@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target(
     NAME LmbrCentral ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.LmbrCentral.ff06785f7145416b9d46fde39098cb0c.v0.1.0
     FILES_CMAKE
         lmbrcentral_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -76,9 +75,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME LmbrCentral.Editor MODULE
+        NAME LmbrCentral.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.LmbrCentral.Editor.ff06785f7145416b9d46fde39098cb0c.v0.1.0
         FILES_CMAKE
             lmbrcentral_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -96,12 +95,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 ${additional_dependencies}
     )
 
-    unset(QT_LRELEASE_EXECUTABLE CACHE)
-    find_program(QT_LRELEASE_EXECUTABLE lrelease HINTS "${QT_PATH}/bin")
-    mark_as_advanced(QT_LRELEASE_EXECUTABLE) # Hiding from GUI
-    if(NOT QT_LRELEASE_EXECUTABLE)
-        message(FATAL_ERROR "Qt's lrelease executbale not found")
-    endif()
     include(${pal_dir}/lrelease_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
     ly_add_target_files(

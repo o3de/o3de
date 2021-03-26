@@ -50,7 +50,6 @@ ly_add_target(
 ly_add_target(
     NAME AtomLyIntegration_CommonFeatures ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AtomLyIntegration_CommonFeatures.4e981f3b17394f5d84d674fff0f54f4f.v0.1.0
     FILES_CMAKE
         atomlyintegration_commonfeatures_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -65,9 +64,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AtomLyIntegration_CommonFeatures.Editor MODULE
+        NAME AtomLyIntegration_CommonFeatures.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AtomLyIntegration_CommonFeatures.Editor.4e981f3b17394f5d84d674fff0f54f4f.v0.1.0
         AUTOUIC
         AUTOMOC
         AUTORCC

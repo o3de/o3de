@@ -79,9 +79,9 @@ ly_add_source_properties(
 )
 
 ly_add_target(
-    NAME ImageProcessing.Editor MODULE
+    NAME ImageProcessing.Editor GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ImageProcessing.Editor.eeffbd9211cf4ce0b5cc73696b427cbe.v0.1.0
     AUTOMOC
     AUTORCC
     FILES_CMAKE
@@ -108,6 +108,7 @@ ly_add_target(
             Gem::TextureAtlas
     RUNTIME_DEPENDENCIES
         3rdParty::ASTCEncoder
+        Gem::TextureAtlas
 )
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)

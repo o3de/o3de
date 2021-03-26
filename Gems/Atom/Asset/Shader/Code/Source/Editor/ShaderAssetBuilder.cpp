@@ -128,7 +128,12 @@ namespace AZ
                     {// *** block (remove all this when [ATOM-4225] addressed)
                         // this is the same code as in AzslBuilder.cpp's CreateJobs. This is not supposed to be repeated here (temporary hack), so not factorized. refer to AzslBuilder.cpp for code comments
                         AZStd::string prependedAzslSourceCode;
-                        RHI::PrependArguments args{ fullPath.c_str(), shaderPlatformInterface->GetAzslHeader(platformInfo), shaderPlatformInterface->GetAPIName().GetCStr(), nullptr, &prependedAzslSourceCode };
+                        RHI::PrependArguments args;
+                        args.m_sourceFile = fullPath.c_str();
+                        args.m_prependFile = shaderPlatformInterface->GetAzslHeader(platformInfo);
+                        args.m_addSuffixToFileName = shaderPlatformInterface->GetAPIName().GetCStr();
+                        args.m_destinationStringOpt = &prependedAzslSourceCode;
+
                         if (RHI::PrependFile(args) == fullPath)
                         {
                             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
@@ -179,6 +184,7 @@ namespace AZ
             RHI::ShaderPlatformInterface* shaderPlatformInterface,
             AssetBuilderSDK::ProcessJobResponse& response,
             AzslData& azslData,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
             const RPI::ShaderSourceData& shaderSourceDataDescriptor,
             AZStd::sys_time_t shaderAssetBuildTimestamp,
@@ -217,7 +223,7 @@ namespace AZ
             // Signal the begin of shader data for an RHI API.
             shaderAssetCreator.BeginAPI(shaderPlatformInterface->GetAPIType());
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor = ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                ShaderAssetBuilderName, shaderPlatformInterface, bindingDependencies, srgAssets, shaderEntryPoints, &rootConstantData);
+                ShaderAssetBuilderName, shaderPlatformInterface, bindingDependencies, srgAssets, shaderEntryPoints, shaderCompilerArguments, &rootConstantData);
             if (!pipelineLayoutDescriptor)
             {
                 AZ_Error(ShaderAssetBuilderName, false, "Failed to build pipeline layout descriptor for api=[%s]",
@@ -257,6 +263,7 @@ namespace AZ
                 variantCreationContext,
                 *shaderPlatformInterface,
                 azslData,
+                shaderCompilerArguments,
                 pathOfProductFiles[ShaderBuilderUtility::AzslSubProducts::om],
                 pathOfProductFiles[ShaderBuilderUtility::AzslSubProducts::ia]);
             if (!outcomeForShaderVariantAsset.IsSuccess())
@@ -483,8 +490,6 @@ namespace AZ
                 // We define a merge behavior that is: ".shader wins if set"
                 RHI::ShaderCompilerArguments mergedArguments = buildOptions.m_compilerArguments;
                 mergedArguments.Merge(shaderAssetSource.m_compiler);
-                // pass it to the shader platform interface:
-                shaderPlatformInterface->SetExternalArguments(mergedArguments);
 
                 AssetBuilderSDK::ProcessJobResultCode compileResult =
                     CompileForAPI(
@@ -493,6 +498,7 @@ namespace AZ
                         shaderPlatformInterface,
                         response,
                         azslData,
+                        mergedArguments,
                         shaderOptionGroupLayout,
                         shaderAssetSource,
                         shaderAssetBuildTimestamp,

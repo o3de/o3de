@@ -25,7 +25,7 @@ import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP, ASSET_PROCESSOR_SETTINGS_ROOT_KEY
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -136,7 +136,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         # Validate that no fatal errors (crashes) are reported within a certain time frame (10 seconds timeout)
         #   This applies to AP and GameLauncher.exe
         time.sleep(CHECK_ALIVE_SECONDS)
-        launcher_name = f"{workspace.project.title()}Launcher"
+        launcher_name = f"{workspace.project.title()}.GameLauncher"
         # fmt:off
         assert process_utils.process_exists(launcher_name, ignore_extensions=True), \
             f"{launcher_name} was not live during the check."
@@ -221,23 +221,20 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         assert not test_assets_added_to_cache(), "Test assets are present in cache before adding scan folder"
 
-        # Add test assets folder in dev to AP config file (AssetProcessorPlatformConfig.ini) to be scanned
-        ap_config_file = os.path.join(asset_processor.temp_asset_root(), 'AssetProcessorPlatformConfig.ini')
-        config = configparser.ConfigParser()
-        config.read(ap_config_file)
-        config["ScanFolder C4874115"] = {
-            "watch": "@ROOT@/C4874115",
-            "output": "C4874115",
-            "recursive": "1",
-            "order": "5000",
-        }
-        with open(ap_config_file, "w") as configfile:
-            config.write(configfile)
+        # Supply an additional scan folder for the test via the settings registry regset parameters
+        test_scan_folder_params = []
+
+        test_scan_folder_root_key = f"{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/ScanFolder C4874115"
+        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/watch=@ROOT@/C4874115"')
+        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/output=C4874115"')
+        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/recursive=1"')
+        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/order=5000"')
 
         # Run AP GUI and read the config file we just modified to pick up our scan folder
         # Pass in a pattern so we don't spend time processing unrelated folders
         result, _ = asset_processor.gui_process(quitonidle=True, add_config_scan_folders=True,
-                                                scan_folder_pattern="*C4874115*")
+                                                scan_folder_pattern="*C4874115*",
+                                                extra_params=test_scan_folder_params)
         assert result, "AP GUI failed"
 
         # Verify test assets processed into cache after adding scan folder
@@ -255,10 +252,9 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         test_ip_address = "1.1.1.1"  # an IP address without Asset Processor
 
         asset_processor.create_temp_asset_root()
-        # Edit remote_ip setting in bootstrap.cfg to an IP address without Asset Processor
-        workspace.settings.modify_bootstrap_setting("remote_ip", test_ip_address,
-                                                    bootstrap_path=os.path.join(asset_processor.temp_asset_root(),
-                                                                                'bootstrap.cfg'))
+        # Set the remote_ip setting through the settings registry to an IP address without Asset Processor
+        extra_params = []
+        extra_params.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={test_ip_address}"')
 
         # Run AP Gui to verify that assets process regardless of the new address
         result, _ = asset_processor.gui_process(quitonidle=True)

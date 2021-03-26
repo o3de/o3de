@@ -30,7 +30,6 @@ ly_add_target(
 ly_add_target(
     NAME ImguiAtom ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ImguiAtom.9986e22e14184f2fb6bb1e7dd185b2f9.v0.1.0
     FILES_CMAKE
         imguiatom_shared_files.cmake
     INCLUDE_DIRECTORIES

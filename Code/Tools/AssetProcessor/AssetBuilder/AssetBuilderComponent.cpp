@@ -19,13 +19,15 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+#include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -40,8 +42,8 @@
 // Command-line parameter options:
 static const char* const s_paramHelp = "help"; // Print help information.
 static const char* const s_paramTask = "task"; // Task to run.
-static const char* const s_paramGameName = "gamename"; // Name of the current project.
-static const char* const s_paramGameCache = "gamecache"; // Full path to the project cache folder.
+static const char* const s_paramProjectName = "project-name"; // Name of the current project.
+static const char* const s_paramProjectCacheRoot = "project-cache-path"; // Full path to the project cache folder.
 static const char* const s_paramModule = "module"; // For resident mode, the path to the builder dll folder, otherwise the full path to a single builder dll to use.
 static const char* const s_paramPort = "port"; // Optional, port number to use to connect to the AP.
 static const char* const s_paramIp = "remoteip"; // optional, IP address to use to connect to the AP
@@ -63,6 +65,78 @@ static const char* const s_taskDebug = "debug"; // runs a one shot job in a fake
 static const char* const s_taskDebugCreate = "debug_create"; // runs a one shot job in a fake environment for a specified file.
 static const char* const s_taskDebugProcess = "debug_process"; // runs a one shot job in a fake environment for a specified file.
 
+//! Scoped Setters for the SettingsRegistry to its previous value on destruction
+struct ScopedSettingsRegistrySetter
+{
+    using SettingsRegistrySetterTypes = AZStd::variant<bool, AZ::s64, AZ::u64, double, AZStd::string_view>;
+    using SettingsRegistryGetterTypes = AZStd::variant<bool, AZ::s64, AZ::u64, double, AZStd::string>;
+
+    ScopedSettingsRegistrySetter(AZ::SettingsRegistryInterface& settingsRegistry, AZStd::string_view jsonPointer,
+        SettingsRegistrySetterTypes newValue)
+        : m_settingsRegistry(settingsRegistry)
+        , m_jsonPointer(jsonPointer)
+    {
+        AZStd::string oldValue;
+        if (m_settingsRegistry.Get(oldValue, jsonPointer))
+        {
+            m_oldValue = AZStd::move(oldValue);
+        }
+
+        AZStd::visit([this](auto&& value) {m_settingsRegistry.Set(m_jsonPointer, AZStd::move(value)); }, AZStd::move(newValue));
+    }
+
+    ~ScopedSettingsRegistrySetter()
+    {
+        // Reset the old value within the Settings Registry if it was set
+        // Or remove it if not
+        if (m_oldValue)
+        {
+            AZStd::visit([this](auto&& value) {m_settingsRegistry.Set(m_jsonPointer, AZStd::move(value)); }, AZStd::move(*m_oldValue));
+        }
+        else
+        {
+            m_settingsRegistry.Remove(m_jsonPointer);
+        }
+    }
+    AZ::SettingsRegistryInterface& m_settingsRegistry;
+    AZStd::string_view m_jsonPointer;
+    AZStd::optional<SettingsRegistryGetterTypes> m_oldValue;
+};
+
+//! FileIO classes which resets the set key to its previous value on destruction
+struct ScopedAliasSetter
+{
+    ScopedAliasSetter(AZ::IO::FileIOBase& fileIoBase, const char* alias,
+        const char* newValue)
+        : m_fileIoBase(fileIoBase)
+        , m_alias(alias)
+    {
+
+        if (const char* oldValue = m_fileIoBase.GetAlias(m_alias); oldValue != nullptr)
+        {
+            m_oldValue = oldValue;
+        }
+
+        m_fileIoBase.SetAlias(alias, newValue);
+    }
+
+    ~ScopedAliasSetter()
+    {
+        // Reset the old alias if it was set or clear it if not
+        if (m_oldValue)
+        {
+            m_fileIoBase.SetAlias(m_alias, m_oldValue->c_str());
+        }
+        else
+        {
+            m_fileIoBase.ClearAlias(m_alias);
+        }
+    }
+    AZ::IO::FileIOBase& m_fileIoBase;
+    const char* m_alias;
+    AZStd::optional<AZStd::string> m_oldValue;
+};
+
 //////////////////////////////////////////////////////////////////////////
 
 void AssetBuilderComponent::PrintHelp()
@@ -71,8 +145,8 @@ void AssetBuilderComponent::PrintHelp()
     AZ_TracePrintf("Help", "The following command line options are available for the AssetBuilder.\n");
     AZ_TracePrintf("Help", "%s - Print help information.\n", s_paramHelp);
     AZ_TracePrintf("Help", "%s - Task to run.\n", s_paramTask);
-    AZ_TracePrintf("Help", "%s - Name of the current project.\n", s_paramGameName);
-    AZ_TracePrintf("Help", "%s - Full path to the project cache folder.\n", s_paramGameCache);
+    AZ_TracePrintf("Help", "%s - Name of the current project.\n", s_paramProjectName);
+    AZ_TracePrintf("Help", "%s - Full path to the project cache folder.\n", s_paramProjectCacheRoot);
     AZ_TracePrintf("Help", "%s - For resident mode, the path to the builder dll folder, otherwise the full path to a single builder dll to use.\n", s_paramModule);
     AZ_TracePrintf("Help", "%s - Optional, port number to use to connect to the AP.\n", s_paramPort);
     AZ_TracePrintf("Help", "%s - UUID string that identifies the builder.  Only used for resident mode when the AP directly starts up the AssetBuilder.\n", s_paramId);
@@ -105,6 +179,7 @@ bool AssetBuilderComponent::IsInDebugMode(const AzFramework::CommandLine& comman
 
     return false;
 }
+
 
 void AssetBuilderComponent::Activate()
 {
@@ -168,17 +243,12 @@ bool AssetBuilderComponent::Run()
     }
 
     bool isDebugTask = (task == s_taskDebug || task == s_taskDebugCreate || task == s_taskDebugProcess);
-    if (!GetParameter(s_paramGameName, m_gameName, !isDebugTask))
+    if (!GetParameter(s_paramProjectName, m_gameName, !isDebugTask))
     {
-        auto gameNameKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::ProjectName);
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(m_gameName, gameNameKey);
-        }
+        m_gameName = AZ::Utils::GetProjectName();
     }
 
-    if (!GetParameter(s_paramGameCache, m_gameCache, !isDebugTask))
+    if (!GetParameter(s_paramProjectCacheRoot, m_gameCache, !isDebugTask))
     {
         if (!isDebugTask)
         {
@@ -283,7 +353,7 @@ bool AssetBuilderComponent::ConnectToAssetProcessor()
 
     //the asset builder may have been given an optional project name to use
     AZStd::string overrideProjectName;
-    if (GetParameter(s_paramGameName, overrideProjectName, false))
+    if (GetParameter(s_paramProjectName, overrideProjectName, false))
     {
         connectionSettings.m_projectName = overrideProjectName;
     }
@@ -380,21 +450,15 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
             return false;
         }
     }
-    AzFramework::StringFunc::Path::Normalize(debugFile);
+    AZ::StringFunc::Path::Normalize(debugFile);
 
-    if (!GetParameter(s_paramGameCache, m_gameCache, false))
+    if (!GetParameter(s_paramProjectCacheRoot, m_gameCache, false))
     {
         if (m_gameCache.empty())
         {
-            // Setup the cache path
-            AZStd::string assetRoot;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(assetRoot, &AzFramework::ApplicationRequests::GetAssetRoot);
-            if (!assetRoot.empty())
-            {
-                AZStd::string tempString = AZStd::string::format("Cache/%s", m_gameName.c_str());
-                AzFramework::StringFunc::Path::Join(assetRoot.c_str(), tempString.c_str(), m_gameCache);
-            }
-            else
+            // Query the project cache root path from the Settings Registry
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (!settingsRegistry || !settingsRegistry->Get(m_gameCache, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
             {
                 m_gameCache = ".";
             }
@@ -415,7 +479,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
     AZStd::string module;
     if (GetParameter(s_paramModule, module, false))
     {
-        AzFramework::StringFunc::Path::GetFullPath(module.c_str(), binDir);
+        AZ::StringFunc::Path::GetFullPath(module.c_str(), binDir);
         if (!LoadBuilder(module))
         {
             AZ_Error("AssetBuilder", false, "Failed to load module '%s'.", module.c_str());
@@ -432,7 +496,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
             return false;
         }
 
-        AzFramework::StringFunc::Path::Join(executableFolder, "Builders", binDir);
+        AZ::StringFunc::Path::Join(executableFolder, "Builders", binDir);
 
         if (!LoadBuilders(binDir))
         {
@@ -445,11 +509,11 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
     if (!GetParameter(s_paramOutput, baseTempDirPath, false))
     {
         AZStd::string fileName;
-        AzFramework::StringFunc::Path::GetFullFileName(debugFile.c_str(), fileName);
+        AZ::StringFunc::Path::GetFullFileName(debugFile.c_str(), fileName);
         AZStd::replace(fileName.begin(), fileName.end(), '.', '_');
 
-        AzFramework::StringFunc::Path::Join(binDir.c_str(), "Debug", baseTempDirPath);
-        AzFramework::StringFunc::Path::Join(baseTempDirPath.c_str(), fileName.c_str(), baseTempDirPath);
+        AZ::StringFunc::Path::Join(binDir.c_str(), "Debug", baseTempDirPath);
+        AZ::StringFunc::Path::Join(baseTempDirPath.c_str(), fileName.c_str(), baseTempDirPath);
     }
 
     // Default tags for the debug task are "tools" and "debug"
@@ -489,7 +553,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Debugging builder '%s'.\n", builder->m_name.c_str());
 
         AZStd::string tempDirPath;
-        AzFramework::StringFunc::Path::Join(baseTempDirPath.c_str(), builder->m_name.c_str(), tempDirPath);
+        AZ::StringFunc::Path::Join(baseTempDirPath.c_str(), builder->m_name.c_str(), tempDirPath);
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> enabledDebugPlatformInfos =
         {
@@ -502,7 +566,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
         if (runCreateJobs)
         {
             AZStd::string createJobsTempDirPath;
-            AzFramework::StringFunc::Path::Join(tempDirPath.c_str(), "CreateJobs", createJobsTempDirPath);
+            AZ::StringFunc::Path::Join(tempDirPath.c_str(), "CreateJobs", createJobsTempDirPath);
             AZ::IO::Result fileResult = fileIO->CreatePath(createJobsTempDirPath.c_str());
             if (!fileResult)
             {
@@ -520,7 +584,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
             builder->m_createJobFunction(createRequest, createResponse);
 
             AZStd::string responseFile;
-            AzFramework::StringFunc::Path::Join(createJobsTempDirPath.c_str(), "CreateJobsResponse.xml", responseFile);
+            AZ::StringFunc::Path::Join(createJobsTempDirPath.c_str(), "CreateJobsResponse.xml", responseFile);
             if (!AZ::Utils::SaveObjectToFile(responseFile, AZ::DataStream::ST_XML, &createResponse))
             {
                 AZ_Error("AssetBuilder", false, "Failed to serialize response to file: %s", responseFile.c_str());
@@ -538,7 +602,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
         if (runProcessJob)
         {
             AZStd::string processJobTempDirPath;
-            AzFramework::StringFunc::Path::Join(tempDirPath.c_str(), "ProcessJobs", processJobTempDirPath);
+            AZ::StringFunc::Path::Join(tempDirPath.c_str(), "ProcessJobs", processJobTempDirPath);
             AZ::IO::Result fileResult = fileIO->CreatePath(processJobTempDirPath.c_str());
             if (!fileResult)
             {
@@ -555,7 +619,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
             processRequest.m_sourceFile = info.m_relativePath;
             processRequest.m_platformInfo = enabledDebugPlatformInfo;
             processRequest.m_sourceFileUUID = info.m_assetId.m_guid;
-            AzFramework::StringFunc::AssetDatabasePath::Join(processRequest.m_watchFolder.c_str(), processRequest.m_sourceFile.c_str(), processRequest.m_fullPath);
+            AZ::StringFunc::AssetDatabasePath::Join(processRequest.m_watchFolder.c_str(), processRequest.m_sourceFile.c_str(), processRequest.m_fullPath);
             processRequest.m_tempDirPath = processJobTempDirPath;
             processRequest.m_jobId = 0;
             processRequest.m_builderGuid = builder->m_busId;
@@ -585,7 +649,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
                 ProcessJob(builder->m_processJobFunction, processRequest, processResponse);
 
                 AZStd::string responseFile;
-                AzFramework::StringFunc::Path::Join(processJobTempDirPath.c_str(),
+                AZ::StringFunc::Path::Join(processJobTempDirPath.c_str(),
                     AZStd::string::format("%zu_%s", i, AssetBuilderSDK::s_processJobResponseFileName).c_str(), responseFile);
                 if (!AZ::Utils::SaveObjectToFile(responseFile, AZ::DataStream::ST_XML, &processResponse))
                 {
@@ -619,73 +683,45 @@ void AssetBuilderComponent::ProcessJob(const AssetBuilderSDK::ProcessJobFunction
     auto ioBase = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(ioBase != nullptr, "AZ::IO::FileIOBase must be ready for use.");
 
-    // Save out the prior paths.
-    const char* priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
-    AZStd::string priorAssets = priorAlias ? priorAlias : AZStd::string();
-
-    priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@root@");
-    AZStd::string priorRoot = priorAlias ? priorAlias : AZStd::string();
-
-    priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@log@");
-    AZStd::string priorLog = priorAlias ? priorAlias : AZStd::string();
-
-    // The game name needs to be lower case within the cache area itself.
-    AZStd::string gameName = m_gameName;
-    AZStd::to_lower(gameName.begin(), gameName.end());
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    AZ_Assert(settingsRegistry != nullptr, "SettingsRegistry must be ready for use in the AssetBuilder.");
 
     // The root path is the cache plus the platform name.
     AZ::IO::FixedMaxPath newRoot(m_gameCache);
-    newRoot /= request.m_platformInfo.m_identifier;
+    // Check if the platform identifier is a valid "asset platform"
+    // If so, use it, other wise use the OS default platform as a fail safe
+    // This is to make sure the "debug platform" isn't added as a path segment
+    // the Cache Root folder
+    if (AzFramework::PlatformHelper::GetPlatformIdFromName(request.m_platformInfo.m_identifier) != AzFramework::PlatformId::Invalid)
+    {
+        newRoot /= request.m_platformInfo.m_identifier;
+    }
+    else
+    {
+        newRoot /= AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+    }
 
     // The asset path is root and the lower case game name.
-    AZ::IO::FixedMaxPath newAssets = newRoot / gameName;
-
-    // The log path is the asset
-    AZ::IO::FixedMaxPath newLog = newRoot / "user" / "log";
+    AZ::IO::FixedMaxPath newAssets = newRoot;
 
     // Now set the paths and run the job.
-    ioBase->SetAlias("@assets@", newAssets.c_str());
-    ioBase->SetAlias("@root@", newRoot.c_str());
-    ioBase->SetAlias("@log@", newLog.c_str());
+    {
+        // Save out the prior paths.
+        ScopedAliasSetter assetAliasScope(*ioBase, "@assets@", newAssets.c_str());
+        ScopedAliasSetter rootAliasScope(*ioBase, "@root@", newRoot.c_str());
+        ScopedAliasSetter projectplatformCacheAliasScope(*ioBase, "@projectplatformcache@", newRoot.c_str());
+        ScopedSettingsRegistrySetter cacheRootFolderScope(*settingsRegistry,
+            AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newRoot.Native());
 
-    job(request, outResponse);
+        // Invoke the Process Job function
+        job(request, outResponse);
+    }
 
     // The asset building ProcessJob method might read any number of source files while processing the asset.
     // Ensure that any exclusive file handle locks caused by this are cleared so that other AssetBuilder processes
     // running in parallel have the ability to read those files as well.
     // This needs to occur after the ProcessJob call, but before the file aliases get cleared.
     FlushFileStreamerCache();
-
-    // Clean up the paths.
-    // Restore previous @assets@ alias
-    if (priorAssets.empty())
-    {
-        ioBase->ClearAlias("@assets");
-    }
-    else
-    {
-        ioBase->SetAlias("@assets@", priorAssets.c_str());
-    }
-
-    // Restore previous @root@ alias
-    if (priorRoot.empty())
-    {
-        ioBase->ClearAlias("@root@");
-    }
-    else
-    {
-        ioBase->SetAlias("@root@", priorRoot.c_str());
-    }
-
-    // Restore previous @log@ alias
-    if (priorLog.empty())
-    {
-        ioBase->ClearAlias("@log@");
-    }
-    else
-    {
-        ioBase->SetAlias("@log@", priorLog.c_str());
-    }
 
     UpdateResultCode(request, outResponse);
 }
@@ -707,8 +743,8 @@ bool AssetBuilderComponent::RunOneShotTask(const AZStd::string& task)
         return false;
     }
 
-    AzFramework::StringFunc::Path::Normalize(inputFilePath);
-    AzFramework::StringFunc::Path::Normalize(outputFilePath);
+    AZ::StringFunc::Path::Normalize(inputFilePath);
+    AZ::StringFunc::Path::Normalize(outputFilePath);
     if (task == s_taskRegisterBuilder)
     {
         return HandleRegisterBuilder(inputFilePath, outputFilePath);
@@ -1021,7 +1057,11 @@ bool AssetBuilderComponent::GetParameter(const char* paramName, AZStd::string& o
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
-    outValue = commandLine->GetSwitchValue(paramName, 0);
+    size_t optionCount = commandLine->GetNumSwitchValues(paramName);
+    if (optionCount > 0)
+    {
+        outValue = commandLine->GetSwitchValue(paramName, optionCount - 1);
+    }
 
     if (outValue.empty())
     {

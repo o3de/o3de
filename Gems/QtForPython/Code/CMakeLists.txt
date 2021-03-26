@@ -45,10 +45,11 @@ ly_add_target(
 ly_add_target(
     NAME QtForPython.Editor MODULE 
     NAMESPACE Gem
-    OUTPUT_NAME Gem.QtForPython.Editor.cd50c7a1e31f4c9495dcffdacc3bde92.v0.1.0
     FILES_CMAKE
         qtforpython_shared_files.cmake
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::QtForPython.Editor.Static
+    RUNTIME_DEPENDENCIES
+        Gem::EditorPythonBindings.Editor
 )

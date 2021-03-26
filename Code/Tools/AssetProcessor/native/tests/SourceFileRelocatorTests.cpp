@@ -181,9 +181,11 @@ namespace UnitTests
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/file.foo")));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/File.bar")));
 
-
-            AZ::IO::FileIOBase::SetInstance(nullptr); // The API requires the old instance to be destroyed first
-            AZ::IO::FileIOBase::SetInstance(new AZ::IO::LocalFileIO());
+            if (AZ::IO::FileIOBase::GetInstance() == nullptr)
+            {
+                m_localFileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
+                AZ::IO::FileIOBase::SetInstance(m_localFileIo.get());
+            }
 
             m_data->m_reporter = AZStd::make_unique<SourceFileRelocator>(m_data->m_connection, &m_data->m_platformConfig);
 
@@ -204,6 +206,12 @@ namespace UnitTests
 
         void TearDown() override
         {
+            if (AZ::IO::FileIOBase::GetInstance() == m_localFileIo.get())
+            {
+                AZ::IO::FileIOBase::SetInstance(nullptr);
+            }
+            m_localFileIo.reset();
+
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_data->m_jobContext;
             delete m_data->m_jobManager;
@@ -405,6 +413,7 @@ namespace UnitTests
         // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
         // allocator, reducing the chance of missing or forgetting to destroy one in the future.
         AZStd::unique_ptr<StaticData> m_data;
+        AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIo;
     };
 
     TEST_F(SourceFileRelocatorTest, GetSources_SingleFile_Succeeds)

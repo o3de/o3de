@@ -60,6 +60,12 @@ namespace MaterialEditor
 
         //! Notify when enabled state for grid changes
         virtual void OnGridEnabledChanged([[maybe_unused]] bool enable) {}
+
+        //! Notify when enabled state for alternate skybox changes
+        virtual void OnAlternateSkyboxEnabledChanged([[maybe_unused]] bool enable) {}
+
+        //! Notify when field of view changes
+        virtual void OnFieldOfViewChanged([[maybe_unused]] float fieldOfView) {}
     };
 
     using MaterialViewportNotificationBus = AZ::EBus<MaterialViewportNotifications>;

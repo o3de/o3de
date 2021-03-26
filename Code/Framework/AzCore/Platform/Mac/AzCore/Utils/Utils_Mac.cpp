@@ -16,7 +16,7 @@
 
 namespace AZ::Utils
 {
-    AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath()
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
     {
         return AZStd::nullopt;
     }

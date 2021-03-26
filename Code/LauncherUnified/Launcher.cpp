@@ -26,9 +26,9 @@
 
 #include <CryLibrary.h>
 #include <IConsole.h>
+#include <ISystem.h>
 #include <ITimer.h>
 #include <LegacyAllocator.h>
-#include <ParseEngineConfig.h>
 
 #include <Launcher_Traits_Platform.h>
 
@@ -68,7 +68,7 @@ namespace
 
         // argument is strictly to match the API of AZ::DynamicModuleHandle
         bool Load(bool unused)
-        { 
+        {
             AZ_UNUSED(unused);
 
             if (IsLoaded())
@@ -90,14 +90,14 @@ namespace
             return CryFreeLibrary(m_moduleHandle);
         }
 
-        bool IsLoaded() const 
-        { 
-            return m_moduleHandle != nullptr; 
+        bool IsLoaded() const
+        {
+            return m_moduleHandle != nullptr;
         }
 
-        const AZ::OSString& GetFilename() const 
-        { 
-            return m_fileName; 
+        const AZ::OSString& GetFilename() const
+        {
+            return m_fileName;
         }
 
         template<typename Function>
@@ -119,7 +119,7 @@ namespace
             : m_fileName()
             , m_moduleHandle(nullptr)
         {
-            m_fileName = AZ::OSString::format("%s%s%s", 
+            m_fileName = AZ::OSString::format("%s%s%s",
                 CrySharedLibraryPrefix, fileFullName, CrySharedLibraryExtension);
         }
 
@@ -296,9 +296,6 @@ namespace LumberyardLauncher
             case ReturnCode::Success:
                 return "Success";
 
-            case ReturnCode::ErrBootstrapMismatch:
-                return "Mismatch detected between Launcher compiler defines and bootstrap values (LY_GAMEFOLDER/sys_game_folder).";
-
             case ReturnCode::ErrCommandLine:
                 return "Failed to copy command line arguments";
 
@@ -323,99 +320,6 @@ namespace LumberyardLauncher
                     " to not be an error if unsuccessful.";
             default:
                 return "Unknown error code";
-        }
-    }
-
-    void CopySettingsRegistryToCrySystemInitParams(const AZ::SettingsRegistryInterface& registry, SSystemInitParams& params)
-    {
-        constexpr AZStd::string_view DefaultRemoteIp = "127.0.0.1";
-        constexpr uint16_t DefaultRemotePort = 45643U;
-
-        AZ::SettingsRegistryInterface::FixedValueString settingsKeyPrefix = AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey;
-        AZ::SettingsRegistryInterface::FixedValueString settingsValueString;
-        AZ::s64 settingsValueInt{};
-
-        // remote filesystem
-        if (registry.Get(settingsValueInt, settingsKeyPrefix + "/remote_filesystem"))
-        {
-            params.remoteFileIO = settingsValueInt != 0;
-        }
-        // remote port
-        if(registry.Get(settingsValueInt, settingsKeyPrefix + "/remote_port"))
-        {
-            params.remotePort = aznumeric_cast<int>(settingsValueInt);
-        }
-        else
-        {
-            params.remotePort = DefaultRemotePort;
-        }
-
-        // remote ip
-        if (registry.Get(settingsValueString, settingsKeyPrefix + "/remote_ip"))
-        {
-            azstrncpy(AZStd::data(params.remoteIP), AZStd::size(params.remoteIP), settingsValueString.c_str(), settingsValueString.size());
-        }
-        else
-        {
-            azstrncpy(AZStd::data(params.remoteIP), AZStd::size(params.remoteIP), DefaultRemoteIp.data(), DefaultRemoteIp.size());
-        }
-
-        // connect_to_remote - also supports <platform>_connect_to_remote override
-        if (registry.Get(settingsValueInt, settingsKeyPrefix + "/" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_connect_to_remote")
-            || registry.Get(settingsValueInt, settingsKeyPrefix + "/connect_to_remote"))
-        {
-            params.connectToRemote = settingsValueInt != 0;
-        }
-#if !defined(DEDICATED_SERVER)
-        // wait_for_connect - also supports <platform>_wait_for_connect override
-        // Dedicated server does not depend on Asset Processor and assumes that assets are already prepared.
-        if (registry.Get(settingsValueInt, settingsKeyPrefix + "/" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_wait_for_connect")
-            || registry.Get(settingsValueInt, settingsKeyPrefix + "/wait_for_connect"))
-        {
-            params.waitForConnection = settingsValueInt != 0;
-        }
-#endif // defined(DEDICATED_SERVER)
-
-        // assets - also supports <platform>_assets override
-        settingsValueString.clear();
-        if (registry.Get(settingsValueString, settingsKeyPrefix + "/" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_assets")
-            || registry.Get(settingsValueString, settingsKeyPrefix + "/assets"))
-        {
-            azstrncpy(AZStd::data(params.assetsPlatform), AZStd::size(params.assetsPlatform), settingsValueString.c_str(), settingsValueString.size());
-        }
-
-        // Project name - First tries sys_game_folder
-        settingsValueString.clear();
-        if (registry.Get(settingsValueString, settingsKeyPrefix + "/sys_game_folder"))
-        {
-            // sys_game_folder is the current way to do it
-            azstrncpy(AZStd::data(params.gameFolderName), AZStd::size(params.gameFolderName), settingsValueString.c_str(), settingsValueString.size());
-        }
-
-        // assetProcessor_branch_token
-        if (registry.Get(settingsValueInt, settingsKeyPrefix + "/assetProcessor_branch_token"))
-        {
-            azsnprintf(AZStd::data(params.branchToken), AZStd::size(params.branchToken), "0x%llx", settingsValueInt);
-        }
-
-        // Engine root path(also AppRoot path as well)
-        settingsValueString.clear();
-        if (registry.Get(settingsValueString, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
-        {
-            azstrncpy(AZStd::data(params.rootPath), AZStd::size(params.rootPath), settingsValueString.c_str(), settingsValueString.size());
-        }
-        // Asset Cache Root path
-        settingsValueString.clear();
-        if (registry.Get(settingsValueString, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
-        {
-            azstrncpy(AZStd::data(params.rootPathCache), AZStd::size(params.rootPathCache), settingsValueString.c_str(), settingsValueString.size());
-        }
-        // Asset Cache Game path (Includes as part of path, the current project name)
-        settingsValueString.clear();
-        if (registry.Get(settingsValueString, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheGameFolder))
-        {
-            azstrncpy(AZStd::data(params.assetsPathCache), AZStd::size(params.assetsPathCache), settingsValueString.c_str(), settingsValueString.size());
-            azstrncpy(AZStd::data(params.assetsPath), AZStd::size(params.assetsPath), settingsValueString.c_str(), settingsValueString.size());
         }
     }
 
@@ -493,24 +397,37 @@ namespace LumberyardLauncher
     }
 
     //! Add the GameProjectName and Launcher build target name into the settings registry
-    void AddGameProjectNameToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, AZ::CommandLine& commandLine)
+    void AddProjectMetadataToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, AZ::CommandLine& commandLine)
     {
-        auto gameProjectNameKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-        AZ::SettingsRegistryInterface::FixedValueString bootstrapGameProjectName;
-        settingsRegistry.Get(bootstrapGameProjectName, gameProjectNameKey);
+        // Inject the Project Path and Project into the CommandLine parameters to beginning of the command line
+        // in order to allow it to used as a fallback if the parameters aren't supplied launch parameters already
+        // Command Line parameters are the bootstrap settings into the Settings Registry, so they precedence
+        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+            + "/project_path";
+        auto projectNameKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
+            + "/project_name";
 
-        const AZStd::string_view gameProjectName = GetGameProjectName();
-        AZ::SettingsRegistryInterface::FixedValueString gameProjectCommandLineOverride = R"(--regset=)";
-        gameProjectCommandLineOverride += gameProjectNameKey;
-        gameProjectCommandLineOverride += '=';
-        gameProjectCommandLineOverride += gameProjectName;
-
-        // Inject the Project Name into the CommandLine parameters, so that the Setting Registry
-        // always is set to the launcher's project name whenever the command line is merged into the Settings Registry
-        // This happens several times through application such as in GameApplication::Start
         AZ::CommandLine::ParamContainer commandLineArgs;
         commandLine.Dump(commandLineArgs);
-        commandLineArgs.emplace_back(gameProjectCommandLineOverride);
+
+        // Insert the project_name option to the front
+        const AZStd::string_view launcherProjectName = GetProjectName();
+        if (!launcherProjectName.empty())
+        {
+            auto projectNameOptionOverride = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--regset="%s=%.*s")",
+                projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
+            commandLineArgs.emplace(commandLineArgs.begin(), projectNameOptionOverride);
+        }
+
+        // Insert the project_path option to the front
+        const AZStd::string_view projectPath = GetProjectPath();
+        if (!projectPath.empty())
+        {
+            auto projectPathOptionOverride = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--regset="%s=%.*s")",
+                projectPathKey.c_str(), aznumeric_cast<int>(projectPath.size()), projectPath.data());
+            commandLineArgs.emplace(commandLineArgs.begin(), projectPathOptionOverride);
+        }
+
         commandLine.Parse(commandLineArgs);
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
@@ -519,27 +436,16 @@ namespace LumberyardLauncher
         const AZStd::string_view buildTargetName = LumberyardLauncher::GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(settingsRegistry, buildTargetName);
 
-        // Output a trace message if the sys_game_folder value read from the boostrap.cfg file doesn't match the value of the
-        // LY_GAMEFOLDER define built into the Launcher.
-        // This isn't any kind of error or ever warning, but is used as an informational message to the user
-        // that the launcher will use the always used the injected LY_GAMEFOLDER define
-        if (bootstrapGameProjectName != gameProjectName)
-        {
-            AZ_TracePrintf("Launcher", R"(The game project "%s" read into the Settings Registry from the bootstrap.cfg file)"
-                R"( does not match the LY_GAMEFOLDER define "%.*s")" "\n",
-                bootstrapGameProjectName.c_str(), aznumeric_cast<int>(gameProjectName.size()), gameProjectName.data());
-        }
-
-        AZ_TracePrintf("Launcher", R"(The game project name of "%.*s" is the value of the LY_GAMEFOLDER define.)" "\n"
-            R"(That value has been successfully set into the Settings Registry at key "%s/sys_game_folder" for Launcher target "%.*s")" "\n",
-            aznumeric_cast<int>(gameProjectName.size()), gameProjectName.data(),
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
+        AZ_TracePrintf("Launcher", R"(Running project "%.*s.)" "\n"
+            R"(The project name value has been successfully set in the Settings Registry at key "%s/project_name" for Launcher target "%.*s")" "\n",
+            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
+            AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
             aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
     }
 
     ReturnCode Run(const PlatformMainInfo& mainInfo)
     {
-        if (mainInfo.m_updateResourceLimits 
+        if (mainInfo.m_updateResourceLimits
             && !mainInfo.m_updateResourceLimits())
         {
             return ReturnCode::ErrResourceLimit;
@@ -562,9 +468,8 @@ namespace LumberyardLauncher
 
         // Inject the ${LY_GAMEFOLDER} project name define that from the Launcher build target
         // into the settings registry
-        AddGameProjectNameToSettingsRegistry(*settingsRegistry, *gameApplication.GetAzCommandLine()); 
+        AddProjectMetadataToSettingsRegistry(*settingsRegistry, *gameApplication.GetAzCommandLine());
 
-        bool applyAppRootOverride = (AZ_TRAIT_LAUNCHER_SET_APPROOT_OVERRIDE == 1);
         AZ::SettingsRegistryInterface::FixedValueString pathToAssets;
         if (!settingsRegistry->Get(pathToAssets, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
@@ -581,51 +486,6 @@ namespace LumberyardLauncher
         }
 
         CryAllocatorsRAII cryAllocatorsRAII;
-    #if AZ_TRAIT_LAUNCHER_ALLOW_CMDLINE_APPROOT_OVERRIDE
-        char appRootOverride[AZ_MAX_PATH_LEN] = { 0 };
-        {
-            // Search for the app root argument (--app-root <PATH>) where <PATH> is the app root path to set for the application
-            const static char* appRootArgPrefix = "--app-root";
-            size_t appRootArgPrefixLen = strlen(appRootArgPrefix);
-
-            const char* appRootArg = nullptr;
-
-            char cmdLineCopy[AZ_COMMAND_LINE_LEN] = { 0 };
-            azstrncpy(cmdLineCopy, AZ_COMMAND_LINE_LEN, mainInfo.m_commandLine, mainInfo.m_commandLineLen);
-
-            const char* delimiters = " ";
-            char* nextToken = nullptr;
-            char* token = azstrtok(cmdLineCopy, 0, delimiters, &nextToken);
-            while (token != NULL)
-            {
-                if (azstrnicmp(appRootArgPrefix, token, appRootArgPrefixLen) == 0)
-                {
-                    appRootArg = azstrtok(nullptr, 0, delimiters, &nextToken);
-                    break;
-                }
-                token = azstrtok(nullptr, 0, delimiters, &nextToken);
-            }
-
-            if (appRootArg)
-            {
-                AZStd::string_view appRootArgView = appRootArg;
-                size_t afterStartQuotes = appRootArgView.find_first_not_of(R"(")");
-                if (afterStartQuotes != AZStd::string_view::npos)
-                {
-                    appRootArgView.remove_prefix(afterStartQuotes);
-                }
-                size_t beforeEndQuotes = appRootArgView.find_last_not_of(R"(")");
-                if (beforeEndQuotes != AZStd::string_view::npos)
-                {
-                    appRootArgView.remove_suffix(appRootArgView.size() - (beforeEndQuotes + 1));
-                }
-                appRootArgView.copy(appRootOverride, AZ_MAX_PATH_LEN);
-                appRootOverride[appRootArgView.size()] = '\0';
-                pathToAssets = appRootOverride;
-                applyAppRootOverride = true;
-            }
-        }
-    #endif // AZ_TRAIT_LAUNCHER_ALLOW_CMDLINE_APPROOT_OVERRIDE
 
         // System Init Params ("Legacy" Lumberyard)
         SSystemInitParams systemInitParams;
@@ -633,12 +493,6 @@ namespace LumberyardLauncher
 
         {
             AzGameFramework::GameApplication::StartupParameters gameApplicationStartupParams;
-
-            if (applyAppRootOverride)
-            {
-                // NOTE: setting this on android doesn't work when assets are packaged in the APK
-                gameApplicationStartupParams.m_appRootOverride = pathToAssets.c_str();
-            }
 
             if (mainInfo.m_allocator)
             {
@@ -653,8 +507,6 @@ namespace LumberyardLauncher
             gameApplicationStartupParams.m_createStaticModulesCallback = CreateStaticModules;
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
-
-            CopySettingsRegistryToCrySystemInitParams(*settingsRegistry, systemInitParams);
 
             gameApplication.Start({}, gameApplicationStartupParams);
 
@@ -688,7 +540,7 @@ namespace LumberyardLauncher
             mainInfo.m_onPostAppStart();
         }
 
-        azstrncpy(systemInitParams.szSystemCmdLine, sizeof(systemInitParams.szSystemCmdLine), 
+        azstrncpy(systemInitParams.szSystemCmdLine, sizeof(systemInitParams.szSystemCmdLine),
             mainInfo.m_commandLine, mainInfo.m_commandLineLen);
 
         systemInitParams.pSharedEnvironment = AZ::Environment::GetInstance();
@@ -704,7 +556,10 @@ namespace LumberyardLauncher
 
         systemInitParams.bDedicatedServer = IsDedicatedServer();
 
-        if (systemInitParams.remoteFileIO)
+        bool remoteFileSystemEnabled{};
+        AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,
+            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "remote_filesystem");
+        if (remoteFileSystemEnabled)
         {
             AZ_TracePrintf("Launcher", "Application is configured for VFS");
             AZ_TracePrintf("Launcher", "Log and cache files will be written to the Cache directory on your host PC");
@@ -716,22 +571,15 @@ namespace LumberyardLauncher
             {
                 AZ_TracePrintf("Launcher", "%s\n%s", message, mainInfo.m_additionalVfsResolution)
             }
-            else 
+            else
             {
                 AZ_TracePrintf("Launcher", "%s", message)
             }
         }
         else
         {
-            AZ_TracePrintf("Launcher", "Application is configured to use device local files at %s\n", systemInitParams.rootPath);
+            AZ_TracePrintf("Launcher", "Application is configured to use device local files at %s\n", pathToAssets.c_str());
             AZ_TracePrintf("Launcher", "Log and cache files will be written to device storage\n");
-
-            const char* writeStorage = mainInfo.m_appWriteStoragePath;
-            if (writeStorage)
-            {
-                AZ_TracePrintf("Launcher", "User Storage will be set to %s/user\n", writeStorage);
-                azsnprintf(systemInitParams.userPath, AZ_MAX_PATH_LEN, "%s/user", writeStorage);
-            }
         }
 
         // Create CrySystem.

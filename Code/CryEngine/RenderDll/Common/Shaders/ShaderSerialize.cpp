@@ -162,7 +162,7 @@ bool CShaderSerialize::OpenSResource(const char* szName,  SSShaderRes* pSR, CSha
     stack_string szReadOnly = szName;
 
     // ShaderCacheGen behavior:
-    // CACHE_READONLY is not really used when exporting the .fxb, so we append the @cache@ alias to the relative shader path
+    // CACHE_READONLY is not really used when exporting the .fxb, so we append the @usercache@ alias to the relative shader path
     // here as well.  We cannot just leave this as the relative Shaders/Cache/Foo.fxb value because then it creates a new
     // file in the asset cache as @assets@/Shaders/Cache/Foo.fxb, which is illegal (since only AP has the authority to write here)
     // Game runtime behavior:

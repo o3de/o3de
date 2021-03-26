@@ -24,11 +24,13 @@ namespace AWSClientAuthUnitTest
 
     {
     public:
-        using AWSClientAuth::AWSCognitoAuthorizationController::m_settings;
         using AWSClientAuth::AWSCognitoAuthorizationController::m_persistentCognitoIdentityProvider;
         using AWSClientAuth::AWSCognitoAuthorizationController::m_persistentAnonymousCognitoIdentityProvider;
         using AWSClientAuth::AWSCognitoAuthorizationController::m_cognitoCachingCredentialsProvider;
         using AWSClientAuth::AWSCognitoAuthorizationController::m_cognitoCachingAnonymousCredentialsProvider;
+        using AWSClientAuth::AWSCognitoAuthorizationController::m_cognitoIdentityPoolId;
+        using AWSClientAuth::AWSCognitoAuthorizationController::m_formattedCognitoUserPoolId;
+        using AWSClientAuth::AWSCognitoAuthorizationController::m_awsAccountId;
     };
 }
 
@@ -39,9 +41,6 @@ protected:
     void SetUp() override
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
-
-        AWSClientAuth::CognitoAuthorizationSettings::Reflect(*m_serializeContext);
-
         m_mockController = AZStd::make_unique<AWSClientAuthUnitTest::AWSCognitoAuthorizationControllerTestLocalMock>();
     }
 
@@ -53,26 +52,18 @@ protected:
 
 public:
     AZStd::unique_ptr<AWSClientAuthUnitTest::AWSCognitoAuthorizationControllerTestLocalMock> m_mockController;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
 };
 
 TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success)
 {
-    AZStd::string path = AZStd::string::format("%s/%s/awsCognitoAuthorization.setreg",
-        m_testFolder->c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
-    CreateTestFile("awsCognitoAuthorization.setreg"
-        , R"({
-            "AWS": {
-                "CognitoIdentityPool": {
-                    "CognitoUserPoolId": "TestUserPoolId",
-                    "LoginWithAmazonId": "www.amazon.com",
-                    "AWSAccountId": "1234567890",
-                    "IdentityPoolId": "TestIdentityPoolId"
-                }
-            }
-        })");
-
-    ASSERT_TRUE(m_mockController->Initialize(path));
-    ASSERT_TRUE(m_mockController->m_settings->m_cognitoUserPoolId == "TestUserPoolId");
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(2);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(1);
+    ASSERT_TRUE(m_mockController->Initialize());
+    ASSERT_TRUE(m_mockController->m_formattedCognitoUserPoolId.find(AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID) != AZStd::string::npos);
+    ASSERT_TRUE(m_mockController->m_awsAccountId == AWSClientAuthUnitTest::TEST_ACCOUNT_ID);
+    ASSERT_TRUE(m_mockController->m_cognitoIdentityPoolId == AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_WithLogins_Success)
@@ -438,9 +429,17 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialHandlerOrder_Call_Alw
     EXPECT_EQ(order, AWSCore::CredentialHandlerOrder::COGNITO_IDENITY_POOL_CREDENTIAL_HANDLER);
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_InvalidPath)
+TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetResourceNameEmpty)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    ASSERT_FALSE(m_mockController->Initialize(""));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1);
+    ASSERT_FALSE(m_mockController->Initialize());
+}
+
+TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetAWSAccountEmpty)
+{
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1).WillOnce(testing::Return(""));
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(0);
+    ASSERT_FALSE(m_mockController->Initialize());
 }

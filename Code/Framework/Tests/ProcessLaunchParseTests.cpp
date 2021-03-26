@@ -12,8 +12,8 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/CommandLine/CommandLine.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -76,13 +76,13 @@ namespace UnitTest
 
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_LaunchBasicProcess_Success)
     {
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
         EXPECT_EQ(processOutput.outputResult.empty(), false);
@@ -91,13 +91,13 @@ namespace UnitTest
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_BasicParameter_Success)
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest -param1 param1val -param2=param2val";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
 
@@ -125,13 +125,13 @@ namespace UnitTest
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"param,1val\"" -param2="\"param2v,al\"")";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
 
@@ -159,13 +159,13 @@ namespace UnitTest
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"param 1val\"" -param2="\"param2v al\"")";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
 
@@ -193,13 +193,13 @@ namespace UnitTest
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"par,am 1val\"" -param2="\"param,2v al\"")";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
 
@@ -223,13 +223,13 @@ namespace UnitTest
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_CommaStringNoQuotes_Success)
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzToolsFramework::ProcessOutput processOutput;
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest -param1 param,1val -param2=param2v,al";
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzToolsFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzToolsFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
 
         EXPECT_EQ(launchReturn, true);
 

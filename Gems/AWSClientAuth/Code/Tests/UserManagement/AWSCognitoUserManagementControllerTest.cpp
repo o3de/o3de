@@ -16,17 +16,6 @@
 #include <AWSClientAuthGemMock.h>
 #include <aws/cognito-idp/CognitoIdentityProviderErrors.h>
 
-namespace AWSClientAuthUnitTest
-{
-    class AWSCognitoUserManagementControllerLocalMock
-        : public AWSClientAuth::AWSCognitoUserManagementController
-    {
-    public:
-        using AWSClientAuth::AWSCognitoUserManagementController::m_settings;
-    };
-}
-
-
 class AWSCognitoUserManagementControllerTest
     : public AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture
     , public AWSCore::AWSCoreRequestBus::Handler
@@ -35,8 +24,7 @@ protected:
     void SetUp() override
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
-        AWSClientAuth::AWSCognitoUserManagementSetting::Reflect(*m_serializeContext);
-        m_mockController = AZStd::make_unique<AWSClientAuthUnitTest::AWSCognitoUserManagementControllerLocalMock>();
+        m_mockController = AZStd::make_unique<AWSClientAuth::AWSCognitoUserManagementController>();
 
         AWSCore::AWSCoreRequestBus::Handler::BusConnect();
     }
@@ -61,26 +49,15 @@ protected:
     }
 
 public:
-    AZStd::unique_ptr<AWSClientAuthUnitTest::AWSCognitoUserManagementControllerLocalMock> m_mockController;
+    AZStd::unique_ptr<AWSClientAuth::AWSCognitoUserManagementController> m_mockController;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
 };
 
 TEST_F(AWSCognitoUserManagementControllerTest, Initialize_Success)
 {
-    AZStd::string path = AZStd::string::format("%s/%s/awsCognitoUserManagement.setreg",
-        m_testFolder->c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
-    CreateTestFile("awsCognitoUserManagement.setreg"
-        , R"({"AWS":
-                {
-                    "CognitoUserPool":
-                    {
-                        "AppClientId": "TestClientId",
-                        "SignUpConfirmationType": "email"
-                    }
-                }
-            })");
-
-    ASSERT_TRUE(m_mockController->Initialize(path));
-    ASSERT_EQ(m_mockController->m_settings->m_appClientId, "TestClientId");
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
+    ASSERT_TRUE(m_mockController->Initialize());
+    ASSERT_EQ(m_mockController->GetCognitoAppClientId(), AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
 TEST_F(AWSCognitoUserManagementControllerTest, EmailSignUp_Success)
@@ -203,9 +180,8 @@ TEST_F(AWSCognitoUserManagementControllerTest, ConfirmForgotPassword_Fail_Confir
     m_mockController->ConfirmForgotPasswordAsync(AWSClientAuthUnitTest::TEST_USERNAME, AWSClientAuthUnitTest::TEST_CODE, AWSClientAuthUnitTest::TEST_NEW_PASSWORD);
 }
 
-TEST_F(AWSCognitoUserManagementControllerTest, Initialize_Fail_InvalidPath)
+TEST_F(AWSCognitoUserManagementControllerTest, Initialize_Fail_GetResourceNameEmpty)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    ASSERT_FALSE(m_mockController->Initialize(""));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
+    ASSERT_FALSE(m_mockController->Initialize());
 }

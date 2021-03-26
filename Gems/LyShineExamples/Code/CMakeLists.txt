@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME LyShineExamples ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.LyShineExamples.c7935ecf5e8047fe8ca947b34b11cadb.v0.1.0
     FILES_CMAKE
         lyshineexamples_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -212,17 +212,29 @@ namespace AWSMetrics
             int currentNumProcessedEvents = originalStats.m_numEvents;
 
             int processingTime = 0;
-            while (processingTime < TIMEOUT_FOR_PROCESSING_IN_MS && currentNumProcessedEvents < expectedNumProcessedEvents)
+            int numTotalRequests = 0;
+            while (processingTime < TIMEOUT_FOR_PROCESSING_IN_MS)
             {
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SLEEP_TIME_FOR_PROCESSING_IN_MS));
                 processingTime += SLEEP_TIME_FOR_PROCESSING_IN_MS;
 
                 const GlobalStatistics& currentStats = m_metricsManager->GetGlobalStatistics();
                 currentNumProcessedEvents = currentStats.m_numEvents;
-            }
+                numTotalRequests = m_metricsManager->GetNumTotalRequests();
+
+                if (currentNumProcessedEvents == expectedNumProcessedEvents)
+                {
+                    // All the expectd metrics events has been sent. Flush the tick bus queue until we get all the notifications.
+                    AZ::TickBus::ExecuteQueuedEvents();
+                    if (numTotalRequests ==
+                        m_notifications.m_numSuccessNotification + m_notifications.m_numFailureNotification)
+                    {
+                        break;
+                    }
+                }
+            }   
         }
 
-        testing::NiceMock<AWSMetricsNotificationBusMock> m_awsMetricsNotificationBusMock;
         AZStd::unique_ptr<MetricsManager> m_metricsManager;
         AWSMetricsNotificationBusMock m_notifications;
 
@@ -356,7 +368,7 @@ namespace AWSMetrics
 
         AWSMetricsRequestBus::Broadcast(&AWSMetricsRequests::FlushMetrics);
 
-        WaitForProcessing(1);
+        WaitForProcessing(MAX_NUM_METRICS_EVENTS);
         ASSERT_EQ(m_notifications.m_numSuccessNotification, 1);
         ASSERT_EQ(m_notifications.m_numFailureNotification, 0);
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), 0);

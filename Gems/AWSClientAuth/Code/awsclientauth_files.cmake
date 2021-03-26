@@ -18,16 +18,15 @@ set(FILES
 
     Include/Private/AWSClientAuthSystemComponent.h
     Include/Private/AWSClientAuthBus.h
+    Include/Private/AWSClientAuthResourceMappingConstants.h
     Include/Private/Authentication/AuthenticationProviderTypes.h
     Include/Private/Authentication/AuthenticationProviderManager.h
     Include/Private/Authentication/AuthenticationNotificationBusBehaviorHandler.h
 
-    Include/Private/Authorization/AWSCognitoAuthorizationTypes.h
     Include/Private/Authorization/AWSCognitoAuthorizationController.h
     Include/Private/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h
     Include/Private/Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h
 
-    Include/Private/UserManagement/AWSCognitoUserManagementTypes.h
     Include/Private/UserManagement/AWSCognitoUserManagementController.h
     Include/Private/UserManagement/UserManagementNotificationBusBehaviorHandler.h
     

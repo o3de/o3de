@@ -15,9 +15,11 @@
 
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h> // for max path len
-#include <ISystem.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
+#include <ISystem.h>
 
 namespace MaterialUtils
 {
@@ -75,14 +77,11 @@ namespace MaterialUtils
         static char cachedGameName[AZ_MAX_PATH_LEN] = { 0 };
         if (!removals[removalSize - 1])
         {
-            if ((gEnv) && (gEnv->pConsole))
+            auto projectName = AZ::Utils::GetProjectName();
+            if (!projectName.empty())
             {
-                ICVar* pGameNameCVar = gEnv->pConsole->GetCVar("sys_game_folder");
-                if (pGameNameCVar)
-                {
-                    azstrcpy(cachedGameName, AZ_MAX_PATH_LEN, pGameNameCVar->GetString());
-                    azstrcat(cachedGameName, AZ_MAX_PATH_LEN, "/");
-                }
+                azstrcpy(cachedGameName, AZ_MAX_PATH_LEN, projectName.c_str());
+                azstrcat(cachedGameName, AZ_MAX_PATH_LEN, "/");
             }
 
             if (cachedGameName[0] == 0)

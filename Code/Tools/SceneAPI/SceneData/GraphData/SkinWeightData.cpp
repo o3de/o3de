@@ -66,6 +66,19 @@ namespace AZ
                 m_vertexLinks[vertexIndex].push_back(link);
             }
 
+            bool CompareLinks(const SceneAPI::DataTypes::ISkinWeightData::Link& left, const SceneAPI::DataTypes::ISkinWeightData::Link& right)
+            {
+                // sort highest to lowest
+                return left.weight >= right.weight;
+            }
+
+            void SkinWeightData::AddAndSortLink(size_t vertexIndex, const SceneAPI::DataTypes::ISkinWeightData::Link& link)
+            {
+                AZ_Assert(vertexIndex < m_vertexLinks.size(), "Invalid vertex index %i for skin weight data links.", vertexIndex);
+                m_vertexLinks[vertexIndex].insert(
+                    AZStd::lower_bound(m_vertexLinks[vertexIndex].begin(), m_vertexLinks[vertexIndex].end(), link, CompareLinks), link);
+            }
+
             int SkinWeightData::GetBoneId(const AZStd::string& boneName)
             {
                 if (m_boneNameIdMap.find(boneName) == m_boneNameIdMap.end())

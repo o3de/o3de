@@ -309,22 +309,22 @@ namespace AZ
                 }
             } // the folders constructed this fashion constitute the base of automatic include search paths
 
-            // get the application root:
-            AZStd::string devFolder;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(devFolder, &AzFramework::ApplicationRequests::GetAppRoot);
-            AzFramework::StringFunc::Path::Normalize(devFolder);
+            // get the engine root:
+            AZStd::string engineRoot;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+            AzFramework::StringFunc::Path::Normalize(engineRoot);
 
             // add optional additional options
             for (AZStd::string& path : options.m_projectIncludePaths)
             {
-                AzFramework::StringFunc::Path::Join(devFolder.c_str(), path.c_str(), path);
+                AzFramework::StringFunc::Path::Join(engineRoot.c_str(), path.c_str(), path);
                 DeleteFromSet(path, scanFoldersSet);  // no need to add a path two times.
             }
             // back-insert the default paths (after the config-read paths we just read)
             TransferContent(/*to:*/options.m_projectIncludePaths, /*from:*/scanFoldersSet);
-            // finally the dev/Gems fallback
+            // finally the <engineroot>/Gems fallback
             AZStd::string gemsFolder;
-            AzFramework::StringFunc::Path::Join(devFolder.c_str(), "Gems", gemsFolder);
+            AzFramework::StringFunc::Path::Join(engineRoot.c_str(), "Gems", gemsFolder);
             options.m_projectIncludePaths.push_back(gemsFolder);
         }
 

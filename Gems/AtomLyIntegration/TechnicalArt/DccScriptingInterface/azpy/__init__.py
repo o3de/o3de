@@ -85,7 +85,7 @@ from pathlib import Path
 # get/set the project name
 _LY_DEV = os.getenv(constants.ENVAR_LY_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
-                                                     check_stub='engineroot.txt'))
+                                                     check_stub='engine.json'))
 
 # get/set the project name
 _LY_PROJECT_TAG = os.getenv(constants.ENVAR_LY_PROJECT,
@@ -94,8 +94,8 @@ _LY_PROJECT_TAG = os.getenv(constants.ENVAR_LY_PROJECT,
 # project cache log dir path
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
                                  Path(_LY_DEV,
+                                      _LY_PROJECT_TAG,
                                      'Cache',
-                                     _LY_PROJECT_TAG,
                                      'pc', 'user', 'log', 'logs')))
 
 

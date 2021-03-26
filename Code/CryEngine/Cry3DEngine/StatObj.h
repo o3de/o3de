@@ -16,7 +16,6 @@
 #pragma once
 
 #if !defined(CONSOLE)
-#   define TRACE_CGF_LEAKS
 #   define SUPPORT_TERRAIN_AO_PRE_COMPUTATIONS
 #endif
 
@@ -337,13 +336,6 @@ public:
     std::vector<uint16> m_chunkBoneIds;
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // for debug purposes
-    //////////////////////////////////////////////////////////////////////////
-#ifdef TRACE_CGF_LEAKS
-    string  m_sLoadingCallstack;
-#endif
-
 private:
     //////////////////////////////////////////////////////////////////////////
     // Sub objects.
@@ -419,7 +411,7 @@ public:
     virtual unsigned int GetBreakableByGame() { return m_bBreakableByGame; };
 
     //Note: This function checks both the children and root data
-    //It should really be 'has any deformable objects' 
+    //It should really be 'has any deformable objects'
     //Should eventually be refactored as part of an eventual statobj refactor.
     virtual bool IsDeformable() override;
 

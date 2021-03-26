@@ -64,7 +64,7 @@ class TestsMissingDependencies_WindowsAndMac(object):
         self._missing_dep_helper = missing_dep_helper
         self._asset_processor.create_temp_asset_root()
         self._asset_processor.add_source_folder_assets(f"AutomatedTesting\\TestAssets")
-        missing_dep_helper.asset_db = os.path.join(asset_processor.temp_asset_root(), "Cache", workspace.project,
+        missing_dep_helper.asset_db = os.path.join(asset_processor.temp_asset_root(), "Cache",
                                                    "assetdb.sqlite")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Slices")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Materials")

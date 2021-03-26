@@ -96,7 +96,7 @@ class AndroidDeployment(object):
             if asset_mode == 'PAK':
                 self.local_asset_path = self.dev_root / 'Pak' / f'{game_name.lower()}_{asset_type}_paks'
             else:
-                self.local_asset_path = self.dev_root / 'Cache' / game_name / asset_type
+                self.local_asset_path = self.dev_root / game_name / 'Cache'  / asset_type
 
             assert game_name is not None, f"'game_name' is required"
             self.game_name = game_name

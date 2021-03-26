@@ -27,7 +27,7 @@ from cmake.Tools.Platform.Android import android_support, generate_android_proje
 @pytest.mark.parametrize(
     "from_override, version_str, expected_result", [
         pytest.param(False, b"Gradle 4.10.1", LooseVersion('4.10.1'), id='equalMinVersion'),
-        pytest.param(False, b"Gradle 5.6.4", LooseVersion('5.6.4'), id='eualMaxVersion'),
+        pytest.param(False, b"Gradle 5.6.4", LooseVersion('5.6.4'), id='equalMaxVersion'),
         pytest.param(False, b"Gradle 1.0", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='lessThanMinVersion'),
         pytest.param(False, b"Gradle 26.3", common.LmbrCmdError('error', common.ERROR_CODE_ENVIRONMENT_ERROR), id='greaterThanMaxVersion'),
         pytest.param(True, b"Gradle 4.10.1", LooseVersion('4.10.1')),

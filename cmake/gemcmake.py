@@ -55,7 +55,6 @@ def getGemCMakeListsTemplate():
 ly_add_target(
     NAME {GEM_NAME} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.{GEM_NAME}.{GEM_UUID}.v{GEM_VERSION}
     FILES_CMAKE
         {GEM_NAME_LOWERCASE}_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -70,9 +69,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME {GEM_NAME}.Editor MODULE
+        NAME {GEM_NAME}.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.{GEM_NAME}.Editor.{GEM_UUID}.v{GEM_VERSION}
         FILES_CMAKE
             {GEM_NAME_LOWERCASE}_editor_files.cmake
         INCLUDE_DIRECTORIES

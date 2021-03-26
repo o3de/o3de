@@ -30,7 +30,6 @@ ly_add_target(
 ly_add_target(
     NAME StartingPointCamera ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.StartingPointCamera.834070b9537d44df83559e2045c3859f.v0.1.0
     FILES_CMAKE
         startingpointcamera_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -46,4 +45,6 @@ ly_add_target(
             Gem::CameraFramework.Static
             Gem::LmbrCentral.Static
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::CameraFramework
 )

@@ -13,7 +13,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QString>
@@ -108,7 +108,7 @@ namespace AssetProcessor
         void SetConnection(AZ::u32 connId);
 
         AZStd::string BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
-        AZStd::unique_ptr<AzToolsFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::string& params) const;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::string& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
         BuilderRunJobOutcome WaitForBuilderResponse(AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds, AZStd::binary_semaphore* waitEvent) const;
@@ -128,7 +128,7 @@ namespace AssetProcessor
         AZStd::binary_semaphore m_connectionEvent;
 
         //! Optional process watcher
-        AZStd::unique_ptr<AzToolsFramework::ProcessWatcher> m_processWatcher = nullptr;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> m_processWatcher = nullptr;
 
         //! Optional communicator, only available if we have a process watcher
         AZStd::unique_ptr<CommunicatorTracePrinter> m_tracePrinter = nullptr;

@@ -30,7 +30,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_Component_DebugCamera ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_Component_DebugCamera.013d1b42ad314c929b292c143bcbf045.v0.1.0
     FILES_CMAKE
         atom_component_debugcamera_shared_files.cmake
     INCLUDE_DIRECTORIES

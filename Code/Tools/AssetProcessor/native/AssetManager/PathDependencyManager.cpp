@@ -30,7 +30,7 @@ namespace AssetProcessor
     PathDependencyManager::PathDependencyManager(AZStd::shared_ptr<AssetDatabaseConnection> stateData, PlatformConfiguration* platformConfig)
         : m_stateData(stateData), m_platformConfig(platformConfig)
     {
-        
+
     }
 
     void PathDependencyManager::SaveUnresolvedDependenciesToDatabase(AssetBuilderSDK::ProductPathDependencySet& unresolvedDependencies, const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, const AZStd::string& platform)
@@ -55,7 +55,7 @@ namespace AssetProcessor
                 // other problems. This string says that something went wrong in this function.
                 AZStd::string("INVALID_PATH"),
                 dependencyType);
-            
+
             AZStd::string path = AssetUtilities::NormalizeFilePath(unresolvedPathDep.m_dependencyPath.c_str()).toUtf8().constData();
             bool isExactDependency = IsExactDependency(path);
 
@@ -81,7 +81,7 @@ namespace AssetProcessor
             dependencyContainer.push_back(placeholderDependency);
         }
 
-        if(!m_stateData->UpdateProductDependencies(dependencyContainer))
+        if (!m_stateData->UpdateProductDependencies(dependencyContainer))
         {
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to save unresolved dependencies to database for product %d (%s)",
                 productEntry.m_productID, productEntry.m_productName.c_str());
@@ -111,8 +111,8 @@ namespace AssetProcessor
         const DependencyProductMap& excludedPathDependencyIds = handleProductDependencies ? exclusionMaps.m_productPathDependencyIds : exclusionMaps.m_sourcePathDependencyIds;
         const DependencyProductMap& excludedWildcardPathDependencyIds = handleProductDependencies ? exclusionMaps.m_wildcardProductPathDependencyIds : exclusionMaps.m_wildcardSourcePathDependencyIds;
 
-        // strip path of /<platform>/<project>/
-        AZStd::string strippedPath = handleProductDependencies ? StripPlatformAndProject(assetName) : sourceEntry.m_sourceName;
+        // strip asset platform from path
+        AZStd::string strippedPath = handleProductDependencies ? AssetUtilities::StripAssetPlatform(assetName).toUtf8().constData() : sourceEntry.m_sourceName;
         SanitizeForDatabase(strippedPath);
 
         auto unresolvedIter = excludedPathDependencyIds.find(ExcludedDependenciesSymbol + strippedPath);
@@ -135,13 +135,6 @@ namespace AssetProcessor
                 }
             }
         }
-    }
-
-    AZStd::string PathDependencyManager::StripPlatformAndProject(AZStd::string_view productName)
-    {
-        auto nextSlash = productName.find('/'); // platform/
-        nextSlash = productName.find('/', nextSlash + 1) + 1; // project/
-        return productName.substr(nextSlash, productName.size() - nextSlash);
     }
 
     PathDependencyManager::DependencyProductMap& PathDependencyManager::SelectMap(MapSet& mapSet, bool wildcard, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::DependencyType type)
@@ -193,7 +186,7 @@ namespace AssetProcessor
 
     void PathDependencyManager::NotifyResolvedDependencies(const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& dependencyContainer) const
     {
-        if(!m_dependencyResolvedCallback)
+        if (!m_dependencyResolvedCallback)
         {
             return;
         }
@@ -226,7 +219,7 @@ namespace AssetProcessor
             const bool isExactDependency = IsExactDependency(productDependencyDatabaseEntry.m_unresolvedPath);
             AZ::s64 dependencyId = isExactDependency ? productDependencyDatabaseEntry.m_productDependencyID : AzToolsFramework::AssetDatabase::InvalidEntryId;
 
-            if(isSourceDependency && !isExactDependency && matchedPath == sourceNameWithScanFolder)
+            if (isSourceDependency && !isExactDependency && matchedPath == sourceNameWithScanFolder)
             {
                 // Since we did a search for the source 2 different ways, filter one out
                 // Scanfolder-prefixes are only for exact dependencies
@@ -239,14 +232,14 @@ namespace AssetProcessor
                 AZStd::vector<AZStd::pair<DependencyProductIdInfo, bool>> exclusions; // bool = is exact dependency
                 GetMatchedExclusions(sourceEntry, matchedProduct, exclusions, productDependencyDatabaseEntry.m_dependencyType, exclusionMaps);
 
-                if(!exclusions.empty())
+                if (!exclusions.empty())
                 {
                     bool isExclusionForThisProduct = false;
                     bool isExclusionExact = false;
 
                     for (const auto& exclusionPair : exclusions)
                     {
-                        if(exclusionPair.first.m_productId == productDependencyDatabaseEntry.m_productPK && exclusionPair.first.m_platform == productDependencyDatabaseEntry.m_platform)
+                        if (exclusionPair.first.m_productId == productDependencyDatabaseEntry.m_productPK && exclusionPair.first.m_platform == productDependencyDatabaseEntry.m_platform)
                         {
                             isExclusionExact = exclusionPair.second;
                             isExclusionForThisProduct = true;
@@ -254,7 +247,7 @@ namespace AssetProcessor
                         }
                     }
 
-                    if(isExclusionForThisProduct)
+                    if (isExclusionForThisProduct)
                     {
                         if (isExactDependency && isExclusionExact)
                         {
@@ -314,8 +307,8 @@ namespace AssetProcessor
         {
             const AZStd::string& productName = productEntry.m_productName;
 
-            // strip path of /<platform>/<project>/
-            AZStd::string strippedPath = StripPlatformAndProject(productName);
+            // strip path of the <platform>/
+            AZStd::string strippedPath = AssetUtilities::StripAssetPlatform(productName).toUtf8().constData();
             SanitizeForDatabase(strippedPath);
 
             searchPaths.push_back(strippedPath);
@@ -347,7 +340,7 @@ namespace AssetProcessor
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer matchedProducts;
 
             // Figure out the list of products to work with, for a source match, use all the products, otherwise just use the matched products
-            if(isSourceDependency)
+            if (isSourceDependency)
             {
                 matchedProducts = products;
             }
@@ -357,11 +350,11 @@ namespace AssetProcessor
                 {
                     const AZStd::string& productName = productEntry.m_productName;
 
-                    // strip path of /<platform>/<project>/
-                    AZStd::string strippedPath = StripPlatformAndProject(productName);
+                    // strip path of the leading asset platform /<platform>
+                    AZStd::string strippedPath = AssetUtilities::StripAssetPlatform(productName).toUtf8().constData();
                     SanitizeForDatabase(strippedPath);
 
-                    if(strippedPath == matchedPath)
+                    if (strippedPath == matchedPath)
                     {
                         matchedProducts.push_back(productEntry);
                     }
@@ -373,7 +366,7 @@ namespace AssetProcessor
         }
 
         // Save everything to the db
-        if(!m_stateData->UpdateProductDependencies(dependencyContainer))
+        if (!m_stateData->UpdateProductDependencies(dependencyContainer))
         {
             AZ_Error("PathDependencyManager", false, "Failed to update product dependencies");
         }
@@ -386,7 +379,7 @@ namespace AssetProcessor
 
     void CleanupPathDependency(AssetBuilderSDK::ProductPathDependency& pathDependency)
     {
-        if(pathDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::SourceFile)
+        if (pathDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::SourceFile)
         {
             // Nothing to cleanup if the dependency type was already pointing at source.
             return;
@@ -411,7 +404,7 @@ namespace AssetProcessor
     {
         const AZ::Data::ProductDependencyInfo::ProductDependencyFlags productDependencyFlags =
             AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad);
-        const QString gameName = AssetUtilities::ComputeGameName();
+
         AZStd::vector<AssetBuilderSDK::ProductDependency> excludedDeps;
 
         // Check the path dependency set and find any conflict (include and exclude the same path dependency)
@@ -458,9 +451,8 @@ namespace AssetProcessor
             {
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
-                QString productNameWithPlatformAndGameName = QString("%1%2%3%2%4").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, gameName, dependencyPathSearch.c_str());
 
-                if (AzFramework::StringFunc::Equal(productNameWithPlatformAndGameName.toUtf8().data(), productName.c_str()))
+                if (AzFramework::StringFunc::Equal(productNameWithPlatform.toUtf8().data(), productName.c_str()))
                 {
                     AZ_Warning(AssetProcessor::ConsoleChannel, false,
                         "Invalid dependency: Product Asset ( %s ) has listed itself as one of its own Product Dependencies.",
@@ -471,18 +463,15 @@ namespace AssetProcessor
 
                 if (isExactDependency)
                 {
-                    m_stateData->GetProductsByProductName(productNameWithPlatformAndGameName, productInfoContainer);
-                    // Not all products will be in the game subfolder.
-                    // Items in dev, like bootstrap.cfg, end up in just the root platform folder.
-                    // These two checks search for products in both location.
-                    // Example: If a path dependency was just "bootstrap.cfg" in SamplesProject on PC, this would search both
-                    //  "cache/SamplesProject/pc/bootstrap.cfg" and "cache/SamplesProject/pc/SamplesProject/bootstrap.cfg".
+                    // Search for products in the cache platform folder
+                    // Example: If a path dependency is "test1.asset" in SamplesProject on PC, this would search 
+                    //  "SamplesProject/Cache/pc/test1.asset"
                     m_stateData->GetProductsByProductName(productNameWithPlatform, productInfoContainer);
 
                 }
                 else
                 {
-                    m_stateData->GetProductsLikeProductName(productNameWithPlatformAndGameName, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::LikeType::Raw, productInfoContainer);
+                    m_stateData->GetProductsLikeProductName(productNameWithPlatform, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::LikeType::Raw, productInfoContainer);
                 }
 
                 // See if path matches any product files

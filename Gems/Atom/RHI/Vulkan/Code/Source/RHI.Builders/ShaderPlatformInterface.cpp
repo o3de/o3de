@@ -87,30 +87,32 @@ namespace AZ
         bool ShaderPlatformInterface::BuildPipelineLayoutDescriptor(
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
             const ShaderResourceGroupInfoList& srgInfoList,
-            const RootConstantsInfo& rootConstantsInfo)
+            const RootConstantsInfo& rootConstantsInfo,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
         {
             AZ_UNUSED(srgInfoList);
             AZ_UNUSED(rootConstantsInfo);
+            AZ_UNUSED(shaderCompilerArguments);
 
             // Nothing to do, so we just finalize the layout descriptor.
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             // Note: all platforms use DirectX packing rules.
-            return m_settings.MakeAdditionalAzslcCommandLineString() +
+            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
                 " --use-spaces --unique-idx --namespace=vk --root-const=128";
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.MakeAdditionalAzslcWarningCommandLineString();
+            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
         }
 
-        bool ShaderPlatformInterface::BuildHasDebugInfo() const
+        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -133,7 +135,8 @@ namespace AZ
             const AZStd::string& functionName,
             RHI::ShaderHardwareStage shaderAssetType,
             const AZStd::string& tempFolderPath,
-            StageDescriptor& outputDescriptor) const
+            StageDescriptor& outputDescriptor,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
 
@@ -143,6 +146,7 @@ namespace AZ
                 tempFolderPath,                          // AP temp folder for the job
                 functionName,                            // name of function that is the entry point
                 shaderAssetType,                         // shader stage (vertex shader, pixel shader, ...)
+                shaderCompilerArguments,
                 shaderByteCode,                          // compiled shader output
                 platform,                                // target platform
                 outputDescriptor.m_byProducts);          // dynamic branch count output & debug dumps
@@ -174,6 +178,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderStageType,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
             AZStd::vector<uint8_t>& compiledShader,
             const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
@@ -215,7 +220,7 @@ namespace AZ
             }
 
             // Compilation parameters
-            AZStd::string params = m_settings.MakeAdditionalDxcCommandLineString();
+            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
             params += " -spirv"; // Generate SPIRV shader
 
             switch (shaderStageType)
@@ -273,10 +278,13 @@ namespace AZ
                 prependFile = WindowsPlatformShaderHeader;
             }
 
-            RHI::PrependArguments args{ shaderSourceFile.c_str(), prependFile.c_str(), "", tempFolder.c_str() };
+            RHI::PrependArguments args;
+            args.m_sourceFile = shaderSourceFile.c_str();
+            args.m_prependFile = prependFile.c_str();
+            args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.vulkan.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
@@ -329,7 +337,7 @@ namespace AZ
                 byProducts.m_dynamicBranchCount = ByProducts::UnknownDynamicBranchCount;
             }
 
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(objectCodeOutputFile));
             }

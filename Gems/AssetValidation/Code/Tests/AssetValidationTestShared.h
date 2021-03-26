@@ -150,8 +150,15 @@ struct AssetValidationTest
     {
         if (!AZ::SettingsRegistry::Get())
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
             AZ::SettingsRegistry::Register(&m_registry);
+
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
+            // Set the engine root to the temporary directory and re-update the runtime file paths
+            auto enginePathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/engine_path";
+            m_registry.Set(enginePathKey, GetEngineRoot());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
         }
     }
 
@@ -165,7 +172,7 @@ struct AssetValidationTest
         AZ_Assert(false, "Not implemented");
     }
 
-    void CalculateBranchTokenForAppRoot([[maybe_unused]] AZStd::string& token) const override
+    void CalculateBranchTokenForEngineRoot([[maybe_unused]] AZStd::string& token) const override
     {
         AZ_Assert(false, "Not implemented");
     }

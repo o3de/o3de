@@ -43,7 +43,7 @@ namespace AZ
             childRequest.m_inputConnections.emplace_back(childInputConnection);
 
             m_childPass = passSystem->CreatePassFromRequest(&childRequest);
-            AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (sys_game_folder)");
+            AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
             
             CreateChildPasses();
 

@@ -234,7 +234,6 @@ class TestAndroidLauncher:
         mock_workspace.shader_compiler.stop.assert_called_once()
 
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._config_ini_to_dict')
-    @mock.patch('ly_test_tools.lumberyard.settings.LySettings.modify_bootstrap_setting', mock.MagicMock)
     @mock.patch('ly_test_tools.lumberyard.settings.LySettings.modify_platform_setting', mock.MagicMock)
     def test_ConfigureSettings_DefaultValues_SetsValues(self, mock_config):
         mock_config.return_value = VALID_ANDROID_CONFIG
@@ -243,7 +242,6 @@ class TestAndroidLauncher:
         launcher = ly_test_tools.launchers.AndroidLauncher(mock_workspace, ["dummy"])
         launcher.configure_settings()
 
-        assert mock_workspace.settings.modify_bootstrap_setting.call_count == 6
         assert mock_workspace.settings.modify_platform_setting.call_count == 8
 
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._config_ini_to_dict')

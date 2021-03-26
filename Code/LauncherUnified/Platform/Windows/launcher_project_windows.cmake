@@ -21,17 +21,14 @@ else()
     )
 endif()
 
-# Find the resource from the game gem
-get_target_property(${project}_SOURCE_DIR ${project} SOURCE_DIR) # Point to where the code is
-get_filename_component(${project}_SOURCE_PARENT_DIR ${${project}_SOURCE_DIR} DIRECTORY) # Parent directory
-
-set(ICON_FILE ${${project}_SOURCE_PARENT_DIR}/Resources/GameSDK.ico)
+set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)
 if(NOT EXISTS ${ICON_FILE})
     # Try the common LauncherUnified icon instead
     set(ICON_FILE Resources/GameSDK.ico)
 endif()
+
 if(EXISTS ${ICON_FILE})
-    set(target_file ${CMAKE_CURRENT_BINARY_DIR}/${project}.GameLauncher.rc)
+    set(target_file ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher.rc)
     configure_file(Platform/Windows/Launcher.rc.in
         ${target_file}
         @ONLY

@@ -68,7 +68,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_RHI.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_RHI.Private.fb7f322c8bdb42228d9e155c954f98bd.v0.1.0
     FILES_CMAKE
         atom_rhi_private_shared_files.cmake
     INCLUDE_DIRECTORIES

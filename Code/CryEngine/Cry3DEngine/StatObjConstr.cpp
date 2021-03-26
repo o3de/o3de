@@ -56,10 +56,6 @@ CStatObj::CStatObj()
     m_fLodDistance = 0.0f;
 
     Init();
-
-#ifdef TRACE_CGF_LEAKS
-    m_sLoadingCallstack = GetSystem()->GetLoadingProfilerCallstack();
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

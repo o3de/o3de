@@ -18,6 +18,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/Utils.h>
 
@@ -69,7 +70,7 @@ namespace UnitTest
         m_localFileIO.reset(aznew AZ::IO::LocalFileIO());
         AZ::IO::FileIOBase::SetInstance(m_localFileIO.get());
 
-        AZ::IO::Path assetPath = AZ::Test::GetEngineRootPath();
+        AZ::IO::Path assetPath = AZStd::string_view{ AZ::Utils::GetProjectPath() };
         assetPath /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetPath.c_str());
 

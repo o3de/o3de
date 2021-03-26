@@ -61,7 +61,7 @@ namespace AZ
                 rapidjson::StringBuffer& scratchBuffer);
 
             static void SetupLogging(AZStd::string& scratchBuffer, JsonSerializationResult::JsonIssueCallback& callback,
-                const AzFramework::CommandLine& commandLine);
+                const AZ::CommandLine& commandLine);
             static JsonSerializationResult::ResultCode VerboseLogging(AZStd::string& scratchBuffer, AZStd::string_view message,
                 JsonSerializationResult::ResultCode result, AZStd::string_view target);
             static AZ::JsonSerializationResult::ResultCode SimpleLogging(AZStd::string& scratchBuffer, AZStd::string_view message,

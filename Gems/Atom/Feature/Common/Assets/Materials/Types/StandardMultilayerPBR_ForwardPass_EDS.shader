@@ -19,6 +19,13 @@
                 "DepthFailOp" : "Keep",
                 "FailOp" : "Keep",
                 "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
             }
         }
     },

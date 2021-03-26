@@ -33,10 +33,12 @@ ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxcAz-5.0.0_az-rev1-multi
 ly_associate_package(PACKAGE_NAME azslc-1.7.19-rev1-multiplatform                        TARGETS azslc                      PACKAGE_HASH e7649ba4a9190a82512f9aaad1b4318fbdf09384c533d2e3cc15c8440e65bd4a)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                     TARGETS glad                       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                        TARGETS xxhash                     PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
-ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev3-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d9c7e21e03b03cb560da4793a91a0d384ea621757cf87a1a82c83bfca6b23f97)
+ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 9d0562de258edfd8f14c4cc85ac665cf64b6bf13928d53725e7f90e4ad4672a3)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-mac      TARGETS PhysX           PACKAGE_HASH 149f5e9b44bd27291b1c4772f5e89a1e0efa88eef73c7e0b188935ed4d0c4a70)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mikkelsen       PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev1-mac     TARGETS GoogleBenchmark PACKAGE_HASH d81817701931508c8aa4efc61852d3d9c5672e43d2f68df645ab56251da43119)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-mac                      TARGETS Qt              PACKAGE_HASH ac248833d65838e4bcef50f30c9ff02ba9464ff64b9ada52de2ad6045d38baec)

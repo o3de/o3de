@@ -2391,6 +2391,27 @@ namespace UnitTest
         EXPECT_STREQ("AB BA", eraseIfTest.c_str());
     }
 
+    template <typename StringType>
+    class ImmutableStringFunctionsFixture
+        : public ScopedAllocatorSetupFixture
+    {};
+    using StringTypesToTest = ::testing::Types<AZStd::string_view, AZStd::string, AZStd::fixed_string<1024>>;
+    TYPED_TEST_CASE(ImmutableStringFunctionsFixture, StringTypesToTest);
+
+    TYPED_TEST(ImmutableStringFunctionsFixture, Contains_Succeeds)
+    {
+        TypeParam testStrValue{ R"(C:\o3de\Assets\Materials\texture\image.png)" };
+        EXPECT_TRUE(testStrValue.contains("Materials"));
+        EXPECT_FALSE(testStrValue.contains("Animations"));
+        EXPECT_TRUE(testStrValue.contains('o'));
+        EXPECT_FALSE(testStrValue.contains('Q'));
+
+        TypeParam typeParamEntry{ R"(texture)" };
+        TypeParam typeParamNoEntry{ R"(physics)" };
+        EXPECT_TRUE(testStrValue.contains(typeParamEntry));
+        EXPECT_FALSE(testStrValue.contains(typeParamNoEntry));
+    }
+
     template<typename T>
     const T* GetFormatString()
     {

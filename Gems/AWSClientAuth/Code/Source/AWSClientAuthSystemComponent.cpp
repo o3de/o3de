@@ -16,7 +16,6 @@
 #include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationController.h>
-#include <Authorization/AWSCognitoAuthorizationTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 
@@ -25,7 +24,7 @@
 
 namespace AWSClientAuth
 {
-    constexpr char SERIALIZE_COMPONENT_NAME[] = "AWSClientAuth";
+    constexpr char SerializeComponentName[] = "AWSClientAuth";
 
     void AWSClientAuthSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -41,17 +40,14 @@ namespace AWSClientAuth
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
-            AWSClientAuth::AWSCognitoProviderSetting::Reflect(*serialize);
             AWSClientAuth::LWAProviderSetting::Reflect(*serialize);
             AWSClientAuth::GoogleProviderSetting::Reflect(*serialize);
-            AWSClientAuth::CognitoAuthorizationSettings::Reflect(*serialize);
-            AWSClientAuth::AWSCognitoUserManagementSetting::Reflect(*serialize);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AuthenticationProviderRequestBus>("AuthenticationProviderRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, SERIALIZE_COMPONENT_NAME)
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AuthenticationProviderRequestBus::Events::Initialize)
                 ->Event("IsSignedIn", &AuthenticationProviderRequestBus::Events::IsSignedIn)
                 ->Event("GetAuthenticationTokens", &AuthenticationProviderRequestBus::Events::GetAuthenticationTokens)
@@ -64,7 +60,7 @@ namespace AWSClientAuth
                 ->Event("SignOut", &AuthenticationProviderRequestBus::Events::SignOut);
 
             behaviorContext->EBus<AWSCognitoAuthorizationRequestBus>("AWSCognitoAuthorizationRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, SERIALIZE_COMPONENT_NAME)
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AWSCognitoAuthorizationRequestBus::Events::Initialize)
                 ->Event("Reset", &AWSCognitoAuthorizationRequestBus::Events::Reset)
                 ->Event("GetIdentityId", &AWSCognitoAuthorizationRequestBus::Events::GetIdentityId)
@@ -72,7 +68,7 @@ namespace AWSClientAuth
                 ->Event("RequestAWSCredentialsAsync", &AWSCognitoAuthorizationRequestBus::Events::RequestAWSCredentialsAsync);
 
             behaviorContext->EBus<AWSCognitoUserManagementRequestBus>("AWSCognitoUserManagementRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, SERIALIZE_COMPONENT_NAME)
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AWSCognitoUserManagementRequestBus::Events::Initialize)
                 ->Event("EmailSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::EmailSignUpAsync)
                 ->Event("PhoneSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::PhoneSignUpAsync)

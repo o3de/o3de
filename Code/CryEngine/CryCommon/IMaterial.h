@@ -392,7 +392,7 @@ struct IMaterial
     virtual void SetDirty(bool dirty = true) = 0;
     virtual bool IsDirty() const = 0;
 
-    //! Returns true if the material is the parent of a group of materials 
+    //! Returns true if the material is the parent of a group of materials
     virtual bool IsMaterialGroup() const = 0;
 
     //! Returns true if the material is a single material belongs to a material group
@@ -410,11 +410,6 @@ struct IMaterial
     //  - 1, normal sketch mode.
     //  - 2, fast sketch mode.
     virtual void SetSketchMode(int mode) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Debug routines
-    //////////////////////////////////////////////////////////////////////////
-    virtual const char* GetLoadingCallstack() = 0;  // trace leaking materials by callstack
 
     // Sets FT_DONT_STREAM flag for all textures used by the material
     // If a stream is already in process, this will stop the stream and flush the device texture

@@ -19,10 +19,6 @@ class QApplication;
 
 namespace AzQtComponents
 {
-
     AZ_QT_COMPONENTS_API void PrepareQtPaths();
-
-    AZ_QT_COMPONENTS_API QString FindEngineRootDir(QApplication* app);
-
 } // namespace AzQtComponents
 

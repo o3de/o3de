@@ -92,7 +92,8 @@ namespace AZ::IO::ArchiveInternal
                 convertedPath->Native().replace(0, aliasToLookFor.size(), aliasToReplaceWith);
             }
             // lowercase path if it starts with either the @assets@ or @root@ alias
-            if (convertedPath->Native().starts_with("@assets@") || convertedPath->Native().starts_with("@root@"))
+            if (convertedPath->Native().starts_with("@assets@") || convertedPath->Native().starts_with("@root@")
+                || convertedPath->Native().starts_with("@projectplatformcache@"))
             {
                 AZStd::to_lower(convertedPath->Native().begin(), convertedPath->Native().end());
             }

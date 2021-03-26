@@ -21,6 +21,9 @@
 
 #include "native/utilities/assetUtils.h"
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 #include <AzFramework/IO/LocalFileIO.h>
 
 using namespace AZ::IO;
@@ -114,20 +117,20 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
                 {
                     projectCacheRoot = QDir(projectCacheRoot.absoluteFilePath(assetPlatform));
                 }
-                fileIO->SetAlias("@root@", projectCacheRoot.absolutePath().toUtf8().data());
+                const char* projectCachePath = projectCacheRoot.absolutePath().toUtf8().data();
+                fileIO->SetAlias("@assets@", projectCachePath);
+                fileIO->SetAlias("@root@", projectCachePath);
 
-                QString userDir = projectCacheRoot.absoluteFilePath("user");
-                userDir = QDir::toNativeSeparators(userDir);
-                fileIO->SetAlias("@user@", userDir.toUtf8().data());
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    AZ::IO::Path projectUserPath;
+                    settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+                    fileIO->SetAlias("@user@", projectUserPath.c_str());
 
-                QString logDir = QDir(userDir).absoluteFilePath("log");
-                logDir = QDir::toNativeSeparators(logDir);
-                fileIO->SetAlias("@log@", logDir.toUtf8().data());
+                    AZ::IO::Path logUserPath = projectUserPath / "log";
+                    fileIO->SetAlias("@log@", logUserPath.c_str());
+                }
 
-                QString gameName = AssetUtilities::ComputeGameName();
-                QString gameDir = projectCacheRoot.absoluteFilePath(gameName);
-                gameDir = QDir::toNativeSeparators(gameDir);
-                fileIO->SetAlias("@assets@", gameDir.toUtf8().data());
 
                 // note that the cache folder is auto-created only upon first use of VFS.
             }
@@ -145,13 +148,20 @@ void FileServer::EnsureCacheFolderExists(int connId)
     {
         return;
     }
-    if (fileIO->GetAlias("@cache@"))
+    if (fileIO->GetAlias("@usercache@"))
     {
         // already created.
         return;
     }
 
-    QString cacheDir = QDir(fileIO->GetAlias("@user@")).absoluteFilePath("cache");
+    AZ::IO::FixedMaxPath cacheUserPath;
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    if (settingsRegistry->Get(cacheUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+    {
+        cacheUserPath /= "Cache";
+    }
+
+    auto cacheDir = QString::fromUtf8(cacheUserPath.c_str(), aznumeric_cast<int>(cacheUserPath.Native().size()));
     cacheDir = QDir::toNativeSeparators(cacheDir);
     // the Cache-dir is special in that we don't allow sharing of cache dirs for multiple running
     // apps of the same platform at the same time.
@@ -207,7 +217,7 @@ void FileServer::EnsureCacheFolderExists(int connId)
     }
 #endif
 
-    fileIO->SetAlias("@cache@", cacheDir.toUtf8().data());
+    fileIO->SetAlias("@usercache@", cacheDir.toUtf8().data());
 }
 
 void FileServer::ConnectionRemoved(unsigned int connId)
@@ -944,7 +954,7 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
     }
 
     auto fileIO = m_fileIOs[connId];
-    
+
     FileTreeResponse::FileList files;
     FileTreeResponse::FolderList folders;
 
@@ -954,10 +964,10 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
         folders.push_back("@assets@");
         untestedFolders.push_back("@assets@");
     }
-    if (fileIO->IsDirectory("@cache@"))
+    if (fileIO->IsDirectory("@usercache@"))
     {
-        folders.push_back("@cache@");
-        untestedFolders.push_back("@cache@");
+        folders.push_back("@usercache@");
+        untestedFolders.push_back("@usercache@");
     }
     if (fileIO->IsDirectory("@user@"))
     {
@@ -976,7 +986,7 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
     }
 
     AZ::IO::Result res = ResultCode::Success;
-    
+
     while (untestedFolders.size() && res == ResultCode::Success)
     {
         AZ::OSString folderName = untestedFolders.back();
@@ -1006,9 +1016,9 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
     }
 
     uint32_t resultCode = static_cast<uint32_t>(res.GetResultCode());
-    
+
     FileTreeResponse response(resultCode, files, folders);
-    
+
     Send(connId, serial, response);
 }
 

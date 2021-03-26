@@ -67,7 +67,7 @@ namespace AzFramework
 
             //! Name of the game project that is used for negotiating a connection with the AssetProcessor
             //! The AssetProcessor needs to be processing Assets for the specified game project
-            //! (Can be queried from Settings Registry - "sys_game_folder")
+            //! (Can be queried from Settings Registry - "project_name" under the ProjectSettingsRootKey)
             AZStd::fixed_string<64> m_projectName;
             //! The IP address to use either connect to or from the AssetProcessor
             //! (Can be queried from Settings Registry - "remote_ip")

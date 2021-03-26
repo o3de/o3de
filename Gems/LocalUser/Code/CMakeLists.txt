@@ -31,7 +31,6 @@ ly_add_target(
 ly_add_target(
     NAME LocalUser ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.LocalUser.93ccb44a96b142f7942a3fb6b9ca36e1.v0.1.0
     FILES_CMAKE
         localuser_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -11,11 +11,11 @@
 */
 
 #include <Atom/RHI/FrameScheduler.h>
+#include <Atom/RHI.Reflect/Format.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
-
 
 namespace AZ
 {

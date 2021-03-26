@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target( 
     NAME AWSCore ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AWSCore.c3710872891c4401b0cbdabfca066cb5.0.1.0
     FILES_CMAKE
         awscore_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -71,7 +70,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME AWSCore.Editor MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AWSCore.Editor.45818501e4b24cb3b09848740ace9fac.0.1.0
         FILES_CMAKE
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

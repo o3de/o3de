@@ -193,18 +193,6 @@ namespace LegacyFramework
         // if we're in console mode, listen for CTRL+C
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, true);
 #endif
-
-        m_ptrCommandLineParser = aznew AzFramework::CommandLine();
-        m_ptrCommandLineParser->Parse(m_desc.m_argc, m_desc.m_argv);
-        if (m_ptrCommandLineParser->HasSwitch("app-root"))
-        {
-            auto appRootOverride = m_ptrCommandLineParser->GetSwitchValue("app-root", 0);
-            if (!appRootOverride.empty())
-            {
-                m_appRoot = appRootOverride;
-            }
-        }
-
         // If we don't have one create a serialize context
         if (GetSerializeContext() == nullptr)
         {

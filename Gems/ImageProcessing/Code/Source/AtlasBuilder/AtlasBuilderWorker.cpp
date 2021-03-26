@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -67,61 +68,18 @@ namespace TextureAtlasBuilder
         return (pathLength > 0 && (path.at(pathLength - 1) == '/' || path.at(pathLength - 1) == '\\'));
     }
 
-    bool GetCanonicalPathFromFullPath(const AZStd::string& fullPath, AZStd::string& canonicalPathOut)
-    {
-        AZStd::string curPath = fullPath;
-
-        // We avoid using LocalFileIO::ConvertToAbsolutePath for this because it does not behave consistently across platforms.
-        // On non-Windows platforms, LocalFileIO::ConvertToAbsolutePath requires that the path exist, otherwise the path
-        // remains unchanged. This won't work for paths that include wildcards.
-        // Also, on non-Windows platforms, if the path is already a full path, it will remain unchanged even if it contains
-        // "./" or "../" somewhere other than the beginning of the path
-
-        // Normalize path
-        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, curPath);
-
-        const AZStd::string slash("/");
-
-        // Replace "/./" occurrances with "/"
-        const AZStd::string slashDotSlash("/./");
-        bool replaced = false;
-        do
-        {
-            // Replace first occurrance
-            replaced = AzFramework::StringFunc::Replace(curPath, slashDotSlash.c_str(), slash.c_str(), false, true, false);
-        } while (replaced);
-
-        // Replace "/xxx/../" with "/"
-        const AZStd::regex slashDotDotSlash("\\/[^/.]*\\/\\.\\.\\/");
-        AZStd::string prevPath;
-        while (prevPath != curPath)
-        {
-            prevPath = curPath;
-            curPath = AZStd::regex_replace(prevPath, slashDotDotSlash, slash, AZStd::regex_constants::match_flag_type::format_first_only);
-        }
-
-        if ((curPath.find("..") != AZStd::string::npos) || (curPath.find("./") != AZStd::string::npos) || (curPath.find("/.") != AZStd::string::npos))
-        {
-            return false;
-        }
-
-        canonicalPathOut = curPath;
-        return true;
-    }
-
     bool ResolveRelativePath(const AZStd::string& relativePath, const AZStd::string& watchDirectory, AZStd::string& resolvedFullPathOut)
     {
         bool resolved = false;
 
         // Get full path by appending the relative path to the watch directory
-        AZStd::string fullPath = watchDirectory;
-        fullPath.append("/");
-        fullPath.append(relativePath);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, AZ::IO::PathView{relativePath});
 
-        // Resolve to canonical path (remove "./" and "../") 
-        resolved = GetCanonicalPathFromFullPath(fullPath, resolvedFullPathOut);
+        resolvedPath = (AZ::IO::FixedMaxPath{watchDirectory} / resolvedPath).LexicallyNormal();
+        resolvedFullPathOut = resolvedPath.String();
 
-        return resolved;
+        return true;
     }
 
     bool GetAbsoluteSourcePathFromRelativePath(const AZStd::string& relativeSourcePath, AZStd::string& absoluteSourcePathOut)
@@ -434,33 +392,38 @@ namespace TextureAtlasBuilder
 
     void AtlasBuilderInput::AddFilesUsingWildCard(AZStd::vector<AZStd::string>& paths, const AZStd::string& insert)
     {
-        const AZStd::string& fullPath = insert;
+        AZ::IO::PathView fullPathView(insert);
 
-        AZStd::vector<AZStd::string> candidates;
-        AZStd::string fixedPath = fullPath.substr(0, fullPath.find('*'));
-        fixedPath = fixedPath.substr(0, fixedPath.find_last_of('/'));
-        candidates.push_back(fixedPath);
-
-        AZStd::vector<AZStd::string> wildPath;
-        AzFramework::StringFunc::Tokenize(fullPath.substr(fixedPath.length()).c_str(), wildPath, "/");
-
-        for (size_t i = 0; i < wildPath.size() && candidates.size() > 0; ++i)
+        // Find first path element with a wild card in it
+        AZ::IO::Path staticPath;
+        auto wildCardPathElementIter = fullPathView.begin();
+        for (; wildCardPathElementIter != fullPathView.end(); ++wildCardPathElementIter)
         {
-            AZStd::vector<AZStd::string> nextCandidates;
-            for (size_t j = 0; j < candidates.size(); ++j)
+            if (wildCardPathElementIter->Native().contains('*'))
             {
-                AZStd::string compare = AZStd::string::format("%s/%s", candidates[j].c_str(), wildPath[i].c_str());
-                QDir inputFolder(candidates[j].c_str());
-                if (inputFolder.exists())
+                break;
+            }
+            staticPath /= *wildCardPathElementIter;
+        }
+
+        // The remaining path segments are part of the wild card path
+
+        AZStd::vector<AZ::IO::Path> candidates{ AZStd::move(staticPath) };
+        for(; wildCardPathElementIter != fullPathView.end() && !candidates.empty(); ++wildCardPathElementIter)
+        {
+            AZStd::vector<AZ::IO::Path> nextCandidates;
+            for (const AZ::IO::Path& candidate : candidates)
+            {
+                if (QDir inputFolder(QString::fromUtf8(candidate.c_str(), aznumeric_cast<int>(candidate.Native().size())));
+                    inputFolder.exists())
                 {
                     QFileInfoList entries = inputFolder.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files);
                     for (const QFileInfo& entry : entries)
                     {
-                        AZStd::string child = (entry.filePath().toStdString()).c_str();
-                        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
-                        if (DoesPathnameMatchWildCard(compare, child))
+                        AZ::IO::Path filenameEntry(entry.fileName().toUtf8().data());
+                        if (filenameEntry.Match(wildCardPathElementIter->Native()))
                         {
-                            nextCandidates.push_back(child);
+                            nextCandidates.push_back(entry.filePath().toUtf8().data());
                         }
                     }
                 }
@@ -468,138 +431,70 @@ namespace TextureAtlasBuilder
             candidates = nextCandidates;
         }
 
-        for (size_t i = 0; i < candidates.size(); ++i)
+        for (const AZ::IO::Path& candidate : candidates)
         {
-            if (!IsFolderPath(candidates[i]) && !HasTrailingSlash(fullPath))
+            QFileInfo fileInfo(QString::fromUtf8(candidate.c_str(), aznumeric_cast<int>(candidate.Native().size())));
+            if (fileInfo.isFile())
             {
-                AZStd::string ext;
-                AzFramework::StringFunc::Path::GetExtension(candidates[i].c_str(), ext, false);
+                AZStd::string ext = fileInfo.suffix().toUtf8().data();
                 if (ImageProcessing::IsExtensionSupported(ext.c_str()) && ext != "dds")
                 {
-                    bool duplicate = false;
-                    for (size_t j = 0; j < paths.size() && !duplicate; ++j)
+                    auto FindExistingPath = [&candidate](const AZStd::string& path)
                     {
-                        duplicate = paths[j] == candidates[i];
-                    }
-                    if (!duplicate)
+                        return candidate == AZ::IO::PathView(path);
+                    };
+                    if (auto foundIt = AZStd::find_if(paths.begin(), paths.end(), FindExistingPath);
+                        foundIt == paths.end())
                     {
-                        paths.push_back(candidates[i]);
+                        AZStd::string normalizedPath = AZ::IO::Path(candidate.Native(), AZ::IO::PosixPathSeparator).LexicallyNormal().Native();
+                        paths.push_back(AZStd::move(normalizedPath));
                     }
                 }
             }
-            else if (IsFolderPath(candidates[i]) && HasTrailingSlash(fullPath))
+            else if (fileInfo.isDir())
             {
                 bool waste = true;
-                AddFolderContents(paths, candidates[i], waste);
+                AddFolderContents(paths, candidate.Native(), waste);
             }
         }
     }
 
     void AtlasBuilderInput::RemoveFilesUsingWildCard(AZStd::vector<AZStd::string>& paths, const AZStd::string& remove)
     {
-        bool isDir = (remove.at(remove.length() - 1) == '/');
-        for (size_t i = 0; i < paths.size(); ++i)
+        auto RemoveWildCardPath = [&remove](const AZStd::string& subPath)
         {
-            if (isDir ? DoesWildCardDirectoryIncludePathname(remove, paths[i]) : DoesPathnameMatchWildCard(remove, paths[i]))
-            {
-                paths.erase(paths.begin() + i);
-                --i;
-            }
-        }
-    }
-
-    // Tells us if the child follows the rule
-    bool AtlasBuilderInput::DoesPathnameMatchWildCard(const AZStd::string& rule, const AZStd::string& child)
-    {
-        AZStd::vector<AZStd::string> rulePathTokens;
-        AzFramework::StringFunc::Tokenize(rule.c_str(), rulePathTokens, "/");
-        AZStd::vector<AZStd::string> pathTokens;
-        AzFramework::StringFunc::Tokenize(child.c_str(), pathTokens, "/");
-        if (rulePathTokens.size() != pathTokens.size())
-        {
-            return false;
-        }
-        for (size_t i = 0; i < rulePathTokens.size(); ++i)
-        {
-            if (!TokenMatchesWildcard(rulePathTokens[i], pathTokens[i]))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool AtlasBuilderInput::DoesWildCardDirectoryIncludePathname(const AZStd::string& rule, const AZStd::string& child)
-    {
-        AZStd::vector<AZStd::string> rulePathTokens;
-        AzFramework::StringFunc::Tokenize(rule.c_str(), rulePathTokens, "/");
-        AZStd::vector<AZStd::string> pathTokens;
-        AzFramework::StringFunc::Tokenize(child.c_str(), pathTokens, "/");
-        if (rulePathTokens.size() >= pathTokens.size())
-        {
-            return false;
-        }
-        for (size_t i = 0; i < rulePathTokens.size(); ++i)
-        {
-            if (!TokenMatchesWildcard(rulePathTokens[i], pathTokens[i]))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool AtlasBuilderInput::TokenMatchesWildcard(const AZStd::string& rule, const AZStd::string& child)
-    {
-        AZStd::vector<AZStd::string> ruleTokens;
-        AzFramework::StringFunc::Tokenize(rule.c_str(), ruleTokens, "*");
-        size_t pos = 0;
-        int token = 0;
-        if (rule.at(0) != '*' && child.find(ruleTokens[0]) != 0)
-        {
-            return false;
-        }
-
-        while (pos != AZStd::string::npos && token < ruleTokens.size())
-        {
-            pos = child.find(ruleTokens[token], pos);
-            if (pos != AZStd::string::npos)
-            {
-                pos += ruleTokens[token].size();
-            }
-            ++token;
-        }
-        return pos == child.size() || (pos != AZStd::string::npos && rule.at(rule.length() - 1) == '*');
+            return AZ::IO::PathView(subPath).Match(remove);
+        };
+        AZStd::erase_if(paths, RemoveWildCardPath);
     }
 
     // Replaces all folder paths with the files they contain
     void AtlasBuilderInput::AddFolderContents(AZStd::vector<AZStd::string>& paths, const AZStd::string& insert, bool& valid)
     {
-        QDir inputFolder(insert.c_str());
-
-        if (inputFolder.exists())
+        if (QDir inputFolder(insert.c_str()); inputFolder.exists())
         {
             QFileInfoList entries = inputFolder.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files);
             for (const QFileInfo& entry : entries)
             {
-                AZStd::string child = (entry.filePath().toStdString()).c_str();
-                AZStd::string ext;
-                bool isDir = !AzFramework::StringFunc::Path::GetExtension(child.c_str(), ext, false);
+                AZ::IO::Path child = entry.filePath().toUtf8().data();
+                AZStd::string ext = entry.suffix().toUtf8().data();
+                const bool isDir = entry.isDir();
                 if (isDir)
                 {
-                    AddFolderContents(paths, child, valid);
+                    AddFolderContents(paths, child.Native(), valid);
                 }
                 else if (ImageProcessing::IsExtensionSupported(ext.c_str()) && ext != "dds")
                 {
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
-                    bool duplicate = false;
-                    for (size_t i = 0; i < paths.size() && !duplicate; ++i)
+                    auto FindExistingPath = [&child](const AZStd::string& path)
                     {
-                        duplicate = paths[i] == child;
-                    }
-                    if (!duplicate)
+                        return child == AZ::IO::PathView(path);
+                    };
+                    if (auto foundIter = AZStd::find_if(paths.begin(), paths.end(), FindExistingPath);
+                        foundIter == paths.end())
                     {
-                        paths.push_back(child);
+                        // Normalize the path to have posix slashes
+                        AZStd::string normalizedPath = AZ::IO::Path(child.Native(), AZ::IO::PosixPathSeparator).LexicallyNormal().Native();
+                        paths.push_back(AZStd::move(normalizedPath));
                     }
                 }
             }
@@ -614,17 +509,11 @@ namespace TextureAtlasBuilder
     // Removes all of the contents of a folder
     void AtlasBuilderInput::RemoveFolderContents(AZStd::vector<AZStd::string>& paths, const AZStd::string& remove)
     {
-        AZStd::string folder = remove;
-        AzFramework::StringFunc::Strip(folder, "/", false, false, true);
-        folder.append("/");
-        for (size_t i = 0; i < paths.size(); ++i)
+        auto RemoveSubPath = [folder = AZ::IO::PathView(remove)](const AZStd::string& subPath)
         {
-            if (paths[i].find(folder) == 0)
-            {
-                paths.erase(paths.begin() + i);
-                --i;
-            }
-        }
+            return AZ::IO::PathView(subPath).IsRelativeTo(folder);
+        };
+        AZStd::erase_if(paths, RemoveSubPath);
     }
 
     // Note - Shutdown will be called on a different thread than your process job thread

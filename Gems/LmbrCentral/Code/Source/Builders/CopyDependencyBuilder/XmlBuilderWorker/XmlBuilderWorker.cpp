@@ -570,7 +570,9 @@ namespace CopyDependencyBuilder
         {
             AZ_Error("XmlBuilderWorker", false, rootNodeOutcome.TakeError().c_str());
             // The XML file couldn't be loaded.
-            return SchemaMatchResult::Error;
+            // We can't know whether this is intentionally an empty file any more than if it were an empty xml with a root node that that were incorrect
+            // So we leave it as "nothing will match this" and emit the above error
+            return SchemaMatchResult::NoMatchFound;
         }
         AZ::rapidxml::xml_node<char>* xmlFileRootNode = rootNodeOutcome.GetValue();
 

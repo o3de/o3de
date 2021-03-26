@@ -21,6 +21,7 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zst
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 
 # platform-specific:
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-ios  TARGETS AWSNativeSDK    PACKAGE_HASH 9e1956b5bb10762cdb84a981dcd356419078f4296ffbc8c55717bc3f53b09d69)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-ios  TARGETS PhysX           PACKAGE_HASH a2a48a09128337c72b9c2c1b8f43187c6c914e8509c9c6cd91810108748d7e09)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googletest      PACKAGE_HASH 2f121ad9784c0ab73dfaa58e1fee05440a82a07cc556bec162eeb407688111a7)

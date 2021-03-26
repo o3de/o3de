@@ -78,12 +78,12 @@ def setup_bootstrap_project(workspace, project):
 
     found_gamefolder = False
     for i, line in enumerate(lines):
-        if line.lstrip().startswith("sys_game_folder"):
-            lines[i] = f"sys_game_folder={project}\n"
+        if line.lstrip().startswith("project_path"):
+            lines[i] = f"project_path={project}\n"
             found_gamefolder = True
             break
 
-    assert found_gamefolder, "'sys_game_folder' not found in bootstrap.cfg"
+    assert found_gamefolder, "'project_path' not found in bootstrap.cfg"
 
     with open(bootstrap_cfg, "w") as f:
         f.writelines(lines)

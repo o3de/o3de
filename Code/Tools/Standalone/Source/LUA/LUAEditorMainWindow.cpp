@@ -20,6 +20,8 @@
 #include <AzCore/std/delegate/delegate.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -80,8 +82,11 @@ namespace LUAEditor
         , m_settingsDialog(nullptr)
     {
         initSharedResources();
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::IO::FixedMaxPath engineRootPath;
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         AzQtComponents::StyleManager* m_styleSheet = new AzQtComponents::StyleManager(this);
-        m_styleSheet->initialize(qApp);
+        m_styleSheet->initialize(qApp, engineRootPath);
 
         LUAViewMessages::Bus::Handler::BusConnect();
 

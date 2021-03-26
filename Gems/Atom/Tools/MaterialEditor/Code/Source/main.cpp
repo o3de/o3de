@@ -10,6 +10,8 @@
 *
 */
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Components/GlobalEventFilter.h>
@@ -43,12 +45,17 @@ int main(int argc, char** argv)
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
 
     auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
     app.installEventFilter(globalEventFilter);
 
     AzQtComponents::StyleManager styleManager(&app);
-    styleManager.Initialize(&app);
+    styleManager.initialize(&app, engineRootPath);
 
     app.Start(AZ::ComponentApplication::Descriptor{});
     app.exec();

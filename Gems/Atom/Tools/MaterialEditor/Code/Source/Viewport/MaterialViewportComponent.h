@@ -55,26 +55,36 @@ namespace MaterialEditor
 
         AZ::Render::LightingPresetPtr AddLightingPreset(const AZ::Render::LightingPreset& preset) override;
         AZ::Render::LightingPresetPtrVector GetLightingPresets() const override;
-        bool SaveLightingPresetSelection(const AZStd::string& path) const override;
+        bool SaveLightingPreset(AZ::Render::LightingPresetPtr preset, const AZStd::string& path) const override;
         AZ::Render::LightingPresetPtr GetLightingPresetByName(const AZStd::string& name) const override;
         AZ::Render::LightingPresetPtr GetLightingPresetSelection() const override;
         void SelectLightingPreset(AZ::Render::LightingPresetPtr preset) override;
         void SelectLightingPresetByName(const AZStd::string& name) override;
         MaterialViewportPresetNameSet GetLightingPresetNames() const override;
+        void SetLightingPresetPreview(AZ::Render::LightingPresetPtr preset, const QImage& image) override;
+        QImage GetLightingPresetPreview(AZ::Render::LightingPresetPtr preset) const override;
+        AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const override;
 
         AZ::Render::ModelPresetPtr AddModelPreset(const AZ::Render::ModelPreset& preset) override;
         AZ::Render::ModelPresetPtrVector GetModelPresets() const override;
-        bool SaveModelPresetSelection(const AZStd::string& path) const override;
+        bool SaveModelPreset(AZ::Render::ModelPresetPtr preset, const AZStd::string& path) const override;
         AZ::Render::ModelPresetPtr GetModelPresetByName(const AZStd::string& name) const override;
         AZ::Render::ModelPresetPtr GetModelPresetSelection() const override;
         void SelectModelPreset(AZ::Render::ModelPresetPtr preset) override;
         void SelectModelPresetByName(const AZStd::string& name) override;
         MaterialViewportPresetNameSet GetModelPresetNames() const override;
+        void SetModelPresetPreview(AZ::Render::ModelPresetPtr preset, const QImage& image) override;
+        QImage GetModelPresetPreview(AZ::Render::ModelPresetPtr preset) const override;
+        AZStd::string GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const override;
 
         void SetShadowCatcherEnabled(bool enable) override;
         bool GetShadowCatcherEnabled() const override;
         void SetGridEnabled(bool enable) override;
         bool GetGridEnabled() const override;
+        void SetAlternateSkyboxEnabled(bool enable) override;
+        bool GetAlternateSkyboxEnabled() const override;
+        void SetFieldOfView(float fieldOfView) override;
+        float GetFieldOfView() const override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -88,7 +98,18 @@ namespace MaterialEditor
         AZ::Render::ModelPresetPtrVector m_modelPresetVector;
         AZ::Render::ModelPresetPtr m_modelPresetSelection;
 
+        AZStd::map<AZ::Render::LightingPresetPtr, QImage> m_lightingPresetPreviewImages;
+        AZStd::map<AZ::Render::ModelPresetPtr, QImage> m_modelPresetPreviewImages;
+
+        QImage m_lightingPresetPreviewImageDefault;
+        QImage m_modelPresetPreviewImageDefault;
+
+        mutable AZStd::map<AZ::Render::LightingPresetPtr, AZStd::string> m_lightingPresetLastSavePathMap;
+        mutable AZStd::map<AZ::Render::ModelPresetPtr, AZStd::string> m_modelPresetLastSavePathMap;
+
         bool m_shadowCatcherEnabled = true;
         bool m_gridEnabled = true;
+        bool m_alternateSkyboxEnabled = false;
+        float m_fieldOfView = 90.0f;
     };
 }

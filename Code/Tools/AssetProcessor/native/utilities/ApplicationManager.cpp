@@ -13,6 +13,7 @@
 #include "native/utilities/ApplicationManager.h"
 
 #include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -83,7 +84,7 @@ namespace AssetProcessor
                 // we are in a job thread - return early to make it so that the global log file does not get this message
                 // there will also be a log listener in the actual job log thread which will get the message too, and that one
                 // will write it to the individual log.
-                return; 
+                return;
             }
 
             AzFramework::LogComponent::OutputMessage(severity, window, message);
@@ -119,29 +120,14 @@ AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv
         *AZ::SettingsRegistry::Get(), AssetProcessorBuildTarget::GetBuildTargetName());
 
     // Adding the PreModuleLoad event to the AssetProcessor application for logging when a gem loads
-    m_preModuleLoadHandler = AZ::ModuleManagerRequests::PreModuleLoadEvent::Handler{ []([[maybe_unused]] AZStd::string_view modulePath)
-    {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Loading (Gem) Module '%.*s'...\n", aznumeric_cast<int>(modulePath.size()), modulePath.data());
-    } };
+    m_preModuleLoadHandler = AZ::ModuleManagerRequests::PreModuleLoadEvent::Handler{
+        []([[maybe_unused]] AZStd::string_view modulePath)
+        {
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Loading (Gem) Module '%.*s'...\n", aznumeric_cast<int>(modulePath.size()), modulePath.data());
+        }
+    };
 
     m_preModuleLoadHandler.Connect(m_moduleManager->m_preModuleLoadEvent);
-
-    // Override the /Amazon/AzCore/Bootstrap/sys_game_folder entry in the Settings Registry using the -gamefolder parameter
-    auto settingsRegistry = AZ::SettingsRegistry::Get();
-    if (m_commandLine.GetNumSwitchValues("gamefolder") > 0)
-    {
-        const AZStd::string& gameFolderOverride = m_commandLine.GetSwitchValue("gamefolder", 0);
-        auto gameFolderCommandLineOverride = AZStd::string::format("--regset=%s/sys_game_folder=%s", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
-            gameFolderOverride.c_str());
-
-        AZ::CommandLine::ParamContainer commandLineArgs;
-        m_commandLine.Dump(commandLineArgs);
-        commandLineArgs.emplace_back(gameFolderCommandLineOverride);
-        m_commandLine.Parse(commandLineArgs);
-
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, m_commandLine, false);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
-    }
 }
 
 AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents() const
@@ -155,7 +141,7 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
             || *iter == AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}") // ScriptDebugAgent
             || *iter == AZ::Uuid("{CAF3A025-FAC9-4537-B99E-0A800A9326DF}") // InputSystemComponent
             || *iter == azrtti_typeid<AssetProcessor::ToolsAssetCatalogComponent>()
-           ) 
+           )
         {
             // AP does not require the above components to be active
             iter = components.erase(iter);
@@ -274,7 +260,7 @@ void ApplicationManager::GetExternalBuilderFileList(QStringList& externalBuilder
 
     if (externalBuilderModules.empty())
     {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor was unable to locate any builders\n");
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor was unable to locate any external builders\n");
     }
 }
 
@@ -284,9 +270,16 @@ QDir ApplicationManager::GetSystemRoot() const
 {
     return m_systemRoot;
 }
-QString ApplicationManager::GetGameName() const
+QString ApplicationManager::GetProjectPath() const
 {
-    return m_gameName;
+    auto projectPath = AZ::Utils::GetProjectPath();
+    if (!projectPath.empty())
+    {
+        return QString::fromUtf8(projectPath.c_str(), aznumeric_cast<int>(projectPath.size()));
+    }
+
+    AZ_Warning("AssetUtils", false, "Unable to obtain the Project Path from the settings registry.");
+    return {};
 }
 
 QCoreApplication* ApplicationManager::GetQtApplication()
@@ -451,7 +444,7 @@ void ApplicationManager::PopulateApplicationDependencies()
     m_filesOfInterest.push_back(applicationPath);
 
     // add some known-dependent files (this can be removed when they are no longer a dependency)
-    // Note that its not necessary for any of these files to actually exist.  It is considered a "change" if they 
+    // Note that its not necessary for any of these files to actually exist.  It is considered a "change" if they
     // change their file modtime, or if they go from existing to not existing, or if they go from not existing, to existing.
     // any of those should cause AP to drop.
     for (const QString& pathName : { "CrySystem",
@@ -475,11 +468,10 @@ void ApplicationManager::PopulateApplicationDependencies()
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);
 
-    QString globalConfigPath = assetRoot.filePath("AssetProcessorPlatformConfig.ini");
+    QString globalConfigPath = assetRoot.filePath("AssetProcessorPlatformConfig.setreg");
     m_filesOfInterest.push_back(globalConfigPath);
 
-    QString gameName = AssetUtilities::ComputeGameName();
-    QString gamePlatformConfigPath = assetRoot.filePath(gameName + "/AssetProcessorGamePlatformConfig.ini");
+    QString gamePlatformConfigPath = QDir(AssetUtilities::ComputeProjectPath()).filePath("AssetProcessorGamePlatformConfig.setreg");
     m_filesOfInterest.push_back(gamePlatformConfigPath);
 
     // add app modules
@@ -510,43 +502,14 @@ void ApplicationManager::PopulateApplicationDependencies()
     }
 }
 
-bool ApplicationManager::StartAZFramework(QString appRootOverride)
+bool ApplicationManager::StartAZFramework()
 {
     AzFramework::Application::Descriptor appDescriptor;
     AZ::ComponentApplication::StartupParameters params;
 
-    QString gameName = AssetUtilities::ComputeGameName();
+    QString projectName = AssetUtilities::ComputeProjectName();
     AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
-    // Add the supplied gameName as specialization key in the registry
-    if (!gameName.isEmpty())
-    {
-        auto gameNameSpecialization = QString("%1/%2").arg(AZ::SettingsRegistryMergeUtils::SpecializationsRootKey).arg(gameName);
-        QByteArray specializationByteArray = gameNameSpecialization.toUtf8();
-        registry.Set(AZStd::string_view(specializationByteArray.data(), specializationByteArray.size()), true);
-    }
-    else
-    {
-        // Add the project name as a registry specialization
-        auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-        if (AZ::SettingsRegistryInterface::FixedValueString bootstrapProjectName; registry.Get(bootstrapProjectName, projectKey) && !bootstrapProjectName.empty())
-        {
-            registry.Set(AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-                AZ::SettingsRegistryMergeUtils::SpecializationsRootKey, bootstrapProjectName.c_str()),
-                true);
-        }
-    }
 
-    // The application will live in a bin folder one level up from the app root.
-    static char s_storageForRootPath[AZ_MAX_PATH_LEN] = { 0 };
-    if (!appRootOverride.isEmpty())
-    {
-        azstrcpy(s_storageForRootPath, AZ_MAX_PATH_LEN, appRootOverride.toUtf8().data());
-        params.m_appRootOverride = s_storageForRootPath;
-    }
-    else
-    {
-        params.m_appRootOverride = nullptr;
-    }
     // Prevent loading of gems in the Create method of the ComponentApplication
     params.m_loadDynamicModules = false;
 
@@ -556,17 +519,12 @@ bool ApplicationManager::StartAZFramework(QString appRootOverride)
     AZ::Debug::Trace::HandleExceptions(true);
 
     m_frameworkApp.Start(appDescriptor, params);
-    
+
     //Registering all the Components
     m_frameworkApp.RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
- 
+
 
     Reflect();
-
-    QDir engineRoot;
-    AssetUtilities::ComputeEngineRoot(engineRoot);
-
-    AZ::IO::FileIOBase::GetInstance()->SetAlias("@devroot@", engineRoot.absolutePath().toUtf8().data());
 
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
@@ -574,13 +532,14 @@ bool ApplicationManager::StartAZFramework(QString appRootOverride)
     {
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@log@", commandLine->GetSwitchValue("logDir", 0).c_str());
     }
-    else
+    else if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
-        char executableDirectory[AZ_MAX_PATH_LEN];
-        if (AZ::Utils::GetExecutableDirectory(executableDirectory, AZStd::size(executableDirectory)) == AZ::Utils::ExecutablePathResult::Success)
-        {
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@log@", executableDirectory);
-        }
+        AZ::IO::Path projectUserPath;
+        settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+
+        AZ::IO::Path logUserPath = projectUserPath / "log";
+        auto fileIo = AZ::IO::FileIOBase::GetInstance();
+        fileIo->SetAlias("@log@", logUserPath.c_str());
     }
     m_entity = aznew AZ::Entity("Application Entity");
     if (m_entity)
@@ -622,7 +581,6 @@ bool ApplicationManager::ActivateModules()
         AZ_Error(AssetProcessor::ConsoleChannel, false, "Cannot compute the asset root folder.  Is AssetProcessor being run from the appropriate folder?");
         return false;
     }
-    assetRoot.cd(AssetUtilities::ComputeGameName());
 
     m_frameworkApp.LoadDynamicModules();
     return true;
@@ -633,89 +591,13 @@ void ApplicationManager::addRunningThread(AssetProcessor::ThreadWorker* thread)
     m_runningThreads.push_back(thread);
 }
 
-QString ApplicationManager::ParseOptionAppRootArgument()
-{
-    AZ_Assert(m_qApp!=nullptr,"m_qApp not initialized.  QT application must be created before this call.")
-    // Parse any parameters.
-    static const char* app_root_parameter = "app-root";
-    static const char* app_root_parameter_desc = "Optional external path outside of the current engine to set as the application root.";
-    QCommandLineOption  appRootPathOption(QString(app_root_parameter), tr(app_root_parameter_desc), QString("path"));
-    QCommandLineParser  parser;
-    parser.setApplicationDescription("Asset Processor");
-    parser.addOption(appRootPathOption);
-    parser.parse(m_qApp->arguments());
-
-    QString appRootArgValue = parser.value(appRootPathOption);
-    appRootArgValue.remove(QChar('\"'));
-    return appRootArgValue.trimmed();
-}
-
-bool ApplicationManager::ValidateExternalAppRoot(QString appRootPath) const 
-{
-    static const char* bootstrap_cfg_name = "bootstrap.cfg";
-
-    QDir testAppRootPath(appRootPath);
-
-    // Make sure the path exists
-    if (!testAppRootPath.exists())
-    {
-        AZ_Warning(AssetProcessor::ConsoleChannel, testAppRootPath.exists(), "Invalid Application Root path override (--app-root): %s.  Directory does not exist.\n", appRootPath.toUtf8().data());
-        return false;
-    }
-
-    // Make sure the path contains bootstrap.cfg
-    if (!testAppRootPath.exists(bootstrap_cfg_name))
-    {
-        AZ_Warning(AssetProcessor::ConsoleChannel, testAppRootPath.exists(), "Invalid Application Root path override (--app-root): %s.  Directory does not contain %s.\n", appRootPath.toUtf8().data(), bootstrap_cfg_name);
-        return false;
-    }
-
-    // Make sure we can read the 'sys_game_folder' settings from bootstrap.cfg
-    QSettings settings(testAppRootPath.absoluteFilePath(bootstrap_cfg_name), QSettings::Format::IniFormat);
-    static const char* sysGameFolderKeyName = "sys_game_folder";
-    auto sysGameFolderSettings = settings.value(sysGameFolderKeyName);
-    if (!sysGameFolderSettings.isValid() || sysGameFolderSettings.isNull())
-    {
-        AZ_Warning(AssetProcessor::ConsoleChannel, testAppRootPath.exists(), "Invalid Application Root path override (--app-root): %s.  %s in the path is not valid.\n", appRootPath.toUtf8().data(), bootstrap_cfg_name);
-        return false;
-    }
-
-    // Make sure the 'sys_game_folder' value in the external bootstrap.cfg points to a valid subfolder in that path
-    QString sysGameFolder = sysGameFolderSettings.toString();
-    QDir    gameFolderPath(appRootPath);
-    if (!gameFolderPath.cd(sysGameFolder))
-    {
-        AZ_Warning(AssetProcessor::ConsoleChannel, testAppRootPath.exists(), "Invalid Application Root path override (--app-root): %s.  Configured Game folder %s in the path is not valid.\n", appRootPath.toUtf8().data(), sysGameFolder.toUtf8().data());
-        return false;
-    }
-
-    return true;
-}
 
 ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
 {
     // Create the Qt Application
     CreateQtApplication();
 
-    // Calculate the override app root path if provided and validate it before passing it along
-    QString overrideAppRootPath = ParseOptionAppRootArgument();
-
-    if (!overrideAppRootPath.isEmpty())
-    {
-        if (ValidateExternalAppRoot(overrideAppRootPath))
-        {
-            QDir overrideAppRoot(overrideAppRootPath);
-            QDir resultAppRoot;
-            AssetUtilities::ComputeAssetRoot(resultAppRoot, &overrideAppRoot);
-        }
-        else
-        {
-            AZ_Error(AssetProcessor::ConsoleChannel, false, "Invalid override app root folder '%s'.", overrideAppRootPath.toUtf8().data());
-            return ApplicationManager::BeforeRunStatus::Status_Failure;
-        }
-    }
-
-    if (!StartAZFramework(overrideAppRootPath))
+    if (!StartAZFramework())
     {
         return ApplicationManager::BeforeRunStatus::Status_Failure;
     }
@@ -742,14 +624,13 @@ bool ApplicationManager::Activate()
         return false;
     }
 
-    m_gameName = AssetUtilities::ComputeGameName();
-
-    if (m_gameName.isEmpty())
+    auto projectName = AssetUtilities::ComputeProjectName();
+    if (projectName.isEmpty())
     {
         AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to detect name of current game project.  Is bootstrap.cfg appropriately configured?");
         return false;
     }
-    
+
     // the following controls what registry keys (or on mac or linux what entries in home folder) are used
     // so they should not be translated!
     qApp->setOrganizationName(GetOrganizationName());

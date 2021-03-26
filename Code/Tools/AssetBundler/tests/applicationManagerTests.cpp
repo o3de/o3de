@@ -115,9 +115,9 @@ namespace AssetBundler
             settingsRegistry->Set(gemSourcePathKey, gemSourcePath.Native());
         }
 
-        AzToolsFramework::AssetUtils::GetGemsInfo(m_data->m_testEngineRoot.c_str(), m_data->m_testEngineRoot.c_str(), DummyProjectName, m_data->m_applicationManager->m_gemInfoList);
+        AzFramework::GetGemsInfo(m_data->m_applicationManager->m_gemInfoList, *settingsRegistry);
         EXPECT_GE(m_data->m_applicationManager->m_gemInfoList.size(), 3);
-        for (const AzToolsFramework::AssetUtils::GemInfo& gemInfo : m_data->m_applicationManager->m_gemInfoList)
+        for (const AzFramework::GemInfo& gemInfo : m_data->m_applicationManager->m_gemInfoList)
         {
             gemsNameMap.erase(gemInfo.m_gemName);
         }

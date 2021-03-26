@@ -43,9 +43,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Vegetation.Editor
     )
     ly_add_target(
-        NAME LandscapeCanvas.Editor MODULE
+        NAME LandscapeCanvas.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.LandscapeCanvas.Editor.19c2b2d5018940108baf252934b8e6bf.v0.1.0
         FILES_CMAKE
             landscapecanvas_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -64,6 +64,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GraphCanvasWidgets
                 Gem::GraphModel.Editor.Static
                 Gem::LandscapeCanvas.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::GraphCanvas.Editor
+            Gem::LmbrCentral.Editor
+            Gem::GraphModel.Editor
+            Gem::GradientSignal.Editor
+            Gem::SurfaceData.Editor
+            Gem::Vegetation.Editor
     )
 endif()
 

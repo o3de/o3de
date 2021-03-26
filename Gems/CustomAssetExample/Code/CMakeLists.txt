@@ -12,7 +12,6 @@
 ly_add_target(
     NAME CustomAssetExample ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.CustomAssetExample.ad082dd50c6545849729e9afeaaeaa1d.v0.1.0
     FILES_CMAKE
         customassetexample_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -27,9 +26,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME CustomAssetExample.Editor MODULE
+        NAME CustomAssetExample.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.CustomAssetExample.Editor.ad082dd50c6545849729e9afeaaeaa1d.v0.1.0
         FILES_CMAKE
             customassetexample_editor_files.cmake
         INCLUDE_DIRECTORIES

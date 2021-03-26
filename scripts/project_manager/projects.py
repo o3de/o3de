@@ -27,9 +27,21 @@ from pathlib import Path
 from pyside import add_pyside_environment, is_pyside_ready, uninstall_env
 
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-dev_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(dev_path)
+log_path = os.path.join(os.path.dirname(__file__), "logs")
+if not os.path.isdir(log_path):
+    os.makedirs(log_path)
+log_path = os.path.join(log_path, "project_manager.log")
+log_file_handler = RotatingFileHandler(filename=log_path, maxBytes=1024 * 1024, backupCount=1)
+formatter = logging.Formatter('%(asctime)s | %(levelname)s : %(message)s')
+log_file_handler.setFormatter(formatter)
+logger.addHandler(log_file_handler)
+
+logger.info("Starting Project Manager")
+
+engine_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(engine_path)
 executable_path = ''
 
 
@@ -40,9 +52,11 @@ def initialize_pyside_from_parser():
     parser.add_argument('--executable_path', required=True, help='Path to Executable to launch with project')
     parser.add_argument('--binaries_path', default=None, help='Path to QT Binaries necessary for PySide.  If not'
                         'provided executable_path folder is assumed')
+    parser.add_argument('--parent_pid', default=0, help='Process ID of launching process')
 
     args = parser.parse_args()
 
+    logger.info(f"parent_pid is {args.parent_pid}")
     global executable_path
     executable_path = args.executable_path
     binaries_path = args.binaries_path or os.path.dirname(executable_path)
@@ -63,6 +77,9 @@ try:
     from PySide2.QtGui import QIcon, QStandardItemModel, QStandardItem
 except ImportError as e:
     logger.error(f"Failed to import PySide2 with error {e}")
+    exit(-1)
+
+logger.error(f"PySide2 imports successful")
 
 from cmake.Tools import engine_template
 from cmake.Tools import add_remove_gem
@@ -128,17 +145,6 @@ class ProjectDialog(QObject):
         self.dialog_logger = DialogLogger(self)
         logger.addHandler(self.dialog_logger)
         logger.setLevel(logging.INFO)
-
-        log_path = os.path.join(os.path.dirname(__file__), "logs")
-        if not os.path.isdir(log_path):
-            os.makedirs(log_path)
-        log_path = os.path.join(log_path, "project_manager.log")
-        log_file_handler = RotatingFileHandler(filename=log_path, maxBytes=1024 * 1024, backupCount=1)
-        formatter = logging.Formatter('%(asctime)s | %(levelname)s : %(message)s')
-        log_file_handler.setFormatter(formatter)
-        logger.addHandler(log_file_handler)
-
-        logger.info("Starting Project Manager")
 
         self.dialog_logger.signaller.send_to_dialog.connect(self.handle_log_message)
         self.displayed_projects = []
@@ -210,7 +216,7 @@ class ProjectDialog(QObject):
         return os.path.basename(self.path_for_selection())
 
     def get_launch_project(self) -> str:
-        # We can't currently pass an absolute path, so we need to assume the folder lives under dev and just pass
+        # We can't currently pass an absolute path, so we need to assume the folder lives under engine and just pass
         # the base name of the selected project
         return os.path.basename(os.path.normpath(self.path_for_selection()))
 
@@ -221,7 +227,7 @@ class ProjectDialog(QObject):
         :return: list of params
         """
         launch_params = [executable_path,
-                         f'-regset="/Amazon/AzCore/Bootstrap/sys_game_folder={self.get_launch_project()}"']
+                         f'-regset="/Amazon/AzCore/Bootstrap/project_path={self.get_launch_project()}"']
         return launch_params
 
     def load_gems(self) -> None:
@@ -238,14 +244,14 @@ class ProjectDialog(QObject):
         Actual load function for load_gems thread.  Blocking call to lower level find method to fill out gems_list
         :return: None
         """
-        self.gems_list = add_remove_gem.find_all_gems([os.path.join(dev_path, 'Gems')])
+        self.gems_list = add_remove_gem.find_all_gems([os.path.join(engine_path, 'Gems')])
 
     def load_template_list(self) -> None:
         """
         Search for available templates to fill out template list
         :return: None
         """
-        self.project_templates = engine_template.find_all_project_templates([os.path.join(dev_path, 'Templates')])
+        self.project_templates = engine_template.find_all_project_templates([os.path.join(engine_path, 'Templates')])
 
     def get_gem_info(self, gem_name: str) -> str:
         """
@@ -359,7 +365,7 @@ class ProjectDialog(QObject):
         will update the mru list with the new entry, if invalid will warn the user.
         :return: None
         """
-        project_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Project Folder", dev_path)
+        project_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Project Folder", engine_path)
         if project_folder:
             self.add_new_project(project_folder)
 
@@ -380,7 +386,7 @@ class ProjectDialog(QObject):
         remove_gems = self.get_selected_project_gems()
         for this_gem in remove_gems:
             gem_path = self.path_for_gem(this_gem)
-            add_remove_gem.add_remove_gem(False, dev_path, gem_path or os.path.join(dev_path, 'Gems', this_gem),
+            add_remove_gem.add_remove_gem(False, engine_path, gem_path or os.path.join(engine_path, 'Gems', this_gem),
                                           self.path_for_selection(), gem_name=this_gem)
 
         self.update_gems()
@@ -449,7 +455,7 @@ class ProjectDialog(QObject):
             if not gem_info:
                 logger.error(f'Unknown gem {this_gem}!')
                 continue
-            add_remove_gem.add_remove_gem(True, dev_path, this_gem[1], self.path_for_selection(),
+            add_remove_gem.add_remove_gem(True, engine_path, this_gem[1], self.path_for_selection(),
                                           gem_name=gem_info.get('Name'),
                                           runtime_dependency=gem_info.get('Runtime', False),
                                           tool_dependency=gem_info.get('Tools', False))
@@ -515,12 +521,12 @@ class ProjectDialog(QObject):
         if not create_project_item:
             return
 
-        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Project Name", dev_path)
+        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Project Name", engine_path)
         folder_dialog.setFileMode(QFileDialog.AnyFile)
         folder_dialog.setOptions(QFileDialog.ShowDirsOnly)
         project_count = 0
         project_name = "MyNewProject"
-        while os.path.exists(os.path.join(dev_path, project_name)):
+        while os.path.exists(os.path.join(engine_path, project_name)):
             project_name = f"MyNewProject{project_count}"
             project_count += 1
         folder_dialog.selectFile(project_name)
@@ -528,7 +534,7 @@ class ProjectDialog(QObject):
         if folder_dialog.exec():
             project_folder = folder_dialog.selectedFiles()
         if project_folder:
-            if engine_template.create_project(dev_path, project_folder[0], create_project_item[1]) == 0:
+            if engine_template.create_project(engine_path, project_folder[0], create_project_item[1]) == 0:
                 # Success
                 self.add_new_project(project_folder[0], validate=False)
                 msg_box = QMessageBox(parent=self.dialog)

@@ -352,9 +352,9 @@ namespace AZ
 
                     // The register number only makes sense if the platform uses "spaces",
                     // since the register Id of the resource will not change even if the pipeline layout changes.
-                    AZStd::string compilerParameters = shaderPlatformInterface->GetAzslCompilerParameters();
-                    bool useRegisterId = (AzFramework::StringFunc::Find(compilerParameters, "--use-spaces") != AZStd::string::npos);
-                    AtomShaderConfig::AddParametersFromConfigFile(compilerParameters, request.m_platformInfo);
+                    // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface appends the "--use-spaces" flag.
+                    AZStd::string azslCompilerParameters = shaderPlatformInterface->GetAzslCompilerParameters(RHI::ShaderCompilerArguments{});
+                    bool useRegisterId = (AzFramework::StringFunc::Find(azslCompilerParameters, "--use-spaces") != AZStd::string::npos);
 
                     // Samplers
                     for (const SamplerSrgData& samplerData : srgData.m_samplers)

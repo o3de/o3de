@@ -20,7 +20,7 @@ namespace LumberyardLauncher
 {
     //! This file is to be added only to the ${project}.[Game|Server]Launcher build target
     //! This function returns the build system target name
-    const AZStd::string_view GetBuildTargetName()
+    AZStd::string_view GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -29,11 +29,22 @@ namespace LumberyardLauncher
     }
 
 
-    const AZStd::string_view GetGameProjectName()
+    AZStd::string_view GetProjectName()
     {
-#if !defined (LY_GAME_PROJECT_NAME)
-#error "LY_GAME_PROJECT_NAME must be defined in order to for the Launcher to run using a Game Project"
+#if !defined (LY_PROJECT_NAME)
+#error "LY_PROJECT_NAME must be defined in order to for the Launcher to run using a Game Project"
 #endif
-        return { LY_GAME_PROJECT_NAME };
+        return { LY_PROJECT_NAME };
+    }
+
+    AZStd::string_view GetProjectPath()
+    {
+        // The Project CMake path optional and not required
+        // It is used as fall back project root path
+#if defined LY_PROJECT_CMAKE_PATH
+        return { LY_PROJECT_CMAKE_PATH };
+#else
+        return {};
+#endif
     }
 }

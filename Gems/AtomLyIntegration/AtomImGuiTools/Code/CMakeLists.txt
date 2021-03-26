@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME AtomImGuiTools ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AtomImGuiTools.1a9d10de1b8a45fab2fe04517f613962.v0.1.0
     FILES_CMAKE
         atomimguitools_shared_files.cmake
     INCLUDE_DIRECTORIES

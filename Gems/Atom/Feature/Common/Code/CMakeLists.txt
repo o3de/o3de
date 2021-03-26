@@ -73,7 +73,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_Feature_Common ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_Feature_Common.b58e5eed0901428ca78544b04dbd61bd.v0.1.0
     FILES_CMAKE
         atom_feature_common_shared_files.cmake
         ../Assets/atom_feature_common_asset_files.cmake
@@ -95,9 +94,9 @@ ly_add_target(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME Atom_Feature_Common.Editor MODULE
+        NAME Atom_Feature_Common.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_Feature_Common.Editor.b58e5eed0901428ca78544b04dbd61bd.v0.1.0
         FILES_CMAKE
             atom_feature_common_editor_files.cmake
         INCLUDE_DIRECTORIES
@@ -126,9 +125,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Atom_Feature_Common.Builders MODULE
+        NAME Atom_Feature_Common.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_Feature_Common.Builders.b58e5eed0901428ca78544b04dbd61bd.v0.1.0
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
         INCLUDE_DIRECTORIES

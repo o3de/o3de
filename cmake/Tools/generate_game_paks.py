@@ -176,10 +176,10 @@ def main(args):
     parser.add_argument('-b', '--binfolder',
                         help='The relative location of the binary folder that contains the resource compiler and asset processor')
 
-    bootstrap = common.get_bootstrap_values(DEV_ROOT, ['sys_game_folder'])
+    bootstrap = common.get_bootstrap_values(DEV_ROOT, ['project_path'])
     parser.add_argument('-g', '--game-name',
                         help='The name of the Game whose asset pak will be generated for',
-                        default=bootstrap.get('sys_game_folder'))
+                        default=bootstrap.get('project_path'))
 
     parser.add_argument('-p', '--asset-platform',
                         help='The asset platform type to process')

@@ -36,13 +36,13 @@ namespace AZ::SerializeContextTools
         AZ::IO::Path sourceGameFolder;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder);
+            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
 
         AZ::IO::Path outputPath;
-        if (application.GetCommandLine()->HasSwitch("output"))
+        if (application.GetAzCommandLine()->HasSwitch("output"))
         {
-            outputPath.Native() = application.GetCommandLine()->GetSwitchValue("output", 0);
+            outputPath.Native() = application.GetAzCommandLine()->GetSwitchValue("output", 0);
             if (outputPath.IsRelative())
             {
                 outputPath = sourceGameFolder / outputPath;
@@ -59,7 +59,7 @@ namespace AZ::SerializeContextTools
     {
         AZStd::vector<AZStd::string> result;
 
-        const AZ::CommandLine* commandLine = application.GetCommandLine();
+        const AZ::CommandLine* commandLine = application.GetAzCommandLine();
         if (!commandLine)
         {
             AZ_Error("SerializeContextTools", false, "Command line not available.");
@@ -76,7 +76,7 @@ namespace AZ::SerializeContextTools
         AZ::IO::Path sourceGameFolder;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder);
+            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
 
         AZStd::vector<AZStd::string_view> fileList;

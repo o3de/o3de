@@ -26,7 +26,7 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED OR PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB)
     ly_add_target(
         NAME AudioEngineWwise.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AudioEngineWwise.Stub
+        OUTPUT_NAME AudioEngineWwise.Stub
         FILES_CMAKE
             audioenginewwise_stub_files.cmake
         BUILD_DEPENDENCIES
@@ -68,7 +68,6 @@ ly_add_target(
 ly_add_target(
     NAME AudioEngineWwise ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AudioEngineWwise.67a80e2ac865406c990f2715feb55f7f.v0.1.0
     FILES_CMAKE
         audioenginewwise_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -201,9 +200,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME AudioEngineWwise.Editor MODULE
+        NAME AudioEngineWwise.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AudioEngineWwise.Editor.67a80e2ac865406c990f2715feb55f7f.v0.1.0
         FILES_CMAKE
             audioenginewwise_editor_shared_files.cmake
         COMPILE_DEFINITIONS
@@ -219,6 +218,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::AudioEngineWwise.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AudioSystem.Editor
     )
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)

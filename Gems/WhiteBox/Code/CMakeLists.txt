@@ -18,7 +18,6 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
     ly_add_target(
         NAME WhiteBox ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME Gem.WhiteBox.c5833dbda2e045d3a5f16b7414280c27.v0.1.0
         FILES_CMAKE
             whitebox_unsupported_files.cmake
         INCLUDE_DIRECTORIES
@@ -32,9 +31,9 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
     )
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME WhiteBox.Editor MODULE
+            NAME WhiteBox.Editor GEM_MODULE
+
             NAMESPACE Gem
-            OUTPUT_NAME Gem.WhiteBox.Editor.c5833dbda2e045d3a5f16b7414280c27.v0.1.0
             FILES_CMAKE
                 whitebox_unsupported_files.cmake
             INCLUDE_DIRECTORIES
@@ -75,7 +74,6 @@ ly_add_target(
 ly_add_target(
     NAME WhiteBox ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.WhiteBox.c5833dbda2e045d3a5f16b7414280c27.v0.1.0
     FILES_CMAKE
         whitebox_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -117,9 +115,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME WhiteBox.Editor MODULE
+        NAME WhiteBox.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.WhiteBox.Editor.c5833dbda2e045d3a5f16b7414280c27.v0.1.0
         FILES_CMAKE
             whitebox_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

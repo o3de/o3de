@@ -15,13 +15,27 @@
 
 #include <stdlib.h>
 
-namespace AZ
+namespace AZ::Utils
 {
-    namespace Utils
+    void NativeErrorMessageBox(const char* title, const char* message)
     {
-        void NativeErrorMessageBox(const char* title, const char* message)
+        ::MessageBox(0, message, title, MB_OK | MB_ICONERROR);
+    }
+
+    AZ::IO::FixedMaxPathString GetEngineManifestPath()
+    {
+        char userProfileBuffer[AZ::IO::MaxPathLength] = {0};
+        size_t variableSize = 0;
+        auto err = getenv_s(&variableSize, userProfileBuffer, AZ::IO::MaxPathLength, "USERPROFILE");
+        if (!err)
         {
-            ::MessageBox(0, message, title, MB_OK | MB_ICONERROR);
+            AZ::IO::FixedMaxPath path{userProfileBuffer};
+            path /= ".o3de";
+            path /= "o3de_manifest.json";
+            return path.Native();
         }
-    } // namespace Utils
-} // namespace AZ
+
+        return {};
+    }
+
+} // namespace AZ::Utils

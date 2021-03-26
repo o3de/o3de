@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME CertificateManager ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.CertificateManager.659cffff33b14a10835bafc6ea623f98.v0.0.1
     FILES_CMAKE
         certificatemanager_shared_files.cmake
     INCLUDE_DIRECTORIES

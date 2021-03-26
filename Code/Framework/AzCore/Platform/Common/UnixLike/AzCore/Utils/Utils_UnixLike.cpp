@@ -12,7 +12,7 @@
 
 #include <AzCore/Utils/Utils.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace AZ
 {
@@ -25,10 +25,25 @@ namespace AZ
 
         void NativeErrorMessageBox(const char*, const char*) {}
 
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> ConvertToAbsolutePath(AZStd::string_view path)
+        AZ::IO::FixedMaxPathString GetEngineManifestPath()
         {
-            AZStd::fixed_string<MaxPathLength> absolutePath;
-            AZStd::fixed_string<MaxPathLength> srcPath{ path };
+            if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
+            {
+                AZ::IO::FixedMaxPath path{homePath};
+                if (!path.empty())
+                {
+                    path /= ".o3de";
+                    path /= "o3de_manifest.json";
+                }
+                return path.Native();
+            }
+            return {};
+        }
+
+        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
+        {
+            AZ::IO::FixedMaxPathString absolutePath;
+            AZ::IO::FixedMaxPathString srcPath{ path };
 
             if (char* result = realpath(srcPath.c_str(), absolutePath.data()); result)
             {

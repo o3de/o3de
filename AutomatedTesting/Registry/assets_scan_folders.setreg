@@ -3,15 +3,45 @@
     {
         "Gems":
         {
-            "AutomatedTesting.Assets":
+            "DevTextures":
             {
                 "SourcePaths":
                 [
-                    "Gems/DevTextures",
-                    "Gems/PBSreferenceMaterials",
-                    "Gems/PhysicsEntities",
-                    "Gems/PhysXSamples",
-                    "Gems/PrimitiveAssets",
+                    "Gems/DevTextures"
+                ]
+            },
+            "PBSreferenceMaterials":
+            {
+                "SourcePaths":
+                [
+                    "Gems/PBSreferenceMaterials"
+                ]
+            },
+            "PhysicsEntities":
+            {
+                "SourcePaths":
+                [
+                    "Gems/PhysicsEntities"
+                ]
+            },
+            "PhysXSamples":
+            {
+                "SourcePaths":
+                [
+                    "Gems/PhysXSamples"
+                ]
+            },
+            "PrimitiveAssets":
+            {
+                "SourcePaths":
+                [
+                    "Gems/PrimitiveAssets"
+                ]
+            },
+            "UiBasics":
+            {
+                "SourcePaths":
+                [
                     "Gems/UiBasics"
                 ]
             }

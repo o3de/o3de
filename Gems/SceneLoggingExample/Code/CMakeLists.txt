@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target(
     NAME SceneLoggingExample ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SceneLoggingExample.35d8f6e49ae04c9382c61a42d4355c2f.v0.1.0
     FILES_CMAKE
         sceneloggingexample_shared_files.cmake
     INCLUDE_DIRECTORIES

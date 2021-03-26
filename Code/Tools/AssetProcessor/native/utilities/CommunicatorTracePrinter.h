@@ -12,14 +12,14 @@
 
 #pragma once
 
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
 
 //! CommunicatorTracePrinter listens to stderr and stdout of a running process and writes its output to the AZ_Trace system
 //! Importantly, it does not do any blocking operations.
 class CommunicatorTracePrinter
 {
 public:
-    CommunicatorTracePrinter(AzToolsFramework::ProcessCommunicator* communicator, const char* window);
+    CommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window);
     ~CommunicatorTracePrinter();
 
     // call this periodically to drain the buffers and write them.
@@ -32,7 +32,7 @@ public:
 
 private:
     AZStd::string m_window;
-    AzToolsFramework::ProcessCommunicator* m_communicator;
+    AzFramework::ProcessCommunicator* m_communicator;
     char m_streamBuffer[128];
     AZStd::string m_stringBeingConcatenated;
     AZStd::string m_errorStringBeingConcatenated;

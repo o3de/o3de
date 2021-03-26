@@ -142,10 +142,6 @@ namespace AssetProcessor
 
     bool Builder::Start()
     {
-        // Get the app root to locate the builders
-        AZStd::string appRootString;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRootString, &AzFramework::ApplicationRequests::GetAppRoot);
-
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
 
@@ -190,24 +186,26 @@ namespace AssetProcessor
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
 
-        QString gameName = AssetUtilities::ComputeGameName();
-
-        AZStd::string appRootString;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRootString, &AzFramework::ApplicationRequests::GetAppRoot);
-        QDir appRoot(QString(appRootString.c_str()));
-        QString gameRoot = appRoot.absoluteFilePath(gameName);
+        QString gameName = AssetUtilities::ComputeProjectName();
+        QString projectPath = AssetUtilities::ComputeProjectPath();
+        QDir engineRoot;
+        AssetUtilities::ComputeEngineRoot(engineRoot);
 
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
 
         AZStd::string params;
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params = AZStd::string::format(R"(-task=%s -id="%s" -gamename="%s" -gamecache="%s" -gameroot="%s" -port %d)",
-                task, builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(), gameRoot.toUtf8().constData(), portNumber);
-        #else
-            params = AZStd::string::format(R"(-task=%s -id="%s" -gamename="\"%s\"" -gamecache="\"%s\"" -gameroot="\"%s\"" -port %d)",
-                task, builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(), gameRoot.toUtf8().constData(), portNumber);
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        params = AZStd::string::format(
+            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)", task,
+            builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
+            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
+#else
+        params = AZStd::string::format(
+            R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
+            task, builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
+            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
+#endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 
         if (moduleFilePath && moduleFilePath[0])
         {
@@ -230,17 +228,17 @@ namespace AssetProcessor
         return params;
     }
 
-    AZStd::unique_ptr<AzToolsFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::string& params) const
+    AZStd::unique_ptr<AzFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::string& params) const
     {
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", fullExePath, params.c_str());
         processLaunchInfo.m_showWindow = false;
-        processLaunchInfo.m_processPriority = AzToolsFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
+        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.m_commandlineParameters.c_str());
 
-        auto processWatcher = AZStd::unique_ptr<AzToolsFramework::ProcessWatcher>(AzToolsFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzToolsFramework::COMMUNICATOR_TYPE_STDINOUT));
+        auto processWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
 
         AZ_Error(AssetProcessor::ConsoleChannel, processWatcher, "Failed to start %s", fullExePath);
 

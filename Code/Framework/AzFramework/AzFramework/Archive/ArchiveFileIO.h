@@ -75,6 +75,7 @@ namespace AZ::IO
         bool ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const override;
         bool ResolvePath(AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path) const override;
         using FileIOBase::ResolvePath;
+        bool ReplaceAlias(AZ::IO::FixedMaxPath& replacedAliasPath, const AZ::IO::PathView& path) const override;
         bool GetFilename(IO::HandleType fileHandle, char* filename, AZ::u64 filenameSize) const override;
         ////////////////////////////////////////////////////////////////////////////////////////////
 

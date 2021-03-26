@@ -65,12 +65,6 @@ namespace AZ
         GlobalBuildOptions ReadBuildOptions(const char* builderName)
         {
             GlobalBuildOptions output;
-            // get the application root:
-            AZStd::string devFolder;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(devFolder, &AzFramework::ApplicationRequests::GetAppRoot);
-            AzFramework::StringFunc::Path::Normalize(devFolder);
-
-            // additionally,
             // try to parse some config file for eventual additional options
             AZStd::string globalBuildOption = "Config/shader_global_build_options.json";
             bool found = MutateToAbsolutePathIfFound(globalBuildOption);

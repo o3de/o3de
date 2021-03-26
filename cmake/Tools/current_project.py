@@ -36,7 +36,7 @@ def set_current_project(dev_root: str,
     try:
         with open(os.path.join(dev_root, 'bootstrap.cfg'), 'r') as s:
             data = s.read()
-        data = re.sub(r'(.*sys_game_folder\s*?[=:]\s*?)([^\n]+)\n', r'\1 {}\n'.format(project_path),
+        data = re.sub(r'(.*project_path\s*?[=:]\s*?)([^\n]+)\n', r'\1 {}\n'.format(project_path),
                       data, flags=re.IGNORECASE)
         if os.path.isfile(os.path.join(dev_root, 'bootstrap.cfg')):
             os.unlink(os.path.join(dev_root, 'bootstrap.cfg'))
@@ -52,29 +52,29 @@ def get_current_project(dev_root: str) -> str:
     """
     get what the current project set is
     :param dev_root: the dev root of the engine
-    :return: sys_game_folder or None on failure
+    :return: project_path or None on failure
     """
     try:
         with open(os.path.join(dev_root, 'bootstrap.cfg'), 'r') as s:
             data = s.read()
-        sys_game_folder = re.search(r'(.*sys_game_folder\s*?[=:]\s*?)(?P<sys_game_folder>[^\n]+)\n',
-                                    data, flags=re.IGNORECASE).group('sys_game_folder').strip()
+        project_path = re.search(r'(.*project_path\s*?[=:]\s*?)(?P<project_path>[^\n]+)\n',
+                                    data, flags=re.IGNORECASE).group('project_path').strip()
     except Exception as e:
         logger.error('Failed to get current project. Exception: ' + str(e))
         return ''
-    return sys_game_folder
+    return project_path
 
 
 def _run_get_current_project(args: argparse) -> int:
-    sys_game_folder = get_current_project(common.determine_dev_root())
-    if sys_game_folder:
-        print(sys_game_folder)
+    project_path = get_current_project(common.determine_engine_root())
+    if project_path:
+        print(project_path)
         return 0
     return 1
 
 
 def _run_set_current_project(args: argparse) -> int:
-    return set_current_project(common.determine_dev_root(), args.project_path)
+    return set_current_project(common.determine_engine_root(), args.project_path)
 
 
 def add_args(parser, subparsers) -> None:

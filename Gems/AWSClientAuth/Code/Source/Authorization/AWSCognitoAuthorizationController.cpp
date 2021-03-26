@@ -13,6 +13,9 @@
 #include <AWSClientAuthBus.h>
 #include <AWSCoreBus.h>
 #include <Authorization/AWSCognitoAuthorizationController.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
+#include <AWSClientAuthResourceMappingConstants.h>
+
 #include <AzCore/EBus/Internal/BusContainer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Interface/Interface.h>
@@ -22,7 +25,9 @@
 
 namespace AWSClientAuth
 {
-    constexpr char COGNITO_AUTHORIZATION_SETTINGS_PATH[] = "/AWS/CognitoIdentityPool";
+    constexpr char CognitoAmazonLoginsId[] = "www.amazon.com";
+    constexpr char CognitoGoogleLoginsId[] = "accounts.google.com";
+    constexpr char CognitoUserPoolIdFormat[] = "cognito-idp.%s.amazonaws.com/%s";
 
     AWSCognitoAuthorizationController::AWSCognitoAuthorizationController()
     {
@@ -30,8 +35,6 @@ namespace AWSClientAuth
         AWSCognitoAuthorizationRequestBus::Handler::BusConnect();
         AuthenticationProviderNotificationBus::Handler::BusConnect();
         AWSCore::AWSCredentialRequestBus::Handler::BusConnect();
-
-        m_settings = AZStd::make_unique<CognitoAuthorizationSettings>();
 
         m_persistentCognitoIdentityProvider = std::make_shared<AWSClientAuthPersistentCognitoIdentityProvider>();
         m_persistentAnonymousCognitoIdentityProvider = std::make_shared<AWSClientAuthPersistentCognitoIdentityProvider>();
@@ -52,32 +55,39 @@ namespace AWSClientAuth
         m_persistentCognitoIdentityProvider.reset();
         m_persistentAnonymousCognitoIdentityProvider.reset();
 
-        m_settings.reset();
-
         AWSCore::AWSCredentialRequestBus::Handler::BusDisconnect();
         AuthenticationProviderNotificationBus::Handler::BusDisconnect();
         AWSCognitoAuthorizationRequestBus::Handler::BusDisconnect();
         AZ::Interface<IAWSCognitoAuthorizationRequests>::Unregister(this);
     }
 
-    bool AWSCognitoAuthorizationController::Initialize(const AZStd::string& settingsRegistryPath)
+    bool AWSCognitoAuthorizationController::Initialize()
     {
-        AZStd::unique_ptr<AZ::SettingsRegistryInterface> settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            m_awsAccountId, &AWSCore::AWSResourceMappingRequests::GetDefaultAccountId);
 
-        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch))
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            m_cognitoIdentityPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoIdentityPoolIdResourceMappingKey);
+
+        if (m_awsAccountId.empty() || m_cognitoIdentityPoolId.empty())
         {
-            AZ_Error("AWSCognitoAuthorizationController", true, "Failed to merge settings file for path %s", settingsRegistryPath.c_str());
+            AZ_Warning("AWSCognitoUserManagementController", m_awsAccountId.empty(), "Missing AWS account id in resource mappings.");
+            AZ_Warning("AWSCognitoUserManagementController", m_cognitoIdentityPoolId.empty(), "Missing Cognito Identity pool id in resource mappings.");
             return false;
         }
 
-        if (!settingsRegistry->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), COGNITO_AUTHORIZATION_SETTINGS_PATH))
-        {
-            AZ_Error("AWSCognitoAuthorizationController", true, "Failed to get settings object for path %s", COGNITO_AUTHORIZATION_SETTINGS_PATH);
-            return false;
-        }
+        AZStd::string userPoolId;
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
+        AZ_Warning("AWSCognitoUserManagementController", userPoolId.empty(), "Missing Cognito USer pool id in resource mappings. Cognito IDP authenticated identities will no work.");
 
-        m_persistentCognitoIdentityProvider->Initialize(m_settings->m_awsAccountId.c_str(), m_settings->m_cognitoIdentityPoolId.c_str());
-        m_persistentAnonymousCognitoIdentityProvider->Initialize(m_settings->m_awsAccountId.c_str(), m_settings->m_cognitoIdentityPoolId.c_str());
+        AZStd::string defaultRegion;
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            defaultRegion, &AWSCore::AWSResourceMappingRequests::GetDefaultRegion);
+        m_formattedCognitoUserPoolId = AZStd::string::format(CognitoUserPoolIdFormat, defaultRegion.c_str(), userPoolId.c_str());
+
+        m_persistentCognitoIdentityProvider->Initialize(m_awsAccountId.c_str(), m_cognitoIdentityPoolId.c_str());
+        m_persistentAnonymousCognitoIdentityProvider->Initialize(m_awsAccountId.c_str(), m_cognitoIdentityPoolId.c_str());
 
         return true;
     }
@@ -182,15 +192,15 @@ namespace AWSClientAuth
         {
         case ProviderNameEnum::AWSCognitoIDP:
         {
-            return m_settings->m_cognitoUserPoolId;
+            return m_formattedCognitoUserPoolId;
         }
         case ProviderNameEnum::LoginWithAmazon:
         {
-            return m_settings->m_loginWithAmazonId;
+            return CognitoAmazonLoginsId;
         }
         case ProviderNameEnum::Google:
         {
-            return m_settings->m_googleId;
+            return CognitoGoogleLoginsId;
         }
         default:
         {

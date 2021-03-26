@@ -337,13 +337,13 @@ bool ApplicationManagerBase::InitPlatformConfiguration()
     m_platformConfiguration = new AssetProcessor::PlatformConfiguration();
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);
-    return m_platformConfiguration->InitializeFromConfigFiles(GetSystemRoot().absolutePath(), assetRoot.absolutePath(), GetGameName());
+    return m_platformConfiguration->InitializeFromConfigFiles(GetSystemRoot().absolutePath(), assetRoot.absolutePath(), GetProjectPath());
 }
 
 bool ApplicationManagerBase::InitBuilderConfiguration()
 {
     m_builderConfig = AZStd::make_unique<AssetProcessor::BuilderConfigurationManager>();
-    QString configFile = GetSystemRoot().absoluteFilePath(GetGameName() + "/" + AssetProcessor::BuilderConfigFile);
+    QString configFile = QDir(GetProjectPath()).absoluteFilePath(AssetProcessor::BuilderConfigFile);
 
     if (!QFile::exists(configFile))
     {
@@ -1193,7 +1193,8 @@ bool ApplicationManagerBase::Activate()
         return false;
     }
 
-    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor will process assets from gameproject %s.\n", AssetUtilities::ComputeGameName().toUtf8().data());
+    AZ_TracePrintf(AssetProcessor::ConsoleChannel,
+        "AssetProcessor will process assets from project root %s.\n", AssetUtilities::ComputeProjectPath().toUtf8().data());
 
     // Shutdown if the disk has less than 128MB of free space
     if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
@@ -1219,7 +1220,7 @@ bool ApplicationManagerBase::Activate()
 
     if (!InitPlatformConfiguration())
     {
-        AZ_Error("AssetProcessor", false, "Failed to Initialize from AssetProcessorPlatformConfig.ini - check the log files in the logs/ subfolder for more information.");
+        AZ_Error("AssetProcessor", false, "Failed to Initialize from AssetProcessorPlatformConfig.setreg - check the log files in the logs/ subfolder for more information.");
         return false;
     }
 
@@ -1401,7 +1402,7 @@ bool ApplicationManagerBase::InitializeExternalBuilders()
     return true;
 }
 
-bool ApplicationManagerBase::WaitForBuilderExit(AzToolsFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds)
+bool ApplicationManagerBase::WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds)
 {
     AZ::u32 exitCode = 0;
     bool finishedOK = false;

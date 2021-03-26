@@ -28,6 +28,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <ImageLoader/ImageLoaders.h>
+#include <Processing/ImageConvert.h>
+#include <Processing/ImageToProcess.h>
 
 namespace ImageProcessing
 {
@@ -71,11 +73,13 @@ namespace ImageProcessing
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
+        ImageProcessingRequestBus::Handler::BusConnect();
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
     }
 
     void BuilderPluginComponent::Deactivate()
     {
+        ImageProcessingRequestBus::Handler::BusDisconnect();
         m_imageBuilder.BusDisconnect();
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
@@ -109,6 +113,23 @@ namespace ImageProcessing
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+    }
+
+    IImageObjectPtr BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
+    {
+        return IImageObjectPtr(LoadImageFromFile(filePath));
+    }
+
+    IImageObjectPtr BuilderPluginComponent::LoadImagePreview(const AZStd::string& filePath)
+    {
+        IImageObjectPtr image(LoadImageFromFile(filePath));
+        if (image)
+        {
+            ImageToProcess imageToProcess(image);
+            imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
+            return imageToProcess.Get();
+        }
+        return image;
     }
 
     void ImageBuilderWorker::ShutDown()

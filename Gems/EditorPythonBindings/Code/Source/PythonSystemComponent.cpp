@@ -30,6 +30,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
@@ -348,73 +349,111 @@ namespace EditorPythonBindings
     {
         // the order of the Python paths is the order the Python bootstrap scripts will execute
 
-        AZStd::string gameFolder;
         auto settingsRegistry = AZ::SettingsRegistry::Get();
-        settingsRegistry->Get(gameFolder, AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::ProjectName));
+        if (!settingsRegistry)
+        {
+            return;
+        }
 
-        if (gameFolder.empty())
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        if (projectPath.empty())
         {
             return;
         }
 
         auto resolveScriptPath = [&pythonPathStack](AZStd::string_view path)
         {
-            AZStd::string editorScriptsPath;
-            AzFramework::StringFunc::Path::Join(path.data(), "Editor/Scripts", editorScriptsPath);
+            AZ::IO::Path editorScriptsPath(path);
+            editorScriptsPath /= "Editor/Scripts";
             if (AZ::IO::SystemFile::Exists(editorScriptsPath.c_str()))
             {
-                pythonPathStack.emplace_back(editorScriptsPath);
+                pythonPathStack.emplace_back(AZStd::move(editorScriptsPath.LexicallyNormal().Native()));
             }
         };
 
         // The discovery order will be:
-        //   - engine
-        //   - gems
-        //   - project
-        //   - user(dev)
+        //   1 - engine
+        //   2 - gems
+        //   3 - project
+        //   4 - user(dev)
 
-        // engine
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        resolveScriptPath(engineRoot);
-
-        // gems
-        auto moduleCallback = [this, &pythonPathStack, resolveScriptPath, engineRoot](const AZ::ModuleData& moduleData) -> bool
+        // 1 - engine
+        AZ::IO::FixedMaxPath engineRoot;
+        if (settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder); !engineRoot.empty())
         {
-            if (moduleData.GetDynamicModuleHandle())
-            {
-                const AZ::OSString& modulePath = moduleData.GetDynamicModuleHandle()->GetFilename();
-                AZStd::string fileName;
-                AzFramework::StringFunc::Path::GetFileName(modulePath.c_str(), fileName);
+            resolveScriptPath(engineRoot.Native());
+        }
 
-                AZStd::vector<AZStd::string> tokens;
-                AzFramework::StringFunc::Tokenize(fileName.c_str(), tokens, '.');
-                if (tokens.size() > 2 && tokens[0] == "Gem")
+        // 2 - gems
+        struct GetGemSourcePathsVisitor
+            : AZ::SettingsRegistryInterface::Visitor
+        {
+            GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
+                : m_settingsRegistry(settingsRegistry)
+            {}
+            void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
+                AZStd::string_view value) override
+            {
+                AZStd::string_view jsonSourcePathPointer{ path };
+                // Remove the array index from the path and check if the JSON path ends with "/SourcePaths"
+                AZ::StringFunc::TokenizeLast(jsonSourcePathPointer, "/");
+                if (jsonSourcePathPointer.ends_with("/SourcePaths"))
                 {
-                    resolveScriptPath(AZStd::string::format("%s/Gems/%s", engineRoot, tokens[1].c_str()));
+                    AZ::IO::Path newSourcePath = jsonSourcePathPointer;
+                    // Resolve any file aliases first - Do not use ResolvePath() as that assumes
+                    // any relative path is underneath the @assets@ alias
+                    if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+                    {
+                        AZ::IO::FixedMaxPath replacedAliasPath;
+                        if (fileIoBase->ReplaceAlias(replacedAliasPath, value))
+                        {
+                            newSourcePath = AZ::IO::PathView(replacedAliasPath);
+                        }
+                    }
+
+                    // The current assumption is that the gem source path is the relative to the engine root
+                    AZ::IO::Path engineRootPath;
+                    m_settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                    newSourcePath = (engineRootPath / newSourcePath).LexicallyNormal();
+
+                    if (auto gemSourcePathIter = AZStd::find(m_gemSourcePaths.begin(), m_gemSourcePaths.end(), newSourcePath);
+                        gemSourcePathIter == m_gemSourcePaths.end())
+                    {
+                        m_gemSourcePaths.emplace_back(AZStd::move(newSourcePath));
+                    }
                 }
             }
-            return true;
+
+            AZStd::vector<AZ::IO::Path> m_gemSourcePaths;
+        private:
+            AZ::SettingsRegistryInterface& m_settingsRegistry;
         };
-        AZ::ModuleManagerRequestBus::Broadcast(&AZ::ModuleManagerRequestBus::Events::EnumerateModules, moduleCallback);
 
-        // project
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-        resolveScriptPath(AZStd::string::format("%s/%s", appRoot, gameFolder.c_str()));
+        GetGemSourcePathsVisitor visitor{ *settingsRegistry };
+        constexpr auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
+            + "/Gems";
+        settingsRegistry->Visit(visitor, gemListKey);
+        for (const AZ::IO::Path& gemSourcePath : visitor.m_gemSourcePaths)
+        {
+            resolveScriptPath(gemSourcePath.Native());
+        }
 
-        // user
+        // 3 - project
+        resolveScriptPath(AZStd::string_view{ projectPath });
+
+        // 4 - user
         AZStd::string assetsType;
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetsType,
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::Assets);
         if (!assetsType.empty())
         {
-            // the pattern to user path is <appRoot>/Cache/<gameFolder>/<assetsType>/user e.g. c:/myroot/dev/Cache/MyProject/pc/user
-            AZStd::string userRelativePath = AZStd::string::format("Cache/%s/%s/user", gameFolder.c_str(), assetsType.c_str());
-            AZStd::string userCachePath;
-            AzFramework::StringFunc::Path::Join(appRoot, userRelativePath.c_str(), userCachePath);
-            resolveScriptPath(userCachePath);
+            AZ::IO::FixedMaxPath userCachePath;
+            if (settingsRegistry->Get(userCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+                !userCachePath.empty())
+            {
+                userCachePath /= "user";
+                resolveScriptPath(userCachePath.Native());
+            }
         }
     }
 
@@ -493,15 +532,17 @@ namespace EditorPythonBindings
 
     bool PythonSystemComponent::ExtendSysPath(const AZStd::unordered_set<AZStd::string>& extendPaths)
     {
-        AZStd::string oldPath{ Py_EncodeLocale(Py_GetPath(), nullptr) };
-        AZStd::vector<AZStd::string> pathParts;
-        AZ::StringFunc::Tokenize(oldPath, pathParts, DELIM, false, false);
-        AZStd::unordered_set<AZStd::string> oldPathSet{ pathParts.begin(), pathParts.end() };
+        AZStd::unordered_set<AZStd::string> oldPathSet;
+        auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
+        {
+            oldPathSet.emplace(pathPart);
+        };
+        AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
         bool appended{ false };
         AZStd::string pathAppend{ "import sys\n" };
         for (const auto& thisStr : extendPaths)
         {
-            if (oldPathSet.find(thisStr) == oldPathSet.end())
+            if (!oldPathSet.contains(thisStr))
             {
                 pathAppend.append(AZStd::string::format("sys.path.append('%s')\n", thisStr.c_str()));
                 appended = true;

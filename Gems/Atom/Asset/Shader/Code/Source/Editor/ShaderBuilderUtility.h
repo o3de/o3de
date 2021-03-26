@@ -87,6 +87,7 @@ namespace AZ
                 BindingDependencies& bindingDependencies /*inout*/,
                 const ShaderResourceGroupAssets& srgAssets,
                 const MapOfStringToStageType& shaderEntryPoints,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
                 const RootConstantData* rootConstantData = nullptr
             );
 

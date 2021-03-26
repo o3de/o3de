@@ -23,8 +23,8 @@ namespace AWSClientAuth
         : public AuthenticationProviderInterface
     {
     public:
-        AWSCognitoAuthenticationProvider();
-        virtual ~AWSCognitoAuthenticationProvider();
+        AWSCognitoAuthenticationProvider() = default;
+        virtual ~AWSCognitoAuthenticationProvider() = default;
 
        // AuthenticationProviderInterface overrides
        bool Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry) override;
@@ -41,8 +41,8 @@ namespace AWSClientAuth
         void UpdateTokens(const Aws::CognitoIdentityProvider::Model::AuthenticationResultType& authenticationResult);
 
     protected:
-        AZStd::unique_ptr<AWSCognitoProviderSetting> m_settings;
         AZStd::string m_session;
+        AZStd::string m_cognitoAppClientId;
     };
 
 } // namespace AWSClientAuth

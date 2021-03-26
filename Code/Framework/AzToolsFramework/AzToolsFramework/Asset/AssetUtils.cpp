@@ -17,444 +17,313 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
-#include <AzCore/JSON/document.h>
-#include <AzCore/JSON/error/en.h>
-AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option")
-#include <QDir>
-#include <QFile>
-#include <QSettings>
-#include <QDirIterator>
-AZ_POP_DISABLE_WARNING
+#include <QString>
 
-
-namespace AzToolsFramework
+namespace AzToolsFramework::AssetUtils::Internal
 {
-    namespace AssetUtils
+    constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
+
+    constexpr const char* AssetConfigPlatformDir = "AssetProcessorConfig";
+    constexpr const char* RestrictedPlatformDir = "restricted";
+
+    AZStd::vector<AZ::IO::Path> FindWildcardMatches(AZStd::string_view sourceFolder, AZStd::string_view relativeName)
     {
-        namespace Internal
+        if (relativeName.empty())
         {
-
-            const char AssetConfigPlatformDir[] = "AssetProcessorConfig";
-            const char RestrictedPlatformDir[] = "restricted";
-
-            QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName)
-            {
-                if (relativeName.isEmpty())
-                {
-                    return QStringList();
-                }
-
-                const int pathLen = sourceFolder.length() + 1;
-
-                relativeName.replace('\\', '/');
-
-                QStringList returnList;
-                QRegExp nameMatch{ relativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
-                QDirIterator diretoryIterator(sourceFolder, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-                QStringList files;
-                while (diretoryIterator.hasNext())
-                {
-                    diretoryIterator.next();
-                    if (!diretoryIterator.fileInfo().isFile())
-                    {
-                        continue;
-                    }
-                    QString pathMatch{ diretoryIterator.filePath().mid(pathLen) };
-                    if (nameMatch.exactMatch(pathMatch))
-                    {
-                        returnList.append(diretoryIterator.filePath());
-                    }
-                }
-                return returnList;
-            }
-
-            void ReadPlatformInfosFromConfigFile(QString configFile, QStringList& enabledPlatforms)
-            {
-                // in the inifile the platform can be missing (commented out)
-                // in which case it is disabled implicitly by not being there
-                // or it can be 'disabled' which means that it is explicitly disabled.
-                // or it can be 'enabled' which means that it is explicitly enabled.
-
-                if (!QFile::exists(configFile))
-                {
-                    return;
-                }
-
-                QSettings loader(configFile, QSettings::IniFormat);
-
-                // Read in enabled platforms
-                loader.beginGroup("Platforms");
-                QStringList keys = loader.allKeys();
-                for (int idx = 0; idx < keys.count(); idx++)
-                {
-                    QString val = loader.value(keys[idx]).toString();
-                    QString platform = keys[idx].toLower().trimmed();
-
-                    val = val.toLower().trimmed();
-
-                    if (val == "enabled")
-                    {
-                        if (!enabledPlatforms.contains(val))
-                        {
-                            enabledPlatforms.push_back(platform);
-                        }
-                    }
-                    else if (val == "disabled")
-                    {
-                        // disable platform explicitly.
-                        int index = enabledPlatforms.indexOf(platform);
-                        if (index != -1)
-                        {
-                            enabledPlatforms.removeAt(index);
-                        }
-                    }
-                }
-                loader.endGroup();
-            }
-
-            void AddGemConfigFiles(const AZStd::vector<AzToolsFramework::AssetUtils::GemInfo>& gemInfoList, QStringList& configFiles)
-            {
-                // there can only be one gam gem per project, so if we find one, we cache the name of it so that
-                // later we can add it to the very end of the list, giving it the ability to override all other config files.
-                QString gameConfigPath;
-
-                for (const GemInfo& gemElement : gemInfoList)
-                {
-                    QString gemAbsolutePath(gemElement.m_absoluteFilePath.c_str());
-
-                    QDir gemDir(gemAbsolutePath);
-                    QString absPathToConfigFile = gemDir.absoluteFilePath("AssetProcessorGemConfig.ini");
-                    if (gemElement.m_isGameGem)
-                    {
-                        gameConfigPath = absPathToConfigFile;
-                    }
-                    else
-                    {
-                        configFiles.push_back(absPathToConfigFile);
-                    }
-                }
-
-                // if a 'game gem' was discovered during the above loop, we want to append it to the END of the list
-                if (!gameConfigPath.isEmpty())
-                {
-                    configFiles.push_back(gameConfigPath);
-                }
-            }
-
-            bool AddPlatformConfigFilePaths(const char* root, QStringList& configFilePaths)
-            {
-                QString configWildcardName{ "*" };
-                configWildcardName.append(AssetProcessorPlatformConfigFileName);
-                QDir sourceRoot(root);
-
-                // first collect public platform configs 
-                QStringList platformList = FindWildcardMatches(sourceRoot.filePath(AssetConfigPlatformDir), configWildcardName);
-
-                // then collect restricted platform configs
-                QDirIterator it(sourceRoot.filePath(RestrictedPlatformDir), QDir::NoDotAndDotDot | QDir::Dirs);
-                while (it.hasNext())
-                {
-                    QDir platformDir(it.next());
-                    platformList << FindWildcardMatches(platformDir.filePath(AssetConfigPlatformDir), configWildcardName);
-                }
-
-                for (const auto& thisConfig : platformList)
-                {
-                    configFilePaths.append(thisConfig);
-                }
-                return (platformList.size() > 0);
-            }
+            return {};
         }
 
-        const char* AssetProcessorPlatformConfigFileName = "AssetProcessorPlatformConfig.ini";
-        const char* AssetProcessorGamePlatformConfigFileName = "AssetProcessorGamePlatformConfig.ini";
-        const char GemsDirectoryName[] = "Gems";
+        const int pathLen = sourceFolder.length() + 1;
 
-        GemInfo::GemInfo(AZStd::string name, AZStd::string relativeFilePath, AZStd::string absoluteFilePath, AZStd::string identifier, bool isGameGem, bool assetOnlyGem)
-            : m_gemName(name)
-            , m_relativeFilePath(relativeFilePath)
-            , m_absoluteFilePath(absoluteFilePath)
-            , m_identifier(identifier)
-            , m_isGameGem(isGameGem)
-            , m_assetOnly(assetOnlyGem)
+        AZ::IO::Path sourceWildcard{ sourceFolder };
+
+
+        AZStd::vector<AZ::IO::Path> returnList;
+
+        // Walks the sourceFolder and subdirectories to search for the relativeName as a wild card using a breathe-first search
+        AZStd::queue<AZ::IO::Path> searchFolders;
+        searchFolders.push(AZStd::move(sourceWildcard));
+        while (!searchFolders.empty())
         {
-        }
-
-        QStringList GetEnabledPlatforms(QStringList configFiles)
-        {
-            QStringList enabledPlatforms;
-
-            // note that the current host platform is enabled by default.
-            enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
-
-            for (const QString& configFile : configFiles)
+            const AZ::IO::Path& searchFolder = searchFolders.front();
+            AZ::IO::SystemFile::FindFileCB findFiles = [&returnList, &relativeName, &searchFolder, &searchFolders](AZStd::string_view fileView, bool isFile) -> bool
             {
-                Internal::ReadPlatformInfosFromConfigFile(configFile, enabledPlatforms);
-            }
-            return enabledPlatforms;
-        }
-
-        QStringList GetConfigFiles(const char* root, const char* assetRoot, const char* gameName, bool addPlatformConfigs, bool addGemsConfigs)
-        {
-            QStringList configFiles;
-            QDir configRoot(root);
-
-            QString rootConfigFile = configRoot.filePath(AssetProcessorPlatformConfigFileName);
-
-            configFiles.push_back(rootConfigFile);
-            if (addPlatformConfigs)
-            {
-                Internal::AddPlatformConfigFilePaths(root, configFiles);
-            }
-
-            if (addGemsConfigs)
-            {
-                AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> gemInfoList;
-                if (!GetGemsInfo(root, assetRoot, gameName, gemInfoList))
+                if (fileView == "." || fileView == "..")
                 {
-                    AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems for game project (%s).\n", gameName);
-                    return {};
+                    return true;
                 }
 
-                Internal::AddGemConfigFiles(gemInfoList, configFiles);
-            }
-
-            QDir assetRootDir(assetRoot);
-            assetRootDir.cd(gameName);
-
-            QString projectConfigFile = assetRootDir.filePath(AssetProcessorGamePlatformConfigFileName);
-
-            configFiles.push_back(projectConfigFile);
-
-            return configFiles;
-        }
-
-        static GemInfo ParseGemInfo(const rapidjson::Document& gemJsonDocument)
-        {
-            constexpr AZStd::fixed_string<32> NameKey = "Name";
-            constexpr AZStd::fixed_string<32> UuidKey = "Uuid";
-            constexpr AZStd::fixed_string<32> LinkTypeKey = "LinkType";
-            constexpr AZStd::fixed_string<32> IsGameGemKey = "IsGameGem";
-
-            GemInfo gemInfo;
-            auto memberIter = gemJsonDocument.FindMember(NameKey.c_str());
-            if (memberIter != gemJsonDocument.MemberEnd())
-            {
-                gemInfo.m_gemName.assign(memberIter->value.GetString(), memberIter->value.GetStringLength());
-            }
-
-            memberIter = gemJsonDocument.FindMember(UuidKey.c_str());
-            if (memberIter != gemJsonDocument.MemberEnd())
-            {
-                gemInfo.m_identifier.assign(memberIter->value.GetString(), memberIter->value.GetStringLength());
-            }
-
-            memberIter = gemJsonDocument.FindMember(IsGameGemKey.c_str());
-            if (memberIter != gemJsonDocument.MemberEnd())
-            {
-                gemInfo.m_isGameGem = memberIter->value.GetBool();
-            }
-
-
-            AZStd::string_view linkTypeString;
-            memberIter = gemJsonDocument.FindMember(LinkTypeKey.c_str());
-            if (memberIter != gemJsonDocument.MemberEnd())
-            {
-                linkTypeString = AZStd::string_view{ memberIter->value.GetString(), memberIter->value.GetStringLength() };
-            }
-
-            gemInfo.m_assetOnly = linkTypeString == "NoCode";
-
-            return gemInfo;
-        }
-
-        bool GetGemsInfo([[maybe_unused]] const char* root, [[maybe_unused]] const char* assetRoot, [[maybe_unused]] const char* gameName, AZStd::vector<GemInfo>& gemInfoList)
-        {
-            AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry == nullptr)
-            {
-                AZ_Error("AzToolsFramework::AssetUtils", false, "Settings Registry does not exist, cannot retrieve information about loaded Gem modules");
-                return false;
-            }
-
-            auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
-            if (fileIoBase == nullptr)
-            {
-                AZ_Error("AzToolsFramework::AssetUtils", false, "File IO, cannot retrieve information about loaded Gem modules");
-                return false;
-            }
-
-            constexpr AZStd::string_view GemJsonFilename{ "gem.json" };
-            AZStd::vector<AZ::IO::FixedMaxPath> gemModuleSourcePaths;
-
-            struct GemSourcePathsVisitor
-                : AZ::SettingsRegistryInterface::Visitor
-            {
-                GemSourcePathsVisitor(AZStd::vector<AZ::IO::FixedMaxPath>& gemSourcePaths)
-                    : m_gemSourcePaths(gemSourcePaths)
-                {}
-
-                void Visit(AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type,
-                    AZStd::string_view value) override
+                if (isFile)
                 {
-                    if (path.find("SourcePaths") != AZStd::string_view::npos
-                        && AZStd::find(m_gemSourcePaths.begin(), m_gemSourcePaths.end(), value) == m_gemSourcePaths.end())
+                    if (AZStd::wildcard_match(relativeName, fileView))
                     {
-                        m_gemSourcePaths.emplace_back(value);
+                        returnList.emplace_back(searchFolder / fileView);
                     }
                 }
-                AZStd::vector<AZ::IO::FixedMaxPath>& m_gemSourcePaths;
+                else
+                {
+                    // Use the current search directory to append the fileView directory wild card
+                    searchFolders.push(searchFolder / fileView);
+                }
+
+                return true;
             };
 
-            GemSourcePathsVisitor visitor{ gemModuleSourcePaths };
-            const auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-            AZ::SettingsRegistry::Get()->Visit(visitor, gemListKey);
 
-            AZ::IO::FixedMaxPath engineRootPath;
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            if (engineRootPath.empty())
-            {
-                AZ_TracePrintfOnce("AzToolsFramework::AssetUtils", "Engine Root Path is empty. The Gem Module Source Paths will have the @engroot@ alias prepended");
-                engineRootPath = "@engroot@";
-            }
-
-            AZStd::vector<char> gemJsonFileData;
-            for (const AZ::IO::FixedMaxPath& gemSourcePath : gemModuleSourcePaths)
-            {
-                AZ::IO::FixedMaxPath gemJsonPath = engineRootPath / gemSourcePath / GemJsonFilename;
-                if (AZ::IO::HandleType gemJsonHandle;  fileIoBase->Open(gemJsonPath.c_str(), AZ::IO::OpenMode::ModeRead, gemJsonHandle))
-                {
-                    AZ::IO::SizeType gemJsonFileSize;
-                    if (AZ::IO::Result ioResult = fileIoBase->Size(gemJsonHandle, gemJsonFileSize); !ioResult)
-                    {
-                        AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to query file size of gem json at path '%s'.\nResult code %u returned",
-                            gemJsonPath.c_str(), aznumeric_cast<uint32_t>(ioResult.GetResultCode()));
-                        fileIoBase->Close(gemJsonHandle);
-                        continue;
-                    }
-
-                    gemJsonFileData.resize_no_construct(gemJsonFileSize);
-                    AZ::IO::SizeType bytesRead{};
-                    if (AZ::IO::Result ioResult = fileIoBase->Read(gemJsonHandle, gemJsonFileData.data(), gemJsonFileData.size(), false, &bytesRead); !ioResult)
-                    {
-                        AZ_Error("AzToolsFramework::AssetUtils", false, "Reading from gem json at path '%s' has failed with result code %u.\n%zu has been read",
-                            gemJsonPath.c_str(), aznumeric_cast<uint32_t>(ioResult.GetResultCode()), bytesRead);
-                        fileIoBase->Close(gemJsonHandle);
-                        continue;
-                    }
-
-                    rapidjson::Document gemJsonDocument;
-                    gemJsonDocument.Parse(gemJsonFileData.data(), gemJsonFileData.size());
-                    if (gemJsonDocument.HasParseError())
-                    {
-                        AZ_Error("AzToolsFramework::AssetUtils", false, "Parsing gem json at path '%s' has json Parse Error: %s",
-                            gemJsonPath.c_str(), rapidjson::GetParseError_En(gemJsonDocument.GetParseError()))
-                    }
-
-                    GemInfo gemInfo = ParseGemInfo(gemJsonDocument);
-
-
-                    char gemJsonResolvePath[AZ::IO::MaxPathLength];
-                    const bool foundFilename = fileIoBase->GetFilename(gemJsonHandle, AZStd::data(gemJsonResolvePath), AZStd::size(gemJsonResolvePath));
-                    if (foundFilename)
-                    {
-                        // Set the Absolute path to the folder containing the gem.json file
-                        gemInfo.m_absoluteFilePath = AZ::IO::PathView(gemJsonResolvePath).ParentPath().Native();
-                    }
-                    else
-                    {
-                        // If unable to retrieve the Filename from the File IO handle the gemJsonPath is used instead
-                        gemInfo.m_absoluteFilePath = gemJsonPath.ParentPath().Native();
-                    }
-
-                    // The gemSourcePath is the relative path
-                    gemInfo.m_relativeFilePath = static_cast<AZStd::string_view>(gemSourcePath.Native());
-                    gemInfoList.push_back(gemInfo);
-                    fileIoBase->Close(gemJsonHandle);
-                }
-            }
-
-            return true;
+            AZ::IO::SystemFile::FindFiles((searchFolder / "*").c_str(), findFiles);
+            searchFolders.pop();
         }
 
-        bool UpdateFilePathToCorrectCase(const QString& root, QString& relativePathFromRoot)
+        return returnList;
+    }
+
+    void AddGemConfigFiles(const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AZStd::vector<AZ::IO::Path>& configFiles)
+    {
+        const char* AssetProcessorGemConfigIni = "AssetProcessorGemConfig.ini";
+        const char* AssetProcessorGemConfigSetreg = "AssetProcessorGemConfig.setreg";
+        for (const AzFramework::GemInfo& gemElement : gemInfoList)
         {
-            AZStd::string rootPath(root.toUtf8().data());
-            AZStd::string relPathFromRoot(relativePathFromRoot.toUtf8().data());
-            AZ::StringFunc::Path::Normalize(relPathFromRoot);
-            AZStd::vector<AZStd::string> tokens;
-            AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-
-            AZStd::string validatedPath;
-            if (rootPath.empty())
+            for (const AZ::IO::Path& gemAbsoluteSourcePath : gemElement.m_absoluteSourcePaths)
             {
-                const char* appRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-                validatedPath = AZStd::string(appRoot);
+                configFiles.push_back(gemAbsoluteSourcePath / AssetProcessorGemConfigIni);
+                configFiles.push_back(gemAbsoluteSourcePath / AssetProcessorGemConfigSetreg);
             }
-            else
+        }
+    }
+}
+
+namespace AzToolsFramework::AssetUtils
+{
+    // Visitor for reading the "/Amazon/AssetProcessor/Settings/Platforms" entries from the Settings Registry
+    struct EnabledPlatformsVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value);
+
+        AZStd::vector<AZStd::string> m_enabledPlatforms;
+    };
+
+    void EnabledPlatformsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
+    {
+        if (value == "enabled")
+        {
+            m_enabledPlatforms.emplace_back(valueName);
+        }
+        else if (value == "disabled")
+        {
+            auto platformEntrySearch = [&valueName](AZStd::string_view platformEntry)
             {
-                validatedPath = rootPath;
-            }
+                return valueName == platformEntry;
+            };
+            auto removeIt = AZStd::remove_if(m_enabledPlatforms.begin(), m_enabledPlatforms.end(), platformEntrySearch);
+            m_enabledPlatforms.erase(removeIt, m_enabledPlatforms.end());
+        }
+    }
 
-            bool success = true;
+    void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
+        AZStd::vector<AZStd::string>& enabledPlatforms)
+    {
+        // note that the current host platform is enabled by default.
+        enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
 
-            for (int idx = 0; idx < tokens.size(); idx++)
+        // in the setreg the platform can be missing (commented out)
+        // in which case it is disabled implicitly by not being there
+        // or it can be 'disabled' which means that it is explicitly disabled.
+        // or it can be 'enabled' which means that it is explicitly enabled.
+        EnabledPlatformsVisitor visitor;
+        settingsRegistry.Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(Internal::AssetProcessorSettingsKey) + "/Platforms");
+        enabledPlatforms.insert(enabledPlatforms.end(), AZStd::make_move_iterator(visitor.m_enabledPlatforms.begin()),
+            AZStd::make_move_iterator(visitor.m_enabledPlatforms.end()));
+    }
+
+    AZStd::vector<AZStd::string> GetEnabledPlatforms(AZ::SettingsRegistryInterface& settingsRegistry,
+        const AZStd::vector<AZ::IO::Path>& configFiles)
+    {
+        AZStd::vector<AZStd::string> enabledPlatforms;
+
+        for (const auto& configFile : configFiles)
+        {
+            if (AZ::IO::SystemFile::Exists(configFile.c_str()))
             {
-                AZStd::string element = tokens[idx];
-                bool foundAMatch = false;
-                AZ::IO::FileIOBase::GetInstance()->FindFiles(validatedPath.c_str(), "*", [&](const char* file)
-                    {
-                        if ( idx != tokens.size() - 1 && !AZ::IO::FileIOBase::GetInstance()->IsDirectory(file))
-                        {
-                            // only the last token is supposed to be a filename, we can skip filenames before that
-                            return true;
-                        }
-
-                        AZStd::string absFilePath(file);
-                        AZ::StringFunc::Path::Normalize(absFilePath);
-                        auto found = absFilePath.rfind(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-                        size_t startingPos = found + 1;
-                        if (found != AZStd::string::npos && absFilePath.size() > startingPos)
-                        {
-                            AZStd::string componentName = AZStd::string(absFilePath.begin() + startingPos, absFilePath.end());
-                            if (AZ::StringFunc::Equal(componentName.c_str(), tokens[idx].c_str()))
-                            {
-                                tokens[idx] = componentName;
-                                foundAMatch = true;
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    });
-
-                if (!foundAMatch)
+                // If the config file is a settings registry file use the SettingsRegistryInterface MergeSettingsFile function
+                // otherwise use the SettingsRegistryMergeUtils MergeSettingsToRegistry_ConfigFile function to merge an INI-style
+                // file to the settings registry
+                if (configFile.Extension() == ".setreg")
                 {
-                    success = false;
-                    break;
+                    settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+                }
+                else
+                {
+                    AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
+                    configParserSettings.m_registryRootPointerPath = Internal::AssetProcessorSettingsKey;
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ConfigFile(settingsRegistry, configFile.Native(), configParserSettings);
+                }
+            }
+        }
+        ReadEnabledPlatformsFromSettingsRegistry(settingsRegistry, enabledPlatforms);
+        return enabledPlatforms;
+    }
+
+    constexpr const char* AssetProcessorPlatformConfigFileName = "AssetProcessorPlatformConfig.ini";
+    constexpr const char* AssetProcessorPlatformConfigSetreg = "AssetProcessorPlatformConfig.setreg";
+
+    bool AddPlatformConfigFilePaths(AZStd::string_view engineRoot, AZStd::vector<AZ::IO::Path>& configFilePaths)
+    {
+        auto restrictedRoot = AZ::IO::Path{ engineRoot } / Internal::RestrictedPlatformDir;
+
+        // first collect public platform configs
+        AZStd::vector<AZ::IO::Path> platformDirs{ AZ::IO::Path{ engineRoot } / Internal::AssetConfigPlatformDir };
+
+        // then collect restricted platform configs
+        // Append the AssetConfigPlatformDir value to each directory
+        AZ::IO::SystemFile::FindFileCB findRestrictedAssetConfigs = [&restrictedRoot, &platformDirs](AZStd::string_view fileView, bool isFile) -> bool
+        {
+            if (fileView != "." && fileView != "..")
+            {
+                if (!isFile)
+                {
+                    platformDirs.push_back(restrictedRoot / fileView / Internal::AssetConfigPlatformDir);
+                }
+            }
+            return true;
+        };
+        AZ::IO::SystemFile::FindFiles((restrictedRoot / "*").c_str(), findRestrictedAssetConfigs);
+
+        // Iterator over all platform directories for platform config files
+        AZStd::vector<AZ::IO::Path> allPlatformConfigs;
+        for (const auto& platformDir : platformDirs)
+        {
+            for (const char* configPath : { AssetProcessorPlatformConfigFileName, AssetProcessorPlatformConfigSetreg })
+            {
+                AZStd::vector<AZ::IO::Path> platformConfigs = Internal::FindWildcardMatches(platformDir.Native(), configPath);
+                allPlatformConfigs.insert(allPlatformConfigs.end(), AZStd::make_move_iterator(platformConfigs.begin()), AZStd::make_move_iterator(platformConfigs.end()));
+            }
+        }
+
+        const bool platformConfigFilePathsAdded = !allPlatformConfigs.empty();
+        configFilePaths.insert(configFilePaths.end(), AZStd::make_move_iterator(allPlatformConfigs.begin()), AZStd::make_move_iterator(allPlatformConfigs.end()));
+        return platformConfigFilePathsAdded;
+    }
+
+    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view assetRoot, AZStd::string_view projectPath,
+        bool addPlatformConfigs, bool addGemsConfigs, AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        constexpr const char* AssetProcessorGamePlatformConfigFileName = "AssetProcessorGamePlatformConfig.ini";
+        constexpr const char* AssetProcessorGamePlatformConfigSetreg = "AssetProcessorGamePlatformConfig.setreg";
+        AZStd::vector<AZ::IO::Path> configFiles;
+        AZ::IO::Path configRoot(engineRoot);
+
+        AZ::IO::Path rootConfigFile = configRoot / AssetProcessorPlatformConfigFileName;
+        configFiles.push_back(rootConfigFile);
+
+        // Add a file entry for the Engine Root AssetProcessor setreg file
+        rootConfigFile = configRoot / AssetProcessorPlatformConfigSetreg;
+        configFiles.push_back(rootConfigFile);
+
+        if (addPlatformConfigs)
+        {
+            AddPlatformConfigFilePaths(engineRoot, configFiles);
+        }
+
+        if (addGemsConfigs)
+        {
+            AZStd::vector<AzFramework::GemInfo> gemInfoList;
+            if (!AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry))
+            {
+                AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems from project folder(%s).\n", projectPath);
+                return {};
+            }
+
+            Internal::AddGemConfigFiles(gemInfoList, configFiles);
+        }
+
+        AZ::IO::Path assetRootDir(assetRoot);
+        assetRootDir /= projectPath;
+
+        AZ::IO::Path projectConfigFile = assetRootDir / AssetProcessorGamePlatformConfigFileName;
+        configFiles.push_back(projectConfigFile);
+
+        // Add a file entry for the Project AssetProcessor setreg file
+        projectConfigFile = assetRootDir / AssetProcessorGamePlatformConfigSetreg;
+        configFiles.push_back(projectConfigFile);
+
+        return configFiles;
+    }
+
+    bool UpdateFilePathToCorrectCase(const QString& root, QString& relativePathFromRoot)
+    {
+        AZStd::string rootPath(root.toUtf8().data());
+        AZStd::string relPathFromRoot(relativePathFromRoot.toUtf8().data());
+        AZ::StringFunc::Path::Normalize(relPathFromRoot);
+        AZStd::vector<AZStd::string> tokens;
+        AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+
+        AZStd::string validatedPath;
+        if (rootPath.empty())
+        {
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(validatedPath, &AzFramework::ApplicationRequests::GetEngineRoot);
+        }
+        else
+        {
+            validatedPath = rootPath;
+        }
+
+        bool success = true;
+
+        for (int idx = 0; idx < tokens.size(); idx++)
+        {
+            AZStd::string element = tokens[idx];
+            bool foundAMatch = false;
+            AZ::IO::FileIOBase::GetInstance()->FindFiles(validatedPath.c_str(), "*", [&](const char* file)
+            {
+                if (idx != tokens.size() - 1 && !AZ::IO::FileIOBase::GetInstance()->IsDirectory(file))
+                {
+                    // only the last token is supposed to be a filename, we can skip filenames before that
+                    return true;
                 }
 
-                AZStd::string absoluteFilePath;
-                AZ::StringFunc::Path::ConstructFull(validatedPath.c_str(), element.c_str(), absoluteFilePath);
+                AZStd::string absFilePath(file);
+                AZ::StringFunc::Path::Normalize(absFilePath);
+                auto found = absFilePath.rfind(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+                size_t startingPos = found + 1;
+                if (found != AZStd::string::npos && absFilePath.size() > startingPos)
+                {
+                    AZStd::string componentName = AZStd::string(absFilePath.begin() + startingPos, absFilePath.end());
+                    if (AZ::StringFunc::Equal(componentName.c_str(), tokens[idx].c_str()))
+                    {
+                        tokens[idx] = componentName;
+                        foundAMatch = true;
+                        return false;
+                    }
+                }
 
-                validatedPath = absoluteFilePath; // go one step deeper.
-            }
+                return true;
+            });
 
-            if (success)
+            if (!foundAMatch)
             {
-                relPathFromRoot.clear();
-                AZ::StringFunc::Join(relPathFromRoot, tokens.begin(), tokens.end(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-                relativePathFromRoot = relPathFromRoot.c_str();
+                success = false;
+                break;
             }
 
-            return success;
+            AZStd::string absoluteFilePath;
+            AZ::StringFunc::Path::ConstructFull(validatedPath.c_str(), element.c_str(), absoluteFilePath);
+
+            validatedPath = absoluteFilePath; // go one step deeper.
         }
-    } //namespace AssetUtils
-} //namespace AzToolsFramework
+
+        if (success)
+        {
+            relPathFromRoot.clear();
+            AZ::StringFunc::Join(relPathFromRoot, tokens.begin(), tokens.end(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+            relativePathFromRoot = relPathFromRoot.c_str();
+        }
+
+        return success;
+    }
+} //namespace AzToolsFramework::AssetUtils

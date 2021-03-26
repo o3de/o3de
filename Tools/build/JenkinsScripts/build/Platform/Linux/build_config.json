@@ -1,12 +1,11 @@
 {
   "profile_pipe": {
     "TAGS": [
-      "default",
-      "weekly-build-metrics",
-      "daily-pipeline-metrics"
+      "default"
     ],
     "steps": [
       "profile",
+      "asset_profile",
       "test_profile"
     ]
   },
@@ -22,7 +21,7 @@
   },
   "debug": {
     "TAGS": [
-      "default",
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -35,7 +34,10 @@
     }
   },
   "profile": {
-    "TAGS": [],
+    "TAGS": [
+        "daily-pipeline-metrics",
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -47,7 +49,7 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "default",
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -60,7 +62,10 @@
     }
   },
   "test_profile": {
-    "TAGS": [],
+    "TAGS": [
+        "daily-pipeline-metrics",
+        "weekly-build-metrics"
+    ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -73,7 +78,6 @@
   },
   "asset_profile": {
     "TAGS": [
-      "default",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_asset_linux.sh",
@@ -139,6 +143,7 @@
   },
   "release": {
     "TAGS": [
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -152,7 +157,7 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "default",
+      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",

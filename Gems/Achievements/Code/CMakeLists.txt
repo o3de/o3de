@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target(
     NAME Achievements ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Achievements.6f8d953dd4fc4bb6ad34c9118a7b789f.v0.1.0
     FILES_CMAKE
         achievements_shared_files.cmake
     INCLUDE_DIRECTORIES

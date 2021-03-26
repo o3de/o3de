@@ -140,7 +140,6 @@ class Launcher(object):
         Perform settings configuration, must be called after a backup of settings has been created with
         backup_settings(). Preferred ways to modify settings are:
 
-        self.workspace.settings.modify_bootstrap_setting()
         self.workspace.settings.modify_platform_setting()
 
         :return: None
@@ -156,7 +155,6 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         log.debug(f"Restoring backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.restore_bootstrap_settings(backup_path)
         self.workspace.settings.restore_platform_settings(backup_path)
         self.workspace.settings.restore_shader_compiler_settings(backup_path)
 

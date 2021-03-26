@@ -36,36 +36,47 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator, 0);
 
+        using ParamContainer = AZStd::vector<AZStd::string>;
+
+        struct CommandArgument
+        {
+            AZStd::string m_option;
+            AZStd::string m_value;
+        };
+        using ArgumentVector = AZStd::vector<CommandArgument>;
+
         CommandLine();
 
         /**
          * Initializes a CommandLine instance which uses the provided commandLineOptionPreix for parsing switches
          */
         CommandLine(AZStd::string_view commandLineOptionPrefix);
-
-        using ParamContainer = AZStd::vector<AZStd::string>;
-        using ParamMap = AZStd::unordered_map<AZStd::string, ParamContainer>;
         /**
         * Construct a command line parser.
         * It will load parameters from the given ARGC/ARGV parameters instead of process command line.
+        * Skips over the first parameter as it assumes it is the executable name
         */
         void Parse(int argc, char** argv);
+        /**
+         * Parses each element of the command line as parameter.
+         * Unlike the ARGC/ARGV version above, this function doesn't skip over the first parameter
+         * It allows for round trip conversion with the Dump() method
+         */
         void Parse(const ParamContainer& commandLine);
 
         /**
         * Will dump command line parameters from the CommandLine in a format such that switches
         * are prefixed with the option prefix followed by their value(s) which are comma separated
-        * The result of this function can be supplied to Parse() to re-create an eqiuvlanet command line obect
+        * The result of this function can be supplied to Parse() to re-create an equivalent command line object
         * Ex, If the command line has the current list of parsed miscellaneous values and switches of
         * MiscValue = ["Foo", "Bat"]
         * Switches = ["GameFolder" : [], "RemoteIp" : ["10.0.0.1"], "ScanFolders" : ["\a\b\c", "\d\e\f"]
         * CommandLineOptionPrefix = "-/"
         *
         * Then the resulting dumped value would be
-        * Dump = ["", "Foo", "Bat", "-GameFolder", "-RemoteIp", "10.0.0.1", "-ScanFolders", "\a\b\c", "-ScanFolders", "\d\e\f"]
-        * NOTE: The first parameter is always empty string as the Parse function skips over it
+        * Dump = ["Foo", "Bat", "-GameFolder", "-RemoteIp", "10.0.0.1", "-ScanFolders", "\a\b\c", "-ScanFolders", "\d\e\f"]
         */
-        void Dump(ParamContainer& commandLineDumpOutput);
+        void Dump(ParamContainer& commandLineDumpOutput) const;
 
         /**
         * Determines whether a switch is present in the command line
@@ -97,16 +108,28 @@ namespace AZ
         */
         const AZStd::string& GetMiscValue(AZStd::size_t index) const;
 
-        /*
-        * Return the list of parsed switches
-        */
-        const ParamMap& GetSwitchList() const;
+
+        // Range accessors
+        [[nodiscard]] bool empty() const;
+        auto size() const -> ArgumentVector::size_type;
+        auto begin() -> ArgumentVector::iterator;
+        auto begin() const -> ArgumentVector::const_iterator;
+        auto cbegin() const -> ArgumentVector::const_iterator;
+        auto end() -> ArgumentVector::iterator;
+        auto end() const -> ArgumentVector::const_iterator;
+        auto cend() const -> ArgumentVector::const_iterator;
+        auto rbegin() -> ArgumentVector::reverse_iterator;
+        auto rbegin() const -> ArgumentVector::const_reverse_iterator;
+        auto crbegin() const -> ArgumentVector::const_reverse_iterator;
+        auto rend() -> ArgumentVector::reverse_iterator;
+        auto rend() const -> ArgumentVector::const_reverse_iterator;
+        auto crend() const -> ArgumentVector::const_reverse_iterator;
 
     private:
-        void AddArgument(AZStd::string currentArg, AZStd::string& currentSwitch);
+        void AddArgument(AZStd::string_view currentArg, AZStd::string& currentSwitch);
+        void ParseOptionArgument(AZStd::string_view newOption, AZStd::string_view newValue, CommandArgument* inProgressArgument);
 
-        ParamMap m_switches;
-        ParamContainer m_miscValues;
+        ArgumentVector m_allValues;
         AZStd::string m_emptyValue;
 
         inline static constexpr size_t MaxCommandOptionPrefixes = 8;

@@ -102,6 +102,12 @@ ly_add_target_dependencies(
         Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 )
 
+# Inject the project path into the ShaderManagementConsole VS debugger command arguments if the build system being invoked
+# in a project centric view
+if(NOT PROJECT_NAME STREQUAL "O3DE")
+    set_property(TARGET ShaderManagementConsole APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${CMAKE_SOURCE_DIR}\"")
+endif()
+
 # Adds the ShaderManagementConsole target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.

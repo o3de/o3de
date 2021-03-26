@@ -24,7 +24,7 @@ from . import ap_setup_fixture as ap_setup_fixture
 def ap_all_platforms_setup_fixture(request, workspace, ap_setup_fixture) -> Dict[str, str]:
 
     dev_dir = os.path.join(workspace.paths.dev())
-    cache_dir = os.path.join(dev_dir, "Cache")
+    cache_dir = workspace.paths.cache()
 
     # add some useful locations
     resources = ap_setup_fixture
@@ -33,11 +33,11 @@ def ap_all_platforms_setup_fixture(request, workspace, ap_setup_fixture) -> Dict
     resources["platform_cache"] = os.path.join(workspace.paths.platform_cache(), workspace.project.lower())
 
     # Specific platform cache locations
-    resources["pc_cache_location"] = os.path.join(cache_dir, workspace.project, "pc")
-    resources["es3_cache_location"] = os.path.join(cache_dir, workspace.project, "es3")
-    resources["ios_cache_location"] = os.path.join(cache_dir, workspace.project, "ios")
-    resources["osx_gl_cache_location"] = os.path.join(cache_dir, workspace.project, "osx_gl")
-    resources["provo_cache_location"] = os.path.join(cache_dir, workspace.project, "provo")
+    resources["pc_cache_location"] = os.path.join(cache_dir, "pc")
+    resources["es3_cache_location"] = os.path.join(cache_dir, "es3")
+    resources["ios_cache_location"] = os.path.join(cache_dir, "ios")
+    resources["osx_gl_cache_location"] = os.path.join(cache_dir, "osx_gl")
+    resources["provo_cache_location"] = os.path.join(cache_dir, "provo")
     resources["all_platforms"] = ["pc", "es3", "ios", "osx_gl", "provo"]
 
     return resources

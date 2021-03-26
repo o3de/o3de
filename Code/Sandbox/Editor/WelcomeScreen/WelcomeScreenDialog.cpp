@@ -25,6 +25,8 @@
 #include <QDesktopWidget>
 #include <QTimer>
 
+#include <AzCore/Utils/Utils.h>
+
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -93,7 +95,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     auto currentProjectButtonMenu = new QMenu();
 
     ui->currentProjectButton->setMenu(currentProjectButtonMenu);
-    ui->currentProjectButton->setText(gEnv->pConsole->GetCVar("sys_game_folder")->GetString());
+    auto projectName = AZ::Utils::GetProjectName();
+    ui->currentProjectButton->setText(projectName.c_str());
     ui->currentProjectButton->adjustSize();
     ui->currentProjectButton->setMinimumWidth(ui->currentProjectButton->width() + 40);
 
@@ -193,10 +196,9 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 
     const char* engineRoot;
     EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
-    AZStd::string gamePathString;
-    AZ::StringFunc::Path::Join(engineRoot, gEnv->pConsole->GetCVar("sys_game_folder")->GetString(), gamePathString);
 
-    QString gamePath = QString(gamePathString.c_str());
+    auto projectPath = AZ::Utils::GetProjectPath();
+    QString gamePath{projectPath.c_str()};
     Path::ConvertSlashToBackSlash(gamePath);
     gamePath = Path::ToUnixPath(gamePath.toLower());
     gamePath = Path::AddSlash(gamePath);

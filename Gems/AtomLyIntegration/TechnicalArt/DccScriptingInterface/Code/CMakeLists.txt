@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME DccScriptingInterface.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_DccScriptingInterface.Editor.7bf5a77dacd8438bb4966a66b5a678d8.v0.1.0
     FILES_CMAKE
         dccscriptinginterface_shared_files.cmake
     INCLUDE_DIRECTORIES
