@@ -32,7 +32,6 @@
 #include <ResourceCompiler.h>
 #include <IResourceCompilerHelper.h>
 #include <CmdLine.h>
-#include <ParseEngineConfig.h>
 #include <CryLibrary.h>
 #include <ZipEncryptor.h>
 
@@ -558,25 +557,28 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
 
         RCLog("Initializing System");
 
-
-        string appRootInput = config.GetAsString("approot", "", "");
-        if (!appRootInput.empty())
-        {
-            rc.SetAppRootPath(appRootInput);
-        }
-        else
         {
             // Create a local SettingsRegistry to read the bootstrap.cfg settings if the appRoot hasn't been overriden
             // on the command line
             AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
+
+            string projectPath = config.GetAsString("gameroot", "", "");
+            if (!projectPath.empty())
+            {
+                const auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+                settingsRegistry.Set(projectPathKey, projectPath.c_str());
+            }
+
             string gameName = config.GetAsString("gamesubdirectory", "", "");
             if (!gameName.empty())
             {
-                const auto gameFolderKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder",
-                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-                settingsRegistry.Set(gameFolderKey, gameName);
+                const auto projectNameKey = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%s/project_name", AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
+                settingsRegistry.Set(projectNameKey, gameName.c_str());
             }
+
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
             // and because we're a tool, add the tool folders:
             if (AZ::SettingsRegistryInterface::FixedValueString appRoot; settingsRegistry.Get(appRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))

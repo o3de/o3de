@@ -30,10 +30,60 @@ set(gems_json_template [[
 set(gem_module_template [[
             "@stripped_gem_target@":
             {
-                "Module":"$<TARGET_FILE_NAME:@gem_target@>",
+                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"],
                 "SourcePaths":["@gem_relative_source_dir@"]
             }]]
 )
+
+#!ly_get_gem_load_dependencies: Retrieves the list of "load" dependencies for a target
+# Visits through only MANUALLY_ADDED_DEPENDENCIES of targets with a GEM_MODULE property
+# to determine which gems a target needs to load
+# ly_get_runtime_dependencies cannot be used as it will recurse through non-manually added dependencies
+# to add manually added added which results in false load dependencies.
+# \arg:ly_GEM_LOAD_DEPENDENCIES(name) - Output variable to be populated gem load dependencies
+# \arg:ly_TARGET(TARGET) - CMake target to examine for dependencies
+function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
+    if(NOT TARGET ${ly_TARGET})
+        return() # Nothing to do
+    endif()
+
+    # Optimize the search by caching gem load dependencies
+    get_property(are_dependencies_cached GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} SET)
+    if(are_dependencies_cached)
+        # We already walked through this target
+        get_property(cached_dependencies GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET})
+        set(${ly_GEM_LOAD_DEPENDENCIES} ${cached_dependencies} PARENT_SCOPE)
+        return()
+    endif()
+
+    unset(all_gem_load_dependencies)
+
+    # For load dependencies, we want to copy over the dependency and traverse them
+    # Only if the dependency has a GEM_MODULE property
+    unset(load_dependencies)
+    get_target_property(load_dependencies ${ly_TARGET} MANUALLY_ADDED_DEPENDENCIES)
+    if(load_dependencies)
+        foreach(load_dependency ${load_dependencies})
+            # Skip wrapping produced when targets are not created in the same directory 
+            if(NOT ${load_dependency} MATCHES "^::@")
+                get_property(dependency_type TARGET ${load_dependency} PROPERTY TYPE)
+                get_property(is_gem_target TARGET ${load_dependency} PROPERTY GEM_MODULE SET)
+                # If the dependency is a "gem module" then add it as a load dependencies
+                # and recurse into its manually added dependencies
+                if (is_gem_target)
+                    unset(dependencies)
+                    ly_get_gem_load_dependencies(dependencies ${load_dependency})
+                    list(APPEND all_gem_load_dependencies ${load_dependency})
+                    list(APPEND all_gem_load_dependencies ${dependencies})
+                endif()
+            endif()
+        endforeach()
+    endif()
+
+    list(REMOVE_DUPLICATES all_gem_load_dependencies)
+    set_property(GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} "${all_gem_load_dependencies}")
+    set(${ly_GEM_LOAD_DEPENDENCIES} ${all_gem_load_dependencies} PARENT_SCOPE)
+endfunction()
 
 #! ly_delayed_generate_settings_registry: Generates a .setreg file for each target with dependencies
 #  added to it via ly_add_target_dependencies
@@ -58,9 +108,16 @@ function(ly_delayed_generate_settings_registry)
         # Get the gem dependencies for the given project and target combination
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
         list(REMOVE_DUPLICATES gem_dependencies) # Strip out any duplicate gem targets
+        set(all_gem_dependencies ${gem_dependencies})
+
+        foreach(gem_target ${gem_dependencies})
+            ly_get_gem_load_dependencies(gem_load_gem_dependencies ${gem_target})
+            list(APPEND all_gem_dependencies ${gem_load_gem_dependencies})
+        endforeach()
+        list(REMOVE_DUPLICATES all_gem_dependencies)
 
         unset(target_gem_dependencies_names)
-        foreach(gem_target ${gem_dependencies})
+        foreach(gem_target ${all_gem_dependencies})
             unset(gem_relative_source_dir)
             # Create path from the LY_ROOT_FOLDER to the the Gem directory
             if (NOT TARGET ${gem_target})
@@ -68,7 +125,7 @@ function(ly_delayed_generate_settings_registry)
             endif()
             get_property(gem_relative_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
             if(gem_relative_source_dir)
-                # Most gems CMakeLists.txt files reside in the <GemSourceDir/>Code/  so remove "Code/"  from the path
+                # Most gems CMakeLists.txt files reside in the <GemSourceDir>/Code/  so remove "Code/"  from the path
                 if(gem_relative_source_dir MATCHES ".*/Code$")
                     get_filename_component(gem_relative_source_dir ${gem_relative_source_dir} DIRECTORY)
                 endif()

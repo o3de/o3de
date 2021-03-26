@@ -32,8 +32,5 @@ set(FILES
     UI/UICore/SaveChangesDialog.hxx
     UI/UICore/SaveChangesDialog.cpp
     UI/UICore/SaveChangesDialog.ui
-    Process/internal/ProcessWatcher_OSX.cpp
-    Process/internal/ProcessCommon_OSX.h
-    Process/internal/ProcessCommunicator_OSX.cpp
     ToolsFileUtils/ToolsFileUtils_generic.cpp
 )

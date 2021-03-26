@@ -14,6 +14,8 @@
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
+#include <AzCore/IO/Path/Path_fwd.h>
+
 #include <QObject>
 #include <QColor>
 #include <QHash>
@@ -62,7 +64,8 @@ namespace AzQtComponents
     public:
         static bool isInstanced() { return s_instance; }
 
-        static void addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix);
+        static void addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix,
+            const AZ::IO::PathView& engineRootPath);
 
         static bool setStyleSheet(QWidget* widget, QString styleFileName);
 
@@ -76,10 +79,10 @@ namespace AzQtComponents
 
         /*!
         * Call to initialize the StyleManager, allowing it to hook into the application and apply the global style
+        * The AzQtComponents does not hook in the AZ::Environment, so the Settings Registry isn't available
+        * Therefore the engine root path must be supplied via function arguments
         */
-        void initialize(QApplication* application);
-        // deprecated; introduced before the new camelCase Qt based method names were adopted.
-        void Initialize(QApplication* application) { initialize(application); }
+        void initialize(QApplication* application, const AZ::IO::PathView& engineRootPath);
 
         /*!
         * Call this to force a refresh of the global stylesheet and a reload of any settings files.
@@ -108,7 +111,7 @@ namespace AzQtComponents
 
     private:
         void initializeFonts();
-        void initializeSearchPaths(QApplication* application);
+        void initializeSearchPaths(QApplication* application, const AZ::IO::PathView& engineRootPath);
 
         void resetWidgetSheets();
 

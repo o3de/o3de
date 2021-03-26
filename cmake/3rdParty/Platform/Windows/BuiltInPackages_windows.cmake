@@ -34,8 +34,9 @@ ly_associate_package(PACKAGE_NAME azslc-1.7.19-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                     TARGETS glad                       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                        TARGETS xxhash                     PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 ly_associate_package(PACKAGE_NAME Blast-1.1.7-rev1-multiplatform                         TARGETS Blast                      PACKAGE_HASH 36b8f393bcd25d0f85cfc7a831ebbdac881e6054c4f0735649966aa6aa86e6f0)
-ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev3-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d9c7e21e03b03cb560da4793a91a0d384ea621757cf87a1a82c83bfca6b23f97)
+ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 # platform-specific:
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 58e199f253a28964b96056ed4a6db06216fcde14a96d6d94b0d6ad3437516bdc)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-windows  TARGETS PhysX           PACKAGE_HASH 198bed89d1aae7caaf5dadba24cee56235fe41725d004b64040d4e50d0f3aa1a)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows          TARGETS mikkelsen       PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS googletest      PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
@@ -43,3 +44,4 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev1-windows TARGETS Goo
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows        TARGETS d3dx12          PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside2-qt-5.15.1-rev2-windows     TARGETS pyside2         PACKAGE_HASH c90f3efcc7c10e79b22a33467855ad861f9dbd2e909df27a5cba9db9fa3edd0f)
 ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev1-windows  TARGETS openimageio     PACKAGE_HASH b9f6d6df180ad240b9f17a68c1862c7d8f38234de0e692e83116254b0ee467e5)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt              PACKAGE_HASH edaf954c647c99727bfd313dab2959803d2df0873914bb96368c3d8286eed6d9)

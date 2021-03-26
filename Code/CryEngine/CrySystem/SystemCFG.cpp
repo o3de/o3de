@@ -23,6 +23,7 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include "SystemCFG.h"
@@ -252,15 +253,8 @@ void CSystem::LogVersion()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::LogBuildInfo()
 {
-    ICVar* pGameName = m_env.pConsole->GetCVar("sys_game_name");
-    if (pGameName)
-    {
-        CryLogAlways("GameName: %s", pGameName->GetString());
-    }
-    else
-    {
-        CryLogAlways("Couldn't find game name in cvar sys_game_name");
-    }
+    auto projectName = AZ::Utils::GetProjectName();
+    CryLogAlways("GameName: %s", projectName.c_str());
     CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 }
 

@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME VirtualGamepad ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.VirtualGamepad.8aa9a66015804d6d9c809ce306e7d913.v0.1.0
     FILES_CMAKE
         virtualgamepad_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -92,13 +92,6 @@ static AZStd::vector<AZStd::string> GetModuleNames()
         moduleNames.push_back("CryFont" MODULE_EXTENSION);
         moduleNames.push_back("CrySystem" MODULE_EXTENSION);
 
-        if (gEnv && gEnv->pConsole)
-        {
-            string gameModuleNameRaw = gEnv->pConsole->GetCVar("sys_dll_game")->GetString();
-            gameModuleNameRaw.append(MODULE_EXTENSION);
-            moduleNames.push_back(gameModuleNameRaw.c_str());
-        }
-
 #undef MODULE_EXTENSION
 
 #   if defined(LINUX)
@@ -1074,14 +1067,6 @@ void CSystem::FatalError(const char* format, ...)
     if (szSysErrorMessage)
     {
         CryLogAlways("<CrySystem> Last System Error: %s", szSysErrorMessage);
-    }
-
-    if (const char* pLoadingProfilerCallstack = GetLoadingProfilerCallstack())
-    {
-        if (pLoadingProfilerCallstack[0])
-        {
-            CryLogAlways("<CrySystem> LoadingProfilerCallstack: %s", pLoadingProfilerCallstack);
-        }
     }
 
     if (GetUserCallback())

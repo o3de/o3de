@@ -26,7 +26,7 @@ namespace AzFramework::AssetSystem::Platform
 
     // Declare platform specific LaunchAssetProcessor function
     bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view appRoot,
-        AZStd::string_view projectName);
+        AZStd::string_view projectPath);
 }
 
 namespace AzFramework
@@ -67,23 +67,21 @@ namespace AzFramework
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
 
+            // Add the engine path to the launch command if available from the Settings Registry
             AZ::SettingsRegistryInterface::FixedValueString engineRootFolder;
-            // Add the app-root to the launch command if available from the Settings Registry
             if (settingsRegistry)
             {
                 settingsRegistry->Get(engineRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
             }
 
-            // Add the active game project to the launch from the Settings Registry
-            const auto gameProjectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder",
-                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-            AZ::SettingsRegistryInterface::FixedValueString gameProjectName;
+            // Add the active project's path to the launch command if available from the Settings Registry
+            AZ::SettingsRegistryInterface::FixedValueString projectPath;
             if (settingsRegistry)
             {
-                settingsRegistry->Get(gameProjectName, gameProjectKey);
+                settingsRegistry->Get(projectPath, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
             }
 
-            if (!Platform::LaunchAssetProcessor(executableDirectory, engineRootFolder, gameProjectName))
+            if (!Platform::LaunchAssetProcessor(executableDirectory, engineRootFolder, projectPath))
             {
                 // if we are unable to launch asset processor
                 AzFramework::AssetSystemInfoBus::Broadcast(&AzFramework::AssetSystem::AssetSystemInfoNotifications::OnError, AssetSystemErrors::ASSETSYSTEM_FAILED_TO_LAUNCH_ASSETPROCESSOR);
@@ -179,24 +177,22 @@ namespace AzFramework
 
             {
                 // Read Branch Token from Settings Registry
-                AZ::s64 branchToken64;
-                if (!settingsRegistry->Get(branchToken64, AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
+                AZStd::string branchToken;
+                if (!settingsRegistry->Get(branchToken, AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
                     AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::BranchToken)))
                 {
                     // The first time the AssetProcessor runs within a branch the bootstrap.cfg does not have a branch token set
                     // Therefore it is not an error for the branch token to not be in the bootstrap.cfg file
-                    AZStd::string branchToken;
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, branchToken);
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, branchToken);
                     AZ_TracePrintfOnce("AssetSystemComponent", "Failed to read branch token from bootstrap. Calculating Branch Token: %s\n", branchToken.c_str());
                     outputConnectionSettings.m_branchToken = branchToken;
                 }
                 else
                 {
-                    outputConnectionSettings.m_branchToken = AZStd::fixed_string<32>::format("0x%08X", aznumeric_cast<AZ::u32>(branchToken64));
+                    outputConnectionSettings.m_branchToken = AZStd::string_view{ branchToken };
                     if (outputConnectionSettings.m_branchToken.empty())
                     {
-                        AZStd::string branchToken;
-                        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, branchToken);
+                        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, branchToken);
                         AZ_TracePrintfOnce("AssetSystemComponent", "Branch token read from bootstrap is empty. Calculating Branch Token: %s\n", branchToken.c_str());
                         outputConnectionSettings.m_branchToken = branchToken;
                     }
@@ -205,19 +201,14 @@ namespace AzFramework
 
             {
                 // Read Project Name from Settings Registry
-                AZ::SettingsRegistryInterface::FixedValueString projectName;
-                if (!settingsRegistry->Get(projectName, AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::ProjectName)))
+                AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
+                if (projectName.empty())
                 {
-                    AZ_Error("AssetSystemComponent", false, "Failed to read project name from bootstrap");
+                    AZ_Error("AssetSystemComponent", false, "Failed to read project name from registry");
                     result = false;
                 }
+
                 outputConnectionSettings.m_projectName = projectName;
-                if (outputConnectionSettings.m_projectName.empty())
-                {
-                    AZ_Error("AssetSystemComponent", false, "Project name read from bootstrap is empty");
-                    result = false;
-                }
             }
 
             // Read the direction in which a connection to the Asset Processor should be from using the Settings Registry

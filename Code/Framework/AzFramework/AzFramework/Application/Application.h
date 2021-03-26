@@ -100,11 +100,10 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! ApplicationRequests::Bus::Handler
-        const char* GetAssetRoot() const override;
         const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
         const char* GetAppRoot() const override;
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
-        void CalculateBranchTokenForAppRoot(AZStd::string& token) const override;
+        void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
 
 #pragma push_macro("GetCommandLine")
 #undef GetCommandLine
@@ -112,7 +111,6 @@ namespace AzFramework
 #pragma pop_macro("GetCommandLine")
         const CommandLine* GetApplicationCommandLine() override { return &m_commandLine; }
 
-        void SetAssetRoot(const char* assetRoot) override;
         void MakePathRootRelative(AZStd::string& fullPath) override;
         void MakePathAssetRootRelative(AZStd::string& fullPath) override;
         void MakePathRelative(AZStd::string& fullPath, const char* rootPath) override;
@@ -180,9 +178,6 @@ namespace AzFramework
 
         AZ::StringFunc::Path::FixedString m_configFilePath;
 
-        AZ::StringFunc::Path::FixedString m_assetRoot;
-        AZ::StringFunc::Path::FixedString m_engineRoot; ///> Location of the engine root folder that this application is based on
-
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_directFileIO; ///> The Direct file IO instance is a LocalFileIO.
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_archiveFileIO; ///> The Default file IO instance is a ArchiveFileIO.
         AZStd::unique_ptr<AZ::IO::Archive> m_archive; ///> The AZ::IO::Instance
@@ -194,7 +189,6 @@ namespace AzFramework
         enum class RootPathType
         {
             AppRoot,
-            AssetRoot,
             EngineRoot
         };
         void SetRootPath(RootPathType type, const char* source);

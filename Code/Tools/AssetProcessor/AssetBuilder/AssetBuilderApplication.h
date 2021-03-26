@@ -45,8 +45,6 @@ public:
 
     bool IsInDebugMode() const;
 
-    bool GetOptionalAppRootArg(char destinationRootArgBuffer[], size_t destinationRootArgBufferSize) const;
-
     void InitializeBuilderComponents() override;
 
 private:

@@ -32,6 +32,7 @@
 #include <Authorization/AWSCognitoAuthorizationBus.h>
 #include <UserManagement/AWSCognitoUserManagementBus.h>
 #include <AWSCoreBus.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
 #include <AWSClientAuthBus.h>
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 #include <HttpRequestor/HttpRequestorBus.h>
@@ -68,13 +69,14 @@ namespace AWSClientAuthUnitTest
     constexpr char TEST_PASSWORD[] = "TestPassword";
     constexpr char TEST_NEW_PASSWORD[] = "TestNewPassword";
     constexpr char TEST_CODE[] = "TestCode";
+    constexpr char TEST_REGION[] = "us-east-1";
     constexpr char TEST_EMAIL[] = "test@test.com";
     constexpr char TEST_PHONE[] = "+11234567890";
     constexpr char TEST_COGNITO_CLIENTID[] = "TestCognitoClientId";
     constexpr char TEST_EXCEPTION[] = "TestException";
     constexpr char TEST_SESSION[] = "TestSession";
     constexpr char TEST_TOKEN[] = "TestToken";
-    constexpr char TEST_ACCOUNT_ID[] = "1234567890";
+    constexpr char TEST_ACCOUNT_ID[] = "TestAccountId";
     constexpr char TEST_IDENTITY_POOL_ID[] = "TestIdenitityPoolId";
     constexpr char TEST_IDENTITY_ID[] = "TestIdenitityId";
     constexpr char TEST_ACCESS_TOKEN[] = "TestAccessToken";
@@ -82,6 +84,39 @@ namespace AWSClientAuthUnitTest
     constexpr char TEST_ID_TOKEN[] = "TestIdToken";
     constexpr char TEST_ACCESS_KEY_ID[] = "TestAccessKeyId";
     constexpr char TEST_SECRET_KEY_ID[] = "TestSecretKeyId";
+    constexpr char TEST_RESOURCE_NAME_ID[] = "TestResourceNameId";
+
+    class AWSResourceMappingRequestBusMock
+        : public AWSCore::AWSResourceMappingRequestBus::Handler
+    {
+    public:
+        AWSResourceMappingRequestBusMock()
+        {
+            AWSCore::AWSResourceMappingRequestBus::Handler::BusConnect();
+
+            ON_CALL(*this, GetResourceRegion).WillByDefault(testing::Return(TEST_REGION));
+            ON_CALL(*this, GetDefaultAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
+            ON_CALL(*this, GetResourceAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
+            ON_CALL(*this, GetResourceNameId).WillByDefault(testing::Return(TEST_RESOURCE_NAME_ID));
+            ON_CALL(*this, GetDefaultRegion).WillByDefault(testing::Return(TEST_REGION));
+        }
+        ~AWSResourceMappingRequestBusMock()
+        {
+            AWSCore::AWSResourceMappingRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_CONST_METHOD0(GetDefaultAccountId, AZStd::string());
+        MOCK_CONST_METHOD0(GetDefaultRegion, AZStd::string());
+        MOCK_CONST_METHOD1(GetResourceAccountId, AZStd::string(const AZStd::string& resourceKeyName));
+        MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string& resourceKeyName));
+        MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string& resourceKeyName));
+        MOCK_CONST_METHOD1(GetResourceType, AZStd::string(const AZStd::string& resourceKeyName));
+        MOCK_CONST_METHOD1(GetServiceUrlByServiceName, AZStd::string(const AZStd::string& serviceName));
+        MOCK_CONST_METHOD2(
+            GetServiceUrlByRESTApiIdAndStage,
+            AZStd::string(const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName));
+        MOCK_METHOD1(ReloadConfigFile, void(bool isReloadingConfigFileName));
+    };
 
     class HttpRequestorRequestBusMock
         : public HttpRequestor::HttpRequestorRequestBus::Handler
@@ -545,6 +580,7 @@ namespace AWSClientAuthUnitTest
         AZ::BehaviorContext* GetBehaviorContext() override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         const char* GetAppRoot() const override { return nullptr; }
+        const char* GetEngineRoot() const override { return nullptr; }
         AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}

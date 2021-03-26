@@ -101,7 +101,7 @@ public:
     QCoreApplication* GetQtApplication();
 
     QDir GetSystemRoot() const;
-    QString GetGameName() const;
+    QString GetProjectPath() const;
 
     void RegisterComponentDescriptor(const AZ::ComponentDescriptor* descriptor);
 
@@ -163,9 +163,7 @@ protected:
     virtual const char* GetLogBaseName() = 0;
     virtual RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) = 0;
 private:
-    bool StartAZFramework(QString appRootOverride);
-    bool ValidateExternalAppRoot(QString appRootPath) const;
-    QString ParseOptionAppRootArgument();
+    bool StartAZFramework();
 
     // QuitPair - Object pointer and "is ready" boolean pair.
     typedef QPair<QObject*, bool> QuitPair;
@@ -178,7 +176,6 @@ private:
     bool m_needRestart = false;
     bool m_queuedCheckQuit = false;
     QDir m_systemRoot;
-    QString m_gameName;
     AZ::Entity* m_entity = nullptr;
 
 };

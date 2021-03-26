@@ -12,6 +12,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <QCoreApplication>
@@ -44,7 +45,7 @@ namespace AssetProcessor
     public:
         AssetCatalogForUnitTest(QObject* parent, AssetProcessor::PlatformConfiguration* platformConfiguration)
             : AssetCatalog(parent, platformConfiguration) {}
-        
+
         // prevent automatic save on shutdown, no point in doing that in unit test mode, just wastes time.
         virtual ~AssetCatalogForUnitTest()
         {
@@ -68,7 +69,7 @@ namespace AssetProcessor
         : public ScopedAllocatorSetupFixture
     {
     protected:
-        
+
         // store all data we create here so that it can be destroyed on shutdown before we remove allocators
         struct DataMembers
         {
@@ -89,7 +90,7 @@ namespace AssetProcessor
             int argc = 0;
             DataMembers() : coreApp(argc, nullptr)
             {
-                
+
             }
         };
 
@@ -108,23 +109,28 @@ namespace AssetProcessor
             m_systemEntity = m_app->Create(desc);
 
             m_data = azcreate(DataMembers, ());
-            
+
             AssetUtilities::ComputeAssetRoot(m_data->m_priorAssetRoot);
             AssetUtilities::ResetAssetRoot();
 
             // the canonicalization of the path here is to get around the fact that on some platforms
             // the "temporary" folder location could be junctioned into some other folder and getting "QDir::current()"
-            // and other similar functions may actually return a different string but still be referring to the same folder   
+            // and other similar functions may actually return a different string but still be referring to the same folder
             m_data->m_temporarySourceDir = QDir(m_data->m_temporaryDir.path());
             QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporarySourceDir.canonicalPath());
             m_data->m_temporarySourceDir = QDir(canonicalTempDirPath);
             m_data->m_scopedDir.Setup(m_data->m_temporarySourceDir.path());
-            m_data->m_gameName = AssetUtilities::ComputeGameName("SamplesProject"); // uses the above file.
+            m_data->m_gameName = AssetUtilities::ComputeProjectName("SamplesProject"); // uses the above file.
 
             AssetUtilities::ResetAssetRoot();
             QDir newRoot; // throwaway dummy var - we just want to invoke the below function
             AssetUtilities::ComputeAssetRoot(newRoot, &m_data->m_temporarySourceDir);
 
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            auto cacheRootKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_cache_path";
+            settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             AssetUtilities::ComputeProjectCacheRoot(m_data->m_cacheRootDir);
             QString normalizedCacheRoot = AssetUtilities::NormalizeDirectoryPath(m_data->m_cacheRootDir.absolutePath());
             m_data->m_cacheRootDir = QDir(normalizedCacheRoot);
@@ -181,7 +187,7 @@ namespace AssetProcessor
 
             m_data->m_databaseLocationListener.BusConnect();
             m_data->m_dbConn.OpenDatabase();
-            
+
             BuildConfig(m_data->m_temporarySourceDir, &(m_data->m_dbConn), m_data->m_config);
             m_data->m_assetCatalog.reset(new AssetCatalogForUnitTest(nullptr, &(m_data->m_config)));
         }
@@ -331,7 +337,7 @@ namespace AssetProcessor
         {
             bool relPathfound = false;
             AZStd::string relPath;
-            AZStd::string fullPath(fileToCheck.toStdString().c_str());
+            AZStd::string fullPath(fileToCheck.toUtf8().constData());
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(relPathfound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath, fullPath, relPath);
 
@@ -356,7 +362,7 @@ namespace AssetProcessor
         {
             bool fullPathfound = false;
             AZStd::string fullPath;
-            AZStd::string relPath(fileToCheck.toStdString().c_str());
+            AZStd::string relPath(fileToCheck.toUtf8().constData());
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fullPathfound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, relPath, fullPath);
 
@@ -419,7 +425,7 @@ namespace AssetProcessor
         ASSERT_EQ(m_data->m_absorber.m_numAssertsAbsorbed, 2);
         // reset the absorber before we leave this assert-test, so that it doesn't cause failure of the test itself
         m_data->m_absorber.Clear();
-            
+
         ASSERT_TRUE(TestGetRelativeProductPath("", false, { "" }));
         ASSERT_TRUE(TestGetFullSourcePath("", m_data->m_temporarySourceDir, false, ""));
     }
@@ -444,75 +450,76 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_WithGameName_ReturnsFileInGameFolder)
     {
-        // feed it a product path with gamename and a platform name, returns it without gamename
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName + "/aaa/basefile.txt");
+        // feed it a product path with a platform name, returns it
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/aaa/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_WithoutGameName_ReturnsFileInRootFolder)
     {
-        // feed it a product path without gamename, just the file name since its supposed to be a root file
+        // feed it a product path, just the file name since its supposed to be a root file
         QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "basefile.txt" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_BadCasingInPlatform_ReturnsRelativePath)
     {
-        // feed it a product path with gamename but poor casing (test 1:  the pc platform is not matching case)
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("Pc/" + m_data->m_gameName + "/aaa/basefile.txt");
+        // feed it a product path but with poor casing (test 1:  the pc platform is not matching case)
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("Pc") + "/aaa/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_BadCasingInGameName_ReturnsRelativePath)
     {
-        //feed it a product path with gamename but poor casing (test 2:  the gameName is not matching case)
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toUpper() + "/aaa/basefile.txt");
+        //feed it a product path but with poor casing (test 2:  the gameName is not matching case)
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/aaa/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_FolderName_ReturnsFolderNameOnly)
     {
-        // feed it a product path that resolves to a directory name instead of a file.  GameName is 'incorrect' (upper)
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toUpper() + "/aaa");
+        // feed it a product path that resolves to a directory name instead of a file.
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/aaa");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_FolderNameExtraSlash_ReturnsFolderNameOnlyNoExtraSlash)
     {
-        //  make sure it doesn't keep any trailing slashes.  GameName is 'incorrect' (upper)
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toUpper() + "/aaa/"); // extra trailing slash
+        //  make sure it doesn't keep any trailing slashes.
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/aaa/"); // extra trailing slash
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa" })); // the API should never result in a trailing slash
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_FolderNameExtraWrongWaySlash_ReturnsFolderNameOnlyNoExtraWrongSlash)
     {
-        //  make sure it doesn't keep any trailing slashes.  GameName is 'incorrect' (upper)
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toUpper() + "/aaa\\"); // extra trailing wrongway slash
+        //  make sure it doesn't keep any trailing slashes.
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/aaa\\"); // extra trailing wrongway slash
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa" })); // the API should never result in a trailing slash
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativeDirectoryNameWhichDoesNotExist_ReturnsFolderNameOnly)
     {
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toLower() + "/nonexistantfolder"); // extra trailing wrongway slash
-        ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "nonexistantfolder" })); 
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/nonexistantfolder"); // extra trailing wrongway slash
+        ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "nonexistantfolder" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativeDirectoryNameWhichDoesNotExistWithExtraSlash_ReturnsFolderNameOnly)
     {
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toLower() + "/nonexistantfolder/"); // extra trailing wrongway slash
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/nonexistantfolder/"); // extra trailing wrongway slash
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "nonexistantfolder" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativeDirectoryNameWhichDoesNotExistWithExtraWrongWaySlash_ReturnsFolderNameOnly)
     {
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc\\" + m_data->m_gameName.toLower() + "\\nonexistantfolder\\"); // extra trailing wrongway slash
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "\\nonexistantfolder\\"); // extra trailing wrongway slash
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "nonexistantfolder" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativePathToSourceFile_ReturnsProductFilePath)
     {
         QString fileToCheck = m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/BaseFile.txt");
-        ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "basefilez.arc2", "basefileaz.azm2", "basefile.arc2", "basefile.azm2" }));
+        ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "basefilez.arc2", "basefileaz.azm2",
+            "basefile.arc2", "basefile.azm2" }));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativePathToSourceFile_BadCasing_ReturnsProductFilePath)
@@ -533,9 +540,9 @@ namespace AssetProcessor
             // ----- Test the ProcessGetFullAssetPath function on product files
             {
                 QStringList pcouts;
-                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc/") + m_data->m_gameName + "/subfolder3/randomfileoutput.random"));
-                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc/") + m_data->m_gameName + "/subfolder3/randomfileoutput.random1"));
-                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc/") + m_data->m_gameName + "/subfolder3/randomfileoutput.random2"));
+                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc") + "/subfolder3/randomfileoutput.random"));
+                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc") + "/subfolder3/randomfileoutput.random1"));
+                pcouts.push_back(m_data->m_cacheRootDir.filePath(QString("pc") + "/subfolder3/randomfileoutput.random2"));
 
                 AZ::s64 jobId;
                 ASSERT_TRUE(AddSourceAndJob("subfolder3", "somerandomfile.random", &(m_data->m_dbConn), jobId));
@@ -591,32 +598,32 @@ namespace AssetProcessor
         QString fileToCheck = "@somerandomalias@/subfolder3/randomfileoutput.random1";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
-    
+
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidAliasMissingSeperator_ReturnsAbsolutePathToSource)
     {
         //feed it a path with some random alias and asset id but no separator
         QString fileToCheck = "@somerandomalias@subfolder3/randomfileoutput.random1";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
-    
+
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidSourcePathContainingCacheAlias_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and input name
         QString fileToCheck = "@assets@/somerandomfile.random";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
-    
+
     TEST_F(AssetCatalogTest_GetFullSourcePath, AbsolutePathToCache_ReturnsAbsolutePathToSource)
     {
         //feed it an absolute path with cacheroot
-        QString fileToCheck = m_data->m_cacheRootDir.filePath("pc/" + m_data->m_gameName.toLower() + "/subfolder3/randomfileoutput.random1");
+        QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/subfolder3/randomfileoutput.random1");
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
-    
+
     TEST_F(AssetCatalogTest_GetFullSourcePath, ProductNameIncludingPlatformAndGameName_ReturnsAbsolutePathToSource)
     {
         //feed it a productName directly
-        QString fileToCheck = "pc/" + m_data->m_gameName + "/subfolder3/randomfileoutput.random1";
+        QString fileToCheck = QString("pc") + "/subfolder3/randomfileoutput.random1";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
@@ -624,7 +631,7 @@ namespace AssetProcessor
         : public AssetCatalogTest
     {
     public:
-       
+
         struct AssetCatalogTest_AssetInfo_DataMembers
         {
             AssetId m_assetA = AssetId(Uuid::CreateRandom(), 0);
@@ -650,7 +657,7 @@ namespace AssetProcessor
 
             AzFramework::StringFunc::Path::Join(m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_assetAFullPath);
             CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAFullPath.c_str()), m_customDataMembers->m_assetTestString.c_str());
-            
+
             AzFramework::StringFunc::Path::Join(m_data->m_cacheRootDir.absolutePath().toUtf8().constData(), m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAProductFullPath);
             CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAProductFullPath.c_str()), m_customDataMembers->m_productTestString.c_str());
         }
@@ -724,7 +731,7 @@ namespace AssetProcessor
             return true;
         };
 
-        void TearDown() override 
+        void TearDown() override
         {
             azdestroy(m_customDataMembers);
             AssetCatalogTest::TearDown();
@@ -848,7 +855,7 @@ namespace AssetProcessor
         using namespace AzFramework::AssetSystem;
 
         PlatformConfiguration config;
-        
+
         config.EnablePlatform(AssetBuilderSDK::PlatformInfo("pc", { "test" }));
 
         {
@@ -1060,7 +1067,7 @@ namespace AssetProcessor
             productDependency.m_dependencySourceGuid = m_sourceFileWithDifferentProductsPerPlatform;
             productDependency.m_unresolvedPath = AZStd::string();
 
-            QString platformGameDir = QDir(cacheRoot.absoluteFilePath(productDependency.m_platform.c_str())).filePath(AssetUtilities::ComputeGameName().toLower());
+            QString platformGameDir = QDir(cacheRoot.absoluteFilePath(productDependency.m_platform.c_str())).filePath(AssetUtilities::ComputeProjectName().toLower());
             QString assetCatalogFile = QDir(platformGameDir).filePath("assetcatalog.xml");
             QFileInfo fileInfo(assetCatalogFile);
 
@@ -1071,7 +1078,7 @@ namespace AssetProcessor
             // process all events
             QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-            // This ensures that no save catalog event was queued when we resolve dependency 
+            // This ensures that no save catalog event was queued when we resolve dependency
             EXPECT_FALSE(fileInfo.exists());
         }
 

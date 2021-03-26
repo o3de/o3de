@@ -52,7 +52,7 @@ namespace AZ
         {
             const char* m_sourceFile;
             const char* m_prependFile;
-            const char* m_addSuffixToFileName;
+            const char* m_addSuffixToFileName = nullptr; //!< optional
             const char* m_destinationFolder = nullptr;  //!< optional. if not set, will just use sourceFile's folder
             AZStd::string* m_destinationStringOpt = nullptr;  //!< when not null, PrependFile() will dump the result in that string rather than on disk.
             ArrayOfCharForMd5* m_digest = nullptr; //! optionally run a hash

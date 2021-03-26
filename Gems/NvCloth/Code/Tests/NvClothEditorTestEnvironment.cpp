@@ -51,8 +51,8 @@ namespace UnitTest
     void NvClothEditorTestEnvironment::AddGemsAndComponents()
     {
         AddDynamicModulePaths({
-            "Gem.LmbrCentral.Editor.ff06785f7145416b9d46fde39098cb0c.v0.1.0",
-            "Gem.EMotionFX.Editor.044a63ea67d04479aa5daf62ded9d9ca.v0.1.0"
+            "LmbrCentral.Editor",
+            "EMotionFX.Editor"
         });
 
         AddComponentDescriptors({

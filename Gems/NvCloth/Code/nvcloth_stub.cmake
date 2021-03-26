@@ -25,7 +25,8 @@ add_library(Gem::NvCloth ALIAS NvCloth.Stub)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME NvCloth.Editor.Stub MODULE
+        NAME NvCloth.Editor.Stub GEM_MODULE
+
         NAMESPACE Gem
         FILES_CMAKE
             nvcloth_stub_files.cmake

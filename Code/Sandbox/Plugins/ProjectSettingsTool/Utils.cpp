@@ -16,6 +16,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -72,15 +73,15 @@ namespace
     template<>
     AZStd::string GetProjectName()
     {
-        AZStd::string projectRoot = GetAbsoluteProjectRoot<AZStd::string>();
-        return projectRoot.substr(projectRoot.find_last_of('/') + 1);
+        auto projectName = AZ::Utils::GetProjectName();
+        return AZStd::string{projectName.c_str()};
     }
 
     template<>
     QString GetProjectName()
     {
-        QString projectRoot = GetAbsoluteProjectRoot<QString>();
-        return projectRoot.mid(projectRoot.lastIndexOf('/'));
+        auto projectName = AZ::Utils::GetProjectName();
+        return QString::fromUtf8(projectName.c_str(), aznumeric_cast<int>(projectName.size()));
     }
 }
 

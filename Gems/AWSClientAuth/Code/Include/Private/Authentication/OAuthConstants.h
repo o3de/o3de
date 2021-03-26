@@ -14,27 +14,25 @@
 
 namespace AWSClientAuth
 {
-    constexpr char OAUTH_CLIENT_ID_BODY_KEY[] = "client_id";
-    constexpr char OAUTH_CLIENT_SECRET_BODY_KEY[] = "client_secret";
-    constexpr char OAUTH_DEVICE_CODE_BODY_KEY[] = "device_code";
-    constexpr char OAUTH_SCOPE_BODY_KEY[] = "scope";
-    constexpr char OAUTH_SCOPE_BODY_VALUE[] = "profile";
-    constexpr char OAUTH_GRANT_TYPE_BODY_KEY[] = "grant_type";
-    constexpr char OAUTH_REFRESH_TOKEN_BODY_KEY[] = "refresh_token";
-    constexpr char OAUTH_REFRESH_TOKEN_BODY_VALUE[] = "refresh_token";
-    constexpr char OAUTH_RESPONSE_TYPE_BODY_KEY[] = "response_type";
+    constexpr char OAuthClientIdBodyKey[] = "client_id";
+    constexpr char OAuthClientSecretBodyKey[] = "client_secret";
+    constexpr char OAuthDeviceCodeBodyKey[] = "device_code";
+    constexpr char OAuthScopeBodyKey[] = "scope";
+    constexpr char OAuthScopeBodyValue[] = "profile";
+    constexpr char OAuthGrantTypeBodyKey[] = "grant_type";
+    constexpr char OAuthRefreshTokenBodyKey[] = "refresh_token";
+    constexpr char OAuthRefreshTokenBodyValue[] = "refresh_token";
+    constexpr char OAuthResponseTypeBodyKey[] = "response_type";
 
-    constexpr char OAUTH_CONTENT_TYPE_HEADER_KEY[] = "Content-Type";
-    constexpr char OAUTH_CONTENT_TYPE_HEADER_VALUE[] = "application/x-www-form-urlencoded";
-    constexpr char OAUTH_CONTENT_LENGTH_HEADER_KEY[] = "Content-Length";
+    constexpr char OAuthContentTypeHeaderKey[] = "Content-Type";
+    constexpr char OAuthContentTypeHeaderValue[] = "application/x-www-form-urlencoded";
+    constexpr char OAuthContentLengthHeaderKey[] = "Content-Length";
 
-    constexpr char OAUTH_USER_CODE_RESPONSE_KEY[] = "user_code";
-    constexpr char OAUTH_ID_TOKEN_RESPONSE_KEY[] = "id_token";
-    constexpr char OAUTH_ACCESS_TOKEN_RESPONSE_KEY[] = "access_token";
-    constexpr char OAUTH_REFRESH_TOKEN_RESPONSE_KEY[] = "refresh_token";
-    constexpr char OAUTH_EXPIRES_IN_RESPONSE_KEY[] = "expires_in";
-    constexpr char OAUTH_ERROR_RESPONSE_KEY[] = "error";
-
-
+    constexpr char OAuthUserCodeResponseKey[] = "user_code";
+    constexpr char OAuthIdTokenResponseKey[] = "id_token";
+    constexpr char OAuthAccessTokenResponseKey[] = "access_token";
+    constexpr char OAuthRefreshTokenResponseKey[] = "refresh_token";
+    constexpr char OAuthExpiresInResponseKey[] = "expires_in";
+    constexpr char OAuthErrorResponseKey[] = "error";
 
 } // namespace AWSClientAuth

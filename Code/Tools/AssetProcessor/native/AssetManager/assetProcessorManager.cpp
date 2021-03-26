@@ -67,8 +67,7 @@ namespace AssetProcessor
         if (AssetUtilities::ComputeAssetRoot(assetRoot))
         {
             azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, assetRoot.absolutePath().toUtf8().constData());
-            QString absoluteDevGameFolderPath = assetRoot.absoluteFilePath(AssetUtilities::ComputeGameName());
-            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, absoluteDevGameFolderPath.toUtf8().constData());
+            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, AssetUtilities::ComputeProjectPath().toUtf8().constData());
         }
 
         using namespace AZStd::placeholders;
@@ -1067,7 +1066,7 @@ namespace AssetProcessor
             AZStd::vector<AZStd::vector<AZ::u32> > newLegacySubIDs;  // each product has a vector of legacy subids;
             for (const AssetBuilderSDK::JobProduct& product : processedAsset.m_response.m_outputProducts)
             {
-                // prior products, if present, will be in the form "platform/game/subfolders/productfile", convert
+                // prior products, if present, will be in the form "platform/subfolders/productfile", convert
                 // our new products to the same thing by removing the cache root
                 QString newProductName = product.m_productFileName.c_str();
                 newProductName = AssetUtilities::NormalizeFilePath(newProductName);
@@ -1093,7 +1092,8 @@ namespace AssetProcessor
                 //This is the legacy product guid, its only use is for backward compatibility as before the asset id's guid was created off of the relative product name.
                 // Right now when we query for an asset guid we first match on the source guid which is correct and secondarily match on the product guid. Eventually this will go away.
                 newProductName = newProductName.right(newProductName.length() - newProductName.indexOf('/') - 1); // remove PLATFORM and an extra slash
-                newProductName = newProductName.right(newProductName.length() - newProductName.indexOf('/') - 1); // remove GAMENAME and an extra slash
+                // Strip the <asset_platform> from the front of a relative product path
+                newProductName = AssetUtilities::StripAssetPlatform(newProductName.toUtf8().constData());
                 newProduct.m_legacyGuid = AZ::Uuid::CreateName(newProductName.toUtf8().constData());
 
                 //push back the new product into the new products list
@@ -1115,7 +1115,7 @@ namespace AssetProcessor
             // we need to delete these product files from the disk as they no longer exist and inform everyone we did so
             for (const auto& priorProduct : priorProducts)
             {
-                // product name will be in the form "platform/game/relativeProductPath"
+                // product name will be in the form "platform/relativeProductPath"
                 // and will always already be a lowercase string, because its relative to the cache.
                 QString productName = priorProduct.m_productName.c_str();
 
@@ -1123,10 +1123,8 @@ namespace AssetProcessor
                 // this is case sensitive since it refers to a real location on disk.
                 QString fullProductPath = m_cacheRootDir.absoluteFilePath(productName);
 
-                // relative file path is gotten by removing the platform and game from the product name
-                QString relativeProductPath = productName;
-                relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove PLATFORM and an extra slash
-                relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove GAMENAME and an extra slash
+                // Strip the <asset_platform> from the front of a relative product path
+                QString relativeProductPath = AssetUtilities::StripAssetPlatform(priorProduct.m_productName);
 
                 AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
 
@@ -1302,16 +1300,15 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
                 AZStd::vector<AZ::u32>& subIds = newLegacySubIDs[productIdx];
 
-                // product name will be in the form "platform/game/relativeProductPath"
+                // product name will be in the form "platform/relativeProductPath"
                 QString productName = QString::fromUtf8(newProduct.m_productName.c_str());
 
                 // the full file path is gotten by adding the product name to the cache root
                 QString fullProductPath = m_cacheRootDir.absoluteFilePath(productName);
 
                 // relative file path is gotten by removing the platform and game from the product name
-                QString relativeProductPath = productName;
-                relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove PLATFORM and an extra slash
-                relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove GAMENAME and an extra slash
+                // Strip the <asset_platform> from the front of a relative product path
+                QString relativeProductPath = AssetUtilities::StripAssetPlatform(productName.toUtf8().constData());
 
                 AssetNotificationMessage message(relativeProductPath.toUtf8().constData(), AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
@@ -1572,10 +1569,10 @@ namespace AssetProcessor
         // this might be interesting, but only if its a known product!
         // the dictionary in statedata stores only the relative path, not the platform.
         // which means right now we have, for example
-        // d:/game/root/Cache/SamplesProject/IOS/SamplesProject/textures/favorite.tga
-        // ^^^^^^^^^^^^  engine root
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cache root
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ platform root
+        // d:/SamplesProject/Cache/ios/textures/favorite.tga
+        // ^^^^^^^^^  projectroot
+        // ^^^^^^^^^^^^^^^^^^^^^ cache root
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^ platform root
         {
             QMutexLocker locker(&m_processingJobMutex);
             auto found = m_processingProductInfoList.find(fullProductFile.toUtf8().constData());
@@ -1596,7 +1593,7 @@ namespace AssetProcessor
         QString relativeProductFile = m_cacheRootDir.relativeFilePath(fullProductFile);
 
         //platform
-        QString platform = relativeProductFile;// currently <platform>/<gamename>/<relative_asset_path>
+        QString platform = relativeProductFile;// currently <platform>/<relative_asset_path>
         platform = platform.left(platform.indexOf('/')); // also consume the extra slash - remove PLATFORM
 
         //we are going to force the processor to re process the source file associated with this product
@@ -1652,11 +1649,8 @@ namespace AssetProcessor
             }
         }
 
-        // currently <platform>/<gamename>/<relative_asset_path>
-        // remove PLATFORM and GAMENAME so that we only have the relative asset path which should match the db
-        QString relativePath(relativeProductFile);
-        relativePath = relativePath.right(relativePath.length() - relativePath.indexOf('/') - 1); // also consume the extra slash - remove PLATFORM
-        relativePath = relativePath.right(relativePath.length() - relativePath.indexOf('/') - 1); // also consume the extra slash - remove GAMENAME
+        // Strip the <asset_platform> from the front of a relative product path
+        QString relativePath = AssetUtilities::StripAssetPlatform(relativeProductFile.toUtf8().constData());
 
         //set the fingerprint on the job that made this product
         for (auto& job : jobs)
@@ -1687,9 +1681,9 @@ namespace AssetProcessor
     {
         bool successfullyRemoved = true;
         // delete the products.
-        // products have names like "pc/SamplesProject/textures/blah.dds" and do include platform roots!
+        // products have names like "pc/textures/blah.dds" and do include platform roots!
         // this means the actual full path is something like
-        // [cache root] / [platform] / [product name]
+        // [cache root] / [platform]
         for (const auto& product : products)
         {
             //get the source for this product
@@ -1700,9 +1694,7 @@ namespace AssetProcessor
             }
 
             QString fullProductPath = m_cacheRootDir.absoluteFilePath(product.m_productName.c_str());
-            QString relativeProductPath(product.m_productName.c_str());
-            relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // also consume the extra slash - remove PLATFORM
-            relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // also consume the extra slash - remove GAMENAME
+            QString relativeProductPath(AssetUtilities::StripAssetPlatform(product.m_productName));
             QFileInfo productFileInfo(fullProductPath);
             if (productFileInfo.exists())
             {
@@ -2144,15 +2136,7 @@ namespace AssetProcessor
                 pathRel = QString();
             }
 
-            if (jobDetails.m_scanFolder->IsRoot())
-            {
-                // stuff which is found in the root continues to go to the root, rather than GAMENAME folder...
-                lowerCasePath += pathRel;
-            }
-            else
-            {
-                lowerCasePath += "/" + AssetUtilities::ComputeGameName() + pathRel;
-            }
+            lowerCasePath += pathRel;
 
             lowerCasePath = lowerCasePath.toLower();
             jobDetails.m_destinationPath = m_cacheRootDir.absoluteFilePath(lowerCasePath);
@@ -3471,8 +3455,16 @@ namespace AssetProcessor
                     AssetProcessor::BuilderConfigurationRequestBus::Broadcast(&AssetProcessor::BuilderConfigurationRequests::UpdateJobDescriptor, jobDescriptor.m_jobKey, jobDescriptor);
 
                     const AssetBuilderSDK::PlatformInfo* const infoForPlatform = m_platformConfig->GetPlatformByIdentifier(jobDescriptor.GetPlatformIdentifier().c_str());
-                    AZ_Assert(infoForPlatform, "Somehow, a platform for a job was created in createjobs which cannot be found in the list of enabled platforms.");
-                    if (infoForPlatform)
+
+                    if (!infoForPlatform)
+                    {
+                        AZ_Warning(AssetProcessor::ConsoleChannel, infoForPlatform,
+                            "CODE BUG: Builder %s emitted jobs for a platform that isn't enabled (%s).  This job will be "
+                            "discarded.  Builders should check the input list of platforms and only emit jobs for platforms "
+                            "in that list", builderInfo.m_name.c_str(), jobDescriptor.GetPlatformIdentifier().c_str());
+                        continue;
+                    }
+
                     {
                         JobDetails newJob;
                         newJob.m_assetBuilderDesc = builderInfo;
@@ -4614,7 +4606,7 @@ namespace AssetProcessor
         QString metaDataFileName;
         QDir assetRoot;
         AssetUtilities::ComputeAssetRoot(assetRoot);
-        QString gameName = AssetUtilities::ComputeGameName();
+        QString projectPath = AssetUtilities::ComputeProjectPath();
         QString fullPathToFile(absolutePathToFileToCheck);
 
         if (!m_cachedMetaFilesExistMap)
@@ -4624,7 +4616,7 @@ namespace AssetProcessor
             for (int idx = 0; idx < m_platformConfig->MetaDataFileTypesCount(); idx++)
             {
                 QPair<QString, QString> metaDataFileType = m_platformConfig->GetMetaDataFileTypeAt(idx);
-                QString fullMetaPath = assetRoot.filePath(gameName + "/" + metaDataFileType.first);
+                QString fullMetaPath = QDir(projectPath).filePath(metaDataFileType.first);
                 if (QFileInfo::exists(fullMetaPath))
                 {
                     m_metaFilesWhichActuallyExistOnDisk.insert(metaDataFileType.first);
@@ -4644,7 +4636,7 @@ namespace AssetProcessor
 
             if (m_metaFilesWhichActuallyExistOnDisk.find(metaDataFileType.first) != m_metaFilesWhichActuallyExistOnDisk.end())
             {
-                QString fullMetaPath = assetRoot.filePath(gameName + "/" + metaDataFileType.first);
+                QString fullMetaPath = QDir(projectPath).filePath(metaDataFileType.first);
                 metaDataFileName = fullMetaPath;
             }
             else

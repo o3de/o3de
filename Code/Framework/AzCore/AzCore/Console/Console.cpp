@@ -161,9 +161,11 @@ namespace AZ
 
     void Console::ExecuteCommandLine(const AZ::CommandLine& commandLine)
     {
-        for (const auto& [switchKey, switchValues] : commandLine.GetSwitchList())
+        for (auto&& commandArgument : commandLine)
         {
-            ConsoleCommandContainer commandArgs(switchValues.begin(), switchValues.end());
+            const auto& switchKey = commandArgument.m_option;
+            const auto& switchValue = commandArgument.m_value;
+            ConsoleCommandContainer commandArgs{ switchValue };
             PerformCommand(switchKey, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
         }
     }

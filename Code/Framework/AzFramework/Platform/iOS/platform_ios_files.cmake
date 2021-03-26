@@ -15,7 +15,6 @@ set(FILES
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_iOS.h
     AzFramework/Application/Application_iOS.mm
-    AzFramework/ProjectManager/ProjectManager_iOS.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
@@ -34,5 +33,8 @@ set(FILES
     ../Common/Apple/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Apple.mm
     AzFramework/Archive/ArchiveVars_Platform.h
     AzFramework/Archive/ArchiveVars_iOS.h
+    AzFramework/Process/ProcessCommon.h
+    AzFramework/Process/ProcessWatcher_iOS.cpp
+    AzFramework/Process/ProcessCommunicator_iOS.cpp
 )
 

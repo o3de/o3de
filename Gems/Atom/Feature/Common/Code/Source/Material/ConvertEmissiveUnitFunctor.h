@@ -42,10 +42,10 @@ namespace AZ
             uint32_t m_ev100Index;
             uint32_t m_nitIndex;
 
-            float m_ev100Min;
-            float m_ev100Max;
-            float m_nitMin;
-            float m_nitMax;
+            float m_ev100Min = 0.0f;
+            float m_ev100Max = 0.0f;
+            float m_nitMin = 0.0f;
+            float m_nitMax = 0.0f;
         };
     }
 }

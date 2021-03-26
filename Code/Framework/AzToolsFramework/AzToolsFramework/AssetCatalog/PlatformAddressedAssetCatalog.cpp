@@ -13,8 +13,9 @@
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/IO/FileIO.h>
 
 
 namespace AzToolsFramework
@@ -54,38 +55,26 @@ namespace AzToolsFramework
 
     AZStd::string PlatformAddressedAssetCatalog::GetAssetRootForPlatform(AzFramework::PlatformId platformId)
     {
-        const char* assetAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
-        if (assetAlias == nullptr)
+        AZ::IO::Path projectCachePath;
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry == nullptr
+            || !settingsRegistry->Get(projectCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
         {
-            AZ_Error("PlatformAddressedAssetCatalog", false, "Failed to retrieve assetRoot");
-            return {};
-        }
-        AZ::IO::PathView assetRoot{ assetAlias };
-        // Folder structure is Cache/Projectfolder/platform/projectfolder
-        // It should have at least one path separator
-        if (assetRoot.Native().find_first_of(AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR) == AZStd::string::npos)
-        {
-            AZ_Warning("PlatformAddressedAssetCatalog", false, "Failed to retrieve valid asset root - got %.*s",
-                aznumeric_cast<int>(assetRoot.Native().size()), assetRoot.Native().data());
+            AZ_Warning("PlatformAddressedAssetCatalog", false, "Failed to retrieve valid project cache root from Settings Registry at key %s",
+                AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
             return {};
         }
 
-        AZ::IO::PathView projectFolderLower = assetRoot.Filename();
-        assetRoot = assetRoot.ParentPath();
-        // Retrieve the Cache/Projectfolder path
-        AZ::IO::Path platformAssetRoot = assetRoot.ParentPath();
-        platformAssetRoot /= GetPlatformName(platformId);
-        platformAssetRoot /= projectFolderLower;
-        return platformAssetRoot.Native();
+        // Retrieve the ProjectPath/Cache/ path
+        AZ::IO::Path platformCachePath = projectCachePath / GetPlatformName(platformId);
+        return platformCachePath.Native();
     }
 
     //! Returns an absolute path to the AssetCatalog for a given platform
     AZStd::string PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId platformId)
     {
-        AZStd::string assetRoot = GetAssetRootForPlatform(platformId);
-        AzFramework::StringFunc::Path::Join(assetRoot.c_str(), "assetcatalog.xml", assetRoot);
-
-        return assetRoot;
+        AZ::IO::Path platformCachePath = GetAssetRootForPlatform(platformId);
+        return (platformCachePath / "assetcatalog.xml").Native();
     }
 
     AZStd::string PlatformAddressedAssetCatalog::GetCatalogRegistryPath() const
@@ -202,7 +191,7 @@ namespace AzToolsFramework
     {
         return AssetCatalog::GetDirectProductDependencies(asset);
     }
-    
+
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> PlatformAddressedAssetCatalog::GetAllProductDependencies(const AZ::Data::AssetId& asset)
     {
         return AssetCatalog::GetAllProductDependencies(asset);

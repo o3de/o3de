@@ -17,11 +17,14 @@
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/Component/EntityId.h>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -168,6 +171,12 @@ public:
 
 int main(int argc, char** argv)
 {
+    AZ::IO::FixedMaxPath engineRootPath;
+    {
+        AZ::ComponentApplication componentApplication(argc, argv);
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
     AzQtComponents::PrepareQtPaths();
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -176,7 +185,7 @@ int main(int argc, char** argv)
 
     QApplication qtApp(argc, argv);
     AzQtComponents::StyleManager styleManager(&qtApp);
-    styleManager.Initialize(&qtApp);
+    styleManager.initialize(&qtApp, engineRootPath);
 
     StandaloneRPE::RPEApplication app(&argc, &argv);
     app.Start(AzFramework::Application::Descriptor());

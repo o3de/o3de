@@ -173,7 +173,15 @@ namespace AZ
                     path.remove_prefix(1); // Remove the leading slash as the StackedString will add this back in.
                     jsonPath.Push(path);
                 }
-                Visit(visitor, jsonPath, "", *value);
+                // Extract the last token of the JSON pointer to use as the valueName
+                AZStd::string_view valueName;
+                size_t pointerTokenCount = pointer.GetTokenCount();
+                if (pointerTokenCount > 0)
+                {
+                    const rapidjson::Pointer::Token& lastToken = pointer.GetTokens()[pointerTokenCount - 1];
+                    valueName = AZStd::string_view(lastToken.name, lastToken.length);
+                }
+                Visit(visitor, jsonPath, valueName, *value);
                 return true;
             }
         }

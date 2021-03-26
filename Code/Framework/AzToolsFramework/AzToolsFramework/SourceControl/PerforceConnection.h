@@ -13,16 +13,19 @@
 #pragma once
 
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+
+namespace AzFramework
+{
+    class ProcessWatcher;
+}
 
 namespace AzToolsFramework
 {
-    class ProcessWatcher;
-
     class PerforceCommand
     {
     public:
-        ProcessOutput m_rawOutput;
+        AzFramework::ProcessOutput m_rawOutput;
         PerforceMap m_commandOutputMap;             // doesn't allow duplicate kvp's
         AZStd::vector<PerforceMap> m_commandOutputMapList; // allows duplicate kvp's
 
@@ -79,7 +82,7 @@ namespace AzToolsFramework
         void ExecuteTicketStatus();
         void ExecuteTrust(bool enable, const AZStd::string& fingerprint);
 
-        ProcessWatcher* ExecuteNewChangelistInput();
+        AzFramework::ProcessWatcher* ExecuteNewChangelistInput();
         void ExecuteNewChangelistOutput();
         void ExecuteRevert(const AZStd::string& filePath);
         void ExecuteShowChangelists(const AZStd::string& currentUser, const AZStd::string& currentClient);
@@ -91,7 +94,7 @@ namespace AzToolsFramework
         bool m_applicationFound = false;
 
         virtual void ExecuteCommand();
-        virtual ProcessWatcher* ExecuteIOCommand();
+        virtual AzFramework::ProcessWatcher* ExecuteIOCommand();
         virtual void ExecuteRawCommand();
     };
 

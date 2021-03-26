@@ -26,7 +26,6 @@ set(FILES
     IDebugCallStack.cpp
     AsyncPakManager.cpp
     Log.cpp
-    BootProfiler.cpp
     SystemRender.cpp
     NotificationNetwork.cpp
     PhysRenderer.cpp
@@ -91,7 +90,6 @@ set(FILES
     WindowsConsole.h
     XConsole.h
     XConsoleVariable.h
-    BootProfiler.h
     crash_face.bmp
     ImageHandler.h
     ImageHandler.cpp
@@ -121,11 +119,9 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    LoadingProfiler.cpp
     PerfHUD.cpp
     ProfileLogSystem.cpp
     Sampler.cpp
-    LoadingProfiler.h
     PerfHUD.h
     ProfileLogSystem.h
     Sampler.h

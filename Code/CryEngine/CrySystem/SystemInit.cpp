@@ -68,6 +68,7 @@
 #include <LoadScreenBus.h>
 #include <LyShine/Bus/UiSystemBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
+#include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
@@ -115,8 +116,6 @@
 #include "SystemCFG.h"
 #include "AutoDetectSpec.h"
 #include "ResourceManager.h"
-#include "LoadingProfiler.h"
-#include "BootProfiler.h"
 #include "VisRegTest.h"
 #include "MTSafeAllocator.h"
 #include "NotificationNetwork.h"
@@ -498,7 +497,7 @@ struct SysSpecOverrideSinkConsole
         else
         {
             // If the cvar doesn't exist, calling this function only saves the value in case it's registered later where
-            // at that point it will be set from the stored value. This is required because otherwise registering the 
+            // at that point it will be set from the stored value. This is required because otherwise registering the
             // cvar bypasses any callbacks and uses values directly from the cvar group files.
             gEnv->pConsole->LoadConfigVar(szKey, szValue);
         }
@@ -618,13 +617,13 @@ static void LoadDetectedSpec(ICVar* pVar)
     if (gEnv->IsEditor())
     {
         ESystemConfigPlatform configPlatform = GetISystem()->GetConfigPlatform();
-        // Check if the config platform is set first. 
+        // Check if the config platform is set first.
         if (configPlatform != CONFIG_INVALID_PLATFORM)
         {
             platform = configPlatform;
         }
     }
-    
+
     AZStd::string configFile;
     GetSpecConfigFileToLoad(pVar, configFile, platform);
     if (configFile.length())
@@ -779,7 +778,7 @@ static void LoadDetectedSpec(ICVar* pVar)
             MobileSysInspect::GetSpecForGPUAndAPI(adapterDesc, apiver, gpuConfigFile);
             GetISystem()->LoadConfiguration(gpuConfigFile.c_str(), pSysSpecOverrideSinkConsole);
         }
-#endif        
+#endif
     }
     if (bMultiGPUEnabled)
     {
@@ -832,23 +831,7 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const cha
 {
     AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = AZ::DynamicModuleHandle::Create(dllName);
 
-    bool libraryLoaded = false;
-#ifdef WIN32
-    if (m_binariesDir.empty())
-    {
-        libraryLoaded = handle->Load(false);
-    }
-    else
-    {
-        char currentDirectory[1024];
-        AZ::Utils::GetExecutableDirectory(currentDirectory, AZ_ARRAY_SIZE(currentDirectory));
-        SetCurrentDirectory(m_binariesDir.c_str());
-        libraryLoaded = handle->Load(false);
-        SetCurrentDirectory(currentDirectory);
-    }
-#else
-    libraryLoaded = handle->Load(false);
-#endif
+    bool libraryLoaded = handle->Load(false);
     // We need to inject the environment first thing so that allocators are available immediately
     InjectEnvironmentFunction injectEnv = handle->GetFunction<InjectEnvironmentFunction>(INJECT_ENVIRONMENT_FUNCTION);
     if (injectEnv)
@@ -974,7 +957,7 @@ bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClas
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else 
+#else
 
     dllfile.append(dllName);
 
@@ -1007,7 +990,7 @@ bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClas
     if (CryCreateClassInstance(moduleClassName, pModule))
     {
         bResult = pModule->Initialize(m_env, initParams);
-        
+
         // After initializing the module, give it a chance to register any AZ console vars
         // declared within the module.
         pModule->RegisterConsoleVars();
@@ -1453,7 +1436,7 @@ bool CSystem::InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInit
 
             displayWidth *= scaleFactor;
             displayHeight *= scaleFactor;
-            
+
             const int maxWidth = m_rMaxWidth->GetIVal();
             if (maxWidth > 0 && maxWidth < displayWidth)
             {
@@ -1524,7 +1507,7 @@ bool CSystem::InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInit
 
 
 /////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitFileSystem(const SSystemInitParams& initParams)
+bool CSystem::InitFileSystem()
 {
     LOADING_TIME_PROFILE_SECTION;
     using namespace AzFramework::AssetSystem;
@@ -1548,136 +1531,6 @@ bool CSystem::InitFileSystem(const SSystemInitParams& initParams)
         bLvlRes = true;
     }
 #endif // !defined(_RELEASE)
-
-    bool usingAssetCache = initParams.UseAssetCache();
-    const char* rootPath = usingAssetCache ? initParams.rootPathCache : initParams.rootPath;
-    const char* assetsPath = usingAssetCache ? initParams.assetsPathCache : initParams.assetsPath;
-
-    if (rootPath == 0)
-    {
-        AZ_Assert(false, "No root path specified in SystemInitParams");
-        return false;
-    }
-
-    if (assetsPath == 0)
-    {
-        AZ_Assert(false, "No assets path specified in SystemInitParams");
-        return false;
-    }
-
-    // establish the root folder and assets folder immediately.
-    // Other folders that can be computed from the root can be specified later.
-    m_env.pFileIO->SetAlias("@root@", rootPath);
-    m_env.pFileIO->SetAlias("@assets@", assetsPath);
-
-    if (initParams.userPath[0] == 0)
-    {
-        string outPath = PathUtil::Make(m_env.pFileIO->GetAlias("@root@"), "user");
-        
-        m_env.pFileIO->SetAlias("@user@", outPath.c_str());
-    }
-    else
-    {
-        m_env.pFileIO->SetAlias("@user@", initParams.userPath);
-    }
-
-    if (initParams.logPath[0] == 0)
-    {
-        char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
-
-        m_env.pFileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
-        string outPath = PathUtil::Make(resolveBuffer, "log");
-        m_env.pFileIO->SetAlias("@log@", outPath.c_str());
-    }
-    else
-    {
-        m_env.pFileIO->SetAlias("@log@", initParams.logPath);
-    }
-
-    m_env.pFileIO->CreatePath("@root@");
-    m_env.pFileIO->CreatePath("@user@");
-    m_env.pFileIO->CreatePath("@log@");
-
-    if ((!m_env.IsInToolMode()) || (m_bShaderCacheGenMode)) // in tool mode, the promise is that you won't access @cache@!
-    {
-        string finalCachePath;
-        if (initParams.cachePath[0] == 0)
-        {
-            char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
-
-            m_env.pFileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
-            finalCachePath = PathUtil::Make(resolveBuffer, "cache");
-        }
-        else
-        {
-            finalCachePath = initParams.cachePath;
-        }
-
-#if defined(AZ_PLATFORM_WINDOWS)
-        // Search for a non-locked cache directory because shaders require separate caches for each running instance.
-        // We only need to do this check for Windows, because consoles can't have multiple instances running simultaneously.
-        // Ex: running editor and game, running multiple games, or multiple non-interactive editor instances 
-        // for parallel level exports.  
-
-        string originalPath = finalCachePath;
-#if defined(REMOTE_ASSET_PROCESSOR)
-        bool allowEngineConnection = !initParams.bToolMode && !initParams.bTestMode;
-        bool allowRemoteIO = allowEngineConnection && initParams.remoteFileIO && !initParams.bEditor;
-
-        if (!allowRemoteIO) // not running on VFS
-#endif
-        {
-            int attemptNumber = 0;
-
-            // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
-            // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
-            // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't 
-            // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a 
-            // linear search, so the more instances we allow, the longer the search will take.  
-            // 128 seems like a reasonable compromise.
-            constexpr int maxAttempts = 128;
-
-            char workBuffer[AZ_MAX_PATH_LEN] = { 0 };
-            while (attemptNumber < maxAttempts)
-            {
-                finalCachePath = originalPath;
-                if (attemptNumber != 0)
-                {
-                    azsnprintf(workBuffer, AZ_MAX_PATH_LEN, "%s%i", originalPath.c_str(), attemptNumber);
-                    finalCachePath = workBuffer;
-                }
-                else
-                {
-                    finalCachePath = originalPath;
-                }
-
-                ++attemptNumber; // do this here so we don't forget
-
-                m_env.pFileIO->CreatePath(finalCachePath.c_str());
-                // if the directory already exists, check for locked file
-                string outLockPath = PathUtil::Make(finalCachePath.c_str(), "lockfile.txt");
-
-                // note, the zero here after GENERIC_READ|GENERIC_WRITE indicates no share access at all
-                g_cacheLock = CreateFileA(outLockPath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, 0);
-                if (g_cacheLock != INVALID_HANDLE_VALUE)
-                {
-                    break;
-                }
-            }
-
-            if (attemptNumber >= maxAttempts)
-            {
-                AZ_Assert(false, "Couldn't find a valid asset cache folder for the Asset Processor after %i attempts.", attemptNumber);
-                AZ_Printf("FileSystem", "Couldn't find a valid asset cache folder for the Asset Processor after %i attempts.", attemptNumber);
-                return false;
-            }
-        }
-
-#endif // defined(AZ_PLATFORM_WINDOWS)
-        AZ_Printf("FileSystem", "Using %s folder for asset cache.\n", finalCachePath.c_str());
-        m_env.pFileIO->SetAlias("@cache@", finalCachePath.c_str());
-        m_env.pFileIO->CreatePath("@cache@");
-    }
 
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -1755,7 +1608,6 @@ void CSystem::ShutdownFileSystem()
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams)
 {
     LOADING_TIME_PROFILE_SECTION;
-    // Load value of sys_game_folder from system.cfg into the sys_game_folder console variable
     {
         ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = GetCVarsWhiteListConfigSink();
         LoadConfiguration(m_systemConfigName.c_str(), pCVarsWhiteListConfigSink);
@@ -1767,17 +1619,19 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams& initPara
 #endif
 
     GetISystem()->SetConfigPlatform(GetDevicePlatform());
-    
+
 #if defined(CRY_ENABLE_RC_HELPER)
     if (!m_env.pResourceCompilerHelper)
     {
         m_env.pResourceCompilerHelper = new CResourceCompilerHelper();
     }
 #endif
-    // you may not set these in game.cfg or in system.cfg
-    m_sys_game_folder->ForceSet(initParams.gameFolderName);
 
-    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "GameDir: %s\n", m_sys_game_folder->GetString());
+    auto projectPath = AZ::Utils::GetProjectPath();
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Path: %s\n", projectPath.empty() ? "None specified" : projectPath.c_str());
+
+    auto projectName = AZ::Utils::GetProjectName();
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Name: %s\n", projectName.empty() ? "None specified" : projectName.c_str());
 
     // simply open all paks if fast load pak can't be found
     if (!m_pResourceManager->LoadFastLoadPaks(true))
@@ -1857,7 +1711,7 @@ bool CSystem::InitFont(const SSystemInitParams& initParams)
 bool CSystem::Init3DEngine(const SSystemInitParams& initParams)
 {
     LOADING_TIME_PROFILE_SECTION(GetISystem());
-    
+
     if (!InitializeEngineModule(DLL_3DENGINE, "EngineModule_Cry3DEngine", initParams))
     {
         return false;
@@ -1930,7 +1784,7 @@ bool CSystem::InitVTuneProfiler()
     LOADING_TIME_PROFILE_SECTION(GetISystem());
 
 #ifdef PROFILE_WITH_VTUNE
-    
+
     WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
     if (!hModule)
     {
@@ -2033,7 +1887,7 @@ void CSystem::OpenBasicPaks()
     bBasicPaksLoaded = true;
 
     LOADING_TIME_PROFILE_SECTION;
-    
+
     // open pak files
     constexpr AZStd::string_view paksFolder = "@assets@/*.pak"; // (@assets@ assumed)
     m_env.pCryPak->OpenPacks(paksFolder);
@@ -2187,12 +2041,6 @@ string GetUniqueLogFileName(string logFileName)
     return logFileName;
 }
 
-
-
-void OnLevelLoadingDump([[maybe_unused]] ICVar* pArgs)
-{
-    gEnv->pSystem->OutputLoadingTimeStats();
-}
 
 #if defined(WIN32) || defined(WIN64)
 static wstring GetErrorStringUnsupportedCPU()
@@ -2415,8 +2263,8 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     signal(SIGILL, CryEngineSignalHandler);
 #endif // AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
 
-    // Temporary Fix for an issue accessing gEnv from this object instance. The gEnv is not resolving to the 
-    // global gEnv, instead its resolving an some uninitialized gEnv elsewhere (NULL). Since gEnv is 
+    // Temporary Fix for an issue accessing gEnv from this object instance. The gEnv is not resolving to the
+    // global gEnv, instead its resolving an some uninitialized gEnv elsewhere (NULL). Since gEnv is
     // initialized to this instance's SSystemGlobalEnvironment (m_env), we will force set it again here
     // to m_env
     if (!gEnv)
@@ -2451,7 +2299,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     // Linux is all console for now and so no room for dialog boxes!
     m_env.bNoAssertDialog = true;
 #endif
-    
+
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
     AZCoreLogSink::Connect();
@@ -2461,25 +2309,25 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-
-    m_assetPlatform = startupParams.assetsPlatform;
-
-    // compute system config name
-    if (m_assetPlatform.empty())
+    
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
-            R"(This can be set via the via the --regset "%s/assets=<value>" command line option)"
-            R"(, by setting value at the "%s/assets path" within a *.setreg file that is loaded by the application)"
-            R"( or by setting the "assets" field in the bootstrap.cfg.)",
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-        return false;
-    }
+        AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
+        if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
+            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets"))
+        {
+            assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+            AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
+                R"(This typically done by setting he "assets" field in the bootstrap.cfg for within a .setreg file)""\n"
+                R"(A fallback of %s will be used.)",
+                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
+                assetPlatform.c_str());
+        }
 
-    m_systemConfigName = "system_" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_";
-    m_systemConfigName += m_assetPlatform;
-    m_systemConfigName += ".cfg";
+        m_systemConfigName = "system_" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_";
+        m_systemConfigName += assetPlatform.c_str();
+        m_systemConfigName += ".cfg";
+    }
 
     AZ_Assert(CryMemory::IsHeapValid(), "Memory heap must be valid before continuing SystemInit.");
 
@@ -2518,11 +2366,6 @@ AZ_POP_DISABLE_WARNING
     m_hInst = (WIN_HINSTANCE)startupParams.hInstance;
     m_hWnd = (WIN_HWND)startupParams.hWnd;
 
-    m_userRootDir = startupParams.userPath;
-    m_logsDir = startupParams.logPath;
-    m_cacheDir = startupParams.cachePath;
-
-    m_binariesDir = startupParams.szBinariesDir;
     m_bEditor = startupParams.bEditor;
     m_bPreviewMode = startupParams.bPreview;
     m_bTestMode = startupParams.bTestMode;
@@ -2666,16 +2509,12 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // File system, must be very early
         //////////////////////////////////////////////////////////////////////////
-        if (!InitFileSystem(startupParams))
+        if (!InitFileSystem())
         {
             return false;
         }
         //////////////////////////////////////////////////////////////////////////
         InlineInitializationProcessing("CSystem::Init InitFileSystem");
-
-#if defined(ENABLE_LOADING_PROFILER)
-        CLoadingProfilerSystem::Init();
-#endif
 
         m_missingAssetLogger = AZStd::make_unique<AzFramework::MissingAssetLogger>();
 
@@ -2786,10 +2625,6 @@ AZ_POP_DISABLE_WARNING
 
         GetIRemoteConsole()->RegisterConsoleVariables();
 
-#ifdef ENABLE_LOADING_PROFILER
-        CBootProfiler::GetInstance().RegisterCVars();
-#endif
-
         if (!startupParams.bSkipConsole)
         {
             // Register system console variables.
@@ -2827,7 +2662,7 @@ AZ_POP_DISABLE_WARNING
         m_env.pCryPak->OpenPack("@assets@", "Engine.pak");
 #if defined(AZ_PLATFORM_ANDROID) || defined(AZ_PLATFORM_IOS)
         MobileSysInspect::LoadDeviceSpecMapping();
-#endif    
+#endif
 
         InitFileSystem_LoadEngineFolders(startupParams);
 
@@ -3471,10 +3306,6 @@ AZ_POP_DISABLE_WARNING
 
         MarkThisThreadForDebugging("Main");
     }
-
-#if defined(ENABLE_LOADING_PROFILER)
-    CLoadingProfilerSystem::SaveTimeContainersToFile("EngineStart.crylp", 0.0, true);
-#endif
 
     InlineInitializationProcessing("CSystem::Init End");
 
@@ -4188,7 +4019,7 @@ static void ScreenshotCmd(IConsoleCmdArgs* pParams)
     }
 }
 
-// Helper to maintain backwards compatibility with our CVar but not force our new code to 
+// Helper to maintain backwards compatibility with our CVar but not force our new code to
 // pull in CryCommon by routing through an environment variable
 void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
 {
@@ -4424,7 +4255,6 @@ void CSystem::CreateSystemVars()
     // Register DLL names as cvars before we load them
     //
     EVarFlags dllFlags = (EVarFlags)0;
-    m_sys_game_folder = REGISTER_STRING("sys_game_folder", "EmptyTemplate", VF_READONLY,            "Specifies the game folder to read all data from. Can be fully pathed for external folders or relative path for folders inside the root.");
     m_sys_dll_response_system = REGISTER_STRING("sys_dll_response_system", 0, dllFlags,                 "Specifies the DLL to load for the dynamic response system");
 
     m_sys_initpreloadpacks = REGISTER_STRING("sys_initpreloadpacks", "", 0,     "Specifies the paks for an engine initialization");
@@ -4446,8 +4276,6 @@ void CSystem::CreateSystemVars()
     m_game_load_screen_minimum_time = REGISTER_FLOAT("game_load_screen_minimum_time", 0.0f, 0, "Minimum amount of time to show the game load screen. Important to prevent short loads from flashing the load screen. 0 means there is no limit.");
     m_level_load_screen_minimum_time = REGISTER_FLOAT("level_load_screen_minimum_time", 0.0f, 0, "Minimum amount of time to show the level load screen. Important to prevent short loads from flashing the load screen. 0 means there is no limit.");
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
-    m_cvGameName = REGISTER_STRING("sys_game_name", "Lumberyard", VF_DUMPTODISK,    "Specifies the name to be displayed in the Launcher window title bar");
 
     REGISTER_INT("cvDoVerboseWindowTitle", 0, VF_NULL, "");
 
@@ -4495,7 +4323,7 @@ void CSystem::CreateSystemVars()
     }
  #endif
 
-    
+
     attachVariable("sys_PakReadSlice", &g_cvars.archiveVars.nReadSlice, "If non-0, means number of kilobytes to use to read files in portions. Should only be used on Win9x kernels");
 
     attachVariable("sys_PakInMemorySizeLimit", &g_cvars.archiveVars.nInMemoryPerPakSizeLimit, "Individual pak size limit for being loaded into memory (MB)");
@@ -4818,15 +4646,6 @@ void CSystem::CreateSystemVars()
         "e.g. LoadConfig lowspec.cfg\n"
         "Usage: LoadConfig <filename>");
 
-    REGISTER_CVAR(sys_ProfileLevelLoading, 0, VF_CHEAT,
-        "Output level loading stats into log\n"
-        "0 = Off\n"
-        "1 = Output basic info about loading time per function\n"
-        "2 = Output full statistics including loading time and memory allocations with call stack info");
-
-    REGISTER_CVAR_CB(sys_ProfileLevelLoadingDump, 0, VF_CHEAT,  "Output level loading dump stats into log\n", OnLevelLoadingDump);
-
-
     assert(m_env.pConsole);
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F12", "Screenshot");
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F11", "RecordClip");
@@ -4871,7 +4690,7 @@ void CSystem::CreateSystemVars()
 
     // adding CVAR to toggle assert verbosity level
     const int defaultAssertValue = 1;
-    REGISTER_CVAR2_CB("sys_asserts", &g_cvars.sys_asserts, defaultAssertValue, VF_CHEAT, 
+    REGISTER_CVAR2_CB("sys_asserts", &g_cvars.sys_asserts, defaultAssertValue, VF_CHEAT,
         "0 = Suppress Asserts\n"
         "1 = Log Asserts\n"
         "2 = Show Assert Dialog\n"
@@ -4955,78 +4774,6 @@ void CSystem::AddCVarGroupDirectory(const string& sPath)
     } while (handle = gEnv->pCryPak->FindNext(handle));
 
     gEnv->pCryPak->FindClose(handle);
-}
-
-void CSystem::OutputLoadingTimeStats()
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    if (GetIConsole())
-    {
-        if (ICVar* pVar = GetIConsole()->GetCVar("sys_ProfileLevelLoading"))
-        {
-            CLoadingProfilerSystem::OutputLoadingTimeStats(GetILog(), pVar->GetIVal());
-        }
-    }
-#endif
-}
-
-SLoadingTimeContainer* CSystem::StartLoadingSectionProfiling([[maybe_unused]] CLoadingTimeProfiler* pProfiler, [[maybe_unused]] const char* szFuncName)
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    return CLoadingProfilerSystem::StartLoadingSectionProfiling(pProfiler, szFuncName);
-#else
-    return 0;
-#endif
-}
-
-void CSystem::EndLoadingSectionProfiling([[maybe_unused]] CLoadingTimeProfiler* pProfiler)
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    CLoadingProfilerSystem::EndLoadingSectionProfiling(pProfiler);
-#endif
-}
-
-const char* CSystem::GetLoadingProfilerCallstack()
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    return CLoadingProfilerSystem::GetLoadingProfilerCallstack();
-#else
-    return nullptr;
-#endif
-}
-
-CBootProfilerRecord* CSystem::StartBootSectionProfiler([[maybe_unused]] const char* name, [[maybe_unused]] const char* args)
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    CBootProfiler& profiler = CBootProfiler::GetInstance();
-    return profiler.StartBlock(name, args);
-#else
-    return nullptr;
-#endif
-}
-
-void CSystem::StopBootSectionProfiler([[maybe_unused]] CBootProfilerRecord* record)
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    CBootProfiler& profiler = CBootProfiler::GetInstance();
-    profiler.StopBlock(record);
-#endif
-}
-
-void CSystem::StartBootProfilerSessionFrames([[maybe_unused]] const char* pName)
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    CBootProfiler& profiler = CBootProfiler::GetInstance();
-    profiler.StartFrame(pName);
-#endif
-}
-
-void CSystem::StopBootProfilerSessionFrames()
-{
-#if defined(ENABLE_LOADING_PROFILER)
-    CBootProfiler& profiler = CBootProfiler::GetInstance();
-    profiler.StopFrame();
-#endif
 }
 
 bool CSystem::RegisterErrorObserver(IErrorObserver* errorObserver)

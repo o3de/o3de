@@ -23,6 +23,7 @@
 
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
@@ -316,6 +317,7 @@ namespace AZ
                 BindingDependencies& bindingDependencies /*inout*/,
                 const ShaderResourceGroupAssets& srgAssets,
                 const MapOfStringToStageType& shaderEntryPoints,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
                 const RootConstantData* rootConstantData /*= nullptr*/)
             {        
                 PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
@@ -415,7 +417,7 @@ namespace AZ
                 rootConstantInfo.m_totalSizeInBytes = rootConstantsLayout->GetDataSize();
             
                 // Build platform-specific PipelineLayoutDescriptor data, and finalize
-                if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(pipelineLayoutDescriptor, srgInfos, rootConstantInfo))
+                if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
                 {
                     AZ_Error(BuilderName, false, "Failed to build pipeline layout descriptor");
                     return nullptr;

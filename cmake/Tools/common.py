@@ -30,9 +30,7 @@ from cmake.Tools import layout_tool
 DEFAULT_TEXT_READ_ENCODING = 'UTF-8'    # The default encoding to use when reading from a text file
 DEFAULT_TEXT_WRITE_ENCODING = 'ascii'   # The encoding to use when writing to a text file
 ENCODING_ERROR_HANDLINGS = 'ignore'     # What to do if we encounter any encoding errors
-DEFAULT_PAK_ROOT = 'Pak'                # The default Pak root folder under dev where the game paks are built
-
-ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+DEFAULT_PAK_ROOT = 'Pak'                # The default Pak root folder under engine root where the game paks are built
 
 if platform.system() == 'Windows':
     # Re-use microsoft error codes since this script is meant to only run on windows host platforms
@@ -53,7 +51,7 @@ else:
 ERROR_CODE_ENVIRONMENT_ERROR = 1
 ERROR_CODE_GENERAL_ERROR = 1
 
-DEV_ROOT_CHECK_FILE = 'engine.json'
+ENGINE_ROOT_CHECK_FILE = 'engine.json'
 HASH_CHUNK_SIZE = 200000
 
 
@@ -75,9 +73,25 @@ class LmbrCmdError(Exception):
         return str(self.msg)
 
 
-def determine_dev_root(starting_path=None):
+def read_project_name_from_project_json(project_path):
+    project_name = None
+    try:
+        with (pathlib.Path(project_path) / 'project.json').open('r') as project_file:
+            project_json = json.load(project_file)
+            project_name = project_json['project_name']
+    except OSError as os_error:
+        logging.warning(f'Unable to open "project.json" file: {os_error}')
+    except json.JSONDecodeError as json_error:
+        logging.warning(f'Unable to decode json in {project_file}: {json_error}')
+    except KeyError as key_error:
+        logging.warning(f'{project_file} is missing project_name key: {key_error}')
+
+    return project_name
+
+
+def determine_engine_root(starting_path=None):
     """
-    Determine the dev root of the engine. By default, the dev root is the engine path, which is determined by walking
+    Determine the engine root of the engine. By default, the engine root is the engine path, which is determined by walking
     up the current working directory until we find the engine.json marker
 
     :param starting_path:    Optional starting path to look for the engine.json marker file, otherwise use the current working path
@@ -86,14 +100,14 @@ def determine_dev_root(starting_path=None):
     
     current_path = os.path.normpath(starting_path or os.getcwd())
     
-    check_file = os.path.join(current_path, DEV_ROOT_CHECK_FILE)
+    check_file = os.path.join(current_path, ENGINE_ROOT_CHECK_FILE)
     
     while not os.path.isfile(check_file):
         next_path = os.path.dirname(current_path)
         if next_path == current_path:
             # If going up one level results in the same path, we've hit the root
             break
-        check_file = os.path.join(next_path, DEV_ROOT_CHECK_FILE)
+        check_file = os.path.join(next_path, ENGINE_ROOT_CHECK_FILE)
         current_path = next_path
     
     if not os.path.isfile(check_file):
@@ -123,34 +137,34 @@ def get_config_file_values(config_file_path, keys_to_extract):
     return result_map
 
 
-def get_bootstrap_values(dev_root, keys_to_extract):
+def get_bootstrap_values(engine_root, keys_to_extract):
     """
     Extract requested values from the bootstrap.cfg file in the def root folder
-    :param dev_root:            The dev root folder where bootstrap.cfg exists
+    :param engine_root:         The engine root folder where bootstrap.cfg exists
     :param keys_to_extract:     The keys to extract into a dictionary
     :return: Dictionary of keys and its values (for matched keys)
     """
-    bootstrap_file = os.path.join(dev_root, 'bootstrap.cfg')
+    bootstrap_file = os.path.join(engine_root, 'bootstrap.cfg')
     if not os.path.isfile(bootstrap_file):
-        raise LmbrCmdError("Missing 'bootstrap.cfg' file from dev root ('{}')".format(dev_root),
+        raise LmbrCmdError("Missing 'bootstrap.cfg' file from engine root ('{}')".format(engine_root),
                            ERROR_CODE_FILE_NOT_FOUND)
     
     result_map = get_config_file_values(bootstrap_file, keys_to_extract)
     return result_map
 
 
-def validate_ap_config_asset_type_enabled(dev_root, bootstrap_asset_type):
+def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
     """
     Validate that the requested bootstrap asset type was enabled in the asset processor configuration file
 
-    :param dev_root:                The dev root to lookup the AP config file
+    :param engine_root:             The engine root to lookup the AP config file
     :param bootstrap_asset_type:    The asset type to validate
     :return:    True if the asset type was enabled, false if not
     """
     
-    ap_config_file = os.path.join(dev_root, 'AssetProcessorPlatformConfig.ini')
+    ap_config_file = os.path.join(engine_root, 'AssetProcessorPlatformConfig.setreg')
     if not os.path.isfile(ap_config_file):
-        raise LmbrCmdError("Missing required asset processor configuration file at '{}'".format(dev_root),
+        raise LmbrCmdError("Missing required asset processor configuration file at '{}'".format(engine_root),
                            ERROR_CODE_FILE_NOT_FOUND)
     
     parser = configparser.ConfigParser()
@@ -285,48 +299,44 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
                            ERROR_CODE_ERROR_NOT_SUPPORTED)
 
 
-def verify_game_project_and_dev_root(game_name, dev_root):
+def verify_project_and_engine_root(project_root, engine_root):
     """
-    Verify the dev root folder and the game name against that dev root. This will perform basic minimal checks
+    Verify the engine root folder and the project root folder. This will perform basic minimal checks
     for validation:
-        1. Make sure bootstrap.cfg exists
-        2. Make sure ${dev_root}/${game_name}/project.json exists
+        1. Make sure ${engine_root}/engine.json
+        2. Make sure ${project_root}/project.json exists
         3. Make sure that the project.json minimally has a json structure with a 'project_name' attribute
 
-    The game name will be verified by returning the value of 'project_name' from the json file to minimize issues
-    on case-insensitive file systems because we rely on the fact that the game name matches the folder in which it resides
+    The project name will be verified by returning the value of 'project_name' from the json file to minimize issues
+    on case-insensitive file systems because we rely on the fact that the project name matches the folder in which it resides
 
-    :param game_name:   The game name to verify. If None, skip the game name verification
-    :param dev_root:    The dev root directory to verify
-    :return: A tuple of the actual 'project_name' from the game's project.json and the pathlib.Path of the dev root if verified
+    :param project_root:   The project root to verify. If None, skip the project name verification
+    :param engine_root:    The engine root directory to verify
+    :return: A tuple of the actual 'project_name' from the game's project.json and the pathlib.Path of the engine root if verified
     """
-    dev_root_path = pathlib.Path(dev_root)
-    if not dev_root_path.exists():
-        raise LmbrCmdError(f"Invalid dev root path ({dev_root})",
+    engine_root_path = pathlib.Path(engine_root)
+    if not engine_root_path.exists():
+        raise LmbrCmdError(f"Invalid engine root path ({engine_root})",
                            ERROR_CODE_INVALID_PARAMETER)
-    # Sanity check: bootstrap
-    bootstrap_path = dev_root_path / 'bootstrap.cfg'
-    if not bootstrap_path.exists():
-        raise LmbrCmdError(f"Invalid dev root path ({dev_root}). Missing bootstrap.cfg",
+    # Sanity check: engine.json
+    engine_json_path = engine_root_path / ENGINE_ROOT_CHECK_FILE
+    if not engine_json_path.exists():
+        raise LmbrCmdError(f"Invalid engine root path ({engine_root}). Missing {ENGINE_ROOT_CHECK_FILE}",
                            ERROR_CODE_INVALID_PARAMETER)
 
-    if game_name is None:
-        return None, dev_root_path
+    if project_root is None:
+        return None, engine_root_path
     else:
-        game_folder = dev_root_path / game_name
-        game_folder_project_properties = game_folder / 'project.json'
-        if not game_folder_project_properties.is_file():
-            raise LmbrCmdError(f"Invalid game '{game_name}'. Make sure it exists under {dev_root}",
+        project_path = engine_root_path / project_root
+        project_path_project_properties = project_path / 'project.json'
+        if not project_path_project_properties.is_file():
+            raise LmbrCmdError(f'Invalid project at path "{project_path}". It is missing the project.json file',
                                ERROR_CODE_INVALID_PARAMETER)
-        try:
-            with open(game_folder_project_properties) as project_json_file:
-                project_json = json.load(project_json_file)
-
-            return project_json['project_name'], dev_root_path
-        except (json.JSONDecodeError, KeyError) as e:
-            raise LmbrCmdError(f"Invalid game '{game_name}'. Its project.json is corrupt or invalid: {str(e)}",
-                               ERROR_CODE_INVALID_PARAMETER)
-
+        project_name = read_project_name_from_project_json(project_path)
+        if not project_name:
+            raise LmbrCmdError(f'Invalid project at path "{project_path}". Its project.json does not contains a "project_name" key',
+                           ERROR_CODE_INVALID_PARAMETER)
+        return project_path, engine_root_path
 
 def remove_dir_path(path):
     """
@@ -444,13 +454,13 @@ def validate_build_dir_and_config(build_dir_name, configuration):
     return build_dir, build_config_dir
 
 
-def validate_deployment_arguments(build_dir_name, configuration, game_name):
+def validate_deployment_arguments(build_dir_name, configuration, project_path):
     """
     Validate the minimal platform deployment arguments
 
     @param build_dir_name:  The name of the build directory relative to the current working directory
     @param configuration:   The configuration the deployment is based on
-    @param game_name:       The name of the game project to deploy
+    @param project_path:    The path the  project to deploy
     @return: Tuple of (resolved build_dir, game name, asset mode, asset_type, and Pak root folder)
     """
 
@@ -458,16 +468,16 @@ def validate_deployment_arguments(build_dir_name, configuration, game_name):
 
     platform_settings = PlatformSettings(build_dir)
 
-    if not game_name:
+    if not project_path:
         if not platform_settings.projects:
             raise LmbrCmdError("Missing required game project argument. Unable to determine a default one.")
-        game_name = platform_settings.projects[0]
-        logging.info(f"Using default game project '{game_name}' as the game project")
+        internal_project_path = pathlib.PurePath(platform_settings.projects[0]).resolve()
+        logging.info(f"Using project_path '{internal_project_path}' as the game project")
     else:
-        if game_name not in  platform_settings.projects:
-            raise LmbrCmdError(f"Game project {game_name} not valid. Was not configured for build directory {build_dir_name}.")
+        if project_path not in platform_settings.projects:
+            raise LmbrCmdError(f"Game project {project_path} not valid. Was not configured for build directory {build_dir_name}.")
 
-    return build_dir, game_name, platform_settings.asset_deploy_mode, platform_settings.asset_deploy_type, platform_settings.override_pak_root or DEFAULT_PAK_ROOT
+    return build_dir, project_path, platform_settings.asset_deploy_mode, platform_settings.asset_deploy_type, platform_settings.override_pak_root or DEFAULT_PAK_ROOT
 
 
 class CommandLineExec(object):
@@ -547,20 +557,18 @@ class CommandLineExec(object):
             raise LmbrCmdError(f"Error trying to call '{self.executable_path}': {str(err)}")
 
 
-def sync_platform_layout(platform_name, game_project, asset_mode, asset_type, layout_root):
+def sync_platform_layout(platform_name, project_path, asset_mode, asset_type, layout_root):
     """
     Perform a layout sync directly on the game project for a platform, game project, asset mode, asset type
 
     @param platform_name:   The platform (lower) name to sync from
-    @param game_project:    The game project to sync to
+    @param project_path:    The path to project to sync to
     @param asset_mode:      The asset mode to base the sync on
     @param asset_type:      The asset type to base the sync on
     @param layout_root:     The root of the layout to sync to
-    @param record_elapsed:  Option to output the elapsed time
     """
-    layout_tool.ASSET_SYNC_MODE_FUNCTION[asset_mode](dev_root=ROOT_DEV_PATH,
-                                                     target_platform=platform_name,
-                                                     game=game_project,
+    layout_tool.ASSET_SYNC_MODE_FUNCTION[asset_mode](target_platform=platform_name,
+                                                     project_path=project_path,
                                                      asset_type=asset_type,
                                                      warning_on_missing_assets=True,
                                                      layout_target=layout_root,
@@ -601,37 +609,6 @@ def get_cmake_dependency_modules(build_dir_path, target, module_type):
         raise LmbrCmdError(f'AzTestRunner registry issue: {str(err)}')
 
     return dep_modules
-
-
-GAME_FOLDER_REGEX = re.compile(r"sys_game_folder\s*=\s*(.*)")
-GAME_NAME_REGEX = re.compile(r"sys_game_name\s*=\s*(.*)")
-
-
-def transform_bootstrap_for_game(game_name, src_bootstrap, dst_bootstrap):
-    """
-    Given a source bootstrap.cfg and game, write a copy of one to a different destination and transform it to
-    override its 'sys_game_folder' or 'sys_game_name' to match the input game_name
-
-    :param game_name:       The name of the game to set in the destination bootstrap
-    :param src_bootstrap:   The absolute path of the source bootstrap
-    :param dst_bootstrap:   The absolute path of the destination bootstrap file to write to (or overwrite)
-    """
-    with open(src_bootstrap, "r") as src_bootstrap_file:
-        bootstrap_lines = src_bootstrap_file.readlines()
-    with open(dst_bootstrap, "w") as dst_bootstrap_file:
-        sys_game_detected = False
-        for bootstrap_line in bootstrap_lines:
-            if GAME_FOLDER_REGEX.match(bootstrap_line):
-                dst_bootstrap_file.write(f'sys_game_folder={game_name}\n')
-                sys_game_detected = True
-            elif GAME_NAME_REGEX.match(bootstrap_line):
-                dst_bootstrap_file.write(f'sys_game_name={game_name}\n')
-                sys_game_detected = True
-            else:
-                dst_bootstrap_file.write(bootstrap_line)
-        if not sys_game_detected:
-            # If no sys_game* is detected, inject one to prevent an error at least in the target
-            dst_bootstrap_file.write(f'sys_game_folder={game_name}\n')
 
 
 def get_test_module_registry(build_dir_path):

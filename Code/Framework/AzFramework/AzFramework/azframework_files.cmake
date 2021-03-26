@@ -145,6 +145,8 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Gem/GemInfo.cpp
+    Gem/GemInfo.h
     StringFunc/StringFunc.h
     InGameUI/UiFrameworkBus.h
     IO/LocalFileIO.cpp
@@ -267,6 +269,11 @@ set(FILES
     Physics/WorldEventhandler.h
     Physics/ScriptCanvasPhysicsUtils.h
     Physics/ScriptCanvasPhysicsUtils.cpp
+    Process/ProcessCommunicator.cpp
+    Process/ProcessCommunicator.h
+    Process/ProcessWatcher.cpp
+    Process/ProcessWatcher.h
+    Process/ProcessCommon_fwd.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

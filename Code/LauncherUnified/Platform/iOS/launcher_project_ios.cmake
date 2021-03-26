@@ -21,37 +21,40 @@ else()
     set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderMetal)
 endif()
 
-# Find the resource from the game gem
-get_target_property(${project}_SOURCE_DIR ${project} SOURCE_DIR) # Point to where the code is
-get_filename_component(${project}_SOURCE_PARENT_DIR ${${project}_SOURCE_DIR} DIRECTORY) # Parent directory
-
-set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/Platform/iOS)
-if (NOT EXISTS ${ly_game_resource_folder})
-    set(ly_game_resource_folder ${${project}_SOURCE_PARENT_DIR}/Resources/IOSLauncher)
-    if (NOT EXISTS ${ly_game_resource_folder})
-        message(FATAL_ERROR "Missing expected resources folder")
+# Add resources and app icons to launchers
+list(APPEND candidate_paths ${project_real_path}/Resources/Platform/iOS)
+list(APPEND candidate_paths ${project_real_path}/Gem/Resources/Platform/iOS) # Legacy projects
+list(APPEND candidate_paths ${project_real_path}/Gem/Resources/IOSLauncher) # Legacy projects
+foreach(resource_path IN LISTS candidate_paths)
+    if(EXISTS ${resource_path})
+        set(ly_game_resource_folder ${resource_path})
+        break()
     endif()
+endforeach()
+
+if(NOT EXISTS ${ly_game_resource_folder})
+    list(JOIN candidate_paths " " formatted_error)
+    message(FATAL_ERROR "Missing 'Resources' folder. Candidate paths tried were: ${formatted_error}")
 endif()
 
-# Add resources and app icons to launchers
-target_sources(${project}.GameLauncher PRIVATE ${ly_game_resource_folder}/Images.xcassets)
-set_target_properties(${project}.GameLauncher PROPERTIES
+
+target_sources(${project_name}.GameLauncher PRIVATE ${ly_game_resource_folder}/Images.xcassets)
+set_target_properties(${project_name}.GameLauncher PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${ly_game_resource_folder}/Info.plist
     RESOURCE ${ly_game_resource_folder}/Images.xcassets
-    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME ${project}AppIcon
+    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME ${project_name}AppIcon
 )
 
 set(layout_tool_dir ${LY_ROOT_FOLDER}/cmake/Tools)
 
-add_custom_command(TARGET ${project}.GameLauncher POST_BUILD
+add_custom_command(TARGET ${project_name}.GameLauncher POST_BUILD
     COMMAND ${LY_PYTHON_CMD} layout_tool.py
-        --dev-root "${LY_ROOT_FOLDER}"
         -p iOS
         -a ${LY_ASSET_DEPLOY_ASSET_TYPE}
-        -g ${project}
+        --project-path ${project_real_path}
         -m ${LY_ASSET_DEPLOY_MODE}
         --create-layout-root
-        -l $<TARGET_BUNDLE_DIR:${project}.GameLauncher>/assets
+        -l $<TARGET_BUNDLE_DIR:${project_name}.GameLauncher>/assets
         --build-config $<CONFIG>
         --warn-on-missing-assets
         --verify

@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME ExpressionEvaluation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ExpressionEvaluation.4c6f9df57ca2468f93c8d860ee6a1167.v0.1.0
     FILES_CMAKE
         expressionevaluation_shared_files.cmake
     INCLUDE_DIRECTORIES

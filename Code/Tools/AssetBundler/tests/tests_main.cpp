@@ -128,7 +128,7 @@ namespace AssetBundler
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_localFileIO);
-           
+
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemA");
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemB");
 
@@ -169,20 +169,21 @@ namespace AssetBundler
 
             m_data->m_gemSeedFilePairList.emplace_back(absoluteGemSeedFilePath, seedFileExists);
 
-            m_data->m_gemInfoList.emplace_back(AzToolsFramework::AssetUtils::GemInfo(gemName, relativeGemPath.Native(), absoluteGemPath.Native(), AZ::Uuid::CreateRandom().ToString<AZStd::string>().c_str(), false, false));
-            
+            m_data->m_gemInfoList.emplace_back(gemName);
+            m_data->m_gemInfoList.back().m_absoluteSourcePaths.push_back(absoluteGemPath.Native());
+
             AZ::IO::Path platformsDirectory = absoluteGemPath / "Assets" / PlatformsFolder;
             if (m_data->m_localFileIO->Exists(platformsDirectory.c_str()))
             {
                 m_data->m_localFileIO->FindFiles(platformsDirectory.c_str(),
                     AZStd::string::format("*.%s", AzToolsFramework::AssetSeedManager::GetSeedFileExtension()).c_str(),
                     [&](const char* fileName)
-                    {
-                        AZStd::string normalizedFilePath = fileName;
-                        AzFramework::StringFunc::Path::Normalize(normalizedFilePath);
-                        m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(normalizedFilePath, seedFileExists));
-                        return true;
-                    });
+                {
+                    AZStd::string normalizedFilePath = fileName;
+                    AzFramework::StringFunc::Path::Normalize(normalizedFilePath);
+                    m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(normalizedFilePath, seedFileExists));
+                    return true;
+                });
             }
 
             AZ::IO::Path iosDirectory = platformsDirectory / AzFramework::PlatformIOS;
@@ -195,7 +196,7 @@ namespace AssetBundler
                 if (result.IsSuccess())
                 {
                     AZStd::list<AZStd::string> seedFiles = result.TakeValue();
-                    for(AZStd::string& seedFile : seedFiles)
+                    for (AZStd::string& seedFile : seedFiles)
                     {
                         AZStd::string normalizedFilePath = seedFile;
                         AzFramework::StringFunc::Path::Normalize(normalizedFilePath);
@@ -207,7 +208,7 @@ namespace AssetBundler
 
         struct StaticData
         {
-            AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> m_gemInfoList;
+            AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
             AZStd::vector<AZStd::pair<AZStd::string, bool>> m_gemSeedFilePairList;
             AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_application = {};
             AZ::IO::FileIOBase* m_priorFileIO = nullptr;
@@ -230,7 +231,8 @@ namespace AssetBundler
     TEST_F(AssetBundlerGemsUtilTest, GetDefaultSeedFiles_AllSeedFiles_Found)
     {
         // DummyProject and fake Engine/Gem structure lives at dev/Code/Tools/AssetBundler/tests/
-        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), DummyProjectFolder, m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC);
+        auto dummyProjectPath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder;
+        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC);
         ASSERT_EQ(defaultSeedList.size(), 5); //adding one for the engine seed file and one for the project file
 
         // Validate whether both GemA and GemB seed file are present  
@@ -246,7 +248,8 @@ namespace AssetBundler
     TEST_F(AssetBundlerGemsUtilTest, GetDefaultSeedFilesForMultiplePlatforms_AllSeedFiles_Found)
     {
         // DummyProject and fake Engine/Gem structure lives at dev/Code/Tools/AssetBundler/tests/
-        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), DummyProjectFolder, m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_IOS);
+        auto dummyProjectPath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder;
+        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_IOS);
         ASSERT_EQ(defaultSeedList.size(), 6); //adding one for the engine seed file and one for the project file
 
 
@@ -264,135 +267,11 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerGemsUtilTest, IsSeedFileValid_Ok)
     {
-         for (const auto& pair : m_data->m_gemSeedFilePairList)
+        for (const auto& pair : m_data->m_gemSeedFilePairList)
         {
             bool result = IsGemSeedFilePathValid(m_data->m_testEngineRoot.c_str(), pair.first, m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_IOS);
-            EXPECT_EQ(result,pair.second);
+            EXPECT_EQ(result, pair.second);
         }
-    }
-
-    const char TestProject[] = "TestProject";
-    const char TestProjectLowerCase[] = "testproject";
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-    const char TestRoot[] = "D:\\Dummy\\Test\\dev\\";
-#else
-    const char TestRoot[] = "/Dummy/Test/dev/";
-#endif
-
-    class MockApplication
-        : public AzFramework::ApplicationRequests::Bus::Handler
-    {
-    public:
-        MockApplication()
-        {
-            // ensure the cached engine root from previous tests is cleared
-            // so the mock application behaves properly
-            g_cachedEngineRoot[0] = 0;
-
-            if (AZ::SettingsRegistry::Get() == nullptr)
-            {
-                m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-                AZ::SettingsRegistry::Register(m_settingsRegistry.get());
-
-                auto gameProjectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "sys_game_folder");
-                m_settingsRegistry->Set(gameProjectKey, TestProject);
-            }
-            AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
-        }
-        ~MockApplication()
-        {
-            AzFramework::ApplicationRequests::Bus::Handler::BusDisconnect();
-            if (m_settingsRegistry.get() == AZ::SettingsRegistry::Get())
-            {
-                AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-            }
-        }
-        // AzFramework::ApplicationRequests::Bus::Handler interface
-        void NormalizePath(AZStd::string& /*path*/) override {};
-        void NormalizePathKeepCase(AZStd::string& /*path*/) override {};
-        void CalculateBranchTokenForAppRoot(AZStd::string& /*token*/) const override {};
-        const char* GetEngineRoot() const { return TestRoot; }
-
-    private:
-        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
-    };
-
-    class AssetBundlerPathUtilTest
-        : public UnitTest::ScopedAllocatorSetupFixture
-    {
-    public:
-
-        void SetUp() override
-        {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
-            m_data = AZStd::make_unique<StaticData>();
-        }
-
-        void TearDown() override
-        {
-            m_data.reset();
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
-        }
-
-        struct StaticData
-        {
-            MockApplication m_mockApplication;
-        };
-
-        AZStd::unique_ptr<StaticData> m_data;
-    };
-
-
-    TEST_F(AssetBundlerPathUtilTest, ComputeAssetAliasAndGameName_AssetCatalogPathNotProvided_Valid)
-    {
-        AZStd::string platformIdentifier = "pc";
-        AZStd::string assetCatalogFile;
-        AZStd::string assetAlias;
-        AZStd::string gameName;
-        EXPECT_TRUE(ComputeAssetAliasAndGameName(platformIdentifier, assetCatalogFile, assetAlias, gameName).IsSuccess());
-        EXPECT_TRUE(gameName == TestProject);
-
-        AZStd::string assetPath;
-        bool success = AzFramework::StringFunc::Path::ConstructFull(TestRoot, "Cache", assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), TestProject, assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), platformIdentifier.c_str(), assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), TestProjectLowerCase, assetPath);
-        EXPECT_EQ(assetAlias, assetPath);
-    }
-
-    TEST_F(AssetBundlerPathUtilTest, ComputeAssetAliasAndGameName_AssetCatalogPathProvided_Valid)
-    {
-        AZStd::string platformIdentifier = "pc";
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        AZStd::string assetCatalogFile = "D:\\Dummy\\Test\\dev\\Cache\\TestProject1\\pc\\testproject1\\assetcatalog.xml";
-#else
-        AZStd::string assetCatalogFile = "/Dummy/Test/dev/Cache/TestProject1/pc/testproject1/assetcatalog.xml";
-#endif
-        AZStd::string assetAlias;
-        AZStd::string gameName;
-        EXPECT_TRUE(ComputeAssetAliasAndGameName(platformIdentifier, assetCatalogFile, assetAlias, gameName).IsSuccess());
-        EXPECT_EQ(gameName, "TestProject1");
-
-        AZStd::string assetPath;
-        bool success = AzFramework::StringFunc::Path::ConstructFull(TestRoot, "Cache", assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), "TestProject1", assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), platformIdentifier.c_str(), assetPath) &&
-            AzFramework::StringFunc::Path::ConstructFull(assetPath.c_str(), "testproject1", assetPath);
-        EXPECT_EQ(assetAlias, assetPath);
-    }
-
-    TEST_F(AssetBundlerPathUtilTest, ComputeAssetAliasAndGameName_GameNameMismatch_Failure)
-    {
-        AZStd::string platformIdentifier = "pc";
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        AZStd::string assetCatalogFile = "D:\\Dummy\\Cache\\TestProject1\\pc\\testproject1\\assetcatalog.xml";
-#else
-        AZStd::string assetCatalogFile = "/Dummy/Cache/TestProject1/pc/testproject1/assetcatalog.xml";
-#endif
-        AZStd::string assetAlias;
-        AZStd::string gameName="SomeOtherGamename";
-        EXPECT_FALSE(ComputeAssetAliasAndGameName(platformIdentifier, assetCatalogFile, assetAlias, gameName).IsSuccess());
     }
 }
 

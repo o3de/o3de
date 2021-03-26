@@ -19,7 +19,8 @@ ly_add_pytest(
     COMPONENT TestTools
 )
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_NAME)
+get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
     # Integration tests.
     ly_add_pytest(
         NAME LyTestTools_IntegTests_Sanity_smoke_no_gpu
@@ -41,19 +42,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SERIAL
         TEST_SUITE smoke
         COMPONENT TestTools
-    )
-
-    ly_add_pytest(
-        NAME LyTestTools_IntegTests_Settings_smoke_no_gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_settings.py
-        TEST_SERIAL
-        TEST_SUITE smoke
-        RUNTIME_DEPENDENCIES
-            AssetProcessor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-            Legacy::CryRenderNULL
-            COMPONENT TestTools
     )
 
     # Regression tests.

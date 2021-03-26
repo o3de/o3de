@@ -144,24 +144,34 @@ namespace AZ
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
                 registry, AZ::RC::GetAssetBuilderTargetName());
 
-            //the project name can be overridden, check it
-            AZStd::string overrideProjectName;
-            overrideProjectName = m_context.m_config->GetAsString("gamesubdirectory", "", "");
+            AZ::CommandLine* commandLine = application.GetAzCommandLine();
+
+            AZStd::string overrideProjectPath = m_context.m_config->GetAsString("gameroot", "", "").c_str();
+            if (!overrideProjectPath.empty())
+            {
+                auto overrideArgs = AZStd::string::format(
+                    "--regset=%s/project_path=%s", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, overrideProjectPath.c_str());
+
+                AZ::CommandLine::ParamContainer commandLineArgs;
+                commandLine->Dump(commandLineArgs);
+                commandLineArgs.emplace_back(overrideArgs.c_str(), overrideArgs.size());
+                commandLine->Parse(commandLineArgs);
+            }
+
+            AZStd::string overrideProjectName = m_context.m_config->GetAsString("gamesubdirectory", "", "").c_str();
             if (!overrideProjectName.empty())
             {
-                // Copy the gamesubdirectory argument into --regset command line parameter for the sys_game_folder
-                auto gameNameOverride = AZStd::string::format("--regset=%s/sys_game_folder=%s", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
+                auto gameNameOverride = AZStd::string::format("--regset=%s/project_name=%s", AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
                     overrideProjectName.c_str());
-                AZ::CommandLine* commandLine = application.GetAzCommandLine();
-                auto settingsRegistry = AZ::SettingsRegistry::Get();
+
                 AZ::CommandLine::ParamContainer commandLineArgs;
                 commandLine->Dump(commandLineArgs);
                 commandLineArgs.emplace_back(gameNameOverride.c_str(), gameNameOverride.size());
                 commandLine->Parse(commandLineArgs);
-
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, false);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
+
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, false);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 
             bool connectedToAP;
             if (!PrepareForExporting(application, m_appRoot, connectedToAP))
@@ -233,7 +243,7 @@ namespace AZ
             return &m_context;
         }
 
-        bool SceneCompiler::PrepareForExporting(RCToolApplication& application, const AZStd::string& appRoot, bool& connectedToAssetProcessor)
+        bool SceneCompiler::PrepareForExporting(RCToolApplication& application, [[maybe_unused]] const AZStd::string& appRoot, bool& connectedToAssetProcessor)
         {
             // Not all Gems shutdown properly and leak memory, but this shouldn't
             //      prevent this builder from completing.
@@ -245,7 +255,6 @@ namespace AZ
             descriptor.m_enableScriptReflection = false;
 
             AZ::ComponentApplication::StartupParameters startupParam;
-            startupParam.m_appRootOverride = appRoot.c_str();
             startupParam.m_loadDynamicModules = false;
 
             application.Start(descriptor, startupParam);

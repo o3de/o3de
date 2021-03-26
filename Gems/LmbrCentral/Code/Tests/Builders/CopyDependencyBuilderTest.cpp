@@ -22,6 +22,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <LyShine/UiAssetTypes.h>
 
@@ -69,7 +70,7 @@ protected:
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
 
-        AZ::IO::Path assetRoot(engineRoot);
+        AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
 
@@ -513,8 +514,11 @@ TEST_F(CopyDependencyBuilderTest, TestXmlAsset_InvalidSourceFilePath_NoProductDe
     AZStd::string fileName = "Xmls/InvalidFilePathExample.xml";
     XmlBuilderWorker builderWorker;
     builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));
+
+    AZStd::vector<const char*> expectedPaths;
+    AZStd::vector<AssetBuilderSDK::ProductDependency> expectedProductDependencies;
     AZ_TEST_START_TRACE_SUPPRESSION;
-    TestFailureCase(&builderWorker, fileName);
+    TestSuccessCase(&builderWorker, fileName, expectedPaths, expectedProductDependencies);
     // One error occurs: Cannot open the source file
     AZ_TEST_STOP_TRACE_SUPPRESSION(1 * SuppressedErrorMultiplier);
 }

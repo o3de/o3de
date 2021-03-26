@@ -25,7 +25,6 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
         PUBLIC
             AZ::AzCore
             Gem::HttpRequestor
@@ -35,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME Twitch ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Twitch.b63e64141fab40b791211ba257632e84.v1.0.0
     FILES_CMAKE
         twitch_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -46,4 +44,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Twitch.Static
+    RUNTIME_DEPENDENCIES
+        Gem::HttpRequestor
 )

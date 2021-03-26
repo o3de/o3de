@@ -78,9 +78,8 @@ void AssetProcessorServerUnitTest::RunFirstPartOfUnitTestsForAssetProcessorServe
 
 void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool failNegotiation)
 {
-    AZStd::string azAppRoot = AZStd::string(QDir::current().absolutePath().toUtf8().constData());
     AZStd::string azBranchToken;
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, azBranchToken);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, azBranchToken);
     
     QString branchToken(azBranchToken.c_str());
 
@@ -99,7 +98,7 @@ void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool fa
         for (int idx = 0; idx < NUMBER_OF_TRIES; ++idx)
         {
             AzFramework::AssetSystem::AssetProcessorConnection connection;
-            connection.Configure(branchToken.toUtf8().data(), "pc", "UNITTEST", AssetUtilities::ComputeGameName().toUtf8().constData()); // UNITTEST identifier will skip the processID validation during negotiation
+            connection.Configure(branchToken.toUtf8().data(), "pc", "UNITTEST", AssetUtilities::ComputeProjectName().toUtf8().constData()); // UNITTEST identifier will skip the processID validation during negotiation
             connection.Connect("127.0.0.1", FEATURE_TEST_LISTEN_PORT);
             while (!connection.IsConnected() && !connection.NegotiationFailed())
             {

@@ -580,26 +580,6 @@ namespace LmbrCentral
 
         REGISTER_INT(s_meshAssetHandler_AsyncCvar, 1, 0, "Enables asynchronous loading of legacy mesh formats");
 
-        // Update the application's asset root.
-        // Requires @assets@ alias which is set during CrySystem initialization.
-        AZStd::string assetRoot;
-        EBUS_EVENT_RESULT(assetRoot, AzFramework::ApplicationRequests::Bus, GetAssetRoot);
-
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (fileIO)
-        {
-            const char* aliasPath = fileIO->GetAlias("@assets@");
-            if (aliasPath && aliasPath[0] != '\0')
-            {
-                assetRoot = aliasPath;
-            }
-        }
-
-        if (!assetRoot.empty())
-        {
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, SetAssetRoot, assetRoot.c_str());
-        }
-
         // Enable catalog now that application's asset root is set.
         if (system.GetGlobalEnvironment()->IsEditor())
         {

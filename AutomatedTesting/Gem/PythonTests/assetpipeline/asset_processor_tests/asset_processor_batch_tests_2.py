@@ -163,7 +163,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert errors == 0, f"There were {errors} asset processing errors"
 
         # Check that project cache was created (DNE until AP makes it)
-        project_cache = os.path.join(external_resources["project_dir"], "Cache", external_resources["project_name"])
+        project_cache = os.path.join(external_resources["project_dir"], "Cache")
         assert os.path.exists(project_cache), f"{project_cache} was not created by AP"
 
         # Clean up external project
@@ -273,7 +273,8 @@ class TestsAssetProcessorBatch_Windows(object):
         "AssetProcessor: Error: Platform in config file or command line 'notaplatform'" should be present in the logs
         """
         asset_processor.create_temp_asset_root()
-        error_search_terms = "AssetProcessor: Error: Platform in config file or command line 'notaplatform'"
+        error_search_terms = 'AssetProcessor: Error: The list of enabled platforms in the settings registry does not contain platform ' \
+                             '"notaplatform"'
         # Run APBatch expecting it to fail
         asset_processor.run_and_check_output(True, error_search_terms, platforms='notaplatform')
 

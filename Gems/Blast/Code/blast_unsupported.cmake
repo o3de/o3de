@@ -25,7 +25,8 @@ add_library(Gem::Blast ALIAS Blast.Stub)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Blast.Editor.Stub MODULE
+        NAME Blast.Editor.Stub GEM_MODULE
+
         NAMESPACE Gem
         FILES_CMAKE
             blast_stub_files.cmake

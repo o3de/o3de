@@ -76,8 +76,8 @@ IF NOT EXIST %TMP% (
     mkdir temp
 )
 SET PYTHON=python\python.cmd
-ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --dev-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM%
-CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --dev-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM%
+ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --project-path=%GAME_PROJECT% --engine-root=. --build-dir=%OUTPUT_DIRECTORY% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM%
+CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --project-path="%GAME_PROJECT%" --engine-root=. --build-dir="%OUTPUT_DIRECTORY%" --gradle-install-path="%GRADLE_HOME%" --cmake-install-path="%CMAKE_HOME%" --ninja-install-path="%LY_NINJA_PATH%" --third-party-path="%LY_3RDPARTY_PATH%" --android-ndk-path="%LY_ANDROID_NDK%" --android-sdk-path="%LY_ANDROID_SDK%" --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM%
 IF NOT %ERRORLEVEL%==0 GOTO :error
 
 PUSHD %OUTPUT_DIRECTORY%

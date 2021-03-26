@@ -10,6 +10,5 @@
 #
 
 set(FILES
-    prefabbuilder_dependencies.cmake
     PrefabBuilderModule.cpp
 )

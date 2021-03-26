@@ -10,11 +10,11 @@
 *
 */
 
-#include <AzCore/Settings/CommandLine.h>
-#include <AzCore/std/string/conversions.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/AzCore_Traits_Platform.h>
-#include <AzCore/std/tuple.h>
+#include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/Settings/CommandLine.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -29,6 +29,21 @@ namespace AZ
 
             return lowerStr;
         }
+
+        AZStd::string_view UnquoteArgument(AZStd::string_view arg)
+        {
+            if (arg.size() < 2)
+            {
+                return arg;
+            }
+
+            return arg.front() == '"' && arg.back() == '"' ? AZStd::string_view{ arg.begin() + 1, arg.end() - 1 } : arg;
+        }
+
+        AZStd::string QuoteArgument(AZStd::string_view arg)
+        {
+            return !arg.empty() ? AZStd::string::format(R"("%.*s")", aznumeric_cast<int>(arg.size()), arg.data()) : AZStd::string{ arg };
+        }
     }
 
     CommandLine::CommandLine()
@@ -41,15 +56,62 @@ namespace AZ
     {
     }
 
-    void CommandLine::AddArgument(AZStd::string currentArg, AZStd::string& currentSwitch)
+    void CommandLine::ParseOptionArgument(AZStd::string_view newOption, AZStd::string_view newValue,
+        CommandArgument* inProgressArgument)
     {
-        StringFunc::Strip(currentArg, " ", false, true, true);
+        // Allow argument values wrapped in quotes at both ends to become the value within the quotes
+        AZStd::string_view unquotedValue = UnquoteArgument(newValue);
+        if (unquotedValue != newValue)
+        {
+            // Update the inProgressArgument before adding new arguments
+            if(inProgressArgument)
+            {
+                inProgressArgument->m_value = unquotedValue;
+                // Set the inProgressArgument to nullptr to indicate that the inProgressArgument has been fulfilled
+                inProgressArgument = nullptr;
+            }
+            else
+            {
+                m_allValues.push_back({ newOption, unquotedValue });
+            }
+        }
+        else
+        {
+            AZStd::vector<AZStd::string_view> tokens;
+            auto splitArgument = [&tokens](AZStd::string_view token)
+            {
+                tokens.emplace_back(AZ::StringFunc::StripEnds(token));
+            };
+            AZ::StringFunc::TokenizeVisitor(newValue, splitArgument, ",;");
+
+            // we do it this way because you are allowed to do odd things like
+            // -root=abc -root=hij,klm -root whee -root fun;days
+            // and roots value should be { abc, hij, klm, whee, fun, days }
+            for (AZStd::string_view optionValue : tokens)
+            {
+                if (inProgressArgument)
+                {
+                    inProgressArgument->m_value = optionValue;
+                    // Set the inProgressArgument to nullptr to indicate that the inProgressArgument has been fulfilled
+                    inProgressArgument = nullptr;
+                }
+                else
+                {
+                    m_allValues.push_back({ newOption, optionValue });
+                }
+            }
+        }
+    }
+
+    void CommandLine::AddArgument(AZStd::string_view currentArg, AZStd::string& currentSwitch)
+    {
+        currentArg = AZ::StringFunc::StripEnds(currentArg);
         if (!currentArg.empty())
         {
-            if (AZStd::string_view(currentArg.begin(), currentArg.begin() + 1).find_first_of(m_commandLineOptionPrefix) != AZStd::string_view::npos)
+            if (m_commandLineOptionPrefix.contains(currentArg.front()))
             {
-                // its possible that its a key-value-pair like /blah=whatever
-                // we support this too, for compatibilty.
+                // its possible that its a key-value-pair like -blah=whatever
+                // we support this too, for compatibility.
 
                 currentArg = currentArg.substr(1);
                 if (currentArg[0] == '-') // for -- extra
@@ -57,93 +119,41 @@ namespace AZ
                     currentArg = currentArg.substr(1);
                 }
 
-                AZStd::size_t foundPos = StringFunc::Find(currentArg.c_str(), '=');
+                AZStd::size_t foundPos = AZ::StringFunc::Find(currentArg, "=");
                 if (foundPos != AZStd::string::npos)
                 {
-                    // Allow argument values wrapped in quotes at both ends to become the value within the quotes 
-                    if (currentArg.length() > (foundPos + 2) && currentArg[foundPos + 1] == '"' && currentArg[currentArg.length() - 1] == '"')
-                    {
-                        AZStd::string argName = currentArg.substr(0, foundPos);
-                        argName = ToLower(argName);
-                        StringFunc::Strip(argName, " ", false, true, true);
-                        m_switches[argName].emplace_back(currentArg.substr(foundPos + 2, currentArg.length() - (foundPos + 2) - 1));
-                        currentSwitch.clear();
-                        return;
-                    }
-
-                    // its in '=' format
-                    AZStd::vector<AZStd::string> tokens;
-                    StringFunc::Tokenize(currentArg.substr(foundPos + 1).c_str(), tokens, ",;");
-                    currentArg.resize(foundPos);
-                    currentArg = ToLower(currentArg);
-                    StringFunc::Strip(currentArg, " ", false, true, true);
-                    m_switches.insert_key(currentArg); // returns pair<iter, bool>
-                   // we do it this way because you are allowed to do odd things like
-                   // /root=abc /root=hij,klm /root whee /root fun;days
-                   // and roots value should be { abc, hij, klm, whee, fun, days }
-                    for (AZStd::string& switchValue : tokens)
-                    {
-                        StringFunc::Strip(switchValue, " ", false, true, true);
-                        m_switches[currentArg].push_back(switchValue);
-                    }
+                    AZStd::string_view argumentView{ currentArg };
+                    AZStd::string_view option = AZ::StringFunc::StripEnds(argumentView.substr(0, foundPos));
+                    AZStd::string_view value = AZ::StringFunc::StripEnds(argumentView.substr(foundPos + 1));
+                    ParseOptionArgument(ToLower(option), value, nullptr);
                     currentSwitch.clear();
                 }
                 else
                 {
-                    // its in this format /switchName switchvalue
+                    // its in this format -switchName switchvalue
                     // (no equals)
-                    currentSwitch = currentArg;
-                    currentSwitch = ToLower(currentSwitch);
-                    m_switches.insert_key(currentSwitch);
+                    currentSwitch = ToLower(currentArg);
+                    m_allValues.push_back({ currentSwitch, "" });
                 }
             }
             else
             {
                 if (currentSwitch.empty())
                 {
-                    m_miscValues.push_back(currentArg);
+                    m_allValues.push_back({ "", UnquoteArgument(currentArg) });
                 }
                 else
                 {
-                    // Allow argument values wrapped in quotes at both ends to become the value within the quotes
-                    if (currentArg[0] == '"' && currentArg.length() >= 2 && currentArg[currentArg.length() - 1] == '"')
-                    {
-                        m_switches[currentSwitch].emplace_back(currentArg.substr(1, currentArg.length() - 2));
-                        currentSwitch.clear();
-                        return;
-                    }
-
-                    AZStd::vector<AZStd::string> tokens;
-                    StringFunc::Tokenize(currentArg.c_str(), tokens, ",;");
-                    for (AZStd::string& switchValue : tokens)
-                    {
-                        StringFunc::Strip(switchValue, " ", false, true, true);
-                        m_switches[currentSwitch].push_back(switchValue);
-                    }
-
+                    ParseOptionArgument(currentSwitch, currentArg, &m_allValues.back());
+                    currentSwitch.clear();
                 }
-
-                currentSwitch.clear();
             }
-        }
-    }
-
-    void CommandLine::Parse(const ParamContainer& commandLine)
-    {
-        m_switches.clear();
-        m_miscValues.clear();
-
-        AZStd::string currentSwitch;
-        for (int i = 1; i < commandLine.size(); ++i)
-        {
-            AddArgument(commandLine[i], currentSwitch);
         }
     }
 
     void CommandLine::Parse(int argc, char** argv)
     {
-        m_switches.clear();
-        m_miscValues.clear();
+        m_allValues.clear();
 
         AZStd::string currentSwitch;
         // Start on 1 because 0 is the executable name
@@ -157,91 +167,145 @@ namespace AZ
         }
     }
 
-    void CommandLine::Dump(ParamContainer& commandLineDumpOutput)
+    void CommandLine::Parse(const ParamContainer& commandLine)
     {
-        // Push back an empty argument as the Parse function always skips parsing the first argument
-        commandLineDumpOutput.emplace_back(AZStd::string());
-        for (const AZStd::string& miscValue : m_miscValues)
-        {
-            commandLineDumpOutput.push_back(miscValue);
-        }
+        m_allValues.clear();
 
-        if (!m_commandLineOptionPrefix.empty())
+        // This version of Parse does not skip over 0th index
+        AZStd::string currentSwitch;
+        for (int i = 0; i < commandLine.size(); ++i)
         {
-            for (const auto& [switchKey, switchValues] : m_switches)
-            {
-                AZStd::string prefixSwitchKey = m_commandLineOptionPrefix.front() + switchKey;
-                if (switchValues.empty())
-                {
-                    // There are no value for the switch so just push it back of the command line dump output
-                    commandLineDumpOutput.emplace_back(prefixSwitchKey);
-                }
-                else
-                {
-                    for (const auto& switchValue : switchValues)
-                    {
-                        commandLineDumpOutput.emplace_back(prefixSwitchKey);
-                        commandLineDumpOutput.emplace_back(switchValue);
-                    }
-                }
-            }
+            AddArgument(commandLine[i], currentSwitch);
         }
-        else
+    }
+
+    void CommandLine::Dump(ParamContainer& commandLineDumpOutput) const
+    {
+        AZ_Error("CommandLine", !m_commandLineOptionPrefix.empty(),
+            "Cannot dump command line switches from a command line with an empty option prefix");
+
+        for (const CommandArgument& argument : m_allValues)
         {
-            AZ_Error("CommandLine", false, "Cannot dump command line switches from a command line with an empty option prefix");
+            if (!argument.m_option.empty())
+            {
+                commandLineDumpOutput.emplace_back(m_commandLineOptionPrefix.front() + argument.m_option);
+            }
+            if (!argument.m_value.empty())
+            {
+                commandLineDumpOutput.emplace_back(QuoteArgument(argument.m_value));
+            }
         }
     }
 
     bool CommandLine::HasSwitch(AZStd::string_view switchName) const
     {
-        return m_switches.find(ToLower(switchName)) != m_switches.end();
+        auto commandArgumentIter = AZStd::find_if(m_allValues.begin(), m_allValues.end(),
+            [optionName = ToLower(switchName)](const CommandArgument& argument) { return argument.m_option == optionName; });
+        return commandArgumentIter != m_allValues.end();
     }
 
     AZStd::size_t CommandLine::GetNumSwitchValues(AZStd::string_view switchName) const
     {
-        ParamMap::const_iterator switchFound = m_switches.find(ToLower(switchName));
-        if (switchFound == m_switches.end())
-        {
-            return 0;
-        }
-
-        return switchFound->second.size();
+        return AZStd::count_if(m_allValues.begin(), m_allValues.end(),
+            [optionName = ToLower(switchName)](const CommandArgument& argument) { return argument.m_option == optionName; });
     }
 
     const AZStd::string& CommandLine::GetSwitchValue(AZStd::string_view switchName, AZStd::size_t index) const
     {
-        ParamMap::const_iterator switchFound = m_switches.find(ToLower(switchName));
-        if (switchFound == m_switches.end())
+        AZStd::string optionName = ToLower(switchName);
+        size_t currentPosIndex{};
+        auto findArgumentAt = [&optionName, index, &currentPosIndex](const CommandArgument& argument)
+        {
+            if (argument.m_option == optionName)
+            {
+                return currentPosIndex++ == index;
+            }
+
+            return false;
+        };
+        auto commandArgumentIter = AZStd::find_if(m_allValues.begin(), m_allValues.end(), findArgumentAt);
+        if (!optionName.empty())
+        {
+            AZ_Assert(index < currentPosIndex, R"(Invalid Command line optional argument lookup of "%s" at index %zu)",
+                optionName.c_str(), index);
+        }
+        else
+        {
+            AZ_Assert(index < currentPosIndex, R"(Invalid Command line positional argument lookup at index %zu)", index);
+        }
+        if (commandArgumentIter == m_allValues.end())
         {
             return m_emptyValue;
         }
-
-        AZ_Assert(index < switchFound->second.size(), "Invalid Command line switch lookup");
-        if (index >= switchFound->second.size())
-        {
-            return m_emptyValue;
-        }
-
-        return switchFound->second.at(index);
+        return commandArgumentIter->m_value;
     }
 
     AZStd::size_t CommandLine::GetNumMiscValues() const
     {
-        return m_miscValues.size();
+        return GetNumSwitchValues("");
     }
 
     const AZStd::string& CommandLine::GetMiscValue(AZStd::size_t index) const
     {
-        AZ_Assert(index < m_miscValues.size(), "Invalid Command line lookup");
-        if (index >= m_miscValues.size())
-        {
-            return m_emptyValue;
-        }
-        return m_miscValues[index];
+        // Positional arguments option value is an empty string
+        return GetSwitchValue("", index);
     }
 
-    const CommandLine::ParamMap& CommandLine::GetSwitchList() const
+    [[nodiscard]] bool CommandLine::empty() const
     {
-        return m_switches;
+        return m_allValues.empty();
+    }
+
+    auto CommandLine::size() const -> ArgumentVector::size_type
+    {
+        return m_allValues.size();
+    }
+    auto CommandLine::begin() -> ArgumentVector::iterator
+    {
+        return m_allValues.begin();
+    }
+    auto CommandLine::begin() const -> ArgumentVector::const_iterator
+    {
+        return m_allValues.begin();
+    }
+    auto CommandLine::cbegin() const -> ArgumentVector::const_iterator
+    {
+        return m_allValues.cbegin();
+    }
+    auto CommandLine::end() -> ArgumentVector::iterator
+    {
+        return m_allValues.end();
+    }
+    auto CommandLine::end() const -> ArgumentVector::const_iterator
+    {
+        return m_allValues.end();
+    }
+    auto CommandLine::cend() const -> ArgumentVector::const_iterator
+    {
+        return m_allValues.cend();
+    }
+    auto CommandLine::rbegin() -> ArgumentVector::reverse_iterator
+    {
+        return m_allValues.rbegin();
+    }
+    auto CommandLine::rbegin() const -> ArgumentVector::const_reverse_iterator
+    {
+        return m_allValues.rbegin();
+    }
+    auto CommandLine::crbegin() const -> ArgumentVector::const_reverse_iterator
+    {
+        return m_allValues.crbegin();
+    }
+    auto CommandLine::rend() -> ArgumentVector::reverse_iterator
+    {
+        return m_allValues.rend();
+    }
+    auto CommandLine::rend() const -> ArgumentVector::const_reverse_iterator
+    {
+        return m_allValues.rend();
+    }
+    auto CommandLine::crend() const -> ArgumentVector::const_reverse_iterator
+    {
+        return m_allValues.crend();
     }
 }

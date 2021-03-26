@@ -100,103 +100,99 @@ namespace AZ
             return shininess;
         }
 
-        bool AssImpMaterialWrapper::GetUseColorMap() const
+        AZStd::optional<bool> AssImpMaterialWrapper::GetUseColorMap() const
         {
             // AssImp stores values as floats, so load as float and convert to bool.
             float useMap = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useMap) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useMap) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get useColorMap from the material. Using default.");
+                return useMap != 0.0f;
             }
-            return useMap != 0.0f;
+            return AZStd::nullopt;
         }
 
-        AZ::Vector3 AssImpMaterialWrapper::GetBaseColor() const
+        AZStd::optional<AZ::Vector3> AssImpMaterialWrapper::GetBaseColor() const
         {
             aiColor3D color(1.f, 1.f, 1.f);
-            if (m_assImpMaterial->Get(AI_MATKEY_BASE_COLOR, color) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_BASE_COLOR, color) != aiReturn::aiReturn_FAILURE)
             {
-                // If a base color is not set, fall back to the diffuse color.
-                // Before PBR support was added, the base color was set to the diffuse color, so
-                // this will match that behavior.
-                return GetDiffuseColor();
+                return AZ::Vector3(color.r, color.g, color.b);
             }
-            return AZ::Vector3(color.r, color.g, color.b);
+            return AZStd::nullopt;
         }
 
-        bool AssImpMaterialWrapper::GetUseMetallicMap() const
+        AZStd::optional<bool> AssImpMaterialWrapper::GetUseMetallicMap() const
         {
             // AssImp stores values as floats, so load as float and convert to bool.
             float useMap = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMap) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMap) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get useMetallicMap from the material. Using default.");
+                return useMap != 0.0f;
             }
-            return useMap != 0.0f;
+            return AZStd::nullopt;
         }
 
-        float AssImpMaterialWrapper::GetMetallicFactor() const
+        AZStd::optional<float> AssImpMaterialWrapper::GetMetallicFactor() const
         {
             float metallic = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get metallic from the material. Using default.");
+                return metallic;
             }
-            return metallic;
+            return AZStd::nullopt;
         }
 
-        bool AssImpMaterialWrapper::GetUseRoughnessMap() const
+        AZStd::optional<bool> AssImpMaterialWrapper::GetUseRoughnessMap() const
         {
             // AssImp stores values as floats, so load as float and convert to bool.
             float useMap = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useMap) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useMap) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get useRoughnessMap from the material. Using default.");
+                return useMap != 0.0f;
             }
-            return useMap != 0.0f;
+            return AZStd::nullopt;
         }
 
-        float AssImpMaterialWrapper::GetRoughnessFactor() const
+        AZStd::optional<float> AssImpMaterialWrapper::GetRoughnessFactor() const
         {
             float roughness = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get roughness from the material. Using default.");
+                return roughness;
             }
-            return roughness;
+            return AZStd::nullopt;
         }
 
-        bool AssImpMaterialWrapper::GetUseEmissiveMap() const
+        AZStd::optional<bool> AssImpMaterialWrapper::GetUseEmissiveMap() const
         {
             // AssImp stores values as floats, so load as float and convert to bool.
             float useMap = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useMap) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useMap) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(
-                    AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get useEmissiveMap from the material. Using default.");
+                return useMap != 0.0f;
             }
-            return useMap != 0.0f;
+            return AZStd::nullopt;
         }
 
-        float AssImpMaterialWrapper::GetEmissiveIntensity() const
+        AZStd::optional<float> AssImpMaterialWrapper::GetEmissiveIntensity() const
         {
             float emissiveIntensity = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveIntensity) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveIntensity) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get emissive intensity from the material. Using default.");
+                return emissiveIntensity;
             }
-            return emissiveIntensity;
+            return AZStd::nullopt;
         }
 
-        bool AssImpMaterialWrapper::GetUseAOMap() const
+        AZStd::optional<bool> AssImpMaterialWrapper::GetUseAOMap() const
         {
             // AssImp stores values as floats, so load as float and convert to bool.
             float useMap = 0.0f;
-            if (m_assImpMaterial->Get(AI_MATKEY_USE_AO_MAP, useMap) == aiReturn::aiReturn_FAILURE)
+            if (m_assImpMaterial->Get(AI_MATKEY_USE_AO_MAP, useMap) != aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get useAOMap from the material. Using default.");
+                return useMap != 0.0f;
             }
-            return useMap != 0.0f;
+            return AZStd::nullopt;
         }
 
         AZStd::string AssImpMaterialWrapper::GetTextureFileName(MaterialMapType textureType) const

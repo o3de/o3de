@@ -20,13 +20,7 @@ int main(int argc, char** argv)
     traceMessageHook.EnableTraceContext(true);
     AZ::Debug::Trace::HandleExceptions(true);
 
-    // Perform an additional check for an override app root argument, and set it in the startup params if appropriate
-    char destinationRootArgBuffer[AZ_MAX_PATH_LEN];
     AZ::ComponentApplication::StartupParameters startupParams;
-    if (app.GetOptionalAppRootArg(destinationRootArgBuffer, AZ_MAX_PATH_LEN))
-    {
-        startupParams.m_appRootOverride = destinationRootArgBuffer;
-    }
     startupParams.m_loadDynamicModules = false;
 
     app.Start(AzFramework::Application::Descriptor(), startupParams);

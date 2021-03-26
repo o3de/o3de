@@ -84,7 +84,6 @@ namespace LumberyardLauncher
         Success = 0,
 
         ErrExePath,             //!< Failed to get the executable path
-        ErrBootstrapMismatch,   //!< Failed to validate launcher compiler defines with bootstrap values
         ErrCommandLine,         //!< Failed to copy the command line
         ErrValidation,          //!< Failed to validate secret
         ErrResourceLimit,       //!< Failed to increase unix resource limits
@@ -107,10 +106,13 @@ namespace LumberyardLauncher
     //////////////////////////////////////////////////////////////////////////
 
     //! This function returns the name of the project
-    const AZStd::string_view GetGameProjectName();
+    AZStd::string_view GetProjectName();
+
+    //! This function returns the path of the project as known by the build system
+    AZStd::string_view GetProjectPath();
 
     //! This function returns the build system target name
-    const AZStd::string_view GetBuildTargetName();
+    AZStd::string_view GetBuildTargetName();
 
     //////////////////////////////////////////////////////////////////////////
     // The following functions are defined per launcher type (e.g. Game/Server)

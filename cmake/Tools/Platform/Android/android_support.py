@@ -84,7 +84,7 @@ APP_SPLASH_NAME = 'app_splash.png'
 
 PYTHON_SCRIPT = 'python.cmd' if platform.system() == 'Windows' else 'python.sh'
 
-ANDROID_LAUNCHER_NAME_PATTERN = "{game_name}.GameLauncher"
+ANDROID_LAUNCHER_NAME_PATTERN = "{project_name}.GameLauncher"
 
 class AndroidProjectManifestEnvironment(object):
     """
@@ -92,43 +92,42 @@ class AndroidProjectManifestEnvironment(object):
     that were passed in or calculated from the command line arguments.
     """
 
-    def __init__(self, dev_root, game_name, android_sdk_version_number, android_ndk_platform_number):
+    def __init__(self, engine_root, project_path, android_sdk_version_number, android_ndk_platform_number, is_test:bool):
         """
         Initialize the object with the project specific parameters and values for the game project
 
-        :param dev_root:                    The dev-root path where the game is located
-        :param game_name:                   The name of the game
+        :param engine_root:                 The path where the engine is located
+        :param project_path:                The path were the project is located
         :param android_sdk_version_number:  The android SDK platform version
         :param android_ndk_platform_number: The android NDK platform version
+        :param is_test:                     Indicates if theAzTestRunner application should be run
         """
 
-        is_test = game_name.lower() == TEST_RUNNER_PROJECT.lower()
-
         if is_test:
-            # The AzTestRunner project.json is located under {dev_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
-            game_folder_project_properties_path = dev_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
+            # The AzTestRunner project.json is located under {engine_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
+            project_properties_path = engine_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
         else:
             # The project.json file is located under the game name folder
-            game_folder = dev_root / game_name
-            game_folder_project_properties_path = game_folder / 'project.json'
+            project_properties_path = project_path / 'project.json'
         # Read and parse the project.json file into a dictionary to process the specific attributes needed for the manifest template
-        game_project_properties_content = game_folder_project_properties_path.resolve(strict=True)\
+        project_properties_content = project_properties_path.resolve(strict=True)\
                                                                              .read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
                                                                                         errors=common.ENCODING_ERROR_HANDLINGS)
-        self.game_name = game_name
+        self.project_path = project_path
 
         # Extract the key attributes we need to process and build up our environment table
-        game_project_json = json.loads(game_project_properties_content)
+        project_json = json.loads(project_properties_content)
 
-        product_name = game_project_json['product_name']
+        project_name = project_json['project_name']
+        product_name = project_json['product_name']
 
-        game_project_android_settings = game_project_json['android_settings']
+        game_project_android_settings = project_json['android_settings']
 
         package_name = game_project_android_settings["package_name"]
 
         package_path = package_name.replace('.', '/')
 
-        project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{self.game_name}Activity'
+        project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{project_name}Activity'
 
         # Multiview options require special processing
         multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(game_project_android_settings)
@@ -140,9 +139,9 @@ class AndroidProjectManifestEnvironment(object):
             "ANDROID_VERSION_NAME":             game_project_android_settings["version_name"],
             "ANDROID_SCREEN_ORIENTATION":       game_project_android_settings["orientation"],
             'ANDROID_APP_NAME':                 TEST_RUNNER_PROJECT if is_test else product_name,       # external facing name
-            'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else self.game_name,     # internal facing name
+            'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else project_name,     # internal facing name
             'ANDROID_PROJECT_ACTIVITY':         project_activity,
-            'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(game_name=self.game_name),
+            'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(project_name=project_name),
             'ANDROID_CONFIG_CHANGES':           multi_window_options['ANDROID_CONFIG_CHANGES'],
             'ANDROID_APP_PUBLIC_KEY':           game_project_android_settings.get('app_public_key', 'NoKey'),
             'ANDROID_APP_OBFUSCATOR_SALT':      game_project_android_settings.get('app_obfuscator_salt', ''),
@@ -297,7 +296,7 @@ PLATFORM_SETTINGS_FORMAT = """
 
 [settings]
 platform={platform}
-game_projects={game_project}
+game_projects={project_path}
 asset_deploy_mode={asset_mode}
 asset_deploy_type={asset_type}
 
@@ -336,7 +335,7 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
     task copyNativeLibs{config}(type: Copy) {{
         delete 'outputs/native-lib/{abi}'
 
-        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{game_name}.GameLauncher.so' )
+        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
         into  'outputs/native-lib/{abi}'
     }}
 
@@ -363,7 +362,7 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR = """
 CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
     task syncLYLayoutMode{config}(type:Exec) {{
         workingDir '{working_dir}'
-        commandLine '{python_full_path}', 'layout_tool.py', '--dev-root', '{dev_root}', '-p', 'Android', '-a', '{asset_type}', '-g', '{game_name}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
+        commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
 """
@@ -424,17 +423,19 @@ class AndroidProjectGenerator(object):
     Class the manages the process to generate an android project folder in order to build with gradle/android studio
     """
 
-    def __init__(self, dev_root, build_dir, android_ndk_path, android_sdk_path, android_sdk_version, android_ndk_platform, game_name, third_party_path, cmake_version, override_cmake_path, override_gradle_path, override_ninja_path, android_sdk_build_tool_version, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False):
+    def __init__(self, engine_root, build_dir, android_ndk_path, android_sdk_path, android_sdk_version, android_ndk_platform,
+                 project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, override_ninja_path,
+                 android_sdk_build_tool_version, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
         
-        :param dev_root:                The dev-root that contains the engine and the game 
-        :param build_dir:               The target folder under the ${dev_root} where the android project folder will be created
+        :param engine_root:             The engine root that contains the engine
+        :param build_dir:               The target folder under the where the android project folder will be created
         :param android_ndk_path:        The path to the ANDROID_NDK used for building the native android code 
         :param android_sdk_path:        The path to the ANDROID_SDK used for building the android java code
         :param android_sdk_version:     The android platform version number to use for the Android SDK related builds
         :param android_ndk_platform:    The android platform version number to use for the Android NDK related builds
-        :param game_name:               The name of the game under the ${dev_root} to create the project for
+        :param project_path:            The path to the project
         :param third_party_path:        The required path to the lumberyard 3rd party path
         :param cmake_version:           The version number of cmake that will be used by gradle
         :param override_cmake_path:     The override path to cmake if it does not exists in the system path
@@ -445,11 +446,11 @@ class AndroidProjectGenerator(object):
         :param asset_mode:
         :param asset_type:
         :param signing_config:          Optional signing configuration arguments
-        :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, game_name, asset_mode, asset_type, and include_assets_in_apk are ignored)
+        :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         """
         self.env = {}
 
-        self.dev_root = dev_root
+        self.engine_root = engine_root
 
         self.build_dir = build_dir
 
@@ -457,7 +458,7 @@ class AndroidProjectGenerator(object):
 
         self.android_sdk_path = android_sdk_path
 
-        self.android_project_builder_path = dev_root / 'Code/Tools/Android/ProjectBuilder'
+        self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
 
         self.android_sdk_version = android_sdk_version
 
@@ -465,7 +466,7 @@ class AndroidProjectGenerator(object):
 
         self.android_ndk_platform = android_ndk_platform
 
-        self.game_name = game_name
+        self.project_path = project_path
 
         self.third_party_path = third_party_path
 
@@ -507,7 +508,7 @@ class AndroidProjectGenerator(object):
             'SDK_VER': self.android_sdk_version,
             'NDK_PLATFORM_VER': self.android_ndk_platform,
             'SDK_BUILD_TOOL_VER': self.android_sdk_build_tool_version,
-            'LY_DEV_ROOT': common.normalize_path_for_settings(self.dev_root)
+            'LY_ENGINE_ROOT': common.normalize_path_for_settings(self.engine_root)
         }
         # Generate the gradle build script
         self.create_file_from_project_template(src_template_file='root.build.gradle.in',
@@ -570,7 +571,7 @@ class AndroidProjectGenerator(object):
         if self.is_test_project:
             platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                         platform='android',
-                                                                        game_project=TEST_RUNNER_PROJECT,
+                                                                        project_path=TEST_RUNNER_PROJECT,
                                                                         asset_mode='',
                                                                         asset_type='',
                                                                         android_sdk_path=str(self.android_sdk_path),
@@ -578,7 +579,7 @@ class AndroidProjectGenerator(object):
         else:
             platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                         platform='android',
-                                                                        game_project=self.game_name,
+                                                                        project_path=self.project_path,
                                                                         asset_mode=self.asset_mode,
                                                                         asset_type=self.asset_type,
                                                                         android_sdk_path=str(self.android_sdk_path),
@@ -709,22 +710,16 @@ class AndroidProjectGenerator(object):
         # Prepare the 'PROJECT_DEPENDENCIES' environment variable
         gradle_project_dependencies = [f"    api project(path: ':{project_dependency}')" for project_dependency in project_dependencies]
 
-        template_dev_root = common.normalize_path_for_settings(self.dev_root)
+        template_engine_root = common.normalize_path_for_settings(self.engine_root)
         template_third_party_path = common.normalize_path_for_settings(self.third_party_path)
         template_ndk_path = common.normalize_path_for_settings(self.android_ndk_path)
 
         gradle_build_env = dict()
 
-        # Calculate the relative path of the engine root based on the target build directory, which is
-        # expected to be at the same folder level as the engine root
-        relative_engine_root_path = ''
-        target_app_root_path = self.dev_root / self.build_dir / 'app'
-        while target_app_root_path != self.dev_root:
-            target_app_root_path = target_app_root_path.parent
-            relative_engine_root_path += '../'
+        engine_root_as_path= pathlib.PurePath(self.engine_root)
 
-        relative_cmakelist_path = relative_engine_root_path + 'CMakeLists.txt'
-        relative_azandroid_path = relative_engine_root_path + 'Code/Framework/AzAndroid/java'
+        relative_cmakelist_path = (engine_root_as_path / 'CMakeLists.txt').as_posix()
+        relative_azandroid_path = (engine_root_as_path / 'Code/Framework/AzAndroid/java').as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
@@ -744,13 +739,13 @@ class AndroidProjectGenerator(object):
             # Prepare the cmake argument list based on the collected android settings and each build config
             cmake_argument_list = [
                 '"-GNinja"',
-                f'"-S{template_dev_root}"',
+                f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_dev_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"']
 
             if not self.is_test_project:
-                cmake_argument_list.append(f'"-DLY_PROJECTS={self.game_name}"')
+                cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')
             else:
                 cmake_argument_list.append('"-DLY_TEST_PROJECT=1"')
 
@@ -766,44 +761,46 @@ class AndroidProjectGenerator(object):
             if self.override_ninja_path:
                 cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={common.normalize_path_for_settings(self.override_ninja_path)}"')
 
+            # Query the project_path from the project.json file
+            project_name = common.read_project_name_from_project_json(self.project_path)
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
-                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(targets_section=f'targets "{self.game_name}.GameLauncher"' if not self.is_test_project else "",
-                                                                         arguments=','.join(cmake_argument_list))
+                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(targets_section=f'targets "{project_name}.GameLauncher"'
+                if project_name and not self.is_test_project else "", arguments=','.join(cmake_argument_list))
 
-            # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
-            # (launcher) since gradle will not include them automatically for APK import
-            gradle_build_env[f'CUSTOM_GRADLE_COPY_NATIVE_{native_config_upper}_LIB_TASK'] = \
-                CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR.format(config=native_config,
-                                                                   config_lower=native_config_lower,
-                                                                   game_name=self.game_name,
-                                                                   abi=ANDROID_ARCH,
-                                                                   optional_test_excludes=",'*.Tests.so'" if not self.is_test_project else "")
+            if project_name:
+                # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
+                # (launcher) since gradle will not include them automatically for APK import
+                gradle_build_env[f'CUSTOM_GRADLE_COPY_NATIVE_{native_config_upper}_LIB_TASK'] = \
+                    CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR.format(config=native_config,
+                                                                       config_lower=native_config_lower,
+                                                                       project_name=project_name,
+                                                                       abi=ANDROID_ARCH,
+                                                                       optional_test_excludes=",'*.Tests.so'" if not self.is_test_project else "")
 
             if self.is_test_project:
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=common.normalize_path_for_settings(self.dev_root / self.build_dir / 'app/src/main/assets'),
+                                                                                       asset_layout_folder=(self.project_path / self.build_dir / 'app/src/main/assets').as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
                 # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=common.normalize_path_for_settings(self.dev_root / self.build_dir / 'app/src/main/assets'),
+                                                                                       asset_layout_folder=(self.project_path / self.build_dir / 'app/src/main/assets').as_posix(),
                                                                                        file_includes='**/Registry/*.setreg')
 
             if self.include_assets_in_apk:
                 if not self.is_test_project:
                     gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                        CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.dev_root / 'cmake/Tools'),
-                                                                         python_full_path=common.normalize_path_for_settings(self.dev_root / 'python' / PYTHON_SCRIPT),
-                                                                         dev_root=common.normalize_path_for_settings(self.dev_root),
+                        CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
+                                                                         python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
                                                                          asset_type=self.asset_type,
-                                                                         game_name=self.game_name,
+                                                                         project_path=self.project_path.as_posix(),
                                                                          asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=common.normalize_path_for_settings(self.dev_root / self.build_dir / 'app/src/main/assets'),
+                                                                         asset_layout_folder=common.normalize_path_for_settings(self.project_path / self.build_dir / 'app/src/main/assets'),
                                                                          config=native_config)
             else:
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''
@@ -833,10 +830,11 @@ class AndroidProjectGenerator(object):
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'
         dest_src_main_path.mkdir(parents=True)
-        az_android_package_env = AndroidProjectManifestEnvironment(dev_root=self.dev_root,
-                                                                   game_name=self.game_name,
+        az_android_package_env = AndroidProjectManifestEnvironment(engine_root=self.engine_root,
+                                                                   project_path=self.project_path,
                                                                    android_sdk_version_number=self.android_sdk_version,
-                                                                   android_ndk_platform_number=self.android_ndk_platform)
+                                                                   android_ndk_platform_number=self.android_ndk_platform,
+                                                                   is_test=self.is_test_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
                                                dst_file=dest_src_main_path / ANDROID_MANIFEST_FILE,
@@ -972,17 +970,12 @@ class AndroidProjectGenerator(object):
             # Always return itself if the path is already and absolute path
             return pathlib.Path(source_path)
 
-        game_gem_resources = self.dev_root / self.game_name / 'Gem' / 'Resources'
+        game_gem_resources = self.project_path / 'Gem' / 'Resources'
         if game_gem_resources.is_dir(game_gem_resources):
             # If the source is relative and the game gem's resource is present, construct the path based on that
             return game_gem_resources / source_path
 
-        legacy_game_resources = self.dev_root / 'Code' / self.game_name / 'Resources'
-        if legacy_game_resources.is_dir(game_gem_resources):
-            # If the source is relative and the game is using the legacy code folder's resource, construct the path based on that
-            return legacy_game_resources / source_path
-
-        raise common.LmbrCmdError("Unable to locate resources folder for game '{}'".format(self.game_name))
+        raise common.LmbrCmdError(f'Unable to locate resources folder for project at path "{self.project_path}"')
 
     def resolve_icon_overrides(self, az_android_dst_path, az_android_package_env):
         """
@@ -1012,7 +1005,7 @@ class AndroidProjectGenerator(object):
             shutil.copyfile(src_default_icon_file.resolve(), dst_default_icon_file.resolve())
             os.chmod(dst_default_icon_file.resolve(), stat.S_IWRITE | stat.S_IREAD)
         else:
-            logging.debug('No default icon override specified for %s', self.game_name)
+            logging.debug(f'No default icon override specified for project_at path {self.project_path}')
 
         # process each of the resolution overrides
         warnings = []
@@ -1028,11 +1021,11 @@ class AndroidProjectGenerator(object):
                 # if both the resolution and the default are unspecified, warn the user but do nothing
                 if icon_source is None:
                     warnings.append(f'No icon override found for "{resolution}".  Either supply one for "{resolution}" or a '
-                                    f'"default" in the android_settings "icon" section of the project.json file for {self.game_name}')
+                                    f'"default" in the android_settings "icon" section of the project.json file for {self.project_path}')
 
                 # if only the resolution is unspecified, remove the resolution specific version from the project
                 else:
-                    logging.debug('Default icon being used for "%s" in %s', resolution, self.game_name)
+                    logging.debug(f'Default icon being used for "{resolution}" in {self.project_path}', resolution)
                     common.remove_dir_path(target_directory)
                 continue
 
@@ -1072,7 +1065,7 @@ class AndroidProjectGenerator(object):
             unused_override_warning = None
             if (orientation & orientation_flag) == 0:
                 unused_override_warning = f'Splash screen overrides specified for "{orientation_key}" when desired orientation ' \
-                                          f'is set to "{ORIENTATION_FLAG_TO_KEY_MAP[orientation]}" in project {self.game_name}. ' \
+                                          f'is set to "{ORIENTATION_FLAG_TO_KEY_MAP[orientation]}" in project {self.project_path}. ' \
                                           f'These overrides will be ignored.'
 
             # if a default splash image is specified for this orientation, then copy it into the generic drawable-<orientation> folder
@@ -1092,7 +1085,8 @@ class AndroidProjectGenerator(object):
                 shutil.copyfile(src_default_splash_img_file.resolve(), dst_default_splash_img_file.resolve())
                 os.chmod(dst_default_splash_img_file.resolve(), stat.S_IWRITE | stat.S_IREAD)
             else:
-                logging.debug(f'No default splash screen override specified for "%s" orientation in %s', orientation_key, self.game_name)
+                logging.debug(f'No default splash screen override specified for "%s" orientation in %s', orientation_key,
+                              self.project_path)
 
             # process each of the resolution overrides
             warnings = []
@@ -1113,10 +1107,10 @@ class AndroidProjectGenerator(object):
                         section = f"{orientation_key}-{resolution}"
                         warnings.append(f'No splash screen override found for "{section}".  Either supply one for "{resolution}" '
                                         f'or a "default" in the android_settings "splash_screen-{orientation_key}" section of the '
-                                        f'project.json file for {self.game_name}.')
+                                        f'project.json file for {self.project_path}.')
                     else:
                         # if only the resolution is unspecified, remove the resolution specific version from the project
-                        logging.debug('Default splash screen being used for "%s-%s" in %s', orientation_key, resolution, self.game_name)
+                        logging.debug(f'Default splash screen being used for "{orientation_key}-{resolution}" in {self.project_path}')
                         common.remove_dir_path(target_directory)
                     continue
                 src_splash_img_file = self.construct_source_resource_path(splash_img_source)
@@ -1133,7 +1127,8 @@ class AndroidProjectGenerator(object):
                     for warning_msg in warnings:
                         logging.warning(warning_msg)
 
-    def clear_unused_assets(self, az_android_dst_path, az_android_package_env):
+    @staticmethod
+    def clear_unused_assets(az_android_dst_path, az_android_package_env):
         """
         micro-optimization to clear assets from the final bundle that won't be used
 
@@ -1208,7 +1203,7 @@ class AndroidProjectGenerator(object):
             else:
                 project_dependencies = ""
 
-            # Prepare an environemt for a basic, no-native (cmake) gradle project (java only)
+            # Prepare an environment for a basic, no-native (cmake) gradle project (java only)
             build_gradle_env = {
                 'PROJECT_DEPENDENCIES': project_dependencies,
                 'TARGET_TYPE': 'library',
@@ -1478,6 +1473,7 @@ def verify_android_ndk(android_ndk_platform, argument_name, override_android_ndk
             validated_android_platforms.append(dir_item.name)
 
     # For NDK revisions 19 and up, there is a mapping file for version numbers that map to other version.
+    platforms_map_aliases = {}
     if ndk_revision_number >= LooseVersion('19.0.0'):
         platforms_map_file = check_android_ndk_path / 'meta/platforms.json'
         if platforms_map_file.exists():

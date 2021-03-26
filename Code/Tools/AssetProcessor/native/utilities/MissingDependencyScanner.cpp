@@ -20,43 +20,48 @@ AZ_POP_DISABLE_WARNING
 #include "native/AssetDatabase/AssetDatabase.h"
 #include "native/assetprocessor.h"
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/FileTag/FileTagBus.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/XML/rapidxml.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileTag/FileTag.h>
+#include <AzFramework/FileTag/FileTagBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace AssetProcessor
 {
     const char* EngineFolder = "Engine";
 
-    AZStd::string GetXMLDependenciesFile(const AZStd::string& fullPath, const AZStd::vector<AzToolsFramework::AssetUtils::GemInfo>& gemInfoList, AZStd::string& tokenName)
+    AZStd::string GetXMLDependenciesFile(const AZStd::string& fullPath, const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AZStd::string& tokenName)
     {
-        AZStd::string xmlDependenciesFileFullPath;
+        AZ::IO::Path xmlDependenciesFileFullPath;
         tokenName = EngineFolder;
-        for (const AzToolsFramework::AssetUtils::GemInfo& gemElement : gemInfoList)
+        for (const AzFramework::GemInfo& gemElement : gemInfoList)
         {
-            if (AzFramework::StringFunc::StartsWith(fullPath.c_str(), gemElement.m_absoluteFilePath.c_str()) || AzFramework::StringFunc::Equal(gemElement.m_absoluteFilePath.c_str(), fullPath.c_str()))
+            for (const AZ::IO::Path& absoluteSourcePath : gemElement.m_absoluteSourcePaths)
             {
-                AZStd::string fileName = AZStd::string::format("%s_Dependencies.xml", gemElement.m_gemName.c_str());
-                AzFramework::StringFunc::Path::ConstructFull(gemElement.m_absoluteFilePath.c_str(), AzToolsFramework::AssetUtils::GemInfo::GetGemAssetFolder().c_str(), fileName.c_str() , "xml", xmlDependenciesFileFullPath);
-                if (AZ::IO::FileIOBase::GetInstance()->Exists(xmlDependenciesFileFullPath.c_str()))
+                if (AZ::StringFunc::StartsWith(fullPath, absoluteSourcePath.Native()) || AZ::StringFunc::Equal(absoluteSourcePath.Native(), fullPath))
                 {
-                    tokenName = gemElement.m_gemName;
-                    return xmlDependenciesFileFullPath;
+                    xmlDependenciesFileFullPath /= AzFramework::GemInfo::GetGemAssetFolder();
+                    xmlDependenciesFileFullPath /= AZStd::string::format("%s_Dependencies.xml", gemElement.m_gemName.c_str());;
+                    if (AZ::IO::FileIOBase::GetInstance()->Exists(xmlDependenciesFileFullPath.c_str()))
+                    {
+                        tokenName = gemElement.m_gemName;
+                        return xmlDependenciesFileFullPath.Native();
+                    }
                 }
             }
         }
 
         // if we are here than either the %gemName%_Dependencies.xml file does not exists or the user inputted path is not inside a gems folder,
         // in both the cases we will return the engine dependencies file
-        const char* devRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
-        AzFramework::StringFunc::Path::ConstructFull(devRoot, EngineFolder, "Engine_Dependencies.xml", "xml", xmlDependenciesFileFullPath);
+        xmlDependenciesFileFullPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        xmlDependenciesFileFullPath /= EngineFolder;
+        xmlDependenciesFileFullPath /= "Engine_Dependencies.xml";
 
-        return xmlDependenciesFileFullPath;
+        return xmlDependenciesFileFullPath.Native();
     }
 
     const int MissingDependencyScanner::DefaultMaxScanIteration = 800;
@@ -731,7 +736,7 @@ namespace AssetProcessor
         }
     }
 
-    bool MissingDependencyScanner::PopulateRulesForScanFolder(const AZStd::string& scanFolderPath, const AZStd::vector<AzToolsFramework::AssetUtils::GemInfo>& gemInfoList, AZStd::string& dependencyTokenName)
+    bool MissingDependencyScanner::PopulateRulesForScanFolder(const AZStd::string& scanFolderPath, const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AZStd::string& dependencyTokenName)
     {
         AZStd::string xmlDependenciesFullFilePath = GetXMLDependenciesFile(scanFolderPath, gemInfoList, dependencyTokenName);
         if (xmlDependenciesFullFilePath.empty())

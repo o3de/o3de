@@ -317,7 +317,8 @@ int CLightEntity::UpdateGSMLightSourceDynamicShadowFrustum(int nDynamicLodCount,
 
         if (bDoGSM)
         {
-            Vec3 vSunDir = Get3DEngine()->GetSunDir().GetNormalized();  // todo: remove GetNormalized() once GetSunDir() returns the normalized value
+            //Vec3 vSunDir = Get3DEngine()->GetSunDir().GetNormalized();  // todo: remove GetNormalized() once GetSunDir() returns the normalized value
+            Vec3 vSunDir = Vec3(1.0f, 0.0f, 0.0f);
             Vec3 vCameraDirWithoutDepth = vCameraDir - vCameraDir.Dot(vSunDir) * vSunDir;
 
             Vec3 vFocusPos = passInfo.GetCamera().GetPosition() + vCameraDirWithoutDepth * fGSMBoxSize;

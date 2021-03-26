@@ -63,6 +63,7 @@ ly_add_target(
             Gem::AtomToolsFramework.Editor
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Public
+            Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
@@ -131,6 +132,12 @@ ly_add_target_dependencies(
         tool_dependencies.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 )
+
+# Inject the project path into the MaterialEditor VS debugger command arguments if the build system being invoked
+# in a project centric view
+if(NOT PROJECT_NAME STREQUAL "O3DE")
+    set_property(TARGET MaterialEditor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${CMAKE_SOURCE_DIR}\"")
+endif()
 
 # Adds the MaterialEditor target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies

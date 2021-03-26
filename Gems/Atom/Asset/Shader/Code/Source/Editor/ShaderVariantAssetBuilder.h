@@ -66,6 +66,7 @@ namespace AZ
                 ShaderVariantCreationContext& context,
                 RHI::ShaderPlatformInterface& shaderPlatformInterface,
                 AzslData& azslData,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
                 const AZStd::string& pathToOmJson,
                 const AZStd::string& pathToIaJson);
 

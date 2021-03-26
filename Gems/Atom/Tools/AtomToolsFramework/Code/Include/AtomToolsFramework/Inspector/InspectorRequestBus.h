@@ -14,6 +14,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
+class QWidget;
+
 namespace AtomToolsFramework
 {
     class InspectorGroupWidget;
@@ -40,7 +42,7 @@ namespace AtomToolsFramework
             const AZStd::string& groupNameId,
             const AZStd::string& groupDisplayName,
             const AZStd::string& groupDescription,
-            InspectorGroupWidget* groupWidget) = 0;
+            QWidget* groupWidget) = 0;
 
         //! Calls Refresh for a specific InspectorGroupWidget, allowing for non-destructive UI changes
         virtual void RefreshGroup(const AZStd::string& groupNameId) = 0;

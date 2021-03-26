@@ -157,7 +157,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "ServerThrottle.h"
 #include "ILocalMemoryUsage.h"
 #include "ResourceManager.h"
-#include "LoadingProfiler.h"
 #include "HMDBus.h"
 #include "OverloadSceneManager/OverloadSceneManager.h"
 #include <IThreadManager.h>
@@ -168,7 +167,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "IZStdDecompressor.h"
 #include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
-#include "BootProfiler.h"
 
 #include <PNoise3.h>
 #include <StringUtils.h>
@@ -320,10 +318,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_bIsAsserting = false;
     m_pSystemEventDispatcher = new CSystemEventDispatcher(); // Must be first.
 
-#if defined(ENABLE_LOADING_PROFILER)
-    CBootProfiler::GetInstance().Init(this);
-#endif
-
     if (m_pSystemEventDispatcher)
     {
         m_pSystemEventDispatcher->RegisterListener(this);
@@ -422,7 +416,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
     m_pCpu = NULL;
-    m_sys_game_folder = NULL;
 
     m_bInitializedSuccessfully = false;
     m_bShaderCacheGenMode = false;
@@ -634,10 +627,6 @@ void CSystem::ShutDown()
         EBUS_EVENT(CrySystemEventBus, OnCrySystemShutdown, *this);
     }
 
-#if defined(ENABLE_LOADING_PROFILER)
-    CLoadingProfilerSystem::ShutDown();
-#endif
-
     if (m_pUserCallback)
     {
         m_pUserCallback->OnShutdown();
@@ -657,7 +646,7 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_pTextModeConsole);
 
     KillPhysicsThread();
-    
+
     if (m_sys_firstlaunch)
     {
         m_sys_firstlaunch->Set("0");
@@ -828,7 +817,7 @@ void CSystem::ShutDown()
 void CSystem::Quit()
 {
     CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", GetCurrentThreadId(), gEnv->mMainThreadId);
-    
+
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 
     // If this was set from anywhere but the main thread, bail and let the main thread handle shutdown
@@ -857,13 +846,13 @@ void CSystem::Quit()
 
     /*
     * TODO: This call to _exit, _Exit, TerminateProcess etc. needs to
-    * eventually be removed. This causes an extremely early exit before we 
-    * actually perform cleanup. When this gets called most managers are 
+    * eventually be removed. This causes an extremely early exit before we
+    * actually perform cleanup. When this gets called most managers are
     * simply never deleted and we leave it to the OS to clean up our mess
     * which is just really bad practice. However there are LOTS of issues
-    * with shutdown at the moment. Removing this will simply cause 
-    * a crash when either the Editor or Launcher initiate shutdown. Both 
-    * applications crash differently too. Bugs will be logged about those 
+    * with shutdown at the moment. Removing this will simply cause
+    * a crash when either the Editor or Launcher initiate shutdown. Both
+    * applications crash differently too. Bugs will be logged about those
     * issues.
     */
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -1117,7 +1106,7 @@ void CSystem::CreatePhysicsThread()
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
 
-        {            
+        {
             m_PhysThread = new CPhysicsThreadTask;
             GetIThreadTaskManager()->RegisterTask(m_PhysThread, threadParams);
         }
@@ -1412,7 +1401,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         ti.xscale = ti.yscale = 1.2f;
 
         const int viewportHeight = GetViewCamera().GetViewSurfaceZ();
-        
+
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_8
 #include AZ_RESTRICTED_FILE(System_cpp)
@@ -1428,7 +1417,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
             switch (stat.GetType())
             {
             case AZ::IO::Statistic::Type::FloatingPoint:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti, 
+                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
                     AZStd::string::format("%s/%s: %.3f", stat.GetOwner().data(), stat.GetName().data(), stat.GetFloatValue()).c_str());
                 break;
             case AZ::IO::Statistic::Type::Integer:
@@ -2744,10 +2733,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     {
     // System event translation
     case WM_CLOSE:
-        /* 
+        /*
             Trigger CSystem to call Quit() the next time
             it calls Update(). HandleMessages can get messages
-            pumped to it from SyncMainWithRender which would 
+            pumped to it from SyncMainWithRender which would
             be called recurively by Quit(). Doing so would
             cause the render thread to deadlock and the main
             thread to spin in SRenderThread::WaitFlushFinishedCond.
@@ -2895,11 +2884,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
 {
     return std::make_shared<AZ::IO::LocalFileIO>();
-}
-
-const char* CSystem::GetAssetsPlatform() const
-{
-    return m_assetPlatform.c_str();
 }
 
 IViewSystem* CSystem::GetIViewSystem()

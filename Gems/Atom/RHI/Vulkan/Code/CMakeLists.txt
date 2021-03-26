@@ -20,7 +20,6 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
     ly_add_target(
         NAME Atom_RHI_Vulkan.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RHI_Vulkan.Private.150d40d376124d98a388dfe890551c03.v0.1.0
         FILES_CMAKE
             atom_rhi_vulkan_stub_module.cmake
         INCLUDE_DIRECTORIES
@@ -36,9 +35,9 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Atom_RHI_Vulkan.Builders MODULE
+            NAME Atom_RHI_Vulkan.Builders GEM_MODULE
+
             NAMESPACE Gem
-            OUTPUT_NAME Gem.Atom_RHI_Vulkan.Builders.150d40d376124d98a388dfe890551c03.v0.1.0
             FILES_CMAKE
                 ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 atom_rhi_vulkan_reflect_common_files.cmake
@@ -117,7 +116,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_RHI_Vulkan.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_RHI_Vulkan.Private.150d40d376124d98a388dfe890551c03.v0.1.0
     FILES_CMAKE
         atom_rhi_vulkan_private_common_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -176,9 +174,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Atom_RHI_Vulkan.Builders MODULE
+        NAME Atom_RHI_Vulkan.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RHI_Vulkan.Builders.150d40d376124d98a388dfe890551c03.v0.1.0
         FILES_CMAKE
             ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         INCLUDE_DIRECTORIES

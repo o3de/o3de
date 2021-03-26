@@ -11,8 +11,8 @@
  */
 
 #include <AzCore/Debug/Trace.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Settings/CommandLine.h>
 #include <Application.h>
 #include <Converter.h>
 #include <Dumper.h>
@@ -58,8 +58,8 @@ void PrintHelp()
     AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
     AZ_Printf("Help", "    [opt] -regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
     AZ_Printf("Help", "           This can be used for example to override the Active Game Project in the settings registry.\n");
-    AZ_Printf("Help", "           instead of using the sys_game_folder value from the bootstrap.cfg.\n");
-    AZ_Printf("Help", R"(           Ex. -regset "/Amazon/AzCore/Bootstrap/sys_game_folder=AutomatedTesting"\n)");
+    AZ_Printf("Help", "           instead of using the project_path value from the bootstrap.cfg.\n");
+    AZ_Printf("Help", R"(           Ex. -regset "/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"\n)");
     AZ_Printf("Help", "           This sets the active game project as AutomatedTesting, overrideing the value in the bootstrap.cfg\n");
     AZ_Printf("Help", "    example: 'convertad -config=config/game.xml -dryrun\n");
     AZ_Printf("Help", R"(  'convert-ini': Converts windows-style INI file to a json format file.)" "\n");
@@ -71,7 +71,7 @@ void PrintHelp()
     AZ_Printf("Help", R"(    [opt] -json-prefix=<prefix>: JSON pointer path prefix to anchor the JSON output underneath.)" "\n");
     AZ_Printf("Help", R"(           On Windows the <prefix> should be in quotes, as \"/\" is treated as command option prefix)" "\n");
     AZ_Printf("Help", R"(    [opt] -verbose: Report additional details during the conversion process.)" "\n");
-    AZ_Printf("Help", R"(    example: 'convertconfig --files=AssetProcessorPlatformConfigIni;bootstrap.cfg --ext=setreg)" "\n");
+    AZ_Printf("Help", R"(    example: 'convert-ini --files=AssetProcessorPlatformConfig.ini;bootstrap.cfg --ext=setreg)" "\n");
 }
 
 int main(int argc, char** argv)
@@ -79,15 +79,15 @@ int main(int argc, char** argv)
     using namespace AZ::SerializeContextTools;
 
     bool result = false;
-    Application application(&argc, &argv);
+    Application application(argc, argv);
     AZ::ComponentApplication::StartupParameters startupParameters;
     startupParameters.m_loadDynamicModules = false;
-    application.Start({}, startupParameters);
+    application.Create({}, startupParameters);
     // Load the DynamicModules after the Application starts to prevent Gem System Components
     // from activating
     application.LoadDynamicModules();
 
-    const AZ::CommandLine* commandLine = application.GetCommandLine();
+    const AZ::CommandLine* commandLine = application.GetAzCommandLine();
     if (commandLine->GetNumMiscValues() < 1)
     {
         PrintHelp();
@@ -96,23 +96,23 @@ int main(int argc, char** argv)
     else
     {
         const AZStd::string& action = commandLine->GetMiscValue(0);
-        if (AzFramework::StringFunc::Equal("dumpfiles", action.c_str()))
+        if (AZ::StringFunc::Equal("dumpfiles", action.c_str()))
         {
             result = Dumper::DumpFiles(application);
         }
-        else if (AzFramework::StringFunc::Equal("dumpsc", action.c_str()))
+        else if (AZ::StringFunc::Equal("dumpsc", action.c_str()))
         {
             result = Dumper::DumpSerializeContext(application);
         }
-        else if (AzFramework::StringFunc::Equal("convert", action.c_str()))
+        else if (AZ::StringFunc::Equal("convert", action.c_str()))
         {
             result = Converter::ConvertObjectStreamFiles(application);
         }
-        else if (AzFramework::StringFunc::Equal("convertad", action.c_str()))
+        else if (AZ::StringFunc::Equal("convertad", action.c_str()))
         {
             result = Converter::ConvertApplicationDescriptor(application);
         }
-        else if (AzFramework::StringFunc::Equal("convert-ini", action.c_str()))
+        else if (AZ::StringFunc::Equal("convert-ini", action.c_str()))
         {
             result = Converter::ConvertConfigFile(application);
         }
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
         AZ_Printf("SerializeContextTools", "Processing didn't complete fully as problems were encountered.\n");
     }
 
-    application.Stop();
+    application.Destroy();
 
     return result ? 0 : -1;
 }

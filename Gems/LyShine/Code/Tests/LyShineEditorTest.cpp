@@ -15,8 +15,9 @@
 #include <AzTest/Utils.h>
 #include <CryCommon/Mocks/ISystemMock.h>
 #include <LyShineBuilder/UiCanvasBuilderWorker.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <LyShineSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -97,7 +98,7 @@ protected:
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());   
 
-        AZ::IO::Path assetRoot(engineRoot);
+        AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());   

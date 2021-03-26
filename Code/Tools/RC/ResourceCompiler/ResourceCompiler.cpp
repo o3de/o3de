@@ -3330,7 +3330,6 @@ void ResourceCompiler::RegisterDefaultKeys()
     RegisterKey("unattended", "Prevents RC from opening any dialogs or message boxes");
     RegisterKey("createjobs", "Instructs RC to read the specified input file (a CreateJobsRequest) and output a CreateJobsResponse");
     RegisterKey("port", "Specifies the port that should be used to connect to the asset processor.  If not set, the default from the bootstrap cfg will be used instead");
-    RegisterKey("approot", "Specifies a custom directory for the engine root path. This path should contain bootstrap.cfg.");
     RegisterKey("branchtoken", "Specifies a branchtoken that should be used by the RC to negotiate with the asset processor. if not set it will be set from the bootstrap file.");
     RegisterKey("recompress", "Recompress a pack file during a copy job using the multi-variant process which picks the fastest decompressor");
     RegisterKey("use_fastest", "Checks every compressor and uses the one that decompresses the data fastest when adding files to a PAK");

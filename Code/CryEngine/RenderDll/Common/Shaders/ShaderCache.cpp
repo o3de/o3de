@@ -375,7 +375,7 @@ void CShaderMan::mfInitShadersCacheMissLog()
     // create valid path
     gEnv->pCryPak->MakeDir(g_szTestResults);
 
-    m_ShaderCacheMissPath = string("@cache@\\Shaders\\ShaderCacheMisses.txt");  // do we want this here, or maybe in @log@ ?
+    m_ShaderCacheMissPath = string("@usercache@\\Shaders\\ShaderCacheMisses.txt");  // do we want this here, or maybe in @log@ ?
 
     // load data which is already stored
     AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
@@ -2175,9 +2175,10 @@ void CShaderMan::mfOptimiseShaders(const char* szFolder, bool bForce)
     for (i = 0; i < Names.size(); i++)
     {
         const char* szName = Names[i].c_str();
-        if (!strncmp(szName, "@cache@/", 7))
+        constexpr AZStd::string_view userCache = "@usercache@/";
+        if (szName == userCache)
         {
-            szName += 7;
+            szName += userCache.size();
         }
         pCache = CHWShader::mfInitCache(szName, NULL, false, 0, false);
         if (!pCache || !pCache->m_pRes[CACHE_USER])

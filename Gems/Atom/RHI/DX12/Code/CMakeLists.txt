@@ -46,7 +46,6 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
     ly_add_target(
         NAME Atom_RHI_DX12.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RHI_DX12.Private.e011969cf32442fdaac2443a960ab5ff.v0.1.0
         FILES_CMAKE
             atom_rhi_dx12_stub_module.cmake
         BUILD_DEPENDENCIES
@@ -56,9 +55,9 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Atom_RHI_DX12.Builders MODULE
+            NAME Atom_RHI_DX12.Builders GEM_MODULE
+
             NAMESPACE Gem
-            OUTPUT_NAME Gem.Atom_RHI_DX12.Builders.e011969cf32442fdaac2443a960ab5ff.v0.1.0
             FILES_CMAKE
                 Source/Platform/${PAL_PLATFORM_NAME}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 atom_rhi_dx12_reflect_common_files.cmake
@@ -136,7 +135,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_RHI_DX12.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_RHI_DX12.Private.e011969cf32442fdaac2443a960ab5ff.v0.1.0
     FILES_CMAKE
         atom_rhi_dx12_private_common_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -182,9 +180,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Atom_RHI_DX12.Builders MODULE
+        NAME Atom_RHI_DX12.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RHI_DX12.Builders.e011969cf32442fdaac2443a960ab5ff.v0.1.0
         FILES_CMAKE
             atom_rhi_dx12_builders_common_shared_files.cmake
         INCLUDE_DIRECTORIES

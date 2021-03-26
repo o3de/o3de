@@ -36,9 +36,9 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME SliceFavorites.Editor MODULE
+    NAME SliceFavorites.Editor GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SliceFavorites.Editor.1bfc7270d4a1490daac8aa8b072c4489.v0.1.0
     FILES_CMAKE
         slicefavorites_shared_files.cmake
     INCLUDE_DIRECTORIES

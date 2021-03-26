@@ -18,6 +18,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <cctype>
 
 namespace AZ
@@ -479,10 +480,9 @@ namespace AZ
                     azstrncpy(resolvedPath, resolvedPathSize, path, pathLen + 1);
 
                     //see if the absolute path uses @assets@ or @root@, if it does lowercase the relative part
-                    if (!LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@assets@")))
-                    {
-                        LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@root@"));
-                    }
+                    [[maybe_unused]] bool lowercasePath = LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@assets@"))
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@root@"))
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@projectplatformcache@"));
 
                     ToUnixSlashes(resolvedPath, resolvedPathSize);
                     return true;
@@ -707,10 +707,9 @@ namespace AZ
                 size_t keyLen = alias.first.length();
                 if (azstrnicmp(resolvedPath, key, keyLen) == 0) // we only support aliases at the front of the path
                 {
-                    if(azstrnicmp(key, "@assets@", 8) == 0 || azstrnicmp(key, "@root@", 6) == 0)
-                    {
-                        AZStd::to_lower(resolvedPath, resolvedPath + resolvedPathSize);
-                    }
+                    [[maybe_unused]] bool lowercasePath = LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@assets@")
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@root@")
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@projectplatformcache@");
 
                     const char* dest = alias.second.c_str();
                     size_t destLen = alias.second.length();
@@ -740,6 +739,44 @@ namespace AZ
                 "Failed to resolve an alias: %s", path ? path : "(null)");
 
             return false;
+        }
+
+        bool LocalFileIO::ReplaceAlias(AZ::IO::FixedMaxPath& replacedAliasPath, const AZ::IO::PathView& path) const
+        {
+            if (path.empty())
+            {
+                replacedAliasPath = path;
+                return true;
+            }
+
+            AZStd::string_view pathStrView = path.Native();
+            for (const auto& [aliasKey, aliasValue] : m_aliases)
+            {
+                if (AZ::StringFunc::StartsWith(pathStrView, aliasKey))
+                {
+                    // Reduce of the size result result path by the size of the and add the resolved alias size
+                    AZStd::string_view postAliasView = pathStrView.substr(aliasKey.size());
+                    size_t requiredFixedMaxPathSize = postAliasView.size();
+                    requiredFixedMaxPathSize += aliasValue.size();
+
+                    // The replaced alias path is greater than 1024 characters, return false
+                    if (requiredFixedMaxPathSize > replacedAliasPath.Native().max_size())
+                    {
+                        return false;
+                    }
+                    replacedAliasPath.Native() = AZ::IO::FixedMaxPathString(AZStd::string_view{ aliasValue });
+                    replacedAliasPath.Native() += postAliasView;
+                    return true;
+                }
+            }
+
+            if (pathStrView.size() > replacedAliasPath.Native().max_size())
+            {
+                return false;
+            }
+
+            replacedAliasPath = path;
+            return true;
         }
 
         bool LocalFileIO::GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const

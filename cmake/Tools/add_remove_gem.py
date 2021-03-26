@@ -441,7 +441,7 @@ def add_remove_gem(add: bool,
 
 def _run_add_gem(args: argparse) -> int:
     return add_remove_gem(True,
-                          common.determine_dev_root(),
+                          common.determine_engine_root(),
                           args.gem_path,
                           args.project_path,
                           args.project_restricted_path,
@@ -451,7 +451,7 @@ def _run_add_gem(args: argparse) -> int:
 
 def _run_remove_gem(args: argparse) -> int:
     return add_remove_gem(False,
-                          common.determine_dev_root(),
+                          common.determine_engine_root(),
                           args.gem_path,
                           args.project_path,
                           args.project_restricted_path,

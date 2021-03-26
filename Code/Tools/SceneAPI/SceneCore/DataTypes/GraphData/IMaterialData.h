@@ -87,15 +87,15 @@ namespace AZ
                 virtual float GetOpacity() const = 0;
                 virtual float GetShininess() const = 0;
 
-                virtual bool GetUseColorMap() const = 0;
-                virtual const AZ::Vector3& GetBaseColor() const = 0;
-                virtual bool GetUseMetallicMap() const = 0;
-                virtual float GetMetallicFactor() const = 0;
-                virtual bool GetUseRoughnessMap() const = 0;
-                virtual float GetRoughnessFactor() const = 0;
-                virtual bool GetUseEmissiveMap() const = 0;
-                virtual float GetEmissiveIntensity() const = 0;
-                virtual bool GetUseAOMap() const = 0;
+                virtual AZStd::optional<bool> GetUseColorMap() const = 0;
+                virtual AZStd::optional<AZ::Vector3> GetBaseColor() const = 0;
+                virtual AZStd::optional<bool> GetUseMetallicMap() const = 0;
+                virtual AZStd::optional<float> GetMetallicFactor() const = 0;
+                virtual AZStd::optional<bool> GetUseRoughnessMap() const = 0;
+                virtual AZStd::optional<float> GetRoughnessFactor() const = 0;
+                virtual AZStd::optional<bool> GetUseEmissiveMap() const = 0;
+                virtual AZStd::optional<float> GetEmissiveIntensity() const = 0;
+                virtual AZStd::optional<bool> GetUseAOMap() const = 0;
                                 
                 virtual uint64_t GetUniqueId() const = 0;
             };

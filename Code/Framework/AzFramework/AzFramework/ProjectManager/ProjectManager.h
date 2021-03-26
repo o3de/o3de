@@ -22,7 +22,7 @@ namespace AzFramework
         constexpr AZ::IO::SystemFile::SizeType MaxBootstrapFileSize = 1024 * 10;
 
         // Check if any project name can be found anywhere
-        bool HasProjectName(const int argc, char* argv[]);
+        bool HasProjectPath(const int argc, char* argv[]);
         // Check if any project name can be found on the command line
         bool HasCommandLineProjectName(const int argc, char* argv[]);
         // Check if a relative project is being used through bootstrap

@@ -133,6 +133,7 @@ namespace AZ
             P8,
             A8P8,
             B4G4R4A4_UNORM,
+            R4G4B4A4_UNORM,
             R10G10B10_7E3_A2_FLOAT,
             R10G10B10_6E4_A2_FLOAT,
             D16_UNORM_S8_UINT,

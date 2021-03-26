@@ -1243,7 +1243,7 @@ namespace
             {
                 char path[AZ::IO::IArchive::MaxPath];
                 path[sizeof(path) - 1] = 0;
-                gEnv->pCryPak->AdjustFileName("@cache@\\TestResults\\StreamingLog.txt", path, AZ_ARRAY_SIZE(path), AZ::IO::IArchive::FLAGS_PATH_REAL | AZ::IO::IArchive::FLAGS_FOR_WRITING);
+                gEnv->pCryPak->AdjustFileName("@usercache@\\TestResults\\StreamingLog.txt", path, AZ_ARRAY_SIZE(path), AZ::IO::IArchive::FLAGS_PATH_REAL | AZ::IO::IArchive::FLAGS_FOR_WRITING);
                 sFileName = path;
             }
             AZ::IO::HandleType fileHandle = fxopen(sFileName, (bFirstTime) ? "wt" : "at");

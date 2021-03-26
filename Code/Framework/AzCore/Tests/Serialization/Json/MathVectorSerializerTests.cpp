@@ -15,6 +15,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Serialization/Json/DoubleSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
@@ -139,6 +140,13 @@ namespace JsonSerializationTests
     {
         using VectorType = AZ::Vector4;
         using Serializer = AZ::JsonVector4Serializer;
+        constexpr static size_t ElementCount = 4;
+    };
+
+    struct QuaternionDescriptor
+    {
+        using VectorType = AZ::Quaternion;
+        using Serializer = AZ::JsonQuaternionSerializer;
         constexpr static size_t ElementCount = 4;
     };
 

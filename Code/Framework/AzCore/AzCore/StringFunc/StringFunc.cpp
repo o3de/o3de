@@ -418,36 +418,37 @@ namespace AZ::StringFunc::Internal
         return Strip(inout, { &stripCharacter, 1 }, bCaseSensitive, bStripBeginning, bStripEnding);
     }
 
-    AZStd::string_view LStrip(AZStd::string_view in, AZStd::string_view stripCharacters)
-    {
-        if (size_t pos = in.find_first_not_of(stripCharacters); pos != AZStd::string_view::npos)
-        {
-            return in.substr(pos);
-        }
-
-        return {};
-    };
-
-    AZStd::string_view RStrip(AZStd::string_view in, AZStd::string_view stripCharacters)
-    {
-        if (size_t pos = in.find_last_not_of(stripCharacters); pos != AZStd::string_view::npos)
-        {
-            return in.substr(0, pos < in.size() ? pos + 1 : pos);
-        }
-
-        return {};
-    };
-
-    AZStd::string_view StripEnds(AZStd::string_view in, AZStd::string_view stripCharacters)
-    {
-        return LStrip(RStrip(in, stripCharacters), stripCharacters);
-    };
 }
 
 namespace AZ
 {
     namespace StringFunc
     {
+        AZStd::string_view LStrip(AZStd::string_view in, AZStd::string_view stripCharacters)
+        {
+            if (size_t pos = in.find_first_not_of(stripCharacters); pos != AZStd::string_view::npos)
+            {
+                return in.substr(pos);
+            }
+
+            return {};
+        };
+
+        AZStd::string_view RStrip(AZStd::string_view in, AZStd::string_view stripCharacters)
+        {
+            if (size_t pos = in.find_last_not_of(stripCharacters); pos != AZStd::string_view::npos)
+            {
+                return in.substr(0, pos < in.size() ? pos + 1 : pos);
+            }
+
+            return {};
+        };
+
+        AZStd::string_view StripEnds(AZStd::string_view in, AZStd::string_view stripCharacters)
+        {
+            return LStrip(RStrip(in, stripCharacters), stripCharacters);
+        };
+
         bool Equal(const char* inA, const char* inB, bool bCaseSensitive /*= false*/, size_t n /*= 0*/)
         {
             if (!inA || !inB)
@@ -483,6 +484,14 @@ namespace AZ
                 }
             }
         }
+        bool Equal(AZStd::string_view inA, AZStd::string_view inB, bool bCaseSensitive)
+        {
+            const size_t maxCharsToCompare = inA.size();
+
+            return inA.size() == inB.size() && (bCaseSensitive
+                ? strncmp(inA.data(), inB.data(), maxCharsToCompare) == 0
+                : azstrnicmp(inA.data(), inB.data(), maxCharsToCompare) == 0);
+        }
 
         bool StartsWith(AZStd::string_view sourceValue, AZStd::string_view prefixValue, bool bCaseSensitive)
         {
@@ -496,9 +505,18 @@ namespace AZ
                 && Equal(sourceValue.substr(sourceValue.size() - suffixValue.size(), AZStd::string_view::npos).data(), suffixValue.data(), bCaseSensitive, suffixValue.size());
         }
 
-        size_t Find(const char* in, char c, size_t pos /*= 0*/, bool bReverse /*= false*/, bool bCaseSensitive /*= false*/)
+        bool Contains(AZStd::string_view in, char ch, bool bCaseSensitive)
         {
-            if (!in)
+            return Find(in, ch, 0, false, bCaseSensitive) != AZStd::string_view::npos;
+        }
+        bool Contains(AZStd::string_view in, AZStd::string_view sv, bool bCaseSensitive)
+        {
+            return Find(in, sv, 0, false, bCaseSensitive) != AZStd::string_view::npos;
+        }
+
+        size_t Find(AZStd::string_view in, char c, size_t pos /*= 0*/, bool bReverse /*= false*/, bool bCaseSensitive /*= false*/)
+        {
+            if (in.empty())
             {
                 return AZStd::string::npos;
             }
@@ -508,7 +526,7 @@ namespace AZ
                 pos = 0;
             }
 
-            size_t inLen = strlen(in);
+            size_t inLen = in.size();
             if (inLen < pos)
             {
                 return AZStd::string::npos;
@@ -557,7 +575,13 @@ namespace AZ
 
         size_t Find(AZStd::string_view in, AZStd::string_view s, size_t offset /*= 0*/, bool bReverse /*= false*/, bool bCaseSensitive /*= false*/)
         {
-            if (in.empty() || s.empty())
+            // Formally an empty string matches at the offset if it is <= to the size of the input string
+            if (s.empty() && offset <= in.size())
+            {
+                return offset;
+            }
+
+            if (in.empty())
             {
                 return AZStd::string::npos;
             }
@@ -773,7 +797,7 @@ namespace AZ
                 bool bIsSpaces = false;
                 if (!bIsEmpty)
                 {
-                    AZStd::string_view strippedNextToken = Internal::StripEnds(*nextToken, " ");
+                    AZStd::string_view strippedNextToken = StripEnds(*nextToken, " ");
                     bIsSpaces = strippedNextToken.empty();
                 }
 
@@ -805,7 +829,7 @@ namespace AZ
                 bool bIsSpaces = false;
                 if (!bIsEmpty)
                 {
-                    AZStd::string_view strippedNextToken = Internal::StripEnds(*nextToken, " ");
+                    AZStd::string_view strippedNextToken = StripEnds(*nextToken, " ");
                     bIsSpaces = strippedNextToken.empty();
                 }
 

@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
@@ -107,6 +108,22 @@ namespace AZ
         StringFunc::Equal("Hello World", "Hello", true, 3) = true
         */
         bool Equal(const char* inA, const char* inB, bool bCaseSensitive = false, size_t n = 0);
+        bool Equal(AZStd::string_view inA, AZStd::string_view inB, bool bCaseSensitive = false);
+
+        //! Contains
+        /*! Checks if the supplied character or string is contained within the @in parameter
+        *
+        Example: Case Insensitive contains finds character
+        StringFunc::Contains("Hello", 'L') == true
+        Example: Case Sensitive contains finds character
+        StringFunc::Contains("Hello", 'l', true) = true
+        Example: Case Insensitive contains does not find string
+        StringFunc::Contains("Well Hello", "Mello") == false
+        Example: Case Sensitive contains does not find character
+        StringFunc::Contains("HeLlo", 'h', true) == false
+        */
+        bool Contains(AZStd::string_view in, char ch, bool bCaseSensitive = false);
+        bool Contains(AZStd::string_view in, AZStd::string_view sv, bool bCaseSensitive = false);
 
         //! Find
         /*! Find for non AZStd::strings. Ease of use to find the first or last occurrence of a character or substring in a c-string with case sensitivity.
@@ -119,7 +136,7 @@ namespace AZ
         Example: Case Sensitive find first occurrence of substring "Hello" a in a c-string
         StringFunc::Find("Well Hello", "Hello", false, true) == 5
         */
-        size_t Find(const char* in, char c, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
+        size_t Find(AZStd::string_view in, char c, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
         size_t Find(AZStd::string_view in, AZStd::string_view str, size_t pos = 0, bool bReverse = false, bool bCaseSensitive = false);
 
         //! First and Last Character
@@ -195,6 +212,33 @@ namespace AZ
         * \returns The reference to the trimmed value
         */
         AZStd::string& TrimWhiteSpace(AZStd::string& value, bool leading, bool trailing);
+
+        //! LStrip
+        /*! Strips leading characters in the stripCharacters set
+        * Example
+        * Example: Case Insensitive Strip leading 'a' characters
+        * StringFunc::LStrip(s = "Abracadabra", 'a'); s == "bracadabra"
+        * Example: Case Sensitive Strip leading 'a' characters
+        * StringFunc::LStrip(s = "Abracadabra", 'a'); s == "Abracadabra"
+        */
+        //! RStrip
+        /*! Strips trailing characters in the stripCharacters set
+        * Example
+        * Example: Case Insensitive Strip trailing 'a' characters
+        * StringFunc::RStrip(s = "AbracadabrA", 'a'); s == "Abracadabr"
+        * Example: Case Sensitive Strip trailing 'a' characters
+        * StringFunc::RStrip(s = "AbracadabrA", 'a'); s == "AbracadabrA"
+        */
+        //! StripEnds
+        /*! Strips leading and trailing characters in the stripCharacters set
+        Example: Case Insensitive Strip all 'a' characters
+        StringFunc::StripEnds(s = "Abracadabra", 'a'); s == "bracadabr"
+        Example: Case Sensitive Strip all 'a' characters
+        StringFunc::StripEnds(s = "Abracadabra", 'a'); s == "Abracadabr"
+        */
+        AZStd::string_view LStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
+        AZStd::string_view RStrip(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
+        AZStd::string_view StripEnds(AZStd::string_view in, AZStd::string_view stripCharacters = " ");
 
         //! Strip
         /*! Strip away the leading, trailing or all character(s) or substring(s) in a AZStd::string with
@@ -669,8 +713,7 @@ namespace AZ
          */
         namespace Path
         {
-            inline constexpr size_t MaxPathLength = 1024;
-            using FixedString = AZStd::fixed_string<MaxPathLength>;
+            using FixedString = AZ::IO::FixedMaxPathString;
             //! Normalize
             /*! Normalizes a path and returns returns StringFunc::Path::IsValid()
              *! strips all AZ_FILESYSTEM_INVALID_CHARACTERS
@@ -791,7 +834,7 @@ namespace AZ
 
             //! StripFullName
             /*! gets rid of the full file name if it has one, returns if it removed one or not
-            *! EX: StringFunc::Path::StripFullName(a="C:\\p4\\game\\info\\some.file") == true; a=="C:\\p4\\game\\info\\"
+            *! EX: StringFunc::Path::StripFullName(a="C:\\p4\\game\\info\\some.file") == true; a=="C:\\p4\\game\\info"
             */
             void StripFullName(AZStd::string& out);
 

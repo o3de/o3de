@@ -52,7 +52,6 @@ ly_add_target(
 ly_add_target(
     NAME PhysX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.PhysX.4e08125824434932a0fe3717259caa47.v0.1.0
     FILES_CMAKE
         ${physx_shared_files}
     COMPILE_DEFINITIONS
@@ -66,6 +65,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -116,10 +117,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME PhysX.Editor MODULE
+        NAME PhysX.Editor GEM_MODULE
+
         NAMESPACE Gem
         AUTOMOC
-        OUTPUT_NAME Gem.PhysX.Editor.4e08125824434932a0fe3717259caa47.v0.1.0
         FILES_CMAKE
             physx_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -132,6 +133,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::PhysX.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 
 endif()

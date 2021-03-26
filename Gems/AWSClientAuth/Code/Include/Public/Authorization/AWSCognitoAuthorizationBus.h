@@ -27,7 +27,7 @@ namespace AWSClientAuth
 
         //! Initializes settings for Cognito identity pool from settings registry.
         //! @param settingsRegistryPath Path for the settings registry file to use.
-        virtual bool Initialize(const AZStd::string& settingsRegistryPath) = 0;
+        virtual bool Initialize() = 0;
 
         //! Once credentials provider are set they cannot be reset. So recreates new Cognito credentials provider on reset.
         //! Service clients need to be created with the new AWSCredentialsProvider after reset.

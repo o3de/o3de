@@ -12,7 +12,6 @@
 ly_add_target(
     NAME SceneProcessing ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SceneProcessing.7c2578f634df4345aca98d671e39b8ab.v0.1.0
     FILES_CMAKE
         sceneprocessing_files.cmake
     INCLUDE_DIRECTORIES
@@ -50,9 +49,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME SceneProcessing.Editor MODULE
+        NAME SceneProcessing.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.SceneProcessing.Editor.7c2578f634df4345aca98d671e39b8ab.v0.1.0
         FILES_CMAKE
             sceneprocessing_editor_files.cmake
         INCLUDE_DIRECTORIES

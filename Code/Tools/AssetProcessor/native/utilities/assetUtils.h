@@ -51,8 +51,7 @@ namespace AssetProcessor
 
 namespace AssetUtilities
 {
-
-    inline constexpr char GameFolderOverrideParameter[] = "gamefolder";
+    inline constexpr char ProjectPathOverrideParameter[] = "project-path";
 
     //! Set precision fingerprint timestamps will be truncated to avoid mismatches across systems/packaging with different file timestamp precisions
     //! Timestamps default to milliseconds.  A value of 1 will keep the default millisecond precision.  A value of 1000 will reduce the precision to seconds
@@ -79,10 +78,10 @@ namespace AssetUtilities
 
     //! makes the file writable
     //! return true if operation is successful, otherwise return false
-    bool MakeFileWritable(QString filename);
+    bool MakeFileWritable(const QString& filename);
 
     //! Check to see if we can Lock the file
-    bool CheckCanLock(QString filename);
+    bool CheckCanLock(const QString& filename);
 
     //! Updates the branch token in the bootstrap file
     bool UpdateBranchToken();
@@ -98,11 +97,14 @@ namespace AssetUtilities
 
     bool ShouldUseFileHashing();
 
-    //! Determine the name of the current game - for example, SamplesProject
-    //! Can be overridden by passing in a non-empty gameNameOverride
-    //! The override will persist if the GameName wasn't set previously or 
+    //! Determine the name of the current project - for example, SamplesProject
+    //! Can be overridden by passing in a non-empty projectNameOverride
+    //! The override will persist if the project name wasn't set previously or
     //! force=true is supplied
-    QString ComputeGameName(QString gameNameOverride = QString(), bool force = false);
+    QString ComputeProjectName(QString projectNameOverride = QString(), bool force = false);
+
+    //! Determine the absolute path of the current project
+    QString ComputeProjectPath();
 
     //! Reads the allowed list directly from the bootstrap file
     QString ReadAllowedlistFromSettingsRegistry(QString initialFolder = QString());
@@ -111,13 +113,7 @@ namespace AssetUtilities
     QString ReadRemoteIpFromSettingsRegistry(QString initialFolder = QString());
 
     //! Writes the allowed list directly to the bootstrap file
-    bool WriteAllowedlistToBootstrap(QStringList allowedList);
-    
-    //! Writes the remote ip directly to the bootstrap file
-    bool WriteRemoteIpToBootstrap(QString remoteIp);
-
-    //! Reads the game name directly from the bootstrap file
-    QString ReadGameNameFromSettingsRegistry(QString initialFolder = QString());
+    bool WriteAllowedlistToSettingsRegistry(const QStringList& allowedList);
 
     //! Reads the listening port from the bootstrap file
     //! By default the listening port is 45643
@@ -143,13 +139,24 @@ namespace AssetUtilities
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer);
 
     //! Compute the root of the cache for the current project.
-    //! This is generally the "cache" folder, subfolder gamedir.
+    //! This is generally the "<Project>/Cache" folder
     bool ComputeProjectCacheRoot(QDir& projectCacheRoot);
 
     //! Compute the folder that will be used for fence files.
     bool ComputeFenceDirectory(QDir& fenceDir);
 
-    //! Converts all slashes to forward slashes, removes double slashes, 
+    //! Strips the first "asset platform" from the first path segment of a relative product path
+    //! This is meant for removing the asset platform for paths such as "pc/MyAssetFolder/MyAsset.asset"
+    //! Therefore the result here becomes "MyAssetFolder/MyAsset"
+    //! 
+    //! Similarly invoking this function on relative path that begins with the "server" platform
+    //! "server/AssetFolder/Server.asset2" -> "AssetFolder/Server.asset2"
+    //! This function does not strip an asset platform from anywhere, but the first path segment
+    //! Therefore invoking strip Asset on "MyProject/Cache/pc/MyAsset/MyAsset.asset"
+    //! would return a copy of the relative path
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath);
+
+    //! Converts all slashes to forward slashes, removes double slashes,
     //! replaces all indirections such as '.' or '..' as appropriate.
     //! On windows, the drive letter (if present) is converted to uppercase.
     //! Besides that, all case is preserved.

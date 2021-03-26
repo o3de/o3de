@@ -184,7 +184,6 @@ namespace UnitTest
             AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor();
 
             const char* dir = m_componentApplication->GetExecutableFolder();
-            m_componentApplication->SetAssetRoot(dir);
 
             m_localFileIO.SetAlias("@assets@", dir);
             m_localFileIO.SetAlias("@devassets@", dir);

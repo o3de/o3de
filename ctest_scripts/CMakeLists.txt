@@ -22,15 +22,17 @@ endif()
 ################################################################################
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-    foreach(project ${LY_PROJECTS_NAME})
-        add_custom_target(${project}.Assets
-            COMMENT "Processing ${project} assets..."
-            COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> --zeroAnalysisMode --gamefolder=${project} --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+    get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+    foreach(project_target_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+        file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        add_custom_target(${project_target_name}.Assets
+            COMMENT "Processing ${project_target_name} assets..."
+            COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> --zeroAnalysisMode --project-path=${project_real_path} --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
         )
-        set_target_properties(${project}.Assets
+        set_target_properties(${project_target_name}.Assets
             PROPERTIES 
                 EXCLUDE_FROM_ALL TRUE
-                FOLDER ${project}
+                FOLDER ${project_target_name}
         )
     endforeach()
 endif()
@@ -56,7 +58,7 @@ endforeach()
 
 
 # EPB Sanity test is being registered here to validate that the ly_add_editor_python_test function works.
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_NAME)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
     ly_add_editor_python_test(
         NAME epb_sanity_smoke_no_gpu
         TEST_PROJECT AutomatedTesting

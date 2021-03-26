@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME Vegetation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Vegetation.f394e7cf54424bba89615381bba9511b.v0.1.0
     FILES_CMAKE
         vegetation_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -45,13 +44,17 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Vegetation.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
+        Gem::GradientSignal
+        Gem::SurfaceData
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Vegetation.Editor MODULE
+        NAME Vegetation.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Vegetation.Editor.f394e7cf54424bba89615381bba9511b.v0.1.0
         FILES_CMAKE
             vegetation_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -66,6 +69,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::Vegetation.Static
                 AZ::AzToolsFramework
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral.Editor
+        Gem::GradientSignal.Editor
+        Gem::SurfaceData.Editor
     )
 endif()
 

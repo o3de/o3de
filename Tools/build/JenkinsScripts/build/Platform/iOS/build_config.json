@@ -1,14 +1,4 @@
 {
-  "profile_pipe": {
-    "TAGS": [
-      "nightly",
-      "weekly-build-metrics"
-    ],
-    "steps": [
-      "profile",
-      "asset_profile"
-    ]
-  },
   "metrics": {
     "TAGS": [
       "weekly"
@@ -36,7 +26,9 @@
   },
   "profile": {
     "TAGS": [
-      "daily-pipeline-metrics"
+      "nightly",
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
     "PARAMETERS": {
@@ -64,7 +56,10 @@
     }
   },
   "asset_profile": {
-    "TAGS": [],
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
     "COMMAND": "../Mac/build_asset_mac.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",

@@ -165,5 +165,6 @@ protected:
     AZStd::unique_ptr<Job> m_queuedJob;
 
     AZStd::string m_gameName;
+    AZStd::string m_projectPath;
     AZStd::string m_gameCache;
 };

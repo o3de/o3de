@@ -38,10 +38,11 @@ ly_add_target(
 ly_add_target(
     NAME Microphone ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Microphone.e70dd59f02f14ea49e6b38434e86ebf1.v0.1.0
     FILES_CMAKE
         microphone_shared_files.cmake
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Microphone.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AudioSystem
 )

@@ -41,10 +41,6 @@ class LySettings(object):
         logger.info(f'Updating setting {setting} to {value}')
         _edit_text_settings_file(self._resource_locator.platform_config_file(), setting, value)
 
-    def modify_bootstrap_setting(self, setting, value, bootstrap_path=None):
-        logger.info(f'Updating setting {setting} to {value}')
-        _edit_text_settings_file(bootstrap_path or self._resource_locator.bootstrap_config_file(), setting, value)
-
     def modify_shader_compiler_setting(self, setting, value):
         logger.info(f'Updating setting {setting} to {value}')
         _edit_text_settings_file(self._resource_locator.shader_compiler_config_file(), setting, value)

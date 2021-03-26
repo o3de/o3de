@@ -32,8 +32,5 @@ set(FILES
     UI/UICore/SaveChangesDialog.hxx
     UI/UICore/SaveChangesDialog.cpp
     UI/UICore/SaveChangesDialog.ui
-    Process/internal/ProcessWatcher_Linux.cpp
-    Process/internal/ProcessCommon_Linux.h
-    Process/internal/ProcessCommunicator_Linux.cpp
     ToolsFileUtils/ToolsFileUtils_generic.cpp
 )

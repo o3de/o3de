@@ -1105,8 +1105,9 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext.get(); }
         BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetExecutableFolder() const override { return nullptr; }
         const char* GetAppRoot() const override { return nullptr; }
+        const char* GetEngineRoot() const override { return nullptr; }
+        const char* GetExecutableFolder() const override { return nullptr; }
         Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}

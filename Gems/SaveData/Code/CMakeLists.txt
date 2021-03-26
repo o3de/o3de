@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME SaveData ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SaveData.d96ab03f53d14c9e83f9b4528c8576d7.v0.1.0
     FILES_CMAKE
         savedata_shared_files.cmake
     INCLUDE_DIRECTORIES

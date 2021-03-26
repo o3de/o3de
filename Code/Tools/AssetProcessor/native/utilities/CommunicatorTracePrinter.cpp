@@ -12,7 +12,7 @@
 
 #include "CommunicatorTracePrinter.h"
 
-CommunicatorTracePrinter::CommunicatorTracePrinter(AzToolsFramework::ProcessCommunicator* communicator, const char* window) :
+CommunicatorTracePrinter::CommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window) :
     m_communicator(communicator),
     m_window(window)
 {

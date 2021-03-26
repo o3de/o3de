@@ -597,9 +597,9 @@ class TestsFBX_AllPlatforms(object):
 
         # Load the asset database.
         db_path = os.path.join(asset_processor.temp_asset_root(), "Cache",
-                               workspace.project, "assetdb.sqlite")
+                               "assetdb.sqlite")
         cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), "Cache",
-                               workspace.project, ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
+                               ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
 
         if blackbox_params.scene_debug_file:
             debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), blackbox_params.scene_debug_file)

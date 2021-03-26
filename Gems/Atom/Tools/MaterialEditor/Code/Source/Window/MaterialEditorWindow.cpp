@@ -24,7 +24,6 @@
 #include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -417,50 +416,6 @@ namespace MaterialEditor
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
-
-        m_menuFile->addSeparator();
-
-        auto presetMenu = m_menuFile->addMenu("Presets");
-
-        presetMenu->addAction("New Model Preset", [this]() {
-            AZ::Render::ModelPresetPtr preset;
-            MaterialViewportRequestBus::BroadcastResult(preset, &MaterialViewportRequestBus::Events::AddModelPreset, AZ::Render::ModelPreset());
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SelectModelPreset, preset);
-        });
-
-        presetMenu->addAction("Save Model Preset", [this]() {
-            const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled.modelpreset.azasset").absoluteFilePath();
-
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SaveModelPresetSelection,
-                AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
-        });
-
-        presetMenu->addSeparator();
-
-        presetMenu->addAction("New Lighting Preset", [this]() {
-            AZ::Render::LightingPresetPtr preset;
-            MaterialViewportRequestBus::BroadcastResult(preset, &MaterialViewportRequestBus::Events::AddLightingPreset, AZ::Render::LightingPreset());
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SelectLightingPreset, preset);
-        });
-
-        presetMenu->addAction("Save Lighting Preset", [this]() {
-            const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled.lightingpreset.azasset").absoluteFilePath();
-
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SaveLightingPresetSelection,
-                AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
-        });
-
-        presetMenu->addSeparator();
-
-        presetMenu->addAction("Reload Presets", [this]() {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::ReloadContent);
-        }, QKeySequence::Refresh);
 
         m_menuFile->addSeparator();
 

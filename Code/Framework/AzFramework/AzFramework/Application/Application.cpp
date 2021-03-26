@@ -154,12 +154,12 @@ namespace AzFramework
             return AZ::Success(AZStd::move(loadedDescriptor));
         }
     }
-    
+
     Application::Application()
-    : Application(nullptr, nullptr)
+        : Application(nullptr, nullptr)
     {
     }
-    
+
     Application::Application(int* argc, char*** argv)
         : ComponentApplication(
             argc ? *argc : 0,
@@ -187,7 +187,6 @@ namespace AzFramework
             AZ::IO::FileIOBase::SetInstance(m_archiveFileIO.get());
             SetFileIOAliases();
         }
-
 
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
@@ -238,14 +237,8 @@ namespace AzFramework
     {
         AZ::Entity* systemEntity = Create(descriptor, startupParameters);
 
-        // Attempt to use the "CacheGameFolder" key in the settings registry to set the asset root
-        // If that fails, fallback to using the App root as the asset root
-        if (!m_settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheGameFolder))
-        {
-            m_assetRoot = GetAppRoot();
-        }
         // Sets FileIOAliases again in case the App root was overridden by the
-        // startupParamets in ComponentApplication::Create
+        // startupParameters in ComponentApplication::Create
         SetFileIOAliases();
 
         if (systemEntity)
@@ -268,7 +261,7 @@ namespace AzFramework
     void Application::PreModuleLoad()
     {
         // Calculate the engine root by reading the engine.json file
-        AZStd::string engineJsonPath = AZStd::string_view{ m_appRoot };
+        AZStd::string engineJsonPath = AZStd::string_view{ m_engineRoot };
         engineJsonPath += s_engineConfigFileName;
         AzFramework::StringFunc::Path::Normalize(engineJsonPath);
         AZ::IO::LocalFileIO localFileIO;
@@ -276,7 +269,7 @@ namespace AzFramework
 
         if (readJsonResult.IsSuccess())
         {
-            SetRootPath(RootPathType::EngineRoot, m_appRoot.c_str());
+            SetRootPath(RootPathType::EngineRoot, m_engineRoot.c_str());
             AZ_TracePrintf(s_azFrameworkWarningWindow, "Engine Path: %s\n", m_engineRoot.c_str());
         }
         else
@@ -410,17 +403,16 @@ namespace AzFramework
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
-        });
+            });
 
         return components;
     }
 
-    AZStd::string Application::ResolveFilePath(AZ::u32 providerId)
+    // UserSettingsFileLocatorBus
+    AZStd::string Application::ResolveFilePath([[maybe_unused]] AZ::u32 providerId)
     {
-        (void)providerId;
-
         AZStd::string result;
-        AzFramework::StringFunc::Path::Join(GetAppRoot(), "UserSettings.xml", result, /*bCaseInsenitive*/false);
+        AzFramework::StringFunc::Path::Join(GetEngineRoot(), "UserSettings.xml", result, /*bCaseInsenitive*/false);
         return result;
     }
 
@@ -449,11 +441,6 @@ namespace AzFramework
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzFrameworkModule());
-    }
-
-    const char* Application::GetAssetRoot() const
-    {
-        return m_assetRoot.c_str();
     }
 
     const char* Application::GetAppRoot() const
@@ -516,21 +503,15 @@ namespace AzFramework
         engineRelativePath = fullPath;
     }
 
-    void Application::CalculateBranchTokenForAppRoot(AZStd::string& token) const
+    void Application::CalculateBranchTokenForEngineRoot(AZStd::string& token) const
     {
-        AzFramework::StringFunc::AssetPath::CalculateBranchToken(AZStd::string(m_appRoot), token);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    void Application::SetAssetRoot(const char* assetRoot)
-    {
-        SetRootPath(RootPathType::AssetRoot, assetRoot);
+        AzFramework::StringFunc::AssetPath::CalculateBranchToken(AZStd::string(m_engineRoot), token);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     void Application::MakePathRootRelative(AZStd::string& fullPath)
     {
-        MakePathRelative(fullPath, m_appRoot.c_str());
+        MakePathRelative(fullPath, m_engineRoot.c_str());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -538,7 +519,12 @@ namespace AzFramework
     {
         // relative file paths wrt AssetRoot are always lowercase
         AZStd::to_lower(fullPath.begin(), fullPath.end());
-        MakePathRelative(fullPath, m_assetRoot.c_str());
+        AZStd::string cacheAssetPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(cacheAssetPath, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+        }
+        MakePathRelative(fullPath, cacheAssetPath.c_str());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -592,8 +578,8 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////
     void Application::PumpSystemEventLoopWhileDoingWorkInNewThread(const AZStd::chrono::milliseconds& eventPumpFrequency,
-                                                                   const AZStd::function<void()>& workForNewThread,
-                                                                   const char* newThreadName)
+        const AZStd::function<void()>& workForNewThread,
+        const char* newThreadName)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
 
@@ -604,7 +590,7 @@ namespace AzFramework
         AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
         {
             AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
-                                     "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
+                "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
             workForNewThread();
             binarySemaphore.release();
@@ -615,7 +601,7 @@ namespace AzFramework
         }
         {
             AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
-                                           "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:WaitOnThread %s", newThreadName);
+                "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:WaitOnThread %s", newThreadName);
             newThread.join();
         }
 
@@ -678,18 +664,6 @@ namespace AzFramework
             }
         }
         break;
-        case RootPathType::AssetRoot:
-        {
-            AZ_Assert(sourceLen < m_assetRoot.max_size(), "String overflow for Asset Root: %s", source);
-            m_assetRoot = source;
-
-            AZStd::replace(std::begin(m_assetRoot), std::end(m_assetRoot), AZ_WRONG_FILESYSTEM_SEPARATOR, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (appendTrailingPathSep)
-            {
-                m_assetRoot.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            }
-        }
-        break;
         case RootPathType::EngineRoot:
         {
             AZ_Assert(sourceLen < m_engineRoot.max_size(), "String overflow for Engine Root: %s", source);
@@ -706,95 +680,102 @@ namespace AzFramework
             AZ_Assert(false, "Invalid RootPathType (%d)", static_cast<int>(type));
         }
     }
+
+
+    static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
+    {
+        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
+        // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
+        // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a
+        // linear search, so the more instances we allow, the longer the search will take.
+        // 128 seems like a reasonable compromise.
+        constexpr int maxAttempts = 128;
+
+        constexpr const char* userCachePathFilename{ "Cache" };
+        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        int attemptNumber;
+        for (attemptNumber = 0; attemptNumber < maxAttempts; ++attemptNumber)
+        {
+            if (attemptNumber != 0)
+            {
+                userCachePath.ReplaceFilename(AZStd::string_view{ AZ::IO::FixedMaxPathString::format("%s%i", userCachePathFilename, attemptNumber) });
+            }
+
+            // if the directory already exists, check for locked file
+            auto cacheLockFilePath = userCachePath / "lockfile.txt";
+
+            constexpr auto LockFileMode = AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY
+                | AZ::IO::SystemFile::SF_OPEN_CREATE
+                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH;
+            if (AZ::IO::SystemFile lockFileHandle; lockFileHandle.Open(cacheLockFilePath.c_str(), LockFileMode))
+            {
+                break;
+            }
+        }
+
+        if (attemptNumber >= maxAttempts)
+        {
+            userCachePath.ReplaceFilename(userCachePathFilename);
+            AZ_TracePrintf("Application", "Couldn't find a valid asset cache folder after %i attempts."
+                " Setting cache folder to %s\n", maxAttempts, userCachePath.c_str());
+        }
+#endif
+
+        fileIoBase.SetAlias("@usercache@", userCachePath.c_str());
+    }
+
     void Application::SetFileIOAliases()
     {
-        if (AZ::IO::FileIOBase::GetInstance() == m_archiveFileIO.get())
+        if (m_archiveFileIO)
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@root@", GetAppRoot());
-            fileIoBase->SetAlias("@assets@", GetAssetRoot());
-            fileIoBase->SetAlias("@engroot@", GetAppRoot());
-            fileIoBase->SetAlias("@devroot@", GetAppRoot());
-            fileIoBase->SetAlias("@devassets@", GetAppRoot());
+            fileIoBase->SetAlias("@assets@", "");
+            fileIoBase->SetAlias("@root@", GetEngineRoot());
+            fileIoBase->SetAlias("@engroot@", GetEngineRoot());
+            fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
             fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
+
             {
-                AZ::SettingsRegistryInterface::FixedValueString pathAliases;
-                if (m_settingsRegistry->Get(pathAliases, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+                AZ::IO::FixedMaxPath pathAliases;
+                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
                 {
-                    fileIoBase->SetAlias("@root@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectcache@", pathAliases.c_str());
                 }
                 pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheGameFolder))
+                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
+                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
                 }
                 pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
                 {
                     fileIoBase->SetAlias("@engroot@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@devroot@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@devroot@", pathAliases.c_str()); // Deprecated - Use @engroot@
                 }
                 pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases, AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder))
+                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
                 {
-                    fileIoBase->SetAlias("@devassets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@devassets@", pathAliases.c_str()); // Deprecated - Use @projectsourceassets@
+                    fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectsourceassets@", (pathAliases / "Assets").c_str());
                 }
             }
 
+            AZ::IO::FixedMaxPath projectUserPath;
+            if (m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                auto userPath = AZ::StringFunc::Path::FixedString::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "user", fileIoBase->GetAlias("@root@"));
-                fileIoBase->SetAlias("@user@", userPath.c_str());
+                fileIoBase->SetAlias("@user@", projectUserPath.c_str());
+                AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
+                fileIoBase->SetAlias("@log@", projectLogPath.c_str());
+                fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
+
+                CreateUserCache(projectUserPath, *fileIoBase);
             }
-
-            {
-                auto logPath = AZ::StringFunc::Path::FixedString::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "log", fileIoBase->GetAlias("@user@"));
-                fileIoBase->SetAlias("@log@", logPath.c_str());
-
-                // Create the Log folder if it doesn't exist
-                fileIoBase->CreatePath("@log@");
-            }
-
-            auto cachePathOriginal = AZ::StringFunc::Path::FixedString::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "cache", fileIoBase->GetAlias("@user@"));
-            // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
-            // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
-            // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't 
-            // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a 
-            // linear search, so the more instances we allow, the longer the search will take.  
-            // 128 seems like a reasonable compromise.
-            constexpr int maxAttempts = 128;
-
-            AZ::StringFunc::Path::FixedString cachePath(cachePathOriginal);
-
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-            int attemptNumber;
-            for (attemptNumber = 0; attemptNumber < maxAttempts; ++attemptNumber)
-            {
-                if (attemptNumber != 0)
-                {
-                    cachePath = AZ::StringFunc::Path::FixedString::format("%s%i", cachePathOriginal.c_str(), attemptNumber);
-                }
-
-                fileIoBase->CreatePath(cachePath.c_str());
-                // if the directory already exists, check for locked file
-                auto cacheLockFilePath = AZ::StringFunc::Path::FixedString::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "lockfile.txt", cachePath.c_str());
-
-                AZ::IO::HandleType lockFileHandle;
-                if (fileIoBase->Open(cacheLockFilePath.c_str(), AZ::IO::OpenMode::ModeWrite, lockFileHandle))
-                {
-                    fileIoBase->Close(lockFileHandle);
-                    break;
-                }
-            }
-
-            if (attemptNumber >= maxAttempts)
-            {
-                cachePath = cachePathOriginal;
-                AZ_TracePrintf("Application", "Couldn't find a valid asset cache folder after %i attempts."
-                    " Setting cache folder to cachePath %s\n", maxAttempts, cachePath.c_str());
-            }
-#endif
-            fileIoBase->SetAlias("@cache@", cachePath.c_str());
         }
     }
 

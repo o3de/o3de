@@ -16,7 +16,9 @@ set(FILES
     AzFramework/API/ApplicationAPI_Mac.h
     AzFramework/Application/Application_Mac.mm
     AzFramework/Asset/AssetSystemComponentHelper_Mac.cpp
-    AzFramework/ProjectManager/ProjectManager_Mac.cpp
+    AzFramework/Process/ProcessWatcher_Mac.cpp
+    AzFramework/Process/ProcessCommon.h
+    AzFramework/Process/ProcessCommunicator_Mac.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp

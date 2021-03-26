@@ -22,7 +22,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 
 namespace AzToolsFramework
@@ -1251,14 +1251,14 @@ namespace AzToolsFramework
             return changelistNum;
         }
 
-        ProcessWatcher* pWatcher = s_perforceConn->m_command.ExecuteNewChangelistInput();
+        AzFramework::ProcessWatcher* pWatcher = s_perforceConn->m_command.ExecuteNewChangelistInput();
         AZ_Assert(pWatcher, "No process found for p4!");
         if (!pWatcher)
         {
             return 0;
         }
 
-        ProcessCommunicator* pCommunicator = pWatcher->GetCommunicator();
+        AzFramework::ProcessCommunicator* pCommunicator = pWatcher->GetCommunicator();
         AZ_Assert(pCommunicator, "No communicator found for p4!");
         if (!pCommunicator)
         {

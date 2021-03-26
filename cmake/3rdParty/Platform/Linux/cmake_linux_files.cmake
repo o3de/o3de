@@ -11,7 +11,6 @@
 
 set(FILES
     AWSGameLiftServerSDK_linux.cmake
-    AWSNativeSDK_linux.cmake
     BuiltInPackages_linux.cmake
     civetweb_linux.cmake
     Clang_linux.cmake
@@ -21,7 +20,6 @@ set(FILES
     FbxSdk_linux.cmake
     FreeType2_linux.cmake
     OpenSSL_linux.cmake
-    Qt_linux.cmake
     tiff_linux.cmake
     Wwise_linux.cmake
 )

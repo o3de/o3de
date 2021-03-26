@@ -416,17 +416,11 @@ def create_template(dev_root: str,
     source_restricted_path = source_restricted_path.replace('\\', '/')
     if not os.path.isabs(source_restricted_path):
         source_restricted_path = f'{dev_root}/{source_restricted_path}'
-    if not os.path.isdir(source_restricted_path):
-        logger.error(f'Src restricted path {source_restricted_path} is not a folder.')
-        return 1
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
 
     # source restricted relative
     source_restricted_platform_relative_path = source_restricted_platform_relative_path.replace('\\', '/')
@@ -1015,17 +1009,11 @@ def create_from_template(dev_root: str,
     destination_restricted_path = destination_restricted_path.replace('\\', '/')
     if not os.path.isabs(destination_restricted_path):
         destination_restricted_path = f'{dev_root}/{destination_restricted_path}'
-    if not os.path.isdir(destination_restricted_path):
-        logger.error(f'Dst restricted path {destination_restricted_path} is not a folder.')
-        return 1
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
 
     # destination restricted relative
     destination_restricted_platform_relative_path = destination_restricted_platform_relative_path.replace('\\', '/')
@@ -1137,17 +1125,11 @@ def create_project(dev_root: str,
     project_restricted_path = project_restricted_path.replace('\\', '/')
     if not os.path.isabs(project_restricted_path):
         project_restricted_path = f'{dev_root}/{project_restricted_path}'
-    if not os.path.isdir(project_restricted_path):
-        logger.error(f'Project restricted path {project_restricted_path} is not a folder.')
-        return 1
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
 
     # project restricted relative
     project_restricted_platform_relative_path = project_restricted_platform_relative_path.replace('\\', '/')
@@ -1313,17 +1295,11 @@ def create_gem(dev_root: str,
     gem_restricted_path = gem_restricted_path.replace('\\', '/')
     if not os.path.isabs(gem_restricted_path):
         gem_restricted_path = f'{dev_root}/{gem_restricted_path}'
-    if not os.path.isdir(gem_restricted_path):
-        logger.error(f'Gem restricted path {gem_restricted_path} is not a folder.')
-        return 1
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
 
     # gem restricted relative
     gem_restricted_platform_relative_path = gem_restricted_platform_relative_path.replace('\\', '/')
@@ -1385,7 +1361,7 @@ def create_gem(dev_root: str,
 
 
 def _run_create_template(args: argparse) -> int:
-    return create_template(common.determine_dev_root(),
+    return create_template(common.determine_engine_root(),
                            args.source_path,
                            args.template_path,
                            args.source_restricted_path,
@@ -1398,7 +1374,7 @@ def _run_create_template(args: argparse) -> int:
 
 
 def _run_create_from_template(args: argparse) -> int:
-    return create_from_template(common.determine_dev_root(),
+    return create_from_template(common.determine_engine_root(),
                                 args.destination_path,
                                 args.template_path,
                                 args.destination_restricted_path,
@@ -1411,7 +1387,7 @@ def _run_create_from_template(args: argparse) -> int:
 
 
 def _run_create_project(args: argparse) -> int:
-    return create_project(common.determine_dev_root(),
+    return create_project(common.determine_engine_root(),
                           args.project_path,
                           args.template_path,
                           args.project_restricted_path,
@@ -1427,7 +1403,7 @@ def _run_create_project(args: argparse) -> int:
 
 
 def _run_create_gem(args: argparse) -> int:
-    return create_gem(common.determine_dev_root(),
+    return create_gem(common.determine_engine_root(),
                       args.gem_path,
                       args.template_path,
                       args.gem_restricted_path,

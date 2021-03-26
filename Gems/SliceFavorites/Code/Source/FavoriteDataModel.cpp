@@ -20,7 +20,7 @@
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/XML/rapidxml_print.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -762,18 +762,10 @@ namespace SliceFavorites
 
     QString FavoriteDataModel::GetProjectName()
     {
-        AZStd::string gameFolder;
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        auto gameFolderKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::ProjectName);
-        if (settingsRegistry)
+        AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
+        if (!projectName.empty())
         {
-            settingsRegistry->Get(gameFolder, gameFolderKey);
-        }
-
-        if (!gameFolder.empty())
-        {
-            return gameFolder.c_str();
+            return QString::fromUtf8(projectName.c_str(), aznumeric_cast<int>(projectName.size()));
         }
 
         return "unknown";

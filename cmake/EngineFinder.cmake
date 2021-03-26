@@ -21,11 +21,16 @@ if(json_error)
 endif()
 
 # Read the list of paths from ~.o3de/o3de_manifest.json
-if($ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
-    set(manifest_path $ENV{USERPROFILE}/.o3de/o3de_manifest.json) # Windows
-else()
-    set(manifest_path $ENV{HOME}/.o3de/o3de_manifest.json) # Unix
+file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory) # Windows
+if((NOT home_directory) OR (NOT EXISTS ${home_directory}))
+    file(TO_CMAKE_PATH "$ENV{HOME}" home_directory)# Unix
 endif()
+
+if (NOT home_directory)
+    message(FATAL_ERROR "Cannot find user home directory, the o3de manifest cannot be found")
+endif()
+# Set manifest path to path in the user home directory
+set(manifest_path ${home_directory}/.o3de/o3de_manifest.json)
 
 if(EXISTS ${manifest_path})
     file(READ ${manifest_path} manifest_json)

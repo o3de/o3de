@@ -22,11 +22,14 @@
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
 #include <Source/Window/MaterialEditorWindowComponent.h>
 #include <Source/Window/MaterialEditorWindow.h>
+#include <Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 namespace MaterialEditor
 {
     void MaterialEditorWindowComponent::Reflect(AZ::ReflectContext* context)
     {
+        GeneralViewportSettings::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<MaterialEditorWindowComponent, AZ::Component>()

@@ -17,17 +17,16 @@
 
 void OutputArgs(const AzFramework::CommandLine& commandLine)
 {
-    const AzFramework::CommandLine::ParamMap& switchList = commandLine.GetSwitchList();
     std::cout << "Switch List:" << std::endl;
-    for (auto& switchPair : switchList)
+    for (auto& switchPair : commandLine)
     {
         // We strip white space from all of our switch names, so "flush" names will start arguments
-        std::cout << switchPair.first.c_str() << std::endl;
-        for (auto& switchValue : switchPair.second)
+        if (!switchPair.m_option.empty())
         {
-            // Auto space every switch value by one space
-            std::cout << " " << switchValue.c_str() << std::endl;
+            std::cout << switchPair.m_option.c_str() << std::endl;
         }
+        std::cout << " " << switchPair.m_value.c_str() << std::endl;
+        
     }
     std::cout << "End Switch List:" << std::endl;
 }

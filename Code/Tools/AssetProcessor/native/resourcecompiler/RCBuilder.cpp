@@ -24,8 +24,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Application/Application.h>
 
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -164,7 +164,7 @@ namespace AssetProcessor
         // build the command line:
         QString commandString = NativeLegacyRCCompiler::BuildCommand(inputFile, watchFolder, platformIdentifier, params, dest);
 
-        AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         // while it might be tempting to set the executable in processLaunchInfo.m_processExecutableString, it turns out that RC.EXE
         // won't work if you do that because it assumes the first command line param is the exe name, which is not the case if you do it that way...
@@ -173,12 +173,12 @@ namespace AssetProcessor
         processLaunchInfo.m_commandlineParameters = QString(formatter).arg(m_rcExecutableFullPath).arg(commandString).toUtf8().data();
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_workingDirectory = m_systemRoot.absolutePath().toUtf8().data();
-        processLaunchInfo.m_processPriority = AzToolsFramework::PROCESSPRIORITY_IDLE;
+        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
         AZ_TracePrintf("RC Builder", "Executing RC.EXE: '%s' ...\n", processLaunchInfo.m_commandlineParameters.c_str());
         AZ_TracePrintf("Rc Builder", "Executing RC.EXE with working directory: '%s' ...\n", processLaunchInfo.m_workingDirectory.c_str());
         
-        AzToolsFramework::ProcessWatcher* watcher = AzToolsFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzToolsFramework::COMMUNICATOR_TYPE_STDINOUT);
+        AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
         if (!watcher)
         {
@@ -256,18 +256,16 @@ namespace AssetProcessor
         QString cmdLine;
         if (!dest.isEmpty())
         {
-            QString gameName = AssetUtilities::ComputeGameName();
+            QString projectName = AssetUtilities::ComputeProjectName();
+            QString projectPath = AssetUtilities::ComputeProjectPath();
 
             int portNumber = 0;
             ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
 
-            QDir assetRoot;
-            AssetUtilities::ComputeAssetRoot(assetRoot);
-            QString gameRoot = assetRoot.absoluteFilePath(AssetUtilities::ComputeGameName());
             AZStd::string appBranchToken;
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, appBranchToken);
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
             cmdLine = QString("\"%1\" /p=%2 %3 /unattended=true /gameroot=\"%4\" /watchfolder=\"%6\" /targetroot=\"%5\" /logprefix=\"%5/\" /port=%7 /gamesubdirectory=\"%8\" /branchtoken=\"%9\"");
-            cmdLine = cmdLine.arg(inputFile, platformIdentifier, params, gameRoot, dest, watchFolder).arg(portNumber).arg(gameName).arg(appBranchToken.c_str());
+            cmdLine = cmdLine.arg(inputFile, platformIdentifier, params, projectPath, dest, watchFolder).arg(portNumber).arg(projectName).arg(appBranchToken.c_str());
         }
         else
         {

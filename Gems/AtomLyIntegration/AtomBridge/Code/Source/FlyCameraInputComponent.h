@@ -32,7 +32,7 @@ namespace AZ
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void Reflect(AZ::ReflectContext* reflection);
 
-            AZ_COMPONENT(FlyCameraInputComponent, "{EB588B1E-AC2E-44AA-A1E6-E5960942E950}");
+            AZ_COMPONENT(FlyCameraInputComponent, "{7AE0D6AD-691C-41B6-9DD5-F23F78B1A02E}");
             virtual ~FlyCameraInputComponent();
 
             // AZ::Component

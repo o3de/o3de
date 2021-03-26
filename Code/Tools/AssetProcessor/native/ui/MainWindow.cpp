@@ -136,7 +136,7 @@ void MainWindow::Activate()
 
     ui->projectLabel->setText(QStringLiteral("%1: %2")
         .arg(tr("Project"))
-        .arg(m_guiApplicationManager->GetGameName()));
+        .arg(QDir{m_guiApplicationManager->GetProjectPath()}.absolutePath()));
 
     ui->rootLabel->setText(QStringLiteral("%1: %2")
         .arg(tr("Root"))

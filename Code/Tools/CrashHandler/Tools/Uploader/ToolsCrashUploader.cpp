@@ -20,6 +20,9 @@
 #include <AzQtComponents/Components/StyleManager.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/typetraits/underlying_type.h>
 
 #include <QString>
@@ -82,7 +85,13 @@ namespace Lumberyard
 
             AzQtComponents::StyleManager styleManager{ nullptr };
             QApplication app{ argCount, nullptr };
-            styleManager.Initialize(&app);
+            AZ::IO::FixedMaxPath engineRootPath;
+            {
+                AZ::ComponentApplication componentApplication;
+                auto settingsRegistry = AZ::SettingsRegistry::Get();
+                settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            }
+            styleManager.initialize(&app, engineRootPath);
 
             QString reportPath{ GetReportString(report.file_path.value()) };
  

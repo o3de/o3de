@@ -70,4 +70,5 @@ set(FILES
     AzCore/Utils/Utils_iOS.mm
     ../Common/Apple/AzCore/Utils/Utils_Apple.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp
+    ../Common/Unimplemented/AzCore/Utils/Utils_Unimplemented.cpp
 )

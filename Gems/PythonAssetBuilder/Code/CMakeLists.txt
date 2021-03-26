@@ -48,9 +48,9 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME PythonAssetBuilder.Editor MODULE
+    NAME PythonAssetBuilder.Editor GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.PythonAssetBuilder.Editor.0a5fda05323649009444bb7c3ee2b9c4.v0.1.0
     FILES_CMAKE
         ${editor_files}
         ${shared_files}
@@ -65,6 +65,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             ${editor_dependencies}
+    RUNTIME_DEPENDENCIES
+        Gem::EditorPythonBindings.Editor
 )
 
 ################################################################################

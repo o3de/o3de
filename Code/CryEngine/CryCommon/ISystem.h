@@ -119,8 +119,6 @@ namespace AZ
 
 class IResourceCompilerHelper;
 
-class CBootProfilerRecord;
-
 namespace Serialization {
     struct IArchiveHost;
 }
@@ -629,15 +627,7 @@ struct SSystemInitParams
     void* hWnd;                                     //
     void* hWndForInputSystem;                       // the HWND for the input devices, distinct from the hWnd, which the rendering system overrides anyways
 
-    char remoteIP[256];
-    int  remotePort;
-    bool remoteFileIO;
     bool remoteResourceCompiler;
-    bool connectToRemote;
-    bool waitForConnection; // if true, wait for the remote connection to be established before proceeding to system init.
-    char assetsPlatform[64]; // what flavor of assets to load.  Corresponds to those in rc.ini and asset processor ini
-    char gameFolderName[256]; // just the name.  Not the full path.
-    char branchToken[12]; // information written by the assetprocessor which help determine whether the game/editor are running from the same branch or not
 
     ILog* pLog;                                     // You can specify your own ILog to be used by System.
     ILogCallback* pLogCallback;                     // You can specify your own ILogCallback to be added on log creation (used by Editor).
@@ -647,45 +637,6 @@ struct SSystemInitParams
     IValidator* pValidator;                         // You can specify different validator object to use by System.
     IOutputPrintSink* pPrintSync;               // Print Sync which can be used to catch all output from engine
     char szSystemCmdLine[2048];                     // Command line.
-
-
-                                                    // set some paths before you create the system.
-
-                                                    // rootPath - (REQUIRED) folder containing root.  Must contain system.cfg or bootstrap.cfg basically.
-                                                    // the remainder are optional and if specified should contain prefixes that can be prepended to any file to get to that location:
-                                                    // READ ONLY!
-    char rootPath[256];
-    char rootPathCache[256];
-
-    // assetsPath - (REQUIRED) - where you assets live.  The engine config parser will default this to @root@/gamename
-    // READ ONLY!
-    char assetsPath[256];
-    char assetsPathCache[256];
-
-    // userPath - (OPTIONAL) User path contains a folder for preferences persistent storage.  May be persisted to the cloud (by things like IOS)
-    // If not specified, this is assumed @root@/User/
-    // WRITABLE
-    char userPath[256];
-
-    // cachePath - (OPTIONAL) a temporary store that can be erased at any time and does not need to be persisted
-    // on the cloud or anything like that. if not specified, this will be @user@/Cache
-    // WRITABLE
-    char cachePath[256];
-
-    // logPath - (OPTIONAL) a log path folder.
-    // If not specified, it will be @cache@/Logs
-    // WRITABLE
-    char logPath[256];
-
-    // the game should never use these values instead, the game should be using crypak or fileio with aliases:
-    // @root@ To get to the folder where system.cfg lives
-    // @assets@ to get to the folder containing game assets (textures and such) - by default, this is @root@/Gamename/
-    // @devroot@ to get to source files that are checked into source control (PC EDITOR ONLY!)
-    // @engroot@ to get to path to the engine root folder
-    // @user@ to access user store
-    // @cache@ to access temporary cache
-    // @log@ to access log file and other forensic storage
-    char szBinariesDir[256];
 
     bool bEditor;                                   // When running in Editor mode.
     bool bPreview;                                  // When running in Preview mode (Minimal initialization).
@@ -730,26 +681,7 @@ struct SSystemInitParams
         hWnd = NULL;
         hWndForInputSystem = NULL;
 
-        memset(rootPath, 0, sizeof(rootPath));
-        memset(rootPathCache, 0, sizeof(rootPathCache));
-        memset(userPath, 0, sizeof(userPath));
-        memset(assetsPath, 0, sizeof(assetsPath));
-        memset(assetsPathCache, 0, sizeof(assetsPathCache));
-        memset(cachePath, 0, sizeof(cachePath));
-        memset(logPath, 0, sizeof(logPath));
-        memset(gameFolderName, 0, sizeof(gameFolderName));
-        memset(branchToken, 0, sizeof(branchToken));
-
-        memset(remoteIP, 0, sizeof(remoteIP));
-        azstrcpy(remoteIP, sizeof(remoteIP), "127.0.0.1");
-        memset(assetsPlatform, 0, sizeof(assetsPlatform));
-        azstrcpy(assetsPlatform, sizeof(assetsPlatform), "pc");
-
-        remotePort = 45643;
-        remoteFileIO = false;
         remoteResourceCompiler = false;
-        connectToRemote = false;
-        waitForConnection = false;
 
         pLog = NULL;
         pLogCallback = NULL;
@@ -762,7 +694,6 @@ struct SSystemInitParams
         pValidator = NULL;
         pPrintSync = NULL;
         memset(szSystemCmdLine, 0, sizeof(szSystemCmdLine));
-        memset(szBinariesDir, 0, sizeof(szBinariesDir));
 
         bEditor = false;
         bPreview = false;
@@ -797,17 +728,6 @@ struct SSystemInitParams
         pCvarsDefault = NULL;
 
         pSharedEnvironment = nullptr;
-    }
-
-    bool UseAssetCache() const
-    {
-#if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_MAC) || defined(AZ_PLATFORM_LINUX)
-        char checkPath[AZ_MAX_PATH_LEN] = { 0 };
-        azsnprintf(checkPath, AZ_MAX_PATH_LEN, "%s/engine.json", rootPathCache);
-        return AZ::IO::SystemFile::Exists(checkPath);
-#else
-        return false;
-#endif // defined(AZ_PLATFORM_WINDOWS) || AZ_TRAIT_OS_PLATFORM_APPLE
     }
 };
 
@@ -1228,11 +1148,6 @@ struct ISystem
     //   Gets number of CPUs
     virtual int GetLogicalCPUCount() = 0;
 
-    //! Get the 'kind' of assets you need to load - this describes the flavor of assets you are going to load
-    //! based on the platform you're on - so for example, android on ES3 will be 'es3' but android on opengl might load PC assets or others...
-    //! This is defined in bootstrap.cfg and is read-only during runtime.
-    virtual const char* GetAssetsPlatform() const = 0;
-
     // Summary:
     //   Return the rendering driver name. GL or Metal
     virtual const char* GetRenderingDriverName() const = 0;
@@ -1407,43 +1322,6 @@ struct ISystem
     virtual bool IsTestMode() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // Loading time/memory profiling
-    //////////////////////////////////////////////////////////////////////////
-
-    // Summary:
-    //   Starts function loading stats profiling.
-    virtual struct SLoadingTimeContainer* StartLoadingSectionProfiling(CLoadingTimeProfiler* pProfiler, const char* szFuncName) = 0;
-
-    // Summary:
-    //   Ends function loading stats profiling.
-    virtual void EndLoadingSectionProfiling(CLoadingTimeProfiler* pProfiler) = 0;
-
-    // Summary:
-    //   Starts function profiling with bootprofiler (session must be started).
-    virtual CBootProfilerRecord* StartBootSectionProfiler(const char* name, const char* args) = 0;
-
-    // Summary:
-    //   Ends function profiling with bootprofiler.
-    virtual void StopBootSectionProfiler(CBootProfilerRecord* record) = 0;
-
-
-    // Summary:
-    //   Starts frame session
-    virtual void StartBootProfilerSessionFrames(const char* pName) = 0;
-
-    // Summary:
-    //   Stops frame session
-    virtual void StopBootProfilerSessionFrames() = 0;
-
-    // Summary:
-    //   Prints loading stats into log.
-    virtual void OutputLoadingTimeStats() = 0;
-
-    // Summary:
-    //   Starts function loading stats profiling.
-    virtual const char* GetLoadingProfilerCallstack() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // File version.
     //////////////////////////////////////////////////////////////////////////
 
@@ -1581,10 +1459,10 @@ struct ISystem
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
-    //  Enable/Disable drawing the console 
+    //  Enable/Disable drawing the console
     virtual void SetConsoleDrawEnabled(bool enabled) = 0;
 
-    //  Enable/Disable drawing the UI 
+    //  Enable/Disable drawing the UI
     virtual void SetUIDrawEnabled(bool enabled) = 0;
 
     // Summary:
@@ -1772,79 +1650,19 @@ struct DiskOperationInfo
 
 #endif
 
-#if defined(ENABLE_LOADING_PROFILER)
-
-struct CLoadingTimeProfiler
-{
-    CLoadingTimeProfiler(ISystem* pSystem, const char* szFuncName)
-        : m_pSystem(pSystem)
-    {
-        m_pSystem = pSystem;
-        m_pTimeContainer = m_pSystem->StartLoadingSectionProfiling(this, szFuncName);
-    }
-
-    ~CLoadingTimeProfiler()
-    {
-        m_pSystem->EndLoadingSectionProfiling(this);
-    }
-
-    struct SLoadingTimeContainer* m_pTimeContainer;
-    double m_fConstructorTime;
-    double m_fConstructorMemUsage;
-
-    DiskOperationInfo m_constructorInfo;
-
-    ISystem* m_pSystem;
-};
-
-class CSYSBootProfileBlock
-{
-    ISystem* m_pSystem;
-    CBootProfilerRecord* m_pRecord;
-public:
-    CSYSBootProfileBlock(ISystem* pSystem, const char* name, const char* args = NULL)
-        : m_pSystem(pSystem)
-    {
-        if (m_pSystem)
-        {
-            m_pRecord = m_pSystem->StartBootSectionProfiler(name, args);
-        }
-    }
-
-    ~CSYSBootProfileBlock()
-    {
-        if (m_pSystem)
-        {
-            m_pSystem->StopBootSectionProfiler(m_pRecord);
-        }
-    }
-};
-
-#ifdef AZ_PROFILE_TELEMETRY
+#if defined(ENABLE_LOADING_PROFILER) && AZ_PROFILE_TELEMETRY
 
 #define LOADING_TIME_PROFILE_SECTION AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore)
 #define LOADING_TIME_PROFILE_SECTION_ARGS(...) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, __VA_ARGS__)
 #define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName) AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, args) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, sectionName, args)
-
-#else
-
-#define LOADING_TIME_PROFILE_SECTION CSYSBootProfileBlock AZ_JOIN(_profileBlockLine, __LINE__)(gEnv && gEnv->pSystem ? gEnv->pSystem : nullptr, __FUNCTION__);
-#define LOADING_TIME_PROFILE_SECTION_ARGS(args) CSYSBootProfileBlock AZ_JOIN(_profileBlockLine, __LINE__)(gEnv->pSystem, __FUNCTION__, args);
-#define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName) CSYSBootProfileBlock AZ_JOIN(_profileBlockLine, __LINE__)(gEnv->pSystem, sectionName);
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, args) CSYSBootProfileBlock AZ_JOIN(_profileBlockLine, __LINE__)(gEnv->pSystem, sectionName, args);
-
-#endif // AZ_PROFILE_TELEMETRY
+#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, sectionName, __VA_ARGS__)
 
 #else
 
 #define LOADING_TIME_PROFILE_SECTION
-#define LOADING_TIME_PROFILE_SECTION_ARGS(args)
+#define LOADING_TIME_PROFILE_SECTION_ARGS(...)
 #define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, args)
-#define LOADING_TIME_PROFILE_SESSION_SECTION(sessionName)
-#define LOADING_TIME_PROFILE_SESSION_START(sessionName)
-#define LOADING_TIME_PROFILE_SESSION_STOP(sessionName)
+#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...)
 
 #endif
 
@@ -1865,7 +1683,7 @@ extern SC_API SSystemGlobalEnvironment* gEnv;
 inline ISystem* GetISystem()
 {
     // Some unit tests temporarily install and then uninstall ISystem* mocks.
-    // It is generally okay for runtime and tool systems which call this function to cache the returned pointer, 
+    // It is generally okay for runtime and tool systems which call this function to cache the returned pointer,
     // because their lifetime is usually shorter than the lifetime of the ISystem* implementation.
     // It is NOT safe for this function to cache it as a static itself, though, as the static it would cache
     // it inside may outlive the the actual instance implementing ISystem* when unit tests are torn down and then restarted.

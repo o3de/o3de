@@ -16,6 +16,7 @@
 #include <ISystem.h>
 
 #include <AzCore/Socket/AzSocket.h>
+#include <AzCore/Utils/Utils.h>
 
 #undef LockDebug
 //#define LockDebug(str1,str2)  {string strMessage;strMessage.Format(str1,str2);if (m_clients.size())   OutputDebugString(strMessage.c_str());}
@@ -46,16 +47,13 @@ public:
 
         const char* path = nullptr; // Don't call GetGameFolder here, it returns a full absolute path and we just really want the game name
 
-        if (ICVar* pVar = gEnv->pConsole->GetCVar("sys_game_folder"))
-        {
-            path = pVar->GetString();
-        }
-        if (!path)
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        if (projectPath.empty())
         {
             return;
         }
 
-        pNotificationNetwork->Send("SystemInfo", path, ::strlen(path) + 1);
+        pNotificationNetwork->Send("SystemInfo", projectPath.c_str(), projectPath.size());
     }
 } g_queryNotification;
 

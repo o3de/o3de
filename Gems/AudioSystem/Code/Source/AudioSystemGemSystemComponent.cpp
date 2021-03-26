@@ -156,7 +156,7 @@ namespace AudioSystemGem
 
             // Initialize the implementation module...
             bool initImplSuccess = false;
-            Audio::Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Audio::Gem::AudioEngineGemRequestBus::Events::Initialize, initParams);
+            Audio::Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Audio::Gem::AudioEngineGemRequestBus::Events::Initialize);
 
             if (initImplSuccess)
             {

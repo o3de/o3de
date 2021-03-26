@@ -26,6 +26,7 @@
 
 // AzCore
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
@@ -751,10 +752,13 @@ bool CFileUtil::ScanDirectory(const QString& path, const QString& file, IFileUti
 
 void CFileUtil::ShowInExplorer([[maybe_unused]] const QString& path)
 {
-    const char* assetRoot;
-    EBUS_EVENT_RESULT(assetRoot, AzFramework::ApplicationRequests::Bus, GetAssetRoot);
+    AZStd::string assetRoot;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+    }
 
-    QString fullpath(assetRoot);
+    auto fullpath = QString::fromUtf8(assetRoot.c_str(), aznumeric_cast<int>(assetRoot.size()));
     AzQtComponents::ShowFileOnDesktop(fullpath);
 }
 

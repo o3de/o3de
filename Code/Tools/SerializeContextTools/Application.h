@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/Path/Path.h>
 
 namespace AZ
@@ -20,10 +20,10 @@ namespace AZ
     namespace SerializeContextTools
     {
         class Application final
-            : public AzToolsFramework::ToolsApplication
+            : public AZ::ComponentApplication
         {
         public:
-            Application(int* argc, char*** argv);
+            Application(int argc, char** argv);
             ~Application() override = default;
             
             const char* GetConfigFilePath() const;

@@ -293,7 +293,7 @@ typedef uint32 vtx_idx;
 
 #if defined(ENABLE_PROFILING_CODE)
 #   define USE_DISK_PROFILER
-//#   define ENABLE_LOADING_PROFILER    // Not guaranteed to have enough slots for all the threads in the system
+#   define ENABLE_LOADING_PROFILER  // requires AZ_PROFILE_TELEMETRY to also be defined
 #endif
 
 #if defined(SOFTCODE_ENABLED)

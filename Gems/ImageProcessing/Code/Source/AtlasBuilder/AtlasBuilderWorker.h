@@ -62,15 +62,6 @@ namespace TextureAtlasBuilder
         //! Removes anything that matches the wildcard
         static void RemoveFilesUsingWildCard(AZStd::vector<AZStd::string>& paths, const AZStd::string& remove);
 
-        //! Compare considering wildcards
-        static bool DoesPathnameMatchWildCard(const AZStd::string& rule, const AZStd::string& path);
-
-        //! As FollowsRule but allows extra items after the last '/'
-        static bool DoesWildCardDirectoryIncludePathname(const AZStd::string& rule, const AZStd::string& path);
-
-        //! Helper function for DoesPathnameMatchWildCard
-        static bool TokenMatchesWildcard(const AZStd::string& rule, const AZStd::string& token);
-
         //! Resolves any folder paths into image file paths
         static void AddFolderContents(AZStd::vector<AZStd::string>& paths, const AZStd::string& insert, bool& valid);
 

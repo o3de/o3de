@@ -23,9 +23,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/MaterialBrowser/MaterialBrowserComponent.h>
 
-// CryCommon
-#include <CryCommon/ParseEngineConfig.h>
-
 // Editor
 #include "MainWindow.h"
 #include "CryEdit.h"
@@ -108,15 +105,6 @@ namespace EditorInternal
     bool EditorToolsApplication::Start()
     {
         AzFramework::Application::StartupParameters params;
-
-        AZStd::string appRootOverride;
-        const size_t appRootSwitches = m_commandLine.GetNumSwitchValues("app-root");
-        if (appRootSwitches != 0)
-        {
-            // Use the last --app-root parameter specified on the command line
-            appRootOverride = m_commandLine.GetSwitchValue("app-root", appRootSwitches - 1);
-            params.m_appRootOverride = appRootOverride.c_str();
-        }
 
         // Must be done before creating QApplication, otherwise asserts when we alloc
         AzToolsFramework::ToolsApplication::Start({}, params);

@@ -39,4 +39,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AutomatedLauncherTesting.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )

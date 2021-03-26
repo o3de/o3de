@@ -11,41 +11,15 @@
 */
 #include "UiCanvasEditor_precompiled.h"
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 #include "EditorCommon.h"
 
 #include <Util/PathUtil.h>
 
 #include <QStandardPaths>
 #include <QMessageBox>
-
-namespace
-{
-    QString GetEngineRootDir()
-    {
-        static bool hasBeenInit = false;
-        static QString fullDir;
-        if (!hasBeenInit)
-        {
-            hasBeenInit = true;
-
-            QDir appPath(qApp->applicationDirPath());
-            while (!appPath.isRoot())
-            {
-                if (QFile::exists(appPath.filePath("engineroot.txt")))
-                {
-                    fullDir = appPath.absolutePath();
-                    break;
-                }
-
-                if (!appPath.cdUp())
-                {
-                    break;
-                }
-            }
-        }
-        return fullDir;
-    }
-} // anonymous namespace.
 
 namespace FileHelpers
 {
@@ -65,14 +39,13 @@ namespace FileHelpers
 
     QString GetRelativePathFromEngineRoot(const QString& fullPath)
     {
-        QString rootPath = GetEngineRootDir() + "/";
-
-        QString result = fullPath;
-        if (result.startsWith(rootPath, Qt::CaseInsensitive))
+        AZ::IO::FixedMaxPath engineRootPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            result = result.remove(0, rootPath.length());
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
-        return result;
+
+        return AZ::IO::PathView(fullPath.toUtf8().constData()).LexicallyProximate(engineRootPath).c_str();
     }
 
     void AppendExtensionIfNotPresent(QString& filename,

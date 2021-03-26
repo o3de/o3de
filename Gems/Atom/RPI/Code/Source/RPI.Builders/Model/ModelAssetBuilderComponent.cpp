@@ -837,7 +837,7 @@ namespace AZ
                 const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(vertexIndex);
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 
-                const size_t numInfluencesToAdd = AZStd::min<size_t>(numInfluencesAdded + numSkinInfluences, maxNumInfluences);
+                const size_t numInfluencesToAdd = AZStd::min<size_t>(numSkinInfluences, maxNumInfluences - numInfluencesAdded);
                 for (size_t influenceIndex = 0; influenceIndex < numInfluencesToAdd; ++influenceIndex)
                 {
                     const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(controlPointIndex, influenceIndex);

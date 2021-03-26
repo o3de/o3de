@@ -13,6 +13,9 @@
 #include "StyleSheetPage.h"
 #include "Gallery/ui_StyleSheetPage.h"
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -97,7 +100,12 @@ StyleSheetPage::StyleSheetPage(QWidget* parent)
     // developers. The style will be loaded from a Qt Resource file if Editor is installed, but
     // developers with the file on disk will be able to modify the style and have it automatically
     // reloaded.
-    AzQtComponents::StyleManager::addSearchPaths("gallery", pathOnDisk, qrcPath);
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    AzQtComponents::StyleManager::addSearchPaths("gallery", pathOnDisk, qrcPath, engineRootPath);
 
     // The following label shows the intended use:
     AzQtComponents::StyleManager::setStyleSheet(ui->exampleWidget, "gallery:StyleSheetPage.qss");

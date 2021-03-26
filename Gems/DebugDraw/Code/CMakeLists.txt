@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME DebugDraw ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.DebugDraw.66239f50bf754354b514c850c8b841fb.v0.1.0
     FILES_CMAKE
         debugdraw_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -42,9 +41,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME DebugDraw.Editor MODULE
+        NAME DebugDraw.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.DebugDraw.Editor.66239f50bf754354b514c850c8b841fb.v0.1.0
         FILES_CMAKE
             debugdraw_editor_files.cmake
         INCLUDE_DIRECTORIES

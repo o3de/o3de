@@ -20,6 +20,7 @@
 #include <AzCore/Socket/AzSocket.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/PlatformId/PlatformId.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
 
@@ -306,23 +307,20 @@ namespace NRemoteCompiler
 
         m_RequestLineRootFolder = "";
 
-        ICVar* pGameFolder = gEnv->pConsole->GetCVar("sys_game_folder");
+        auto projectName = AZ::Utils::GetProjectName();
         ICVar* pCompilerFolderSuffix = CRenderer::CV_r_ShaderCompilerFolderSuffix;
 
-        if (pGameFolder)
+        if (!projectName.empty())
         {
-            string folder = pGameFolder->GetString();
-            folder.Trim();
-            if (!folder.empty())
+            if (pCompilerFolderSuffix)
             {
-                if (pCompilerFolderSuffix)
-                {
-                    string suffix = pCompilerFolderSuffix->GetString();
-                    suffix.Trim();
-                    folder.append(suffix);
-                }
-                m_RequestLineRootFolder = folder + string("/");
+                string suffix = pCompilerFolderSuffix->GetString();
+                suffix.Trim();
+                projectName.append(suffix);
             }
+
+            projectName.append("/");
+            m_RequestLineRootFolder.assign(projectName.c_str(), projectName.size());
         }
 
         if (m_RequestLineRootFolder.empty())

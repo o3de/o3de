@@ -961,6 +961,22 @@ namespace AZStd
             }
         }
 
+        // C++23 contains
+        bool contains(const basic_string& other) const
+        {
+            return find(other) != npos;
+        }
+
+        bool contains(value_type c) const
+        {
+            return find(c) != npos;
+        }
+
+        bool contains(const_pointer s) const
+        {
+            return find(s) != npos;
+        }
+
         inline size_type find(const this_type& rhs, size_type offset = 0) const
         {
             const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;

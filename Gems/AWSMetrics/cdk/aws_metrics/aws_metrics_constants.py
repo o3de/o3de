@@ -121,7 +121,7 @@ DASHBOARD_GLOBAL_DESCRIPTION = "# Metrics Dashboard  \n"\
                                "This dashboard contains near-real-time metrics sent from your client"\
                                " or dedicated server.  \n You can edit the widgets using the AWS console"\
                                " or modify your CDK application code. Please note that redeploying"\
-                               " the CDK application will not overwrite any changes you made directly"\
+                               " the CDK application will overwrite any changes you made directly"\
                                " via the AWS console.  \n For more information about using the AWS Metrics Gem"\
                                " and CDK application, please check the AWSMetrics gem document."
 # The description for the operational health shown on the CloudWatch dashboard

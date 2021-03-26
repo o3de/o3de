@@ -28,8 +28,8 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <AzslCompiler.h>
 #include <CommonFiles/CommonTypes.h>

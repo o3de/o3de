@@ -36,6 +36,9 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API void Write(const char* name, const DataTypes::MatrixType& data);
         SCENE_CORE_API void Write(const char* name, bool data);
         SCENE_CORE_API void Write(const char* name, Vector3 data);
+        SCENE_CORE_API void Write(const char* name, AZStd::optional<bool> data);
+        SCENE_CORE_API void Write(const char* name, AZStd::optional<float> data);
+        SCENE_CORE_API void Write(const char* name, AZStd::optional<AZ::Vector3> data);
 
         SCENE_CORE_API const AZStd::string& GetOutput() const;
 

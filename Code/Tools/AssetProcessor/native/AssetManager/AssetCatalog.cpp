@@ -12,11 +12,12 @@
 
 #include "native/AssetManager/AssetCatalog.h"
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 #include <AzFramework/FileTag/FileTag.h>
+#include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <QElapsedTimer>
 #include "PathDependencyManager.h"
@@ -45,14 +46,12 @@ namespace AssetProcessor
         m_absoluteDevFolderPath[0] = 0;
         m_absoluteDevGameFolderPath[0] = 0;
 
-        AZStd::string appRoot;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-        azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, appRoot.c_str());
-        
-        AZStd::string gameFolderPath;
-        AzFramework::StringFunc::Path::Join(appRoot.c_str(), AssetUtilities::ComputeGameName().toUtf8().constData(), gameFolderPath);
-        azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, gameFolderPath.c_str());
+        AZStd::string engineRoot;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+        azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, engineRoot.c_str());
 
+        AZStd::string gameFolderPath{AssetUtilities::ComputeProjectPath().toUtf8().constData()};
+        azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, gameFolderPath.c_str());
 
         AssetUtilities::ComputeProjectCacheRoot(m_cacheRootDir);
 
@@ -340,9 +339,13 @@ namespace AssetProcessor
                 }
                 else
                 {
+                    auto settingsRegistry = AZ::SettingsRegistry::Get();
+                    AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
+                    settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
                     QString tempRegistryFile = QString("%1/%2").arg(workSpace).arg("assetcatalog.xml.tmp");
-                    QString platformGameDir = QString("%1/%2/").arg(m_cacheRoot.absoluteFilePath(platform)).arg(AssetUtilities::ComputeGameName().toLower());
-                    QString actualRegistryFile = QString("%1%2").arg(platformGameDir).arg("assetcatalog.xml");
+                    QString platformCacheDir = QString::fromUtf8(cacheRootFolder.c_str(), aznumeric_cast<int>(cacheRootFolder.size()));
+                    QString actualRegistryFile = QString("%1/%2").arg(platformCacheDir).arg("assetcatalog.xml");
 
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating asset catalog: %s --> %s\n", tempRegistryFile.toUtf8().constData(), actualRegistryFile.toUtf8().constData());
                     AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
@@ -352,12 +355,12 @@ namespace AssetProcessor
                         AZ::IO::FileIOBase::GetInstance()->Close(fileHandle);
 
                         // Make sure that the destination folder of the registry file exists
-                        QDir registryDir(platformGameDir);
+                        QDir registryDir(platformCacheDir);
                         if (!registryDir.exists())
                         {
                             QString absPath = registryDir.absolutePath();
                             bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
-                            AZ_Warning(AssetProcessor::ConsoleChannel, makeDirResult, "Failed create folder %s", platformGameDir.toUtf8().constData());
+                            AZ_Warning(AssetProcessor::ConsoleChannel, makeDirResult, "Failed create folder %s", platformCacheDir.toUtf8().constData());
                         }
                         
                         // if we succeeded in doing this, then use "rename" to move the file over the previous copy.
@@ -488,9 +491,7 @@ namespace AssetProcessor
                     AZ::Data::AssetId assetId(combined.m_sourceGuid, combined.m_subID);
 
                     // relative file path is gotten by removing the platform and game from the product name
-                    QString relativeProductPath = combined.m_productName.c_str();
-                    relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove PLATFORM and an extra slash
-                    relativeProductPath = relativeProductPath.right(relativeProductPath.length() - relativeProductPath.indexOf('/') - 1); // remove GAMENAME and an extra slash
+                    QString relativeProductPath = AssetUtilities::StripAssetPlatform(combined.m_productName);
                     QString fullProductPath = m_cacheRoot.absoluteFilePath(combined.m_productName.c_str());
 
                     AZ::Data::AssetInfo info;
@@ -1133,31 +1134,17 @@ namespace AssetProcessor
         return assetInfo;
     }
 
-    bool ConvertDatabaseProductPathToProductFileName(QString dbPath, QString& productFileName)
+    bool ConvertDatabaseProductPathToProductFilename(AZStd::string_view dbPath, QString& productFileName)
     {
-        QString gameName = AssetUtilities::ComputeGameName();
-        bool result = false;
-        int gameNameIndex = dbPath.indexOf(gameName, 0, Qt::CaseInsensitive);
-        if (gameNameIndex != -1)
+        // Always strip the leading directory from the product path
+        // The leading directory can be either an asset platform path or a subfolder
+        AZ::StringFunc::TokenizeNext(dbPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+        if (!dbPath.empty())
         {
-            //we will now remove the gameName and the native separator to get the assetId
-            dbPath.remove(0, gameNameIndex + gameName.length() + 1);   // adding one for the native separator also
-            result = true;
+            productFileName = QString::fromUtf8(dbPath.data(), aznumeric_cast<int>(dbPath.size()));
+            return true;
         }
-        else
-        {
-            //we will just remove the platform and the native separator to get the assetId
-            int separatorIndex = dbPath.indexOf("/");
-            if (separatorIndex != -1)
-            {
-                dbPath.remove(0, separatorIndex + 1);   // adding one for the native separator
-                result = true;
-            }
-        }
-
-        productFileName = dbPath;
-
-        return result;
+        return false;
     }
 
     void AssetCatalog::ProcessGetRelativeProductPathFromFullSourceOrProductPathRequest(const AZStd::string& fullPath, AZStd::string& relativeProductPath)
@@ -1166,7 +1153,7 @@ namespace AssetProcessor
         QString normalizedSourceOrProductPath = AssetUtilities::NormalizeFilePath(sourceOrProductPath);
 
         QString productFileName;
-        int resultCode = 0;
+        bool resultCode = false;
         QDir inputPath(normalizedSourceOrProductPath);
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessGetRelativeProductPath: %s...\n", sourceOrProductPath.toUtf8().constData());
@@ -1175,7 +1162,7 @@ namespace AssetProcessor
         {
             //if the path coming in is already a relative path,we just send it back
             productFileName = sourceOrProductPath;
-            resultCode = 1;
+            resultCode = true;
         }
         else
         {
@@ -1196,7 +1183,7 @@ namespace AssetProcessor
                 // Now after removing the cache root,normalizedInputAssetPath can either be $Platform/$Game/xxx/yyy or something like $Platform/zzz
                 // and the corresponding assetId have to be either xxx/yyy or zzz
 
-                resultCode = ConvertDatabaseProductPathToProductFileName(normalizedSourceOrProductPath, productFileName);
+                resultCode = ConvertDatabaseProductPathToProductFilename(normalizedSourceOrProductPath.toUtf8().data(), productFileName);
             }
             else
             {
@@ -1224,12 +1211,12 @@ namespace AssetProcessor
 
                         if (m_db->GetProductsBySourceName(relativeName, products))
                         {
-                            resultCode = ConvertDatabaseProductPathToProductFileName(products[0].m_productName.c_str(), productFileName);
+                            resultCode = ConvertDatabaseProductPathToProductFilename(products[0].m_productName, productFileName);
                         }
                         else
                         {
                             productFileName = relativeName;
-                            resultCode = 1;
+                            resultCode = true;
                         }
                     }
                 }
@@ -1242,7 +1229,6 @@ namespace AssetProcessor
         }
 
         relativeProductPath = productFileName.toUtf8().data();
-
     }
 
     void AssetCatalog::ProcessGetFullSourcePathFromRelativeProductPathRequest(const AZStd::string& relPath, AZStd::string& fullSourcePath)

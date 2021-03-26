@@ -14,9 +14,11 @@
 #include <PythonAssetBuilder/PythonAssetBuilderBus.h>
 #include <PythonAssetBuilder/PythonBuilderRequestBus.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -198,16 +200,15 @@ namespace PythonAssetBuilder
         }
 
         // transaction->Commit() requires the "@user@" alias
-        if (AZ::IO::FileIOBase::GetInstance()->GetAlias("@user@") == nullptr)
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        auto ioBase = AZ::IO::FileIOBase::GetInstance();
+        if (ioBase->GetAlias("@user@") == nullptr)
         {
-            AZStd::string assetRoot;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                assetRoot,
-                &AzFramework::ApplicationRequests::Bus::Events::GetAssetRoot);
-
-            AZStd::string userPath;
-            AZ::StringFunc::Path::Join(assetRoot.c_str(), "AssetProcessorTemp", userPath);
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@user@", userPath.c_str());
+            if (AZ::IO::Path userPath; settingsRegistry->Get(userPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                userPath /= "AssetProcessorTemp";
+                ioBase->SetAlias("@user@", userPath.c_str());
+            }
         }
 
         // transaction->Commit() expects the file to exist and write-able

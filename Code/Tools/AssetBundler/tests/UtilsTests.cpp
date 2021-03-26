@@ -51,7 +51,7 @@ namespace AssetBundler
         // AzFramework::ApplicationRequests::Bus::Handler interface
         void NormalizePath(AZStd::string& /*path*/) override {}
         void NormalizePathKeepCase(AZStd::string& /*path*/) override {}
-        void CalculateBranchTokenForAppRoot(AZStd::string& /*token*/) const override {}
+        void CalculateBranchTokenForEngineRoot(AZStd::string& /*token*/) const override {}
 
         const char* GetAppRoot() const  override
         {

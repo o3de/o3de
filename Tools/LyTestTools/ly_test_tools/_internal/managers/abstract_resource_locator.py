@@ -150,9 +150,9 @@ class AbstractResourceLocator(object):
     def cache(self):
         """
         Return path to the cache dir.
-        :return: path to engine_root/dev/Cache/
+        :return: path to project_root/Cache/
         """
-        return self._cache_override or os.path.join(self.dev(), "Cache")
+        return self._cache_override or os.path.join(self.project(), "Cache")
 
     def asset_db(self):
         """
@@ -171,9 +171,9 @@ class AbstractResourceLocator(object):
     def asset_cache(self, platform):
         """
         Return path to the cache for the current platform and project inside the game project folder
-        :return: path to cache/<project>/<platform>/<project>
+        :return: path to <project_path>/Cache/<platform>
         """
-        return os.path.join(self.platform_cache_path(platform), self._project)
+        return os.path.join(self.platform_cache_path(platform))
 
     def asset_catalog(self, platform):
         """
@@ -194,14 +194,14 @@ class AbstractResourceLocator(object):
         Return path to AssetProcessorBatch's log directory using the project bin dir
         :return: path where the "logs" folder will be found
         """
-        return self._ap_log_root or self.build_directory()
+        return self._ap_log_root or self.project_log()
 
     def ap_log_dir(self):
         """
         Return path to AssetProcessorBatch's log directory using the project bin dir
         :return: path to 'logs' dir in <bin dir> folder
         """
-        return os.path.join(self.ap_log_root(), 'logs')
+        return self.ap_log_root()
 
     def ap_job_logs(self):
         """
@@ -209,6 +209,7 @@ class AbstractResourceLocator(object):
         :return: path to 'logs' dir in <bin dir> folder
         """
         return os.path.join(self.ap_log_dir(), 'JobLogs')
+
 
     def ap_batch_log(self):
         """
@@ -227,9 +228,9 @@ class AbstractResourceLocator(object):
     def project_cache(self):
         """
         Return path to the current project cache folder
-        :return: path to engine_root/dev/Cache/<project>
+        :return: path to <project_path>/Cache
         """
-        return os.path.join(self.cache(), self._project)
+        return self.cache()
 
     def get_shader_compiler_path(self):
         """
@@ -243,7 +244,7 @@ class AbstractResourceLocator(object):
         return os.path.join(self.dev(), 'bootstrap.cfg')
 
     def asset_processor_config_file(self):
-        return os.path.join(self.dev(), 'AssetProcessorPlatformConfig.ini')
+        return os.path.join(self.dev(), 'AssetProcessorPlatformConfig.setreg')
 
     def autoexec_file(self):
         return os.path.join(

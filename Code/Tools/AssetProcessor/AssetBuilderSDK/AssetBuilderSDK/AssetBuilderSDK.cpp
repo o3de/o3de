@@ -494,8 +494,8 @@ namespace AssetBuilderSDK
     }
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
 
-    PlatformInfo::PlatformInfo(const char* identifier, const AZStd::unordered_set<AZStd::string>& tags)
-        : m_identifier(identifier)
+    PlatformInfo::PlatformInfo(AZStd::string identifier, const AZStd::unordered_set<AZStd::string>& tags)
+        : m_identifier(AZStd::move(identifier))
         , m_tags(tags)
     {
     }

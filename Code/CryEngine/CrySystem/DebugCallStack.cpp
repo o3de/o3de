@@ -277,17 +277,6 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         sprintf_s(excCode, "0x%08X", exception_pointer->ExceptionRecord->ExceptionCode);
         WriteLineToLog("Exception: %s, at Address: %s", excCode, excAddr);
 
-        if (CSystem* pSystem = (CSystem*)GetSystem())
-        {
-            if (const char* pLoadingProfilerCallstack = pSystem->GetLoadingProfilerCallstack())
-            {
-                if (pLoadingProfilerCallstack[0])
-                {
-                    WriteLineToLog("<CrySystem> LoadingProfilerCallstack: %s", pLoadingProfilerCallstack);
-                }
-            }
-        }
-
         {
             IMemoryManager::SProcessMemInfo memInfo;
             if (gEnv->pSystem->GetIMemoryManager()->GetProcessMemInfo(memInfo))
@@ -593,7 +582,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
                                 AZ::Debug::SymbolStorage::DecodeFrames(frames, numFrames, lines);
                                 for (unsigned int i2 = 0; i2 < numFrames; ++i2)
                                 {
-                                    fprintf(f, "%2d) %s\n", numFrames - i2, lines[i2]); 
+                                    fprintf(f, "%2d) %s\n", numFrames - i2, lines[i2]);
                                 }
                             }
                         }

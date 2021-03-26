@@ -297,7 +297,7 @@ void CVisRegTest::CaptureSample(const SCmd& cmd)
     if (m_cmdFreq == 1)   // Final sample
     {
         // Screenshot
-        stack_string filename("@cache@/TestResults/VisReg/");   // the default unaliased assets folder is read-only!
+        stack_string filename("@usercache@/TestResults/VisReg/");   // the default unaliased assets folder is read-only!
         filename += m_testName + "/" + cmd.args.c_str();
         gEnv->pRenderer->ScreenShot(filename);
 
@@ -335,7 +335,7 @@ void CVisRegTest::Finish()
 
 bool CVisRegTest::WriteResults()
 {
-    stack_string filename("@cache@/TestResults/VisReg/");
+    stack_string filename("@usercache@/TestResults/VisReg/");
     filename += m_testName + "/visreg_results.xml";
 
     AZ::IO::HandleType fileHandle = fxopen(filename.c_str(), "wb");

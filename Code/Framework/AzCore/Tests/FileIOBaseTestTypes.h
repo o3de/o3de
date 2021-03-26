@@ -416,6 +416,11 @@ public:
         return false;
     }
 
+    bool ReplaceAlias(AZ::IO::FixedMaxPath&, const AZ::IO::PathView&) const override
+    {
+        return false;
+    }
+
     void SetAlias(const char*, const char*) override
     {
     }

@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Authorization/AWSCognitoAuthorizationBus.h>
-#include <Authorization/AWSCognitoAuthorizationTypes.h>
 #include <Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h>
 #include <Authentication/AuthenticationProviderBus.h>
 #include <Credential/AWSCredentialBus.h>
@@ -34,7 +33,7 @@ namespace AWSClientAuth
         virtual ~AWSCognitoAuthorizationController();
 
         // AWSCognitoAuthorizationRequestsBus interface methods
-        bool Initialize(const AZStd::string& settingsRegistryPath) override;
+        bool Initialize() override;
         void Reset() override;
         AZStd::string GetIdentityId() override;
         bool HasPersistedLogins() override;
@@ -54,11 +53,14 @@ namespace AWSClientAuth
         int GetCredentialHandlerOrder() const override;
         std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider() override;
 
-        AZStd::unique_ptr<CognitoAuthorizationSettings> m_settings;
         std::shared_ptr<AWSClientAuthPersistentCognitoIdentityProvider> m_persistentCognitoIdentityProvider;
         std::shared_ptr<AWSClientAuthPersistentCognitoIdentityProvider> m_persistentAnonymousCognitoIdentityProvider;
         std::shared_ptr<Aws::Auth::CognitoCachingAuthenticatedCredentialsProvider> m_cognitoCachingCredentialsProvider;
         std::shared_ptr<Aws::Auth::CognitoCachingAnonymousCredentialsProvider> m_cognitoCachingAnonymousCredentialsProvider;
+
+        AZStd::string m_cognitoIdentityPoolId;
+        AZStd::string m_formattedCognitoUserPoolId;
+        AZStd::string m_awsAccountId;
 
     private:
         void PersistLoginsAndRefreshAWSCredentials(const AuthenticationTokens& authenticationTokens);

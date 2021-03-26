@@ -830,6 +830,15 @@ namespace AZ
             return false;
         }
 
+        bool NetworkFileIO::ReplaceAlias([[maybe_unused]] AZ::IO::FixedMaxPath& replaceAliasPath, [[maybe_unused]] const AZ::IO::PathView& path) const
+        {
+            REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::ReplaceAlias(path=%.*s)",
+                aznumeric_cast<int>(path.Native().size()), path.Native.data()).c_str());
+            REMOTEFILE_LOG_APPEND(AZStd::string::format("NetworkFileIO::ReplaceAlias(path=%.*s) return false",
+                aznumeric_cast<int>(path.Native().size()), path.Native().data()).c_str());
+            return false;
+        }
+
         bool NetworkFileIO::GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const
         {
             REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::GetFilename(fileHandle=%u, filename=%s, filenamesize=%u)", fileHandle, filename?filename:"nullptr", filenameSize).c_str());
@@ -1386,6 +1395,11 @@ namespace AZ
         bool RemoteFileIO::ResolvePath(AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path) const
         {
             return m_excludedFileIO ? m_excludedFileIO->ResolvePath(resolvedPath, path) : false;
+        }
+
+        bool RemoteFileIO::ReplaceAlias(AZ::IO::FixedMaxPath& replaceAliasPath, const AZ::IO::PathView& path) const
+        {
+            return m_excludedFileIO ? m_excludedFileIO->ReplaceAlias(replaceAliasPath, path) : false;
         }
 
 #ifdef REMOTEFILEIO_CACHE_FILETREE

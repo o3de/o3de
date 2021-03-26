@@ -14,7 +14,9 @@
 
 #include <UserManagement/AWSCognitoUserManagementController.h>
 #include <AWSClientAuthBus.h>
+#include <AWSClientAuthResourceMappingConstants.h>
 #include <AWSCoreBus.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
 
 #include <aws/core/utils/Outcome.h>
 #include <aws/core/utils/memory/stl/AWSVector.h>
@@ -35,41 +37,25 @@
 
 namespace AWSClientAuth
 {
-    constexpr char COGNITO_USER_POOL[] = "/AWS/CognitoUserPool";
-
     AWSCognitoUserManagementController::AWSCognitoUserManagementController()
     {
         AZ::Interface<IAWSCognitoUserManagementRequests>::Register(this);
         AWSCognitoUserManagementRequestBus::Handler::BusConnect();
-
-        m_settings = AZStd::make_unique<AWSCognitoUserManagementSetting>();
     }
 
     AWSCognitoUserManagementController::~AWSCognitoUserManagementController()
     {
-        m_settings.reset();
-
         AWSCognitoUserManagementRequestBus::Handler::BusDisconnect();
         AZ::Interface<IAWSCognitoUserManagementRequests>::Unregister(this);
     }
 
-    bool AWSCognitoUserManagementController::Initialize(const AZStd::string& settingsRegistryPath)
+    bool AWSCognitoUserManagementController::Initialize()
     {
-        AZStd::unique_ptr<AZ::SettingsRegistryInterface> settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
-        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch))
-        {
-            AZ_Error("AWSCognitoUserManagementController", true, "Failed to merge settings file for path %s", settingsRegistryPath.c_str());
-            return false;
-        }
-
-        if (!settingsRegistry->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), COGNITO_USER_POOL))
-        {
-            AZ_Error("AWSCognitoUserManagementController", true, "Failed to get settings object for path %s", COGNITO_USER_POOL);
-            return false;
-        }
-
-        return true;
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            m_cognitoAppClientId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoAppClientIdResourceMappingKey);
+        AZ_Warning(
+            "AWSCognitoUserManagementController", m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");
+        return !m_cognitoAppClientId.empty();
     }
 
     // Call Cognito user pool sign up using email. Confirmation code sent to the email set.
@@ -85,7 +71,7 @@ namespace AWSClientAuth
         AZ::Job* emailSignUpJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, username, password, email]()
         {
             Aws::CognitoIdentityProvider::Model::SignUpRequest signUpRequest;
-            signUpRequest.SetClientId(m_settings->m_appClientId.c_str());
+            signUpRequest.SetClientId(m_cognitoAppClientId.c_str());
             signUpRequest.SetUsername(username.c_str());
             signUpRequest.SetPassword(password.c_str());
 
@@ -123,7 +109,7 @@ namespace AWSClientAuth
         AZ::Job* phoneSignUpJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, username, password, phoneNumber]()
         {
             Aws::CognitoIdentityProvider::Model::SignUpRequest signUpRequest;
-            signUpRequest.SetClientId(m_settings->m_appClientId.c_str());
+            signUpRequest.SetClientId(m_cognitoAppClientId.c_str());
             signUpRequest.SetUsername(username.c_str());
             signUpRequest.SetPassword(password.c_str());
 
@@ -163,7 +149,7 @@ namespace AWSClientAuth
         AZ::Job* confirmSignUpJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, username, confirmationCode]()
         {
             Aws::CognitoIdentityProvider::Model::ConfirmSignUpRequest confirmSignupRequest;
-            confirmSignupRequest.SetClientId(m_settings->m_appClientId.c_str());
+            confirmSignupRequest.SetClientId(m_cognitoAppClientId.c_str());
             confirmSignupRequest.SetUsername(username.c_str());
             confirmSignupRequest.SetConfirmationCode(confirmationCode.c_str());
 
@@ -192,7 +178,7 @@ namespace AWSClientAuth
         AZ::Job* forgotPasswordJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, username]()
         {
             Aws::CognitoIdentityProvider::Model::ForgotPasswordRequest forgotPasswordRequest;
-            forgotPasswordRequest.SetClientId(m_settings->m_appClientId.c_str());
+            forgotPasswordRequest.SetClientId(m_cognitoAppClientId.c_str());
             forgotPasswordRequest.SetUsername(username.c_str());
 
             Aws::CognitoIdentityProvider::Model::ForgotPasswordOutcome forgotPasswordOutcome{ cognitoIdentityProviderClient->ForgotPassword(forgotPasswordRequest) };
@@ -220,7 +206,7 @@ namespace AWSClientAuth
         AZ::Job* confirmForgotPasswordJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, username, confirmationCode, newPassword]()
         {
             Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordRequest confirmForgotPasswordRequest;
-            confirmForgotPasswordRequest.SetClientId(m_settings->m_appClientId.c_str());
+            confirmForgotPasswordRequest.SetClientId(m_cognitoAppClientId.c_str());
             confirmForgotPasswordRequest.SetUsername(username.c_str());
             confirmForgotPasswordRequest.SetConfirmationCode(confirmationCode.c_str());
             confirmForgotPasswordRequest.SetPassword(newPassword.c_str());

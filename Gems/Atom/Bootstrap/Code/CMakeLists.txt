@@ -22,7 +22,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_Bootstrap ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_Bootstrap.c7ff89ad6e8b4b45b2fadef2bcf12d6e.v0.1.0
     FILES_CMAKE
         bootstrap_files.cmake
     INCLUDE_DIRECTORIES

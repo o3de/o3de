@@ -1,4 +1,13 @@
 {
+  "profile_pipe": {
+    "TAGS": [
+      "default"
+    ],
+    "steps": [
+      "profile",
+      "gradle"
+    ]
+  },
   "metrics": {
     "TAGS":[
         "weekly"
@@ -11,7 +20,7 @@
   },
   "debug": {
     "TAGS":[
-        "default",
+        "nightly",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -26,7 +35,6 @@
   },
   "profile": {
     "TAGS":[
-        "default",
         "weekly-build-metrics",
         "daily-pipeline-metrics"
     ],
@@ -42,7 +50,7 @@
   },
   "profile_nounity": {
     "TAGS":[
-        "default",
+        "nightly",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -95,6 +103,7 @@
   },
   "release": {
     "TAGS":[
+        "nightly",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -109,7 +118,7 @@
   },
   "monolithic_release": {
     "TAGS":[
-        "default",
+        "nightly",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -124,7 +133,6 @@
   },
   "gradle": {
     "TAGS":[
-        "default",
         "weekly-build-metrics"
     ],
     "COMMAND":"gradle_windows.cmd",

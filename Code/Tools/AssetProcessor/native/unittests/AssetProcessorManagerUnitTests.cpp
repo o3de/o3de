@@ -15,7 +15,7 @@
 #include "AssetProcessorManagerUnitTests.h"
 
 #include <AzCore/Casting/lossy_cast.h>
-
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include "MockApplicationManager.h"
 #include "native/FileWatcher/FileWatcher.h"
@@ -56,7 +56,7 @@ namespace AssetProcessor
         using GetFullSourcePathFromRelativeProductPathResponse = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathResponse;
     };
 
-   
+
 
     REGISTER_UNIT_TEST(AssetProcessorManagerUnitTests_ScanFolders)
 
@@ -138,7 +138,7 @@ namespace AssetProcessor
         AssetUtilities::ComputeAssetRoot(oldRoot);
         AssetUtilities::ResetAssetRoot();
         FileWatcher fileWatcher;
-        
+
         UNIT_TEST_EXPECT_TRUE(QDir::temp().exists());
         QString tmpDirPath = AssetUtilities::NormalizeDirectoryPath(QDir::tempPath());
 
@@ -153,8 +153,7 @@ namespace AssetProcessor
         UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
         NetworkRequestID requestId(1, 1);
 
-        // system is already actually initialized, along with gEnv, so this will always return that game name.
-        QString gameName = AssetUtilities::ComputeGameName(AssetProcessorManagerTestGameProject);
+        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
 
         // update the engine root
         AssetUtilities::ResetAssetRoot();
@@ -162,6 +161,13 @@ namespace AssetProcessor
         AssetUtilities::ComputeAssetRoot(newRoot, &tempPath);
 
         // create a dummy file in the cache folder, so the folder structure gets created
+        // Override the cache folder to be the within the temporary directory
+        auto projectCacheRootKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Set(projectCacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().data());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+        }
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
         CreateDummyFile(projectCacheRoot.absoluteFilePath("placeholder.txt"));
@@ -343,7 +349,7 @@ namespace AssetProcessor
 
         // make sure it picked up the one in the cache and not for example the real working folder
 
-        QString normalizedDirPathCheck = AssetUtilities::NormalizeDirectoryPath(QDir(canonicalTempDirPath).absoluteFilePath("Cache/" + gameName));
+        QString normalizedDirPathCheck = AssetUtilities::NormalizeDirectoryPath(QDir(canonicalTempDirPath).absoluteFilePath("Cache"));
         UNIT_TEST_EXPECT_TRUE(normalizedCacheRoot == normalizedDirPathCheck);
         QDir normalizedCacheRootDir(normalizedCacheRoot);
 
@@ -441,7 +447,7 @@ namespace AssetProcessor
         QString relativePathFromWatchFolder = "uniquefile.txt";
         QString watchFolderPath = tempPath.absoluteFilePath("subfolder3");
         QString absolutePath = AssetUtilities::NormalizeFilePath(watchFolderPath + "/" + relativePathFromWatchFolder);
-        
+
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
 
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
@@ -469,7 +475,7 @@ namespace AssetProcessor
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_watchFolderPath == AssetUtilities::NormalizeFilePath(watchFolderPath));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_pathRelativeToWatchFolder == "uniquefile.txt");
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_databaseSourceName == "uniquefile.txt");
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()) + "/" + gameName.toLower());
+            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_destinationPath.startsWith(platformFolder));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
@@ -659,8 +665,8 @@ namespace AssetProcessor
 
 
         QStringList es3outs;
-        es3outs.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefile.arc1"));
-        es3outs.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefile.arc2"));
+        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.arc1")));
+        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.arc2")));
 
         // feed it the messages its waiting for (create the files)
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "products."));
@@ -790,7 +796,7 @@ namespace AssetProcessor
         assetMessages.clear();
 
         es3outs.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefile.azm"));
+        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.azm")));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "products."));
 
         //Invoke Asset Processed for es3 platform , txt files2 job description
@@ -815,7 +821,7 @@ namespace AssetProcessor
         assetMessages.clear();
 
         QStringList pcouts;
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc1"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc1")));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "products."));
 
         response.m_outputProducts.clear();
@@ -843,7 +849,7 @@ namespace AssetProcessor
         assetMessages.clear();
 
         pcouts.clear();
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.azm"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.azm")));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "products."));
 
         response.m_outputProducts.clear();
@@ -1012,7 +1018,7 @@ namespace AssetProcessor
         {
             QString processFile1 = processResults[checkIdx].m_jobEntry.GetAbsoluteSourcePath();
             UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(processFile1) == AssetUtilities::NormalizeFilePath(absolutePath));
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()) + "/" + gameName.toLower());
+            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
             processFile1 = processResults[checkIdx].m_destinationPath;
             UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
@@ -1029,12 +1035,12 @@ namespace AssetProcessor
         QStringList pcouts2;
         es3outs.clear();
         pcouts.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefilea.arc1"));
-        es3outs2.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefilea.azm"));
+        es3outs.push_back(cacheRoot.filePath(QString("es3/basefilea.arc1")));
+        es3outs2.push_back(cacheRoot.filePath(QString("es3/basefilea.azm")));
         // note that the ES3 outs have changed
         // but the pc outs are still the same.
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc1"));
-        pcouts2.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.azm"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc1")));
+        pcouts2.push_back(cacheRoot.filePath(QString("pc/basefile.azm")));
 
         // feed it the messages its waiting for (create the files)
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "newfile."));
@@ -1155,7 +1161,7 @@ namespace AssetProcessor
         {
             QString processFile1 = processResults[checkIdx].m_jobEntry.GetAbsoluteSourcePath();
             UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(processFile1) == AssetUtilities::NormalizeFilePath(absolutePath));
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()) + "/" + gameName.toLower());
+            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
             processFile1 = processResults[checkIdx].m_destinationPath;
             UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
@@ -1261,7 +1267,7 @@ namespace AssetProcessor
         //      4 * file claimed for the produce file to be able to update it safely.
         //      4 * file released for the produce file so it's free for other tools to use it again.
         UNIT_TEST_EXPECT_TRUE(payloadList.size() == 9);
-        unsigned int messageLoadCount = 0; 
+        unsigned int messageLoadCount = 0;
         for (auto payload : payloadList)
         {
             if (payload.first == SourceFileNotificationMessage::MessageType)
@@ -1487,9 +1493,9 @@ namespace AssetProcessor
 
         pcouts.clear();
 
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/subfolder3/randomfileoutput.random"));
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/subfolder3/randomfileoutput.random1"));
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/subfolder3/randomfileoutput.random2"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/subfolder3/randomfileoutput.random")));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/subfolder3/randomfileoutput.random1")));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/subfolder3/randomfileoutput.random2")));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "products."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[1], "products."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[2], "products."));
@@ -1535,12 +1541,12 @@ namespace AssetProcessor
         es3outs2.clear();
         pcouts.clear();
         pcouts2.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefilez.arc2"));
-        es3outs2.push_back(cacheRoot.filePath(QString("es3/") + gameName + "/basefileaz.azm2"));
+        es3outs.push_back(cacheRoot.filePath(QString("es3/basefilez.arc2")));
+        es3outs2.push_back(cacheRoot.filePath(QString("es3/basefileaz.azm2")));
         // note that the ES3 outs have changed
         // but the pc outs are still the same.
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc2"));
-        pcouts2.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.azm2"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc2")));
+        pcouts2.push_back(cacheRoot.filePath(QString("pc/basefile.azm2")));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs2[0], "newfile."));
@@ -1629,7 +1635,7 @@ namespace AssetProcessor
         {
             QString processFile1 = processResults[checkIdx].m_jobEntry.GetAbsoluteSourcePath();
             UNIT_TEST_EXPECT_TRUE(processFile1 == expectedReplacementInputFile);
-            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()) + "/" + gameName.toLower());
+            QString platformFolder = cacheRoot.filePath(QString::fromUtf8(processResults[checkIdx].m_jobEntry.m_platformInfo.m_identifier.c_str()));
             platformFolder = AssetUtilities::NormalizeDirectoryPath(platformFolder);
             processFile1 = processResults[checkIdx].m_destinationPath;
             UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
@@ -1951,13 +1957,13 @@ namespace AssetProcessor
         }
 
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-        
+
         // it now believes that there are a whole bunch of assets in subfolder1/done_renaming and they resulted in
         // a whole bunch of files to have been created in the asset cache, listed in processresults, and they exist in outputscreated...
         // rename the output folder:
 
-        QString originalCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/" + gameName.toLower() + "/done_renaming";
-        QString newCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/" + gameName.toLower() + "/renamed_again";
+        QString originalCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/done_renaming";
+        QString newCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/renamed_again";
 
         UNIT_TEST_EXPECT_TRUE(renamer.rename(originalCacheFolderName, newCacheFolderName));
 
@@ -2017,8 +2023,8 @@ namespace AssetProcessor
 
         // setup complete.  now RENAME that folder.
 
-        originalCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/" + gameName.toLower() + "/rename_this_secondly";
-        newCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/" + gameName.toLower() + "/done_renaming_again";
+        originalCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/rename_this_secondly";
+        newCacheFolderName = normalizedCacheRootDir.absoluteFilePath("pc") + "/done_renaming_again";
 
         UNIT_TEST_EXPECT_TRUE(renamer.rename(originalCacheFolderName, newCacheFolderName));
 
@@ -2305,8 +2311,7 @@ namespace AssetProcessor
         UnitTestUtils::ScopedDir changeDir(dir.path());
         QDir tempPath(dir.path());
 
-        // system is already actually initialized, along with gEnv, so this will always return that game name.
-        QString gameName = AssetUtilities::ComputeGameName(AssetProcessorManagerTestGameProject);
+        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
 
         // update the engine root
         AssetUtilities::ResetAssetRoot();
@@ -2382,8 +2387,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_jobKey.compare(processResults[1].m_jobEntry.m_jobKey) != 0);
 
         QStringList pcouts;
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc1"));
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc2"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc1")));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc2")));
 
         // Create the product files for the first job
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
@@ -2416,7 +2421,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(changedInputResults[0].first) == AssetUtilities::NormalizeFilePath(sourceFile));
 
         pcouts.clear();
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/basefile.arc3"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc3")));
         // Create the product files for the second job
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
 
@@ -2515,9 +2520,7 @@ namespace AssetProcessor
         UnitTestUtils::ScopedDir changeDir(dir.path());
         QDir tempPath(dir.path());
 
-
-        // system is already actually initialized, along with gEnv, so this will always return that game name.
-        QString gameName = AssetUtilities::ComputeGameName(AssetProcessorManagerTestGameProject);
+        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
 
         // update the engine root
         AssetUtilities::ResetAssetRoot();
@@ -2745,7 +2748,7 @@ namespace AssetProcessor
             }
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         };
-        
+
         AssetProcessor::AssetBuilderInfoBus::Handler::BusConnect();
         QDir oldRoot;
         AssetUtilities::ComputeAssetRoot(oldRoot);
@@ -2757,8 +2760,7 @@ namespace AssetProcessor
         UnitTestUtils::ScopedDir changeDir(dir.path());
         QDir tempPath(dir.path());
 
-        // system is already actually initialized, along with gEnv, so this will always return that game name.
-        QString gameName = AssetUtilities::ComputeGameName(AssetProcessorManagerTestGameProject);
+        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
 
         // update the engine root
         AssetUtilities::ResetAssetRoot();
@@ -2803,11 +2805,11 @@ namespace AssetProcessor
         QDir cacheRoot;
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::ComputeProjectCacheRoot(cacheRoot));
 
-        QString productFileAPath = cacheRoot.filePath(QString("pc/") + gameName + "/FileAProduct.txt");
-        QString productFileBPath = cacheRoot.filePath(QString("pc/") + gameName + "/FileBProduct1.txt");
-        QString product2FileBPath = cacheRoot.filePath(QString("pc/") + gameName + "/FileBProduct2.txt");
-        QString productFileCPath = cacheRoot.filePath(QString("pc/") + gameName + "/FileCProduct.txt");
-        QString product2FileCPath = cacheRoot.filePath(QString("pc/") + gameName + "/FileCProduct2.txt");
+        QString productFileAPath = cacheRoot.filePath(QString("pc/FileAProduct.txt"));
+        QString productFileBPath = cacheRoot.filePath(QString("pc/FileBProduct1.txt"));
+        QString product2FileBPath = cacheRoot.filePath(QString("pc/FileBProduct2.txt"));
+        QString productFileCPath = cacheRoot.filePath(QString("pc/FileCProduct.txt"));
+        QString product2FileCPath = cacheRoot.filePath(QString("pc/FileCProduct2.txt"));
 
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
@@ -2817,7 +2819,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(product2FileBPath, "product"));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(productFileCPath, "product"));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(product2FileCPath, "product"));
-        
+
         // Analyze FileA
         QMetaObject::invokeMethod(&apm, "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileAPath));
 
@@ -2927,7 +2929,7 @@ namespace AssetProcessor
             {
                 // Ensure that we are processing the right FileB job
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
-                
+
                 response.m_outputProducts.clear();
                 response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2FileBPath.toUtf8().constData()));
                 QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetail.m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
@@ -2981,7 +2983,7 @@ namespace AssetProcessor
 
         processResults.clear();
         // Modify fingerprint of Job("FileA", "xxx", "pc") and analyze FileA again,
-        changeJobAFingerprint = false; // This will revert back the changes in the extra info used for fingerprinting of this job 
+        changeJobAFingerprint = false; // This will revert back the changes in the extra info used for fingerprinting of this job
 
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileAPath));
 
@@ -3001,7 +3003,7 @@ namespace AssetProcessor
             {
                 // Verify FileB jobinfo
                 UNIT_TEST_EXPECT_TRUE(QString(jobDetail.m_jobEntry.m_jobKey).compare("yyy") == 0);
-                
+
             }
             else if (QString(jobDetail.m_jobEntry.m_pathRelativeToWatchFolder).endsWith("FileC.txt"))
             {
@@ -3011,14 +3013,14 @@ namespace AssetProcessor
         }
 
 
-        // Since one of the FileC job("FileC.txt","zzz") have emitted a job dependency on a FileB job("FileB.txt", "yyy") 
-        // which also have a job dependency on a FileA job("FileA.txt", "xxx") therefore deleting File A source file should 
+        // Since one of the FileC job("FileC.txt","zzz") have emitted a job dependency on a FileB job("FileB.txt", "yyy")
+        // which also have a job dependency on a FileA job("FileA.txt", "xxx") therefore deleting File A source file should
         // cause both jobs (File B and File C) to be processed again.
-        
+
         processResults.clear();
 
         QFile::remove(sourceFileAPath);
-        
+
         QMetaObject::invokeMethod(&apm, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileAPath));
 
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
@@ -3053,7 +3055,7 @@ namespace AssetProcessor
 
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
 
-        
+
         UNIT_TEST_EXPECT_TRUE(processResults.size() == 3);
 
         for (JobDetails& jobDetail : processResults)
@@ -3091,15 +3093,14 @@ namespace AssetProcessor
 
         // the canonicalization of the path here is to get around the fact that on some platforms
         // the "temporary" folder location could be junctioned into some other folder and getting "QDir::current()"
-        // and other similar functions may actually return a different string but still be referring to the same folder   
+        // and other similar functions may actually return a different string but still be referring to the same folder
         QTemporaryDir dir;
         QDir tempPath(dir.path());
         QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
         UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
         tempPath = QDir(canonicalTempDirPath);
 
-        // system is already actually initialized, along with gEnv, so this will always return that game name.
-        QString gameName = AssetUtilities::ComputeGameName(AssetProcessorManagerTestGameProject);
+        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
 
         // update the engine root
         AssetUtilities::ResetAssetRoot();
@@ -3116,7 +3117,7 @@ namespace AssetProcessor
 
         // note: the crux of this test is that we ar redirecting output into the cache at a different location instead of default.
         // so our scan folder has a "redirected" folder.
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "redirected", false, true, platforms, -1)); 
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "redirected", false, true, platforms, -1));
 
         AssetProcessorManager_Test apm(&config);
 
@@ -3173,7 +3174,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.filePath("subfolder1"));
 
         QStringList pcouts;
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/redirected/basefile.arc1"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
 
         // Create the product files for the first job
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
@@ -3230,7 +3231,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_databaseSourceName == "redirected/basefile.foo");
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.absoluteFilePath("subfolder1"));
 
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/redirected/basefile.arc1"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
 
         // Create the product files for the first job
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
@@ -3260,7 +3261,7 @@ namespace AssetProcessor
         assetMessages.clear();
         changedInputResults.clear();
 
-        QString deletedProductPath = cacheRoot.filePath(QString("pc/") + gameName + "/redirected/basefile.arc1");
+        QString deletedProductPath = cacheRoot.filePath(QString("pc/redirected/basefile.arc1"));
 
         QFile::remove(deletedProductPath);
 
@@ -3279,7 +3280,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_databaseSourceName == "redirected/basefile.foo");
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.absoluteFilePath("subfolder1"));
 
-        pcouts.push_back(cacheRoot.filePath(QString("pc/") + gameName + "/redirected/basefile.arc1"));
+        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
 
         // Create the product files for the first job
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));

@@ -45,7 +45,6 @@ struct IConsoleCmdArgs;
 class CServerThrottle;
 struct ICryFactoryRegistryImpl;
 struct IZLibCompressor;
-class CLoadingProfilerSystem;
 class CWatchdogThread;
 class CThreadManager;
 
@@ -437,11 +436,6 @@ public:
 
     uint32 GetUsedMemory();
 
-    //! For asset processor, we need to know what kind of assets we're loading.  This comes all the way from bootstrap.cfg
-    //! It will be a string like "pc" or "es3" or such and controls what kind of assets we have access to (its used when for example
-    //! attempting to open a file when multiple different assets for different platforms are available.)
-    const char* GetAssetsPlatform() const;
-
     virtual void DumpMemoryUsageStatistics(bool bUseKB);
     virtual void DumpMemoryCoverage();
     void CollectMemInfo(SCryEngineStatsGlobalMemInfo&);
@@ -685,7 +679,7 @@ private:
     bool InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInitParams& initParams);
 
     bool InitFont(const SSystemInitParams& initParams);
-    bool InitFileSystem(const SSystemInitParams& initParams);
+    bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
     bool InitStreamEngine();
     bool Init3DEngine(const SSystemInitParams& initParams);
@@ -792,7 +786,7 @@ public:
 
     const CTimeValue& GetLastTickTime(void) const { return m_lastTickTime; }
     const ICVar* GetDedicatedMaxRate(void) const { return m_svDedicatedMaxRate; }
-   
+
     const char* GetRenderingDriverName(void) const
     {
         if(m_rDriver)
@@ -802,7 +796,7 @@ public:
         return nullptr;
     }
 
-    
+
     std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO();
 
     // Gets the dimensions (in pixels) of the primary physical display.
@@ -914,7 +908,6 @@ private: // ------------------------------------------------------
 
     // DLL names
     ICVar* m_sys_dll_response_system;
-    ICVar* m_sys_game_folder;
 #if !defined(_RELEASE)
     ICVar* m_sys_resource_cache_folder;
 #endif
@@ -950,7 +943,6 @@ private: // ------------------------------------------------------
     ICVar* m_rFullscreenWindow;
     ICVar* m_rFullscreenNativeRes;
     ICVar* m_rDriver;
-    ICVar* m_cvGameName;
     ICVar* m_rDisplayInfo;
     ICVar* m_rOverscanBordersDrawDebugView;
     ICVar* m_sysNoUpdate;
@@ -1040,8 +1032,6 @@ private: // ------------------------------------------------------
 
     uint64 m_nUpdateCounter;
 
-    int sys_ProfileLevelLoading, sys_ProfileLevelLoadingDump;
-
     bool m_executedCommandLine = false;
 
     AZStd::unique_ptr<AzFramework::MissingAssetLogger> m_missingAssetLogger;
@@ -1071,18 +1061,6 @@ public:
     void CloseLanguagePak(const char* sLanguage);
     void CloseLanguageAudioPak(const char* sLanguage);
     void UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate);
-
-    // level loading profiling
-    virtual void OutputLoadingTimeStats();
-    virtual struct SLoadingTimeContainer* StartLoadingSectionProfiling(CLoadingTimeProfiler* pProfiler, const char* szFuncName);
-    virtual void EndLoadingSectionProfiling(CLoadingTimeProfiler* pProfiler);
-    virtual const char* GetLoadingProfilerCallstack();
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual CBootProfilerRecord* StartBootSectionProfiler(const char* name, const char* args);
-    virtual void StopBootSectionProfiler(CBootProfilerRecord* record);
-    virtual void StartBootProfilerSessionFrames(const char* pName);
-    virtual void StopBootProfilerSessionFrames();
 
     //////////////////////////////////////////////////////////////////////////
     // CryAssert and error related.
@@ -1139,16 +1117,8 @@ protected: // -------------------------------------------------------------
     ITextModeConsole*             m_pTextModeConsole;
     INotificationNetwork* m_pNotificationNetwork;
 
-    string  m_binariesDir;
     string  m_currentLanguageAudio;
-    string  m_assetPlatform; // ("es3" / "pc" / etc) describes the KIND of assets we load and controls where they're loaded from
     string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_es3.cfg or system_android_opengl.cfg or system_windows_pc.cfg
-
-    // the following variables capture what was set up in the systeminitparams after/during InitFileSystem
-    // They are not actually to be used except to establish aliases like @user@
-    string m_userRootDir;
-    string m_cacheDir;
-    string m_logsDir;
 
     std::vector< std::pair<CTimeValue, float> > m_updateTimes;
 

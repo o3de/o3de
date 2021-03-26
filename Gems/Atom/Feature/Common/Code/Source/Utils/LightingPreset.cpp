@@ -107,12 +107,13 @@ namespace AZ
                 serializeContext->RegisterGenericType<AZStd::vector<LightConfig>>();
 
                 serializeContext->Class<LightingPreset>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("autoSelect", &LightingPreset::m_autoSelect)
                     ->Field("displayName", &LightingPreset::m_displayName)
-                    ->Field("skyboxImageAsset", &LightingPreset::m_skyboxImageAsset)
-                    ->Field("iblSpecularImageAsset", &LightingPreset::m_iblSpecularImageAsset)
                     ->Field("iblDiffuseImageAsset", &LightingPreset::m_iblDiffuseImageAsset)
+                    ->Field("iblSpecularImageAsset", &LightingPreset::m_iblSpecularImageAsset)
+                    ->Field("skyboxImageAsset", &LightingPreset::m_skyboxImageAsset)
+                    ->Field("alternateSkyboxImageAsset", &LightingPreset::m_alternateSkyboxImageAsset)
                     ->Field("iblExposure", &LightingPreset::m_iblExposure)
                     ->Field("skyboxExposure", &LightingPreset::m_skyboxExposure)
                     ->Field("shadowCatcherOpacity", &LightingPreset::m_shadowCatcherOpacity)
@@ -132,6 +133,7 @@ namespace AZ
                     ->Constructor<const LightingPreset&>()
                     ->Property("autoSelect", BehaviorValueProperty(&LightingPreset::m_autoSelect))
                     ->Property("displayName", BehaviorValueProperty(&LightingPreset::m_displayName))
+                    ->Property("alternateSkyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_alternateSkyboxImageAsset))
                     ->Property("skyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_skyboxImageAsset))
                     ->Property("iblSpecularImageAsset", BehaviorValueProperty(&LightingPreset::m_iblSpecularImageAsset))
                     ->Property("iblDiffuseImageAsset", BehaviorValueProperty(&LightingPreset::m_iblDiffuseImageAsset))
@@ -152,7 +154,8 @@ namespace AZ
             const Camera::Configuration& cameraConfig,
             AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
             Data::Instance<RPI::Material> shadowCatcherMaterial,
-            RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex) const
+            RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex,
+            bool enableAlternateSkybox) const
         {
             if (iblFeatureProcessor)
             {
@@ -163,7 +166,8 @@ namespace AZ
 
             if (skyboxFeatureProcessor)
             {
-                skyboxFeatureProcessor->SetCubemap(RPI::StreamingImage::FindOrCreate(m_skyboxImageAsset));
+                auto skyboxAsset = (enableAlternateSkybox && m_alternateSkyboxImageAsset.GetId().IsValid()) ? m_alternateSkyboxImageAsset : m_skyboxImageAsset;
+                skyboxFeatureProcessor->SetCubemap(RPI::StreamingImage::FindOrCreate(skyboxAsset));
                 skyboxFeatureProcessor->SetCubemapExposure(m_skyboxExposure);
             }
 

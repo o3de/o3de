@@ -22,7 +22,6 @@
 #include <QElapsedTimer>
 #include <QTemporaryDir>
 #include <QTextStream>
-#include <QSettings>
 #include <QTimeZone>
 #include <QRandomGenerator>
 
@@ -38,7 +37,9 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 #include <xxhash/xxhash.h>
 
@@ -77,7 +78,7 @@ namespace AssetUtilsInternal
     {
         if (waitTimeInSeconds < 0)
         {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user")
+            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
             waitTimeInSeconds = 0;
         }
         bool failureOccurredOnce = false; // used for logging.
@@ -152,12 +153,64 @@ namespace AssetUtilsInternal
 
         return true;
     }
+
+    static bool DumpAssetProcessorUserSettingsToFile(AZ::SettingsRegistryInterface& settingsRegistry,
+        const AZ::IO::FixedMaxPath& setregPath)
+    {
+        // The AssetProcessor settings are currently under the Bootstrap object(This may change in the future
+        constexpr AZStd::string_view AssetProcessorUserSettingsRootKey = AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey;
+        AZStd::string apSettingsJson;
+        AZ::IO::ByteContainerStream apSettingsStream(&apSettingsJson);
+
+        AZ::SettingsRegistryMergeUtils::DumperSettings apDumperSettings;
+        apDumperSettings.m_prettifyOutput = true;
+        apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        {
+            // The AssetUtils only updates the following keys in the registry
+            // Dump them all out to the setreg file
+            auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorUserSettingsRootKey)
+                + "/allowed_list";
+            auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorUserSettingsRootKey)
+                + "/assetProcessor_branch_token";
+            // The objects leading up to the keys to dump must be included in order the keys to be dumped
+            return allowedListKey.starts_with(path.substr(0, allowedListKey.size()))
+                || branchTokenKey.starts_with(path.substr(0, branchTokenKey.size()));
+        };
+        apDumperSettings.m_jsonPointerPrefix = AssetProcessorUserSettingsRootKey;
+
+        if (AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(settingsRegistry, AssetProcessorUserSettingsRootKey,
+            apSettingsStream, apDumperSettings))
+        {
+
+            constexpr auto modeFlags = AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY | AZ::IO::SystemFile::SF_OPEN_CREATE
+                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH;
+            if (AZ::IO::SystemFile apSetregFile; apSetregFile.Open(setregPath.c_str(), modeFlags))
+            {
+                size_t bytesWritten = apSetregFile.Write(apSettingsJson.data(), apSettingsJson.size());
+                return bytesWritten == apSettingsJson.size();
+            }
+            else
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to open AssetProcessor user setreg file (%s)\n", setregPath.c_str());
+            }
+        }
+        else
+        {
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Dump of AssetProcessor User Settings failed at JSON pointer %.*s \n",
+                aznumeric_cast<int>(AssetProcessorUserSettingsRootKey.size()), AssetProcessorUserSettingsRootKey.data());
+        }
+
+        return false;
+    }
 }
 
 namespace AssetUtilities
 {
+    constexpr AZStd::string_view AssetProcessorUserSetregRelPath = "user/Registry/asset_processor.setreg";
+
     // do not place Qt objects in global scope, they allocate and refcount threaded data.
-    AZ::SettingsRegistryInterface::FixedValueString s_gameName;
+    AZ::SettingsRegistryInterface::FixedValueString s_projectPath;
+    AZ::SettingsRegistryInterface::FixedValueString s_projectName;
     AZ::SettingsRegistryInterface::FixedValueString s_assetRoot;
     AZ::SettingsRegistryInterface::FixedValueString s_assetServerAddress;
     AZ::SettingsRegistryInterface::FixedValueString s_cachedEngineRoot;
@@ -191,7 +244,7 @@ namespace AssetUtilities
 
     void ResetGameName()
     {
-        s_gameName = {};
+        s_projectName = {};
     }
 
     bool CopyDirectory(QDir source, QDir destination)
@@ -245,7 +298,7 @@ namespace AssetUtilities
         return true;
     }
 
-    bool ComputeAssetRoot(QDir& root, const QDir* appRootOverride)
+    bool ComputeAssetRoot(QDir& root, const QDir* rootOverride)
     {
         if (!s_assetRoot.empty())
         {
@@ -253,10 +306,10 @@ namespace AssetUtilities
             return true;
         }
 
-        // Use the appRoot if supplied is supplied and not an empty string
-        if (appRootOverride && !appRootOverride->path().isEmpty())
+        // Use the override if supplied and not an empty string
+        if (rootOverride && !rootOverride->path().isEmpty())
         {
-            root = *appRootOverride;
+            root = *rootOverride;
             s_assetRoot = root.absolutePath().toUtf8().constData();
             return true;
         }
@@ -288,7 +341,7 @@ namespace AssetUtilities
             return true;
         }
 
-        // The EngineRootFolder Key has not been found in the SettingsRegistry, log an warning about
+        // The EngineRootFolder Key has not been found in the SettingsRegistry
         auto engineRootError = AZ::SettingsRegistryInterface::FixedValueString::format("The EngineRootFolder is not set in the SettingsRegistry at key %s.",
             AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         AssetProcessor::MessageInfoBus::Broadcast(&AssetProcessor::MessageInfoBusTraits::OnErrorMessage, engineRootError.c_str());
@@ -296,7 +349,7 @@ namespace AssetUtilities
         return false;
     }
 
-    //! Get the engine root folder
+    //! Get the external engine root folder if the engine is external to the current root folder.
     //! If the current root folder is also the engine folder, then this behaves the same as ComputeEngineRoot
     bool ComputeEngineRoot(QDir& root, const QDir* engineRootOverride)
     {
@@ -312,6 +365,7 @@ namespace AssetUtilities
             AssetUtilities::ComputeAssetRoot(root, engineRootOverride);
         }
 
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         // Use the engineRootOverride if supplied and not empty
         if (engineRootOverride && !engineRootOverride->path().isEmpty())
         {
@@ -320,11 +374,11 @@ namespace AssetUtilities
             return true;
         }
 
-        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry == nullptr)
         {
             return false;
         }
+
         AZ::IO::FixedMaxPathString engineRootFolder;
         if (settingsRegistry->Get(engineRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
         {
@@ -336,7 +390,7 @@ namespace AssetUtilities
         return false;
     }
 
-    bool MakeFileWritable(QString fileName)
+    bool MakeFileWritable(const QString& fileName)
     {
 #if defined WIN32
         DWORD fileAttributes = GetFileAttributesA(fileName.toUtf8());
@@ -386,7 +440,7 @@ namespace AssetUtilities
 #endif
     }
 
-    bool CheckCanLock(QString fileName)
+    bool CheckCanLock(const QString& fileName)
     {
 #if defined(AZ_PLATFORM_WINDOWS)
         AZStd::wstring usableFileName;
@@ -419,42 +473,55 @@ namespace AssetUtilities
 #endif
     }
 
-    QString ComputeGameName(QString gameNameOverride, bool force)
+    QString ComputeProjectName(QString gameNameOverride, bool force)
     {
-        if (force || s_gameName.empty())
+        if (force || s_projectName.empty())
         {
-            // if its been specified on the command line, then ignore bootstrap:
+            // Override Game Name if a non-empty override string has been supplied
+            if (!gameNameOverride.isEmpty())
+            {
+                s_projectName = gameNameOverride.toUtf8().constData();
+            }
+            else
+            {
+                s_projectName = AZ::Utils::GetProjectName();
+            }
+        }
+
+        return QString::fromUtf8(s_projectName.c_str(), aznumeric_cast<int>(s_projectName.size()));
+    }
+
+    QString ComputeProjectPath()
+    {
+        if (s_projectPath.empty())
+        {
+            // Check command-line args first
             QStringList args = QCoreApplication::arguments();
             for (QString arg : args)
             {
-                if (arg.contains(QString("/%1=").arg(GameFolderOverrideParameter), Qt::CaseInsensitive) || arg.contains(QString("--%1=").arg(GameFolderOverrideParameter), Qt::CaseInsensitive))
+                if (arg.contains(QString("/%1=").arg(ProjectPathOverrideParameter), Qt::CaseInsensitive)
+                    || arg.contains(QString("--%1=").arg(ProjectPathOverrideParameter), Qt::CaseInsensitive))
                 {
                     QString rawValueString = arg.split("=")[1].trimmed();
                     if (!rawValueString.isEmpty())
                     {
-                        s_gameName = rawValueString.toUtf8().constData();
-                        return rawValueString;
+                        QDir path(rawValueString);
+                        if (path.isAbsolute())
+                        {
+                            s_projectPath = rawValueString.toUtf8().constData();
+                            break;
+                        }
                     }
                 }
             }
-
-            // Override Game Name if a non-empty override string has been supplied
-            if (!gameNameOverride.isEmpty())
-            {
-                s_gameName = gameNameOverride.toUtf8().constData();
-            }
-            else
-            {
-                QDir engineRoot;
-                if (!AssetUtilities::ComputeEngineRoot(engineRoot))
-                {
-                    return QString();
-                }
-                s_gameName = ReadGameNameFromSettingsRegistry(engineRoot.absolutePath()).toUtf8().constData();
-            }
         }
 
-        return QString::fromUtf8(s_gameName.c_str(), aznumeric_cast<int>(s_gameName.size()));
+        if (s_projectPath.empty())
+        {
+            s_projectPath = AZ::Utils::GetProjectPath();
+        }
+
+        return QString::fromUtf8(s_projectPath.c_str(), aznumeric_cast<int>(s_projectPath.size()));
     }
 
     bool InServerMode()
@@ -479,7 +546,7 @@ namespace AssetUtilities
                 }
                 else
                 {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.ini file \
+                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file \
 to ensure that the address is correct. Asset Processor won't be running in server mode.");
                 }
 
@@ -517,19 +584,18 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             }
         }
 
-        QDir engineRoot;
-        ComputeEngineRoot(engineRoot);
-        QString rootConfigFile = engineRoot.absoluteFilePath("AssetProcessorPlatformConfig.ini");
-
-        if (QFile::exists(rootConfigFile))
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
         {
-            QString address;
-            QSettings loader(rootConfigFile, QSettings::IniFormat);
-            loader.beginGroup("Server");
-            address = loader.value("cacheServerAddress", QString()).toString();
-            loader.endGroup();
-            s_assetServerAddress = address.toUtf8().constData();
-            return address;
+            AZStd::string address;
+            if (settingsRegistry->Get(address, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+                + "/Server/cacheServerAddress"))
+            {
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+            }
+            s_assetServerAddress = address;
+
+            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
         }
 
         return QString();
@@ -549,18 +615,12 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return *s_fileHashSetting;
         }
 
-        QDir engineRoot;
-        ComputeEngineRoot(engineRoot);
-        QString rootConfigFile = engineRoot.absoluteFilePath("AssetProcessorPlatformConfig.ini");
-
-        if (QFile::exists(rootConfigFile))
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
         {
-            bool curValue;
-            QSettings loader(rootConfigFile, QSettings::IniFormat);
-            loader.beginGroup("Fingerprinting");
-            curValue = loader.value("UseFileHashing", true).toBool();
-            loader.endGroup();
-
+            bool curValue = true;
+            settingsRegistry->Get(curValue, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+                + "/Fingerprinting/UseFileHashing");
             AZ_TracePrintf(AssetProcessor::DebugChannel, "UseFileHashing: %s\n", curValue ? "True" : "False");
             s_fileHashSetting = curValue;
 
@@ -573,46 +633,8 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         return *s_fileHashSetting;
     }
 
-    QString ReadGameNameFromSettingsRegistry(QString initialFolder /*= QString()*/)
+    QString ReadAllowedlistFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        if (initialFolder.isEmpty())
-        {
-            QDir engineRoot;
-            if (!AssetUtilities::ComputeEngineRoot(engineRoot))
-            {
-                return QString();
-            }
-
-            initialFolder = engineRoot.absolutePath();
-        }
-
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/sys_game_folder");
-        AZStd::fixed_string<BufferSize> projectKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
-        projectKey += "/sys_game_folder";
-
-        AZ::SettingsRegistryInterface::FixedValueString projectName;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry && settingsRegistry->Get(projectName, projectKey))
-        {
-            return QString::fromUtf8(projectName.c_str(), aznumeric_cast<int>(projectName.size()));
-        }
-
-        AZ_Warning("AssetUtils", false, "Unable to find the Project Name(sys_game_folder) key in the settings registry");
-        return {};
-    }
-
-    QString ReadAllowedlistFromSettingsRegistry(QString initialFolder /*= QString()*/)
-    {
-        if (initialFolder.isEmpty())
-        {
-            QDir assetRoot;
-            if (!AssetUtilities::ComputeAssetRoot(assetRoot))
-            {
-                return QString();
-            }
-
-            initialFolder = assetRoot.absolutePath();
-        }
-
         constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/allowed_list");
         AZStd::fixed_string<BufferSize> allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         allowedListKey += "/allowed_list";
@@ -626,18 +648,8 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         return {};
     }
 
-    QString ReadRemoteIpFromSettingsRegistry(QString initialFolder /*= QString()*/)
+    QString ReadRemoteIpFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        if (initialFolder.isEmpty())
-        {
-            QDir engineRoot;
-            if (!AssetUtilities::ComputeEngineRoot(engineRoot))
-            {
-                return QString();
-            }
-
-            initialFolder = engineRoot.absolutePath();
-        }
         constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_ip");
         AZStd::fixed_string<BufferSize> remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remoteIpKey += "/remote_ip";
@@ -651,159 +663,44 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         return {};
     }
 
-    bool WriteAllowedlistToBootstrap(QStringList newAllowedList)
+    bool WriteAllowedlistToSettingsRegistry(const QStringList& newAllowedList)
     {
-        QDir assetRoot;
-        ComputeAssetRoot(assetRoot);
-        QString bootstrapFilename = assetRoot.filePath("bootstrap.cfg");
-        QFile bootstrapFile(bootstrapFilename);
+        AZ::IO::FixedMaxPath assetProcessorUserSetregPath = AZ::Utils::GetProjectPath();
+        assetProcessorUserSetregPath /= AssetProcessorUserSetregRelPath;
 
-        // do not alter the branch file unless we are able to obtain an exclusive lock.  Other apps (such as NPP) may actually write 0 bytes first, then slowly spool out the remainder)
-        if (!CheckCanLock(bootstrapFilename))
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
         {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable access Settings Registry. Branch Token cannot be updated");
             return false;
         }
 
-        if (!bootstrapFile.open(QIODevice::ReadOnly))
+        auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+            + "/allowed_list";
+        AZStd::string currentAllowedList;
+        if (settingsRegistry->Get(currentAllowedList, allowedListKey))
         {
-            return false;
-        }
+            // Split the current allowedList into an array and compare against the new allowed list
+            AZStd::vector<AZStd::string_view> allowedListArray;
+            auto AppendAllowedIpTokens = [&allowedListArray](AZStd::string_view token) { allowedListArray.emplace_back(token); };
+            AZ::StringFunc::TokenizeVisitor(currentAllowedList, AppendAllowedIpTokens, ',');
 
-        // regexp that matches either the beginning of the file, some whitespace, and allowed_list, or,
-        // matches a newline, then whitespace, then allowed_list it will not match comments.
-        QRegExp allowedListPattern("(^|\\n)\\s*allowed_list\\s*=\\s*(.+)", Qt::CaseInsensitive, QRegExp::RegExp);
-
-        //read the file line by line and try to find the allowed_list line
-        QString readAllowedList;
-        QString allowedListline;
-        while (!bootstrapFile.atEnd())
-        {
-            QString contents(bootstrapFile.readLine());
-            int matchIdx = allowedListPattern.indexIn(contents);
-            if (matchIdx != -1)
+            auto CompareQListToAzVector = [](AZStd::string_view currentAllowedIp, const QString& newAllowedIp)
             {
-                allowedListline = contents;
-                readAllowedList = allowedListPattern.cap(2);
-                break;
+                return currentAllowedIp == newAllowedIp.toUtf8().constData();
+            };
+            if (AZStd::equal(allowedListArray.begin(), allowedListArray.end(), newAllowedList.begin(), newAllowedList.end(), CompareQListToAzVector))
+            {
+                // no need to update, remote_ip already matches
+                return true;
             }
         }
 
-        //read the entire file into so we can do a buffer replacement
-        bootstrapFile.seek(0);
-        QString fileContents;
-        fileContents = bootstrapFile.readAll();
-        bootstrapFile.close();
+        // Update Settings Registry with new token
+        AZStd::string azNewAllowedList{ newAllowedList.join(', ').toUtf8().constData() };
+        settingsRegistry->Set(allowedListKey, azNewAllowedList);
 
-        //format the new allowed list
-        QString formattedNewAllowedList = newAllowedList.join(", ");
-
-        //if we didn't find a allowed_list entry then append one
-        if (allowedListline.isEmpty())
-        {
-            fileContents.append("\nallowed_list = " + formattedNewAllowedList + "\n");
-        }
-        else if (QString::compare(formattedNewAllowedList, readAllowedList, Qt::CaseInsensitive) == 0)
-        {
-            // no need to update, they match
-            return true;
-        }
-        else
-        {
-            //Replace the found line with a new one
-            fileContents.replace(allowedListline, "allowed_list = " + formattedNewAllowedList + "\n");
-        }
-
-        // Make the bootstrap file writable
-        if (!MakeFileWritable(bootstrapFilename))
-        {
-            AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to make the bootstrap file writable.")
-            return false;
-        }
-        if (!bootstrapFile.open(QIODevice::WriteOnly))
-        {
-            return false;
-        }
-
-        QTextStream output(&bootstrapFile);
-        output << fileContents;
-        bootstrapFile.close();
-        return true;
-    }
-
-    bool WriteRemoteIpToBootstrap(QString newRemoteIp)
-    {
-        QDir assetRoot;
-        ComputeAssetRoot(assetRoot);
-        QString bootstrapFilename = assetRoot.filePath("bootstrap.cfg");
-        QFile bootstrapFile(bootstrapFilename);
-
-        // do not alter the branch file unless we are able to obtain an exclusive lock.  Other apps (such as NPP) may actually write 0 bytes first, then slowly spool out the remainder)
-        if (!CheckCanLock(bootstrapFilename))
-        {
-            return false;
-        }
-
-        if (!bootstrapFile.open(QIODevice::ReadOnly))
-        {
-            return false;
-        }
-
-        // regexp that matches either the beginning of the file, and remote_ip, or,
-        // matches a newline, then whitespace, then remote_ip it will not match comments.
-        QRegExp remoteIpPattern("(^|\\n)\\s*remote_ip\\s*=\\s*(.+)", Qt::CaseInsensitive, QRegExp::RegExp);
-
-        //read the file line by line and try to find the remote_ip line
-        QString readRemoteIp;
-        QString remoteIpline;
-        while (!bootstrapFile.atEnd())
-        {
-            QString contents(bootstrapFile.readLine());
-            int matchIdx = remoteIpPattern.indexIn(contents);
-            if (matchIdx != -1)
-            {
-                remoteIpline = contents;
-                readRemoteIp = remoteIpPattern.cap(2);
-                break;
-            }
-        }
-
-        //read the entire file into so we can do a buffer replacement
-        bootstrapFile.seek(0);
-        QString fileContents;
-        fileContents = bootstrapFile.readAll();
-        bootstrapFile.close();
-
-        //if we didn't find a remote_ip entry then append one
-        if (remoteIpline.isEmpty())
-        {
-            fileContents.append("\nremote_ip = " + newRemoteIp + "\n");
-        }
-        else if (QString::compare(newRemoteIp, readRemoteIp, Qt::CaseInsensitive) == 0)
-        {
-            // no need to update, they match
-            return true;
-        }
-        else
-        {
-            //Replace the found line with a new one
-            fileContents.replace(remoteIpline, "remote_ip = " + newRemoteIp + "\n");
-        }
-
-        // Make the bootstrap file writable
-        if (!MakeFileWritable(bootstrapFilename))
-        {
-            AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to make the bootstrap file writable.")
-                return false;
-        }
-        if (!bootstrapFile.open(QIODevice::WriteOnly))
-        {
-            return false;
-        }
-
-        QTextStream output(&bootstrapFile);
-        output << fileContents;
-        bootstrapFile.close();
-        return true;
+        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
     }
 
     quint16 ReadListeningPortFromSettingsRegistry(QString initialFolder /*= QString()*/)
@@ -923,22 +820,19 @@ to ensure that the address is correct. Asset Processor won't be running in serve
 
     bool ComputeProjectCacheRoot(QDir& projectCacheRoot)
     {
-        QDir assetRoot;
-        if (!ComputeAssetRoot(assetRoot))
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
-            return false; // failed to detect engine root
+            AZ::SettingsRegistryInterface::FixedValueString projectCacheRootValue;
+            if (registry->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+                !projectCacheRootValue.empty())
+            {
+                projectCacheRoot = QDir(QString::fromUtf8(projectCacheRootValue.c_str(), aznumeric_cast<int>(projectCacheRootValue.size())));
+                return true;
+            }
         }
 
-        QString gameDir = ComputeGameName(assetRoot.absolutePath());
-        if (gameDir.isEmpty())
-        {
-            return false;
-        }
-
-        projectCacheRoot = QDir(assetRoot.filePath("Cache/" + gameDir));
-        return true;
+        return false;
     }
-
 
     bool ComputeFenceDirectory(QDir& fenceDir)
     {
@@ -949,6 +843,25 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         }
         fenceDir = QDir(cacheRoot.filePath("fence"));
         return true;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        // Skip over the assetPlatform path segment if it is matches one of the platform defaults
+        // Otherwise return the path unchanged
+        AZStd::string_view strippedProductPath{ relativeProductPath };
+        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+            pathSegment.has_value())
+        {
+            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
+            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
+            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
+            {
+                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
+            }
+        }
+
+        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)
@@ -1035,92 +948,41 @@ to ensure that the address is correct. Asset Processor won't be running in serve
 
     bool UpdateBranchToken()
     {
-        QDir assetRoot;
-        ComputeAssetRoot(assetRoot);
-        QString bootstrapFilename = assetRoot.filePath("bootstrap.cfg");
-        QFile bootstrapFile(bootstrapFilename);
-        QString fileContents;
-
-        // do not alter the branch file unless we are able to obtain an exclusive lock.  Other apps (such as NPP) may actually write 0 bytes first, then slowly spool out the remainder)
-        QElapsedTimer timer;
-        timer.start();
-        bool hasLock = false;
-        do
-        {
-            if (CheckCanLock(bootstrapFilename))
-            {
-                hasLock = true;
-                break;
-            }
-
-            QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
-
-        } while (!timer.hasExpired(10 * AssetUtilsInternal::g_RetryWaitInterval));
-        if (!hasLock)
-        {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to lock bootstrap file at: %s\n", bootstrapFilename.toUtf8().constData());
-            return false;
-        }
-
-        if (!bootstrapFile.open(QIODevice::ReadOnly))
-        {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to open bootstrap file at: %s\n", bootstrapFilename.toUtf8().constData());
-            return false;
-        }
-
-        fileContents = bootstrapFile.readAll();
-        bootstrapFile.close();
+        AZ::IO::FixedMaxPath assetProcessorUserSetregPath = AZ::Utils::GetProjectPath();
+        assetProcessorUserSetregPath /= AssetProcessorUserSetregRelPath;
 
         AZStd::string appBranchToken;
-        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, appBranchToken);
-        QString currentBranchToken(appBranchToken.c_str());
-        QString readBranchToken;
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
 
-        // regexp that matches either the beginning of the file, some whitespace, and assetProcessor_branch_token, or,
-        // matches a newline, then whitespace, then assetProcessor_branch_token
-        // it will not match comments.
-        QRegExp branchTokenPattern("(^|\\n)\\s*assetProcessor_branch_token\\s*=\\s*(\\S+)\\b", Qt::CaseInsensitive, QRegExp::RegExp);
-
-        int matchIdx = branchTokenPattern.indexIn(fileContents);
-        if (matchIdx != -1)
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
         {
-            readBranchToken = branchTokenPattern.cap(2);
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable access Settings Registry. Branch Token cannot be updated");
+            return false;
         }
 
-        if (readBranchToken.isEmpty())
+        AZStd::string registryBranchToken;
+        auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/assetProcessor_branch_token";
+        if (settingsRegistry->Get(registryBranchToken, branchTokenKey))
         {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "adding branch token (%s) in (%s)\n", currentBranchToken.toUtf8().constData(), bootstrapFilename.toUtf8().constData());
-            fileContents.append("\nassetProcessor_branch_token = " + currentBranchToken + "\n");
-        }
-        else if (QString::compare(currentBranchToken, readBranchToken, Qt::CaseInsensitive) == 0)
-        {
-            // no need to update, branch token match
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Branch token (%s) is already correct in (%s)\n", currentBranchToken.toUtf8().constData(), bootstrapFilename.toUtf8().constData());
-            return true;
+            if (appBranchToken == registryBranchToken)
+            {
+                // no need to update, branch token match
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Branch token (%s) is already correct in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
+                return true;
+            }
+
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Updating branch token (%s) in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
         }
         else
         {
-            //Updating branch token
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Updating branch token (%s) in (%s)\n", currentBranchToken.toUtf8().constData(), bootstrapFilename.toUtf8().constData());
-            fileContents.replace(branchTokenPattern.cap(0), "\nassetProcessor_branch_token = " + currentBranchToken + "\n");
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Adding branch token (%s) in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
         }
 
-        // Make the bootstrap file writable
-        if (!MakeFileWritable(bootstrapFilename))
-        {
-            AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to make the bootstrap file writable.")
-            return false;
-        }
-        if (!bootstrapFile.open(QIODevice::WriteOnly))
-        {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to open bootstrap file (%s)\n", bootstrapFilename.toUtf8().constData());
-            return false;
-        }
+        // Update Settings Registry with new token
+        settingsRegistry->Set(branchTokenKey, appBranchToken);
 
-        QTextStream output(&bootstrapFile);
-        output << fileContents;
-        bootstrapFile.close();
-        return true;
+        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
     }
 
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer)
@@ -1130,7 +992,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
 
     AZStd::string ComputeJobLogFolder()
     {
-        return AZStd::string::format("@log@/logs/JobLogs");
+        return AZStd::string::format("@log@/JobLogs");
     }
 
     AZStd::string ComputeJobLogFileName(const AzToolsFramework::AssetSystem::JobInfo& jobInfo)
@@ -1477,14 +1339,28 @@ to ensure that the address is correct. Asset Processor won't be running in serve
 
     bool CreateTempWorkspace(QString& result)
     {
-        // Use the engine root as a temp workspace folder
-        // this works better for numerous reasons
-        // * Its on the same drive as the /Cache/ so we will be moving files instead of copying from drive to drive
+        // Use the project user folder as a temp workspace folder
+        // The benefits are
+        // * It's on the same drive as the Cache/ so we will be moving files instead of copying from drive to drive
         // * It is discoverable by the user and thus deletable and we can also tell people to send us that folder without them having to go digging for it
-        // * If you can't write to it you have much bigger problems
 
         QDir rootDir;
-        if (ComputeAssetRoot(rootDir))
+        bool foundValidPath{};
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::IO::Path userPath; settingsRegistry->Get(userPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                rootDir.setPath(QString::fromUtf8(userPath.c_str(), aznumeric_cast<int>(userPath.Native().size())));
+                foundValidPath = true;
+            }
+        }
+
+        if (!foundValidPath)
+        {
+            foundValidPath = ComputeAssetRoot(rootDir);
+        }
+
+        if (foundValidPath)
         {
             QString tempPath = rootDir.absolutePath();
             return CreateTempWorkspace(tempPath, result);
@@ -1499,7 +1375,6 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         QString inputName;
         QString platformName;
         QString jobDescription;
-        QString gameName = AssetUtilities::ComputeGameName();
         AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
@@ -1513,16 +1388,16 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             platform = AzToolsFramework::AssetSystem::GetHostAssetPlatform();
         }
 
-        QString platformPrepend = QString("%1/%2/").arg(platform, gameName);
-        QString productNameWithPlatformAndGameName = productName;
+        QString platformPrepend = QString("%1/").arg(platform);
+        QString productNameWithPlatform = productName;
 
         if (!productName.startsWith(platformPrepend, Qt::CaseInsensitive))
         {
-            productNameWithPlatformAndGameName = productName = QString("%1/%2/%3").arg(platform, gameName, productName);
+            productNameWithPlatform = productName = QString("%1/%2").arg(platform, productName);
         }
 
         ProductDatabaseEntryContainer products;
-        if (databaseConnection->GetProductsByProductName(productNameWithPlatformAndGameName, products))
+        if (databaseConnection->GetProductsByProductName(productNameWithPlatform, products))
         {
             // if we find stuff, then return immediately, productName is already a productName.
             return productName;
@@ -1535,24 +1410,9 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return productName;
         }
 
-        if (!databaseConnection->GetProductsLikeProductName(productNameWithPlatformAndGameName, AssetDatabaseConnection::LikeType::StartsWith, products))
+        if (!databaseConnection->GetProductsLikeProductName(productNameWithPlatform, AssetDatabaseConnection::LikeType::StartsWith, products))
         {
-            //if we are here it means that the asset database does not know about this product,
-            //we will now remove the gameName and try again ,so now the path will only have $PLATFORM/ in front of it
-            int gameNameIndex = productName.indexOf(gameName, 0, Qt::CaseInsensitive);
-
-            if (gameNameIndex != -1)
-            {
-                //we will now remove the gameName and the separator
-                productName.remove(gameNameIndex, gameName.length() + 1);// adding one for the native separator
-            }
-
-            //Search the database for this product
-            if (!databaseConnection->GetProductsLikeProductName(productName, AssetDatabaseConnection::LikeType::StartsWith, products))
-            {
-                //return empty string if the database still does not have any idea about the product
-                productName = QString();
-            }
+            return {};
         }
         return productName.toLower();
     }

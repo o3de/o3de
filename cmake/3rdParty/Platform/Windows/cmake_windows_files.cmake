@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSNativeSDK_windows.cmake
     AWSGameLiftServerSDK_windows.cmake
     BuiltInPackages_windows.cmake
     Clang_windows.cmake
@@ -23,7 +22,6 @@ set(FILES
     FreeType2_windows.cmake
     libav_windows.cmake
     OpenSSL_windows.cmake
-    Qt_windows.cmake
     tiff_windows.cmake
     Wwise_windows.cmake
 )

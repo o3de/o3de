@@ -13,6 +13,8 @@
 #include <AzQtComponents/Components/StyleSheetCache.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <QProxyStyle>
 #include <QWidget>
 #include <QDir>
@@ -89,7 +91,8 @@ void StyleSheetCache::registerPathsFoundOnDisk(const QString& pathOnDisk, const 
     }
 }
 
-void StyleSheetCache::addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix)
+void StyleSheetCache::addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix,
+    const AZ::IO::PathView& engineRootPath)
 {
     AZ_Warning("StyleSheetCache", m_prefixes.find(searchPrefix) == m_prefixes.end(),
         "Style prefix \"%s\" was already registered, ignoring...", searchPrefix.constData());
@@ -98,7 +101,7 @@ void StyleSheetCache::addSearchPaths(const QString& searchPrefix, const QString&
     QString diskPathToUse = pathOnDisk;
     if (!QFileInfo(pathOnDisk).isAbsolute())
     {
-        QDir rootDir(AzQtComponents::FindEngineRootDir(qApp));
+        QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         diskPathToUse = rootDir.absoluteFilePath(pathOnDisk);
     }
 

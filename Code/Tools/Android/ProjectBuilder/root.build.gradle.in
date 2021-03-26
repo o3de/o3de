@@ -35,7 +35,7 @@ subprojects {
         sdkVer = ${SDK_VER}
         ndkPlatformVer = ${NDK_PLATFORM_VER}
         buildToolsVer = '${SDK_BUILD_TOOL_VER}'
-        lyDevRoot = '${LY_DEV_ROOT}'
+        lyEngineRoot = '${LY_ENGINE_ROOT}'
     }
 }
 

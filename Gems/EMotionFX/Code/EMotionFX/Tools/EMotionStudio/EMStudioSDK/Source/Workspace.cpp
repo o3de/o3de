@@ -28,6 +28,8 @@
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <QApplication>
@@ -57,19 +59,24 @@ namespace EMStudio
         }
 
         AZStd::string commandString;
-        AZStd::string resultFileName = filename;
+        AZ::IO::Path resultFileName = filename;
 
         // If the filename is in the asset source folder, we relocated it to the cache folder first.
-        if (GetMainWindow()->GetFileManager()->IsFileInAssetSource(resultFileName))
+        if (!GetMainWindow()->GetFileManager()->IsFileInAssetCache(resultFileName.Native()) &&
+            GetMainWindow()->GetFileManager()->IsFileInAssetSource(resultFileName.Native()))
         {
-            GetMainWindow()->GetFileManager()->RelocateToAssetCacheFolder(resultFileName);
+            GetMainWindow()->GetFileManager()->RelocateToAssetCacheFolder(resultFileName.Native());
         }
 
-        if (GetMainWindow()->GetFileManager()->IsFileInAssetCache(resultFileName))
+        if (GetMainWindow()->GetFileManager()->IsFileInAssetCache(resultFileName.Native()))
         {
             // Retrieve relative filename for file in cache folder.
-            EMotionFX::GetEMotionFX().GetFilenameRelativeTo(&resultFileName, EMotionFX::GetEMotionFX().GetAssetCacheFolder().c_str());
-            resultFileName = "@assets@/" + resultFileName;
+            if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+            {
+                AZ::IO::FixedMaxPath convertedPath;
+                fileIoBase->ConvertToAlias(convertedPath, resultFileName);
+                resultFileName = convertedPath;
+            }
         }
         else
         {
@@ -80,9 +87,19 @@ namespace EMStudio
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, filename.c_str(), assetInfo, watchFolder);
             if (success)
             {
-                // In this case, the file likely exists in the other folder detectived by AP (e.g Gems/something/Assets)
+                // In this case, the file likely exists in the other folder not scanned by AP (e.g Gems/something/Assets)
                 // AP will process this file and move the processed file in cache folder.
-                resultFileName = "@assets@/" + assetInfo.m_relativePath;
+                AZ::IO::Path assetCachePath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(assetCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+                }
+                if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+                {
+                    AZ::IO::FixedMaxPath convertedPath;
+                    fileIoBase->ConvertToAlias(convertedPath, assetCachePath / assetInfo.m_relativePath);
+                    resultFileName = convertedPath;
+                }
             }
             else
             {

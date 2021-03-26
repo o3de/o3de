@@ -60,6 +60,8 @@ namespace AWSMetrics
         }
 
         m_consumerTerminated = false;
+
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
 
         // Start a separate thread to monitor and consume the metrics queue.
@@ -138,8 +140,6 @@ namespace AWSMetrics
 
     void MetricsManager::SendMetricsAsync(AZStd::shared_ptr<MetricsQueue> metricsQueue)
     {
-        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
-
         if (m_clientConfiguration->OfflineRecordingEnabled())
         {
             SendMetricsToLocalFileAsync(metricsQueue);
@@ -186,13 +186,20 @@ namespace AWSMetrics
 
                     OnResponseReceived(*metricsQueue, responseRecords);
 
-                    AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
+                    AZ::TickBus::QueueFunction([requestId]()
+                    {
+                        AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
+                    });
                 }
                 else
                 {
                     OnResponseReceived(*metricsQueue);
 
-                    AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsFailure, requestId, outcome.GetError());
+                    AZStd::string errorMessage = outcome.GetError();
+                    AZ::TickBus::QueueFunction([requestId, errorMessage]()
+                    {
+                        AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsFailure, requestId, errorMessage);
+                    });
                 }
             },
             true, m_jobContext.get());
@@ -209,13 +216,20 @@ namespace AWSMetrics
             {
                 OnResponseReceived(successJob->parameters.data, successJob->result.events);
 
-                AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
+                AZ::TickBus::QueueFunction([requestId]()
+                {
+                    AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
+                });
             },
             [this, requestId](ServiceAPI::PostProducerEventsRequestJob* failedJob)
             {
                 OnResponseReceived(failedJob->parameters.data);
 
-                AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsFailure, requestId, failedJob->error.message);
+                AZStd::string errorMessage = failedJob->error.message;
+                AZ::TickBus::QueueFunction([requestId, errorMessage]()
+                {
+                    AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsFailure, requestId, errorMessage);
+                });
             });
 
         requestJob->parameters.data = AZStd::move(metricsQueue);
@@ -332,6 +346,10 @@ namespace AWSMetrics
 
     void MetricsManager::FlushMetricsAsync()
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
+
+        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
+
         if (m_metricsQueue.GetNumMetrics() == 0)
         {
             return;
@@ -451,5 +469,10 @@ namespace AWSMetrics
     const char* MetricsManager::GetMetricsFilePath() const
     {
         return m_clientConfiguration->GetMetricsFileFullPath();
+    }
+
+    int MetricsManager::GetNumTotalRequests() const
+    {
+        return m_sendMetricsId.load();
     }
 }

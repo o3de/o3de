@@ -34,6 +34,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_displayName, "Display Name", "Identifier used for display and selection")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_autoSelect, "Auto Select", "When true, the configuration is automatically selected when loaded")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_modelAsset, "Model Asset", "Model asset reference")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_previewImageAsset, "Preview Image Asset", "Preview image asset reference")
                         ;
                 }
             }

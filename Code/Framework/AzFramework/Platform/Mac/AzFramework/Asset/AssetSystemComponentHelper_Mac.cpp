@@ -20,8 +20,8 @@ namespace AzFramework::AssetSystem::Platform
 {
     void AllowAssetProcessorToForeground()
     {}
-    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view appRoot,
-        AZStd::string_view gameProjectName)
+    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view engineRoot,
+        AZStd::string_view projectPath)
     {
         AZ::IO::FixedMaxPath assetProcessorPath{ executableDirectory };
         // In Mac the Editor and game is within a bundle, so the path to the sibling app
@@ -30,19 +30,19 @@ namespace AzFramework::AssetSystem::Platform
         assetProcessorPath = assetProcessorPath.LexicallyNormal();
 
         auto fullLaunchCommand = AZ::IO::FixedMaxPathString::format(R"(open -g "%s" --args --start-hidden)", assetProcessorPath.c_str());
-        // Add the app-root to the launch command if not empty
-        if (!appRoot.empty())
+        // Add the engine path to the launch command if not empty
+        if (!engineRoot.empty())
         {
-            fullLaunchCommand += R"( --app-root=")";
-            fullLaunchCommand += appRoot;
+            fullLaunchCommand += R"( --engine-path=")";
+            fullLaunchCommand += engineRoot;
             fullLaunchCommand += '"';
         }
 
-        // Add the active game project to the launch command if not empty 
-        if (!gameProjectName.empty())
+        // Add the active project path to the launch command if not empty
+        if (!projectPath.empty())
         {
-            fullLaunchCommand += R"( --gameFolder=")";
-            fullLaunchCommand += gameProjectName;
+            fullLaunchCommand += R"( --project-path=")";
+            fullLaunchCommand += projectPath;
             fullLaunchCommand += '"';
         }
 

@@ -67,7 +67,7 @@ def override_bootstrap_cfg(package_env):
     print('Override values in bootstrap.cfg')
     engine_root = package_env.get('ENGINE_ROOT')
     bootstrap_path = os.path.join(engine_root, 'bootstrap.cfg')
-    replace_values = {'sys_game_folder':'{}'.format(package_env.get('BOOTSTRAP_CFG_GAME_FOLDER'))}
+    replace_values = {'project_path':'{}'.format(package_env.get('BOOTSTRAP_CFG_GAME_FOLDER'))}
     try:
         with open(bootstrap_path, 'r') as bootstrap_cfg:
             content = bootstrap_cfg.read()

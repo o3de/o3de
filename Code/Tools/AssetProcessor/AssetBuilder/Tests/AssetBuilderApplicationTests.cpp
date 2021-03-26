@@ -26,62 +26,6 @@ namespace AssetBuilder
 
     using AssetBuilderAppTest = AllocatorsFixture;
 
-    TEST_F(AssetBuilderAppTest, GetAppRootArg_AssetBuilderAppNoArgs_NoExtraction)
-    {
-        AssetBuilderApplication app(nullptr, nullptr);
-
-        char appRootBuffer[AZ_MAX_PATH_LEN];
-        ASSERT_FALSE(app.GetOptionalAppRootArg(appRootBuffer, AZ_MAX_PATH_LEN));
-    }
-
-    TEST_F(AssetBuilderAppTest, GetAppRootArg_AssetBuilderAppQuotedAppRoot_Success)
-    {
-    #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        const char* appRootArg = R"str(-approot="C:\path\to\app\root\")str";
-        const char* expectedResult = R"str(C:\path\to\app\root\)str";
-    #else
-        const char* appRootArg = R"str(-approot="/path/to/app/root")str";
-        const char* expectedResult = R"str(/path/to/app/root/)str";
-    #endif
-
-        const char* argArray[] = {
-            appRootArg
-        };
-        int argc = AZ_ARRAY_SIZE(argArray);
-        char** argv = const_cast<char**>(argArray); // this is unfortunately necessary to get around osx's strict non-const string literal stance 
-
-        AssetBuilderApplication app(&argc, &argv);
-
-        char appRootBuffer[AZ_MAX_PATH_LEN] = { 0 };
-
-        ASSERT_TRUE(app.GetOptionalAppRootArg(appRootBuffer, AZ_ARRAY_SIZE(appRootBuffer)));
-        ASSERT_STREQ(appRootBuffer, expectedResult);
-    }
-
-    TEST_F(AssetBuilderAppTest, GetAppRootArg_AssetBuilderAppNoQuotedAppRoot_Success)
-    {
-    #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        const char* appRootArg = R"str(-approot=C:\path\to\app\root\)str";
-        const char* expectedResult = R"str(C:\path\to\app\root\)str";
-    #else
-        const char* appRootArg = R"str(-approot=/path/to/app/root)str";
-        const char* expectedResult = R"str(/path/to/app/root/)str";
-    #endif
-
-        const char* argArray[] = {
-            appRootArg
-        };
-        int argc = AZ_ARRAY_SIZE(argArray);
-        char** argv = const_cast<char**>(argArray); // this is unfortunately necessary to get around osx's strict non-const string literal stance
-
-        AssetBuilderApplication app(&argc, &argv);
-
-        char appRootBuffer[AZ_MAX_PATH_LEN] = { 0 };
-
-        ASSERT_TRUE(app.GetOptionalAppRootArg(appRootBuffer, AZ_ARRAY_SIZE(appRootBuffer)));
-        ASSERT_STREQ(appRootBuffer, expectedResult);
-    }
-    
     TEST_F(AssetBuilderAppTest, AssetBuilder_EditorScriptingComponents_Exists)
     {
         AssetBuilderApplication app(nullptr, nullptr);

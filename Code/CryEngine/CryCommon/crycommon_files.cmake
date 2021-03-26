@@ -110,7 +110,6 @@ set(FILES
     AzDXGIFormat.h
     SFunctor.h
     FunctorBaseFunction.h
-    ParseEngineConfig.h
     CustomMemoryHeap.h
     FunctorBaseMember.h
     stridedptr.h

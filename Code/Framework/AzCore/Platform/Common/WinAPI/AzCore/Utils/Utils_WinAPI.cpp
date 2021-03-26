@@ -47,7 +47,7 @@ namespace AZ
             return result;
         }
 
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath()
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
         {
             return AZStd::nullopt;
         }
@@ -57,10 +57,10 @@ namespace AZ
             return AZStd::nullopt;
         }
 
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> ConvertToAbsolutePath(AZStd::string_view path)
+        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
         {
-            AZStd::fixed_string<MaxPathLength> absolutePath;
-            AZStd::fixed_string<MaxPathLength> srcPath{ path };
+            AZ::IO::FixedMaxPathString absolutePath;
+            AZ::IO::FixedMaxPathString srcPath{ path };
             char* result = _fullpath(absolutePath.data(), srcPath.c_str(), absolutePath.capacity());
             // Force update of the fixed_string size() value
             absolutePath.resize_no_construct(AZStd::char_traits<char>::length(absolutePath.data()));

@@ -22,9 +22,9 @@ if(NOT PAL_TRAIT_BUILD_ATOM_ASSET_SHADER_SUPPORTED)
 
     # Create a stub
     ly_add_target(
-        NAME Atom_Asset_Shader.Builders MODULE
+        NAME Atom_Asset_Shader.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_Asset_Shader.Builders.d32452026dae4b7dba2ad89dbde9c48f.v0.1.0
         FILES_CMAKE
             atom_asset_shader_builders_stub_files.cmake
         INCLUDE_DIRECTORIES
@@ -83,9 +83,9 @@ foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
 endforeach()
 
 ly_add_target(
-    NAME Atom_Asset_Shader.Builders MODULE
+    NAME Atom_Asset_Shader.Builders GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_Asset_Shader.Builders.d32452026dae4b7dba2ad89dbde9c48f.v0.1.0
     FILES_CMAKE
         atom_asset_shader_builders_shared_files.cmake
     PLATFORM_INCLUDE_FILES

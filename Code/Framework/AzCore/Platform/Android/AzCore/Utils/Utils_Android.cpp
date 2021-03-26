@@ -52,10 +52,10 @@ namespace AZ
         // in non-release builds.
         // If a bootstrap.cfg file is not found in the public storage, it is then searched for
         // within the APK itself
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath()
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
         {
             const char* appRoot = AZ::Android::Utils::FindAssetsDirectory();
-            return appRoot ? AZStd::make_optional<AZStd::fixed_string<MaxPathLength>>(appRoot) : AZStd::nullopt;
+            return appRoot ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(appRoot) : AZStd::nullopt;
         }
 
         AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
@@ -64,10 +64,10 @@ namespace AZ
             return writeStorage ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(writeStorage) : AZStd::nullopt;
         }
 
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> ConvertToAbsolutePath(AZStd::string_view path)
+        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
         {
-            AZStd::fixed_string<MaxPathLength> absolutePath;
-            AZStd::fixed_string<MaxPathLength> srcPath{ path };
+            AZ::IO::FixedMaxPathString absolutePath;
+            AZ::IO::FixedMaxPathString srcPath{ path };
             if (AZ::Android::Utils::IsApkPath(srcPath.c_str()))
             {
                 return srcPath;

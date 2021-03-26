@@ -24,12 +24,12 @@ def printMessage(message):
 def getCurrentProject():
     bootstrap = open("bootstrap.cfg", "r")
 
-    gameProjectRegex = re.compile("^sys_game_folder\s*=\s*(.*)")
+    gameProjectRegex = re.compile(r"^project_path\s*=\s*(.*)")
 
     for line in bootstrap:
         gameFolderMatch = gameProjectRegex.match(line)
         if gameFolderMatch:
-            return gameFolderMatch.group(1)
+            return os.path.basename(gameFolderMatch.group(1))
     return None
 
 

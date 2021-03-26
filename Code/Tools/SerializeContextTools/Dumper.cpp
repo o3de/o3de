@@ -18,6 +18,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
@@ -41,7 +42,7 @@ namespace AZ::SerializeContextTools
         AZ::IO::Path sourceGameFolder;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_SourceGameFolder);
+            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
         bool result = true;
 

@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -237,5 +238,57 @@ namespace AZ
         const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
     {
         return JsonMathVectorSerializerInternal::Store<Vector4, 4>(outputValue, inputValue, defaultValue, valueTypeId, context);
+    }
+
+    // Quaternion
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonQuaternionSerializer, SystemAllocator, 0);
+
+    JsonSerializationResult::Result JsonQuaternionSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        // check for "yaw, pitch, roll" object
+        if (inputValue.IsObject())
+        {
+            if (inputValue.GetObject().ObjectEmpty())
+            {
+                Quaternion* outQuaternion = reinterpret_cast<Quaternion*>(outputValue);
+                *outQuaternion = Quaternion::CreateIdentity();
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Using identity quaternion for empty object.");
+            }
+
+            AZ::BaseJsonSerializer* floatSerializer = context.GetRegistrationContext()->GetSerializerForType(azrtti_typeid<float>());
+            if (!floatSerializer)
+            {
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "Failed to find the json float serializer.");
+            }
+
+            constexpr const char* names[3] = {"yaw", "pitch", "roll"};
+            float values[3];
+            int i = 0;
+            for (auto itr = inputValue.MemberBegin(); itr != inputValue.MemberEnd(); ++i, ++itr)
+            {
+                ScopedContextPath subPath(context, names[i]);
+                JSR::Result intermediate = floatSerializer->Load(values + i, azrtti_typeid<float>(), itr->value, context);
+                if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+                {
+                    return intermediate;
+                }
+            }
+
+            auto eulerAnglesDegrees = Vector3::CreateFromFloat3(values);
+            reinterpret_cast<Quaternion*>(outputValue)->SetFromEulerDegrees(eulerAnglesDegrees);
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success, "Successfully read quaternion.");
+        }
+
+        return JsonMathVectorSerializerInternal::Load<Quaternion, 4>(outputValue, outputValueTypeId, inputValue, context);
+    }
+
+    JsonSerializationResult::Result JsonQuaternionSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        return JsonMathVectorSerializerInternal::Store<Quaternion, 4>(outputValue, inputValue, defaultValue, valueTypeId, context);
     }
 }

@@ -26,7 +26,6 @@ if ROOT_DEV_PATH not in sys.path:
 from cmake.Tools import common
 from cmake.Tools.Platform.Android import android_support
 
-
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = LooseVersion('4.10.1')
 GRADLE_MAX_VERSION = LooseVersion('5.6.4')
@@ -148,12 +147,13 @@ def main(args):
 
     parser = argparse.ArgumentParser(description="Prepare the android studio subfolder")
 
-    parser.add_argument('--dev-root',
-                        help='The path to the dev root. Defaults to the current working directory.',
+    parser.add_argument('--engine-root',
+                        help='The path to the engine root. Defaults to the current working directory.',
                         default=os.getcwd())
 
     parser.add_argument('--build-dir',
-                        help='The build dir subpath from the dev root',
+                        help='The build dir path. It will be concatenated to the project-path using the rules of os.path.join',
+                        type=pathlib.Path,
                         required=True)
 
     parser.add_argument('--third-party-path',
@@ -196,8 +196,8 @@ def main(args):
                         default=None,
                         required=False)
 
-    parser.add_argument('-g', '--game-name',
-                        help='The game project to base off of')
+    parser.add_argument('-g', '--project-path',
+                        help='The project path to generate an android project')
 
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
@@ -266,15 +266,15 @@ def main(args):
     verified_android_ndk_platform, verified_android_ndk_path = android_support.verify_android_ndk(android_ndk_platform=parsed_args.get_argument(ANDROID_NDK_PLATFORM_ARGUMENT_NAME),
                                                                                                   argument_name=ANDROID_NDK_ARGUMENT_NAME,
                                                                                                   override_android_ndk_path=parsed_args.get_argument(ANDROID_NDK_ARGUMENT_NAME))
-    if parsed_args.unit_test or parsed_args.game_name == android_support.TEST_RUNNER_PROJECT:
-        verified_game_name = android_support.TEST_RUNNER_PROJECT
-        _, verified_dev_root = common.verify_game_project_and_dev_root(game_name=None,
-                                                                       dev_root=parsed_args.dev_root)
+    if parsed_args.unit_test or parsed_args.project_path == android_support.TEST_RUNNER_PROJECT:
+        verified_project_path = android_support.TEST_RUNNER_PROJECT
+        _, verified_engine_root = common.verify_project_and_engine_root(project_root=None,
+                                                                       engine_root=parsed_args.dev_root)
         is_test_project = True
     else:
-        # Verify the dev-root and game name
-        verified_game_name, verified_dev_root = common.verify_game_project_and_dev_root(game_name=parsed_args.game_name,
-                                                                                        dev_root=parsed_args.dev_root)
+        # Verify the engine root path and project path
+        verified_project_path, verified_engine_root = common.verify_project_and_engine_root(project_root=parsed_args.project_path,
+                                                                                        engine_root=parsed_args.engine_root)
         is_test_project = False
 
     # Verify the 3rd Party Root Path
@@ -285,26 +285,26 @@ def main(args):
                                   common.ERROR_CODE_INVALID_PARAMETER)
     third_party_path = third_party_path.parent
 
-    build_dir = verified_dev_root / parsed_args.build_dir
+    build_dir = parsed_args.build_dir
 
     signing_config = build_optional_signing_profile(store_file=parsed_args.get_argument(SIGNING_PROFILE_STORE_FILE_ARGUMENT_NAME),
                                                     store_password=parsed_args.get_argument(SIGNING_PROFILE_STORE_PASSWORD_ARGUMENT_NAME),
                                                     key_alias=parsed_args.get_argument(SIGNING_PROFILE_KEY_ALIAS_ARGUMENT_NAME),
                                                     key_password=parsed_args.get_argument(SIGNING_PROFILE_KEY_PASSWORD_ARGUMENT_NAME))
 
-    logging.debug("Dev Root         : %s", str(verified_dev_root.resolve()))
+    logging.debug("Engine Root      : %s", str(verified_engine_root.resolve()))
     logging.debug("Build Path       : %s", str(build_dir.resolve()))
     logging.debug("Android NDK Path : %s", str(verified_android_ndk_path.resolve()))
     logging.debug("Android SDK Path : %s", str(verified_android_sdk_path.resolve()))
 
     # Prepare the generator and execute
-    generator = android_support.AndroidProjectGenerator(dev_root=verified_dev_root,
+    generator = android_support.AndroidProjectGenerator(engine_root=verified_engine_root,
+                                                        project_path=verified_project_path,
                                                         build_dir=build_dir,
                                                         android_sdk_path=verified_android_sdk_path,
                                                         android_ndk_path=verified_android_ndk_path,
                                                         android_sdk_version=verified_android_sdk_platform,
                                                         android_ndk_platform=verified_android_ndk_platform,
-                                                        game_name=verified_game_name,
                                                         third_party_path=third_party_path,
                                                         cmake_version=cmake_version,
                                                         override_cmake_path=override_cmake_path,

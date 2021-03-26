@@ -75,15 +75,10 @@ TEST(CrySystemMaterialUtilsTests, MaterialUtilsTestPrefixes)
 TEST(CrySystemMaterialUtilsTests, MaterialUtilsTestGameName)
 {
     char tempBuffer[AZ_MAX_PATH_LEN];
-    
-    ICVar* pGameNameCVar = nullptr;
-    if ((gEnv)&&(gEnv->pConsole))
-    {
-        pGameNameCVar = gEnv->pConsole->GetCVar("sys_game_folder");
-    }
 
-    azsnprintf(tempBuffer, AZ_MAX_PATH_LEN, ".\\%s\\materials\\blahblah.mat.mat.abc.test", pGameNameCVar ? pGameNameCVar->GetString() : "SamplesProject");
- 
+    auto projectName = AZ::Utils::GetProjectName();
+    azsnprintf(tempBuffer, AZ_MAX_PATH_LEN, ".\\%s\\materials\\blahblah.mat.mat.abc.test", projectName.c_str());
+
     MaterialUtils::UnifyMaterialName(tempBuffer);
     EXPECT_TRUE(strcmp(tempBuffer, "materials/blahblah.mat.mat.abc") == 0);
 }

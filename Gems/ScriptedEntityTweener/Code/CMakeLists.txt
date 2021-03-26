@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME ScriptedEntityTweener ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptedEntityTweener.0d1f5f05559c4a99aaefd30633a0158e.v0.1.0
     FILES_CMAKE
         scriptedentitytweener_shared_files.cmake
     INCLUDE_DIRECTORIES

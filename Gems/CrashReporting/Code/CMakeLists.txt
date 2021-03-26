@@ -16,7 +16,6 @@ endif()
 ly_add_target(
     NAME CrashReporting ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.CrashReporting.089562a2cbbd41749b359f85fa04f1c9.v0.1.0
     FILES_CMAKE
         crashreporting_static_files.cmake
         Platform/${PAL_PLATFORM_NAME}/crashreporting_static_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

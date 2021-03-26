@@ -25,6 +25,9 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #endif
 
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 // AzFramework
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
@@ -267,7 +270,14 @@ namespace Editor
         QLoggingCategory::setFilterRules(QStringLiteral("lumberyard.editor.input.*=false"));
 
         // Initialize our stylesheet here to allow Gems to register stylesheets when their system components activate.
-        m_stylesheet->initialize(this);
+        AZ::IO::FixedMaxPath engineRootPath;
+        {
+            // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
+            AZ::ComponentApplication application(argc, argv);
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+        m_stylesheet->initialize(this, engineRootPath);
     }
 
     void EditorQtApplication::Initialize()

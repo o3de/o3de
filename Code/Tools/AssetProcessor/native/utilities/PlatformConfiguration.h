@@ -22,6 +22,7 @@
 #include <QVector>
 #include <QSet>
 
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/string.h>
 #include <native/utilities/assetUtils.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
@@ -29,10 +30,15 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #endif
 
-class QSettings;
+
+namespace AZ
+{
+    class SettingsRegistryInterface;
+}
 
 namespace AssetProcessor
 {
+    inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
     class PlatformConfiguration;
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
@@ -105,6 +111,73 @@ namespace AssetProcessor
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
     };
 
+    //! Visitor for reading the "/Amazon/AssetProcessor/Settings/ScanFolder *" entries from the Settings Registry
+    //! Expects the key to path to the visitor to be "/Amazon/AssetProcessor/Settings"
+    struct ScanFolderVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        struct ScanFolderInfo
+        {
+            AZStd::string m_scanFolderIdentifier;
+            AZStd::string m_scanFolderDisplayName;
+            AZ::IO::Path m_watchPath{ AZ::IO::PosixPathSeparator };
+            AZStd::vector<AZStd::string> m_includeIdentifiers;
+            AZStd::vector<AZStd::string> m_excludeIdentifiers;
+            AZStd::string m_outputPrefix;
+            int m_scanOrder{};
+            bool m_isRecursive{};
+        };
+        AZStd::vector<ScanFolderInfo> m_scanFolderInfos;
+    private:
+        AZStd::stack<AZStd::string> m_scanFolderStack;
+    };
+
+    struct ExcludeVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
+    private:
+        AZStd::stack<AZStd::string> m_excludeNameStack;
+    };
+
+    struct RCVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        RCVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
+            : m_registry(settingsRegistry)
+            , m_enabledPlatforms(enabledPlatforms)
+        {
+        }
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        struct RCAssetRecognizer
+        {
+            AssetRecognizer m_recognizer;
+            AZStd::string m_defaultParams;
+            bool m_ignore{};
+        };
+        AZStd::vector<RCAssetRecognizer> m_assetRecognizers;
+    private:
+        void ApplyParamsOverrides(AZStd::string_view path);
+
+        AZStd::stack<AZStd::string> m_rcNameStack;
+        const AZ::SettingsRegistryInterface& m_registry;
+        const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
+    };
+
     /** Reads the platform ini configuration file to determine
     * platforms for which assets needs to be build
     */
@@ -127,22 +200,23 @@ namespace AssetProcessor
         * Note that order of the config files is relevant - later files override settings in
         * files that are earlier.
         **/
-        bool InitializeFromConfigFiles(QString absoluteSystemRoot, QString absoluteAssetRoot, QString gameName, bool addPlatformConfigs = true, bool addGemsConfigs = true);
+        bool InitializeFromConfigFiles(const QString& absoluteSystemRoot, const QString& absoluteAssetRoot, const QString& projectPath, bool addPlatformConfigs = true, bool addGemsConfigs = true);
 
-        QString PlatformName(unsigned int platformCrc) const;
-        QString RendererName(unsigned int rendererCrc) const;
+        //! Merge an AssetProcessor*Config.ini path to the Settings Registry
+        //! The settings are anchored underneath the AssetProcessor::AssetProcessorSettingsKey JSON pointer
+        static bool MergeConfigFileToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, const AZ::IO::PathView& filePathView);
 
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& GetEnabledPlatforms() const;
         const AssetBuilderSDK::PlatformInfo* const GetPlatformByIdentifier(const char* identifier) const;
 
         //! Add AssetProcessor config files from platform specific folders
-        bool AddPlatformConfigFilePaths(QStringList& configList);
+        bool AddPlatformConfigFilePaths(AZStd::vector<AZ::IO::Path>& configList);
 
         int MetaDataFileTypesCount() const { return m_metaDataFileTypes.count(); }
         // Metadata file types are (meta file extension, original file extension - or blank if its tacked on the end instead of replacing).
         // so for example if its
         // blah.tif + blah.tif.metadata, then its ("metadata", "")
-        // but if its blah.tif + blah.metadata (rplacing tif, data is lost) then its ("metadata", "tif")
+        // but if its blah.tif + blah.metadata (replacing tif, data is lost) then its ("metadata", "tif")
         QPair<QString, QString> GetMetaDataFileTypeAt(int pos) const;
 
         // Metadata extensions can also be a real file, to create a dependency on file types if a specific file changes
@@ -160,7 +234,7 @@ namespace AssetProcessor
         int GetScanFolderCount() const;
 
         //! Return the gems info list
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> GetGemsInformation() const;
+        AZStd::vector<AzFramework::GemInfo> GetGemsInformation() const;
 
         //! Retrieve the scan folder at a given index.
         AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index);
@@ -249,18 +323,18 @@ namespace AssetProcessor
     protected:
 
         // call this first, to populate the list of platform informations
-        void ReadPlatformInfosFromConfigFile(QString fileSource);
+        void ReadPlatformInfosFromSettingsRegistry();
         // call this next, in order to find out what platforms are enabled
-        void PopulateEnabledPlatforms(QStringList configFiles);
-        // finaly, call this, in order to delete the platforminfos for non-enabled platforms
+        void PopulateEnabledPlatforms();
+        // finally, call this, in order to delete the platforminfos for non-enabled platforms
         void FinalizeEnabledPlatforms();
 
         // iterate over all the gems and add their folders to the "scan folders" list as appropriate.
-        void AddGemScanFolders(const AZStd::vector<AzToolsFramework::AssetUtils::GemInfo>& gemInfoList);
+        void AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList);
 
-        void ReadEnabledPlatformsFromConfigFile(QString fileSource);
-        bool ReadRecognizersFromConfigFile(QString fileSource, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
-        void ReadMetaDataFromConfigFile(QString fileSource);
+        void ReadEnabledPlatformsFromSettingsRegistry();
+        bool ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
+        void ReadMetaDataFromSettingsRegistry();
 
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
@@ -269,15 +343,13 @@ namespace AssetProcessor
         AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolders;
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> m_gemInfoList;
+        AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
 
         int m_minJobs = 1;
         int m_maxJobs = 3;
 
         // used only during file read, keeps the total running list of all the enabled platforms from all config files and command lines
-        QStringList m_tempEnabledPlatforms;
-
-        bool ReadRecognizerFromConfig(AssetRecognizer& target, QSettings& loader); // assumes the group is already selected
+        AZStd::vector<AZStd::string> m_tempEnabledPlatforms;
 
         ///! if non-empty, fatalError contains the error that occurred during read.
         ///! it will be printed out to the log when

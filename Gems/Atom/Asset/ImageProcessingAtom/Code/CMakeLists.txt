@@ -93,9 +93,9 @@ ly_add_source_properties(
 )
 
 ly_add_target(
-    NAME ImageProcessingAtom.Editor MODULE
+    NAME ImageProcessingAtom.Editor GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ImageProcessingAtom.Editor.9d10b00be96045caa64c705e5772cb64.v0.1.0
     FILES_CMAKE
         imageprocessingatom_shared_files.cmake
     INCLUDE_DIRECTORIES

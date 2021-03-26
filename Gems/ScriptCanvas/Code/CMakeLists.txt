@@ -86,7 +86,6 @@ ly_add_target(
 ly_add_target(
     NAME ScriptCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptCanvasGem.869a0d0ec11a45c299917d45c81555e6.v0.1.0
     FILES_CMAKE
         scriptcanvasgem_game_files.cmake
     INCLUDE_DIRECTORIES
@@ -105,7 +104,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::ScriptEvents.Static
-        
+    RUNTIME_DEPENDENCIES
+        Gem::ScriptEvents
+        Gem::ExpressionEvaluation
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -172,9 +173,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ScriptCanvas.Editor MODULE
+        NAME ScriptCanvas.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.ScriptCanvasGem.Editor.869a0d0ec11a45c299917d45c81555e6.v0.1.0
         FILES_CMAKE
             scriptcanvasgem_editor_shared_files.cmake
         COMPILE_DEFINITIONS
@@ -199,6 +200,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             3rdParty::Qt::Widgets
             Legacy::EditorCore
             AZ::AzQtComponents
+            Gem::GraphCanvas.Editor
+            Gem::ScriptEvents.Editor
+            Gem::ExpressionEvaluation
     )
 endif()
 

@@ -506,7 +506,7 @@ void ConnectionManager::AddAddressToAllowedList(QString address)
     UpdateAllowedListFromBootStrap();
     while (m_allowedListAddresses.removeOne(address)) {}
     m_allowedListAddresses << address;
-    AssetUtilities::WriteAllowedlistToBootstrap(m_allowedListAddresses);
+    AssetUtilities::WriteAllowedlistToSettingsRegistry(m_allowedListAddresses);
     Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 
@@ -514,7 +514,7 @@ void ConnectionManager::RemoveAddressFromAllowedList(QString address)
 {
     UpdateAllowedListFromBootStrap();
     while (m_allowedListAddresses.removeOne(address)) {}
-    AssetUtilities::WriteAllowedlistToBootstrap(m_allowedListAddresses);
+    AssetUtilities::WriteAllowedlistToSettingsRegistry(m_allowedListAddresses);
     Q_EMIT SyncAllowedListAndRejectedList(m_allowedListAddresses, m_rejectedAddresses);
 }
 

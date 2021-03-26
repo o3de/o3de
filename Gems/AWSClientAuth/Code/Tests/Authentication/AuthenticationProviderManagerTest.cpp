@@ -66,7 +66,6 @@ protected:
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
 
-        AWSClientAuth::AWSCognitoProviderSetting::Reflect(*m_serializeContext);
         AWSClientAuth::LWAProviderSetting::Reflect(*m_serializeContext);
         AWSClientAuth::GoogleProviderSetting::Reflect(*m_serializeContext);
 
@@ -93,10 +92,6 @@ protected:
                         "Scope": "profile",
                         "OAuthCodeURL": "https://oauth2.googleapis.com/device/code",
                         "OAuthTokensURL": "https://oauth2.googleapis.com/token"
-                    },
-                    "CognitoIDP":
-                    {
-                        "AppClientId": "TestCognitoClientId"
                     }
                 } 
             })");

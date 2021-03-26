@@ -101,7 +101,7 @@ namespace PhysX
 
         // Set up gems other than PhysX for loading
         AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
-        dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.LmbrCentral.ff06785f7145416b9d46fde39098cb0c.v0.1.0";
+        dynamicModuleDescriptor.m_dynamicLibraryPath = "LmbrCentral";
         appDesc.m_modules.push_back(dynamicModuleDescriptor);
 
         // Create system entity

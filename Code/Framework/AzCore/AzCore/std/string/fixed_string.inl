@@ -1072,6 +1072,23 @@ namespace AZStd
         Traits::assign(rhs.m_buffer[rhs.m_size], Element{ 0 });
     }
 
+    // C++23 contains
+    template<class Element, size_t MaxElementCount, class Traits>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::contains(const basic_fixed_string& other) const -> bool
+    {
+        return find(other) != npos;
+    }
+    template<class Element, size_t MaxElementCount, class Traits>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::contains(value_type c) const -> bool
+    {
+        return find(c) != npos;
+    }
+    template<class Element, size_t MaxElementCount, class Traits>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::contains(const_pointer s) const -> bool
+    {
+        return find(s) != npos;
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::find(const basic_fixed_string& rhs, size_type offset) const -> size_type
     {

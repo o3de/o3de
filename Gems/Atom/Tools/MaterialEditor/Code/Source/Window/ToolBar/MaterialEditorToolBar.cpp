@@ -13,12 +13,15 @@
 #include <Source/Window/ToolBar/MaterialEditorToolBar.h>
 #include <Source/Window/ToolBar/ModelPresetComboBox.h>
 #include <Source/Window/ToolBar/LightingPresetComboBox.h>
-#include <Source/Window/ToolBar/FovSliderWidget.h>
 #include <Atom/Document/MaterialEditorSettingsBus.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 
+#include <AzCore/std/containers/vector.h>
+#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
+#include <QIcon>
 #include <QMenu>
 #include <QToolButton>
 #include <QAction>
@@ -36,7 +39,7 @@ namespace MaterialEditor
         toggleGrid->setCheckable(true);
         connect(toggleGrid, &QAction::triggered, [this, toggleGrid]() {
             MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, toggleGrid->isChecked());
-        });
+            });
         bool enableGrid = false;
         MaterialViewportRequestBus::BroadcastResult(enableGrid, &MaterialViewportRequestBus::Events::GetGridEnabled);
         toggleGrid->setChecked(enableGrid);
@@ -46,7 +49,7 @@ namespace MaterialEditor
         toggleShadowCatcher->setCheckable(true);
         connect(toggleShadowCatcher, &QAction::triggered, [this, toggleShadowCatcher]() {
             MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, toggleShadowCatcher->isChecked());
-        });
+            });
         bool enableShadowCatcher = false;
         MaterialViewportRequestBus::BroadcastResult(enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
         toggleShadowCatcher->setChecked(enableShadowCatcher);
@@ -57,13 +60,13 @@ namespace MaterialEditor
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
         toneMappingMenu->addAction("None", [this]() {
             MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "None");
-        });
+            });
         toneMappingMenu->addAction("Gamma2.2", [this]() {
             MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "Gamma2.2");
-        });
+            });
         toneMappingMenu->addAction("ACES", [this]() {
             MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "ACES");
-        });
+            });
         toneMappingButton->setMenu(toneMappingMenu);
         toneMappingButton->setText("Tone Mapping");
         toneMappingButton->setIcon(QIcon(":/Icons/toneMapping.svg"));
@@ -82,10 +85,6 @@ namespace MaterialEditor
         auto lightingPresetComboBox = new LightingPresetComboBox(this);
         lightingPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
         addWidget(lightingPresetComboBox);
-
-        FovSliderWidget* fovSlider = new FovSliderWidget(this);
-        fovSlider->setFixedWidth(250);
-        addWidget(fovSlider);
     }
 } // namespace MaterialEditor
 

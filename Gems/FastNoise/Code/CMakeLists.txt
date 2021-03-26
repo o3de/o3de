@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME FastNoise ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.FastNoise.c5f23032407f49ca8d8de1733423565c.v0.1.0
     FILES_CMAKE
         fastnoise_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -38,6 +37,9 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::FastNoise.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
+        Gem::GradientSignal
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -62,9 +64,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME FastNoise.Editor MODULE
+        NAME FastNoise.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.FastNoise.Editor.c5f23032407f49ca8d8de1733423565c.v0.1.0
         FILES_CMAKE
             fastnoise_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -75,6 +77,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 FastNoise.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
+            Gem::SurfaceData.Editor
     )
 endif()
 

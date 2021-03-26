@@ -88,7 +88,8 @@ namespace AZ
         bool ShaderPlatformInterface::BuildPipelineLayoutDescriptor(
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptorBase,
             const ShaderResourceGroupInfoList& srgInfoList,
-            const RootConstantsInfo& rootConstantsInfo)
+            const RootConstantsInfo& rootConstantsInfo,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
         {
             PipelineLayoutDescriptor* pipelineLayoutDescriptor = azrtti_cast<PipelineLayoutDescriptor*>(pipelineLayoutDescriptorBase.get());
             AZ_Assert(pipelineLayoutDescriptor, "PipelineLayoutDescriptor should have been created by now");
@@ -116,7 +117,7 @@ namespace AZ
                     }
                 }
 
-                if (m_settings.m_dxcDisableOptimizations)
+                if (shaderCompilerArguments.m_dxcDisableOptimizations)
                 {
                     // When optimizations are disabled (-Od), all resources declared in the source file are available to all stages
                     // (when enabled only the resources which are referenced in a stage are bound to the stage)
@@ -148,7 +149,8 @@ namespace AZ
             const AZStd::string& functionName,
             RHI::ShaderHardwareStage shaderStage,
             const AZStd::string& tempFolderPath,
-            StageDescriptor& outputDescriptor) const
+            StageDescriptor& outputDescriptor,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
 
@@ -158,6 +160,7 @@ namespace AZ
                 tempFolderPath,                          // AP job temp folder
                 functionName,                            // name of function that is the entry point
                 shaderStage,                             // shader stage (vertex shader, pixel shader, ...)
+                shaderCompilerArguments,
                 shaderByteCode,                          // compiled shader output
                 outputDescriptor.m_byProducts);          // dynamic branch count output & byproduct files
 
@@ -182,20 +185,20 @@ namespace AZ
             return true;
         }
        
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.MakeAdditionalAzslcCommandLineString() +
+            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
                 " --use-spaces --namespace=dx --root-const=128";
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.MakeAdditionalAzslcWarningCommandLineString();
+            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
         }
 
-        bool ShaderPlatformInterface::BuildHasDebugInfo() const
+        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -209,6 +212,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderStageType,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
             AZStd::vector<uint8_t>& compiledShader,
             ByProducts& byProducts) const
         {
@@ -253,7 +257,7 @@ namespace AZ
             }
 
             // Compilation parameters
-            AZStd::string params = m_settings.MakeAdditionalDxcCommandLineString();
+            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
 
             // Enable half precision types when shader model >= 6.2
             int shaderModelMajor = 0;
@@ -267,13 +271,18 @@ namespace AZ
             AZ::StringFunc::TrimWhiteSpace(params, true, false); // we don't need the extra leading spaces that tend to build up
 
             unsigned char md5[RHI::Md5NumBytes];
-            RHI::PrependArguments args{ shaderSourceFile.c_str(), PlatformShaderHeader, "", tempFolder.c_str(), nullptr, &md5 };
+            RHI::PrependArguments args;
+            args.m_sourceFile = shaderSourceFile.c_str();
+            args.m_prependFile = PlatformShaderHeader;
+            args.m_destinationFolder = tempFolder.c_str();
+            args.m_digest = &md5;
+
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash
             // -Fd "Write debug information to the given file, or automatically named file in directory when ending in '\\'"
             // If we use the auto-name (hash), there is no way we can retrieve that name apart from listing the directory.
             // Instead, let's just generate that hash ourselves.
             AZStd::string symbolDatabaseFileCliArgument{" "};  // when not debug: still insert a space between 5.dxil and 7.hlsl-in
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 // prepare .ldd filename:
                 AZStd::string md5hex = RHI::ByteToHexString(md5);
@@ -343,7 +352,7 @@ namespace AZ
                 byProducts.m_dynamicBranchCount = ByProducts::UnknownDynamicBranchCount;
             }
 
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(objectCodeOutputFile));
             }

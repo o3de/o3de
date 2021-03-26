@@ -30,7 +30,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
-           'get_dccsi_config', 'get_current_project']
+           'get_dccsi_config']
 
 # note: this module should reamin py2.7 compatible (Maya) so no f'strings
 # -------------------------------------------------------------------------
@@ -135,23 +135,6 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
         return None
 # -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-def get_current_project(dev_folder=get_stub_check_path()):
-    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str"""
-    boostrap_filepath = Path(dev_folder, "bootstrap.cfg")
-    if boostrap_filepath.exists():
-        bootstrap = open(str(boostrap_filepath), "r")
-        game_project_regex = re.compile(r"^sys_game_folder\s*=\s*(.*)")
-        for line in bootstrap:
-            game_folder_match = game_project_regex.match(line)
-            if game_folder_match:
-                _LOGGER.debug('Project is: {}'.format(game_folder_match.group(1)))
-                return game_folder_match.group(1)
-    return None
-# -------------------------------------------------------------------------
-
-
 # -------------------------------------------------------------------------
 def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
     """Builds and adds local site dir libs based on py version"""
@@ -192,9 +175,6 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engineroot.txt')))
-    
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engineroot.txt'))))
-    
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

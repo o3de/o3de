@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME MessagePopup ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.MessagePopup.89225422672547deaca9e7a22b883973.v0.1.0
     FILES_CMAKE
         messagepopup_shared_files.cmake
     INCLUDE_DIRECTORIES

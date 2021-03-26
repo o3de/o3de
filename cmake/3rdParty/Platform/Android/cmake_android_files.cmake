@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSNativeSDK_android.cmake
     BuiltInPackages_android.cmake
     civetweb_android.cmake
     expat_android.cmake

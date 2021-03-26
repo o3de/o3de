@@ -24,8 +24,6 @@
 
 #include <StringUtils.h>
 
-#include <ParseEngineConfig.h>
-
 #include <AzFramework/Application/Application.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformId/PlatformId.h>
@@ -249,7 +247,6 @@ int main_wrapped(int argc, char* argv[])
 
     COutputPrintSink printSink;
     SSystemInitParams sip;
-    CEngineConfig cfg;
 
     using PlatformMap = AZStd::unordered_map<AZ::OSString, AZ::PlatformID, AZStd::hash<AZ::OSString>>;
     using PlatformMapElement = PlatformMap::value_type;
@@ -339,10 +336,6 @@ int main_wrapped(int argc, char* argv[])
         DisplayErrorMessageBox("Invalid target platform");
         return errorCode;
     }
-
-    // Overwrite assets platform so it matches the platform for which we are generating the shaders.
-    cfg.m_assetPlatform = foundPlatform->first.c_str();
-    cfg.CopyToStartupParams(sip);
 
     sip.bShaderCacheGen = true;
     sip.bDedicatedServer = false;

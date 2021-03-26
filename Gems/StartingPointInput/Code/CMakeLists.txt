@@ -37,7 +37,6 @@ ly_add_target(
 ly_add_target(
     NAME StartingPointInput ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.StartingPointInput.09f4bedeee614358bc36788e77f97e51.v0.1.0
     FILES_CMAKE
         startingpointinput_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -59,9 +58,9 @@ ly_add_source_properties(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME StartingPointInput.Editor MODULE
+        NAME StartingPointInput.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.StartingPointInput.Editor.09f4bedeee614358bc36788e77f97e51.v0.1.0
         FILES_CMAKE
             startingpointinput_shared_files.cmake
         INCLUDE_DIRECTORIES

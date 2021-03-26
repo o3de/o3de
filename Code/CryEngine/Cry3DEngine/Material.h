@@ -18,7 +18,6 @@
 #include <IMaterial.h>
 
 #if !defined(CONSOLE)
-#   define TRACE_MATERIAL_LEAKS
 #   define SUPPORT_MATERIAL_EDITING
 #endif
 
@@ -203,7 +202,7 @@ public:
     bool SetGetMaterialParamFloat(const char* sParamName, float& v, bool bGet, bool allowShaderParam = false, int materialIndex = 0) override;
     bool SetGetMaterialParamVec3(const char* sParamName, Vec3& v, bool bGet, bool allowShaderParam = false, int materialIndex = 0) override;
     bool SetGetMaterialParamVec4(const char* sParamName, Vec4& v, bool bGet, bool allowShaderParam = false, int materialIndex = 0) override;
-    
+
     void SetDirty(bool dirty = true) override;
     bool IsDirty() const override;
 
@@ -264,11 +263,6 @@ public:
     bool IsForwardRenderingRequired();
     bool IsNearestCubemapRequired();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Debug routines
-    //////////////////////////////////////////////////////////////////////////
-    virtual const char* GetLoadingCallstack();  // trace leaking materials by callstack
-
     void DisableTextureStreaming() override;
     virtual void RequestTexturesLoading(const float fMipFactor);
 
@@ -286,13 +280,6 @@ public:
     void SetDccMaterialHash(uint32 hash) override { m_dccMaterialHash = hash; }
 
     virtual CryCriticalSection& GetSubMaterialResizeLock();
-public:
-    //////////////////////////////////////////////////////////////////////////
-    // for debug purposes
-    //////////////////////////////////////////////////////////////////////////
-#ifdef TRACE_MATERIAL_LEAKS
-    string  m_sLoadingCallstack;
-#endif
 
 private:
     friend class CMatMan;

@@ -144,92 +144,92 @@ namespace AZ
                 return m_shininess;
             }
 
-            void MaterialData::SetUseColorMap(bool useColorMap)
+            void MaterialData::SetUseColorMap(AZStd::optional<bool> useColorMap)
             {
                 m_useColorMap = useColorMap;
             }
 
-            bool MaterialData::GetUseColorMap() const
+            AZStd::optional<bool> MaterialData::GetUseColorMap() const
             {
                 return m_useColorMap;
             }
 
-            void MaterialData::SetBaseColor(const AZ::Vector3& baseColor)
+            void MaterialData::SetBaseColor(const AZStd::optional<AZ::Vector3>& baseColor)
             {
                 m_baseColor = baseColor;
             }
 
-            const AZ::Vector3& MaterialData::GetBaseColor() const
+            AZStd::optional<AZ::Vector3> MaterialData::GetBaseColor() const
             {
                 return m_baseColor;
             }
 
-            void MaterialData::SetUseMetallicMap(bool useMetallicMap)
+            void MaterialData::SetUseMetallicMap(AZStd::optional<bool> useMetallicMap)
             {
                 m_useMetallicMap = useMetallicMap;
             }
 
-            bool MaterialData::GetUseMetallicMap() const
+            AZStd::optional<bool> MaterialData::GetUseMetallicMap() const
             {
                 return m_useMetallicMap;
             }
 
-            void MaterialData::SetMetallicFactor(float metallicFactor)
+            void MaterialData::SetMetallicFactor(AZStd::optional<float> metallicFactor)
             {
                 m_metallicFactor = metallicFactor;
             }
 
-            float MaterialData::GetMetallicFactor() const
+            AZStd::optional<float> MaterialData::GetMetallicFactor() const
             {
                 return m_metallicFactor;
             }
 
-            void MaterialData::SetUseRoughnessMap(bool useRoughnessMap)
+            void MaterialData::SetUseRoughnessMap(AZStd::optional<bool> useRoughnessMap)
             {
                 m_useRoughnessMap = useRoughnessMap;
             }
 
-            bool MaterialData::GetUseRoughnessMap() const
+            AZStd::optional<bool> MaterialData::GetUseRoughnessMap() const
             {
                 return m_useRoughnessMap;
             }
 
-            void MaterialData::SetRoughnessFactor(float roughnessFactor)
+            void MaterialData::SetRoughnessFactor(AZStd::optional<float> roughnessFactor)
             {
                 m_roughnessFactor = roughnessFactor;
             }
 
-            float MaterialData::GetRoughnessFactor() const
+            AZStd::optional<float> MaterialData::GetRoughnessFactor() const
             {
                 return m_roughnessFactor;
             }
 
-            void MaterialData::SetUseEmissiveMap(bool useEmissiveMap)
+            void MaterialData::SetUseEmissiveMap(AZStd::optional<bool> useEmissiveMap)
             {
                 m_useEmissiveMap = useEmissiveMap;
             }
 
-            bool MaterialData::GetUseEmissiveMap() const
+            AZStd::optional<bool> MaterialData::GetUseEmissiveMap() const
             {
                 return m_useEmissiveMap;
             }
 
-            void MaterialData::SetEmissiveIntensity(float emissiveIntensity)
+            void MaterialData::SetEmissiveIntensity(AZStd::optional<float> emissiveIntensity)
             {
                 m_emissiveIntensity = emissiveIntensity;
             }
 
-            float MaterialData::GetEmissiveIntensity() const
+            AZStd::optional<float> MaterialData::GetEmissiveIntensity() const
             {
                 return m_emissiveIntensity;
             }
 
-            void MaterialData::SetUseAOMap(bool useAOMap)
+            void MaterialData::SetUseAOMap(AZStd::optional<bool> useAOMap)
             {
                 m_useAOMap = useAOMap;
             }
 
-            bool MaterialData::GetUseAOMap() const
+            AZStd::optional<bool> MaterialData::GetUseAOMap() const
             {
                 return m_useAOMap;
             }

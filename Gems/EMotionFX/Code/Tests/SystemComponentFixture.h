@@ -24,6 +24,7 @@
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
@@ -165,7 +166,12 @@ namespace EMotionFX
 
         virtual AZStd::string GetAssetFolder() const
         {
-            return m_app.GetAssetRoot();
+            AZStd::string assetCachePath;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(assetCachePath, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+            }
+            return assetCachePath;
         }
 
         // Runs after allocators are set up but before application startup

@@ -27,7 +27,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialConverterSystemComponent, Component>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -42,15 +42,16 @@ namespace AZ
             RPI::MaterialConverterBus::Handler::BusDisconnect();
         }
 
-        bool MaterialConverterSystemComponent::ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& sourceData)
+        bool MaterialConverterSystemComponent::ConvertMaterial(
+            const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& sourceData)
         {
             using namespace AZ::RPI;
 
             // The source data for generating material asset
             sourceData.m_materialType = GetMaterialTypePath();
 
-            auto handleTexture = [&materialData, &sourceData](const char* propertyTextureGroup, SceneAPI::DataTypes::IMaterialData::TextureMapType textureType)
-            {
+            auto handleTexture = [&materialData, &sourceData](
+                                     const char* propertyTextureGroup, SceneAPI::DataTypes::IMaterialData::TextureMapType textureType) {
                 MaterialSourceData::PropertyMap& properties = sourceData.m_properties[propertyTextureGroup];
                 const AZStd::string& texturePath = materialData.GetTexture(textureType);
 
@@ -61,14 +62,16 @@ namespace AZ
                     using namespace AzToolsFramework;
                     AZ::Data::AssetInfo sourceInfo;
                     AZStd::string watchFolder;
-                    AssetSystemRequestBus::BroadcastResult(assetFound, &AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, texturePath.c_str(), sourceInfo, watchFolder);
+                    AssetSystemRequestBus::BroadcastResult(
+                        assetFound, &AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, texturePath.c_str(), sourceInfo,
+                        watchFolder);
                 }
 
                 if (assetFound)
                 {
                     properties["textureMap"].m_value = texturePath;
                 }
-                else if(!texturePath.empty())
+                else if (!texturePath.empty())
                 {
                     AZ_Warning("AtomFeatureCommon", false, "Could not find asset '%s' for '%s'", texturePath.c_str(), propertyTextureGroup);
                 }
@@ -76,29 +79,54 @@ namespace AZ
 
             handleTexture("specularF0", SceneAPI::DataTypes::IMaterialData::TextureMapType::Specular);
             handleTexture("normal", SceneAPI::DataTypes::IMaterialData::TextureMapType::Normal);
-            handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
-
+            AZStd::optional<bool> useColorMap = materialData.GetUseColorMap();
+            // If the useColorMap property exists, this is a PBR material and the color should be set to baseColor.
+            if (useColorMap.has_value())
+            {
+                handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
+            }
+            else
+            {
+                // If it doesn't have the useColorMap property, then it's a non-PBR material and the baseColor
+                // texture needs to be set to the diffuse texture.
+                handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::Diffuse);
+            }
 
             auto toColor = [](const AZ::Vector3& v) { return AZ::Color::CreateFromVector3AndFloat(v, 1.0f); };
-            sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetBaseColor());
+
+            AZStd::optional<AZ::Vector3> baseColor = materialData.GetBaseColor();
+            if (baseColor.has_value())
+            {
+                sourceData.m_properties["baseColor"]["color"].m_value = toColor(baseColor.value());
+            }
 
             sourceData.m_properties["opacity"]["factor"].m_value = materialData.GetOpacity();
 
+            auto applyOptionalPropertiesFunc = [&sourceData](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
+            {
+                // Only set PBR settings if they were specifically set in the scene's data.
+                // Otherwise, leave them unset so the data driven default properties are used.
+                if (propertyOptional.has_value())
+                {
+                    sourceData.m_properties[propertyGroup][propertyName].m_value = propertyOptional.value();
+                }
+            };
+
             handleTexture("metallic", SceneAPI::DataTypes::IMaterialData::TextureMapType::Metallic);
-            sourceData.m_properties["metallic"]["factor"].m_value = materialData.GetMetallicFactor();
-            sourceData.m_properties["metallic"]["useTexture"].m_value = materialData.GetUseMetallicMap();
+            applyOptionalPropertiesFunc("metallic", "factor", materialData.GetMetallicFactor());
+            applyOptionalPropertiesFunc("metallic", "useTexture", materialData.GetUseMetallicMap());
 
             handleTexture("roughness", SceneAPI::DataTypes::IMaterialData::TextureMapType::Roughness);
-            sourceData.m_properties["roughness"]["factor"].m_value = materialData.GetRoughnessFactor();
-            sourceData.m_properties["roughness"]["useTexture"].m_value = materialData.GetUseRoughnessMap();
+            applyOptionalPropertiesFunc("roughness", "factor", materialData.GetRoughnessFactor());
+            applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
 
             handleTexture("emissive", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
-            sourceData.m_properties["emissive"]["intensity"].m_value = materialData.GetEmissiveIntensity();
             sourceData.m_properties["emissive"]["color"].m_value = toColor(materialData.GetEmissiveColor());
-            sourceData.m_properties["emissive"]["useTexture"].m_value = materialData.GetUseEmissiveMap();
+            applyOptionalPropertiesFunc("emissive", "intensity", materialData.GetEmissiveIntensity());
+            applyOptionalPropertiesFunc("emissive", "useTexture", materialData.GetUseEmissiveMap());
 
             handleTexture("ambientOcclusion", SceneAPI::DataTypes::IMaterialData::TextureMapType::AmbientOcclusion);
-            sourceData.m_properties["ambientOcclusion"]["useTexture"].m_value = materialData.GetUseAOMap();
+            applyOptionalPropertiesFunc("ambientOcclusion", "useTexture", materialData.GetUseAOMap());
             return true;
         }
 

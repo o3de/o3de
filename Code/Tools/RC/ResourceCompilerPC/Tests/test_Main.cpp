@@ -17,6 +17,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include "../CryEngine/Cry3DEngine/CGF/CGFLoader.h"
@@ -121,7 +122,7 @@ protected:
         const AZStd::string engroot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engroot.c_str());
 
-        AZ::IO::Path assetRoot(engroot);
+        AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
 

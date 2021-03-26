@@ -68,6 +68,6 @@ class AuthPolicy:
         policy_output = core.CfnOutput(
             self._stack,
             id=f'{policy_id}Output',
-            description='User policy arn to call service',
+            description=f'{role_name} policy arn to call service',
             export_name=f"{self._application_name}:{policy_id}",
             value=policy.managed_policy_arn)

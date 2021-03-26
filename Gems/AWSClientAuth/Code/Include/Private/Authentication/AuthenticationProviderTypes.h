@@ -68,35 +68,4 @@ namespace AWSClientAuth
                 ->Field("OAuthTokensURL", &GoogleProviderSetting::m_oAuthTokensURL);
         }
     };
-
-    //! Holds AWS Cognito provider serialized Settings.
-    class AWSCognitoProviderSetting
-    {
-    public:
-        AWSCognitoProviderSetting() = default;
-        ~AWSCognitoProviderSetting() = default;
-
-        AZ_TYPE_INFO(AWSCognitoProviderSetting, "{46EF239C-D3CF-4B17-BA68-FD6B3B249305}");
-
-        AZStd::string m_appClientId;
-
-        static void Reflect(AZ::SerializeContext& context)
-        {
-            context.Class<AWSCognitoProviderSetting>()
-                ->Field("AppClientId", &AWSCognitoProviderSetting::m_appClientId)
-                ;
-
-            AZ::EditContext* editContext = context.GetEditContext();
-
-            if (editContext)
-            {
-                editContext->Class<AWSCognitoProviderSetting>("AWSCognitoProviderSetting", "AWSCognitoProviderSetting Settings")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "AWSClientAuth")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AWSCognitoProviderSetting::m_appClientId, "ClientId", "Cognito User Pool App Client Id");
-            }
-        }
-    };
 } // namespace AWSClientAuth

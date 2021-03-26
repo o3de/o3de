@@ -130,37 +130,36 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
     m_qtFileWatcher.addPath(assetDbPath);
 
     // if our Gems file changes, make sure we watch that, too.
-    QString gameName = AssetUtilities::ComputeGameName();
-    QString gemsConfigFile = devRoot.filePath(gameName + "/gems.json");
-
-    m_qtFileWatcher.addPath(gemsConfigFile);
+    QString projectPath = AssetUtilities::ComputeProjectPath();
 
     QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::fileChanged, this, &GUIApplicationManager::FileChanged);
     QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::directoryChanged, this, &GUIApplicationManager::DirectoryChanged);
 
-    // Register a notifier for when the sys_game_folder property changes within the SettingsRegistry
+    // Register a notifier for when the project_path property changes within the SettingsRegistry
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
-        auto onBootStrapGameFolderChanged = [this, cachedGameName = gameName](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
+        // Needs to be updated to project_path.
+        auto OnProjectPathChanged = [this, cachedProjectPath = projectPath](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
         {
-            constexpr auto projectKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/sys_game_folder";
-            if (projectKey == path && type == AZ::SettingsRegistryInterface::Type::String)
+            constexpr auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            if (projectPathKey == path)
             {
-                auto registry = AZ::SettingsRegistry::Get();
-                AZ::SettingsRegistryInterface::FixedValueString newGameName;
-                if (registry->Get(newGameName, path))
+                AZ::SettingsRegistryInterface::FixedValueString newProjectPath;
+                if (auto registry = AZ::SettingsRegistry::Get(); registry && registry->Get(newProjectPath, path))
                 {
-                    // we only have to quit if the actual project name has changed, not if just the bootstrap has changed.
-                    if (cachedGameName.compare(newGameName.c_str()) != 0)
+                    // we only have to quit if the project path has changed, not if just the bootstrap has changed.
+                    if (cachedProjectPath.compare(newProjectPath.c_str()) != 0)
                     {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Bootstrap.cfg Game Name changed from %s to %s.  Quitting\n", cachedGameName.toUtf8().constData(), newGameName.c_str());
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "bootstrap.cfg Project Path changed from %s to %s.  Quitting\n",
+                            cachedProjectPath.toUtf8().constData(), newProjectPath.c_str());
                         QMetaObject::invokeMethod(this, "QuitRequested", Qt::QueuedConnection);
                     }
                 }
             }
         };
-        m_bootstrapGameFolderChangedHandler = settingsRegistry->RegisterNotifier(AZStd::move(onBootStrapGameFolderChanged));
+        m_bootstrapGameFolderChangedHandler = settingsRegistry->RegisterNotifier(AZStd::move(OnProjectPathChanged));
     }
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
@@ -189,8 +188,13 @@ bool GUIApplicationManager::Run()
     qRegisterMetaType<AZ::u32>("AZ::u32");
     qRegisterMetaType<AZ::Uuid>("AZ::Uuid");
 
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
     AzQtComponents::StyleManager* styleManager = new AzQtComponents::StyleManager(qApp);
-    styleManager->Initialize(qApp);
+    styleManager->initialize(qApp, engineRootPath);
 
     QDir engineRoot;
     AssetUtilities::ComputeAssetRoot(engineRoot);
@@ -198,7 +202,8 @@ bool GUIApplicationManager::Run()
     AzQtComponents::StyleManager::addSearchPaths(
         QStringLiteral("style"),
         engineRoot.filePath(QStringLiteral("Code/Tools/AssetProcessor/native/ui/style")),
-        QStringLiteral(":/AssetProcessor/style"));
+        QStringLiteral(":/AssetProcessor/style"),
+        engineRootPath);
 
     m_mainWindow = new MainWindow(this);
     auto wrapper = new AzQtComponents::WindowDecorationWrapper(
@@ -485,7 +490,7 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
             QVariant settingValue = loader.value("Game Projects/enabled_game_projects");
             QStringList compiledProjects = settingValue.toStringList();
 
-            if(compiledProjects.isEmpty())
+            if (compiledProjects.isEmpty())
             {
                 QByteArray byteArray;
                 QFile jsonFile;
@@ -497,12 +502,12 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
                 QJsonObject settingsObject = QJsonDocument::fromJson(byteArray).object();
                 QJsonArray projectsArray = settingsObject["Game Projects"].toArray();
 
-                if(!projectsArray.isEmpty())
+                if (!projectsArray.isEmpty())
                 {
                     auto projectObject = projectsArray[0].toObject();
                     QString projects = projectObject["default_value"].toString();
 
-                    if(!projects.isEmpty())
+                    if (!projects.isEmpty())
                     {
                         compiledProjects = projects.split(',');
                         usingDefaults = true;
@@ -515,13 +520,13 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
                 compiledProjects[i] = compiledProjects[i].trimmed();
             }
 
-            QString enabledProject = AssetUtilities::ComputeGameName();
+            QString enabledProject = AssetUtilities::ComputeProjectName();
 
-            if(!compiledProjects.contains(enabledProject))
+            if (!compiledProjects.contains(enabledProject))
             {
                 QString projectSourceLine;
 
-                if(usingDefaults)
+                if (usingDefaults)
                 {
                     projectSourceLine = QString("The currently compiled projects according to the defaults in %1 are '%2'").arg(defaultSettingsFile);
                 }
@@ -531,7 +536,6 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
                 }
 
                 projectSourceLine = projectSourceLine.arg(compiledProjects.join(", "));
-
                 friendlyErrorMessage = QString("An error occurred while loading gems.\n"
                     "The enabled game project is not in the list of compiled projects.\n"
                     "Please configure the enabled project to be compiled and rebuild or change the enabled project.\n"
@@ -539,13 +543,12 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
                     "%2\n"
                     "Full error text:\n"
                     "%3"
-                ).arg(enabledProject).arg(projectSourceLine).arg(message).arg(AssetUtilities::GameFolderOverrideParameter);
+                ).arg(enabledProject).arg(projectSourceLine).arg(message).arg(AssetUtilities::ProjectPathOverrideParameter);
             }
         }
 
-        if(friendlyErrorMessage.isEmpty())
+        if (friendlyErrorMessage.isEmpty())
         {
-            
             friendlyErrorMessage = QString("An error occurred while loading gems.\n"
                 "This can happen when new gems are added to a project, but those gems need to be built in order to function.\n"
                 "This can also happen when switching to a different project, one which uses gems which are not yet built.\n"
@@ -631,33 +634,17 @@ void GUIApplicationManager::CreateQtApplication()
     m_qApp = new QApplication(*m_frameworkApp.GetArgC(), *m_frameworkApp.GetArgV());
 }
 
-void GUIApplicationManager::DirectoryChanged(QString path)
+void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)
 {
-    AZ_UNUSED(path);
-    QDir devRoot = ApplicationManager::GetSystemRoot();
-    QString cacheRoot = devRoot.filePath("Cache");
-    if (!QDir(cacheRoot).exists())
+    QDir projectCacheRoot;
+    AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
+    if (!projectCacheRoot.exists() || !projectCacheRoot.exists("assetdb.sqlite"))
     {
-        //Cache directory is removed we need to restart
+        // If either the Cache directory or database file has been removed, we need to restart
         QTimer::singleShot(200, this, [this]()
         {
             QMetaObject::invokeMethod(this, "Restart", Qt::QueuedConnection);
         });
-    }
-    else
-    {
-        QDir projectCacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
-        QString assetDbPath = projectCacheRoot.filePath("assetdb.sqlite");
-
-        if (!QFile::exists(assetDbPath))
-        {
-            // even if cache directory exists but the the database file is missing we need to restart
-            QTimer::singleShot(200, this, [this]()
-            {
-                QMetaObject::invokeMethod(this, "Restart", Qt::QueuedConnection);
-            });
-        }
     }
 }
 
@@ -694,70 +681,6 @@ void GUIApplicationManager::FileChanged(QString path)
             {
                 QMetaObject::invokeMethod(this, "Restart", Qt::QueuedConnection);
             });
-        }
-    }
-    else if (AssetUtilities::NormalizeFilePath(path).endsWith("gems.json", Qt::CaseInsensitive))
-    {
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> oldGemsList = GetPlatformConfiguration()->GetGemsInformation();
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> newGemsList;
-        QDir assetRoot;
-        AssetUtilities::ComputeAssetRoot(assetRoot);
-        AzToolsFramework::AssetUtils::GetGemsInfo(GetSystemRoot().absolutePath().toUtf8().constData(), assetRoot.absolutePath().toUtf8().constData(), GetGameName().toUtf8().constData(), newGemsList);
-
-        for (auto oldGemIter = oldGemsList.begin(); oldGemIter != oldGemsList.end();)
-        {
-            bool gemMatch = false;
-            for (auto newGemIter = newGemsList.begin(); newGemIter != newGemsList.end();)
-            {
-                if (AzFramework::StringFunc::Equal(oldGemIter->m_identifier.c_str(), newGemIter->m_identifier.c_str()))
-                {
-                    gemMatch = true;
-                    newGemIter = newGemsList.erase(newGemIter);
-                    break;
-                }
-                newGemIter++;
-            }
-
-            if (gemMatch)
-            {
-                oldGemIter = oldGemsList.erase(oldGemIter);
-            }
-            else
-            {
-                oldGemIter++;
-            }
-        }
-
-        // oldGemslist should contain the list of gems that got removed and newGemsList should contain the list of gems that were added to the project
-        // if the project requires to be built again then we will quit otherwise we can restart
-        bool exitApp = false;
-        for (const AzToolsFramework::AssetUtils::GemInfo& gemInfo : newGemsList)
-        {
-            if (!gemInfo.m_assetOnly)
-            {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Gem %s was added to the project and require building. Quitting\n", gemInfo.m_gemName.c_str());
-                exitApp = true;
-            }
-        }
-
-        if (exitApp)
-        {
-            QuitRequested();
-        }
-        else
-        {
-            if (oldGemsList.size() || newGemsList.size())
-            {
-                if (oldGemsList.size())
-                {
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "Gem(s) were removed from the project. Restarting\n");
-                }
-                else if (newGemsList.size())
-                {
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "Assets only gem(s) were added to the project. Restarting\n");
-                }
-                QMetaObject::invokeMethod(this, "Restart", Qt::QueuedConnection);
-            }
         }
     }
 }

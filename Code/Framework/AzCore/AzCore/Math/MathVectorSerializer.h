@@ -51,4 +51,16 @@ namespace AZ
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
     };
+
+    class JsonQuaternionSerializer
+        : public BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(JsonQuaternionSerializer, "{18604375-3606-49AC-B366-0F6DF9149FF3}", BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+        JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            JsonDeserializerContext& context) override;
+        JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
+            const Uuid& valueTypeId, JsonSerializerContext& context) override;
+    };
 }

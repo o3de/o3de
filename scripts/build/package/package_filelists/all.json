@@ -9,6 +9,7 @@
         ".p4ignore": "#exclude",
         ".submodules": "#exclude",
         "**/*.pyc": "#exclude",
-        "**/*.pdb": "#exclude"
+        "**/*.pdb": "#exclude",
+        "build/*/packages/*/*.stamp": "#exclude"
     }
 }

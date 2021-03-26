@@ -42,11 +42,11 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AtomToolsFramework.Editor MODULE
+    NAME AtomToolsFramework.Editor GEM_MODULE
+
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
-    OUTPUT_NAME Gem.AtomToolsFramework.Editor.3e0ee0c27f204f5188146baac822d020.v0.1.0
     FILES_CMAKE
         atomtoolsframework_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -47,7 +47,7 @@ namespace AudioEngineWwiseGem
     protected:
         ////////////////////////////////////////////////////////////////////////
         // Audio::Gem::AudioEngineGemRequestBus interface implementation
-        bool Initialize(const SSystemInitParams* initParams) override;
+        bool Initialize() override;
         void Release() override;
         ////////////////////////////////////////////////////////////////////////
 

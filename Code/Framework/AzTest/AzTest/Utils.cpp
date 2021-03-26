@@ -16,6 +16,8 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -170,25 +172,15 @@ namespace AZ
 
         AZStd::string GetEngineRootPath()
         {
-            static const AZStd::string engineFile = AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "engineroot.txt";
-            AZStd::string currentPath = GetCurrentExecutablePath();
-            AZStd::string enginePath = currentPath + engineFile;
-            if (AZ::IO::SystemFile::Exists(enginePath.c_str()))
+            if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
             {
-                return currentPath;
+                return AZ::SettingsRegistryMergeUtils::FindEngineRoot(*registry).String();
             }
-            size_t lastPathSeparator = currentPath.find_last_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            while (lastPathSeparator != AZStd::string::npos)
+            else
             {
-                currentPath.erase(lastPathSeparator);
-                enginePath = currentPath + engineFile;
-                if (AZ::IO::SystemFile::Exists(enginePath.c_str()))
-                {
-                    return currentPath;
-                }
-                lastPathSeparator = currentPath.find_last_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
+                AZ::SettingsRegistryImpl localRegistry;
+                return AZ::SettingsRegistryMergeUtils::FindEngineRoot(localRegistry).String();
             }
-            return "";
         }
 
         AZStd::string ScopedAutoTempDirectory::Resolve(const char* path) const

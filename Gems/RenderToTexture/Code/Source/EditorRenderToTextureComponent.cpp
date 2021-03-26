@@ -230,7 +230,7 @@ namespace RenderToTexture
         return AZ::TICK_LAST;
     }
 
-    void EditorRenderToTextureComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void EditorRenderToTextureComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         // we can do this in the editor because it is single threaded
         Render(m_renderTargetHandle, m_config, GetEntityId());

@@ -32,7 +32,6 @@ ly_add_target(
 ly_add_target(
     NAME Metastream ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Metastream.c02d7efe05134983b5699d9ee7594c3a.v1.0.0
     FILES_CMAKE
         metastream_shared_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

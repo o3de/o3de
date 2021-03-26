@@ -15,6 +15,7 @@
 #include "AssetValidationTestShared.h"
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/Asset/AssetSeedList.h>
+#include <AzFramework/Gem/GemInfo.h>
 
 // Needs SPEC-2324
 #if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER 
@@ -29,25 +30,22 @@ bool AssetValidationTest::CreateDummyFile(const char* path, const char* seedFile
 
 TEST_F(AssetValidationTest, DefaultSeedList_ReturnsExpectedSeedLists)
 {
-    AZStd::vector<AssetValidation::AssetSeed::GemInfo> gemInfo;
+    AZStd::vector<AzFramework::GemInfo> gemInfo;
 
     AZStd::string gemSeedList, engineSeedList, projectSeedList;
 
-    ASSERT_TRUE(CreateDummyFile("mockGem", "seedList", "Mock Gem Seed List", gemSeedList));
+    ASSERT_TRUE(CreateDummyFile((AZ::IO::Path("mockGem") / AzFramework::GemInfo::GetGemAssetFolder()).c_str(), "seedList", "Mock Gem Seed List", gemSeedList));
     ASSERT_TRUE(CreateDummyFile("Engine", "SeedAssetList", "Engine Seed List", engineSeedList));
-    auto settingsRegistry = AZ::SettingsRegistry::Get();
-    ASSERT_NE(settingsRegistry, nullptr);
 
-    AZ::SettingsRegistryInterface::FixedValueString bootstrapProjectName;
-    auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-    settingsRegistry->Get(bootstrapProjectName, projectKey);
-    ASSERT_FALSE(bootstrapProjectName.empty());
-    ASSERT_TRUE(CreateDummyFile(bootstrapProjectName.c_str(), "SeedAssetList", "Project Seed List", projectSeedList));
+    AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
+    ASSERT_FALSE(projectName.empty());
+    ASSERT_TRUE(CreateDummyFile(projectName.c_str(), "SeedAssetList", "Project Seed List", projectSeedList));
 
-    AssetValidation::AssetSeed::GemInfo mockGem("MockGem", "mockGem", (m_tempDir / "mockGem").string().c_str(), "mockGem", true, false);
+    AzFramework::GemInfo mockGem("MockGem");
+    mockGem.m_absoluteSourcePaths.push_back((m_tempDir / "mockGem").string().c_str());
     gemInfo.push_back(mockGem);
 
-    AZStd::vector<AZStd::string> defaultSeedLists = GetDefaultSeedListFiles(gemInfo, AzFramework::PlatformFlags::Platform_PC);
+    AZStd::vector<AZStd::string> defaultSeedLists = AssetValidation::AssetSeed::GetDefaultSeedListFiles(gemInfo, AzFramework::PlatformFlags::Platform_PC);
 
     ASSERT_THAT(defaultSeedLists, ::testing::UnorderedElementsAre(gemSeedList, engineSeedList, projectSeedList));
 }

@@ -25,6 +25,7 @@ namespace AzFramework
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
+            serializeContext->Class<SpawnableSystemComponent, AZ::Component>();
             serializeContext->RegisterGenericType<AZ::Data::Asset<Spawnable>>();
         }
     }
@@ -62,7 +63,7 @@ namespace AzFramework
             else
             {
                 AZ_Warning("Spawnables", false, "No root spawnable assigned or root spawanble couldnt' be loaded.\n"
-                    "The root spawnable can be assigned in the Settings Registry under the key '$s'.\n", RootSpawnableRegistryKey);
+                    "The root spawnable can be assigned in the Settings Registry under the key '%s'.\n", RootSpawnableRegistryKey);
             }
 
             m_rootSpawnableInitialized = true;

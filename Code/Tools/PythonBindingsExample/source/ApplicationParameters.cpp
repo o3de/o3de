@@ -18,7 +18,7 @@ namespace PythonBindingsExample
     void ApplicationParameters::ShowHelp()
     {
         constexpr const char* helpText =
-R"(PythonBindingsExample - An example of how to bind the Behavior Context in a simple Tools Application
+            R"(PythonBindingsExample - An example of how to bind the Behavior Context in a simple Tools Application
 
 PythonBindingsExample.exe --file path/to/file.py --arg one --arg two
 --help Prints the help text
@@ -32,43 +32,42 @@ PythonBindingsExample.exe --file path/to/file.py --arg one --arg two
 
     bool ApplicationParameters::Parse(const AzFramework::CommandLine* commandLine)
     {
-        if (commandLine->GetSwitchList().empty())
+        if (commandLine->empty())
         {
             ShowHelp();
             return false;
         }
 
-        auto&& switchList = commandLine->GetSwitchList();
-        for (auto&& switchItem : switchList)
+        for (auto&& switchItem : *commandLine)
         {
-            if (switchItem.first == "help")
+            if (switchItem.m_option == "help")
             {
                 ShowHelp();
                 return false;
             }
-            else if (switchItem.first.starts_with('v'))
+            else if (switchItem.m_option.starts_with('v'))
             {
                 m_verbose = true;
             }
-            else if (switchItem.first.starts_with('f'))
+            else if (switchItem.m_option.starts_with('f'))
             {
-                m_pythonFilename = switchItem.second[0];
+                m_pythonFilename = switchItem.m_value;
             }
-            else if (switchItem.first.starts_with('a'))
+            else if (switchItem.m_option.starts_with('a'))
             {
-                m_pythonArgs.push_back(switchItem.second[0]);
+                m_pythonArgs.push_back(switchItem.m_value);
             }
-            else if (switchItem.first.starts_with('s'))
+            else if (switchItem.m_option.starts_with('s'))
             {
-                m_pythonStatement = switchItem.second[0];
+                m_pythonStatement = switchItem.m_value;
             }
-            else if (switchItem.first.starts_with('i'))
+            else if (switchItem.m_option.starts_with('i'))
             {
                 m_interactiveMode = true;
             }
             else
             {
-                AZ_Warning("python_app", false, "Unknown switch %s \n", switchItem.first.c_str());
+                AZ_Warning("python_app", false, "Unknown switch %s \n", switchItem.m_option.c_str());
             }
         }
         return true;

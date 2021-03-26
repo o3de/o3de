@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSNativeSDK_ios.cmake
     BuiltInPackages_ios.cmake
     expat_ios.cmake
     FreeType2_ios.cmake

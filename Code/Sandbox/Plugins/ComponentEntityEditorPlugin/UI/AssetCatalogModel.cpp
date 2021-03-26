@@ -29,6 +29,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -458,7 +459,10 @@ void AssetCatalogModel::LoadDatabase()
     clear();
 
     AZStd::string assetRootFolder;
-    EBUS_EVENT_RESULT(assetRootFolder, AzFramework::ApplicationRequests::Bus, GetAssetRoot);
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(assetRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+    }
     m_rootPath = assetRootFolder.c_str();
 
     auto startCB = []() {};
