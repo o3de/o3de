@@ -64,8 +64,8 @@ If you have the Git credential manager core installed, you should not be prompte
 3.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
     - FBXSDK should be installed to `<3rdParty path>\FbxSdk\2016.1.2-az.1`. See the README in this folder for details
-    - WWise should be installed to: `<3rdPartyPath>\Wwise\2019.2.8.7432`
-    - CMake should be installed to: `<3rdPartyPath>\CMake\3.19.1`
+    - WWise should be installed to: `<3rdParty Path>\Wwise\2019.2.8.7432`
+    - CMake should be installed to: `<3rdParty Path>\CMake\3.19.1`
 4.  Add the following environment variables through the command line
     ```
     set LY_3RDPARTY_PATH=<Location of the unzipped 3rdParty zip>
@@ -74,7 +74,7 @@ If you have the Git credential manager core installed, you should not be prompte
     
 5.  Configure the source into a solution using this command line, replacing <your build location> to a path you've created
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting -DLY_MONOLITHIC_GAME=1
+    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting -DLY_MONOLITHIC_GAME=1
     ```
 
 6.  Alternatively, you can do this through the CMake GUI:
@@ -100,7 +100,7 @@ If you have the Git credential manager core installed, you should not be prompte
     ```
 2.  Once you're ready to build the project, run the same set of commands to configure and build:
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH%" -DLY_PROJECTS=<New project name> -DLY_MONOLITHIC_GAME=1
+    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_PROJECTS=<New project name> -DLY_MONOLITHIC_GAME=1
 
     cmake --build <your build location> --target <New Project Name> --config profile -- /m
     ```
