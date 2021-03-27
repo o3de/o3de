@@ -114,9 +114,11 @@ def RegexMatcher(str, regex) {
     return matcher ? matcher.group(1) : null
 }
 
-def LoadPipelineConfig(String pipelineName, String branchName) {
+def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
     echo 'Loading pipeline config'
-    PullFilesFromGit(PIPELINE_CONFIG_FILE, branchName)
+    if (scmType == 'codecommit') {
+        PullFilesFromGit(PIPELINE_CONFIG_FILE, branchName)
+    }
     def pipelineConfig = {}
     pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
     palRm(PIPELINE_CONFIG_FILE)
@@ -129,7 +131,9 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
             platform_regex = platform_regex.replace('/','\\\\')
         }
         echo "Downloading platform pipeline configs ${pipeline_config}"
-        PullFilesFromGit(pipeline_config, branchName)
+        if (scmType == 'codecommit') {
+            PullFilesFromGit(pipeline_config, branchName)
+        }
         echo "Searching platform pipeline configs in ${pipeline_config} using ${platform_regex}"
         for (pipeline_config_path in findFiles(glob: pipeline_config)) {
             echo "\tFound platform pipeline config ${pipeline_config_path}"
@@ -149,7 +153,9 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
             platform_regex = platform_regex.replace('/','\\\\')
         }
         echo "Downloading configs ${build_config}"
-        PullFilesFromGit(build_config, branchName)
+        if (scmType == 'codecommit') {
+            PullFilesFromGit(build_config, branchName)
+        }
         echo "Searching configs in ${build_config} using ${platform_regex}"
         for (build_config_path in findFiles(glob: build_config)) {
             echo "\tFound config ${build_config_path}"
@@ -157,17 +163,19 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
             if(platform) {
                 pipelineConfig.platforms[platform].build_types = readJSON file: build_config_path.toString()
             }
-            palRm(build_config_path.toString())
         }
     }
     return pipelineConfig
 }
 
-def GetPipelineRegion() {
+def GetSCMType() {
     def gitUrl = scm.getUserRemoteConfigs()[0].getUrl()
-    def gitUrlList = gitUrl.tokenize('.') as String[]
-    def pipelineRegion = gitUrlList[1]
-    return pipelineRegion
+    if (gitUrl ==~ /https:\/\/git-codecommit.*/) {
+        return 'codecommit'
+    } else if (gitUrl ==~ /https:\/\/github.com.*/) {
+        return 'github'
+    }
+    return 'unknown'
 }
 
 def GetBuildEnvVars(Map platformEnv, Map buildTypeEnv, String pipelineName) {
@@ -186,6 +194,28 @@ def GetBuildEnvVars(Map platformEnv, Map buildTypeEnv, String pipelineName) {
         envVarMap[var.key] = var.value 
     }
     return envVarMap
+}
+
+def CheckoutBootstrapScripts(String branchName) {
+    checkout([$class: "GitSCM",
+            branches: [[name: "*/${branchName}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+            [
+                $class: "SparseCheckoutPaths",
+                sparseCheckoutPaths: [
+                [ $class: "SparseCheckoutPath", path: "AutomatedReview/" ],
+                [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
+                [ $class: "SparseCheckoutPath", path: "Tools/build/JenkinsScripts/build/Platform" ]
+                ]
+            ],
+            [
+                $class: "CloneOption", depth: 1, noTags: false, reference: "", shallow: true
+            ]
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: scm.userRemoteConfigs
+        ])
 }
 
 def GetEnvStringList(Map envVarMap) {
@@ -280,7 +310,18 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     }
 }
 
+def SetLfsCredentials(cmd, lbl = '') {
+    if (env.IS_UNIX) {
+        sh label: lbl,
+           script: cmd
+    } else { 
+        bat label: lbl,
+            script: cmd
+    }
+}
+
 def CheckoutRepo(boolean disableSubmodules = false) {
+    palSh('git lfs uninstall', 'Git LFS Uninstall')  // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
@@ -292,7 +333,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
         if(fileExists(indexLockFile)) { // if it is still there, remove it
             palRm(indexLockFile)
         }
-        palSh('git remote prune origin', 'Git reset')
     }
 
     def random = new Random()
@@ -326,6 +366,13 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             ]
         }
     }
+
+    // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
+    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
+        SetLfsCredentials("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials')
+    }
+    palSh('git lfs install', 'Git LFS Install')
+    palSh('git lfs pull', 'Git LFS Pull')
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
     palSh('git rev-parse HEAD > commitid', 'Getting commit id')
@@ -475,7 +522,6 @@ def CreateTeardownStage(Map environmentVars) {
 }
 
 def pipelineName = ''
-def pipelineRegion = ''
 def branchName = ''
 def pipelineConfig = {}
 
@@ -490,7 +536,7 @@ try {
             withEnv(envVarList) {
                 timestamps {
                     pipelineName = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-                    pipelineRegion = GetPipelineRegion()
+                    scmType = GetSCMType()
 
                     if(env.BRANCH_NAME) {
                         branchName = env.BRANCH_NAME
@@ -500,10 +546,14 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running \"${pipelineName}\" for \"${branchName}\", region: \"${pipelineRegion}\"..."
+                    echo "Running \"${pipelineName}\" for \"${branchName}\"..."
+
+                    if (scmType == 'github') {
+                        CheckoutBootstrapScripts(branchName)
+                    }
 
                     // Load configs
-                    pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
+                    pipelineConfig = LoadPipelineConfig(pipelineName, branchName, scmType)
      
                     // Add each platform as a parameter that the user can disable if needed
                     pipelineConfig.platforms.each { platform ->
@@ -513,7 +563,9 @@ try {
                     properties(pipelineProperties)
 
                     // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it
-                    PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName)
+                    if (scmType == 'codecommit') {
+                        PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName)
+                    }
                     stash name: 'incremental_build_script',
                           includes: INCREMENTAL_BUILD_SCRIPT_PATH
                  }    
@@ -540,7 +592,7 @@ try {
                 def nodeLabel = envVars['NODE_LABEL']
 
                 buildConfigs["${platform.key} [${build_job.key}]"] = { 
-                    node("${nodeLabel}-${pipelineRegion}") {
+                    node("${nodeLabel}") {
                         if(isUnix()) { // Has to happen inside a node
                             envVars['IS_UNIX'] = 1
                         }                 
