@@ -163,7 +163,6 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
             if(platform) {
                 pipelineConfig.platforms[platform].build_types = readJSON file: build_config_path.toString()
             }
-            palRm(build_config_path.toString())
         }
     }
     return pipelineConfig
@@ -311,7 +310,18 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     }
 }
 
+def SetLfsCredentials(cmd, lbl = '') {
+    if (env.IS_UNIX) {
+        sh label: lbl,
+           script: cmd
+    } else { 
+        bat label: lbl,
+            script: cmd
+    }
+}
+
 def CheckoutRepo(boolean disableSubmodules = false) {
+    palSh('git lfs uninstall', 'Git LFS Uninstall')  // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
