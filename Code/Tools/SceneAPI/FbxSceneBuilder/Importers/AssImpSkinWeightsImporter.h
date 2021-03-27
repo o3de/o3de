@@ -59,11 +59,10 @@ namespace AZ
             protected:
                 struct Pending
                 {
-                    aiBone* m_bone = nullptr;
+                    const aiBone* m_bone = nullptr;
                     unsigned m_numVertices = 0;
                     AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> m_skinWeightData;
                 };
-                AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> BuildSkinWeightData(aiBone* bone, unsigned numVertices);
 
                 //! List of skin weights that still need to be filled in. Setting the data for skin weights is
                 //! delayed until after the tree has been fully constructed as bones are linked by name, but until

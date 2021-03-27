@@ -26,7 +26,7 @@ namespace ProjectSettingsTool
             : m_projectName("")
             , m_productName("")
             , m_executableName("")
-            , m_sysGameFolder("")
+            , m_projectPath("")
             , m_sysDllGame("")
             , m_projectOutputFolder("")
             , m_codeFolder("")
@@ -37,7 +37,7 @@ namespace ProjectSettingsTool
         AZStd::string m_projectName;
         AZStd::string m_productName;
         AZStd::string m_executableName;
-        AZStd::string m_sysGameFolder;
+        AZStd::string m_projectPath;
         AZStd::string m_sysDllGame;
         AZStd::string m_projectOutputFolder;
         AZStd::string m_codeFolder;

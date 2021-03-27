@@ -23,6 +23,16 @@ if(LY_UNITY_BUILD AND NOT PAL_TRAIT_BUILD_UNITY_SUPPORTED)
     message(ERROR "LY_UNITY_BUILD is specified, but not supported for the current target platform")
 endif()
 
+define_property(TARGET PROPERTY GEM_MODULE
+    BRIEF_DOCS "Defines a MODULE library as a Gem"
+    FULL_DOCS [[
+        Property which is set on targets that should be seen as gems
+        This is used to determine whether this target should load as
+        when used as a runtime dependency should load at the same time
+        as its dependee
+    ]]
+)
+
 
 #! ly_add_target: adds a target and provides parameters for the common configurations.
 #
@@ -39,6 +49,7 @@ endif()
 # \arg:STATIC (bool) defines this target to be a static library
 # \arg:SHARED (bool) defines this target to be a dynamic library
 # \arg:MODULE (bool) defines this target to be a module library
+# \arg:GEM_MODULE (bool) defines this target to be a module library while also marking the target as a "Gem" via the GEM_MODULE property
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
@@ -64,7 +75,7 @@ endif()
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE HEADERONLY EXECUTABLE APPLICATION AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -76,6 +87,11 @@ function(ly_add_target)
     endif()
     if(NOT ly_add_target_FILES_CMAKE)
         message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+    endif()
+
+    # If the GEM_MODULE tag is passed set the normal MODULE argument
+    if(ly_add_target_GEM_MODULE)
+        set(ly_add_target_MODULE ${ly_add_target_GEM_MODULE})
     endif()
 
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
@@ -176,6 +192,10 @@ function(ly_add_target)
 
     endif()
 
+    if(ly_add_target_GEM_MODULE)
+        set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
+    endif()
+
     if (ly_add_target_INCLUDE_DIRECTORIES)
         target_include_directories(${ly_add_target_NAME}
             ${ly_add_target_INCLUDE_DIRECTORIES}
@@ -225,7 +245,15 @@ function(ly_add_target)
     ly_source_groups_from_folders("${ALLFILES}")
     source_group("Generated Files" REGULAR_EXPRESSION "(${CMAKE_BINARY_DIR})") # Any file coming from the output folder
     file(RELATIVE_PATH project_path ${LY_ROOT_FOLDER} ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(TARGET ${project_NAME} PROPERTY FOLDER ${project_path})
+    # Visual Studio cannot load a project with a FOLDER that starts with a "../" relative path
+    # Strip away any leading ../ and then add a prefix of ExternalTargets/ as that in this scenario
+    # A relative directory with ../ would be outside of the Lumberyard Engine Root therefore it is external
+    set(ide_path ${project_path})
+    if (${project_path} MATCHES [[^(\.\./)+(.*)]])
+        set(ide_path "${CMAKE_MATCH_2}")
+    endif()
+    set_property(TARGET ${project_NAME} PROPERTY FOLDER ${ide_path})
+
 
     if(ly_add_target_RUNTIME_DEPENDENCIES)
         ly_parse_third_party_dependencies("${ly_add_target_RUNTIME_DEPENDENCIES}")
@@ -556,66 +584,6 @@ function(ly_add_target_files)
             set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${file}\n${ly_add_target_files_OUTPUT_SUBDIRECTORY}")
         endforeach()
 
-    endforeach()
-
-endfunction()
-
-
-#! ly_add_translations: adds translations (ts) to a target.
-#
-# This wrapper will generate a qrc file with those translations and add the files under "prefix" and add them to
-# the indicated targets. These files will be added under the "Generated Files" filter
-#
-# \arg:TARGETS name of the targets that the translations will be added to
-# \arg:PREFIX prefix where the translation will be located within the qrc file
-# \arg:FILES translation files to add
-#
-function(ly_add_translations)
-
-    set(options)
-    set(oneValueArgs PREFIX)
-    set(multiValueArgs TARGETS FILES)
-
-    cmake_parse_arguments(ly_add_translations "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input arguments
-    if(NOT ly_add_translations_TARGETS)
-        message(FATAL_ERROR "You must provide at least one target")
-    endif()
-    if(NOT ly_add_translations_FILES)
-        message(FATAL_ERROR "You must provide at least a translation file")
-    endif()
-
-    qt5_add_translation(TRANSLATED_FILES ${ly_add_translations_FILES})
-
-    set(qrc_file_contents 
-"<RCC>
-    <qresource prefix=\"/${ly_add_translations_PREFIX}\">
-")
-    foreach(file ${TRANSLATED_FILES})
-        get_filename_component(filename ${file} NAME)
-        string(APPEND qrc_file_contents "        <file>${filename}</file>
-")
-    endforeach()
-    string(APPEND qrc_file_contents "    </qresource>
-</RCC>
-")
-    set(qrc_file_path ${CMAKE_CURRENT_BINARY_DIR}/i18n_${ly_add_translations_PREFIX}.qrc)
-    file(WRITE 
-        ${qrc_file_path}
-        ${qrc_file_contents}
-    )
-    set_source_files_properties(
-            ${TRANSLATED_FILES}
-            ${qrc_file_path}
-        PROPERTIES 
-            GENERATED TRUE
-            SKIP_AUTORCC TRUE
-    )
-    qt5_add_resources(RESOURCE_FILE ${qrc_file_path})
-
-    foreach(target ${ly_add_translations_TARGETS})
-        target_sources(${target} PRIVATE "${TRANSLATED_FILES};${qrc_file_path};${RESOURCE_FILE}")
     endforeach()
 
 endfunction()

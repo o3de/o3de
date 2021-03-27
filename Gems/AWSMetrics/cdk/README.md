@@ -52,7 +52,7 @@ to use for environment variables.
 ## Bootstrap the environment
 An environment needs to be bootstrapped since this CDK application uses assets like a local directory that contains the handler code for the AWS Lambda functions.
 
-Use the following cdk bootstrap command to bootstrap one or more AWS environments.
+Use the following CDK bootstrap command to bootstrap one or more AWS environments.
 
 ```
 cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1 aws://ACCOUNT-NUMBER-2/REGION-2 ...
@@ -68,8 +68,32 @@ $ cdk synth
 ```
 
 To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
+them to your `requirements.txt` file and rerun the `pip install -r requirements.txt`
 command.
+
+## Deploy the project
+To deploy the CDK application, use the following CLI command:
+
+```
+$ cdk deploy
+```
+
+## Enable the optional batch processing feature
+You can optionally enable the batch processing feature by specifying the context variable like below:
+
+```
+$ cdk synth -c batch_processing=true
+$ cdk deploy -c batch_processing=true
+```
+
+This will deploy the AWS resources required by the batch processing feature and bring additional cost.
+
+To disable the feature and remove related AWS resources, you need to empty the deployed S3 bucket manually and run the normal CDK CLI commands for updating the CDK application:
+
+```
+$ cdk synth
+$ cdk deploy
+```
 
 ## Useful commands
 

@@ -16,6 +16,8 @@
 #include <AzCore/base.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -24,9 +26,6 @@ namespace AZ
 {
     namespace Utils
     {
-        // Common cross platform Utils go here
-        inline constexpr size_t MaxPathLength = 1024;
-
         //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
         //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
         inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
@@ -77,10 +76,22 @@ namespace AZ
         //! @returns a result object that indicates if the executable directory was able to be stored within the buffer
         ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
 
+        //! Retrieves the full path to the engine from settings registry
+        AZ::IO::FixedMaxPathString GetEnginePath();
+
+        //! Retrieves the full path to the project from settings registry
+        AZ::IO::FixedMaxPathString GetProjectPath();
+
+        //! Retrieves the project name from the settings registry
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectName();
+
+        //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
+        AZ::IO::FixedMaxPathString GetEngineManifestPath();
+
         //! Retrieves the App root path to use on the current platform
         //! If the optional is not engaged the AppRootPath should be calculated based
         //! on the location of the bootstrap.cfg file
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
 
         //! Retrieves the development write storage path to use on the current platform, may be considered
         //! temporary or cache storage
@@ -88,7 +99,7 @@ namespace AZ
 
         // Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
-        AZStd::optional<AZStd::fixed_string<MaxPathLength>> ConvertToAbsolutePath(AZStd::string_view path);
+        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
 
         //! Save a string to a file. Otherwise returns a failure with error message.
         AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);

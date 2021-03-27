@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME Maestro ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Maestro.3b9a978ed6f742a1acb99f74379a342c.v0.1.0
     FILES_CMAKE
         maestro_files.cmake
     INCLUDE_DIRECTORIES
@@ -42,13 +41,15 @@ ly_add_target(
             Legacy::CryCommon
             Gem::Maestro.Static
             Gem::LmbrCentral
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Maestro.Editor MODULE
+        NAME Maestro.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Maestro.Editor.3b9a978ed6f742a1acb99f74379a342c.v0.1.0
         FILES_CMAKE
             maestro_files.cmake
             maestro_editor_files.cmake
@@ -70,6 +71,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Maestro.Static
                 Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 endif()
 

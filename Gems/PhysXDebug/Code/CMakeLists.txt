@@ -25,7 +25,6 @@ endif()
 ly_add_target(
     NAME PhysXDebug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.PhysXDebug.516145e2d9904b13813f1b54605e26a6.v0.1.0
     FILES_CMAKE
         ${physx_files}
     INCLUDE_DIRECTORIES
@@ -40,13 +39,16 @@ ly_add_target(
             Gem::PhysX
             Gem::ImGui.imguilib
             Gem::ImGui
+    RUNTIME_DEPENDENCIES
+        Gem::PhysX
+        Gem::ImGui
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME PhysXDebug.Editor MODULE
+        NAME PhysXDebug.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.PhysXDebug.Editor.516145e2d9904b13813f1b54605e26a6.v0.1.0
         FILES_CMAKE
             ${physx_editor_files}
         COMPILE_DEFINITIONS
@@ -66,5 +68,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::PhysX
                 Gem::ImGui.imguilib
                 Gem::ImGui
+        RUNTIME_DEPENDENCIES
+            Gem::PhysX.Editor
+            Gem::ImGui.Editor
     )
 endif()

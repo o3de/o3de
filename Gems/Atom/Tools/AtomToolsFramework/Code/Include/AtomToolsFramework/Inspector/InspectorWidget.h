@@ -58,7 +58,7 @@ namespace AtomToolsFramework
             const AZStd::string& groupNameId,
             const AZStd::string& groupDisplayName,
             const AZStd::string& groupDescription,
-            InspectorGroupWidget* groupWidget) override;
+            QWidget* groupWidget) override;
 
         void RefreshGroup(const AZStd::string& groupNameId) override;
         void RebuildGroup(const AZStd::string& groupNameId) override;

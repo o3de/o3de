@@ -15,7 +15,6 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -23,6 +22,7 @@
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Driller/RemoteDrillerInterface.h>
@@ -38,17 +38,11 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
+#include <AzCore/Jobs/Algorithms.h>
 
 namespace AssetBundler
 {
     const char compareVariablePrefix = '$';
-
-    GemInfo::GemInfo(AZStd::string name, AZStd::string relativeFilePath, AZStd::string absoluteFilePath)
-        : m_gemName(name)
-        , m_relativeFilePath(relativeFilePath)
-        , m_absoluteFilePath(absoluteFilePath)
-    {
-    }
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv)
         : AzToolsFramework::ToolsApplication(argc, argv)
@@ -123,40 +117,20 @@ namespace AssetBundler
         }
         m_showVerboseOutput = ShouldPrintVerbose(parser);
 
-        ComputeEngineRoot();
+        m_currentProjectName = AZStd::string_view{ AZ::Utils::GetProjectName() };
 
-        const char* devRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(devRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        if (devRoot)
+        if (m_currentProjectName.empty())
         {
-            AZ_TracePrintf(AssetBundler::AppWindowNameVerbose, "Setting devroot alias to ( %s ).\n", devRoot);
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@devroot@", devRoot);
-        }
-
-        AZStd::string platformName(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
-        AZStd::string assetsAlias;
-        AZStd::string assetCatalogFile;
-
-        AZ::Outcome<void, AZStd::string> result = AssetBundler::ComputeAssetAliasAndGameName(platformName, assetCatalogFile, assetsAlias, m_currentProjectName);
-        if (!result.IsSuccess())
-        {
-            AZ_Error(AppWindowName, false, result.GetError().c_str());
+            AZ_Error(AppWindowName, false, "Unable to retrieve project name from the Settings Registry");
             return false;
         }
 
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
         // Gems
-        if (!AzToolsFramework::AssetUtils::GetGemsInfo(g_cachedEngineRoot, appRoot, m_currentProjectName.c_str(), m_gemInfoList))
+        if (!AzFramework::GetGemsInfo(m_gemInfoList, *m_settingsRegistry))
         {
             AZ_Error(AppWindowName, false, "Failed to read Gems for project: %s\n", m_currentProjectName.c_str());
             return false;
         }
-
-        // @assets@ alias
-        AZ_TracePrintf(AssetBundler::AppWindowNameVerbose, "Setting asset alias to ( %s ).\n", assetsAlias.c_str());
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetsAlias.c_str());
 
         m_platformCatalogManager = AZStd::make_unique<AzToolsFramework::PlatformAddressedAssetCatalogManager>();
 
@@ -1304,13 +1278,18 @@ namespace AssetBundler
 
     AZ::Outcome<void, AZStd::string> ApplicationManager::ValidateInputArgs(const AzFramework::CommandLine* parser, const AZStd::vector<const char*>& validArgList)
     {
-        for (const auto& paramInfo : parser->GetSwitchList())
+        for (const auto& paramInfo : *parser)
         {
+            // Skip positional arguments
+            if (paramInfo.m_option.empty())
+            {
+                continue;
+            }
             bool isValidArg = false;
 
             for (const auto& validArg : validArgList)
             {
-                if (AzFramework::StringFunc::Equal(paramInfo.first.c_str(), validArg))
+                if (AzFramework::StringFunc::Equal(paramInfo.m_option, validArg))
                 {
                     isValidArg = true;
                     break;
@@ -1319,7 +1298,7 @@ namespace AssetBundler
 
             if (!isValidArg)
             {
-                return AZ::Failure(AZStd::string::format("Invalid command: \"--%s\" is not a valid argument for this sub-command.", paramInfo.first.c_str()));
+                return AZ::Failure(AZStd::string::format("Invalid command: \"--%s\" is not a valid argument for this sub-command.", paramInfo.m_option.c_str()));
             }
         }
 
@@ -1407,7 +1386,7 @@ namespace AssetBundler
         const char* appRoot = nullptr;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
 
-        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(g_cachedEngineRoot, appRoot, m_currentProjectName.c_str());
+        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(GetEngineRoot(), appRoot, AZ::Utils::GetProjectPath().c_str());
         auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
 
         AZ_TracePrintf(AppWindowName, "No platform specified, defaulting to platforms ( %s ).\n", platformsString.c_str());
@@ -1573,7 +1552,8 @@ namespace AssetBundler
         // Add Default Seed List Files
         if (params.m_addDefaultSeedListFiles)
         {
-            AZStd::unordered_map<AZStd::string, AZStd::string> defaultSeedListFiles = GetDefaultSeedListFiles(AssetBundler::g_cachedEngineRoot, m_currentProjectName.c_str(), m_gemInfoList, params.m_platformFlags);
+            AZStd::unordered_map<AZStd::string, AZStd::string> defaultSeedListFiles = GetDefaultSeedListFiles(GetEngineRoot(), AZ::Utils::GetProjectPath(),
+                m_gemInfoList, params.m_platformFlags);
             if (defaultSeedListFiles.empty())
             {
                 // Error has already been thrown
@@ -1590,7 +1570,7 @@ namespace AssetBundler
                 }
             }
 
-            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AssetBundler::g_cachedEngineRoot, m_currentProjectName.c_str());
+            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(GetEngineRoot(), AZ::Utils::GetProjectPath(), m_currentProjectName);
             if (defaultSeeds.empty())
             {
                 // Error has already been thrown
@@ -1830,9 +1810,9 @@ namespace AssetBundler
 
         bool hasError = false;
 
-        for (const AZStd::string_view& platformName : AzFramework::PlatformHelper::GetPlatformsInterpreted(paramsOutcome.GetValue().m_platformFlags))
+        for (AZStd::string platformName : AzFramework::PlatformHelper::GetPlatformsInterpreted(paramsOutcome.GetValue().m_platformFlags))
         {
-            AZ_TracePrintf(AssetBundler::AppWindowName, "Running Compare command for the %.*s platform...\n", aznumeric_cast<int>(platformName.size()), platformName.data());
+            AZ_TracePrintf(AssetBundler::AppWindowName, "Running Compare command for the %s platform...\n", platformName.c_str());
 
             ComparisonParams params = paramsOutcome.GetValue();
             AddPlatformToAllComparisonParams(params, platformName);
@@ -2687,7 +2667,7 @@ namespace AssetBundler
             AZ_Printf(AppWindowName, "          \"path\" - This refers to an Engine-Root-Relative path.\n");
             AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\SamplesProject\\test.txt\" can be represented as \"SamplesProject\\test.txt\".\n");
             AZ_Printf(AppWindowName, "    \"cache path\" - This refers to a Cache-Relative path.\n");
-            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\Cache\\SamplesProject\\pc\\samplesproject\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
+            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\SamplesProject\\Cache\\pc\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
             AZ_Printf(AppWindowName, "\n");
 
             OutputHelpSeeds();
@@ -2718,7 +2698,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Removes the asset from the list of root assets for the specified platform.\n", RemoveSeedArg);
         AZ_Printf(AppWindowName, "%-31s---To completely remove the asset, it must be removed for all platforms.\n", "");
-        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"...\\dev\\Cache\\ProjectName\\platform\\projectname\\\"\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"ProjectPath\\Cache\\platform\\\"\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Adds the specified platform to every Seed in the Seed List file, if possible.\n", AddPlatformToAllSeedsFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Removes the specified platform from every Seed in the Seed List file, if possible.\n", RemovePlatformFromAllSeedsFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Seed List file after performing any specified operations.\n", PrintFlag);
@@ -2730,7 +2710,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Allows input file path to still match if the file path case is different than on disk.\n", IgnoreFileCaseFlag);
         AZ_Printf(AppWindowName, "    --%-25s-[Testing] Specifies the Asset Catalog file referenced by all Seed operations.\n", AssetCatalogFileArg);
         AZ_Printf(AppWindowName, "%-31s---Designed to be used in Unit Tests.\n", "");
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpAssetLists()
@@ -2740,7 +2720,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the Asset List file to operate on by path. Must include (.%s) file extension.\n", AssetListFileArg, AssetSeedManager::GetAssetListFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the Seed List file(s) that will be used as root(s) when generating this Asset List file.\n", SeedListFileArg);
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the Seed(s) to use as root(s) when generating this Asset List File.\n", AddSeedArg);
-        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"...\\dev\\Cache\\ProjectName\\platform\\projectname\\\"\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"ProjectPath\\Cache\\platform\\\"\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-The specified files and all dependencies will be ignored when generating the Asset List file.\n", SkipArg);
         AZ_Printf(AppWindowName, "%-31s---Takes in a comma-separated list of either: cache paths to pre-processed assets, or wildcard patterns.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Automatically include all default Seed List files in generated Asset List File.\n", AddDefaultSeedListFilesFlag);
@@ -2754,7 +2734,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Run all input commands, without saving to the specified Asset List file.\n", DryRunFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Generates a human-readable file that maps every entry in the Asset List file to the Seed that generated it.\n", GenerateDebugFileFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Allow destructive overwrites of files. Include this arg in automation.\n", AllowOverwritesFlag);
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpComparisonRules()
@@ -2781,7 +2761,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-The Token name of the Comparison Step you wish to use as the second input of this Comparison Step.\n", ComparisonSecondInputArg);
         AZ_Printf(AppWindowName, "%-31s---Comparison Steps of the ( FilePattern ) type only accept one input Token, and cannot be used with this arg.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Comparison Rules file after performing any specified operations.\n", PrintFlag);
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpCompare()
@@ -2813,7 +2793,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---All input Asset List files must exist for all specified platforms\n", "");
         AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Allow destructive overwrites of files. Include this arg in automation.\n", AllowOverwritesFlag);
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpBundleSettings()
@@ -2829,7 +2809,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) referenced by all Bundle Settings operations.\n", PlatformArg);
         AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Bundle Settings file after modifying any specified values.\n", PrintFlag);
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpBundles()
@@ -2846,7 +2826,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) that will be referenced when generating Bundles.\n", PlatformArg);
         AZ_Printf(AppWindowName, "%-31s---If no platforms are specified, Bundles will be generated for all available platforms.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Allow destructive overwrites of files. Include this arg in automation.\n", AllowOverwritesFlag);
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     void ApplicationManager::OutputHelpBundleSeed()
@@ -2854,7 +2834,7 @@ namespace AssetBundler
         using namespace AzToolsFramework;
         AZ_Printf(AppWindowName, "\n%-25s-Subcommand for generating bundles directly from seeds. Must provide either (--%s) or (--%s).\n", BundleSeedCommand, BundleSettingsFileArg, OutputBundlePathArg);
         AZ_Printf(AppWindowName, "    --%-25s-Adds the asset to the list of root assets for the specified platform.\n", AddSeedArg);
-        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"...\\dev\\Cache\\ProjectName\\platform\\projectname\\\"\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"ProjectPath\\Cache\\platform\\\"\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the Bundle Settings file to operate on by path. Must include (.%s) file extension.\n", BundleSettingsFileArg, AssetBundleSettings::GetBundleSettingsFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Sets the path where generated Bundles will be stored. Must include (.%s) file extension.\n", OutputBundlePathArg, AssetBundleSettings::GetBundleFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Determines which version of Lumberyard Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
@@ -2865,7 +2845,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Allow destructive overwrites of files. Include this arg in automation.\n", AllowOverwritesFlag);
         AZ_Printf(AppWindowName, "    --%-25s-[Testing] Specifies the Asset Catalog file referenced by all Bundle operations.\n", AssetCatalogFileArg);
         AZ_Printf(AppWindowName, "%-31s---Designed to be used in Unit Tests.\n", "");
-        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootsrap.cfg's sys_game_folder.\n", ProjectArg);
+        AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

@@ -55,8 +55,6 @@ public:
         int());
     MOCK_METHOD0(GetLogicalCPUCount,
         int());
-    MOCK_CONST_METHOD0(GetAssetsPlatform,
-        const char*());
     MOCK_CONST_METHOD0(GetRenderingDriverName,
         const char*());
     MOCK_METHOD1(DumpMemoryUsageStatistics,
@@ -206,22 +204,6 @@ public:
         bool());
     MOCK_METHOD3(SetFrameProfiler,
         void(bool on, bool display, char* prefix));
-    MOCK_METHOD2(StartLoadingSectionProfiling,
-        struct SLoadingTimeContainer*(CLoadingTimeProfiler * pProfiler, const char* szFuncName));
-    MOCK_METHOD1(EndLoadingSectionProfiling,
-        void(CLoadingTimeProfiler * pProfiler));
-    MOCK_METHOD2(StartBootSectionProfiler,
-        CBootProfilerRecord * (const char* name, const char* args));
-    MOCK_METHOD1(StopBootSectionProfiler,
-        void(CBootProfilerRecord * record));
-    MOCK_METHOD1(StartBootProfilerSessionFrames,
-        void(const char* pName));
-    MOCK_METHOD0(StopBootProfilerSessionFrames,
-        void());
-    MOCK_METHOD0(OutputLoadingTimeStats,
-        void());
-    MOCK_METHOD0(GetLoadingProfilerCallstack,
-        const char*());
     MOCK_METHOD0(GetFileVersion,
         const SFileVersion&());
     MOCK_METHOD0(GetProductVersion,

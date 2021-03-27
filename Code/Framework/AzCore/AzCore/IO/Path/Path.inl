@@ -1035,7 +1035,7 @@ namespace AZ::IO
         // move the parser from the end to a valid filename by decrementing
         for(--pathParserEnd, --patternParserEnd; pathParserEnd && patternParserEnd; --pathParserEnd, --patternParserEnd)
         {
-            if (!AZStd::wildcard_match(*patternParserEnd, *pathParserEnd))
+            if (!AZStd::wildcard_match_case(*patternParserEnd, *pathParserEnd))
             {
                 return false;
             }
@@ -1830,9 +1830,9 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    [[nodiscard]] constexpr bool BasicPath<StringType>::IsRelativeTo() const
+    [[nodiscard]] constexpr bool BasicPath<StringType>::IsRelativeTo(const PathView& base) const
     {
-        return static_cast<PathView>(*this).IsRelative();
+        return static_cast<PathView>(*this).IsRelativeTo(base);
     }
 
     template <typename StringType>

@@ -121,6 +121,7 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
     }
     def pipelineConfig = {}
     pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
+    palRm(PIPELINE_CONFIG_FILE)
     pipelineConfig.platforms = EMPTY_JSON
 
     // Load the pipeline configs per platform
@@ -141,6 +142,7 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
                 pipelineConfig.platforms[platform] = EMPTY_JSON
                 pipelineConfig.platforms[platform].PIPELINE_ENV = readJSON file: pipeline_config_path.toString()
             }
+            palRm(pipeline_config_path.toString())
         }
     }
 
@@ -161,6 +163,7 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
             if(platform) {
                 pipelineConfig.platforms[platform].build_types = readJSON file: build_config_path.toString()
             }
+            palRm(build_config_path.toString())
         }
     }
     return pipelineConfig
@@ -233,39 +236,45 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     folderPathParts.remove(folderPathParts.size()-1) // remove the filename
     def folderPath = folderPathParts.join('/')
     if (folderPath.contains('*')) {
-        
-        def currentPath = ''
-        for (int i = 0; i < folderPathParts.size(); i++) {
-            if (folderPathParts[i] == '*') {
-                palMkdir(currentPath)
-                retry(3) { palSh("aws codecommit get-folder --repository-name ${repositoryName} --commit-specifier ${branchName} --folder-path ${currentPath} > ${currentPath}/.codecommit", "GetFolder ${currentPath}") }
-                def folderInfo = readJSON file: "${currentPath}/.codecommit"
-                folderInfo.subFolders.each { folder ->
-                    def newSubPath = currentPath + '/' + folder.relativePath
-                    for (int j = i+1; j < folderPathParts.size(); j++) {
-                        newSubPath = newSubPath + '/' + folderPathParts[j]
+
+        try {
+            def currentPath = ''
+            for (int i = 0; i < folderPathParts.size(); i++) {
+                if (folderPathParts[i] == '*') {
+                    palMkdir(currentPath)
+                    retry(3) { palSh("aws codecommit get-folder --repository-name ${repositoryName} --commit-specifier ${branchName} --folder-path ${currentPath} > ${currentPath}/.codecommit", "GetFolder ${currentPath}") }
+                    def folderInfo = readJSON file: "${currentPath}/.codecommit"
+                    folderInfo.subFolders.each { folder ->
+                        def newSubPath = currentPath + '/' + folder.relativePath
+                        for (int j = i+1; j < folderPathParts.size(); j++) {
+                            newSubPath = newSubPath + '/' + folderPathParts[j]
+                        }
+                        newSubPath = newSubPath + '/' + filename
+                        PullFilesFromGit(newSubPath, branchName, false, repositoryName)
                     }
-                    newSubPath = newSubPath + '/' + filename
-                    PullFilesFromGit(newSubPath, branchName, false, repositoryName)
+                    palRm("${currentPath}/.codecommit")
                 }
-                palRm("${currentPath}/.codecommit")
+                if (i == 0) {
+                    currentPath = folderPathParts[i]
+                } else {
+                    currentPath = currentPath + '/' + folderPathParts[i]
+                }
             }
-            if (i == 0) {
-                currentPath = folderPathParts[i]
-            } else {
-                currentPath = currentPath + '/' + folderPathParts[i]
-            }
+        } catch(Exception e) {
         }
 
     } else if (filename.contains('*')) {
 
-        palMkdir(folderPath)
-        retry(3) { palSh("aws codecommit get-folder --repository-name ${repositoryName} --commit-specifier ${branchName} --folder-path ${folderPath} > ${folderPath}/.codecommit", "GetFolder ${folderPath}") }
-        def folderInfo = readJSON file: "${folderPath}/.codecommit"
-        folderInfo.files.each { file ->
-            PullFilesFromGit("${folderPath}/${filename}", branchName, false, repositoryName)
+        try {
+            palMkdir(folderPath)
+            retry(3) { palSh("aws codecommit get-folder --repository-name ${repositoryName} --commit-specifier ${branchName} --folder-path ${folderPath} > ${folderPath}/.codecommit", "GetFolder ${folderPath}") }
+            def folderInfo = readJSON file: "${folderPath}/.codecommit"
+            folderInfo.files.each { file ->
+                PullFilesFromGit("${folderPath}/${filename}", branchName, false, repositoryName)
+            }
+            palRm("${folderPath}/.codecommit")
+        } catch(Exception e) {
         }
-        palRm("${folderPath}/.codecommit")
 
     } else {
 
@@ -302,18 +311,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     }
 }
 
-def SetLfsCredentials(cmd, lbl = '') {
-    if (env.IS_UNIX) {
-        sh label: lbl,
-           script: cmd
-    } else { 
-        bat label: lbl,
-            script: cmd
-    }
-}
-
 def CheckoutRepo(boolean disableSubmodules = false) {
-    palSh('git lfs uninstall', 'Git LFS Uninstall')  // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
@@ -323,7 +321,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             palSh('git gc', 'Git GarbageCollect')
         }
         if(fileExists(indexLockFile)) { // if it is still there, remove it
-            palRm(indexLockFile, 'Remove index.lock')
+            palRm(indexLockFile)
         }
     }
 
@@ -435,6 +433,26 @@ def Build(Map options, String platform, String type, String workspace) {
     }
 }
 
+def TestMetrics(Map options, Map buildType, String workspace, String branchName, String repoName) {
+    catchError(buildResult: null, stageResult: null) {
+        def cmakeBuildDir = [workspace, buildType.value.PARAMETERS.OUTPUT_DIRECTORY].join('/')
+        def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${buildType.value.PARAMETERS.CONFIGURATION} ${repoName} "
+        if (params.DESTINATION_BRANCH)
+            command += '--destination-branch "$DESTINATION_BRANCH" '
+        dir(workspace) {
+            checkout scm: [
+                $class: 'GitSCM',
+                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']],
+                userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars']]
+            ]
+            withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
+                bat label: "Publishing ${buildType.key} Test Metrics",
+                script: command
+            }
+        }
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -473,6 +491,14 @@ def CreateBuildStage(Map pipelineConfig, String platformName, String jobName, Ma
     return {
         stage("${jobName}") {
             Build(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'])
+        }
+    }
+}
+
+def CreateTestMetricsStage(Map pipelineConfig, Map buildJob, String branchName, Map environmentVars) {
+    return {
+        stage("${buildJob.key}") {
+            TestMetrics(pipelineConfig, buildJob, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME)
         }
     }
 }
@@ -571,6 +597,9 @@ try {
                                         }
                                     } else {
                                         CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                                    }
+                                    if (env.MARS_REPO && platform.key == 'Windows' && build_job.key.startsWith('test')) {
+                                        CreateTestMetricsStage(pipelineConfig, build_job, branchName, envVars).call()
                                     }
                                 }   
                                 catch(Exception e) {

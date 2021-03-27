@@ -32,7 +32,6 @@ ly_add_target(
 ly_add_target(
     NAME GameStateSamples ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.GameStateSamples.76db0b1bcff84224a92cbceb373f4a85.v0.1.0
     FILES_CMAKE
         gamestatesamples_shared_files.cmake
         ${include_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

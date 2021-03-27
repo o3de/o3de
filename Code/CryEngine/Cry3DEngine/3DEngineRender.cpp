@@ -1080,7 +1080,7 @@ void C3DEngine::WorldStreamUpdate()
 
                 if (GetCVars()->e_StreamSaveStartupResultsIntoXML)
                 {
-                    const char* testResultsFile = "@cache@/TestResults/Streaming_Level_Start_Throughput.xml";
+                    const char* testResultsFile = "@usercache@/TestResults/Streaming_Level_Start_Throughput.xml";
 
                     AZ::IO::HandleType resultsFile = gEnv->pCryPak->FOpen(testResultsFile, "wb");
                     if (resultsFile != AZ::IO::InvalidHandle)

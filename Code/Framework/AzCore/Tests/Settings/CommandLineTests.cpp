@@ -25,9 +25,11 @@ namespace UnitTest
         AZ::CommandLine cmd;
         EXPECT_FALSE(cmd.HasSwitch(""));
         EXPECT_EQ(cmd.GetNumSwitchValues("haha"), 0);
+        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_EQ(cmd.GetSwitchValue("haha", 0), AZStd::string());
-        EXPECT_EQ(cmd.GetNumMiscValues(), 0);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
+        EXPECT_EQ(cmd.GetNumMiscValues(), 0);
         AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_EQ(cmd.GetMiscValue(1), AZStd::string());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
@@ -379,7 +381,6 @@ namespace UnitTest
     {
         AZ::CommandLine origCommandLine{ "-/" };
 
-
         const char* argValues[] =
         {
             "programname.exe", "/gamefolder", "/RemoteIp", "10.0.0.1", "-ScanFolders", R"(\a\b\c,\d\e\f)", "Foo", "Bat"
@@ -396,20 +397,21 @@ namespace UnitTest
         for (const auto& commandLine : commandLines)
         {
             EXPECT_TRUE(commandLine.HasSwitch("gamefolder"));
-            EXPECT_EQ(0, commandLine.GetNumSwitchValues("gamefolder"));
+            EXPECT_EQ(1, commandLine.GetNumSwitchValues("gamefolder"));
+            EXPECT_STREQ("", commandLine.GetSwitchValue("gamefolder", 0).c_str());
 
             EXPECT_TRUE(commandLine.HasSwitch("remoteip"));
             EXPECT_EQ(1, commandLine.GetNumSwitchValues("remoteip"));
-            EXPECT_EQ("10.0.0.1", commandLine.GetSwitchValue("remoteip", 0));
+            EXPECT_STREQ("10.0.0.1", commandLine.GetSwitchValue("remoteip", 0).c_str());
 
             EXPECT_TRUE(commandLine.HasSwitch("scanfolders"));
             EXPECT_EQ(2, commandLine.GetNumSwitchValues("scanfolders"));
-            EXPECT_EQ(R"(\a\b\c)", commandLine.GetSwitchValue("scanfolders", 0));
-            EXPECT_EQ(R"(\d\e\f)", commandLine.GetSwitchValue("scanfolders", 1));
+            EXPECT_STREQ(R"(\a\b\c)", commandLine.GetSwitchValue("scanfolders", 0).c_str());
+            EXPECT_STREQ(R"(\d\e\f)", commandLine.GetSwitchValue("scanfolders", 1).c_str());
 
             EXPECT_EQ(2, commandLine.GetNumMiscValues());
-            EXPECT_EQ("Foo", commandLine.GetMiscValue(0));
-            EXPECT_EQ("Bat", commandLine.GetMiscValue(1));
+            EXPECT_STREQ("Foo", commandLine.GetMiscValue(0).c_str());
+            EXPECT_STREQ("Bat", commandLine.GetMiscValue(1).c_str());
         }
     }
 }   // namespace UnitTest

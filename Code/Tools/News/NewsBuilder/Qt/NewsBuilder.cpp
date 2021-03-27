@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/IO/Path/Path.h>
 #include "NewsBuilder.h"
 #include "Qt/ArticleDetails.h"
 #include "Qt/BuilderArticleViewContainer.h"
@@ -39,8 +40,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace News
 {
-
-    NewsBuilder::NewsBuilder(QWidget* parent)
+    NewsBuilder::NewsBuilder(QWidget* parent, const AZ::IO::PathView& engineRootPath)
         : QMainWindow(parent)
         , m_ui(new Ui::NewsBuilderClass())
         , m_manifest(new BuilderResourceManifest(
@@ -51,15 +51,16 @@ namespace News
         , m_articleViewContainer(new BuilderArticleViewContainer(this, *m_manifest))
         , m_logContainer(new LogContainer(this))
     {
+
         AzQtComponents::StyleManager* m_styleSheet = new AzQtComponents::StyleManager(this);
-        m_styleSheet->initialize(qApp);
+        m_styleSheet->initialize(qApp, engineRootPath);
 
         m_ui->setupUi(this);
 
-        QDir rootDir(AzQtComponents::FindEngineRootDir(qApp));
+        QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/News/NewsBuilder/Resources");
         const auto qrcPath = QStringLiteral(":/NewsBuilder");
-        AzQtComponents::StyleManager::addSearchPaths("newsbuilder", pathOnDisk, qrcPath);
+        AzQtComponents::StyleManager::addSearchPaths("newsbuilder", pathOnDisk, qrcPath, engineRootPath);
 
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("newsbuilder:NewsBuilder.qss"));
 

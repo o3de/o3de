@@ -11,6 +11,8 @@
 */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <QTextStream>
 #include <QApplication>
@@ -52,7 +54,8 @@ namespace AzQtComponents
 
     }
 
-    void StyleManager::addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix)
+    void StyleManager::addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix,
+        const AZ::IO::PathView& engineRootPath)
     {
         if (!s_instance)
         {
@@ -60,7 +63,7 @@ namespace AzQtComponents
             return;
         }
 
-        s_instance->m_stylesheetCache->addSearchPaths(searchPrefix, pathOnDisk, qrcPrefix);
+        s_instance->m_stylesheetCache->addSearchPaths(searchPrefix, pathOnDisk, qrcPrefix, engineRootPath);
     }
 
     bool StyleManager::setStyleSheet(QWidget* widget, QString styleFileName)
@@ -153,7 +156,7 @@ namespace AzQtComponents
         }
     }
 
-    void StyleManager::initialize(QApplication* application)
+    void StyleManager::initialize([[maybe_unused]] QApplication* application, const AZ::IO::PathView& engineRootPath)
     {
         if (s_instance)
         {
@@ -167,7 +170,7 @@ namespace AzQtComponents
 
         connect(application, &QCoreApplication::aboutToQuit, this, &StyleManager::cleanupStyles);
 
-        initializeSearchPaths(application);
+        initializeSearchPaths(application, engineRootPath);
         initializeFonts();
 
         m_titleBarOverdrawHandler = TitleBarOverdrawHandler::createHandler(application, this);
@@ -228,10 +231,11 @@ namespace AzQtComponents
         QFontDatabase::addApplicationFont(openSansPathSpecifier.arg("OpenSans-SemiboldItalic.ttf"));
     }
 
-    void StyleManager::initializeSearchPaths(QApplication* application)
+    void StyleManager::initializeSearchPaths([[maybe_unused]] QApplication* application, const AZ::IO::PathView& engineRootPath)
     {
         // now that QT is initialized, we can use its path manipulation functions to set the rest up:
-        QString rootDir = FindEngineRootDir(application);
+
+        QString rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
 
         if (!rootDir.isEmpty())
         {

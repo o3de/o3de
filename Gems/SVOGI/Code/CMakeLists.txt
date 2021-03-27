@@ -32,7 +32,6 @@ ly_add_target(
 ly_add_target(
     NAME SVOGI ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SVOGI.09a70eb8876e49a8a919cabbb8f33b27.v0.1.0
     FILES_CMAKE
         svogi_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -44,4 +43,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::SVOGI.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )

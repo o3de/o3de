@@ -452,7 +452,7 @@ namespace AssetValidation
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::SettingsRegistryInterface::FixedValueString gameFolder;
-        auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+        auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
         settingsRegistry->Get(gameFolder, projectKey);
 
         if (gameFolder.empty())
@@ -461,9 +461,9 @@ namespace AssetValidation
             return false;
         }
 
-        AZStd::vector<AssetSeed::GemInfo> gemInfoList;
+        AZStd::vector<AzFramework::GemInfo> gemInfoList;
 
-        if (!AssetSeed::GetGemsInfo(engineRoot, appRoot, gameFolder.c_str(), gemInfoList))
+        if (!AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry))
         {
             AZ_Warning("AssetValidation", false, "Unable to get gem information.");
             return false;

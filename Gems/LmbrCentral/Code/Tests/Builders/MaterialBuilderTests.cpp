@@ -21,6 +21,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 
 using namespace MaterialBuilder;
 using namespace AZ;
@@ -45,7 +46,7 @@ protected:
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
 
-        AZ::IO::Path assetRoot(engineRoot);
+        AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetRoot.c_str());

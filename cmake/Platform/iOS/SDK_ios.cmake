@@ -9,7 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-
 # Detect the ios SDK Path and set the SYSROOT
 find_program(XCRUN_PROG "xcrun")
 execute_process(COMMAND ${XCRUN_PROG} --sdk iphoneos --show-sdk-path
@@ -20,11 +19,10 @@ if (NOT GET_IOS_SDK_RESULT EQUAL 0)
 endif()
 string(STRIP ${LY_IOS_SDK_PATH} LY_IOS_SDK_PATH)
 
-ly_set(CMAKE_SYSROOT ${LY_IOS_SDK_PATH})
+set(CMAKE_SYSROOT ${LY_IOS_SDK_PATH})
 
-ly_set(SDKROOT "iphoneos")
+set(SDKROOT "iphoneos")
 
-ly_set(DEVROOT "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer")
+set(DEVROOT "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer")
 
-ly_set(CMAKE_OSX_SYSROOT "${SDKROOT}")
-
+set(CMAKE_OSX_SYSROOT "${SDKROOT}")

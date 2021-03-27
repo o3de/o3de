@@ -457,10 +457,8 @@ namespace MaterialEditor
     {
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::IO::FixedMaxPath assetDatabaseSqlitePath;
-        if (settingsRegistry && settingsRegistry->Get(assetDatabaseSqlitePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        if (settingsRegistry && settingsRegistry->Get(assetDatabaseSqlitePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
         {
-            // Grab the Parent of the Asset RootPath to remove the <asset> platform from the end of the path
-            assetDatabaseSqlitePath = assetDatabaseSqlitePath.ParentPath();
             assetDatabaseSqlitePath /= "assetdb.sqlite";
             result = AZStd::string_view(assetDatabaseSqlitePath.Native());
             return true;

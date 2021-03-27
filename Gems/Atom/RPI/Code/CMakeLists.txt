@@ -36,7 +36,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_RPI.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_RPI.Private.a218db9eb2114477b46600fea4441a6c.v0.1.0
     FILES_CMAKE
         atom_rpi_private_files.cmake
     INCLUDE_DIRECTORIES
@@ -96,9 +95,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Atom_RPI.Editor MODULE
+        NAME Atom_RPI.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RPI.Editor.a218db9eb2114477b46600fea4441a6c.v0.1.0
         FILES_CMAKE
             atom_rpi_editor_files.cmake
         INCLUDE_DIRECTORIES
@@ -165,9 +164,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         # Create a stub
         ly_add_target(
-            NAME Atom_RPI.Builders MODULE
+            NAME Atom_RPI.Builders GEM_MODULE
+
             NAMESPACE Gem
-            OUTPUT_NAME Gem.Atom_RPI.Builders.a218db9eb2114477b46600fea4441a6c.v0.1.0
             FILES_CMAKE
                 atom_rpi_builders_stub_files.cmake
             INCLUDE_DIRECTORIES
@@ -209,9 +208,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Atom_RPI.Builders MODULE
+        NAME Atom_RPI.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RPI.Builders.a218db9eb2114477b46600fea4441a6c.v0.1.0
         FILES_CMAKE
             atom_rpi_builders_shared_files.cmake
         INCLUDE_DIRECTORIES

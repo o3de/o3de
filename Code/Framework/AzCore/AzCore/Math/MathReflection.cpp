@@ -369,6 +369,7 @@ namespace AZ
         context.Serializer<JsonVector2Serializer>()->HandlesType<Vector2>();
         context.Serializer<JsonVector3Serializer>()->HandlesType<Vector3>();
         context.Serializer<JsonVector4Serializer>()->HandlesType<Vector4>();
+        context.Serializer<JsonQuaternionSerializer>()->HandlesType<Quaternion>();
     }
 
     void MathReflect(ReflectContext* context)

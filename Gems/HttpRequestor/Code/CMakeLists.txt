@@ -33,7 +33,6 @@ ly_add_target(
 ly_add_target(
     NAME HttpRequestor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.HttpRequestor.28479e255bde466e91fc34eec808d9c7.v1.0.0
     FILES_CMAKE
         httprequestor_shared_files.cmake
     PLATFORM_INCLUDE_FILES

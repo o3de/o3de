@@ -90,7 +90,6 @@ def test_adb_call(mock_check_output):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -115,7 +114,6 @@ def test_adb_shell(mock_adb_call):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -141,7 +139,6 @@ def test_adb_ls_success(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -168,7 +165,6 @@ def test_adb_ls_error_no_output(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -195,7 +191,6 @@ def test_adb_ls_error_no_such_file(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -222,7 +217,6 @@ def test_adb_ls_error_permission_denied(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -250,7 +244,6 @@ def test_get_target_android_devices(mock_adb_call):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -277,7 +270,6 @@ def test_check_known_android_paths_success(mock_adb_ls):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -303,7 +295,6 @@ def test_check_known_android_paths_fail(mock_adb_ls):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -330,7 +321,6 @@ def test_detect_device_storage_path_no_external_storage_env(mock_check_known_and
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")),\
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -357,7 +347,6 @@ def test_detect_device_storage_path_invalid_external_storage_env(mock_check_know
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")),\
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -384,7 +373,6 @@ def test_detect_device_storage_path_valid_external_storage_env(mock_adb_ls, mock
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")),\
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -427,7 +415,6 @@ def test_detect_device_storage_path_real_path():
          patch.object(android_deployment.AndroidDeployment, 'adb_ls', wraps=_mock_adb_ls), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -469,7 +456,6 @@ def test_detect_device_storage_path_real_path_fail(mock_check_known_android_path
          patch.object(android_deployment.AndroidDeployment, 'adb_ls', wraps=_mock_adb_ls), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -493,7 +479,6 @@ def test_get_device_file_timestamp_success(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -522,7 +507,6 @@ def test_get_device_file_timestamp_no_file(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -551,7 +535,6 @@ def test_get_device_file_timestamp_bad_timestamp_file(mock_adb_shell):
          patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
          patch.object(pathlib.Path, 'glob', return_value=["foo.bar"]):
 
-        local_asset_path = pathlib.Path("Foo")
         inst = android_deployment.AndroidDeployment(dev_root=TEST_DEV_ROOT,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -576,7 +559,7 @@ def test_get_device_file_timestamp_bad_timestamp_file(mock_adb_shell):
 
 def test_update_device_file_timestamp(tmpdir):
 
-    cache_dir = f'{TEST_DEV_ROOT}/Cache/{TEST_GAME_NAME}/{TEST_ASSET_TYPE}'
+    cache_dir = f'{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}'
     tmpdir.ensure(f'{cache_dir}/foo.txt')
 
     mock_dev_root = tmpdir.join(TEST_DEV_ROOT).realpath()
@@ -585,7 +568,6 @@ def test_update_device_file_timestamp(tmpdir):
             patch.object(android_deployment.AndroidDeployment, 'resolve_adb_tool', return_value=pathlib.Path("Foo")), \
             patch.object(android_deployment.AndroidDeployment, 'adb_call', return_value="") as mock_adb_call:
 
-        local_asset_path = pathlib.Path(tmpdir.join(cache_dir).realpath())
         inst = android_deployment.AndroidDeployment(dev_root=mock_dev_root,
                                                     build_dir=TEST_BUILD_DIR,
                                                     configuration='profile',
@@ -624,8 +606,8 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{TEST_GAME_NAME}/{TEST_ASSET_TYPE}/dummy.txt").ensure()
-    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{TEST_GAME_NAME}/{TEST_ASSET_TYPE}").realpath())
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
+    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}").realpath())
 
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
@@ -696,8 +678,8 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{test_game_name}/{test_asset_type}/dummy.txt").ensure()
-    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{test_game_name}/{test_asset_type}").realpath())
+    tmpdir.join(f"{TEST_DEV_ROOT}/{test_game_name}/Cache/{test_asset_type}/dummy.txt").ensure()
+    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{test_game_name}/Cache/{test_asset_type}").realpath())
 
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())
@@ -792,8 +774,7 @@ def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_na
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").ensure()
     expected_apk_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/build/outputs/apk/{test_config}/app-{test_config}.apk").realpath())
 
-    tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{TEST_GAME_NAME}/{TEST_ASSET_TYPE}/dummy.txt").ensure()
-    expected_asset_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/Cache/{TEST_GAME_NAME}/{TEST_ASSET_TYPE}").realpath())
+    tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_GAME_NAME}/Cache/{TEST_ASSET_TYPE}/dummy.txt").ensure()
 
     tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry/dummy.txt").ensure()
     expected_registry_path = str(tmpdir.join(f"{TEST_DEV_ROOT}/{TEST_BUILD_DIR}/app/src/main/assets/Registry").realpath())

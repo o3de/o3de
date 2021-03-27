@@ -38,6 +38,18 @@ namespace AZ
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
+        FrameCaptureOutputResult DdsFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            // write the read back result of the image attachment to a dds file
+            const auto outcome = AZ::DdsFile::WriteFile(
+                outputFilePath,
+                {readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, readbackResult.m_dataBuffer.get()});
+
+            return outcome.IsSuccess() ? FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt}
+                                       : FrameCaptureOutputResult{FrameCaptureResult::InternalError, outcome.GetError().m_message};
+        }
+
         class FrameCaptureNotificationBusHandler final
             : public FrameCaptureNotificationBus::Handler
             , public AZ::BehaviorEBusHandler
@@ -392,18 +404,9 @@ namespace AZ
                     }
                     else if (extension == "dds")
                     {
-                        // write the read back result of the image attachment to a dds file
-                        auto outcome = AZ::DdsFile::WriteFile(m_outputFilePath, { readbackResult.m_imageDescriptor.m_size,
-                            readbackResult.m_imageDescriptor.m_format, readbackResult.m_dataBuffer.get() });
-                        if (outcome.IsSuccess())
-                        {
-                            m_result = FrameCaptureResult::Success;
-                        }
-                        else
-                        {
-                            m_latestCaptureInfo = outcome.GetError().m_message;
-                            m_result = FrameCaptureResult::InternalError;
-                        }
+                        const auto ddsFrameCapture = DdsFrameCaptureOutput(m_outputFilePath, readbackResult);
+                        m_result = ddsFrameCapture.m_result;
+                        m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
                     else
                     {

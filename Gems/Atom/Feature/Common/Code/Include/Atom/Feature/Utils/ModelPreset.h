@@ -19,6 +19,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
@@ -34,6 +35,7 @@ namespace AZ
             bool m_autoSelect = false;
             AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_previewImageAsset;
         };
 
         using ModelPresetPtr = AZStd::shared_ptr<ModelPreset>;

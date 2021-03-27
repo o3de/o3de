@@ -21,6 +21,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -525,7 +526,10 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
             // Get asset root from application.
-            EBUS_EVENT_RESULT(m_assetRoot, AzFramework::ApplicationRequests::Bus, GetAssetRoot);
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+            }
 
             // Reflect registry for serialization.
             AZ::SerializeContext* serializeContext = nullptr;

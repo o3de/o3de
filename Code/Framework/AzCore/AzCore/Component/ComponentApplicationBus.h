@@ -184,6 +184,11 @@ namespace AZ
          */
         virtual const char*             GetAppRoot() const = 0;
         /**
+         * Gets the path of the working engine folder that the app is a part of.
+         * @return A pointer to the engine path.
+         */
+        virtual const char*             GetEngineRoot() const = 0;
+        /**
          * Gets the path to the directory that contains the application's executable.
          * @return A pointer to the name of the path that contains the application's executable.
          */

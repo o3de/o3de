@@ -70,7 +70,7 @@ VertexOutput MainVS(VertexInput IN)
 
 struct PSDepthOutput
 {
-    float m_depth : SV_DepthLessEqual;
+    float m_depth : SV_DepthGreaterEqual;
 };
 
 PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)

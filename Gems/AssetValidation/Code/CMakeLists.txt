@@ -23,14 +23,12 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            AZ::GemRegistry
             Legacy::CryCommon
 )
 
 ly_add_target(
     NAME AssetValidation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AssetValidation.5a5c3c10b91d4b4ea8baef474c5b5d49.v0.1.0
     FILES_CMAKE
         assetvalidation_shared_files.cmake
     INCLUDE_DIRECTORIES

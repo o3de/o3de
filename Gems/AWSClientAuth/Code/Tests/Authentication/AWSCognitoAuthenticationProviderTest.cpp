@@ -24,7 +24,7 @@ namespace AWSClientAuthUnitTest
         : public AWSClientAuth::AWSCognitoAuthenticationProvider
     {
     public:
-        using AWSClientAuth::AWSCognitoAuthenticationProvider::m_settings;
+        using AWSClientAuth::AWSCognitoAuthenticationProvider::m_cognitoAppClientId;
     };
 }
 
@@ -35,22 +35,6 @@ class AWSCognitoAuthenticationProviderTest
     void SetUp() override
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
-
-        AWSClientAuth::AWSCognitoProviderSetting::Reflect(*m_serializeContext);
-
-        AZStd::string path = AZStd::string::format("%s/%s/authenticationProvider.setreg",
-            m_testFolder->c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
-        CreateTestFile("authenticationProvider.setreg"
-            , R"({
-                "AWS": 
-                {
-                    "CognitoIDP":
-                    {
-                        "AppClientId": "TestCognitoClientId"
-                    }
-                } 
-            })");
-        m_settingsRegistry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
 
         m_cognitoAuthenticationProviderMock.Initialize(m_settingsRegistry);
 
@@ -78,6 +62,7 @@ class AWSCognitoAuthenticationProviderTest
 
 public:
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock m_cognitoAuthenticationProviderMock;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
 
     void AssertAuthenticationTokensPopulated()
     {
@@ -116,9 +101,10 @@ public:
 
 TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Success)
 {
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
     ASSERT_TRUE(mock.Initialize(m_settingsRegistry));
-    ASSERT_EQ(mock.m_settings->m_appClientId, AWSClientAuthUnitTest::TEST_COGNITO_CLIENTID);
+    ASSERT_EQ(mock.m_cognitoAppClientId, AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
 TEST_F(AWSCognitoAuthenticationProviderTest, PasswordGrantSingleFactorSignInAsync_Success)
@@ -275,15 +261,9 @@ TEST_F(AWSCognitoAuthenticationProviderTest, SignOut_Success)
     AssertAuthenticationTokensEmpty();
 }
 
-TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Fail_EmptyRegistry)
+TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Fail_EmptyResourceName)
 {
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
-    AZStd::shared_ptr<AZ::SettingsRegistryImpl> registry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
-    registry->SetContext(m_serializeContext.get());
-    ASSERT_FALSE(mock.Initialize(registry));
-    ASSERT_EQ(mock.m_settings->m_appClientId, "");
-    registry.reset();
-
-    // Restore
-    mock.Initialize(m_settingsRegistry);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
+    ASSERT_FALSE(mock.Initialize(m_settingsRegistry));
 }

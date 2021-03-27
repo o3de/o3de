@@ -35,7 +35,7 @@ namespace Physics
         /// Allows derived environments to override to set up which gems, components etc the environment should load.
         void AddGemsAndComponents() override
         {
-            AddDynamicModulePaths({ "Gem.LmbrCentral.Editor.ff06785f7145416b9d46fde39098cb0c.v0.1.0" });
+            AddDynamicModulePaths({ "LmbrCentral.Editor" });
 
             const auto& physxDescriptors = PhysX::GetDescriptors();
             const auto& physxEditorDescriptors = PhysX::GetEditorDescriptors();

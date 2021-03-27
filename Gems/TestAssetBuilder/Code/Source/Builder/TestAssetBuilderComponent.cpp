@@ -514,7 +514,8 @@ namespace TestAssetBuilder
             }
             if (relativePath != fileName)
             {
-                AZ_Error("AssetBuilder", false, "GetRelativeProductPathFromFullSourceOrProductPath - relativePath and fileName didn't match for ( %s ).", sourcePath.c_str());
+                AZ_Error("AssetBuilder", false, R"(GetRelativeProductPathFromFullSourceOrProductPath - relativePath "%s" and fileName "%s" didn't match for ( %s ).)",
+                    relativePath.c_str(), fileName.c_str(), sourcePath.c_str());
                 return;
             }
 
@@ -565,17 +566,20 @@ namespace TestAssetBuilder
             }
             if (sliceSourceInfo.m_assetId.IsValid())
             {
-                AZ_Error("AssetBuilder", false, "AssetSystemRequest::GetAssetInfoById - Response AssetID should not be valid for ( %s )", badAssetId.ToString<AZStd::string>().c_str());
+                AZ_Error("AssetBuilder", false, R"(AssetSystemRequest::GetAssetInfoById - Response AssetID should not be valid for ( %s ). Received Asset ID "%s")",
+                    badAssetId.ToString<AZStd::string>().c_str(), sliceSourceInfo.m_assetId.ToString<AZStd::string>().c_str());
                 return;
             }
             if (badAssetId.m_subId == sliceSourceInfo.m_assetId.m_subId)
             {
-                AZ_Error("AssetBuilder", false, "AssetSystemRequest::GetAssetInfoById - Response SubID should not match for ( %s ) Received SubID %d.", badAssetId.ToString<AZStd::string>().c_str());
+                AZ_Error("AssetBuilder", false, "AssetSystemRequest::GetAssetInfoById - Response SubID should not match for ( %s ) Received SubID %d.",
+                    badAssetId.ToString<AZStd::string>().c_str(), sliceSourceInfo.m_assetId.m_subId);
                 return;
             }
             if (sliceSourceInfo.m_assetType != AZ::Data::s_invalidAssetType)
             {
-                AZ_Error("AssetBuilder", false, "AssetSystemRequest::GetAssetInfoById - Response AssetType should not be valid for ( %s )", badAssetId.ToString<AZStd::string>().c_str());
+                AZ_Error("AssetBuilder", false, R"(AssetSystemRequest::GetAssetInfoById - Response AssetType should not be valid for ( %s ). Received AssetType "%s")",
+                    badAssetId.ToString<AZStd::string>().c_str(), sliceSourceInfo.m_assetType.ToString<AZStd::string>().c_str());
                 return;
             }
 

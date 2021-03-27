@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME Presence ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Presence.903ce283760647049efaef70d9368eeb.v0.1.0
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     FILES_CMAKE

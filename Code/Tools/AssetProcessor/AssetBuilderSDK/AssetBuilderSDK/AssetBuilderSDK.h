@@ -185,7 +185,7 @@ namespace AssetBuilderSDK
         };
 
         AZStd::string m_pattern;
-        PatternType   m_type;
+        PatternType   m_type{};
 
         AssetBuilderPattern() = default;
         AssetBuilderPattern(const AssetBuilderPattern& src) = default;
@@ -221,8 +221,8 @@ namespace AssetBuilderSDK
         AssetBuilderSDK::AssetBuilderPattern    m_pattern;
         RegexType           m_regex;
         AZStd::string       m_errorString;
-        bool                m_isRegex;
-        bool                m_isValid;
+        bool                m_isRegex{};
+        bool                m_isValid{};
     };
 
     //!Information that builders will send to the assetprocessor
@@ -503,7 +503,7 @@ namespace AssetBuilderSDK
         AZStd::unordered_set<AZStd::string> m_tags; ///< The tags like "console" or "tools" on that platform
 
         PlatformInfo() = default;
-        PlatformInfo(const char* identifier, const AZStd::unordered_set<AZStd::string>& tags);
+        PlatformInfo(AZStd::string identifier, const AZStd::unordered_set<AZStd::string>& tags);
         bool operator==(const PlatformInfo& other);
 
         ///! utility function.  It just searches the set for you:

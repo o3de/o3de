@@ -91,6 +91,7 @@
         _Func(P010,                    VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16, 1, 0, 0) \
         _Func(P016,                    VK_FORMAT_G16_B16R16_2PLANE_420_UNORM,   1,    0,    0) \
         _Func(B4G4R4A4_UNORM,          VK_FORMAT_B4G4R4A4_UNORM_PACK16,         1,    0,    0) \
+        _Func(R4G4B4A4_UNORM,          VK_FORMAT_R4G4B4A4_UNORM_PACK16,         1,    0,    0) \
         _Func(D16_UNORM_S8_UINT,       VK_FORMAT_D16_UNORM_S8_UINT,             0,    1,    1) \
         _Func(EAC_R11_UNORM,           VK_FORMAT_EAC_R11_UNORM_BLOCK,           1,    0,    0) \
         _Func(EAC_R11_SNORM,           VK_FORMAT_EAC_R11_SNORM_BLOCK,           1,    0,    0) \

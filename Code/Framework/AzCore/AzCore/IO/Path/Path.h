@@ -170,7 +170,7 @@ namespace AZ::IO
         //! Check whether the path is not absolute
         [[nodiscard]] constexpr bool IsRelative() const;
         //! Check whether the path is relative to the base path
-        [[nodiscard]] constexpr bool IsRelativeTo(const PathView & base) const;
+        [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
@@ -517,7 +517,7 @@ namespace AZ::IO
         //! Checks if the path has a root directory
         [[nodiscard]] constexpr bool HasRootDirectory() const;
         //! Checks whether the entire root path portion of the path is empty
-        //! The root portion ofthe path is made up of root_name() / root_directory()
+        //! The root portion of the path is made up of root_name() / root_directory()
         [[nodiscard]] constexpr bool HasRootPath() const;
         //! checks whether the relative part of path is empty
         //! (C:\\     lumberyard\dev\)
@@ -539,8 +539,8 @@ namespace AZ::IO
         [[nodiscard]] constexpr bool IsAbsolute() const;
         //! Check whether the path is not absolute
         [[nodiscard]] constexpr bool IsRelative() const;
-        //! Check whether the path is relative to the input path
-        [[nodiscard]] constexpr bool IsRelativeTo() const;
+        //! Check whether the path is relative to the base path
+        [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
         // decomposition
         //! Given a windows path of "C:\lumberyard\foo\bar\name.txt" and a posix path of

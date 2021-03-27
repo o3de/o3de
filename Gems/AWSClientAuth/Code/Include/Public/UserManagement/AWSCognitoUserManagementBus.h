@@ -24,7 +24,7 @@ namespace AWSClientAuth
 
         //! Initialize Cognito User pool.
         //! @param settingsRegistryPath settingsRegistryPath Path for the settings registry file to use.
-        virtual bool Initialize(const AZStd::string& settingsRegistryPath) = 0;
+        virtual bool Initialize() = 0;
 
         // Requests interface
         //! Cognito user pool email sign up start.

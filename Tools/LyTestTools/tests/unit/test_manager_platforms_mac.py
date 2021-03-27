@@ -59,7 +59,7 @@ class TestMacResourceLocator(object):
 
     def test_ProjectLog_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            mac_resource_locator.platform_cache(),
+            mac_resource_locator.project(),
             'user',
             'log')
 
@@ -67,7 +67,7 @@ class TestMacResourceLocator(object):
 
     def test_ProjectScreenshots_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            mac_resource_locator.platform_cache(),
+            mac_resource_locator.project(),
             'user',
             'ScreenShots')
 

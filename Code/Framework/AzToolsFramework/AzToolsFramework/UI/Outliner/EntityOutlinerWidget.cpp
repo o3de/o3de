@@ -18,8 +18,10 @@
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/sort.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -147,7 +149,13 @@ namespace AzToolsFramework
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
 
-        QDir rootDir(AzQtComponents::FindEngineRootDir(qApp));
+        AZ::IO::FixedMaxPath engineRootPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        QDir rootDir = QString::fromUtf8(engineRootPath.c_str(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath(QStringLiteral("Code/Framework/AzToolsFramework/AzToolsFramework/UI/Outliner/"));
         const QStringView qrcPath = QStringLiteral(":/EntityOutliner");
 
@@ -155,7 +163,7 @@ namespace AzToolsFramework
         // developers. The style will be loaded from a Qt Resource file if Editor is installed, but
         // developers with the file on disk will be able to modify the style and have it automatically
         // reloaded.
-        AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString());
+        AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString(), engineRootPath);
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("outliner:EntityOutliner.qss"));
 
         m_listModel = aznew EntityOutlinerListModel(this);

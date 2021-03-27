@@ -22,6 +22,35 @@ namespace AZ
 
     using StringFuncTest = AllocatorsFixture;
 
+    TEST_F(StringFuncTest, Equal_CaseSensitive_OnNonNullTerminatedStringView_Success)
+    {
+        constexpr AZStd::string_view testString1 = "Hello World IceCream";
+        constexpr AZStd::string_view testString2 = "IceCream World Hello";
+        constexpr bool caseSensitive = true;
+        EXPECT_TRUE(AZ::StringFunc::Equal(testString1.substr(6,5), testString2.substr(9,5), caseSensitive));
+    }
+    TEST_F(StringFuncTest, Equal_CaseInsensitive_OnNonNullTerminatedStringView_Success)
+    {
+        constexpr AZStd::string_view testString1 = "Hello World IceCream";
+        constexpr AZStd::string_view testString2 = "IceCream woRLd Hello";
+        constexpr bool caseSensitive = false;
+        EXPECT_TRUE(AZ::StringFunc::Equal(testString1.substr(6, 5), testString2.substr(9, 5), caseSensitive));
+    }
+    TEST_F(StringFuncTest, Equal_CaseSensitive_OnNonNullTerminatedStringView_WithDifferentCases_Fails)
+    {
+        constexpr AZStd::string_view testString1 = "Hello World IceCream";
+        constexpr AZStd::string_view testString2 = "IceCream woRLd Hello";
+        constexpr bool caseSensitive = true;
+        EXPECT_FALSE(AZ::StringFunc::Equal(testString1.substr(6, 5), testString2.substr(9, 5), caseSensitive));
+    }
+    TEST_F(StringFuncTest, Equal_OnNonNullTerminatedStringView_WithDifferentSize_Fails)
+    {
+        constexpr AZStd::string_view testString1 = "Hello World IceCream";
+        constexpr AZStd::string_view testString2 = "IceCream World Hello";
+
+        EXPECT_FALSE(AZ::StringFunc::Equal(testString1.substr(6, 6), testString2.substr(9, 5)));
+    }
+
     // Strip out any trailing path separators
 
     TEST_F(StringFuncTest, Strip_ValidInputExtraEndingPathSeparators_Success)

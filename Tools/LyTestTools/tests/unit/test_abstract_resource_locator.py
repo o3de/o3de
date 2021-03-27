@@ -134,7 +134,7 @@ class TestAbstractResourceLocator(object):
     def test_Cache_IsCalled_ReturnsCachePath(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)
-        expected_path = os.path.join(mock_abstract_resource_locator.dev(), 'Cache')
+        expected_path = os.path.join(mock_abstract_resource_locator.cache())
 
         assert mock_abstract_resource_locator.cache() == expected_path
 
@@ -178,7 +178,7 @@ class TestAbstractResourceLocator(object):
     def test_AssetProcessorConfigFile_IsCalled_ReturnsAssetProcessorConfigFilePath(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)
-        expected_path = os.path.join(mock_abstract_resource_locator.dev(), 'AssetProcessorPlatformConfig.ini')
+        expected_path = os.path.join(mock_abstract_resource_locator.dev(), 'AssetProcessorPlatformConfig.setreg')
 
         assert mock_abstract_resource_locator.asset_processor_config_file() == expected_path
 

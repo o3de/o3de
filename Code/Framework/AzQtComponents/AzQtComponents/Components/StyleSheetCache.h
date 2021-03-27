@@ -14,6 +14,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzCore/IO/Path/Path_fwd.h>
+
 #include <QObject>
 #include <QHash>
 #include <QString>
@@ -45,7 +47,8 @@ namespace AzQtComponents
     public:
         static const QString& styleSheetExtension();
 
-        void addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix);
+        void addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix,
+            const AZ::IO::PathView& engineRootPath);
         void setFallbackSearchPaths(const QString& fallbackPrefix, const QString& pathOnDisk, const QString& qrcPrefix);
 
         QString loadStyleSheet(QString styleFileName);

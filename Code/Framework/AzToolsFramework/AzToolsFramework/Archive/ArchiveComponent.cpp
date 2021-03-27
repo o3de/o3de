@@ -18,8 +18,8 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AzToolsFramework
@@ -46,7 +46,7 @@ namespace AzToolsFramework
     class ConsoleEchoCommunicator
     {
     public:
-        ConsoleEchoCommunicator(AzToolsFramework::ProcessCommunicator* communicator)
+        ConsoleEchoCommunicator(AzFramework::ProcessCommunicator* communicator)
             : m_communicator(communicator)
         {
         }
@@ -103,7 +103,7 @@ namespace AzToolsFramework
             }
         }
 
-        AzToolsFramework::ProcessCommunicator* m_communicator = nullptr;
+        AzFramework::ProcessCommunicator* m_communicator = nullptr;
     };
 
     void ArchiveComponent::Activate()
@@ -372,7 +372,7 @@ namespace AzToolsFramework
                 m_cv.notify_all();
             }
 
-            ProcessLauncher::ProcessLaunchInfo info;
+            AzFramework::ProcessLauncher::ProcessLaunchInfo info;
             info.m_commandlineParameters = exePath + " " + commandLineArgs;
             
             info.m_showWindow = false;
@@ -380,7 +380,7 @@ namespace AzToolsFramework
             {
                 info.m_workingDirectory = workingDir;
             }
-            AZStd::unique_ptr<ProcessWatcher> watcher(ProcessWatcher::LaunchProcess(info, ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcher(AzFramework::ProcessWatcher::LaunchProcess(info, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
 
             AZStd::string consoleOutput;
             AZ::u32 exitCode = static_cast<AZ::u32>(SevenZipExitCode::UserStoppedProcess);

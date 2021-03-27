@@ -30,7 +30,6 @@ ly_add_target(
 ly_add_target(
     NAME AssetMemoryAnalyzer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AssetMemoryAnalyzer.35414634480a4d4c8412c60fe62f4c81.v0.1.0
     FILES_CMAKE
         assetmemoryanalyzer_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -41,6 +40,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AssetMemoryAnalyzer.Static
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui
 )
 
 ################################################################################

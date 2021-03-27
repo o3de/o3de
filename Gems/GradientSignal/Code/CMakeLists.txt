@@ -31,7 +31,6 @@ ly_add_target(
 ly_add_target(
     NAME GradientSignal ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.GradientSignal.8825563d9d964ec3be3bab681f3bd9f2.v0.1.0
     FILES_CMAKE
         gradientsignal_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -45,6 +44,9 @@ ly_add_target(
         PUBLIC
             Gem::ImageProcessing.Headers # ImageProcessing/PixelFormats.h is part of a header in Includes
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
+        Gem::SurfaceData
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -74,9 +76,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME GradientSignal.Editor MODULE
+        NAME GradientSignal.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.GradientSignal.Editor.8825563d9d964ec3be3bab681f3bd9f2.v0.1.0
         FILES_CMAKE
             gradientsignal_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -87,6 +89,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::GradientSignal.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
+            Gem::SurfaceData.Editor
     )
 
 endif()

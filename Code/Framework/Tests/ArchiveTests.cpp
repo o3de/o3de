@@ -240,14 +240,14 @@ namespace UnitTest
         ASSERT_NE(nullptr, console);
 
         {
-            AZStd::string testArchivePath_withSubfolders = "@cache@/immediate.pak";
-            AZStd::string testArchivePath_withMountPoint = "@cache@/levels/test/flatarchive.pak";
+            AZStd::string testArchivePath_withSubfolders = "@usercache@/immediate.pak";
+            AZStd::string testArchivePath_withMountPoint = "@usercache@/levels/test/flatarchive.pak";
 
             // delete test files in case they already exist
             archive->ClosePack(testArchivePath_withSubfolders.c_str());
             fileIo->Remove(testArchivePath_withSubfolders.c_str());
             fileIo->Remove(testArchivePath_withMountPoint.c_str());
-            fileIo->CreatePath("@cache@/levels/test");
+            fileIo->CreatePath("@usercache@/levels/test");
 
             // setup test archive and file
             AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
@@ -314,14 +314,14 @@ namespace UnitTest
         // and be able to IMMEDIATELY
         // * read the file in the subfolder
         // * enumerate the folders (including that subfolder) even though they are 'virtual', not real folders on physical media
-        // * all of the above even though the mount point for the archive is @assets@ wheras the physical pack lives in @cache@
+        // * all of the above even though the mount point for the archive is @assets@ wheras the physical pack lives in @usercache@
         // finally, we're going to repeat the above test but with files mounted with subfolders
         // so for example, the pack will contain levelinfo.xml at the root of it
         // but it will be mounted at a subfolder (levels/mylevel).
         // this must cause FindNext and Open to work for levels/mylevel/levelinfo.xml.
 
-        constexpr const char* testArchivePath_withSubfolders = "@cache@/immediate.pak";
-        constexpr const char* testArchivePath_withMountPoint = "@cache@/levels/test/flatarchive.pak";
+        constexpr const char* testArchivePath_withSubfolders = "@usercache@/immediate.pak";
+        constexpr const char* testArchivePath_withMountPoint = "@usercache@/levels/test/flatarchive.pak";
 
         AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
         ASSERT_NE(nullptr, fileIo);
@@ -340,7 +340,7 @@ namespace UnitTest
         archive->ClosePack(testArchivePath_withMountPoint);
         fileIo->Remove(testArchivePath_withSubfolders);
         fileIo->Remove(testArchivePath_withMountPoint);
-        fileIo->CreatePath("@cache@/levels/test");
+        fileIo->CreatePath("@usercache@/levels/test");
 
 
         AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
@@ -435,7 +435,7 @@ namespace UnitTest
         ASSERT_NE(nullptr, archive);
 
         constexpr AZStd::string_view dataString = "HELLO WORLD";
-        constexpr const char* testArchivePath_withMountPoint = "@cache@/levels/test/flatarchive.pak";
+        constexpr const char* testArchivePath_withMountPoint = "@usercache@/levels/test/flatarchive.pak";
         bool found_mylevel_file{};
         bool found_mylevel_folder{};
 
@@ -556,10 +556,10 @@ namespace UnitTest
         // mount the pack
         // make sure that the pack and loose file both appear when the PaKFileIO interface is used.
         using namespace AZ::IO;
-        AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();;
+        AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
         AZ::IO::ArchiveFileIO cpfio(archive);
 
-        constexpr const char* genericArchiveFileName = "@cache@/testarchiveio.pak";
+        constexpr const char* genericArchiveFileName = "@usercache@/testarchiveio.pak";
         ASSERT_NE(nullptr, archive);
         const char* dataString = "HELLO WORLD"; // other unit tests make sure writing and reading is working, so don't test that here
         size_t dataLen = strlen(dataString);
@@ -599,7 +599,7 @@ namespace UnitTest
         EXPECT_TRUE(cpfio.Exists("testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("@assets@/testfile.xml"));  // this should be hte same file
         EXPECT_TRUE(!cpfio.Exists("@log@/testfile.xml"));
-        EXPECT_TRUE(!cpfio.Exists("@cache@/testfile.xml"));
+        EXPECT_TRUE(!cpfio.Exists("@usercache@/testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
 
         // --- Coverage test ----
@@ -715,7 +715,7 @@ namespace UnitTest
         ASSERT_NE(nullptr, fileIo);
 
         // test whether aliasing works as expected.  We'll create a archive in the cache, but we'll map it to a bunch of folders
-        constexpr const char* testArchivePath = "@cache@/archivetest.pak";
+        constexpr const char* testArchivePath = "@usercache@/archivetest.pak";
 
         char realNameBuf[AZ_MAX_PATH_LEN] = { 0 };
         EXPECT_TRUE(fileIo->ResolvePath(testArchivePath, realNameBuf, AZ_MAX_PATH_LEN));
@@ -737,16 +737,16 @@ namespace UnitTest
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath));
 
-        EXPECT_TRUE(archive->OpenPack("@cache@", realNameBuf));
-        EXPECT_TRUE(archive->IsFileExist("@cache@/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@cache@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@cache@/notfoundit.dat"));
+        EXPECT_TRUE(archive->OpenPack("@usercache@", realNameBuf));
+        EXPECT_TRUE(archive->IsFileExist("@usercache@/foundit.dat"));
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
         // change its actual location:
         EXPECT_TRUE(archive->OpenPack("@assets@", realNameBuf));
         EXPECT_TRUE(archive->IsFileExist("@assets@/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@cache@/foundit.dat")); // do not find it in the previous location!
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous location!
         EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
@@ -755,7 +755,7 @@ namespace UnitTest
         EXPECT_TRUE(archive->OpenPack("@assets@/mystuff", realNameBuf));
         EXPECT_TRUE(archive->IsFileExist("@assets@/mystuff/foundit.dat"));
         EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat")); // do not find it in the previous locations!
-        EXPECT_FALSE(archive->IsFileExist("@cache@/foundit.dat")); // do not find it in the previous locations!
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous locations!
         EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@assets@/mystuff/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat")); // non-existent file

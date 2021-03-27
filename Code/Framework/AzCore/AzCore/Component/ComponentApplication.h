@@ -9,15 +9,13 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#ifndef AZCORE_COMPONENT_APPLICATION_H
-#define AZCORE_COMPONENT_APPLICATION_H
+#pragma once
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/ProfileModuleInit.h>
-#include <AzCore/Debug/LocalFileEventLogger.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -40,12 +38,15 @@ namespace AZ
     class IConsole;
     class Module;
     class ModuleManager;
+}
+namespace AZ::Debug
+{
+    class DrillerManager;
+    class LocalFileEventLogger;
+}
 
-    namespace Debug
-    {
-        class DrillerManager;
-    }
-
+namespace AZ
+{
     class ReflectionEnvironment
     {
     public:
@@ -167,15 +168,6 @@ namespace AZ
             //! \note Dynamic AZ::Modules are specified in the ComponentApplication::Descriptor.
             CreateStaticModulesCallback m_createStaticModulesCallback = nullptr;
 
-            //! If set, this is used as the app root folder instead of it being calculated.
-            const char* m_appRootOverride = nullptr;
-
-            //! The path to root of the asset cache folder. For instance: ./cache/<project>/pc
-            const char* m_cacheRootPath = nullptr;
-
-            //! The path to the project in the asset cache folder.  For instance: ./cache/<project>/pc/<project>
-            const char* m_cacheProjectPath = nullptr;
-
             //! Specifies which system components to create & activate. If no tags specified, all system components are used. Specify as comma separated list.
             const char* m_systemComponentTags = nullptr;
 
@@ -226,6 +218,8 @@ namespace AZ
         /// Returns the working root folder that has been registered with the app, if there is one.
         /// It's expected that derived applications will implement an application root.
         const char* GetAppRoot() const override { return m_appRoot.c_str(); }
+        /// Returns the path to the engine.
+        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
         /// Returns the path to the folder the executable is in.
         const char* GetExecutableFolder() const override { return m_exeDirectory.c_str(); }
 
@@ -331,6 +325,9 @@ namespace AZ
         /// Create the drillers
         void        CreateDrillers();
 
+        /// Parse ComponentApplication specific command line arguments
+        void ParseCommandLine(const AZ::CommandLine& commandLine);
+
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
@@ -363,17 +360,11 @@ namespace AZ
         /// Calculates the directory the application executable comes from.
         void CalculateExecutablePath();
 
-        /// Calculates the directory where the bootstrap.cfg file resides.
-        void CalculateAppRoot(const char* appRootOverride = {});
+        /// Calculates the root directory of the engine.
+        void CalculateEngineRoot();
 
-        /**
-         * Check/verify a given path for the engine marker (file) so that we can identify that
-         * a given path is the engine root. This is only valid for target platforms that are built
-         * for the host platform and not deployable (ie windows, mac).
-         * @param fullPath The full path to look for the engine marker
-         * @return true if the input path contains the engine marker file, false if not
-         */
-        virtual bool CheckPathForEngineMarker(const char* fullPath) const;
+        /// Calculates the directory where the bootstrap.cfg file resides.
+        void CalculateAppRoot();
 
         template<typename Iterator>
         static void NormalizePath(Iterator begin, Iterator end, bool doLowercase = true)
@@ -398,10 +389,11 @@ namespace AZ
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocatorAllocate*                         m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
-        AZ::StringFunc::Path::FixedString           m_exeDirectory;
-        AZ::StringFunc::Path::FixedString           m_appRoot;
+        AZ::IO::FixedMaxPathString                  m_exeDirectory;
+        AZ::IO::FixedMaxPathString                  m_engineRoot;
+        AZ::IO::FixedMaxPathString                  m_appRoot;
 
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_gameProjectChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectChangedHandler;
 
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope
@@ -427,9 +419,15 @@ namespace AZ
         // Created early to allow events to be logged before anything else. These will be kept in memory until
         // a file is associated with the logger. The internal buffer is limited to 64kb and once full unexpected
         // behavior may happen. The LocalFileEventLogger will register itself automatically with AZ::Interface<IEventLogger>.
-        AZ::Debug::LocalFileEventLogger             m_eventLogger;
+
+        struct EventLoggerDeleter
+        {
+            EventLoggerDeleter() noexcept;
+            EventLoggerDeleter(bool skipDelete) noexcept;
+            void operator()(AZ::Debug::LocalFileEventLogger* ptr);
+            bool m_skipDelete{};
+        };
+        using EventLoggerPtr = AZStd::unique_ptr<AZ::Debug::LocalFileEventLogger, EventLoggerDeleter>;
+        EventLoggerPtr m_eventLogger;
     };
 }
-
-#endif // AZCORE_COMPONENT_APPLICATION_H
-#pragma once

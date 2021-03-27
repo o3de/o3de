@@ -131,7 +131,7 @@ namespace AssetProcessor
 
         void RegisterSpecializedScanner(AZStd::shared_ptr<SpecializedDependencyScanner> scanner);
 
-        bool PopulateRulesForScanFolder(const AZStd::string& scanFolderPath, const AZStd::vector<AzToolsFramework::AssetUtils::GemInfo>& gemInfoList, AZStd::string& dependencyTokenName);
+        bool PopulateRulesForScanFolder(const AZStd::string& scanFolderPath, const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AZStd::string& dependencyTokenName);
 
     protected:
         bool RunScan(

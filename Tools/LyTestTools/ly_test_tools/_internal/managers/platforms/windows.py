@@ -56,14 +56,14 @@ class _WindowsResourceLocator(AbstractResourceLocator):
         Return path to the project's log dir for the Windows operating system.
         :return: path to 'log' dir in the platform cache dir
         """
-        return os.path.join(self.platform_cache(), 'user', 'log')
+        return os.path.join(self.project(), 'user', 'log')
 
     def project_screenshots(self):
         """
         Return path to the project's screenshot dir for the Windows operating system.
         :return: path to 'screenshot' dir in the platform cache dir
         """
-        return os.path.join(self.platform_cache(), 'user', 'ScreenShots')
+        return os.path.join(self.project(), 'user', 'ScreenShots')
 
     def editor_log(self):
         """

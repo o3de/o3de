@@ -36,27 +36,45 @@ namespace AZ::SettingsRegistryMergeUtils
     inline static constexpr char FilePathsRootKey[] = "/Amazon/AzCore/Runtime/FilePaths";
     inline static constexpr char FilePathKey_BinaryFolder[] = "/Amazon/AzCore/Runtime/FilePaths/BinaryFolder";
     inline static constexpr char FilePathKey_EngineRootFolder[] = "/Amazon/AzCore/Runtime/FilePaths/EngineRootFolder";
+
+    //! Stores the absolute path to root of a project's cache.  No asset platform in this path, this is where the asset database file lives.
+    //! i.e. <ProjectPath>/Cache
+    inline static constexpr char FilePathKey_CacheProjectRootFolder[] = "/Amazon/AzCore/Runtime/FilePaths/CacheProjectRootFolder";
+
+    //! Stores the absolute path to the cache root for an asset platform.  This is the @root@ alias.
+    //! i.e. <ProjectPath>/Cache/<assetplatform>
     inline static constexpr char FilePathKey_CacheRootFolder[] = "/Amazon/AzCore/Runtime/FilePaths/CacheRootFolder";
-    inline static constexpr char FilePathKey_CacheGameFolder[] = "/Amazon/AzCore/Runtime/FilePaths/CacheGameFolder";
-    inline static constexpr char FilePathKey_SourceGameFolder[] = "/Amazon/AzCore/Runtime/FilePaths/SourceGameFolder";
-    //! Stores the filename of the Game Project Directory which is equivalent to the project name
-    inline static constexpr char FilePathKey_SourceGameName[] = "/Amazon/AzCore/Runtime/FilePaths/SourceGameName";
+
+    //! Stores the absolute path of the Game Project Directory
+    inline static constexpr char FilePathKey_ProjectPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectPath";
+
+    //! Store the absolute path to the Projects "user" directory, which is a transient directory where per user
+    //! project settings can be stored
+    inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
+
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
-    //! Root key for where command line are stored at witin the settings registry
+    //! Root key for where command line are stored at within the settings registry
     inline static constexpr char CommandLineRootKey[] = "/Amazon/AzCore/Runtime/CommandLine";
-    //! Root key for command line switches(arguments that start with "-" or "--")
-    inline static constexpr char CommandLineSwitchRootKey[] = "/Amazon/AzCore/Runtime/CommandLine/Switches";
-    //! Root key for command line positional arguments
-    inline static constexpr char CommandLineMiscValuesRootKey[] = "/Amazon/AzCore/Runtime/CommandLine/MiscValues";
 
-    //! Examines the Settings Registry for a "/Amazon/CommandLine/Switches/app-root" key
-    //! to use as an override for the Application Root.
-    //! If that key is not found, it then checks the AZ::Utils::GetDefaultAppRootPath and returns that if it is value
+    //! Root key where raw project settings (project.json) file is merged to settings registry
+    inline static constexpr char ProjectSettingsRootKey[] = "/Amazon/Project/Settings";
+
+    //! Root key where raw engine manifest (o3de_manifest.json) file is merged to settings registry
+    inline static constexpr char EngineManifestRootKey[] = "/Amazon/Engine/Manifest";
+
+    //! Root key where raw engine settings (engine.json) file is merged to settings registry
+    inline static constexpr char EngineSettingsRootKey[] = "/Amazon/Engine/Settings";
+
+    //! Examines the Settings Registry for a "${BootstrapSettingsRootKey}/engine_path" key
+    //! to use as an override for the Engine Root.
     //! Otherwise a directory walk upwards from the executable directory is performed
-    //! to find the boostrap.cfg file which will be used as the app root
-    AZ::IO::FixedMaxPath GetAppRoot(SettingsRegistryInterface* settingsRegistry = nullptr);
+    //! to find the engine.json file which will be used as the engine root
+    //! If it's still not found, attempt to find the project (by similar means) then reconcile the
+    //! engine root by inspecting project.json and the engine manifest file.
+    AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry);
+    AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry);
 
     //! Query the specializations that will be used when loading the Settings Registry.
     //! The SpecializationsRootKey is visited to retrieve any specializations stored within that section of that registry
@@ -151,16 +169,18 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
 
-    //! Adds the development settings added by individual users to the Settings Registry.
+    //! Adds the development settings added by individual users of the project to the Settings Registry.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_DevRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    void MergeSettingsToRegistry_UserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
 
     //! Adds the settings set through the command line to the Settings Registry. This will also execute any Settings
-    //! Registry related arguments. Note that --set will be run first and all other commands are run afterwards and only
-    //! if executeCommands is true. The following options are supported:
+    //! Registry related arguments. Note that --regset and -regremove will run in the order in which they are parsed
     //! --regset <arg> Sets a value in the registry. See MergeCommandLineArgument for options for <arg>
     //!     example: --regset "/My/String/Value=String value set"
+    //! --regremove <arg> Removes a value in the registry
+    //!    example: --regremove "/My/String/Value"
+    //! only when executeCommands is true are the following options supported:
     //! --regdump <path> Dumps the content of the key at path and all it's content/children to output.
     //!     example: --regdump /My/Array/With/Objects
     //! --regdumpall Dumps the entire settings registry to output.
@@ -169,7 +189,11 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! Stores the command line settings into the Setting Registry
     //! The arguments can be used later anywhere the command line is needed
-    void MergeSettingsToRegistry_StoreCommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine);
+    void StoreCommandLineToRegistry(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine);
+
+    //! Query the command line settings from the Setting Registry and stores them
+    //! into the AZ::CommandLine instance
+    bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
 
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings
@@ -179,14 +203,25 @@ namespace AZ::SettingsRegistryMergeUtils
         //! Include filter which is used to indicate which paths of the Settings Registry
         //! should be traversed.
         //! If the include filter is empty then all paths underneath the JSON pointer path are included
-        //! otherwise the include filter invoked and if it returns true does it proceed with traversal continues down the path
+        //! otherwise the include filter invoked and if it returns true does it proceed with traversal down the path
+        //! The supplied JSON pointer will be a complete path from the root of the registry
         AZStd::function<bool(AZStd::string_view path)> m_includeFilter;
+        //! JSON pointer prefix to dump all settings underneath
+        //! For example if the prefix is "/Amazon/Settings", then the dumped settings will be placed underneath
+        //! an object at that path
+        //! """
+        //! {
+        //!   "Amazon":{
+        //!     "Settings":{ <Dumped values> }
+        //!   }
+        //! }
+        AZStd::string_view m_jsonPointerPrefix;
     };
 
     //! Dumps supplied settings registry from the path specified by key if it exist the the AZ::IO::GenericStream
-    //! key is a JSON pointer path to dumping settings recursively from
-    //! stream is an AZ::IO::GenericStream that supports writing
-    //! dumperSettings are used to determine how to format the dumped output
+    //! @param key is a JSON pointer to recursively dump settings from
+    //! @param stream is an AZ::IO::GenericStream that supports writing
+    //! @param dumperSettings are used to determine how to format the dumped output
     bool DumpSettingsRegistryToStream(SettingsRegistryInterface& registry, AZStd::string_view key,
         AZ::IO::GenericStream& stream, const DumperSettings& dumperSettings);
 

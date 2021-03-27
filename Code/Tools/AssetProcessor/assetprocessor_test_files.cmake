@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    testdata/unittests.qrc
     testdata/config_broken_badplatform/AssetProcessorPlatformConfig.ini
     testdata/config_broken_noplatform/AssetProcessorPlatformConfig.ini
     testdata/config_broken_noscans/AssetProcessorPlatformConfig.ini

@@ -190,7 +190,7 @@ namespace RenderToTexture
         return AZ::TICK_LAST;
     }
 
-    void RenderToTextureComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void RenderToTextureComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         // push the changes from the component's RenderContextConfig to our RenderContext
         // do this here before we render so we avoid threading issues.

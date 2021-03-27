@@ -41,7 +41,6 @@ ly_add_target(
 ly_add_target(
     NAME RenderToTexture ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.RenderToTexture.b895c3bc4f894c1ebb9562a3577248f9.v0.1.0
     FILES_CMAKE
         rendertotexture_shared_files.cmake
     PLATFORM_INCLUDE_FILES
@@ -54,6 +53,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::RenderToTexture.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -83,9 +84,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME RenderToTexture.Editor MODULE
+        NAME RenderToTexture.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.RenderToTexture.Editor.b895c3bc4f894c1ebb9562a3577248f9.v0.1.0
         FILES_CMAKE
             rendertotexture_shared_files.cmake
         PLATFORM_INCLUDE_FILES
@@ -98,6 +99,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::RenderToTexture.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 endif()
 

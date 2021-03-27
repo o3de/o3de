@@ -699,3 +699,9 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     # a good starting point.
     include(cmake/3rdParty/BuiltInPackages.cmake)
 endif()
+
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    include(cmake/LYWrappers.cmake)
+    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
+    ly_parse_third_party_dependencies(3rdParty::Qt)
+endif()

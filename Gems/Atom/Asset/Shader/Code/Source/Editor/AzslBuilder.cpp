@@ -167,7 +167,12 @@ namespace AZ
 
                     // execute azsl prepending here, before preprocess, in order to support macros in AzslcHeader.azsli
                     AZStd::string prependedAzslSourceCode;
-                    RHI::PrependArguments args{ fullPath.c_str(), shaderPlatformInterface->GetAzslHeader(info), shaderPlatformInterface->GetAPIName().GetCStr(), nullptr, &prependedAzslSourceCode };
+                    RHI::PrependArguments args;
+                    args.m_sourceFile = fullPath.c_str();
+                    args.m_prependFile = shaderPlatformInterface->GetAzslHeader(info);
+                    args.m_addSuffixToFileName = shaderPlatformInterface->GetAPIName().GetCStr();
+                    args.m_destinationStringOpt = &prependedAzslSourceCode;
+
                     if (RHI::PrependFile(args) == fullPath)  // error case. it returns the combined-file's name on success, or original path on failure, but here we use the "direct to string" mode so we don't need to store the returned name.
                     {
                         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
@@ -345,14 +350,11 @@ namespace AZ
                 return;
             }
 
-            // pass it to the shader platform interface:
-            platformInterface->SetExternalArguments(buildOptions.m_compilerArguments);
-
             // compiler setup
             ShaderBuilder::AzslCompiler azslc(preprocessedPath);
-            AZStd::string compilerParameters = platformInterface->GetAzslCompilerParameters();
+            AZStd::string compilerParameters = platformInterface->GetAzslCompilerParameters(buildOptions.m_compilerArguments);
             compilerParameters += " ";
-            compilerParameters += platformInterface->GetAzslCompilerWarningParameters();
+            compilerParameters += platformInterface->GetAzslCompilerWarningParameters(buildOptions.m_compilerArguments);
             AtomShaderConfig::AddParametersFromConfigFile(compilerParameters, request.m_platformInfo);
             if (isSrgi || isAzsli)
             {

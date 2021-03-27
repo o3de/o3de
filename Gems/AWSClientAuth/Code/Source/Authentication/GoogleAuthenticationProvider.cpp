@@ -22,8 +22,8 @@
 namespace AWSClientAuth
 {
 
-    constexpr char GOOGLE_SETTINGS_PATH[] = "/AWS/Google";
-    constexpr char GOOGLE_VERIFICATION_URL_RESPONSE_KEY[] = "verification_url";
+    constexpr char GoogleSettingsPath[] = "/AWS/Google";
+    constexpr char GoogleVerificationUrlResponseKey[] = "verification_url";
 
     GoogleAuthenticationProvider::GoogleAuthenticationProvider()
     {
@@ -37,9 +37,9 @@ namespace AWSClientAuth
 
     bool GoogleAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GOOGLE_SETTINGS_PATH))
+        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get Google settings object for path %s", GOOGLE_SETTINGS_PATH);
+            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get Google settings object for path %s", GoogleSettingsPath);
             return false;
         }
         return true;
@@ -70,13 +70,13 @@ namespace AWSClientAuth
     // Refer https://developers.google.com/identity/protocols/oauth2/limited-input-device#step-1:-request-device-and-user-codes.
     void GoogleAuthenticationProvider::DeviceCodeGrantSignInAsync()
     {
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s", OAUTH_CLIENT_ID_BODY_KEY, m_settings->m_appClientId.c_str()
-            , OAUTH_SCOPE_BODY_KEY, OAUTH_SCOPE_BODY_VALUE);
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s", OAuthClientIdBodyKey, m_settings->m_appClientId.c_str()
+            , OAuthScopeBodyKey, OAuthScopeBodyValue);
 
         // Set headers and body for device sign in http requests.
         AZStd::map<AZStd::string, AZStd::string> headers;
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
 
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthCodeURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -84,15 +84,15 @@ namespace AWSClientAuth
             {
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
-                    m_cachedDeviceCode = jsonView.GetString(OAUTH_DEVICE_CODE_BODY_KEY).c_str();
+                    m_cachedDeviceCode = jsonView.GetString(OAuthDeviceCodeBodyKey).c_str();
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantSignInSuccess
-                        , jsonView.GetString(OAUTH_USER_CODE_RESPONSE_KEY).c_str(), jsonView.GetString(GOOGLE_VERIFICATION_URL_RESPONSE_KEY).c_str()
-                        , jsonView.GetInteger(OAUTH_EXPIRES_IN_RESPONSE_KEY));
+                        , jsonView.GetString(OAuthUserCodeResponseKey).c_str(), jsonView.GetString(GoogleVerificationUrlResponseKey).c_str()
+                        , jsonView.GetInteger(OAuthExpiresInResponseKey));
                 }
                 else
                 {
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantSignInFail
-                        , jsonView.GetString(OAUTH_ERROR_RESPONSE_KEY).c_str());
+                        , jsonView.GetString(OAuthErrorResponseKey).c_str());
                 }
             }
         );
@@ -105,12 +105,12 @@ namespace AWSClientAuth
     {
         // Set headers and body for device confirm sign in http requests.
         AZStd::map<AZStd::string, AZStd::string> headers;
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s&%s=%s", OAUTH_CLIENT_ID_BODY_KEY, m_settings->m_appClientId.c_str()
-            , OAUTH_CLIENT_SECRET_BODY_KEY, m_settings->m_clientSecret.c_str(), OAUTH_DEVICE_CODE_BODY_KEY, m_cachedDeviceCode.c_str()
-            , OAUTH_GRANT_TYPE_BODY_KEY, m_settings->m_grantType.c_str());
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s&%s=%s", OAuthClientIdBodyKey, m_settings->m_appClientId.c_str()
+            , OAuthClientSecretBodyKey, m_settings->m_clientSecret.c_str(), OAuthDeviceCodeBodyKey, m_cachedDeviceCode.c_str()
+            , OAuthGrantTypeBodyKey, m_settings->m_grantType.c_str());
  
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
 
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -125,7 +125,7 @@ namespace AWSClientAuth
                 else
                 {
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInFail
-                        , jsonView.GetString(OAUTH_ERROR_RESPONSE_KEY).c_str());
+                        , jsonView.GetString(OAuthErrorResponseKey).c_str());
                 }
             }
         );
@@ -136,12 +136,12 @@ namespace AWSClientAuth
     void GoogleAuthenticationProvider::RefreshTokensAsync()
     {
         AZStd::map<AZStd::string, AZStd::string> headers;
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s&%s=%s", OAUTH_CLIENT_ID_BODY_KEY, m_settings->m_appClientId.c_str()
-            , OAUTH_CLIENT_SECRET_BODY_KEY, m_settings->m_clientSecret.c_str()
-            , OAUTH_GRANT_TYPE_BODY_KEY, OAUTH_REFRESH_TOKEN_BODY_VALUE, OAUTH_REFRESH_TOKEN_BODY_KEY, m_authenticationTokens.GetRefreshToken().c_str());
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s&%s=%s", OAuthClientIdBodyKey, m_settings->m_appClientId.c_str()
+            , OAuthClientSecretBodyKey, m_settings->m_clientSecret.c_str()
+            , OAuthGrantTypeBodyKey, OAuthRefreshTokenBodyValue, OAuthRefreshTokenBodyKey, m_authenticationTokens.GetRefreshToken().c_str());
 
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
 
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -156,7 +156,7 @@ namespace AWSClientAuth
             else
             {
                 AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensFail
-                    , jsonView.GetString(OAUTH_ERROR_RESPONSE_KEY).c_str());
+                    , jsonView.GetString(OAuthErrorResponseKey).c_str());
             }
         }
         );
@@ -164,9 +164,9 @@ namespace AWSClientAuth
 
     void GoogleAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
-        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAUTH_ACCESS_TOKEN_RESPONSE_KEY).c_str(),
-            jsonView.GetString(OAUTH_REFRESH_TOKEN_RESPONSE_KEY).c_str() ,jsonView.GetString(OAUTH_ID_TOKEN_RESPONSE_KEY).c_str(), ProviderNameEnum::Google
-            , jsonView.GetInteger(OAUTH_EXPIRES_IN_RESPONSE_KEY));
+        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str() ,jsonView.GetString(OAuthIdTokenResponseKey).c_str(), ProviderNameEnum::Google
+            , jsonView.GetInteger(OAuthExpiresInResponseKey));
     }
 
 } // namespace AWSClientAuth

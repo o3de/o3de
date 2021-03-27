@@ -31,9 +31,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GraphCanvasWidgets
     )
     ly_add_target(
-        NAME GraphModel.Editor MODULE
+        NAME GraphModel.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.GraphModel.Editor.0844f64a3acf4f5abf3a535dc9b63bc9.v0.1.0
         FILES_CMAKE
             graphmodel_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -49,6 +49,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::GraphCanvasWidgets
                 Gem::GraphModel.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::GraphCanvas.Editor
     )
 endif()
 

@@ -48,9 +48,9 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME EditorPythonBindings.Editor MODULE
+    NAME EditorPythonBindings.Editor GEM_MODULE
+
     NAMESPACE Gem
-    OUTPUT_NAME Gem.EditorPythonBindings.Editor.b658359393884c4381c2fe2952b1472a.v0.1.0
     FILES_CMAKE
         editorpythonbindings_editor_files.cmake
     INCLUDE_DIRECTORIES

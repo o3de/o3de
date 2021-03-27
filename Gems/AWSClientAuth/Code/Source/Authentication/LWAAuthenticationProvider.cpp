@@ -21,8 +21,8 @@
 
 namespace AWSClientAuth
 {
-    constexpr char LWA_SETTINGS_PATH[] = "/AWS/LoginWithAmazon";    
-    constexpr char LWA_VERIFICATION_URL_RESPONSE_KEY[] = "verification_uri";
+    constexpr char LwaSettingsPath[] = "/AWS/LoginWithAmazon";    
+    constexpr char LwaVerificationUrlResponseKey[] = "verification_uri";
 
     LWAAuthenticationProvider::LWAAuthenticationProvider()
     {
@@ -36,9 +36,9 @@ namespace AWSClientAuth
 
     bool LWAAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LWA_SETTINGS_PATH))
+        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LwaSettingsPath))
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get login with Amazon settings object for path %s", LWA_SETTINGS_PATH);
+            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
             return false;
         }
         return true;
@@ -70,12 +70,12 @@ namespace AWSClientAuth
     void LWAAuthenticationProvider::DeviceCodeGrantSignInAsync()
     {
         // Set headers and body for device sign in http requests.
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAUTH_RESPONSE_TYPE_BODY_KEY, m_settings->m_responseType.c_str()
-            , OAUTH_CLIENT_ID_BODY_KEY, m_settings->m_appClientId.c_str(), OAUTH_SCOPE_BODY_KEY, OAUTH_SCOPE_BODY_VALUE);
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAuthResponseTypeBodyKey, m_settings->m_responseType.c_str()
+            , OAuthClientIdBodyKey, m_settings->m_appClientId.c_str(), OAuthScopeBodyKey, OAuthScopeBodyValue);
 
         AZStd::map<AZStd::string, AZStd::string> headers;
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
         
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthCodeURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -83,17 +83,17 @@ namespace AWSClientAuth
             {
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
-                    m_cachedUserCode = jsonView.GetString(OAUTH_USER_CODE_RESPONSE_KEY).c_str();
-                    m_cachedDeviceCode = jsonView.GetString(OAUTH_DEVICE_CODE_BODY_KEY).c_str();
+                    m_cachedUserCode = jsonView.GetString(OAuthUserCodeResponseKey).c_str();
+                    m_cachedDeviceCode = jsonView.GetString(OAuthDeviceCodeBodyKey).c_str();
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantSignInSuccess
-                        , jsonView.GetString(OAUTH_USER_CODE_RESPONSE_KEY).c_str()
-                        , jsonView.GetString(LWA_VERIFICATION_URL_RESPONSE_KEY).c_str()
-                        , jsonView.GetInteger(OAUTH_EXPIRES_IN_RESPONSE_KEY));
+                        , jsonView.GetString(OAuthUserCodeResponseKey).c_str()
+                        , jsonView.GetString(LwaVerificationUrlResponseKey).c_str()
+                        , jsonView.GetInteger(OAuthExpiresInResponseKey));
                 }
                 else
                 {
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantSignInFail
-                        , jsonView.GetString(OAUTH_ERROR_RESPONSE_KEY).c_str());
+                        , jsonView.GetString(OAuthErrorResponseKey).c_str());
                 }
             }
         );
@@ -104,12 +104,12 @@ namespace AWSClientAuth
     void LWAAuthenticationProvider::DeviceCodeGrantConfirmSignInAsync()
     {
         // Set headers and body for device confirm sign in http requests.
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAUTH_USER_CODE_RESPONSE_KEY, m_cachedUserCode.c_str()
-            , OAUTH_GRANT_TYPE_BODY_KEY, m_settings->m_grantType.c_str(), OAUTH_DEVICE_CODE_BODY_KEY, m_cachedDeviceCode.c_str());
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAuthUserCodeResponseKey, m_cachedUserCode.c_str()
+            , OAuthGrantTypeBodyKey, m_settings->m_grantType.c_str(), OAuthDeviceCodeBodyKey, m_cachedDeviceCode.c_str());
 
         AZStd::map<AZStd::string, AZStd::string> headers;
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
 
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -136,12 +136,12 @@ namespace AWSClientAuth
     void LWAAuthenticationProvider::RefreshTokensAsync()
     {
         // Set headers and body for device confirm sign in http requests.
-        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAUTH_CLIENT_ID_BODY_KEY, m_settings->m_appClientId.c_str(), OAUTH_GRANT_TYPE_BODY_KEY,
-            OAUTH_REFRESH_TOKEN_BODY_VALUE, OAUTH_REFRESH_TOKEN_BODY_KEY, m_authenticationTokens.GetRefreshToken().c_str());
+        AZStd::string body = AZStd::string::format("%s=%s&%s=%s&%s=%s", OAuthClientIdBodyKey, m_settings->m_appClientId.c_str(), OAuthGrantTypeBodyKey,
+            OAuthRefreshTokenBodyValue, OAuthRefreshTokenBodyKey, m_authenticationTokens.GetRefreshToken().c_str());
 
         AZStd::map<AZStd::string, AZStd::string> headers;
-        headers[OAUTH_CONTENT_TYPE_HEADER_KEY] = OAUTH_CONTENT_TYPE_HEADER_VALUE;
-        headers[OAUTH_CONTENT_LENGTH_HEADER_KEY] = AZStd::to_string(body.length());
+        headers[OAuthContentTypeHeaderKey] = OAuthContentTypeHeaderValue;
+        headers[OAuthContentLengthHeaderKey] = AZStd::to_string(body.length());
 
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
@@ -165,9 +165,9 @@ namespace AWSClientAuth
     void LWAAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
         // For Login with Amazon openId and access tokens are the same.
-        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAUTH_ACCESS_TOKEN_RESPONSE_KEY).c_str(), jsonView.GetString(OAUTH_REFRESH_TOKEN_RESPONSE_KEY).c_str(),
-            jsonView.GetString(OAUTH_ACCESS_TOKEN_RESPONSE_KEY).c_str(), ProviderNameEnum::LoginWithAmazon
-            , jsonView.GetInteger(OAUTH_EXPIRES_IN_RESPONSE_KEY));
+        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(), jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(),
+            jsonView.GetString(OAuthAccessTokenResponseKey).c_str(), ProviderNameEnum::LoginWithAmazon
+            , jsonView.GetInteger(OAuthExpiresInResponseKey));
     }
 
 } // namespace AWSClientAuth

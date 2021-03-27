@@ -15,35 +15,35 @@ import pytest
 from . import current_project
 
 TEST_BOOTSTRAP_CONTENT_1 = """
-sys_game_folder = Game1
+project_path = Game1
 foo = bar
 key1 = value1
 key2 = value2
 assets = pc
 """
 TEST_BOOTSTRAP_CONTENT_2 = """
-sys_game_folder=Game1
+project_path=Game1
 foo = bar
 key1 = value1
 key2 = value2
 assets = pc
 """
 TEST_BOOTSTRAP_CONTENT_3 = """
-sys_game_folder= Game1
+project_path= Game1
 foo = bar
 key1 = value1
 key2 = value2
 assets = pc
 """
 TEST_BOOTSTRAP_CONTENT_4 = """
-sys_game_folder =Game1
+project_path =Game1
 foo = bar
 key1 = value1
 key2 = value2
 assets = pc
 """
 TEST_BOOTSTRAP_CONTENT_5 = """
-sys_game_folder           =                Game1
+project_path           =                Game1
 foo = bar
 key1 = value1
 key2 = value2

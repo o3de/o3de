@@ -52,6 +52,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -81,7 +82,6 @@ AZ_POP_DISABLE_WARNING
 #include <CryCommon/ITimer.h>
 #include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
-#include <CryCommon/ParseEngineConfig.h>
 
 // Editor
 #include "Settings.h"
@@ -683,7 +683,6 @@ public:
 
         QString dummyString;
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
-            {{"app-root", "Application Root path override", "app-root"}, m_appRoot},
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
@@ -691,7 +690,11 @@ public:
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
             {{"exec_line", "command to run on startup, used for systems like automation", "exec_line"}, m_execLineCmd},
             {{"regset", "Command-line argument to override settings registry values", "regset"}, dummyString},
-            {{"regdump", "Sets a value within the global settings registry at the JSON pointer path @key with value of @value)", "regdump"}, dummyString}
+            {{"regremove", "Deletes a value within the global settings registry at the JSON pointer path @key", "regremove"}, dummyString},
+            {{"regdump", "Sets a value within the global settings registry at the JSON pointer path @key with value of @value", "regdump"}, dummyString},
+            {{"project-path", "Supplies the path to the project that the Editor should use", "project-path"}, dummyString},
+            {{"engine-path", "Supplies the path to the engine", "engine-path"}, dummyString},
+            {{"project-cache-path", "Path to the project cache", "project-cache-path"}, dummyString},
             // add dummy entries here to prevent QCommandLineParser error-ing out on cmd line args that will be parsed later
         };
 
@@ -719,7 +722,11 @@ public:
         }
 #endif
 
-        parser.process(args);
+        if (!parser.parse(args))
+        {
+            AZ_TracePrintf("QT CommandLine Parser", "QT command line parsing warned with message %s."
+                " Has the QCommandLineParser had these options added to it", parser.errorText().toUtf8().constData());
+        }
 
         // Get boolean options
         const int numOptions = options.size();
@@ -1217,11 +1224,10 @@ bool CCryEditApp::InitGame()
 {
     if (!m_bPreviewMode && !GetIEditor()->IsInMatEditMode())
     {
-        ICVar* pVar = gEnv->pConsole->GetCVar("sys_game_folder");
-        const char* sGameFolder = pVar ? pVar->GetString() : nullptr;
-        Log((QString("sys_game_folder = ") + (sGameFolder && sGameFolder[0] ? sGameFolder : "<not set>")).toUtf8().data());
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        Log((QString("project_path = %1").arg(!projectPath.empty() ? projectPath.c_str() : "<not set>")).toUtf8().data());
 
-        pVar = gEnv->pConsole->GetCVar("sys_localization_folder");
+        ICVar* pVar = gEnv->pConsole->GetCVar("sys_localization_folder");
         const char* sLocalizationFolder = pVar ? pVar->GetString() : nullptr;
         Log((QString("sys_localization_folder = ") + (sLocalizationFolder && sLocalizationFolder[0] ? sLocalizationFolder : "<not set>")).toUtf8().data());
 
@@ -1740,11 +1746,17 @@ BOOL CCryEditApp::InitInstance()
     mainWindowWrapper->setGuest(mainWindow);
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
-    QDir engineRoot = AzQtComponents::FindEngineRootDir(qApp);
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    QDir engineRoot = QString::fromUtf8(engineRootPath.c_str(), aznumeric_cast<int>(engineRootPath.Native().size()));
     AzQtComponents::StyleManager::addSearchPaths(
         QStringLiteral("style"),
         engineRoot.filePath(QStringLiteral("Code/Sandbox/Editor/Style")),
-        QStringLiteral(":/Editor/Style"));
+        QStringLiteral(":/Editor/Style"),
+        engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
     // Note: we should use getNativeHandle to get the HWND from the widget, but
@@ -5496,9 +5508,9 @@ void CCryEditApp::OpenLUAEditor(const char* files)
         }
     }
 
-    const char* appRoot = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-    AZ_Assert(appRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
+    const char* engineRoot = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+    AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
 
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
@@ -5509,7 +5521,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 #endif
         "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
 
-    AZStd::string processArgs = AZStd::string::format("%s -app-root \"%s\"", args.c_str(), appRoot);
+    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
     StartProcessDetached(process.c_str(), processArgs.c_str());
 }
 

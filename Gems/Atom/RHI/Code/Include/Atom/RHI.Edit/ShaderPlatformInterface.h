@@ -51,6 +51,9 @@ namespace AZ
 
         //! This class provides a platform agnostic interface for the creation
         //! and manipulation of platform shader objects.
+        //! WARNING: The ShaderPlatformInterface objects are singletons and will be used to process multiple shader compilation jobs.
+        //! Do not store per-job configuration data in any ShaderPlatformInterface classes, as it may get stomped. Instead, pass
+        //! any per-job configuration on the call stack.
         class ShaderPlatformInterface
         {
         public:
@@ -123,16 +126,17 @@ namespace AZ
                 const AZStd::string& functionName,
                 ShaderHardwareStage shaderStage,
                 const AZStd::string& tempFolderPath,
-                StageDescriptor& outputDescriptor) const = 0;
+                StageDescriptor& outputDescriptor,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
 
             //! Get the parameters (except warning related) from that platform interface, and the configuration files.
-            virtual AZStd::string GetAzslCompilerParameters() const = 0;
+            virtual AZStd::string GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
 
             //! Get only the warning-related parameters from that platform interface.
-            virtual AZStd::string GetAzslCompilerWarningParameters() const = 0;
+            virtual AZStd::string GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
 
             //! Query whether the shaders are set to build with debug information
-            virtual bool BuildHasDebugInfo() const = 0;
+            virtual bool BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
 
             //! Get the filename of include file to prefix shader programs with
             virtual const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const = 0;
@@ -142,23 +146,20 @@ namespace AZ
             virtual bool BuildPipelineLayoutDescriptor(
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
                 const ShaderResourceGroupInfoList& srgInfoList,
-                const RootConstantsInfo& rootConstantsInfo) = 0;
+                const RootConstantsInfo& rootConstantsInfo,
+                const ShaderCompilerArguments& shaderCompilerArguments) = 0;
 
             //! See AZ::RHI::Factory::GetAPIUniqueIndex() for details.
             //! See AZ::RHI::Limits::APIType::PerPlatformApiUniqueIndexMax.
             uint32_t GetAPIUniqueIndex() const { return m_apiUniqueIndex; }
 
-            //! To set when you can read from a config file: additional arguments or compiler settings
-            void SetExternalArguments(const ShaderCompilerArguments& arguments)
-            {
-                m_settings = arguments;
-            }
-
-        protected:
-            ShaderCompilerArguments m_settings;
-
         private:
             ShaderPlatformInterface() = delete;
+
+            //! WARNING: The ShaderPlatformInterface objects are singletons and will be used to process multiple shader compilation jobs.
+            //! Do not store per-job configuration data in any ShaderPlatformInterface classes, as it may get stomped. Instead, pass
+            //! any per-job configuration on the call stack.
+            
             const uint32_t m_apiUniqueIndex;
         };
     }

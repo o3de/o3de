@@ -72,6 +72,41 @@ namespace AZ::SceneAPI::Utilities
         m_output += AZStd::string::format("\t%s: <% f, % f, % f>\n", name, data.GetX(), data.GetY(), data.GetZ());
     }
 
+    void DebugOutput::Write(const char* name, AZStd::optional<bool> data)
+    {
+        if (data.has_value())
+        {
+            Write(name, data.value());
+        }
+        else
+        {
+            Write(name, "Not set");
+        }
+    }
+    void DebugOutput::Write(const char* name, AZStd::optional<float> data)
+    {
+        if (data.has_value())
+        {
+            Write(name, data.value());
+        }
+        else
+        {
+            Write(name, "Not set");
+        }
+    }
+
+    void DebugOutput::Write(const char* name, AZStd::optional<AZ::Vector3> data)
+    {
+        if (data.has_value())
+        {
+            Write(name, data.value());
+        }
+        else
+        {
+            Write(name, "Not set");
+        }
+    }
+
     const AZStd::string& DebugOutput::GetOutput() const
     {
         return m_output;

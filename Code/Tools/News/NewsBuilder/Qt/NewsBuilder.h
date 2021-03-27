@@ -17,6 +17,8 @@
 
 #include "NewsShared/LogType.h"
 #include "NewsShared/ErrorCodes.h"
+
+#include <AzCore/IO/Path/Path_fwd.h>
 #endif
 
 class QSignalMapper;
@@ -41,7 +43,7 @@ namespace News
         Q_OBJECT
 
     public:
-        explicit NewsBuilder(QWidget* parent = nullptr);
+        explicit NewsBuilder(QWidget* parent, const AZ::IO::PathView& engineRootPath);
         ~NewsBuilder();
 
     private:

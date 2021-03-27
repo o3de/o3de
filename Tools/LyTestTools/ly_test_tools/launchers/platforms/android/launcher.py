@@ -20,6 +20,7 @@ Assumptions for running automation:
 import json
 import logging
 import os
+from pathlib import PurePath, Path
 from subprocess import CalledProcessError
 
 import six
@@ -120,6 +121,7 @@ class AndroidLauncher(Launcher):
         self._adb_prefix_command = ['adb']
         self._device_id = None
         self.launch_proc = None
+        self.android_vfs_setreg_path = None
         self.package_name = get_package_name(os.path.join(self.workspace.paths.dev(),
                                                           self.workspace.project))
         self._device_id = self.get_device_config(config_file=self.workspace.paths.devices_file(),
@@ -181,6 +183,9 @@ class AndroidLauncher(Launcher):
     def teardown(self):
         ly_test_tools.mobile.android.undo_tcp_port_changes(self._device_id)
         self.restore_settings()
+        # Remove temporary vfs file if created
+        if self.android_vfs_setreg_path and os.path.isfile(self.android_vfs_setreg_path):
+            os.remove(self.android_vfs_setreg_path)
         self.workspace.shader_compiler.stop()
         super(AndroidLauncher, self).teardown()
 
@@ -190,12 +195,22 @@ class AndroidLauncher(Launcher):
 
         :return: None
         """
-        self.workspace.settings.modify_bootstrap_setting('sys_game_folder', self.workspace.project)
-        self.workspace.settings.modify_bootstrap_setting('connect_to_remote', 1)
-        self.workspace.settings.modify_bootstrap_setting('android_connect_to_remote', 1)
-        self.workspace.settings.modify_bootstrap_setting('wait_for_connect', 1)
-        self.workspace.settings.modify_bootstrap_setting('remote_ip', '127.0.0.1')
-        self.workspace.settings.modify_bootstrap_setting('remote_port', '45643')
+
+        # Write the Android vfs settings to a settings registry file within the user's registry folder
+        user_registry_path = Path(self.workspace.project) / 'user' / 'Registry'
+        user_registry_path.mkdir(parents=True, exist_ok=True)
+
+        # Create a python dictionary that can serialize to a json file with JSON pointer of
+        # /Amazon/AzCore/Bootstrap/<settings>
+        vfs_settings = { 'Amazon' : { 'AzCore' : { 'Bootstrap' : {} }}}
+        vfs_settings['Amazon']['AzCore']['Bootstrap']['connect_to_remote'] = 1
+        vfs_settings['Amazon']['AzCore']['Bootstrap']['android_connect_to_remote'] = 1
+        vfs_settings['Amazon']['AzCore']['Bootstrap']['wait_for_connect'] = 1
+        vfs_settings['Amazon']['AzCore']['Bootstrap']['remote_ip'] = '127.0.0.1'
+        vfs_settings['Amazon']['AzCore']['Bootstrap']['remote_port'] = 45643
+        self.android_vfs_setreg_path = user_registry_path / 'test_android_vfs_settings.android.setreg'
+        with self.android_vfs_setreg_path.open('w') as android_vfs_setreg:
+            json.dump(vfs_settings, android_vfs_setreg, indent=4)
 
         self.workspace.settings.modify_platform_setting('r_AssetProcessorShaderCompiler', 1)
         self.workspace.settings.modify_platform_setting('r_ShadersAsyncCompiling', 0)

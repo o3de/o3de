@@ -31,7 +31,6 @@ ly_add_target(
 ly_add_target(
     NAME MultiplayerCompression ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.MultiplayerCompression.1d353c8ca3c74ed193fd6c6783ae41cc.v0.1.0
     FILES_CMAKE
         multiplayercompression_shared_files.cmake
     INCLUDE_DIRECTORIES

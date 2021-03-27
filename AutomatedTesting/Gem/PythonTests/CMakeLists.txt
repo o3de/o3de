@@ -30,6 +30,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT
+            Physics
     )
     ly_add_pytest(
         NAME AutomatedTesting::PhysicsTests_Sandbox
@@ -42,6 +44,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT
+            Physics
     )
 endif()
 
@@ -49,9 +53,23 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
         NAME AutomatedTesting::ScriptCanvasTests
-        TEST_SUITE main
+        TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Active.py
+        TIMEOUT 3600
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            Legacy::CryRenderNULL
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            ScriptCanvas
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::ScriptCanvasTests_Sandbox
+        TEST_SUITE sandbox
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Sandbox.py
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
@@ -74,6 +92,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT
+            WhiteBox
     )
 endif()
 
@@ -108,7 +128,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
             AutomatedTesting.Assets
             Gem::EditorPythonBindings.Editor
-            COMPONENT TestTools
+        COMPONENT TestTools
     )
 endif()
 
@@ -136,7 +156,6 @@ include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_LARGE_WORLDS_TEST_SUPPORTED)
 
 ## DynVeg ##
-
     ly_add_pytest(
         NAME DynamicVegetationTests_Main_NoGPU
         TEST_SERIAL
@@ -150,6 +169,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
     ly_add_pytest(
@@ -165,6 +186,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
     ly_add_pytest(
@@ -179,10 +202,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::Editor
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
 ## LandscapeCanvas ##
-
     ly_add_pytest(
         NAME LandscapeCanvasTests_Main
         TEST_SERIAL
@@ -194,6 +218,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
            Legacy::Editor
            AutomatedTesting.Assets
            Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
 ## GradientSignal ##
@@ -209,6 +235,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::Editor
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
     ly_add_pytest(
@@ -222,6 +250,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::Editor
             AutomatedTesting.Assets
             Legacy::CryRenderNULL
+        COMPONENT
+            LargeWorlds
     )
 
 endif()
@@ -239,6 +269,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT
+            Editor
     )
 endif()
 

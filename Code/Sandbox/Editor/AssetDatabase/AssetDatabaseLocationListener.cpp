@@ -14,6 +14,8 @@
 
 #include "AssetDatabaseLocationListener.h"
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -44,16 +46,20 @@ namespace AssetDatabase
         return m_assetDatabaseConnection;
     }
 
-    bool AssetDatabaseLocationListener::GetAssetDatabaseLocation( AZStd::string& result )
+    bool AssetDatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& result)
     {
-        result = gEnv->pFileIO->GetAlias( "@devroot@" );
-        result += "/Cache/";
-        ICVar * pCvar = gEnv->pConsole->GetCVar( "sys_game_folder" );
-        if( pCvar && pCvar->GetString() )
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
-            result += pCvar->GetString();
+            AZ::SettingsRegistryInterface::FixedValueString projectCacheRootValue;
+            if (registry->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+                !projectCacheRootValue.empty())
+            {
+                result = projectCacheRootValue;
+                result += "/assetdb.sqlite";
+                return true;
+            }
         }
-        result += "/assetdb.sqlite";
-        return true;
+
+        return false;
     }
 }//namespace AssetDatabase

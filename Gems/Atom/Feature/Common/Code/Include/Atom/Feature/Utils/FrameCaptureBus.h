@@ -76,6 +76,18 @@ namespace AZ
         };
         using FrameCaptureNotificationBus = EBus<FrameCaptureNotifications>;
 
+        //! Stores the result of a frame capture request.
+        //! Includes the result type along with an optional error message if the request did not complete successfully.
+        struct FrameCaptureOutputResult
+        {
+            FrameCaptureResult m_result; //!< Outcome after attempting to capture a frame.
+            AZStd::optional<AZStd::string> m_errorMessage; //!< If the capture did not succeed, an optional diagnostic message is set.
+        };
+
+        //! Writes out content of ReadbackResult in the Dds image format.
+        FrameCaptureOutputResult DdsFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
+
     } // namespace Render
 
     AZ_TYPE_INFO_SPECIALIZE(Render::FrameCaptureResult, "{F0B013CE-DFAE-4743-B123-EB1EE1705E03}");

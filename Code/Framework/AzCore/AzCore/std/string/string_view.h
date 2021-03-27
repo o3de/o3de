@@ -669,6 +669,22 @@ namespace AZStd
             return ends_with(basic_string_view(suffix));
         }
 
+        // C++23 contains
+        constexpr bool contains(basic_string_view other) const
+        {
+            return find(other) != npos;
+        }
+
+        constexpr bool contains(value_type c) const
+        {
+            return find(c) != npos;
+        }
+
+        constexpr bool contains(const_pointer s) const
+        {
+            return find(s) != npos;
+        }
+
         // find
         constexpr size_type find(basic_string_view other, size_type pos = 0) const
         {

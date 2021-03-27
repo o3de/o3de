@@ -77,7 +77,6 @@ ly_add_target(
 ly_add_target(
     NAME ImGui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ImGui.bab8807a1bc646b3909f3cc200ffeedf.v0.1.0
     FILES_CMAKE
         imgui_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -88,13 +87,15 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::ImGui.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME ImGui.Editor MODULE
+        NAME ImGui.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.ImGui.Editor.bab8807a1bc646b3909f3cc200ffeedf.v0.1.0
         AUTOMOC
         AUTOUIC
         FILES_CMAKE
@@ -115,5 +116,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 endif()

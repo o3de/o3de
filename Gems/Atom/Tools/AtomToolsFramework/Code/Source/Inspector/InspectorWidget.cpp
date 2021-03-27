@@ -63,7 +63,7 @@ namespace AtomToolsFramework
         const AZStd::string& groupNameId,
         const AZStd::string& groupDisplayName,
         const AZStd::string& groupDescription,
-        InspectorGroupWidget* groupWidget)
+        QWidget* groupWidget)
     {
         InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_propertyContent);
         groupHeader->setText(groupDisplayName.c_str());

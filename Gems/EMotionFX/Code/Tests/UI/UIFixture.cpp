@@ -22,6 +22,8 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -51,7 +53,12 @@ namespace EMotionFX
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyRegisterViews);
 
-        (new AzQtComponents::StyleManager(m_uiApp))->initialize(m_uiApp);
+        AZ::IO::FixedMaxPath engineRootPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+        (new AzQtComponents::StyleManager(m_uiApp))->initialize(m_uiApp, engineRootPath);
     }
 
     MakeQtApplicationBase::~MakeQtApplicationBase()

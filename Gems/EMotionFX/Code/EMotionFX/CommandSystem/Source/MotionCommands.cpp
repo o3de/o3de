@@ -221,7 +221,7 @@ namespace CommandSystem
         // Resolve the filename if it starts with a path alias
         if (auto fileIoBase{ AZ::IO::FileIOBase::GetInstance() }; fileIoBase && filename.starts_with('@'))
         {
-            char resolvedPath[AZ::StringFunc::Path::MaxPathLength];
+            char resolvedPath[AZ::IO::MaxPathLength];
             if (fileIoBase->ResolvePath(filename.c_str(), resolvedPath, AZ_ARRAY_SIZE(resolvedPath)))
             {
                 filename = resolvedPath;

@@ -163,13 +163,12 @@ class WinLauncher(Launcher):
 
         :return: None
         """
-        # Update settings
+        # Update settings via the settings registry to avoid modifying the bootstrap.cfg
         host_ip = '127.0.0.1'
-
-        self.workspace.settings.modify_bootstrap_setting("sys_game_folder", self.workspace.project)
-        self.workspace.settings.modify_bootstrap_setting("remote_ip", host_ip)
-        self.workspace.settings.modify_bootstrap_setting("wait_for_connect", 1)
-        self.workspace.settings.modify_bootstrap_setting("white_list", host_ip)
+        self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.project}"')
+        self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
+        self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
+        self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
         self.workspace.settings.modify_platform_setting("r_AssetProcessorShaderCompiler", 1)
         self.workspace.settings.modify_platform_setting("r_ShaderCompilerServer", host_ip)
@@ -194,7 +193,7 @@ class WinEditor(WinLauncher):
 
     def __init__(self, build, args):
         super(WinEditor, self).__init__(build, args)
-        self.args.append("--regset=\"/Amazon/Settings/EnableSourceControl=false\"")
+        self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
 
     def binary_path(self):
         """

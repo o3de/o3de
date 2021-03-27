@@ -74,9 +74,9 @@ namespace ScriptCanvasTests
                     descriptor.m_useExistingAllocator = true;
 
                     AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
-                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.GraphCanvas.Editor.875b6fcbdeea44deaae7984ad9bb6cdc.v0.1.0";
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "GraphCanvas.Editor";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
-                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ScriptCanvasGem.Editor.869a0d0ec11a45c299917d45c81555e6.v0.1.0";
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "ScriptCanvas.Editor";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ExpressionEvaluation.4c6f9df57ca2468f93c8d860ee6a1167.v0.1.0";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);

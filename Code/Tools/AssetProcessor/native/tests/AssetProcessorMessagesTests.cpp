@@ -106,7 +106,7 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager->BeforeRun();
 
             // Override Game Name to be "SamplesProject"
-            AssetUtilities::ComputeGameName("SamplesProject", true);
+            AssetUtilities::ComputeProjectName("SamplesProject", true);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
             m_batchApplicationManager->InitAssetProcessorManager();
@@ -144,7 +144,7 @@ namespace AssetProcessorMessagesTests
             RunNetworkRequest([]()
                 {
                     AZStd::string appBranchToken;
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, appBranchToken);
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
 
                     AzFramework::AssetSystem::ConnectionSettings connectionSettings;
                     connectionSettings.m_assetProcessorIp = "127.0.0.1";

@@ -35,7 +35,6 @@ ly_add_target(
 ly_add_target(
     NAME EMotionFX_Atom ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.EMotionFX_Atom.4f8a4d073ba34b43be45705f18705f1e.v0.1.0
     FILES_CMAKE
         emotionfxatom_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -51,9 +50,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME EMotionFX_Atom.Editor MODULE
+        NAME EMotionFX_Atom.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.EMotionFX_Atom.Editor.4f8a4d073ba34b43be45705f18705f1e.v0.1.0
         FILES_CMAKE
             emotionfx_atom_editor_files.cmake
         INCLUDE_DIRECTORIES

@@ -67,25 +67,7 @@ namespace AZ
             return a != OpenMode::Invalid;
         }
 
-        inline OpenMode operator | (OpenMode a, OpenMode b)
-        {
-            return static_cast<OpenMode>(static_cast<AZ::u32>(a) | static_cast<AZ::u32>(b));
-        }
-
-        inline OpenMode operator & (OpenMode a, OpenMode b)
-        {
-            return static_cast<OpenMode>(static_cast<AZ::u32>(a) & static_cast<AZ::u32>(b));
-        }
-
-        inline OpenMode& operator |= (OpenMode& a, OpenMode b)
-        {
-            return a = a | b;
-        }
-
-        inline OpenMode& operator &= (OpenMode& a, OpenMode b)
-        {
-            return a = a & b;
-        }
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenMode)
 
         OpenMode GetOpenModeFromStringMode(const char* mode);
 
@@ -250,12 +232,14 @@ namespace AZ
             virtual bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const = 0;
             AZStd::optional<AZ::IO::FixedMaxPath> ConvertToAlias(const AZ::IO::PathView& path) const;
 
-            /// ResolvePath - Replaces any aliases in path with their values and stores the result in resolvedPath,
-            /// also ensures that the path is absolute
-            /// returns true if path was resolved, false otherwise
-            /// note that all of the above file-finding and opening functions automatically resolve the path before operating
-            /// so you should not need to call this except in very exceptional circumstances where you absolutely need to
-            /// hit a physical file and don't want to use SystemFile
+            //! ResolvePath - Replaces any aliases in path with their values and stores the result in resolvedPath,
+            //! also ensures that the path is absolute
+            //! NOTE: If the path does not start with an alias then the resolved value of the @assets@ is used
+            //!       which has the effect of making the path relative to the @assets@/ folder
+            //! returns true if path was resolved, false otherwise
+            //! note that all of the above file-finding and opening functions automatically resolve the path before operating
+            //! so you should not need to call this except in very exceptional circumstances where you absolutely need to
+            //! hit a physical file and don't want to use SystemFile
             virtual bool ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const = 0;
 
             //! ResolvePath - Replaces any @ aliases in the supplied path with their the resolved alias values
@@ -264,6 +248,11 @@ namespace AZ
             //! MaxPathLength in which case a null optional is returned
             virtual bool ResolvePath(AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path) const = 0;
             AZStd::optional<AZ::IO::FixedMaxPath> ResolvePath(const AZ::IO::PathView& path) const;
+
+            //! ReplaceAliases - If the path starts with an @...@ alias it is substituted with the alias value
+            //! otherwise the path is copied as is to the resolvedAlias path value
+            //! returns true if the resulting path can fit within AZ::IO::FixedMaxPath buffer
+            virtual bool ReplaceAlias(AZ::IO::FixedMaxPath& replacedAliasPath, const AZ::IO::PathView& path) const = 0;
 
             /// Divulge the filename used to originally open that handle.
             virtual bool GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const = 0;

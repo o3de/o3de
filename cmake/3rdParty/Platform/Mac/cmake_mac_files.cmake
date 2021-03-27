@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSNativeSDK_mac.cmake
     BuiltInPackages_mac.cmake
     civetweb_mac.cmake
     Clang_mac.cmake
@@ -20,6 +19,5 @@ set(FILES
     FbxSdk_mac.cmake
     FreeType2_mac.cmake
     OpenSSL_mac.cmake
-    Qt_mac.cmake
     Wwise_mac.cmake
 )

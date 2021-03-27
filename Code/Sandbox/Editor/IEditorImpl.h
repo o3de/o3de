@@ -146,7 +146,6 @@ public:
     QString GetLevelDataFolder();
     QString GetSearchPath(EEditorPathName path);
     QString GetResolvedUserFolder();
-    QString GetProjectName() override;
     bool ExecuteConsoleApp(const QString& CommandLine, QString& OutputText, bool bNoTimeOut = false, bool bShowWindow = false);
     virtual bool IsInGameMode() override;
     virtual void SetInGameMode(bool inGame) override;

@@ -1064,7 +1064,7 @@ namespace Audio
             ///////////////////////////////////////////////////////////////////////////////////////////
 
             // Interface methods
-            virtual bool Initialize(const SSystemInitParams* initParams) = 0;
+            virtual bool Initialize() = 0;
             virtual void Release() = 0;
         };
 

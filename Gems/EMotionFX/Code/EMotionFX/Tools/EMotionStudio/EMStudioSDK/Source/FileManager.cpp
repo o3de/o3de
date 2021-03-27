@@ -313,59 +313,18 @@ namespace EMStudio
 
     bool FileManager::IsFileInAssetCache(const AZStd::string& filename) const
     {
-        AZStd::string folderPath;
-        AzFramework::StringFunc::Path::GetFullPath(filename.c_str(), folderPath);
-
-        AZStd::string assetCacheFolder = EMotionFX::GetEMotionFX().GetAssetCacheFolder();
-
-        auto CharacterCompareIgnoreCase = [](const char lhs, const char rhs)
-        {
-            return tolower(lhs) == tolower(rhs);
-        };
-        auto PathCompareIgnoreCase = [&CharacterCompareIgnoreCase](const AZ::IO::PathView& lhs, const AZ::IO::PathView& rhs)
-        {
-            AZStd::string_view lhsStringView = lhs.Native();
-            AZStd::string_view rhsStringView = rhs.Native();
-            return AZStd::equal(lhsStringView.begin(), lhsStringView.end(), rhsStringView.begin(), rhsStringView.end(),
-                CharacterCompareIgnoreCase);
-        };
-
-        AZ::IO::PathView folderPathView(folderPath);
-        AZ::IO::PathView assetCacheView(assetCacheFolder);
-        auto [folderPathIter, assetCacheIter] = AZStd::mismatch(folderPathView.begin(), folderPathView.end(),
-            assetCacheView.begin(), assetCacheView.end(), PathCompareIgnoreCase);
-
-        // TODO: Use the case sensitive version here.
-        // Can't do that yet as the folder path returned for an alias returns wrong capitalization while the one from the file dialog from Qt is correct.
-        // But as they differ, the function can't detect subfolders correctly.
-        if (assetCacheIter == assetCacheView.end())
-        {
-            return true;
-        }
-
-        return false;
+        AZ::IO::Path folderPath = AZ::IO::Path(filename).ParentPath();
+        AZ::IO::Path assetCacheFolder = EMotionFX::GetEMotionFX().GetAssetCacheFolder();
+        return folderPath.IsRelativeTo(assetCacheFolder);
     }
 
 
     bool FileManager::IsFileInAssetSource(const AZStd::string& filename) const
     {
-        AZStd::string folderPath;
-        AzFramework::StringFunc::Path::GetFullPath(filename.c_str(), folderPath);
+        AZ::IO::Path folderPath = AZ::IO::Path(filename).ParentPath();
 
-        AZStd::string assetSourceFolder = EMotionFX::GetEMotionFX().GetAssetSourceFolder();
-
-        // The asset source folder is case-sensitive, therefore a regular path compare check works here
-        // A specialized case-insensitive path compare isn't needed here.
-        AZ::IO::PathView folderPathView(folderPath);
-        AZ::IO::PathView assetSourceView(assetSourceFolder);
-        auto [folderPathIter, assetSourceIter] = AZStd::mismatch(folderPathView.begin(), folderPathView.end(),
-            assetSourceView.begin(), assetSourceView.end());
-        if (assetSourceIter == assetSourceView.end())
-        {
-            return true;
-        }
-
-        return false;
+        AZ::IO::Path assetSourceFolder = EMotionFX::GetEMotionFX().GetAssetSourceFolder();
+        return folderPath.IsRelativeTo(assetSourceFolder);
     }
 
 

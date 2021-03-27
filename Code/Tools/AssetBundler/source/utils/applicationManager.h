@@ -185,7 +185,7 @@ namespace AssetBundler
         ////////////////////////////////////////////////////////////////////////////////////////////
 
         AZStd::string GetCurrentProjectName() { return m_currentProjectName; }
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> GetGemInfoList() { return m_gemInfoList; }
+        AZStd::vector<AzFramework::GemInfo> GetGemInfoList() { return m_gemInfoList; }
 
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,7 +288,7 @@ namespace AssetBundler
 
         AZStd::unique_ptr<AzToolsFramework::AssetSeedManager> m_assetSeedManager;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformCatalogManager;
-        AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> m_gemInfoList;
+        AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
         bool m_showVerboseOutput = false;
         AZStd::string m_currentProjectName;
 

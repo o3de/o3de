@@ -18,6 +18,8 @@
 #include <Authentication/AuthenticationProviderBus.h>
 #include <AWSClientAuthBus.h>
 #include <AWSCoreBus.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
+#include <AWSClientAuthResourceMappingConstants.h>
 
 #include <aws/cognito-idp/model/InitiateAuthRequest.h>
 #include <aws/cognito-idp/model/InitiateAuthResult.h>
@@ -28,31 +30,18 @@
 
 namespace AWSClientAuth
 {
-
-    constexpr char COGNITO_IDP_SETTINGS_PATH[] = "/AWS/CognitoIDP";
-    constexpr char COGNITO_USERNAME_KEY[] = "USERNAME";
-    constexpr char COGNITO_PASSWORD_KEY[] = "PASSWORD";
-    constexpr char COGNITO_REFRESH_TOKEN_AUTHPARAM_KEY[] = "REFRESH_TOKEN";
-    constexpr char COGNITO_SMS_MFA_CODE_KEY[] = "SMS_MFA_CODE";
-
-    AWSCognitoAuthenticationProvider::AWSCognitoAuthenticationProvider()
-    {
-        m_settings = AZStd::make_unique<AWSCognitoProviderSetting>();
-    }
-
-    AWSCognitoAuthenticationProvider::~AWSCognitoAuthenticationProvider()
-    {
-        m_settings.reset();
-    }
+    constexpr char CognitoUsernameKey[] = "USERNAME";
+    constexpr char CognitoPasswordKey[] = "PASSWORD";
+    constexpr char CognitoRefreshTokenAuthParamKey[] = "REFRESH_TOKEN";
+    constexpr char CognitoSmsMfaCodeKey[] = "SMS_MFA_CODE";
 
     bool AWSCognitoAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), COGNITO_IDP_SETTINGS_PATH))
-        {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get settings object for path %s", COGNITO_IDP_SETTINGS_PATH);
-            return false;
-        }
-        return true;
+        AZ_UNUSED(settingsRegistry);
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            m_cognitoAppClientId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoAppClientIdResourceMappingKey);
+        AZ_Warning("AWSCognitoAuthenticationProvider", m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");
+        return !m_cognitoAppClientId.empty();
     }
 
 
@@ -128,9 +117,9 @@ namespace AWSClientAuth
             // Set Request parameters for SMS Multi factor authentication.
             // Note: Email MFA is no longer supported by Cognito, use SMS as MFA
             Aws::CognitoIdentityProvider::Model::RespondToAuthChallengeRequest respondToAuthChallengeRequest;
-            respondToAuthChallengeRequest.SetClientId(m_settings->m_appClientId.c_str());
-            respondToAuthChallengeRequest.AddChallengeResponses(COGNITO_SMS_MFA_CODE_KEY, confirmationCode.c_str());
-            respondToAuthChallengeRequest.AddChallengeResponses(COGNITO_USERNAME_KEY, username.c_str());
+            respondToAuthChallengeRequest.SetClientId(m_cognitoAppClientId.c_str());
+            respondToAuthChallengeRequest.AddChallengeResponses(CognitoSmsMfaCodeKey, confirmationCode.c_str());
+            respondToAuthChallengeRequest.AddChallengeResponses(CognitoUsernameKey, username.c_str());
             respondToAuthChallengeRequest.SetChallengeName(Aws::CognitoIdentityProvider::Model::ChallengeNameType::SMS_MFA);
             respondToAuthChallengeRequest.SetSession(m_session.c_str());
 
@@ -177,13 +166,13 @@ namespace AWSClientAuth
         {
             // Set Request parameters.
             Aws::CognitoIdentityProvider::Model::InitiateAuthRequest initiateAuthRequest;
-            initiateAuthRequest.SetClientId(m_settings->m_appClientId.c_str());
+            initiateAuthRequest.SetClientId(m_cognitoAppClientId.c_str());
             initiateAuthRequest.SetAuthFlow(Aws::CognitoIdentityProvider::Model::AuthFlowType::REFRESH_TOKEN_AUTH);
 
             // Set username and password for Password grant/ Initiate Auth flow.
             Aws::Map<Aws::String, Aws::String> authParameters
             {
-                {COGNITO_REFRESH_TOKEN_AUTHPARAM_KEY, GetAuthenticationTokens().GetRefreshToken().c_str()}
+                {CognitoRefreshTokenAuthParamKey, GetAuthenticationTokens().GetRefreshToken().c_str()}
             };
             initiateAuthRequest.SetAuthParameters(authParameters);
 
@@ -228,14 +217,14 @@ namespace AWSClientAuth
         {
             // Set Request parameters.
             Aws::CognitoIdentityProvider::Model::InitiateAuthRequest initiateAuthRequest;
-            initiateAuthRequest.SetClientId(m_settings->m_appClientId.c_str());
+            initiateAuthRequest.SetClientId(m_cognitoAppClientId.c_str());
             initiateAuthRequest.SetAuthFlow(Aws::CognitoIdentityProvider::Model::AuthFlowType::USER_PASSWORD_AUTH);
 
             // Set username and password for Password grant/ Initiate Auth flow.
             Aws::Map<Aws::String, Aws::String> authParameters
             {
-                {COGNITO_USERNAME_KEY, username.c_str()},
-                {COGNITO_PASSWORD_KEY, password.c_str()}
+                {CognitoUsernameKey, username.c_str()},
+                {CognitoPasswordKey, password.c_str()}
             };
             initiateAuthRequest.SetAuthParameters(authParameters);
 

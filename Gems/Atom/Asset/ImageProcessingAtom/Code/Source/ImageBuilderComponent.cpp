@@ -22,6 +22,7 @@
 #include <ImageLoader/ImageLoaders.h>
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageConvert.h>
+#include <Processing/ImageToProcess.h>
 #include <Processing/PixelFormatInfo.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -85,10 +86,13 @@ namespace ImageProcessingAtom
 
         m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
         m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
+
+        ImageProcessingRequestBus::Handler::BusConnect();
     }
 
     void BuilderPluginComponent::Deactivate()
     {
+        ImageProcessingRequestBus::Handler::BusDisconnect();
         m_imageBuilder.BusDisconnect();
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
@@ -123,6 +127,23 @@ namespace ImageProcessingAtom
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+    }
+
+    IImageObjectPtr BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
+    {
+        return IImageObjectPtr(LoadImageFromFile(filePath));
+    }
+
+    IImageObjectPtr BuilderPluginComponent::LoadImagePreview(const AZStd::string& filePath)
+    {
+        IImageObjectPtr image(LoadImageFromFile(filePath));
+        if (image)
+        {
+            ImageToProcess imageToProcess(image);
+            imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
+            return imageToProcess.Get();
+        }
+        return image;
     }
 
     void ImageBuilderWorker::ShutDown()

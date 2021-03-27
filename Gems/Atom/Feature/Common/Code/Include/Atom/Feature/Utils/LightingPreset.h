@@ -80,9 +80,10 @@ namespace AZ
 
             bool m_autoSelect = false;
             AZStd::string m_displayName;
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_alternateSkyboxImageAsset;
             float m_iblExposure = 0.0f;
             float m_skyboxExposure = 0.0f;
             ExposureControlConfig m_exposure;
@@ -99,7 +100,8 @@ namespace AZ
                 const Camera::Configuration& cameraConfig,
                 AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
                 Data::Instance<AZ::RPI::Material> shadowCatcherMaterial = nullptr,
-                RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex = RPI::MaterialPropertyIndex()) const;
+                RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex = RPI::MaterialPropertyIndex(),
+                bool enableAlternateSkybox = false) const;
         };
 
         using LightingPresetPtr = AZStd::shared_ptr<LightingPreset>;

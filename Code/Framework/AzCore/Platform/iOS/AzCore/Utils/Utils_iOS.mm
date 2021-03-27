@@ -19,10 +19,10 @@
 
 namespace AZ::Utils
 {
-    AZStd::optional<AZStd::fixed_string<MaxPathLength>> GetDefaultAppRootPath()
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
     {
         const char* pathToResources = [[[NSBundle mainBundle] resourcePath] UTF8String];
-        return AZStd::fixed_string<MaxPathLength>::format("%s/assets", pathToResources);
+        return AZ::IO::FixedMaxPathString::format("%s/assets", pathToResources);
     }
 
     AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()

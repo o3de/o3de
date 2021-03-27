@@ -604,4 +604,14 @@ namespace AZ::IO
         }
         return realUnderlyingFileIO->ResolvePath(resolvedPath, path);
     }
+
+    bool ArchiveFileIO::ReplaceAlias(AZ::IO::FixedMaxPath& replacedAliasPath, const AZ::IO::PathView& path) const
+    {
+        FileIOBase* realUnderlyingFileIO = FileIOBase::GetDirectInstance();
+        if (!realUnderlyingFileIO)
+        {
+            return false;
+        }
+        return realUnderlyingFileIO->ReplaceAlias(replacedAliasPath, path);
+    }
 }//namespace AZ:IO

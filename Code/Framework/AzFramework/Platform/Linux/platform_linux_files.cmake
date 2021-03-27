@@ -16,7 +16,9 @@ set(FILES
     AzFramework/API/ApplicationAPI_Linux.h
     AzFramework/Application/Application_Linux.cpp
     AzFramework/Asset/AssetSystemComponentHelper_Linux.cpp
-    AzFramework/ProjectManager/ProjectManager_Linux.cpp
+    AzFramework/Process/ProcessWatcher_Linux.cpp
+    AzFramework/Process/ProcessCommon.h
+    AzFramework/Process/ProcessCommunicator_Linux.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp

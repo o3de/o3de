@@ -10,6 +10,9 @@
 *
 */
 #include "mainwidget.h"
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/ToolButtonComboBox.h>
 #include <AzQtComponents/Components/ToolButtonLineEdit.h>
@@ -173,15 +176,21 @@ static void addMenu(QMainWindow *w, const QString &name)
     menu->addAction("Longer item 5");
 }
 
-int main(int argv, char **argc)
+int main(int argc, char **argv)
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
-    QApplication app(argv, argc);
+    QApplication app(argc, argv);
     AzQtComponents::LumberyardStylesheet stylesheet(&app);
-    stylesheet.Initialize(&app);
+    AZ::IO::FixedMaxPath engineRootPath;
+    {
+        AZ::ComponentApplication componentApplication(argc, argv);
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    stylesheet.initialize(&app, engineRootPath);
 
     auto wrapper = new AzQtComponents::WindowDecorationWrapper();
     QMainWindow *w = new MainWindow();

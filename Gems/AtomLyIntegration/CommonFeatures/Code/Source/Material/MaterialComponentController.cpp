@@ -255,6 +255,10 @@ namespace AZ
 
         void MaterialComponentController::SetMaterialOverrides(const MaterialAssignmentMap& materials)
         {
+            // this function is called twice once material asset is changed, a temp variable is
+            // needed to prevent material asset going out of scope during second call
+            // before LoadMaterials() is called [LYN-2249]
+            auto temp = m_configuration.m_materials; 
             m_configuration.m_materials = materials;
             LoadMaterials();
         }

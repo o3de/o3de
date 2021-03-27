@@ -61,7 +61,6 @@ public:
     MOCK_METHOD0(GetLevelDataFolder, QString());
     MOCK_METHOD1(GetPrimaryCDFolder, QString(EEditorPathName));
     MOCK_METHOD0(GetResolvedUserFolder, QString());
-    MOCK_METHOD0(GetProjectName, QString());
     MOCK_METHOD4(ExecuteConsoleApp, bool(const QString&,QString&,bool,bool));
     MOCK_METHOD0(SetDataModified, void());
     MOCK_CONST_METHOD0(IsInitialized, bool());

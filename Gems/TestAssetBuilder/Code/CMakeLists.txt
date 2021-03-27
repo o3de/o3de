@@ -30,7 +30,8 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME TestAssetBuilder.Editor MODULE
+    NAME TestAssetBuilder.Editor GEM_MODULE
+
     NAMESPACE Gem
     FILES_CMAKE
         testassetbuilder_shared_files.cmake

@@ -15,8 +15,9 @@
 
 #pragma once
 
+#include "AtomOutputFrameCapture.h"
+
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <Atom/Feature/Utils/FrameCaptureBus.h>
 
 #include <QDialog>
 #include <QTimer>
@@ -33,7 +34,6 @@ namespace Ui
 class CSequenceBatchRenderDialog
     : public QDialog
     , public IMovieListener
-    , private AZ::Render::FrameCaptureNotificationBus::Handler
 {
 public:
     CSequenceBatchRenderDialog(float fps, QWidget* pParent = nullptr);
@@ -219,9 +219,6 @@ protected slots:
     bool GetResolutionFromCustomResText(const char* customResText, int& retCustomWidth, int& retCustomHeight) const;
 
 private:
-    // FrameCaptureNotificationBus overrides ...
-    void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
-
     void CheckForEnableUpdateButton();
     void stashActiveViewportResolution();
     void UpdateSpinnerProgressMessage(const char* description);
@@ -234,4 +231,6 @@ private:
     bool m_editorIdleProcessingEnabled;
     int32 CV_TrackViewRenderOutputCapturing;
     QScopedPointer<CPrefixValidator> m_prefixValidator;
+
+    TrackView::AtomOutputFrameCapture m_atomOutputFrameCapture;
 };

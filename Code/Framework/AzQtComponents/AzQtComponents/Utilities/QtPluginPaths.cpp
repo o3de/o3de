@@ -73,30 +73,5 @@ namespace AzQtComponents
         }
 #endif
     }
-
-    QString FindEngineRootDir(QApplication* app)
-    {
-        // The QApplication must be initialized before this method is called
-        // so it must be passed in as a parameter, even if we don't use it.
-        (void)app;
-
-        // Attempt to locate the engine by looking for 'engineroot.txt' and walking up the folder path until it is found (or not)
-        QDir appPath(QApplication::applicationDirPath());
-        QString engineRootPath;
-        while (!appPath.isRoot())
-        {
-            if (QFile::exists(appPath.filePath("engine.json")))
-            {
-                engineRootPath = appPath.absolutePath();
-                break;
-            }
-            if (!appPath.cdUp())
-            {
-                break;
-            }
-        }
-        return engineRootPath;
-
-    }
 } // namespace AzQtComponents
 

@@ -24,12 +24,11 @@ namespace ProjectSettingsTool
         if (serialize)
         {
             serialize->Class<BaseSettings>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("project_name", &BaseSettings::m_projectName)
                 ->Field("product_name", &BaseSettings::m_productName)
                 ->Field("executable_name", &BaseSettings::m_executableName)
-                ->Field("sys_game_folder", &BaseSettings::m_sysGameFolder)
-                ->Field("sys_dll_game", &BaseSettings::m_sysDllGame)
+                ->Field("project_path", &BaseSettings::m_projectPath)
                 ->Field("project_output_folder", &BaseSettings::m_projectOutputFolder)
                 ->Field("code_folder", &BaseSettings::m_codeFolder)
             ;
@@ -52,7 +51,7 @@ namespace ProjectSettingsTool
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileName))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ExecutableName)
                         ->Attribute(Attributes::LinkedProperty, Identfiers::IosExecutableName)
-                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_sysGameFolder, "Game Folder", "The name of the project's folder.")
+                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectPath, "Project Path", "The project root folder path .")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileNameOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ProductName)
                         ->Attribute(Attributes::LinkedProperty, Identfiers::ExecutableName)

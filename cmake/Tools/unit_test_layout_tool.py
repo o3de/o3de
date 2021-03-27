@@ -37,9 +37,9 @@ def test_copy_asset_files_to_layout_success():
     try:
         # Setup test vectors
         
-        # Blacklisted files, should not show up in the result
-        test_blacklisted_file = [
-            'assetprocessorplatformconfig.ini'
+        # Denied files, should not show up in the result
+        test_denylist_file = [
+            'assetprocessorplatformconfig.setreg'
         ]
         # System files that are not the same platform, so should skip
         test_skip_system_files = [
@@ -69,18 +69,14 @@ def test_copy_asset_files_to_layout_success():
             'good_src_2'
         ]
         test_expected_copied_files = test_dest_diff_as_src + test_src_not_in_dst
-    
-        test_dev_root = 'dev'
-        test_game = 'game1'
-        test_asset_type = 'pc'
+
         test_game_asset_folder = 'game_cache'
         test_layout_target = 'layout_target'
         test_platform = 'goodplatform'
-        test_asset_mode = layout_tool.ASSET_MODE_LOOSE
 
         def _mock_os_listdir(path):
             assert path == test_game_asset_folder
-            mock_files = test_blacklisted_file + \
+            mock_files = test_denylist_file + \
                          test_skip_system_files + \
                          test_skip_source_folders + \
                          test_skip_dest_is_folder + \
@@ -130,8 +126,7 @@ def test_copy_asset_files_to_layout_success():
             result_copy_files.append(basename)
         shutil.copy2 = _mock_shutil_copy2
 
-        layout_tool.copy_asset_files_to_layout(game_name=test_game,
-                                               game_asset_folder=test_game_asset_folder,
+        layout_tool.copy_asset_files_to_layout(project_asset_folder=test_game_asset_folder,
                                                target_platform=test_platform,
                                                layout_target=test_layout_target)
         
@@ -217,17 +212,16 @@ def test_create_link_error():
 
 
 @pytest.mark.parametrize(
-    "game_name, asset_type, ensure_path, warn_on_missing, expected_result", [
-        pytest.param('Foo', 'pc', 'dev/Cache/Foo/pc/bootstrap.cfg', False, 'dev/Cache/Foo/pc'),
+    "project_path, asset_type, ensure_path, warn_on_missing, expected_result", [
+        pytest.param('Foo', 'pc', 'Foo/Cache/pc/bootstrap.cfg', False, 'Foo/Cache/pc'),
         pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', True, None),
-        pytest.param('Foo', 'pc', 'dev/Cache/Foo/es3/bootstrap.cfg', True, None),
+        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', True, None),
         pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', False, common.LmbrCmdError),
-        pytest.param('Foo', 'pc', 'dev/Cache/Foo/es3/bootstrap.cfg', False, common.LmbrCmdError),
+        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', False, common.LmbrCmdError),
     ]
 )
-def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, game_name, asset_type, ensure_path, warn_on_missing, expected_result):
+def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, project_path, asset_type, ensure_path, warn_on_missing, expected_result):
     tmpdir.ensure(ensure_path)
-    dev_root_realpath = str(tmpdir.join('dev').realpath())
     if isinstance(expected_result, str):
         expected_path_realpath = str(tmpdir.join(expected_result).realpath())
     elif expected_result == common.LmbrCmdError:
@@ -236,10 +230,9 @@ def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, game_nam
         expected_path_realpath = None
 
     try:
-        result = layout_tool.construct_and_validate_cache_game_asset_folder(dev_root=dev_root_realpath,
-                                                                            game_name=game_name,
+        result = layout_tool.construct_and_validate_cache_project_asset_folder(project_path=project_path,
                                                                             asset_type=asset_type,
-                                                                            warn_on_missing_game_cache=warn_on_missing)
+                                                                            warn_on_missing_project_cache=warn_on_missing)
 
         assert expected_result != common.LmbrCmdError, "Expecting an error result"
         if result == None:
@@ -273,31 +266,22 @@ def test_sync_layout_vfs_success(tmpdir, existing_temp_vfs_folder, existing_gems
     
     try:
         # Simple Test Parameters
-        test_dev_root = str(tmpdir.join('dev').realpath())
-        test_game = 'Foo'
+        test_engine_root = str(tmpdir.join('engine-root').realpath())
+        test_project_path = str(tmpdir.join('Foo').realpath())
+        test_project_name_lower = 'foo'
         test_target_platform = 'bogus'
         test_asset_type = 'pc'
-        game_folder = test_game.lower()
 
         # Setup a test dev and game cache folder structure inside the temp folder
-        path_to_src_cache = 'dev/Cache/{}/pc'.format(test_game)
-        path_to_src_cache_config = '{}/{}/config'.format(path_to_src_cache, test_game.lower())
-        path_to_src_cache_config_file = '{}/game.xml'.format(path_to_src_cache_config)
-        tmpdir.ensure(path_to_src_cache_config_file)
-        
-        # Make a dummy config file
-        config_file = tmpdir.join(path_to_src_cache_config_file)
-        config_file.write('<foo></foo>')
 
         # Capture relevant real paths in the temp folder so we can verify our assertions
-        cache_game_folder = os.path.join(test_dev_root, 'Cache', test_game)
+        cache_game_folder = os.path.join(test_project_path, 'Cache')
 
         cache_game_folder_gems = os.path.join(cache_game_folder, test_asset_type, 'gems')
-        
-        path_to_src_config_realpath = str(tmpdir.join(path_to_src_cache_config).realpath())
+
         layout_target_root_realpath = str(tmpdir.join('layout').realpath())
         layout_target_gems_realpath = os.path.join(layout_target_root_realpath, 'gems')
-        layout_target_game_realpath = os.path.join(layout_target_root_realpath, test_game)
+        layout_target_game_realpath = os.path.join(layout_target_root_realpath)
         
         # If we are optionally testing existing links in a layout folder, track the expected and actual rmdirs
         actual_rmdir_paths = set()
@@ -331,8 +315,7 @@ def test_sync_layout_vfs_success(tmpdir, existing_temp_vfs_folder, existing_gems
 
         # Predict the temp folder name
         hasher = hashlib.md5()
-        hasher.update(test_dev_root.encode('UTF-8'))
-        hasher.update(game_folder.encode('UTF-8'))
+        hasher.update(test_project_path.encode('UTF-8'))
         result = hasher.hexdigest()
         tmp_folder_subfolder = 'ly-layout-{}'.format(result)
         test_layout_folder = str(tmpdir.join('{}/vfs/foo'.format(tmp_folder_subfolder)).realpath())
@@ -347,7 +330,6 @@ def test_sync_layout_vfs_success(tmpdir, existing_temp_vfs_folder, existing_gems
             os.rmdir = _mock_os_rmdir
             
         mock_layout_tool_create_link_validation = {
-            os.path.normcase(path_to_src_config_realpath): os.path.normcase(test_layout_config_folder),
             os.path.normcase(cache_game_folder_gems): os.path.normcase(layout_target_gems_realpath),
             os.path.normcase(test_layout_folder): os.path.normcase(layout_target_game_realpath)
         }
@@ -360,15 +342,14 @@ def test_sync_layout_vfs_success(tmpdir, existing_temp_vfs_folder, existing_gems
             
         layout_tool.create_link = _mock_layout_tool_create_link
 
-        def _mock_copy_asset_files_to_layout(game_name, game_asset_folder, target_platform, layout_target):
+        def _mock_copy_asset_files_to_layout(project_path, project_asset_folder, target_platform, layout_target):
             # Validate the correct call to copy asset files
             assert target_platform == target_platform
             assert os.path.normcase(layout_target) == os.path.normcase(layout_target_root_realpath)
         layout_tool.copy_asset_files_to_layout = _mock_copy_asset_files_to_layout
 
-        layout_tool.sync_layout_vfs(dev_root                  = test_dev_root,
-                                    target_platform           = test_target_platform,
-                                    game                      = test_game,
+        layout_tool.sync_layout_vfs(target_platform           = test_target_platform,
+                                    project_path              = test_project_path,
                                     asset_type                = test_asset_type,
                                     warning_on_missing_assets = False,
                                     layout_target             = layout_target_root_realpath,
@@ -404,19 +385,19 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
     old_remove_link = layout_tool.remove_link
     try:
         # Simple Test Parameters
-        tmpdir.ensure('dev/bootstrap.cfg')
-        dev_root_realpath = str(tmpdir.join('dev').realpath())
-        test_game = 'Foo'
+        tmpdir.ensure('engine-root/bootstrap.cfg')
+        engine_root_realpath = str(tmpdir.join('engine-root').realpath())
+        test_project_path = str(tmpdir.join('Foo').realpath())
+        test_project_name_lower = 'foo'
         test_target_platform = 'bogus'
         test_asset_type = 'pc'
-        game_folder = test_game.lower()
-        cache_game_folder_realpath = os.path.join(dev_root_realpath, 'Cache', test_game)
+        cache_game_folder_realpath = os.path.join(test_project_path, 'Cache')
         
         # Make sure a dummy layout folder is created
         tmpdir.ensure('layout/dummy.txt')
         test_layout_target_realpath = str(tmpdir.join('layout').realpath())
         test_layout_target_gems_realpath = os.path.join(test_layout_target_realpath, 'gems')
-        test_layout_target_game_realpath = os.path.join(test_layout_target_realpath, game_folder)
+        test_layout_target_game_realpath = os.path.join(test_layout_target_realpath,)
 
         # If we are optionally testing existing links in a layout folder, track the expected and actual rmdirs
         actual_rmdir_paths = set()
@@ -441,11 +422,13 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
         if mode == 'PAK':
             # In PAK Mode, the linking rules are slightly different. The 'game folder' link points to inside the pak folder, and there is no 'gems' link
             if test_override_pak_folder:
-                test_game_asset_folder = os.path.join(dev_root_realpath, test_override_pak_folder, '{}_{}_paks'.format(game_folder, test_asset_type))
-                cache_game_folder_game_realpath = os.path.join(test_game_asset_folder, game_folder)
+                test_game_asset_folder = os.path.join(engine_root_realpath, test_override_pak_folder,
+                                                      f'{test_project_name_lower}_{test_asset_type}_paks')
+                cache_game_folder_game_realpath = os.path.join(test_game_asset_folder)
             else:
-                test_game_asset_folder = os.path.join(dev_root_realpath, 'Pak', '{}_{}_paks'.format(game_folder, test_asset_type))
-                cache_game_folder_game_realpath = os.path.join(test_game_asset_folder, game_folder)
+                test_game_asset_folder = os.path.join(engine_root_realpath, 'Pak',
+                                                      f'{test_project_name_lower}_{test_asset_type}_paks')
+                cache_game_folder_game_realpath = os.path.join(test_game_asset_folder)
 
             mock_layout_tool_create_link_validation[os.path.normcase(cache_game_folder_game_realpath)] = os.path.normcase(test_layout_target_game_realpath)
 
@@ -460,7 +443,7 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
     
             test_game_asset_folder = os.path.join(cache_game_folder_realpath, test_asset_type)
             cache_game_folder_gems_realpath = os.path.join(cache_game_folder_realpath, test_asset_type, 'gems')
-            cache_game_folder_game_realpath = os.path.join(cache_game_folder_realpath, test_asset_type, game_folder)
+            cache_game_folder_game_realpath = os.path.join(cache_game_folder_realpath, test_asset_type)
             mock_layout_tool_create_link_validation[os.path.normcase(cache_game_folder_gems_realpath)] = os.path.normcase(test_layout_target_gems_realpath)
             mock_layout_tool_create_link_validation[os.path.normcase(cache_game_folder_game_realpath)] = os.path.normcase(test_layout_target_game_realpath)
 
@@ -468,8 +451,8 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
             assert False, "Invalid Mode {}".format(mode)
         os.makedirs(test_game_asset_folder, exist_ok=True)
 
-        def _mock_copy_asset_files_to_layout(game_name, game_asset_folder, target_platform, layout_target):
-            assert os.path.normcase(game_asset_folder) == os.path.normcase(test_game_asset_folder)
+        def _mock_copy_asset_files_to_layout(project_path, project_asset_folder, target_platform, layout_target):
+            assert os.path.normcase(project_asset_folder) == os.path.normcase(test_game_asset_folder)
             assert target_platform == test_target_platform
             assert layout_target == test_layout_target_realpath
         layout_tool.copy_asset_files_to_layout = _mock_copy_asset_files_to_layout
@@ -483,8 +466,7 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
 
         layout_tool.sync_layout_non_vfs(mode                        = mode,
                                         target_platform             = test_target_platform,
-                                        dev_root                    = dev_root_realpath,
-                                        game                        = test_game,
+                                        project_path                = test_project_path,
                                         asset_type                  = test_asset_type,
                                         warning_on_missing_assets   = False,
                                         layout_target               = test_layout_target_realpath,

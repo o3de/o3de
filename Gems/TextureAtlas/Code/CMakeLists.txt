@@ -12,7 +12,6 @@
 ly_add_target(
     NAME TextureAtlas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.TextureAtlas.5a149b6b3c964064bd4970f0e92f72e2.v0.1.0
     FILES_CMAKE
         textureatlas_files.cmake
     INCLUDE_DIRECTORIES

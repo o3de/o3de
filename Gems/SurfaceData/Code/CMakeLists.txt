@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target(
     NAME SurfaceData ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.SurfaceData.5de82d29d6094bfe97c1a4d35fcd5fbe.v0.1.0
     FILES_CMAKE
         surfacedata_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -41,14 +40,16 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::SurfaceData.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME SurfaceData.Editor MODULE
+        NAME SurfaceData.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.SurfaceData.Editor.5de82d29d6094bfe97c1a4d35fcd5fbe.v0.1.0
         FILES_CMAKE
             surfacedata_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -64,6 +65,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Gem::SurfaceData.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 
 endif()

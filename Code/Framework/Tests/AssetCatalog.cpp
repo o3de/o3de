@@ -842,7 +842,6 @@ namespace UnitTest
             m_application = new AzFramework::Application();
             m_assetRoot = UnitTest::GetTestFolderPath();
             m_application->NormalizePathKeepCase(m_assetRoot);
-            m_application->SetAssetRoot(m_assetRoot.c_str());
             m_assetCatalog = aznew AzFramework::AssetCatalog();
 
             m_firstAssetId = AssetId(AZ::Uuid::CreateRandom(), 0);

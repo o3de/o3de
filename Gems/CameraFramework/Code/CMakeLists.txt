@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME CameraFramework ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.CameraFramework.54f2763fe191432fa681ce4a354eedf5.v0.1.0
     FILES_CMAKE
         cameraframework_shared_files.cmake
     INCLUDE_DIRECTORIES

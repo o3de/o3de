@@ -25,7 +25,6 @@ namespace AzFramework
     namespace AssetSystem
     {
         constexpr char BranchToken[] = "assetProcessor_branch_token";
-        constexpr char ProjectName[] = "sys_game_folder";
         constexpr char Assets[] = "assets";
         constexpr char AssetProcessorRemoteIp[] = "remote_ip";
         constexpr char AssetProcessorRemotePort[] = "remote_port";

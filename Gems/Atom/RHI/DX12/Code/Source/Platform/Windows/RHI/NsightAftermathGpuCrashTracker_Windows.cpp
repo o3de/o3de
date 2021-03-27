@@ -15,6 +15,7 @@
 #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -91,16 +92,8 @@ void GpuCrashTracker::OnDescription(PFN_GFSDK_Aftermath_AddGpuCrashDumpDescripti
     // Add some basic description about the crash. This is called after the GPU crash happens, but before
     // the actual GPU crash dump callback. The provided data is included in the crash dump and can be
     // retrieved using GFSDK_Aftermath_GpuCrashDump_GetDescription().
-    AZ::SettingsRegistryInterface::FixedValueString projectName;
-    auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get();
-
-    auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/sys_game_folder", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-    settingsRegistry->Get(projectName, projectKey);
-   
-    static const char* executableFolder = nullptr;
-    AZStd::string fileAbsolutePath;
     AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-    AzFramework::StringFunc::Path::Join(executableFolder, projectName.c_str(), fileAbsolutePath);
+    fileAbsolutePath /= AZ::Utils::GetProjectName();
     addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, fileAbsolutePath.c_str());
 
     addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationVersion, "v1.0");

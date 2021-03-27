@@ -15,6 +15,7 @@
 
 #include "MainStatusBar.h"
 
+#include <AzCore/Utils/Utils.h>
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Style.h>
@@ -220,24 +221,16 @@ MainStatusBar::MainStatusBar(QWidget* parent)
 void MainStatusBar::Init()
 {
     //called on mainwindow initialization
-    const int statusbarTimerUpdateInterval {
+    const int statusbarTimerUpdateInterval{
         500
     };                                             //in ms, so 2 FPS
 
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
     QString strGameInfo;
-    ICVar* pCVar = gEnv->pConsole->GetCVar("sys_game_folder");
-    if (pCVar)
-    {
-        strGameInfo = tr("GameFolder: '%1'").arg(QtUtil::ToQString(pCVar->GetString()));
-    }
-    pCVar = gEnv->pConsole->GetCVar("sys_dll_game");
-    if (pCVar)
-    {
-        strGameInfo += QLatin1String(" - ") + tr("GameDLL: '%1'").arg(QtUtil::ToQString(pCVar->GetString()));
-    }
+    strGameInfo = tr("GameFolder: '%1'").arg(projectPath.c_str());
     SetItem(QStringLiteral("game_info"), strGameInfo, tr("Game Info"), QPixmap());
 
-    //ask for updates for items regulary. This is basically what MFC does
+    //ask for updates for items regularly. This is basically what MFC does
     auto timer = new QTimer(this);
     timer->setInterval(statusbarTimerUpdateInterval);
     connect(timer, &QTimer::timeout, this, &MainStatusBar::requestStatusUpdate);

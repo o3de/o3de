@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME ScriptEvents ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptEvents.32d8ba21703e4bbbb08487366e48dd69.v0.1.0
     FILES_CMAKE
         scriptevents_files.cmake
     INCLUDE_DIRECTORIES
@@ -43,9 +42,9 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME ScriptEvents.Editor MODULE
+        NAME ScriptEvents.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.ScriptEvents.Editor.32d8ba21703e4bbbb08487366e48dd69.v0.1.0
         FILES_CMAKE
             scriptevents_editor_files.cmake
             scriptevents_editor_builder_files.cmake

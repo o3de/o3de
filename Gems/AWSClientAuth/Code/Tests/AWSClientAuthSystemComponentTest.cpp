@@ -14,7 +14,6 @@
 #include <AzTest/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AWSClientAuthSystemComponent.h>
-#include <ResourceMapping/AWSResourceMappingBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AWSClientAuthGemMock.h>
@@ -119,33 +118,6 @@ namespace AWSClientAuthUnitTest
     };
 }
 
-class AWSResourceMappingRequestBusMock
-    : public AWSCore::AWSResourceMappingRequestBus::Handler
-{
-public:
-    AWSResourceMappingRequestBusMock()
-    {
-        AWSCore::AWSResourceMappingRequestBus::Handler::BusConnect();
-
-        ON_CALL(*this, GetResourceRegion).WillByDefault(testing::Return("us-east-1"));
-    }
-    ~AWSResourceMappingRequestBusMock()
-    {
-        AWSCore::AWSResourceMappingRequestBus::Handler::BusDisconnect();
-    }
-
-    MOCK_CONST_METHOD0(GetDefaultAccountId, AZStd::string());
-    MOCK_CONST_METHOD0(GetDefaultRegion, AZStd::string());
-    MOCK_CONST_METHOD1(GetResourceAccountId, AZStd::string(const AZStd::string& resourceKeyName));
-    MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string& resourceKeyName));
-    MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string& resourceKeyName));
-    MOCK_CONST_METHOD1(GetResourceType, AZStd::string(const AZStd::string& resourceKeyName));
-    MOCK_CONST_METHOD1(GetServiceUrlByServiceName, AZStd::string(const AZStd::string& serviceName));
-    MOCK_CONST_METHOD2(
-        GetServiceUrlByRESTApiIdAndStage, AZStd::string(const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName));
-    MOCK_METHOD1(ReloadConfigFile, void(bool isReloadingConfigFileName));
-};
-
 class AWSClientAuthSystemComponentTest
     : public AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture
 {
@@ -193,7 +165,7 @@ protected:
 public:
     testing::NiceMock<AWSClientAuthUnitTest::AWSClientAuthSystemComponentMock> *m_awsClientAuthSystemsComponent;
     testing::NiceMock<AWSClientAuthUnitTest::AWSCoreSystemComponentMock> *m_awsCoreSystemsComponent;
-    testing::NiceMock<AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
     AZ::Entity* m_entity = nullptr;
 };
 

@@ -516,8 +516,6 @@ struct IEditor
     virtual QString GetSearchPath(EEditorPathName path) = 0;
     //! This folder is supposed to store Sandbox user settings and state
     virtual QString GetResolvedUserFolder() = 0;
-    //! Returns the name of the sys_game_folder
-    virtual QString GetProjectName() = 0;
     //! Execute application and get console output.
     virtual bool ExecuteConsoleApp(
         const QString& CommandLine,

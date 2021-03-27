@@ -15,7 +15,7 @@
 
 #include <AzTest/AzTest.h>
 
-const char TestAppRoot[] = ":/testdata";
+const char TestAppRoot[] = "@exefolder@/testdata";
 const char EmptyDummyProjectName[] = "EmptyDummyProject";
 const char DummyProjectName[] = "DummyProject";
 
@@ -54,10 +54,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BadPlatform)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_broken_badplatform";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_badplatform");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -67,10 +69,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoPlatform)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_broken_noplatform";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noplatform");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -79,10 +83,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_broken_noscans";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noscans");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -91,10 +97,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_broken_recognizers";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_recognizers");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -103,10 +111,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     // verify the data.
@@ -127,42 +137,43 @@ TEST_F(PlatformConfigurationUnitTests, TestReadScanFolderRoot_FromSettingsRegist
     auto settingsRegistry = AZ::SettingsRegistry::Get();
     ASSERT_NE(nullptr, settingsRegistry);
 
-    AZ::SettingsRegistryInterface::Specializations apSpecializations;
-    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(*settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, apSpecializations);
-
-    struct ScanFolderVisitor
-        : AZ::SettingsRegistryInterface::Visitor
+    QTemporaryDir tempEngineRoot;
+    QDir tempPath(tempEngineRoot.path());
+    QString testScanFolderSetregPath = tempPath.absoluteFilePath("test.setreg");
+    UnitTestUtils::CreateDummyFile(testScanFolderSetregPath, QString(R"({ "Amazon":
     {
-        void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
+        "AssetProcessor":
         {
-            if (valueName == "recursive")
-            {
-                m_isRecursive = value != 0;
-            }
-            else if (valueName == "order")
-            {
-                m_scanOrder = value;
+            "Settings":
+             {
+                "ScanFolder SettingsRegistryTest":
+                {
+                    "watch": "_TestPath",
+                    "recursive": false,
+                    "order": 20000
+                }
             }
         }
-        void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-        {
-            if (valueName == "watch")
-            {
-                m_watchPath = value;
-            }
-        }
-        AZ::SettingsRegistryInterface::FixedValueString m_watchPath;
-        bool m_isRecursive{};
-        int m_scanOrder{};
-    };
+    }
+    }\n)"));
 
-    ScanFolderVisitor scanFolderVisitor;
-    EXPECT_TRUE(settingsRegistry->Visit(scanFolderVisitor, "/Amazon/AssetProcessor/Settings/ScanFolder Root"));
+    EXPECT_TRUE(AssetProcessor::PlatformConfiguration::MergeConfigFileToSettingsRegistry(*settingsRegistry, testScanFolderSetregPath.toUtf8().data()));
+
+    AZStd::string watchPath;
+    bool recurseScanFolder{ true };
+    AZ::s64 scanOrder{};
+
+    EXPECT_TRUE(settingsRegistry->Get(watchPath, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+        + "/ScanFolder SettingsRegistryTest/watch"));
+    EXPECT_TRUE(settingsRegistry->Get(recurseScanFolder, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+        + "/ScanFolder SettingsRegistryTest/recursive"));
+    EXPECT_TRUE(settingsRegistry->Get(scanOrder, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+        + "/ScanFolder SettingsRegistryTest/order"));
 
     // These test values come from the <dev_root>/Engine/Registry/AssetProcessorPlatformConfig.setreg file
-    EXPECT_STREQ("@ROOT@", scanFolderVisitor.m_watchPath.c_str());
-    EXPECT_FALSE(scanFolderVisitor.m_isRecursive);
-    EXPECT_EQ(10000, scanFolderVisitor.m_scanOrder);
+    EXPECT_STREQ("_TestPath", watchPath.c_str());
+    EXPECT_FALSE(recurseScanFolder);
+    EXPECT_EQ(20000, scanOrder);
 }
 
 
@@ -340,34 +351,36 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    AssetUtilities::ComputeProjectName(EmptyDummyProjectName, true);
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
-    QString scanName = AssetUtilities::ComputeGameName() + " Scan Folder";
+    QString scanName = AssetUtilities::ComputeProjectPath() + " Scan Folder";
     ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), scanName);
     ASSERT_EQ(config.GetScanFolderAt(0).GetOutputPrefix(), QString());
     ASSERT_EQ(config.GetScanFolderAt(0).RecurseSubFolders(), true);
     ASSERT_EQ(config.GetScanFolderAt(0).GetOrder(), 0);
-    // its important that this does NOT change and this makes sure the old way of doing it (case-sensitive name) persists
-    ASSERT_EQ(config.GetScanFolderAt(0).GetPortableKey(), QString("from-ini-file-Game"));
+    ASSERT_EQ(config.GetScanFolderAt(0).GetPortableKey(), QString("Game"));
 
     ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("FeatureTests"));
     ASSERT_EQ(config.GetScanFolderAt(1).GetOutputPrefix(), QString("featuretestsoutputfolder")); // to prove its not related to display name
     ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), false);
     ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 5000);
     // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("from-ini-file-FeatureTests"));
+    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("FeatureTests"));
 
     ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests2"));
     ASSERT_EQ(config.GetScanFolderAt(2).GetOutputPrefix(), QString("featuretestsoutputfolder")); // to prove its not related to display name
     ASSERT_EQ(config.GetScanFolderAt(2).RecurseSubFolders(), false);
     ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 6000);
     // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("from-ini-file-FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("FeatureTests2"));
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderPlatformSpecific)
@@ -375,10 +388,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_regular_platform_scanfolder";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular_platform_scanfolder");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 5);
@@ -419,10 +434,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_TRUE(config.IsFileExcluded("blahblah/$tmp_01.test"));
@@ -446,10 +463,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
     const char* platformWhichIsNotCurrentPlatform = "pc";
 #endif
 
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -519,11 +538,13 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Overrides)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-        
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, DummyProjectName, false, false));
+
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), DummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -565,7 +586,7 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     QTemporaryDir tempEngineRoot;
     QDir tempPath(tempEngineRoot.path());
     AssetUtilities::ResetAssetRoot();
-    AssetUtilities::ComputeGameName("SamplesProject", true);
+    AssetUtilities::ComputeProjectName("SamplesProject", true);
 
     QDir computedEngineRoot;
     ASSERT_TRUE(AssetUtilities::ComputeAssetRoot(computedEngineRoot, &tempPath));
@@ -576,9 +597,11 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("Gems/LyShine/AssetProcessorGemConfig.ini"), ";nothing to see here"));
 
     // note that it is expected that the gems system gives us absolute paths.
-    AZStd::vector<AzToolsFramework::AssetUtils::GemInfo> fakeGems;
-    fakeGems.push_back({ "LyShine", "Gems/LyShine", tempPath.absoluteFilePath("Gems/LyShine").toUtf8().constData(), "0fefab3f13364722b2eab3b96ce2bf20", true, false });// true = pretend this is a game gem.
-    fakeGems.push_back({ "LmbrCentral", "Gems/LmbrCentral/v2", tempPath.absoluteFilePath("Gems/LmbrCentral/v2").toUtf8().constData(), "ff06785f7145416b9d46fde39098cb0c", false, false });
+    AZStd::vector<AzFramework::GemInfo> fakeGems;
+    fakeGems.emplace_back("LyShine");// true = pretend this is a game gem.
+    fakeGems.back().m_absoluteSourcePaths.push_back(tempPath.absoluteFilePath("Gems/LyShine").toUtf8().constData());
+    fakeGems.emplace_back("LmbrCentral");
+    fakeGems.back().m_absoluteSourcePaths.push_back(tempPath.absoluteFilePath("Gems/LmbrCentral/v2").toUtf8().constData());
 
     // reading gems via the Gems System is already to be tested in the actual Gems API tests.
     // to avoid trying to load those DLLs we avoid calling the actual ReadGems function
@@ -593,8 +616,7 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     EXPECT_TRUE(config.GetScanFolderAt(0).GetOutputPrefix().isEmpty());
     EXPECT_TRUE(config.GetScanFolderAt(0).RecurseSubFolders());
     // the first one is a game gem, so its order should be above 1 but below 100.
-    EXPECT_GE(config.GetScanFolderAt(0).GetOrder(), 1);
-    EXPECT_LE(config.GetScanFolderAt(0).GetOrder(), 100);
+    EXPECT_GE(config.GetScanFolderAt(0).GetOrder(), 100);
     EXPECT_EQ(0, config.GetScanFolderAt(0).ScanPath().compare(expectedScanFolder, Qt::CaseInsensitive));
 
     // for each gem, there are currently 1 scan folder, the gem assets folder, with no output prefix
@@ -618,15 +640,17 @@ TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes)
     ASSERT_TRUE(QString::compare(config.GetMetaDataFileTypeAt(1).second, "zzzz", Qt::CaseInsensitive) == 0);
 }
 
-TEST_F(PlatformConfigurationUnitTests, ReadCheckSever_FromConfig_Valid)
+TEST_F(PlatformConfigurationUnitTests, ReadCheckServer_FromConfig_Valid)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    const char* configRoot = ":/testdata/config_regular";
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
+    ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot, TestAppRoot, EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -642,7 +666,11 @@ TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)
     QTemporaryDir tempEngineRoot;
     QDir tempPath(tempEngineRoot.path());
     AssetUtilities::ResetAssetRoot();
-    AssetUtilities::ComputeGameName("SamplesProject", true);
+    AssetUtilities::ComputeProjectName("SamplesProject", true);
+
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    ASSERT_NE(nullptr, settingsRegistry);
+    settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, tempPath.absolutePath().toUtf8().constData());
 
     QDir computedEngineRoot;
     ASSERT_TRUE(AssetUtilities::ComputeAssetRoot(computedEngineRoot, &tempPath));
@@ -655,7 +683,7 @@ TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)
     platformConfigPath.append("TestPlatform/");
     platformConfigPath.append(AssetProcessor::AssetProcessorPlatformConfigFileName);
 
-    QStringList platformConfigList;
+    AZStd::vector<AZ::IO::Path> platformConfigList;
     ASSERT_FALSE(config.AddPlatformConfigFilePaths(platformConfigList));
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath(platformConfigPath), ";nothing to see here"));
     ASSERT_TRUE(config.AddPlatformConfigFilePaths(platformConfigList));

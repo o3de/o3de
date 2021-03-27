@@ -296,13 +296,3 @@ list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
 ly_get_absolute_pal_filename(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME})
 ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
-
-
-# we must include this here to bring the package system up before we actually start calling
-# find_package.  Otherwise the find_package may not actually find the packages it needs
-include(cmake/3rdPartyPackages.cmake)
-
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
-    find_package(Qt REQUIRED MODULE)
-endif()

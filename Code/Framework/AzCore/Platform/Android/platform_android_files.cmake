@@ -64,6 +64,7 @@ set(FILES
     AzCore/Socket/AzSocket_Platform.h
     ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
     AzCore/Utils/Utils_Android.cpp
+    ../Common/Unimplemented/AzCore/Utils/Utils_Unimplemented.cpp
     ../../AzCore/Android/AndroidEnv.cpp
     ../../AzCore/Android/AndroidEnv.h
     ../../AzCore/Android/APKFileHandler.cpp

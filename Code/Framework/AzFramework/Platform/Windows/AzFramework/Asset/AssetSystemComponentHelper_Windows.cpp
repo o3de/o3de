@@ -61,18 +61,19 @@ namespace AzFramework::AssetSystem::Platform
         }
     }
 
-    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view appRoot,
-        AZStd::string_view gameProjectName)
+    bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view engineRoot,
+        AZStd::string_view projectPath)
     {
         AZ::IO::FixedMaxPath assetProcessorPath{ executableDirectory };
         assetProcessorPath /= "AssetProcessor.exe";
 
         auto fullLaunchCommand = AZ::IO::FixedMaxPathString::format(R"("%s" --start-hidden)", assetProcessorPath.c_str());
-        // Add the app-root to the launch command if not empty
-        if (!appRoot.empty())
+
+        // Add the engine path to the launch command if not empty
+        if (!engineRoot.empty())
         {
-            fullLaunchCommand += R"( --app-root=")";
-            fullLaunchCommand += appRoot;
+            fullLaunchCommand += R"( --engine-path=")";
+            fullLaunchCommand += engineRoot;
             // Windows CreateProcess has issues with paths that end with a trailing backslash
             // so remove it if it exist
             if (fullLaunchCommand.ends_with(AZ::IO::WindowsPathSeparator))
@@ -82,11 +83,11 @@ namespace AzFramework::AssetSystem::Platform
             fullLaunchCommand += '"';
         }
 
-        // Add the active game project to the launch command if not empty 
-        if (!gameProjectName.empty())
+        // Add the active project path to the launch command if not empty
+        if (!projectPath.empty())
         {
-            fullLaunchCommand += R"( --gameFolder=")";
-            fullLaunchCommand += gameProjectName;
+            fullLaunchCommand += R"( --project-path=")";
+            fullLaunchCommand += projectPath;
             fullLaunchCommand += '"';
         }
 

@@ -177,7 +177,7 @@ protected:
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
 
-    static bool WaitForBuilderExit(AzToolsFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
+    static bool WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
 
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;

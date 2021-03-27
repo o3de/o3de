@@ -39,7 +39,6 @@ ly_add_target(
 ly_add_target(
     NAME NvCloth ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.NvCloth.6ab53783d9f54c9e97a15ad729e7c182.v0.1.0
     FILES_CMAKE
         nvcloth_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -53,6 +52,8 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::NvCloth.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -80,9 +81,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME NvCloth.Editor MODULE
+        NAME NvCloth.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.NvCloth.Editor.6ab53783d9f54c9e97a15ad729e7c182.v0.1.0
         FILES_CMAKE
             nvcloth_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -96,6 +97,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Legacy::CryCommon
                 Gem::NvCloth.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 endif()
 

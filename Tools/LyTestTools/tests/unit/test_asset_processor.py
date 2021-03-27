@@ -60,7 +60,7 @@ class TestAssetProcessor(object):
         under_test.start(connect_to_ap=True)
 
         assert under_test._ap_proc is not None
-        mock_popen.assert_called_once_with([mock_ap_path, '--zeroAnalysisMode', '--gamefolder', 'AutomatedTesting',
+        mock_popen.assert_called_once_with([mock_ap_path, '--zeroAnalysisMode', '--regset="/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"',
                                             '--acceptInput', '--platforms', 'bar'], cwd=os.path.dirname(mock_ap_path))
         mock_connect.assert_called()
 
@@ -105,8 +105,8 @@ class TestAssetProcessor(object):
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_NoFastscanBatchCompletes_Success(self, mock_run, mock_workspace):
-        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         mock_workspace.project = None
+        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         apb_path = mock_workspace.paths.asset_processor_batch()
         mock_run.return_value.returncode = 0
         result, _ = under_test.batch_process(1, False)
@@ -118,23 +118,23 @@ class TestAssetProcessor(object):
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_FastscanBatchCompletes_Success(self, mock_run, mock_workspace):
-        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         mock_workspace.project = 'AutomatedTesting'
+        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         apb_path = mock_workspace.paths.asset_processor_batch()
         mock_run.return_value.returncode = 0
 
         result = under_test.batch_process(1, True)
 
         assert result
-        mock_run.assert_called_once_with([apb_path, '--zeroAnalysisMode', '--gamefolder', 'AutomatedTesting'],
+        mock_run.assert_called_once_with([apb_path, '--zeroAnalysisMode', '--regset="/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"'],
                                          close_fds=True, capture_output=False,
                                          timeout=1)
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_ReturnCodeFail_Failure(self, mock_run, mock_workspace):
-        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         mock_workspace.project = None
+        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
         apb_path = mock_workspace.paths.asset_processor_batch()
         mock_run.return_value.returncode = 1
 
@@ -145,42 +145,11 @@ class TestAssetProcessor(object):
 
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
-    @mock.patch('os.path.isfile')
-    @mock.patch('ly_test_tools.lumberyard.asset_processor.file_system.unlock_file')
-    def test_EnableAssetProcessorPlatform_PlatformInConfig_ConfigUpdated(self, mock_unlock, mock_isfile,
-                                                                         mock_workspace):
-        mock_isfile.return_value = True
+    def test_EnableAssetProcessorPlatform_AssetProcessorObject_Updated(self, mock_workspace):
         under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
-        apconfig_path = mock_workspace.paths.asset_processor_config_file()
-
-        mock_config_content = '[Platforms]\n;foo\n;bar\n[Other]\nsomething\n'
-
-        mock_open_config = mock.mock_open(read_data=mock_config_content)
-
-        patcher = mock.patch('builtins.open', mock_open_config)
-        patcher.start()
 
         under_test.enable_asset_processor_platform('foo')
-
-        mock_unlock.assert_called_once_with(apconfig_path)
-        mock_open_config.assert_called_once_with(apconfig_path, 'r+')
-        file_handle = mock_open_config()
-        file_handle.writelines.assert_called_once_with(['[Platforms]\n', 'foo\n', ';bar\n', '[Other]\n', 'something\n'])
-        patcher.stop()
-
-    @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
-    @mock.patch('os.path.isfile')
-    @mock.patch('ly_test_tools.lumberyard.asset_processor.file_system.unlock_file')
-    def test_EnableAssetProcessorPlatform_FileDoesNotExist_ErrorRaised(self, mock_unlock, mock_isfile, mock_workspace):
-        mock_isfile.return_value = False
-        under_test = ly_test_tools.lumberyard.asset_processor.AssetProcessor(mock_workspace)
-        apconfig_path = mock_workspace.paths.asset_processor_config_file()
-
-        with pytest.raises(IOError):
-            under_test.enable_asset_processor_platform('foo')
-
-        mock_isfile.assert_called_once_with(apconfig_path)
-        mock_unlock.assert_not_called()
+        assert "foo" in under_test._enabled_platform_overrides
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     def test_BackupAPSettings_Called_CallsBackupAPSettings(self, mock_workspace):

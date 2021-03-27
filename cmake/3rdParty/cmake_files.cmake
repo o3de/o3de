@@ -11,7 +11,6 @@
 
 set(FILES
     BuiltInPackages.cmake
-    FindAWSNativeSDK.cmake
     FindAWSGameLiftServerSDK.cmake
     Findcivetweb.cmake
     FindClang.cmake
@@ -23,7 +22,6 @@ set(FILES
     FindFreeType2.cmake
     Findlibav.cmake
     FindOpenSSL.cmake
-    FindQt.cmake
     FindRadTelemetry.cmake
     Findtiff.cmake
     FindVkValidation.cmake

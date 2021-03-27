@@ -131,8 +131,9 @@ class TestAutomationBase:
                         crash_info = f.read()
                 except Exception as ex:
                     crash_info += f"\n{str(ex)}"
-                        
-                error_str = f"Editor.exe crashed, return code: 0x{return_code:0X}\n\nCrash log:\n{crash_info}"
+
+                return_code_str = f"0x{return_code:0X}" if isinstance(return_code, int) else "None"
+                error_str = f"Editor.exe crashed, return code: {return_code_str}\n\nCrash log:\n{crash_info}"
                 errors.append(TestRunError("CRASH", error_str))
         
         self.test_times[testcase_name] = time.time() - test_starttime

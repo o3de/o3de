@@ -43,7 +43,6 @@ ly_add_target(
 ly_add_target(
     NAME AudioSystem ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AudioSystem.6f63f2b6d07f4b89b4b7c86ebee7feb8.v0.1.0
     FILES_CMAKE
         audiosystem_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -69,9 +68,9 @@ ly_add_target(
 if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     # Stub gem for server. Audio system is client only
     ly_add_target(
-        NAME AudioSystem.Server MODULE
+        NAME AudioSystem.Server GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AudioSystem.Server.6f63f2b6d07f4b89b4b7c86ebee7feb8.v0.1.0
         FILES_CMAKE
             audiosystem_stub_files.cmake
         BUILD_DEPENDENCIES
@@ -215,9 +214,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AudioSystem.Static
     )
     ly_add_target(
-        NAME AudioSystem.Editor MODULE
+        NAME AudioSystem.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.AudioSystem.Editor.6f63f2b6d07f4b89b4b7c86ebee7feb8.v0.1.0
         FILES_CMAKE
             audiosystem_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

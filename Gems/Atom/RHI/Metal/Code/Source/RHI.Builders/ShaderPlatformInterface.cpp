@@ -60,7 +60,8 @@ namespace AZ
         bool ShaderPlatformInterface::BuildPipelineLayoutDescriptor(
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
             const ShaderResourceGroupInfoList& srgInfoList,
-            const RootConstantsInfo& rootConstantsInfo)
+            const RootConstantsInfo& rootConstantsInfo,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
         {
             AZ::Metal::PipelineLayoutDescriptor* metalDescriptor = azrtti_cast<AZ::Metal::PipelineLayoutDescriptor*>(pipelineLayoutDescriptor.get());
             AZ_Assert(metalDescriptor, "PipelineLayoutDescriptor should have been created by now");
@@ -154,22 +155,22 @@ namespace AZ
             return (shaderStageType == RHI::ShaderHardwareStage::RayTracing);
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             // Note: all platforms use DirectX packing rules. We enable vk namespace as well to allow
             // for vk syntax to carry  through from dxc to spirv-cross.
-            return m_settings.MakeAdditionalAzslcCommandLineString() +
+            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
                 " --use-spaces --unique-idx --namespace=mt,vk --root-const=128";
         }
  
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters() const
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.MakeAdditionalAzslcWarningCommandLineString();
+            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
         }
 
-        bool ShaderPlatformInterface::BuildHasDebugInfo() const
+        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return m_settings.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -190,7 +191,8 @@ namespace AZ
            const AZStd::string& functionName,
            RHI::ShaderHardwareStage shaderStage,
            const AZStd::string& tempFolderPath,
-           StageDescriptor& outputDescriptor) const
+           StageDescriptor& outputDescriptor,
+           const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             for (auto srgLayout : m_srgLayouts)
             {
@@ -206,6 +208,7 @@ namespace AZ
                 tempFolderPath,                  // AP temp folder for the job
                 functionName,                    // name of function that is the entry point
                 shaderStage,                     // shader stage (vertex shader, pixel shader, ...)
+                shaderCompilerArguments,
                 shaderSourceCode,                // cross-compiled shader output
                 shaderByteCode,                  // compiled byte code
                 platform,                        // target platform
@@ -241,6 +244,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderType,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
             AZStd::vector<char>& sourceMetalShader,
             AZStd::vector<uint8_t>& compiledByteCode,
             const AssetBuilderSDK::PlatformInfo& platform,
@@ -275,7 +279,7 @@ namespace AZ
             AZStd::string shaderSpirvOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "spirv");
             
             // Compilation parameters
-            AZStd::string params = m_settings.MakeAdditionalDxcCommandLineString();
+            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
             params += " -spirv"; // Generate SPIRV shader
             
             // Enable half precision types when shader model >= 6.2
@@ -299,7 +303,10 @@ namespace AZ
                 prependFile = MacPlatformShaderHeader;
             }
 
-            RHI::PrependArguments args{ shaderSourceFile.c_str(), prependFile.c_str(), "", tempFolder.c_str() };
+            RHI::PrependArguments args;
+            args.m_sourceFile = shaderSourceFile.c_str();
+            args.m_prependFile = prependFile.c_str();
+            args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);
             if (BuildHasDebugInfo())

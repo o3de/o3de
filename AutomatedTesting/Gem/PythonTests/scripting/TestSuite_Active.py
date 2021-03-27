@@ -19,16 +19,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 
 from base import TestAutomationBase
 
-
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
-
-    def test_Opening_Closing_Pane(self, request, workspace, editor, launcher_platform):
-        from . import Opening_Closing_Pane as test_module
-        self._run_test(request, workspace, editor, test_module)
-
+    
     def test_Docking_Pane(self, request, workspace, editor, launcher_platform):
         from . import Docking_Pane as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -36,4 +31,3 @@ class TestAutomation(TestAutomationBase):
     def test_Resizing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Resizing_Pane as test_module
         self._run_test(request, workspace, editor, test_module)
-

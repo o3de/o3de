@@ -35,7 +35,7 @@ namespace AzToolsFramework
         AZStd::string Get7zExePath()
         {
             const char* rootPath = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(rootPath, &AZ::ComponentApplicationRequests::GetAppRoot);
+            AZ::ComponentApplicationBus::BroadcastResult(rootPath, &AZ::ComponentApplicationRequests::GetEngineRoot);
             AZStd::string exePath;
             AzFramework::StringFunc::Path::ConstructFull(rootPath, "Tools", "7za", ".exe", exePath);
             return exePath;

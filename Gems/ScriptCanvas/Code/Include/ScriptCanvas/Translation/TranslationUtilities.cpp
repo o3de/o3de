@@ -27,8 +27,7 @@ namespace TranslationUtilitiesCPP
     using namespace ScriptCanvas::Translation;
     
     const char* k_namespaceNameNative = "AutoNative";
-    const char* k_fileDirectoryPathNative = "@engroot@/Gems/ScriptCanvas/Include/ScriptCanvas/AutoNative";
-    const char* k_fileDirectoryPathLua = "@engroot@/DebugScriptCanvas2LuaOutput/";
+    const char* k_fileDirectoryPathLua = "@usercache@/DebugScriptCanvas2LuaOutput/";
     const char* k_space = " ";
     
     const size_t k_maxTabs = 20;
@@ -113,18 +112,6 @@ namespace TranslationUtilitiesCPP
             return AZ::Failure(AZStd::string("FileIOBase unavailable"));
         }
 
-        if (!fileIO->GetAlias("@engroot@"))
-        {
-             const char* engineRoot = nullptr;
-             AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
- 
-             if (engineRoot == nullptr)
-             {
-                 return AZ::Failure(AZStd::string("no engine root"));
-             }
- 
-             fileIO->SetAlias("@engroot@", engineRoot);
-        }
         // \todo get a (debug) file path based on the extension
         const AZStd::string filePath = TranslationUtilitiesCPP::GetDebugLuaFilePath(source, extension);
 

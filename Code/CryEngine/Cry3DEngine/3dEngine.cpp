@@ -952,7 +952,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 
                 if (GetCVars()->e_SQTestCount == 0)
                 {
-                    const char* testResultsFile = "@cache@/TestResults/Streaming_Latency_Test.xml";
+                    const char* testResultsFile = "@usercache@/TestResults/Streaming_Latency_Test.xml";
 
                     AZ::IO::HandleType resultsFile = gEnv->pCryPak->FOpen(testResultsFile, "wb");
                     if (resultsFile != AZ::IO::InvalidHandle)

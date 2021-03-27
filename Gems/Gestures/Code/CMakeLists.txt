@@ -27,7 +27,6 @@ ly_add_target(
 ly_add_target(
     NAME Gestures ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Gestures.6056556b6088413984309c4a413593ad.v1.0.0
     FILES_CMAKE
         gestures_shared_files.cmake
     INCLUDE_DIRECTORIES

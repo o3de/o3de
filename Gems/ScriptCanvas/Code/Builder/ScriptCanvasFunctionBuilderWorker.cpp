@@ -124,20 +124,19 @@ namespace ScriptCanvasBuilder
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
             }
         }
-
-        {
-            AssetBuilderSDK::JobDescriptor copyDescriptor;
-            copyDescriptor.m_priority = 2;
-            copyDescriptor.m_critical = true;
-            copyDescriptor.m_jobKey = s_scriptCanvasCopyJobKey;
-            copyDescriptor.SetPlatformIdentifier("pc");
-            copyDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString())
-                .append(AZStd::string::format("|%zu", fingerprint));
-            response.m_createJobOutputs.push_back(copyDescriptor);
-        }
-
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
+            if (info.HasTag("tools"))
+            {
+                AssetBuilderSDK::JobDescriptor copyDescriptor;
+                copyDescriptor.m_priority = 2;
+                copyDescriptor.m_critical = true;
+                copyDescriptor.m_jobKey = s_scriptCanvasCopyJobKey;
+                copyDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
+                copyDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
+                response.m_createJobOutputs.push_back(copyDescriptor);
+            }
+
             AssetBuilderSDK::JobDescriptor jobDescriptor;
             jobDescriptor.m_priority = 2;
             jobDescriptor.m_critical = true;

@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_AtomBridge ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_AtomBridge.b55b2738aa4a46c8b034fe98e6e5158b.v0.1.0
     FILES_CMAKE
         atombridge_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -54,7 +53,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Atom_AtomBridge.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_AtomBridge.Editor.b55b2738aa4a46c8b034fe98e6e5158b.v0.1.0
         FILES_CMAKE
             atombridge_editor_files.cmake
         INCLUDE_DIRECTORIES

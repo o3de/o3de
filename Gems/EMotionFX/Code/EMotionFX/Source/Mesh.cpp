@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/PackedVector3.h>
 #include "EMotionFXConfig.h"
 #include "Mesh.h"
 #include "SubMesh.h"
@@ -29,8 +30,6 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator, 0)
 
-
-    // default constructor
     Mesh::Mesh()
         : BaseObject()
     {
@@ -47,7 +46,6 @@ namespace EMotionFX
         mVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
         mSharedVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
     }
-
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
@@ -69,44 +67,137 @@ namespace EMotionFX
         Allocate(numVerts, numIndices, numPolygons, numOrgVerts);
     }
 
-
-    // destructor
     Mesh::~Mesh()
     {
         ReleaseData();
     }
 
-
-    // creation
     Mesh* Mesh::Create()
     {
         return aznew Mesh();
     }
 
-
-    // extended creation
     Mesh* Mesh::Create(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
     {
         return aznew Mesh(numVerts, numIndices, numPolygons, numOrgVerts, isCollisionMesh);
     }
 
+    namespace AtomMeshHelpers
+    {
+        // Local 2D and 4D packed vector structs as we don't have packed representations in AzCore and don't plan to add these.
+        struct Vector2
+        {
+            float x;
+            float y;
+        };
+
+        struct Vector4
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        // Needed for converting the packed vectors from the Atom buffers that normally load directly into GPU into AzCore versions used by EMFX.
+        AZ::Vector2 ConvertVector(const Vector2& input)
+        {
+            return AZ::Vector2(input.x, input.y);
+        }
+
+        AZ::Vector3 ConvertVector(const AZ::PackedVector3f& input)
+        {
+            return AZ::Vector3(input.GetX(), input.GetY(), input.GetZ());
+        }
+
+        AZ::Vector4 ConvertVector(const Vector4& input)
+        {
+            return AZ::Vector4(input.x, input.y, input.z, input.w);
+        }
+
+        // Convert Atom buffer storing elements of type SourceType to an EMFX vertex attribute layer storing elements of type TargetType.
+        // The vertex attribute layer is created within and added to the given target mesh.
+        // Atom meshes might have different vertex features like some might contain tangents or multiple UV sets while other meshes do not have
+        // tangents or don't contain any UV set at all. The corresponding EMFX sub-meshes do not support that, so we need to pad the vertex buffers.
+        // @param[in] sourceModelLod Source model LOD asset to read the vertex buffers from.
+        // @param[in] modelVertexCount Accumulated vertex count for all Atom meshes calculated and cached by the caller.
+        // @param[in] sourceBufferName The name of the buffer to translate into a vertex attribute layer.
+        // @param[in] inputBufferData Pointer to the source buffer from the Atom model LOD asset. This contains the data to be translated and copied over.
+        // @param[in] targetMesh The EMFX mesh where the newly created vertex attribute layer should be added to.
+        // @param[in] vertexAttributeLayerTypeId The type ID of the attribute layer used to identify type of vertex data (positions, normals, etc.)
+        // @param[in] keepOriginals True in case the vertex elements change when deforming the mesh, false if not.
+        // @param[in] defaultPaddingValue The value used for the sub-meshes in the EMFX that do not contain a given vertex feature in Atom for the given mesh.
+        template<typename TargetType, typename SourceType>
+        void CreateAndAddVertexAttributeLayer(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, AZ::u32 modelVertexCount,
+            const AZ::Name& sourceBufferName, const void* inputBufferData,
+            Mesh* targetMesh, AZ::u32 vertexAttributeLayerTypeId, bool keepOriginals,
+            const TargetType& defaultPaddingValue)
+        {
+            VertexAttributeLayerAbstractData* targetVertexAttributeLayer = VertexAttributeLayerAbstractData::Create(modelVertexCount, vertexAttributeLayerTypeId, sizeof(TargetType), keepOriginals);
+            TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
+
+            // Fill the vertex attribute layer by iterating through the Atom meshes and copying over the vertex data for each.
+            size_t addedElements = 0;
+            for (const AZ::RPI::ModelLodAsset::Mesh& atomMesh : sourceModelLod->GetMeshes())
+            {
+                const uint32_t atomMeshVertexCount = atomMesh.GetVertexCount();
+                const AZ::RPI::BufferAssetView* bufferAssetView = atomMesh.GetSemanticBufferAssetView(sourceBufferName);
+                if (bufferAssetView)
+                {
+                    const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = bufferAssetView->GetBufferViewDescriptor();
+                    const SourceType* atomMeshBuffer = reinterpret_cast<const SourceType*>(inputBufferData) + bufferAssetViewDescriptor.m_elementOffset;
+
+                    for (size_t vertexIndex = 0; vertexIndex < atomMeshVertexCount; ++vertexIndex)
+                    {
+                        targetBuffer[vertexIndex] = ConvertVector(atomMeshBuffer[vertexIndex]);
+                    }
+                }
+                else
+                {
+                    AZ_Warning("EMotionFX", false, "Padding %s buffer for mesh %s. Mesh has %d vertices while buffer is empty.",
+                        sourceBufferName.GetCStr(), atomMesh.GetName().GetCStr(), atomMeshVertexCount);
+
+                    for (size_t vertexIndex = 0; vertexIndex < atomMeshVertexCount; ++vertexIndex)
+                    {
+                        targetBuffer[vertexIndex] = defaultPaddingValue;
+                    }
+                }
+
+                targetBuffer += atomMeshVertexCount;
+                addedElements += atomMeshVertexCount;
+            }
+
+            AZ_Assert(addedElements == modelVertexCount, "The model has %d vertices while we only added %d elements to the %s buffer.",
+                modelVertexCount, addedElements, sourceBufferName.GetCStr());
+
+            // In case we want to keep the original values, the target buffer will have double the size and we copy the same thing twice.
+            // The original values won't be touched when morphing or skinning but are needed as a base for the mesh deformations.
+            if (keepOriginals)
+            {
+                memcpy(targetBuffer, targetVertexAttributeLayer->GetData(), sizeof(TargetType) * modelVertexCount);
+            }
+
+            targetMesh->AddVertexAttributeLayer(targetVertexAttributeLayer);
+        }
+    };
 
     Mesh* Mesh::CreateFromModelLod(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap)
     {
-        AZ::u32 numVertex = 0;
-        AZ::u32 numIndices = 0;
+        AZ::u32 modelVertexCount = 0;
+        AZ::u32 modelIndexCount = 0;
         for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
         {
-            numVertex += mesh.GetVertexCount();
-            numIndices += mesh.GetIndexCount();
+            modelVertexCount += mesh.GetVertexCount();
+            modelIndexCount += mesh.GetIndexCount();
         }
+
         // IndicesPerFace defined in atom is 3.
-        const AZ::u32 numPolygons = numIndices / 3;
-        Mesh* mesh = Create(numVertex, numIndices, numPolygons, numVertex, false);
+        const AZ::u32 numPolygons = modelIndexCount / 3;
+        Mesh* mesh = Create(modelVertexCount, modelIndexCount, numPolygons, modelVertexCount, false);
 
         // The lod has shared buffers that combine the data from each submesh.
         // These buffers can be accessed through the first submesh in their entirety
-        // by using the BufferViewDescriptor from the Buffer instead of the one from the submesh's BufferAssetView
+        // by using the BufferViewDescriptor from the Buffer instead of the one from the sub-mesh's BufferAssetView
         const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
 
         // Copy the index buffer for the entire lod
@@ -129,84 +220,59 @@ namespace EMotionFX
         for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
         {
             const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBufferViewDescriptor();
-            const AZ::u32 elementSize = bufferAssetViewDescriptor.m_elementSize;
             const size_t elementCountInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementCount;
-            const size_t elementOffsetInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementOffset;
             const void* bufferData = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBuffer().data();
             const AZ::Name& name = streamBufferInfo.m_semantic.m_name;
 
             if (name == AZ::Name("POSITION"))
             {
-                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_POSITIONS, sizeof(AZ::Vector3), true);
-                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
-                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
-                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
-                {
-                    AZ::PackedVector3f sourceVector = sourceData[vertexIndex];
-                    targetData[vertexIndex] = AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ());
-                }
-                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
-                mesh->AddVertexAttributeLayer(targetDataLayer);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_POSITIONS, /*keepOriginals=*/true,
+                    AZ::Vector3(0.0f, 0.0f, 0.0f));
             }
             else if (name == AZ::Name("NORMAL"))
             {
-                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_NORMALS, sizeof(AZ::Vector3), true);
-                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
-                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
-                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
-                {
-                    const AZ::PackedVector3f& sourceVector = sourceData[vertexIndex];
-                    targetData[vertexIndex] = AZStd::move(AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ()));
-                }
-                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
-                mesh->AddVertexAttributeLayer(targetDataLayer);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_NORMALS, /*keepOriginals=*/true,
+                    AZ::Vector3(1.0f, 0.0f, 0.0f));
             }
             else if (name == AZ::Name("UV"))
             {
-                VertexAttributeLayerAbstractData* uvData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_UVCOORDS, sizeof(AZ::Vector2), false);
-                const float* sourceData = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset * 2;
-                AZ::Vector2* targetData = static_cast<AZ::Vector2*>(uvData->GetData());
-                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
-                {
-                    targetData[vertexIndex] = AZStd::move(AZ::Vector2(sourceData[2 * vertexIndex], sourceData[2 * vertexIndex + 1]));
-                }
-                mesh->AddVertexAttributeLayer(uvData);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector2, AtomMeshHelpers::Vector2>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_UVCOORDS, /*keepOriginals=*/false,
+                    AZ::Vector2(0.0f, 0.0f));
             }
             else if (name == AZ::Name("TANGENT"))
             {
-                VertexAttributeLayerAbstractData* tangentData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_TANGENTS, sizeof(AZ::Vector4), true);
-                const AZ::Vector4* sourceData = static_cast<const AZ::Vector4*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
-                memcpy(tangentData->GetData(), sourceData, elementCountInBytes);
-                memcpy((uint8*)tangentData->GetData() + elementCountInBytes, bufferData, elementCountInBytes);
-                mesh->AddVertexAttributeLayer(tangentData);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_TANGENTS, /*keepOriginals=*/true,
+                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f));
             }
             else if (name == AZ::Name("BITANGENT"))
             {
-                VertexAttributeLayerAbstractData* targetDataLayer = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_BITANGENTS, sizeof(AZ::Vector3), true);
-                AZ::Vector3* targetData = static_cast<AZ::Vector3*>(targetDataLayer->GetData());
-                const AZ::PackedVector3f* sourceData = static_cast<const AZ::PackedVector3f*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
-                for (size_t vertexIndex = 0; vertexIndex < numVertex; ++vertexIndex)
-                {
-                    const AZ::PackedVector3f& sourceVector = sourceData[vertexIndex];
-                    targetData[vertexIndex] = AZStd::move(AZ::Vector3(sourceVector.GetX(), sourceVector.GetY(), sourceVector.GetZ()));
-                }
-                memcpy(targetData + numVertex, targetData, numVertex * sizeof(AZ::Vector3));
-                mesh->AddVertexAttributeLayer(targetDataLayer);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_BITANGENTS, /*keepOriginals=*/true,
+                    AZ::Vector3(1.0f, 0.0f, 0.0f));
             }
             else if (name == AZ::Name("COLOR"))
             {
-                VertexAttributeLayerAbstractData* colorData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_COLORS128, sizeof(AZ::Vector4), false);
-                const AZ::Vector4* sourceData = static_cast<const AZ::Vector4*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
-                memcpy(colorData->GetData(), sourceData, elementCountInBytes);
-                mesh->AddVertexAttributeLayer(colorData);
+                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
+                    name, bufferData,
+                    mesh, Mesh::ATTRIB_COLORS128, /*keepOriginals=*/false,
+                    AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
             }
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
                 size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
-                maxSkinInfluences = influenceCount / numVertex;
+                maxSkinInfluences = influenceCount / modelVertexCount;
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
-                AZ_Assert(influenceCount % numVertex == 0, "Expect an equal number of influences for each vertex.");
+                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
 
                 // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
@@ -217,7 +283,7 @@ namespace EMotionFX
             {
                 // Atom stores joint weights as float (range 0 - 1)
                 size_t influenceCount = elementCountInBytes / sizeof(float);
-                maxSkinInfluences = influenceCount / numVertex;
+                maxSkinInfluences = influenceCount / modelVertexCount;
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
@@ -234,9 +300,9 @@ namespace EMotionFX
         }
 
         // Add the original vertex layer
-        VertexAttributeLayerAbstractData* originalVertexData = VertexAttributeLayerAbstractData::Create(numVertex, Mesh::ATTRIB_ORGVTXNUMBERS, sizeof(AZ::u32), false);
+        VertexAttributeLayerAbstractData* originalVertexData = VertexAttributeLayerAbstractData::Create(modelVertexCount, Mesh::ATTRIB_ORGVTXNUMBERS, sizeof(AZ::u32), false);
         AZ::u32* originalVertexDataRaw = static_cast<AZ::u32*>(originalVertexData->GetData());
-        for (AZ::u32 i = 0; i < numVertex; ++i)
+        for (size_t i = 0; i < modelVertexCount; ++i)
         {
             originalVertexDataRaw[i] = i;
         }
@@ -246,14 +312,14 @@ namespace EMotionFX
         if (skinJointIndices && skinWeights)
         {
             // Create the skinning layer
-            SkinningInfoVertexAttributeLayer* skinningLayer = SkinningInfoVertexAttributeLayer::Create(numVertex, /*allocData=*/false);
+            SkinningInfoVertexAttributeLayer* skinningLayer = SkinningInfoVertexAttributeLayer::Create(modelVertexCount, /*allocData=*/false);
             mesh->AddSharedVertexAttributeLayer(skinningLayer);
             MCore::Array2D<SkinInfluence>& skin2dArray = skinningLayer->GetArray2D();
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
-            skin2dArray.Resize(numVertex);
+            skin2dArray.Resize(modelVertexCount);
 
             // Fill in skinning data from atom buffer
-            for (uint32 v = 0; v < numVertex; ++v)
+            for (uint32 v = 0; v < modelVertexCount; ++v)
             {
                 for (uint32 i = 0; i < maxSkinInfluences; ++i)
                 {
@@ -293,9 +359,9 @@ namespace EMotionFX
                 subMeshVertexCount,
                 subMeshIndexCount,
                 subMeshPolygonCount,
-                /*materialIndex*/ 0,
-                /*numJoints*/ 0);
-            
+                /*materialIndex*/0,
+                /*numJoints*/0);
+
             mesh->InsertSubMesh(subMeshIndex, subMesh);
 
             vertexOffset += subMeshVertexCount;
@@ -1064,78 +1130,78 @@ namespace EMotionFX
     // remove indexed null triangles (triangles that use 2 or 3 of the same vertices, so which are invisible)
     uint32 Mesh::RemoveIndexedNullTriangles(bool removeEmptySubMeshes)
     {
-        uint32 numRemoved = 0;
-        uint32 i;
+    uint32 numRemoved = 0;
+    uint32 i;
 
-        // for all triangles
-        uint32 numIndices = mNumIndices;
-        uint32 offset = 0;
-        for (i=0; i<mNumIndices; i+=3)
-        {
-            uint32 indexA = mIndices[offset];
-            uint32 indexB = mIndices[offset+1];
-            uint32 indexC = mIndices[offset+2];
+    // for all triangles
+    uint32 numIndices = mNumIndices;
+    uint32 offset = 0;
+    for (i=0; i<mNumIndices; i+=3)
+    {
+    uint32 indexA = mIndices[offset];
+    uint32 indexB = mIndices[offset+1];
+    uint32 indexC = mIndices[offset+2];
 
-            // if we need to remove this triangle
-            if (indexA == indexB || indexA == indexC || indexB == indexC)
-            {
-                // re-arrange the array in memory
-                uint32 numBytesToMove = (mNumIndices - (offset+3)) * sizeof(uint32);
-                if (numBytesToMove > 0)
-                    MCore::MemMove(((uint8*)mIndices + (offset * sizeof(uint32))), ((uint8*)mIndices + (offset+3)*sizeof(uint32)), numBytesToMove);
+    // if we need to remove this triangle
+    if (indexA == indexB || indexA == indexC || indexB == indexC)
+    {
+    // re-arrange the array in memory
+    uint32 numBytesToMove = (mNumIndices - (offset+3)) * sizeof(uint32);
+    if (numBytesToMove > 0)
+    MCore::MemMove(((uint8*)mIndices + (offset * sizeof(uint32))), ((uint8*)mIndices + (offset+3)*sizeof(uint32)), numBytesToMove);
 
-                numRemoved++;
-                numIndices -= 3;
+    numRemoved++;
+    numIndices -= 3;
 
-                // adjust all submesh start index offsets changed
-                //const uint32 numSubMeshes = mSubMeshes.GetLength();
-                for (uint32 s=0; s<mSubMeshes.GetLength(); )
-                {
-                    SubMesh* subMesh = mSubMeshes[s];
+    // adjust all submesh start index offsets changed
+    //const uint32 numSubMeshes = mSubMeshes.GetLength();
+    for (uint32 s=0; s<mSubMeshes.GetLength(); )
+    {
+    SubMesh* subMesh = mSubMeshes[s];
 
-                    // if this isn't the last submesh
-                    if (s < mSubMeshes.GetLength() - 1)
-                    {
-                        // if we remove a triangle from this submesh
-                        if (subMesh->GetStartIndex() <= offset && mSubMeshes[s+1]->GetStartIndex() > offset)
-                            subMesh->SetNumIndices( subMesh->GetNumIndices() - 3 );
-                    }
-                    else
-                    {
-                        if (subMesh->GetStartIndex() <= offset)
-                            subMesh->SetNumIndices( subMesh->GetNumIndices() - 3 );
-                    }
+    // if this isn't the last submesh
+    if (s < mSubMeshes.GetLength() - 1)
+    {
+    // if we remove a triangle from this submesh
+    if (subMesh->GetStartIndex() <= offset && mSubMeshes[s+1]->GetStartIndex() > offset)
+    subMesh->SetNumIndices( subMesh->GetNumIndices() - 3 );
+    }
+    else
+    {
+    if (subMesh->GetStartIndex() <= offset)
+    subMesh->SetNumIndices( subMesh->GetNumIndices() - 3 );
+    }
 
-                    // now find out if we need to adjust the index offset of the submesh
-                    if (subMesh->GetStartIndex() >= offset)
-                    {
-                        if (subMesh->GetStartIndex() != offset)
-                            subMesh->SetStartIndex( subMesh->GetStartIndex() - 3 );
-                    }
+    // now find out if we need to adjust the index offset of the submesh
+    if (subMesh->GetStartIndex() >= offset)
+    {
+    if (subMesh->GetStartIndex() != offset)
+    subMesh->SetStartIndex( subMesh->GetStartIndex() - 3 );
+    }
 
 
-                    // remove the submesh if it's empty
-                    if (subMesh->GetNumIndices() == 0 && removeEmptySubMeshes)
-                        mSubMeshes.Remove(s);
-                    else
-                        s++;
+    // remove the submesh if it's empty
+    if (subMesh->GetNumIndices() == 0 && removeEmptySubMeshes)
+    mSubMeshes.Remove(s);
+    else
+    s++;
 
-                }
-            }   // if we gotta remove
-            else
-                offset += 3;
-        }
+    }
+    }   // if we gotta remove
+    else
+    offset += 3;
+    }
 
-        // reallocate the array, if we removed anything
-        if (numIndices != mNumIndices)
-            mIndices = (uint32*)MCore::AlignedRealloc(mIndices, sizeof(uint32) * numIndices, mNumIndices*sizeof(uint32), 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
+    // reallocate the array, if we removed anything
+    if (numIndices != mNumIndices)
+    mIndices = (uint32*)MCore::AlignedRealloc(mIndices, sizeof(uint32) * numIndices, mNumIndices*sizeof(uint32), 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
 
-        // update the number of indices
-        MCORE_ASSERT(numRemoved == (mNumIndices - numIndices) / 3);
-        mNumIndices = numIndices;
+    // update the number of indices
+    MCORE_ASSERT(numRemoved == (mNumIndices - numIndices) / 3);
+    mNumIndices = numIndices;
 
-        // return the number of removed triangles
-        return numRemoved;
+    // return the number of removed triangles
+    return numRemoved;
     }
     */
 
@@ -1159,7 +1225,7 @@ namespace EMotionFX
         //------------------------------------
         const uint32 numVertsToRemove = (endVertexNr - startVertexNr) + 1; // +1 because we remove the end vertex as well
 
-        // remove the num verices counter
+                                                                           // remove the num verices counter
         mNumVertices -= numVertsToRemove;
 
         // remove the attributes from the vertex attribute layers
@@ -1508,17 +1574,17 @@ namespace EMotionFX
         MCore::LogDebug("  + Is Triangle Mesh         = %d", CheckIfIsTriangleMesh());
         MCore::LogDebug("  + Is Quad Mesh             = %d", CheckIfIsQuadMesh());
         /*
-            // iterate through and log all org vertex numbers
-            const uint32 numOrgVertices = GetNumOrgVertices();
-            LogDebug("   - Org Vertices (%d)", numOrgVertices);
-            for (i=0; i<numOrgVertices; ++i)
-                LogDebug("     + %d", orgVerts[i]);
+        // iterate through and log all org vertex numbers
+        const uint32 numOrgVertices = GetNumOrgVertices();
+        LogDebug("   - Org Vertices (%d)", numOrgVertices);
+        for (i=0; i<numOrgVertices; ++i)
+        LogDebug("     + %d", orgVerts[i]);
 
-            // iterate through and log all positions
-            const uint32 numPositions = GetNumVertices();
-            LogDebug("   - Positions / Normals (%d)", numPositions);
-            for (i=0; i<numPositions; ++i)
-                LogDebug("     + Position: %f %f %f, Normal: %f %f %f", positions[i].x, positions[i].y, positions[i].z, normals[i].x, normals[i].y, normals[i].z);
+        // iterate through and log all positions
+        const uint32 numPositions = GetNumVertices();
+        LogDebug("   - Positions / Normals (%d)", numPositions);
+        for (i=0; i<numPositions; ++i)
+        LogDebug("     + Position: %f %f %f, Normal: %f %f %f", positions[i].x, positions[i].y, positions[i].z, normals[i].x, normals[i].y, normals[i].z);
         */
         // iterate through all of its submeshes
         const uint32 numSubMeshes = GetNumSubMeshes();
@@ -1537,20 +1603,20 @@ namespace EMotionFX
             MCore::LogDebug("     + MaterialNr   = %d", subMesh->GetMaterial());
 
             /*      // output all triangle indices that point inside the data we output above
-                    LogDebug("       - Triangle Indices:");
-                    const uint32 startVertex    = subMesh->GetStartVertex();
-                    const uint32 startIndex     = subMesh->GetStartIndex();
-                    const uint32 endIndex       = subMesh->GetStartIndex() + subMesh->GetNumIndices();
-                    for (i=startIndex; i<endIndex; i+=3)
-                    {
-                        // remove the start index values if you want them local in the submesh vertex buffers
-                        // otherwise do not remove the start vertex, then they point absolute inside the big
-                        // vertex attribute buffers of the mesh
-                        const uint32 indexA = indices[i]   - startVertex;
-                        const uint32 indexB = indices[i+1] - startVertex;
-                        const uint32 indexC = indices[i+2] - startVertex;
-                        LogDebug("         + (%d, %d, %d)", indexA, indexB, indexC);
-                    }*/
+            LogDebug("       - Triangle Indices:");
+            const uint32 startVertex    = subMesh->GetStartVertex();
+            const uint32 startIndex     = subMesh->GetStartIndex();
+            const uint32 endIndex       = subMesh->GetStartIndex() + subMesh->GetNumIndices();
+            for (i=startIndex; i<endIndex; i+=3)
+            {
+            // remove the start index values if you want them local in the submesh vertex buffers
+            // otherwise do not remove the start vertex, then they point absolute inside the big
+            // vertex attribute buffers of the mesh
+            const uint32 indexA = indices[i]   - startVertex;
+            const uint32 indexB = indices[i+1] - startVertex;
+            const uint32 indexC = indices[i+2] - startVertex;
+            LogDebug("         + (%d, %d, %d)", indexA, indexB, indexC);
+            }*/
 
             // output the bones used by this submesh
             MCore::LogDebug("       - Bone list:");
@@ -1773,23 +1839,23 @@ namespace EMotionFX
                 polyStartIndex += numPolyVerts;
             }
             /*
-                    for (uint32 f=0; f<mNumIndices; f+=3)
-                    {
-                        // get the face indices
-                        const uint32 indexA = indices[f];
-                        const uint32 indexB = indices[f+1];
-                        const uint32 indexC = indices[f+2];
+            for (uint32 f=0; f<mNumIndices; f+=3)
+            {
+            // get the face indices
+            const uint32 indexA = indices[f];
+            const uint32 indexB = indices[f+1];
+            const uint32 indexC = indices[f+2];
 
-                        const MCore::Vector3& posA = positions[ indexA ];
-                        const MCore::Vector3& posB = positions[ indexB ];
-                        const MCore::Vector3& posC = positions[ indexC ];
-                        MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
+            const MCore::Vector3& posA = positions[ indexA ];
+            const MCore::Vector3& posB = positions[ indexB ];
+            const MCore::Vector3& posC = positions[ indexC ];
+            MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
 
-                        // store the tangents in the orgTangents array
-                        smoothNormals[ orgVerts[indexA] ] += faceNormal;
-                        smoothNormals[ orgVerts[indexB] ] += faceNormal;
-                        smoothNormals[ orgVerts[indexC] ] += faceNormal;
-                    }
+            // store the tangents in the orgTangents array
+            smoothNormals[ orgVerts[indexA] ] += faceNormal;
+            smoothNormals[ orgVerts[indexB] ] += faceNormal;
+            smoothNormals[ orgVerts[indexC] ] += faceNormal;
+            }
             */
             // normalize
             for (uint32 i = 0; i < mNumOrgVerts; ++i)
@@ -1842,24 +1908,24 @@ namespace EMotionFX
                 polyStartIndex += numPolyVerts;
             }
             /*
-                    // sum all face normals
-                    for (uint32 f=0; f<mNumIndices; f+=3)
-                    {
-                        // get the face indices
-                        const uint32 indexA = indices[f];
-                        const uint32 indexB = indices[f+1];
-                        const uint32 indexC = indices[f+2];
+            // sum all face normals
+            for (uint32 f=0; f<mNumIndices; f+=3)
+            {
+            // get the face indices
+            const uint32 indexA = indices[f];
+            const uint32 indexB = indices[f+1];
+            const uint32 indexC = indices[f+2];
 
-                        const MCore::Vector3& posA = positions[ indexA ];
-                        const MCore::Vector3& posB = positions[ indexB ];
-                        const MCore::Vector3& posC = positions[ indexC ];
-                        MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
+            const MCore::Vector3& posA = positions[ indexA ];
+            const MCore::Vector3& posB = positions[ indexB ];
+            const MCore::Vector3& posC = positions[ indexC ];
+            MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
 
-                        // store the tangents in the orgTangents array
-                        normals[indexA] += faceNormal;
-                        normals[indexB] += faceNormal;
-                        normals[indexC] += faceNormal;
-                    }
+            // store the tangents in the orgTangents array
+            normals[indexA] += faceNormal;
+            normals[indexB] += faceNormal;
+            normals[indexC] += faceNormal;
+            }
             */
             // normalize the normals
             for (uint32 i = 0; i < mNumVertices; ++i)

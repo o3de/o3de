@@ -499,6 +499,38 @@ namespace SettingsRegistryTests
         EXPECT_TRUE(this->m_registry->Visit(visitor, "/Test/Object/Type"));
     }
 
+    TEST_F(SettingsRegistryTest, VisitWithVisitor_EndOfPathArguments_MatchesValueNameArgument_ForAllIterations)
+    {
+        // Validate that every invocation of the Traverse and Visit command supplies a 'path' parameter
+        // whose end matches that of the 'valueName' parameter
+        AZStd::string json{
+            R"({
+                "Test":
+                {
+                    "Object":{ "Type": "TestString" }
+                }
+            })"
+        };
+        ASSERT_TRUE(this->m_registry->MergeSettings(json.c_str(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
+
+        struct : public AZ::SettingsRegistryInterface::Visitor
+        {
+            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
+                AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type) override
+            {
+                EXPECT_TRUE(path.ends_with(valueName));
+                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
+            }
+            void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
+            {
+                EXPECT_TRUE(path.ends_with(valueName));
+            }
+        } visitor;
+
+        EXPECT_TRUE(this->m_registry->Visit(visitor, ""));
+        EXPECT_TRUE(this->m_registry->Visit(visitor, "/Test"));
+    }
+
     //
     // Object
     //
@@ -730,7 +762,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Object", "Object", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Object/NullType", "NullType", SRI::Type::Null, SRI::VisitAction::Value),
@@ -752,7 +784,7 @@ namespace SettingsRegistryTests
             RegistryEntry("/Test/Array/6", "6", SRI::Type::String, SRI::VisitAction::Value),
             RegistryEntry("/Test/Array", "Array", SRI::Type::Array, SRI::VisitAction::End),
 
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::End)
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::End)
         };
 
         Visit(expected, "/Test");
@@ -778,11 +810,11 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Layer1/Layer2", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Layer1/Layer2", "Layer2", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Layer1/Layer2/Layer3", "Layer3", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Layer1/Layer2/Layer3/StringType", "StringType", SRI::Type::String, SRI::VisitAction::Value),
             RegistryEntry("/Layer1/Layer2/Layer3", "Layer3", SRI::Type::Object, SRI::VisitAction::End),
-            RegistryEntry("/Layer1/Layer2", "", SRI::Type::Object, SRI::VisitAction::End)
+            RegistryEntry("/Layer1/Layer2", "Layer2", SRI::Type::Object, SRI::VisitAction::End)
         };
 
         Visit(expected, "/Layer1/Layer2");
@@ -806,9 +838,9 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Object/0/0", "", SRI::Type::Array, SRI::VisitAction::Begin),
+            RegistryEntry("/Object/0/0", "0", SRI::Type::Array, SRI::VisitAction::Begin),
             RegistryEntry("/Object/0/0/0", "0", SRI::Type::String, SRI::VisitAction::Value),
-            RegistryEntry("/Object/0/0", "", SRI::Type::Array, SRI::VisitAction::End)
+            RegistryEntry("/Object/0/0", "0", SRI::Type::Array, SRI::VisitAction::End)
         };
 
         Visit(expected, "/Object/0/0");
@@ -830,7 +862,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Object0", "Object0", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Object0/Field", "Field", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -842,7 +874,7 @@ namespace SettingsRegistryTests
             RegistryEntry("/Test/Object2/Field", "Field", SRI::Type::Integer, SRI::VisitAction::Value),
             RegistryEntry("/Test/Object2", "Object2", SRI::Type::Object, SRI::VisitAction::End),
 
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::End)
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::End)
         };
 
         Visit(expected, "/Test");
@@ -864,7 +896,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Array0", "Array0", SRI::Type::Array, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Array0/0", "0", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -878,7 +910,7 @@ namespace SettingsRegistryTests
             RegistryEntry("/Test/Array2/1", "1", SRI::Type::Integer, SRI::VisitAction::Value),
             RegistryEntry("/Test/Array2", "Array2", SRI::Type::Array, SRI::VisitAction::End),
 
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::End)
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::End)
         };
 
         Visit(expected, "/Test");
@@ -900,7 +932,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Object0", "Object0", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Object0/Field", "Field", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -928,7 +960,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Object0", "Object0", SRI::Type::Object, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Object0/Field", "Field", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -954,7 +986,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Array0", "Array0", SRI::Type::Array, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Array0/0", "0", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -984,7 +1016,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<RegistryEntry> expected =
         {
-            RegistryEntry("/Test", "", SRI::Type::Object, SRI::VisitAction::Begin),
+            RegistryEntry("/Test", "Test", SRI::Type::Object, SRI::VisitAction::Begin),
 
             RegistryEntry("/Test/Array0", "Array0", SRI::Type::Array, SRI::VisitAction::Begin),
             RegistryEntry("/Test/Array0/0", "0", SRI::Type::Integer, SRI::VisitAction::Value),
@@ -1700,11 +1732,7 @@ namespace SettingsRegistryTests
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0/Path"));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MERGESETTINGSFOLDER_CONFLICTINGSPECIALIZATIONS
-    TEST_F(SettingsRegistryTest, DISABLED_MergeSettingsFolder_ConflictingSpecializations_ReportsErrorAndReturnsFalse)
-#else
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_ConflictingSpecializations_ReportsErrorAndReturnsFalse)
-#endif // AZ_TRAIT_DISABLE_FAILED_MERGESETTINGSFOLDER_CONFLICTINGSPECIALIZATIONS
     {
         CreateTestFile("Memory.test.editor.setreg", "{}");
         CreateTestFile("Memory.editor.test.setreg", "{}");

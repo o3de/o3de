@@ -28,7 +28,6 @@ ly_add_target(
 ly_add_target(
     NAME Camera ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Camera.f910686b6725452fbfc4671f95f733c6.v0.1.0
     FILES_CMAKE
         camera_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -43,9 +42,9 @@ ly_add_target(
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME Camera.Editor MODULE
+        NAME Camera.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Camera.Editor.f910686b6725452fbfc4671f95f733c6.v0.1.0
         FILES_CMAKE
             camera_editor_files.cmake
         COMPILE_DEFINITIONS

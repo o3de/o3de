@@ -29,7 +29,7 @@ namespace LumberyardLauncher
         return "@log@/Game.log";
     }
 
-    const AZStd::string_view GetBuildTargetName()
+    AZStd::string_view GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -37,7 +37,12 @@ namespace LumberyardLauncher
         return { LY_CMAKE_TARGET };
     }
 
-    const AZStd::string_view GetGameProjectName()
+    AZStd::string_view GetProjectName()
+    {
+        return { "Tests" };
+    }
+
+    AZStd::string_view GetProjectPath()
     {
         return { "Tests" };
     }

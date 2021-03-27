@@ -11,7 +11,9 @@
 */
 
 #include "FrameworkApplicationFixture.h"
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzTest/Utils.h>
 
 class ApplicationTest
@@ -22,7 +24,14 @@ protected:
     void SetUp() override
     {
         FrameworkApplicationFixture::SetUp();
-        m_application->SetAssetRoot(m_tempDirectory.GetDirectory());
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, m_tempDirectory.GetDirectory());
+        }
+        if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+        {
+            fileIoBase->SetAlias("@assets@", m_tempDirectory.GetDirectory());
+        }
     }
 
     void TearDown() override
@@ -31,13 +40,13 @@ protected:
     }
 
     AZStd::string m_root;
-    AZ::Test::ScopedAutoTempDirectory   m_tempDirectory;
+    AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 };
 
 TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPath_Valid)
 {
     AZStd::string inputPath;
-    AzFramework::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "TestA.txt", inputPath, true);
     m_application->MakePathAssetRootRelative(inputPath);
     EXPECT_EQ(inputPath, "testa.txt");
 }
@@ -45,7 +54,7 @@ TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPath_Valid)
 TEST_F(ApplicationTest, MakePathRelative_AbsPath_Valid)
 {
     AZStd::string inputPath;
-    AzFramework::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "TestA.txt", inputPath, true);
     m_application->MakePathRelative(inputPath, m_tempDirectory.GetDirectory());
     EXPECT_EQ(inputPath, "TestA.txt");
 }
@@ -55,7 +64,7 @@ TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPath_RootLowerCase_Valid)
     AZStd::string inputPath;
     AZStd::string root = m_tempDirectory.GetDirectory();
     AZStd::to_lower(root.begin(), root.end());
-    AzFramework::StringFunc::Path::ConstructFull(root.c_str(), "TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(root.c_str(), "TestA.txt", inputPath, true);
     m_application->MakePathAssetRootRelative(inputPath);
     EXPECT_EQ(inputPath, "testa.txt");
 }
@@ -65,7 +74,7 @@ TEST_F(ApplicationTest, MakePathRelative_AbsPath_RootLowerCase_Valid)
     AZStd::string inputPath;
     AZStd::string root = m_tempDirectory.GetDirectory();
     AZStd::to_lower(root.begin(), root.end());
-    AzFramework::StringFunc::Path::ConstructFull(root.c_str(), "TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(root.c_str(), "TestA.txt", inputPath, true);
     m_application->MakePathRelative(inputPath, root.c_str());
     EXPECT_EQ(inputPath, "TestA.txt");
 }
@@ -74,7 +83,7 @@ TEST_F(ApplicationTest, MakePathRelative_AbsPath_RootLowerCase_Valid)
 TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPathWithSubFolders_Valid)
 {
     AZStd::string inputPath;
-    AzFramework::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "Foo/TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "Foo/TestA.txt", inputPath, true);
     m_application->MakePathAssetRootRelative(inputPath);
     EXPECT_EQ(inputPath, "foo/testa.txt");
 }
@@ -82,7 +91,7 @@ TEST_F(ApplicationTest, MakePathAssetRootRelative_AbsPathWithSubFolders_Valid)
 TEST_F(ApplicationTest, MakePathRelative_AbsPathWithSubFolders_Valid)
 {
     AZStd::string inputPath;
-    AzFramework::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "Foo/TestA.txt", inputPath, true);
+    AZ::StringFunc::Path::ConstructFull(m_tempDirectory.GetDirectory(), "Foo/TestA.txt", inputPath, true);
     m_application->MakePathRelative(inputPath, m_tempDirectory.GetDirectory());
     EXPECT_EQ(inputPath, "Foo/TestA.txt");
 }

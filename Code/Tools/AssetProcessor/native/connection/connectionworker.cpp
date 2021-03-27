@@ -235,9 +235,9 @@ bool ConnectionWorker::NegotiateDirect(bool initiate)
     using namespace AzFramework::AssetSystem;
 
     AZStd::string azBranchToken;
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForAppRoot, azBranchToken);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, azBranchToken);
     QString branchToken(azBranchToken.c_str());
-    QString projectName = AssetUtilities::ComputeGameName();
+    QString projectName = AssetUtilities::ComputeProjectName();
     
     NegotiationMessage myInfo;
 
@@ -316,7 +316,7 @@ bool ConnectionWorker::NegotiateDirect(bool initiate)
     QString incomingBranchToken(engineInfo.m_negotiationInfoMap[NegotiationInfo_BranchIndentifier].c_str());
     if (QString::compare(incomingBranchToken, branchToken, Qt::CaseInsensitive) != 0)
     {
-        //if we are here it means that the editor/game which is negotiating is running on a different branch
+        // if we are here it means that the editor/game which is negotiating is running on a different branch
         // note that it could have just read nothing from the engine or a repeat packet, in that case, discard it silently and try again.
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "ConnectionWorker::NegotiateDirect: branch token mismatch from %s - %p - %s vs %s\n", engineInfo.m_identifier.c_str(), this, incomingBranchToken.toUtf8().data(), branchToken.toUtf8().data());
         AssetProcessor::MessageInfoBus::Broadcast(&AssetProcessor::MessageInfoBus::Events::NegotiationFailed);
@@ -325,7 +325,7 @@ bool ConnectionWorker::NegotiateDirect(bool initiate)
     }
 
     QString incomingProjectName(engineInfo.m_negotiationInfoMap[NegotiationInfo_ProjectName].c_str());
-    // Do a case-insensitive compare for the project name because some (case-sensitive) platforms will blower-case the incoming project name
+    // Do a case-insensitive compare for the project name because some (case-sensitive) platforms will lower-case the incoming project name
     if(QString::compare(incomingProjectName, projectName, Qt::CaseInsensitive) != 0)
     {
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "ConnectionWorker::NegotiateDirect: project name mismatch from %s - %p - %s vs %s\n", engineInfo.m_identifier.c_str(), this, incomingProjectName.toUtf8().constData(), projectName.toUtf8().constData());

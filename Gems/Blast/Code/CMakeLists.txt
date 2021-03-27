@@ -43,7 +43,6 @@ ly_add_target(
 ly_add_target(
     NAME Blast ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Blast.414bd211c99d4f74aef3a266b9ca208c.v0.1.0
     FILES_CMAKE
         blast_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -55,6 +54,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Blast.Static
+    RUNTIME_DEPENDENCIES
+        Gem::PhysX
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -87,10 +88,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Blast.Editor MODULE
+        NAME Blast.Editor GEM_MODULE
+
         NAMESPACE Gem
         AUTOMOC
-        OUTPUT_NAME Gem.Blast.Editor.414bd211c99d4f74aef3a266b9ca208c.v0.1.0
         FILES_CMAKE
             blast_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -104,7 +105,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Blast.Editor.Static
                 Gem::PythonAssetBuilder.Editor
         RUNTIME_DEPENDENCIES
-                3rdParty::assimplib
+            3rdParty::assimplib
+            Gem::PhysX.Editor
     )
 
 endif()

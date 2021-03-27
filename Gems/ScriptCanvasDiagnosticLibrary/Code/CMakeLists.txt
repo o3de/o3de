@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target(
     NAME ScriptCanvasDiagnosticLibrary ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptCanvasDiagnosticLibrary.d969b997bb7f4342ba0b3eedc378025d.v0.1.0
     FILES_CMAKE
         scriptcanvasdiagnosticlibrary_shared_files.cmake
     INCLUDE_DIRECTORIES

@@ -13,7 +13,7 @@
 #include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #define SCC_WINDOW "Source Control"
 
@@ -331,7 +331,7 @@ namespace AzToolsFramework
         ExecuteCommand();
     }
 
-    ProcessWatcher* PerforceCommand::ExecuteNewChangelistInput()
+    AzFramework::ProcessWatcher* PerforceCommand::ExecuteNewChangelistInput()
     {
         m_commandArgs = "change -i";
         return ExecuteIOCommand();
@@ -370,31 +370,31 @@ namespace AzToolsFramework
     void PerforceCommand::ExecuteCommand()
     {
         m_rawOutput.Clear();
-        ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = "p4 -ztag " + m_commandArgs;
         processLaunchInfo.m_showWindow = false;
-        ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
-        m_applicationFound = processLaunchInfo.m_launchResult == ProcessLauncher::PLR_MissingFile ? false : true;
+        AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
+        m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;
     }
 
-    ProcessWatcher* PerforceCommand::ExecuteIOCommand()
+    AzFramework::ProcessWatcher* PerforceCommand::ExecuteIOCommand()
     {
-        ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = "p4 " + m_commandArgs;
         processLaunchInfo.m_showWindow = false;
-        ProcessWatcher* processWatcher = ProcessWatcher::LaunchProcess(processLaunchInfo, ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
-        m_applicationFound = processLaunchInfo.m_launchResult == ProcessLauncher::PLR_MissingFile ? false : true;
+        AzFramework::ProcessWatcher* processWatcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
+        m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;
         return processWatcher;
     }
 
     void PerforceCommand::ExecuteRawCommand()
     {
         m_rawOutput.Clear();
-        ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = "p4 " + m_commandArgs;
         processLaunchInfo.m_showWindow = false;
-        ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
-        m_applicationFound = processLaunchInfo.m_launchResult == ProcessLauncher::PLR_MissingFile ? false : true;
+        AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
+        m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;
     }
 
     AZStd::string PerforceConnection::GetUser() const

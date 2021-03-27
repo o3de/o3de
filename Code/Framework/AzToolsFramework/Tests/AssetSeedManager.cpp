@@ -23,6 +23,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzTest/Utils.h>
 namespace // anonymous
 {
@@ -179,7 +180,7 @@ namespace UnitTest
             const AZStd::string engroot = AZ::Test::GetEngineRootPath();
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engroot.c_str());
 
-            AZ::IO::Path assetRoot(engroot);
+            AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
 

@@ -17,7 +17,6 @@ include(${pal_source_dir}/PAL2_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
     ly_add_target(
         NAME Atom_RHI_Metal.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        OUTPUT_NAME Gem.Atom_RHI_Metal.Private.5f27cdc951e64fe0be9d823dc7acbc28.v0.1.0
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_metal_stub_module.cmake
@@ -35,8 +34,8 @@ if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Atom_RHI_Metal.Builders MODULE
-            OUTPUT_NAME Gem.Atom_RHI_Metal.Builders.5f27cdc951e64fe0be9d823dc7acbc28.v0.1.0
+            NAME Atom_RHI_Metal.Builders GEM_MODULE
+
             NAMESPACE Gem
             FILES_CMAKE
                 Source/Platform/${PAL_PLATFORM_NAME}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -101,7 +100,6 @@ ly_add_target(
 ly_add_target(
     NAME Atom_RHI_Metal.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Atom_RHI_Metal.Private.5f27cdc951e64fe0be9d823dc7acbc28.v0.1.0
     FILES_CMAKE
         atom_rhi_metal_private_common_shared_files.cmake
     PLATFORM_INCLUDE_FILES
@@ -146,9 +144,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
    ly_add_target(
-        NAME Atom_RHI_Metal.Builders MODULE
+        NAME Atom_RHI_Metal.Builders GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Atom_RHI_Metal.Builders.5f27cdc951e64fe0be9d823dc7acbc28.v0.1.0
         FILES_CMAKE
             atom_rhi_metal_builders_shared_files.cmake
         PLATFORM_INCLUDE_FILES

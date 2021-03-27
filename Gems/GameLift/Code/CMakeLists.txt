@@ -41,7 +41,6 @@ ly_add_target(
 ly_add_target( 
     NAME GameLift ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.GameLift.76de765796504906b73be7365a9bff06.v2.0.0
     FILES_CMAKE
         GameLift_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -97,9 +96,9 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 )
 
     ly_add_target(
-        NAME GameLift.Server MODULE
+        NAME GameLift.Server GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.GameLift.Server.76de765796504906b73be7365a9bff06.v2.0.0
         FILES_CMAKE
             GameLift_files.cmake
         INCLUDE_DIRECTORIES

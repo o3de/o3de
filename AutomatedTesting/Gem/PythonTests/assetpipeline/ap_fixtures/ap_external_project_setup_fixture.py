@@ -52,7 +52,7 @@ def ap_external_project_setup_fixture(request, workspace) -> Dict:
     paths = mock()
     paths.asset_processor = lambda: resources["ap_path"]
     paths.asset_processor_batch = lambda: resources["ap_batch_path"]
-    paths.asset_processor_config_file = lambda: os.path.join(resources["project_dir"], "AssetProcessorConfig.ini")
+    paths.asset_processor_config_file = lambda: os.path.join(resources["project_dir"], "AssetProcessorConfig.setreg")
     mock_workspace.paths = paths
     resources["external_workspace"] = mock_workspace
 

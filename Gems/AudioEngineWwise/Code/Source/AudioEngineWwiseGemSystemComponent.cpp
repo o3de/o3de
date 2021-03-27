@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzFramework/Platform/PlatformDefaults.h>
 
-#include <ISystem.h>
 #include <AudioAllocators.h>
 #include <AudioLogger.h>
 #include <AudioSystemImplCVars.h>
@@ -111,7 +112,7 @@ namespace AudioEngineWwiseGem
     #endif // AUDIO_ENGINE_WWISE_EDITOR
     }
 
-    bool AudioEngineWwiseGemSystemComponent::Initialize(const SSystemInitParams* initParams)
+    bool AudioEngineWwiseGemSystemComponent::Initialize()
     {
         bool success = false;
 
@@ -143,7 +144,14 @@ namespace AudioEngineWwiseGem
             AZ::AllocatorInstance<Audio::AudioImplAllocator>::Create(allocDesc);
         }
 
-        m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(initParams->assetsPlatform);
+        AZ::SettingsRegistryInterface::FixedValueString assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(
+            AZ_TRAIT_OS_PLATFORM_CODENAME);
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
+                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
+        }
+        m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
         #if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL

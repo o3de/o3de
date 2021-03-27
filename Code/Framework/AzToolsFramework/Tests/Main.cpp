@@ -11,7 +11,10 @@
 */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -40,7 +43,13 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
     ::testing::InitGoogleMock(&argc, argv);
     QApplication app(argc, argv);
     auto styleManager = AZStd::make_unique< AzQtComponents::StyleManager>(&app);
-    styleManager->initialize(&app);
+    AZ::IO::FixedMaxPath engineRootPath;
+    {
+        AZ::ComponentApplication componentApplication(argc, argv);
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    styleManager->initialize(&app, engineRootPath);
     AZ::Test::printUnusedParametersWarning(argc, argv);
     AZ::Test::addTestEnvironments({ new ToolsFrameworkHook });
     int result = RUN_ALL_TESTS();

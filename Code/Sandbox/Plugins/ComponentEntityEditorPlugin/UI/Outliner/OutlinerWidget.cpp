@@ -24,9 +24,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings//SettingsRegistryMergeUtils.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/sort.h>
 
@@ -151,7 +153,12 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     m_gui->setupUi(this);
 
 
-    QDir rootDir(AzQtComponents::FindEngineRootDir(qApp));
+    AZ::IO::FixedMaxPath engineRootPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    }
+    QDir rootDir = QString::fromUtf8(engineRootPath.c_str(), aznumeric_cast<int>(engineRootPath.Native().size()));
     const auto pathOnDisk = rootDir.absoluteFilePath(QStringLiteral("Code/Sandbox/Plugins/ComponentEntityEditorPlugin/UI/Outliner/"));
     const auto qrcPath = QStringLiteral(":/EntityOutliner/");
 
@@ -159,7 +166,7 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     // developers. The style will be loaded from a Qt Resource file if Editor is installed, but
     // developers with the file on disk will be able to modify the style and have it automatically
     // reloaded.
-    AzQtComponents::StyleManager::addSearchPaths("EntityOutliner", pathOnDisk, qrcPath);
+    AzQtComponents::StyleManager::addSearchPaths("EntityOutliner", pathOnDisk, qrcPath, engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("EntityOutliner:EntityOutliner.qss"));
 
     m_listModel = aznew OutlinerListModel(this);

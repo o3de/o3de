@@ -43,7 +43,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_SequenceBatchRenderDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-
 namespace
 {
     const int g_useActiveViewportResolution = -1;   // reserved value to indicate the use of the active viewport resolution
@@ -90,6 +89,14 @@ namespace
     {
         return (renderItemHeight == g_useActiveViewportResolution) ? activeViewportHeight : renderItemHeight;
     }
+}
+
+static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& atomOutputFrameCapture, const int width, const int height)
+{
+    const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
+    atomOutputFrameCapture.UpdateView(
+        TrackView::TransformFromEntityId(activeCameraEntityId),
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, width, height));
 }
 
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
@@ -874,8 +881,6 @@ void CSequenceBatchRenderDialog::InitializeContext()
 
 void CSequenceBatchRenderDialog::CaptureItemStart()
 {
-    AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-
     // Disable most of the UI in group chunks.
     // (Leave the start/cancel button and feedback elements).
     m_ui->BATCH_RENDER_LIST_GROUP_BOX->setEnabled(false);
@@ -976,20 +981,11 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         m_renderContext.cvarCustomResHeightBU = pCVarCustomResHeight->GetIVal();
         pCVarCustomResWidth->Set(renderWidth);
         pCVarCustomResHeight->Set(renderHeight);
-
-        // awaiting ATOM-14859
-        // AzFramework::NativeWindowHandle windowHandle = nullptr;
-        // AzFramework::WindowSystemRequestBus::BroadcastResult(
-        //     windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
-        // AzFramework::WindowRequestBus::Event(
-        //     windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea,
-        //     AzFramework::WindowSize(renderWidth, renderHeight));
     }
     else
     {
         // Otherwise, try to adjust the viewport resolution accordingly.
-        CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView();
-        if (viewPane)
+        if (CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView())
         {
             viewPane->ResizeViewport(renderWidth, renderHeight);
         }
@@ -1007,6 +1003,11 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
             cvarDebugInfo->Set(DISPLAY_INFO_OFF);
         }
     }
+
+    // create a new atom pipeline to capture the frames of the current sequence
+    m_atomOutputFrameCapture.CreatePipeline(
+        *TrackView::SceneFromGameEntityContext(), "TrackViewSequencePipeline", renderItem.resW, renderItem.resH);
+    UpdateAtomOutputFrameCaptureView(m_atomOutputFrameCapture, renderItem.resW, renderItem.resH);
 
     GetIEditor()->GetMovieSystem()->EnableFixedStepForCapture(m_renderContext.captureOptions.timeStep);
 
@@ -1205,7 +1206,7 @@ void CSequenceBatchRenderDialog::OnUpdateFinalize()
     m_renderContext.frameNumber = 0;
     m_renderContext.capturingFrame = false;
 
-    AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+    m_atomOutputFrameCapture.DestroyPipeline(*TrackView::SceneFromGameEntityContext());
 
     // Check to see if there is more items to process
     bool done = m_renderContext.currentItemIndex == m_renderItems.size() - 1;
@@ -1330,6 +1331,9 @@ void CSequenceBatchRenderDialog::OnKickIdle()
         // being captured, it's safe to move to the next step of the main update
         if (!capturing() || !m_renderContext.capturingFrame)
         {
+            const auto& renderItem = m_renderItems[m_renderContext.currentItemIndex];
+            // update the view given the current camera transform and projection
+            UpdateAtomOutputFrameCaptureView(m_atomOutputFrameCapture, renderItem.resW, renderItem.resH);
             GetIEditor()->GetGameEngine()->Update(); // step update (original frame capture)
         }
 
@@ -1341,14 +1345,24 @@ void CSequenceBatchRenderDialog::OnKickIdle()
                 m_renderContext.captureOptions.folder.c_str(), fileName.c_str(), filePath, /*caseInsensitive=*/true,
                 /*normalize=*/false);
 
-            bool capturedScreenshot = false;
-            AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                capturedScreenshot, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
+            // track view callback after each frame is captured
+            const auto captureFinishedCallback = [this]() {
+                m_renderContext.capturingFrame = false;
+                GetIEditor()->GetMovieSystem()->EndCapture();
+                GetIEditor()->GetMovieSystem()->ControlCapture();
+            };
 
-            if (capturedScreenshot)
-            {
-                m_renderContext.capturingFrame = true;
-            }
+            // readback result callback (how the image should be captured)
+            // currently only .dds
+            const auto readbackCallback = [filePath](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult) {
+                if (const AZ::Render::FrameCaptureOutputResult result = AZ::Render::DdsFrameCaptureOutput(filePath, readbackResult);
+                    result.m_errorMessage.has_value())
+                {
+                    AZ_Printf("TrackView", "Frame capture failed: %s", result.m_errorMessage.value().c_str());
+                }
+            };
+
+            m_renderContext.capturingFrame = m_atomOutputFrameCapture.BeginCapture(readbackCallback, captureFinishedCallback);
         }
     }
     else
@@ -1356,14 +1370,6 @@ void CSequenceBatchRenderDialog::OnKickIdle()
         // Post events, this will cause an Update tick.
         qApp->sendPostedEvents();
     }
-}
-
-void CSequenceBatchRenderDialog::OnCaptureFinished(
-    [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
-{
-    m_renderContext.capturingFrame = false;
-    GetIEditor()->GetMovieSystem()->EndCapture();
-    GetIEditor()->GetMovieSystem()->ControlCapture();
 }
 
 void CSequenceBatchRenderDialog::OnCancelRender()

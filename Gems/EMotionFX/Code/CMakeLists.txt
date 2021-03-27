@@ -9,8 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(GemUUID 044a63ea67d04479aa5daf62ded9d9ca)
-
 ly_get_list_relative_pal_filename(core_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 ly_get_list_relative_pal_filename(editor_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/${PAL_PLATFORM_NAME})
@@ -60,12 +58,13 @@ ly_add_target(
 ly_add_target(
     NAME EMotionFX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.EMotionFX.${GemUUID}.v0.1.0
     FILES_CMAKE
         Source/Integration/System/emotionfx_module_files.cmake
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::EMotionFX.Static
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -121,9 +120,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME EMotionFX.Editor MODULE
+        NAME EMotionFX.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Gem.EMotionFX.Editor.${GemUUID}.v0.1.0
         FILES_CMAKE
             Source/Integration/System/emotionfx_module_files.cmake
         INCLUDE_DIRECTORIES
@@ -133,6 +132,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::EMotionFX.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 endif()
 

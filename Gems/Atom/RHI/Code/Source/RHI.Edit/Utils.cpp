@@ -14,8 +14,8 @@
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
-#include <AzToolsFramework/Process/ProcessCommunicator.h>
-#include <AzToolsFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -176,7 +176,16 @@ namespace AZ
             AZStd::string combinedFile;
             if (arguments.m_destinationFolder)
             {
-                combinedFile = arguments.m_destinationFolder;
+                AZStd::string filename;
+                if(AzFramework::StringFunc::Path::GetFullFileName(sourceFileAbsolutePath->c_str(), filename))
+                {
+                    combinedFile = AZStd::string::format("%s/%s", arguments.m_destinationFolder, filename.c_str());
+                }
+                else
+                {
+                    AZ_Error(ShaderPlatformInterfaceName, false, "GetFullFileName('%s') failed", sourceFileAbsolutePath->c_str());
+                    return *sourceFileAbsolutePath;
+                }
             }
             else
             {
@@ -248,10 +257,10 @@ namespace AZ
                 return false;
             }
 
-            AzToolsFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
             processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
             processLaunchInfo.m_showWindow = true;
-            processLaunchInfo.m_processPriority = AzToolsFramework::PROCESSPRIORITY_NORMAL;
+            processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
             {
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Input File");
@@ -263,14 +272,14 @@ namespace AZ
             }
             AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.m_commandlineParameters.c_str());
 
-            AzToolsFramework::ProcessWatcher* watcher = AzToolsFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzToolsFramework::COMMUNICATOR_TYPE_STDINOUT);
+            AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)
             {
                 AZ_Error(ShaderPlatformInterfaceName, false, "Shader compiler could not be launched");
                 return false;
             }
 
-            AZStd::unique_ptr<AzToolsFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzToolsFramework::ProcessWatcher>(watcher);
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
 
             AZStd::string errorMessages;
             auto pumpOuputStreams = [&watcherPtr, &errorMessages]()

@@ -32,7 +32,6 @@ ly_add_target(
 ly_add_target(
     NAME InAppPurchases ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.InAppPurchases.92fe57eae7d3402a90761973678c079a.v0.1.0
     FILES_CMAKE
         inapppurchases_shared_files.cmake
     INCLUDE_DIRECTORIES

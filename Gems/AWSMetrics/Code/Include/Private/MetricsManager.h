@@ -93,6 +93,11 @@ namespace AWSMetrics
         //! @return Path to the local metrics file.
         const char* GetMetricsFilePath() const;
 
+        //! Get the total number of requests for sending metrics events.
+        //! This value could be different to the number of submitted metrics events since metrics events could be sent in batch.
+        //! @return Total number of requests for sending metrics events.
+        int GetNumTotalRequests() const;
+
     private:
         //! Job management
         void SetupJobContext();

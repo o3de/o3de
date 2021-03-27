@@ -20,8 +20,8 @@
 #include "System.h"
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 //#if !defined(LINUX)
 
 #include <ISystem.h>
@@ -186,21 +186,17 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
         }
     }
 
-    if (gEnv->pConsole)
-    {
-        if (ICVar*  pCVarGameDir = gEnv->pConsole->GetCVar("sys_game_folder"))
-        {
-            sprintf(s, "GameDir: %s\n", pCVarGameDir->GetString());
-            azstrcat(str, length, s);
-        }
-    }
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    azstrcat(str, length, "ProjectDir: ");
+    azstrcat(str, length, projectPath.c_str());
+    azstrcat(str, length, "\n");
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME
     GetModuleFileNameA(NULL, s, sizeof(s));
     
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
-    if (AzFramework::StringFunc::Path::GetFullFileName(s, exeName))
+    if (AZ::StringFunc::Path::GetFullFileName(s, exeName))
     {
         azstrcat(str, length, "Executable: ");
         azstrcat(str, length, exeName.c_str());

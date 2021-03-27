@@ -49,7 +49,8 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvasTesting.Editor MODULE
+    NAME ScriptCanvasTesting.Editor GEM_MODULE
+
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvastestingeditor_shared_files.cmake
@@ -69,6 +70,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
+    RUNTIME_DEPENDENCIES
+        Gem::ScriptCanvas.Editor
 )
 
 ################################################################################
