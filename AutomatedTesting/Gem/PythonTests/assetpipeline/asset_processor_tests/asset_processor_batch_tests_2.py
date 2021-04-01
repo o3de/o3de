@@ -74,6 +74,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C3594360")
     @pytest.mark.test_case_id("C3688013")
+    @pytest.mark.SUITE_sandbox
     # fmt:off
     def test_AllSupportedPlatforms_FastScanWorks_FasterThanFullScan(self, workspace, asset_processor):
         # fmt:on
