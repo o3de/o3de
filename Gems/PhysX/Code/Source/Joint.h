@@ -27,7 +27,7 @@ namespace PhysX
         const char* GetTypeName() override;
 
         float m_swingLimitY = 45.0f; ///< Maximum angle in degrees from the Y axis of the joint frame.
-        float m_swingLimitZ = 44.99f; ///< Maximum angle in degrees from the Z axis of the joint frame.
+        float m_swingLimitZ = 45.0f; ///< Maximum angle in degrees from the Z axis of the joint frame.
         float m_twistLimitLower = -45.0f; ///< Lower limit in degrees for rotation about the X axis of the joint frame.
         float m_twistLimitUpper = 45.0f; ///< Upper limit in degrees for rotation about the X axis of the joint frame.
     };
