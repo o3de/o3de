@@ -443,12 +443,9 @@ def Build(Map options, String platform, String type, String workspace) {
     }
 }
 
-def TestMetrics(Map options, Map buildType, String workspace, String branchName, String repoName) {
+def TestMetrics(Map options, String workspace, String branchName, String repoName, String buildJobName, String outputDirectory, String configuration) {
     catchError(buildResult: null, stageResult: null) {
-        def cmakeBuildDir = [workspace, buildType.value.PARAMETERS.OUTPUT_DIRECTORY].join('/')
-        def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${buildType.value.PARAMETERS.CONFIGURATION} ${repoName} "
-        if (params.DESTINATION_BRANCH)
-            command += '--destination-branch "$DESTINATION_BRANCH" '
+        def cmakeBuildDir = [workspace, outputDirectory].join('/')
         dir(workspace) {
             checkout scm: [
                 $class: 'GitSCM',
@@ -456,7 +453,10 @@ def TestMetrics(Map options, Map buildType, String workspace, String branchName,
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars']]
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
-                bat label: "Publishing ${buildType.key} Test Metrics",
+                def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                if (params.DESTINATION_BRANCH)
+                    command += "--destination-branch ${params.DESTINATION_BRANCH} "
+                bat label: "Publishing ${buildJobName} Test Metrics",
                 script: command
             }
         }
@@ -505,10 +505,10 @@ def CreateBuildStage(Map pipelineConfig, String platformName, String jobName, Ma
     }
 }
 
-def CreateTestMetricsStage(Map pipelineConfig, Map buildJob, String branchName, Map environmentVars) {
+def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmentVars, String buildJobName, String outputDirectory, String configuration) {
     return {
-        stage("${buildJob.key}") {
-            TestMetrics(pipelineConfig, buildJob, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME)
+        stage("${buildJobName}_metrics") {
+            TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
         }
     }
 }
@@ -608,8 +608,10 @@ try {
                                     } else {
                                         CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
                                     }
-                                    if (env.MARS_REPO && platform.key == 'Windows' && build_job.key.startsWith('test')) {
-                                        CreateTestMetricsStage(pipelineConfig, build_job, branchName, envVars).call()
+                                    if (env.MARS_REPO && platform.key == 'Windows' && build_job_name.startsWith('test')) {
+                                        def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
+                                        def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                        CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                                     }
                                 }   
                                 catch(Exception e) {
