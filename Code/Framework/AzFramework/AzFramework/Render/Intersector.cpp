@@ -34,7 +34,7 @@ namespace AzFramework
             SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
             if (scene)
             {
-                scene->SetSubsystem<IntersectorInterface>(this);
+                scene->SetSubsystem(this);
             }
         }
 
@@ -46,7 +46,8 @@ namespace AzFramework
             SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
             if (scene)
             {
-                scene->UnsetSubsystem<IntersectorInterface>();
+                [[maybe_unused]] bool result = scene->UnsetSubsystem(this);
+                AZ_Assert(result, "Failed to unregister Intersector with scene");
             }
         }
 

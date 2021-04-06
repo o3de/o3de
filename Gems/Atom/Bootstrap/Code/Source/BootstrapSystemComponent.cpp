@@ -269,7 +269,7 @@ namespace AZ
 
                 // Register scene to RPI system so it will be processed/rendered per tick
                 RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
-                scene->SetSubsystem(atomScene.get());
+                scene->SetSubsystem(atomScene);
 
                 atomSceneHandle = atomScene;
 

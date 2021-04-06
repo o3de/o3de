@@ -14,12 +14,12 @@
 
 namespace AzFramework
 {
-    Scene::Scene(AZStd::string_view name)
-        : m_name(name)
+    Scene::Scene(AZStd::string name)
+        : m_name(AZStd::move(name))
     {
     }
 
-    const AZStd::string& Scene::GetName()
+    const AZStd::string& Scene::GetName() const
     {
         return m_name;
     }

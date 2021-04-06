@@ -333,7 +333,7 @@ namespace SceneUnitTest
         EXPECT_TRUE(scene->SetSubsystem(foo1a));
 
         // Get that class back from the Scene
-        EXPECT_EQ(foo1a, scene->GetSubsystem<Foo1>());
+        EXPECT_EQ(foo1a, *scene->FindSubsystem<Foo1*>());
 
         // Try to set the same class type twice, this should fail.
         Foo1* foo1b = new Foo1();
@@ -345,9 +345,10 @@ namespace SceneUnitTest
 
         // Unset the class that was previously set
         EXPECT_TRUE(scene->UnsetSubsystem<Foo1>());
+        delete foo1a;
 
         // Make sure that the previsouly set class was really removed.
-        EXPECT_EQ(nullptr, scene->GetSubsystem<Foo1>());
+        EXPECT_EQ(nullptr, scene->FindSubsystem<Foo1*>());
     }
 } // UnitTest
 

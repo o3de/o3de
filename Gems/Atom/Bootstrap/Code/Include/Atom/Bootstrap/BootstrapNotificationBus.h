@@ -48,10 +48,10 @@ namespace AZ
                         AZ_Assert(scenes.size() > 0, "AzFramework didn't set up any scenes.");
 
                         // Assume first scene is the default scene
-                        AZ::RPI::Scene* defaultScene = scenes.at(0)->GetSubsystem<AZ::RPI::Scene>();
-                        if (defaultScene && defaultScene->GetDefaultRenderPipeline())
+                        AZ::RPI::ScenePtr* defaultScene = scenes.at(0)->FindSubsystem<AZ::RPI::ScenePtr>();
+                        if (defaultScene && *defaultScene && (*defaultScene)->GetDefaultRenderPipeline())
                         {
-                            handler->OnBootstrapSceneReady(defaultScene);
+                            handler->OnBootstrapSceneReady(defaultScene->get());
                         }
                     }
                 };

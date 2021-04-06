@@ -194,6 +194,7 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
     Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h

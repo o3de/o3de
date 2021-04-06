@@ -91,7 +91,7 @@ namespace MaterialEditor
         AZStd::vector<AzFramework::Scene*> scenes;
         AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
         AZ_Assert(scenes.size() > 0, "Error: Scenes missing during system component initialization"); // This should never happen unless scene creation has changed.
-        scenes.at(0)->SetSubsystem(m_scene.get());
+        scenes.at(0)->SetSubsystem(m_scene);
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);

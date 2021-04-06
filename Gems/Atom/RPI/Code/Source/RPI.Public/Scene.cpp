@@ -76,7 +76,11 @@ namespace AZ
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.
-                return scene->GetSubsystem<RPI::Scene>();
+                RPI::ScenePtr* scenePtr = scene->FindSubsystem<RPI::ScenePtr>();
+                if (scenePtr)
+                {
+                    return scenePtr->get();
+                }
             }
             return nullptr;
         }

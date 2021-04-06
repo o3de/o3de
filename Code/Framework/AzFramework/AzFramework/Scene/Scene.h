@@ -15,6 +15,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/any.h>
 
 namespace AzFramework
 {
@@ -24,71 +25,38 @@ namespace AzFramework
         AZ_TYPE_INFO(Scene, "{DB449BB3-7A95-434D-BC61-47ACBB1F3436}");
         AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
 
-        explicit Scene(AZStd::string_view name);
+        explicit Scene(AZStd::string name);
 
-        const AZStd::string& GetName();
+        const AZStd::string& GetName() const;
         
         // Set the instance of a subsystem associated with this scene.
         template <typename T>
-        bool SetSubsystem(T* system);
+        bool SetSubsystem(T&& system);
 
         // Unset the instance of a subsystem associated with this scene.
         template <typename T>
         bool UnsetSubsystem();
 
+        // Unset the instance of the exact system associated with this scene.
+        // Use this to make sure the expected instance is removed or to make sure type deduction is done in the same was as during setting.
+        template<typename T>
+        bool UnsetSubsystem(const T& system);
+
         // Get the instance of a subsystem associated with this scene.
         template <typename T>
-        T* GetSubsystem();
+        T* FindSubsystem();
+
+        // Get the instance of a subsystem associated with this scene.
+        template<typename T>
+        const T* FindSubsystem() const;
 
     private:
-
-        AZStd::string m_name;
-
         // Storing keys separate from data to optimize for fast key search.
         AZStd::vector<AZ::TypeId> m_systemKeys;
-        AZStd::vector<void*> m_systemPointers;
+        AZStd::vector<AZStd::any> m_systemObjects;
+
+        AZStd::string m_name;
     };
-    
-    template <typename T>
-    bool Scene::SetSubsystem(T* system)
-    {
-        if (GetSubsystem<T>() != nullptr)
-        {
-            return false;
-        }
-        m_systemKeys.push_back(T::RTTI_Type());
-        m_systemPointers.push_back(system);
-        return true;
-    }
-
-    template <typename T>
-    bool Scene::UnsetSubsystem()
-    {
-        for (size_t i = 0; i < m_systemKeys.size(); ++i)
-        {
-            if (m_systemKeys.at(i) == T::RTTI_Type())
-            {
-                m_systemKeys.at(i) = m_systemKeys.back();
-                m_systemKeys.pop_back();
-                m_systemPointers.at(i) = m_systemPointers.back();
-                m_systemPointers.pop_back();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    template <typename T>
-    T* Scene::GetSubsystem()
-    {
-        for (size_t i = 0; i < m_systemKeys.size(); ++i)
-        {
-            if (m_systemKeys.at(i) == T::RTTI_Type())
-            {
-                return reinterpret_cast<T*>(m_systemPointers.at(i));
-            }
-        }
-        return nullptr;
-    }
-
 } // AzFramework
+
+#include <AzFramework/Scene/Scene.inl>

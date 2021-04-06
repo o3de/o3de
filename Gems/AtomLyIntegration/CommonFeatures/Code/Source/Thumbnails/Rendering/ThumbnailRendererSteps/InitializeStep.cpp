@@ -106,9 +106,9 @@ namespace AZ
                     &AzFramework::SceneSystemRequests::CreateScene,
                     data->m_sceneName);
                 AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str()); // This should never happen unless scene creation has changed.
-                createSceneOutcome.GetValue()->SetSubsystem(data->m_scene.get());
+                createSceneOutcome.GetValue()->SetSubsystem(data->m_scene);
                 data->m_frameworkScene = createSceneOutcome.GetValue();
-                data->m_frameworkScene->SetSubsystem(data->m_scene.get());
+                data->m_frameworkScene->SetSubsystem(data->m_scene);
 
                 bool success = false;
                 AzFramework::SceneSystemRequestBus::BroadcastResult(
