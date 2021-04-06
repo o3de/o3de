@@ -605,6 +605,7 @@ try {
 
                                     if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
                                         build_job.value.steps.each { build_step ->
+                                            build_job_name = build_step
                                             CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
                                         }
                                     } else {
