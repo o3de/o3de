@@ -305,6 +305,7 @@ def SetLfsCredentials(cmd, lbl = '') {
         bat label: lbl,
             script: cmd
     }
+}
 
 def CheckoutBootstrapScripts(String branchName) {
     checkout([$class: "GitSCM",
