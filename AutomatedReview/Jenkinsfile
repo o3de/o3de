@@ -343,7 +343,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             if(fileExists(indexLockFile)) { // if it is still there, remove it
                 palRm(indexLockFile)
             }
-            palSh('git remote prune origin', 'Git reset')
         }
     }
 
