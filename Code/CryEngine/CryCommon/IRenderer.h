@@ -1119,8 +1119,8 @@ struct IRenderer
     //Sums DIP counts for the EFSLIST_* passes that match the submitted mask.
     //Compose the mask with bitwise arithmetic, use (1 << EFSLIST_*) per list.
     //e.g. to sum general and transparent, pass in ( (1 << EFSLIST_GENERAL) | (1 << EFSLIST_TRANSP) )
-    virtual int GetCurrentNumberOfDrawCalls(const uint32 EFSListMask) const = 0;
-    virtual float GetCurrentDrawCallRTTimes(const uint32 EFSListMask) const = 0;
+    virtual int GetCurrentNumberOfDrawCalls(uint32 EFSListMask) const = 0;
+    virtual float GetCurrentDrawCallRTTimes(uint32 EFSListMask) const = 0;
 
     virtual void SetDebugRenderNode(IRenderNode* pRenderNode) = 0;
     virtual bool IsDebugRenderNode(IRenderNode* pRenderNode) const = 0;
@@ -1211,7 +1211,7 @@ struct IRenderer
 
     // Summary:
     //  Draws user primitives.
-    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, const PublicRenderPrimitiveType nPrimType) = 0;
+    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, PublicRenderPrimitiveType nPrimType) = 0;
 
     struct DynUiPrimitive : public AZStd::intrusive_slist_node<DynUiPrimitive>
     {
@@ -1242,7 +1242,7 @@ struct IRenderer
 
     // Summary:
     //  Sets delta gamma.
-    virtual bool  SetGammaDelta(const float fGamma) = 0;
+    virtual bool  SetGammaDelta(float fGamma) = 0;
 
     // Summary:
     //  Restores gamma
@@ -1442,7 +1442,7 @@ struct IRenderer
     virtual void FontRestoreRenderingState(bool overrideViewProjMatrices, const TransformationMatrices& restoringMatrices) = 0;
 
     virtual bool FlushRTCommands(bool bWait, bool bImmediatelly, bool bForce) = 0;
-    virtual void DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, const bool asciiMultiLine, const STextDrawContext& ctx) const = 0;
+    virtual void DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, bool asciiMultiLine, const STextDrawContext& ctx) const = 0;
 
     virtual int  RT_CurThreadList() = 0;
 
@@ -1522,8 +1522,8 @@ struct IRenderer
     virtual ITexture* EF_GetTextureByName(const char* name, uint32 flags = 0) = 0;
     // Summary:
     //  Loads the texture for name(nameTex).
-    virtual ITexture* EF_LoadTexture(const char* nameTex, const uint32 flags = 0) = 0;
-    virtual ITexture* EF_LoadCubemapTexture(const char* nameTex, const uint32 flags = 0) = 0;
+    virtual ITexture* EF_LoadTexture(const char* nameTex, uint32 flags = 0) = 0;
+    virtual ITexture* EF_LoadCubemapTexture(const char* nameTex, uint32 flags = 0) = 0;
     // Summary:
     //  Loads default texture whose life cycle is managed by Texture Manager, do not try to release them by yourself!
     virtual ITexture* EF_LoadDefaultTexture(const char* nameTex) = 0;
@@ -1556,9 +1556,9 @@ struct IRenderer
     virtual void EF_AddEf (IRenderElement* pRE, SShaderItem& pSH, CRenderObject* pObj, const SRenderingPassInfo& passInfo, int nList, int nAW, const SRendItemSorter& rendItemSorter) = 0;
 
     //! Draw all shaded REs in the list
-    virtual void EF_EndEf3D (const int nFlags, const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo) = 0;
+    virtual void EF_EndEf3D (int nFlags, int nPrecacheUpdateId, int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo) = 0;
 
-    virtual void EF_InvokeShadowMapRenderJobs(const int nFlags) = 0;
+    virtual void EF_InvokeShadowMapRenderJobs(int nFlags) = 0;
 
     // Dynamic lights
     void EF_ClearLightsList() {}; // For FC Compatibility.
@@ -1570,9 +1570,9 @@ struct IRenderer
     // Deferred lights/vis areas
 
     virtual int EF_AddDeferredLight(const CDLight& pLight, float fMult, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
-    virtual uint32 EF_GetDeferredLightsNum(const eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
+    virtual uint32 EF_GetDeferredLightsNum(eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
     virtual void EF_ClearDeferredLightsList() = 0;
-    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, const eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
+    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
 
     virtual uint8 EF_AddDeferredClipVolume(const IClipVolume* pClipVolume) = 0;
     virtual bool EF_SetDeferredClipVolumeBlendData(const IClipVolume* pClipVolume, const SClipVolumeBlendInfo& blendInfo) = 0;
@@ -1605,13 +1605,13 @@ struct IRenderer
 
     //////////////////////////////////////////////////////////////////////////
 
-    virtual void EF_AddWaterSimHit(const Vec3& vPos, const float scale, const float strength) = 0;
+    virtual void EF_AddWaterSimHit(const Vec3& vPos, float scale, float strength) = 0;
     virtual void EF_DrawWaterSimHits() = 0;
 
     /////////////////////////////////////////////////////////////////////////////////
     // 2d interface for the shaders
     /////////////////////////////////////////////////////////////////////////////////
-    virtual void EF_EndEf2D(const bool bSort) = 0;
+    virtual void EF_EndEf2D(bool bSort) = 0;
 
     // Summary:
     //   Returns various Renderer Settings, see ERenderQueryTypes.
@@ -1771,7 +1771,7 @@ struct IRenderer
     virtual void UpdateTextureInVideoMemory(uint32 tnum, const byte* newdata, int posx, int posy, int w, int h, ETEX_Format eTFSrc = eTF_B8G8R8, int posz = 0, int sizez = 1) = 0;
 
     virtual bool DXTCompress(const byte* raw_data, int nWidth, int nHeight, ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, MIPDXTcallback callback) = 0;
-    virtual bool DXTDecompress(const byte* srcData, const size_t srcFileSize, byte* dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix) = 0;
+    virtual bool DXTDecompress(const byte* srcData, size_t srcFileSize, byte* dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix) = 0;
     virtual void RemoveTexture(unsigned int TextureId) = 0;
     virtual void DeleteFont(IFFont* font) = 0;
 
@@ -2219,7 +2219,7 @@ struct IRenderer
     virtual void EndScreenShot([[maybe_unused]] int e_ScreenShot) {};
 
     // Sets a renderer tracked cvar
-    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, const bool bSilentMode = false) = 0;
+    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, bool bSilentMode = false) = 0;
 
     // Get the render piepline
     virtual SRenderPipeline* GetRenderPipeline() = 0;
@@ -2303,7 +2303,7 @@ struct IRenderer
     virtual long FX_SetVertexDeclaration(int StreamMask, const AZ::Vertex::Format& vertexFormat) = 0;
 
     // Draw indexed prim
-    virtual void FX_DrawIndexedPrimitive(const eRenderPrimitiveType eType, const int nVBOffset, const int nMinVertexIndex, const int nVerticesCount, const int nStartIndex, const int nNumIndices, bool bInstanced = false) = 0;
+    virtual void FX_DrawIndexedPrimitive(eRenderPrimitiveType eType, int nVBOffset, int nMinVertexIndex, int nVerticesCount, int nStartIndex, int nNumIndices, bool bInstanced = false) = 0;
 
     // Set Index stream
     virtual long FX_SetIStream(const void* pB, uint32 nOffs, RenderIndexType idxType) = 0;
@@ -2312,7 +2312,7 @@ struct IRenderer
     virtual long FX_SetVStream(int nID, const void* pB, uint32 nOffs, uint32 nStride, uint32 nFreq = 1) = 0;
 
     // Draw primitives
-    virtual void FX_DrawPrimitive(const eRenderPrimitiveType eType, const int nStartVertex, const int nVerticesCount, const int nInstanceVertices = 0) = 0;
+    virtual void FX_DrawPrimitive(eRenderPrimitiveType eType, int nStartVertex, int nVerticesCount, int nInstanceVertices = 0) = 0;
 
     // Clear texture
     virtual void FX_ClearTarget(ITexture* pTex) = 0;
@@ -2370,7 +2370,7 @@ struct IRenderer
     virtual void ApplyDepthTextureState(int unit, int nFilter, bool clamp) = 0;
     virtual ITexture* GetZTargetTexture() = 0;
     virtual int GetTextureState(const STexState& TS) = 0;
-    virtual uint32 TextureDataSize(uint32 nWidth, uint32 nHeight, uint32 nDepth, uint32 nMips, uint32 nSlices, const ETEX_Format eTF, ETEX_TileMode eTM = eTM_None) = 0;
+    virtual uint32 TextureDataSize(uint32 nWidth, uint32 nHeight, uint32 nDepth, uint32 nMips, uint32 nSlices, ETEX_Format eTF, ETEX_TileMode eTM = eTM_None) = 0;
     virtual void ApplyForID(int nID, int nTUnit, int nTState, int nTexMaterialSlot, int nSUnit, bool useWhiteDefault) = 0;
     virtual ITexture* Create3DTexture(const char* szName, int nWidth, int nHeight, int nDepth, int nMips, int nFlags, const byte* pData, ETEX_Format eTFSrc, ETEX_Format eTFDst) = 0;
     virtual bool IsTextureExist(const ITexture* pTex) = 0;

@@ -424,31 +424,7 @@ namespace AZ
 
         BloomBlurChildPass::BloomBlurChildPass(const RPI::PassDescriptor& descriptor)
             : ComputePass(descriptor)
-        {
-            Name name = Name{ "m_offsets" };
-            m_offsetsInputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(name);
-            AZ_Error("PassSystem", m_offsetsInputIndex.IsValid(), "[BloomBlurChildPass '%s']: Failed to find shader input buffer %s.",
-                name.GetCStr());
-
-            name = Name{ "m_weights" };
-            m_weightsInputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(name);
-            AZ_Error("PassSystem", m_weightsInputIndex.IsValid(), "[BloomBlurChildPass '%s']: Failed to find shader input buffer %s.",
-                name.GetCStr());
-
-            FindShaderConstantInputIndex(m_kernelRadiusInputIndex, "m_kernelRadius");
-            FindShaderConstantInputIndex(m_directionInputIndex, "m_direction");
-            FindShaderConstantInputIndex(m_mipLevelInputIndex, "m_mipLevel");
-            FindShaderConstantInputIndex(m_sourceImageSizeInputIndex, "m_sourceImageSize");
-            FindShaderConstantInputIndex(m_sourceImageTexelSizeInputIndex, "m_sourceImageTexelSize");
-        }
-
-        void BloomBlurChildPass::FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* nameStr)
-        {
-            Name name(nameStr);
-            index = m_shaderResourceGroup->FindShaderInputConstantIndex(name);
-            AZ_Error("PassSystem", index.IsValid(), "[BloomBlurChildPass '%s']: Failed to find shader input constant %s.",
-                name.GetCStr());
-        }
+        { }
 
         void BloomBlurChildPass::UpdateParameters(
             Data::Instance<RPI::Buffer> offsetBuffer,

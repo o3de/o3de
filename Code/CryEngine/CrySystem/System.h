@@ -612,7 +612,7 @@ public:
     virtual void SetConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform, bool bClient);
     virtual ESystemConfigSpec GetMaxConfigSpec() const;
     virtual ESystemConfigPlatform GetConfigPlatform() const;
-    virtual void SetConfigPlatform(const ESystemConfigPlatform platform);
+    virtual void SetConfigPlatform(ESystemConfigPlatform platform);
     //////////////////////////////////////////////////////////////////////////
 
     virtual int SetThreadState(ESubsystem subsys, bool bActive);
@@ -746,7 +746,7 @@ public:
 
     // interface ISystem -------------------------------------------
     virtual IDataProbe* GetIDataProbe() { return m_pDataProbe; };
-    virtual void SetForceNonDevMode(const bool bValue);
+    virtual void SetForceNonDevMode(bool bValue);
     virtual bool GetForceNonDevMode() const;
     virtual bool WasInDevMode() const { return m_bWasInDevMode; };
     virtual bool IsDevMode() const { return m_bInDevMode && !GetForceNonDevMode(); }
@@ -759,7 +759,7 @@ public:
         }
         return (true);
     }
-    virtual void AutoDetectSpec(const bool detectResolution);
+    virtual void AutoDetectSpec(bool detectResolution);
 
     virtual void AsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync)
     {
@@ -1084,7 +1084,7 @@ public:
     }
 
     virtual ESystemGlobalState  GetSystemGlobalState(void);
-    virtual void SetSystemGlobalState(const ESystemGlobalState systemGlobalState);
+    virtual void SetSystemGlobalState(ESystemGlobalState systemGlobalState);
 
 #if !defined(_RELEASE)
     virtual bool IsSavingResourceList() const { return (g_cvars.archiveVars.nSaveLevelResourceList != 0); }

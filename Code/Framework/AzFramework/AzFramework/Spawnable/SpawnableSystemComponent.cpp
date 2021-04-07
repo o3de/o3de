@@ -46,28 +46,80 @@ namespace AzFramework
         services.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
+    void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    {
+        m_entitiesManager.ProcessQueue();
+        RootSpawnableNotificationBus::ExecuteQueuedEvents();
+    }
+
     void SpawnableSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
-        if (!m_rootSpawnableInitialized)
+        if (!m_catalogAvailable)
         {
-            auto registry = AZ::SettingsRegistry::Get();
-            AZ_Assert(registry, "Unable to check for root spawnable because the Settings Registry is not available.");
-            if (registry->GetObject(m_rootSpawnable, RootSpawnableRegistryKey) && m_rootSpawnable.GetId().IsValid())
-            {
-                AZ_TracePrintf("Spawnables", "Root spawnable '%s' used.\n", m_rootSpawnable.GetHint().c_str());
-                if (!m_rootSpawnable.QueueLoad())
-                {
-                    AZ_Error("Spawnables", false, "Unable to queue root spawnable for loading.\n");
-                }
-            }
-            else
-            {
-                AZ_Warning("Spawnables", false, "No root spawnable assigned or root spawanble couldnt' be loaded.\n"
-                    "The root spawnable can be assigned in the Settings Registry under the key '%s'.\n", RootSpawnableRegistryKey);
-            }
-
-            m_rootSpawnableInitialized = true;
+            m_catalogAvailable = true;
+            LoadRootSpawnableFromSettingsRegistry();
         }
+    }
+
+    uint64_t SpawnableSystemComponent::AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable)
+    {
+        uint64_t generation = 0;
+
+        if (m_rootSpawnableId == rootSpawnable.GetId())
+        {
+            AZ_TracePrintf("Spawnables", "Root spawnable wasn't updated because it's already assigned to the requested asset.");
+            return m_rootSpawnableContainer.GetCurrentGeneration();
+        }
+
+        if (rootSpawnable.QueueLoad())
+        {
+            m_rootSpawnableId = rootSpawnable.GetId();
+
+            // Suspend and resume processing in the container that completion calls aren't received until
+            // everything has been setup to accept callbacks from the call.
+            m_rootSpawnableContainer.Reset(rootSpawnable);
+            m_rootSpawnableContainer.SpawnAllEntities();
+            generation = m_rootSpawnableContainer.GetCurrentGeneration();
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(),
+                generation);
+            m_rootSpawnableContainer.Alert(
+                [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
+                {
+                    RootSpawnableNotificationBus::QueueBroadcast(
+                        &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, newSpawnable, generation);
+                });
+        }
+        else
+        {
+            AZ_Error("Spawnables", false, "Unable to queue root spawnable '%s' for loading.", rootSpawnable.GetHint().c_str());
+        }
+
+        return generation;
+    }
+
+    void SpawnableSystemComponent::ReleaseRootSpawnable()
+    {
+        if (m_rootSpawnableContainer.IsSet())
+        {
+            m_rootSpawnableContainer.Alert(
+                [](uint32_t generation)
+                {
+                    RootSpawnableNotificationBus::QueueBroadcast(&RootSpawnableNotificationBus::Events::OnRootSpawnableReleased, generation);
+                });
+            m_rootSpawnableContainer.Clear();
+        }
+        m_rootSpawnableId = AZ::Data::AssetId();
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
+        [[maybe_unused]] uint32_t generation)
+    {
+        AZ_TracePrintf("Spawnables", "New root spawnable '%s' assigned (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
+    {
+        AZ_TracePrintf("Spawnables", "Generation %i of the root spawnable has been released.\n", generation);
     }
 
     void SpawnableSystemComponent::Activate()
@@ -83,14 +135,105 @@ namespace AzFramework
             &AZ::Data::AssetCatalogRequestBus::Events::AddExtension, Spawnable::FileExtension);
 
         AssetCatalogEventBus::Handler::BusConnect();
+        RootSpawnableNotificationBus::Handler::BusConnect();
+        AZ::TickBus::Handler::BusConnect();
+
+        auto registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "Unable to change root spawnable callback because Settings Registry is not available.");
+        m_registryChangeHandler = registry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+            {
+                if (path.starts_with(RootSpawnableRegistryKey))
+                {
+                    LoadRootSpawnableFromSettingsRegistry();
+                }
+            });
     }
 
     void SpawnableSystemComponent::Deactivate()
     {
+        m_registryChangeHandler.Disconnect();
+
+        AZ::TickBus::Handler::BusDisconnect();
+        RootSpawnableNotificationBus::Handler::BusDisconnect();
         AssetCatalogEventBus::Handler::BusDisconnect();
 
-        AZ_Assert(AZ::Data::AssetManager::IsReady(),
-            "Spawnables can't be unregistered because the Asset Manager has been destroyed already or never started.");
+        if (m_catalogAvailable)
+        {
+            ReleaseRootSpawnable();
+
+            // The SpawnalbleSystemComponent needs to guarantee there's no more processing left to do by the
+            // entity manager before it can safely destroy it on shutdown, but also to make sure that are no
+            // more calls to the callback registered to the root spawnable as that accesses this component.
+            m_rootSpawnableContainer.Clear();
+            SpawnableEntitiesManager::CommandQueueStatus queueStatus;
+            do
+            {
+                queueStatus = m_entitiesManager.ProcessQueue();
+            } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
+        }
+
         AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);
+    }
+
+    void SpawnableSystemComponent::LoadRootSpawnableFromSettingsRegistry()
+    {
+        AZ_Assert(m_catalogAvailable, "Attempting to load root spawnable while the catalog is not available yet.");
+
+        auto registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "Unable to check for root spawnable because the Settings Registry is not available.");
+
+        AZ::SettingsRegistryInterface::Type rootSpawnableKeyType = registry->GetType(RootSpawnableRegistryKey);
+        if (rootSpawnableKeyType == AZ::SettingsRegistryInterface::Type::Object)
+        {
+            AZ::Data::Asset<Spawnable> rootSpawnable;
+            if (registry->GetObject(rootSpawnable, RootSpawnableRegistryKey) && rootSpawnable.GetId().IsValid())
+            {
+                AssignRootSpawnable(AZStd::move(rootSpawnable));
+            }
+            else
+            {
+                AZ_Warning("Spawnables", false, "Root spawnable couldn't be queued for loading");
+                ReleaseRootSpawnable();
+            }
+        }
+        else if (rootSpawnableKeyType == AZ::SettingsRegistryInterface::Type::String)
+        {
+            AZStd::string rootSpawnableName;
+            if (registry->Get(rootSpawnableName, RootSpawnableRegistryKey))
+            {
+                AZ::Data::AssetId rootSpawnableId;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    rootSpawnableId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, rootSpawnableName.c_str(),
+                    azrtti_typeid<Spawnable>(), false);
+                if (rootSpawnableId.IsValid())
+                {
+                    AZ::Data::Asset<Spawnable> rootSpawnable = AZ::Data::Asset<Spawnable>(rootSpawnableId, azrtti_typeid<Spawnable>());
+                    if (rootSpawnable.GetId().IsValid())
+                    {
+                        AssignRootSpawnable(AZStd::move(rootSpawnable));
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "Spawnables", false, "Root spawnable at '%s' couldn't be queued for loading.", rootSpawnableName.c_str());
+                        ReleaseRootSpawnable();
+                    }
+                }
+                else
+                {
+                    AZ_Warning(
+                        "Spawnables", false, "Root spawnable with name '%s' wasn't found in the asset catalog.", rootSpawnableName.c_str());
+                    ReleaseRootSpawnable();
+                }
+            }
+        }
+        else if (rootSpawnableKeyType == AZ::SettingsRegistryInterface::Type::NoType)
+        {
+            AZ_Warning(
+                "Spawnables", false,
+                "No root spawnable assigned. The root spawnable can be assigned in the Settings Registry under the key '%s'.\n",
+                RootSpawnableRegistryKey);
+            ReleaseRootSpawnable();
+        }
     }
 } // namespace AzFramework

@@ -23,7 +23,7 @@ import boto3
 from boto3.dynamodb.table import TableResource
 from botocore.exceptions import ClientError
 
-logging.basicConfig(stream=sys.stdout, format="%(asctime)s %(process)d %(levelname)s %(message)s")
+logging.basicConfig(stream=sys.stdout, format="%(asctime)s %(process)d %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

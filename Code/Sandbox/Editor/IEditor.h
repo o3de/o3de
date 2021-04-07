@@ -144,8 +144,6 @@ enum EEditorNotifyEvent
     eNotify_OnMissionChange,           // Send when the current mission changes.
     eNotify_OnBeginLoad,               // Sent when the document is start to load.
     eNotify_OnEndLoad,                 // Sent when the document loading is finished
-    eNotify_OnBeginExportToGame,       // Sent when the level starts to be exported to game
-    eNotify_OnExportToGame,            // Sent when the level is exported to game
 
     // Editing events.
     eNotify_OnEditModeChange,          // Sent when editing mode change (move,rotate,scale,....)
@@ -818,7 +816,6 @@ struct IEditor
     virtual void LoadPlugins() = 0;
 
     virtual bool IsNewViewportInteractionModelEnabled() const = 0;
-    virtual bool IsPrefabSystemEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs

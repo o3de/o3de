@@ -27,6 +27,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Model/ModelLodIndex.h
     Include/Atom/RPI.Reflect/Model/ModelAssetCreator.h
     Include/Atom/RPI.Reflect/Model/ModelLodAssetCreator.h
+    Include/Atom/RPI.Reflect/Model/MorphTargetDelta.h
     Include/Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h
     Include/Atom/RPI.Reflect/Model/MorphTargetMetaAssetCreator.h
     Include/Atom/RPI.Reflect/Model/SkinMetaAsset.h
@@ -108,6 +109,7 @@ set(FILES
     Source/RPI.Reflect/Model/ModelLodAsset.cpp
     Source/RPI.Reflect/Model/ModelAssetCreator.cpp
     Source/RPI.Reflect/Model/ModelLodAssetCreator.cpp
+    Source/RPI.Reflect/Model/MorphTargetDelta.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAsset.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAssetCreator.cpp
     Source/RPI.Reflect/Model/SkinMetaAsset.cpp

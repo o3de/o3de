@@ -52,6 +52,8 @@ namespace AZ
 
         void NoClipControllerComponent::Reflect(AZ::ReflectContext* reflection)
         {
+            NoClipControllerProperties::Reflect(reflection);
+
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
                 serializeContext->Class<NoClipControllerComponent, CameraControllerComponent, AZ::Component>()

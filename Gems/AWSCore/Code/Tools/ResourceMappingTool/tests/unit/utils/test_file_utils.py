@@ -59,6 +59,13 @@ class TestFileUtils(TestCase):
         self._mock_path.cwd.assert_called_once()
         assert actual_path_name == TestFileUtils._expected_path_name
 
+    def test_get_parent_directory_path_return_expected_path_name(self) -> None:
+        self._mock_path.return_value.parent = TestFileUtils._expected_path_name
+
+        actual_path_name: str = file_utils.get_parent_directory_path("dummy")
+        self._mock_path.assert_called_once()
+        assert actual_path_name == TestFileUtils._expected_path_name
+
     def test_find_files_with_suffix_under_directory_return_expected_file_name(self) -> None:
         mocked_path: MagicMock = self._mock_path.return_value
         mocked_matched_path: MagicMock = MagicMock()

@@ -144,6 +144,7 @@ namespace AZ
                 if (context && (context->IsRemovingReflection() || !context->FindClassData(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid())))
                 {
                     AZ::SceneAPI::DataTypes::IManifestObject::Reflect(context);
+                    AZ::SceneAPI::Events::CallProcessorBinder::Reflect(context);
                     // Register components
                     AZ::SceneAPI::SceneCore::BehaviorComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::LoadingComponent::Reflect(context);

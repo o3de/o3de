@@ -39,41 +39,7 @@ namespace ScriptCanvas
     }
 
     void ExecutionStateInterpretedPerActivation::Execute()
-    {
-        const auto registryIndex = GetLuaRegistryIndex();
-        AZ_Assert(registryIndex != LUA_NOREF, "ExecutionStateInterpretedPerActivation::Activate called but Init is was never called");
-        auto& lua = m_luaState;
-        // Lua:
-        lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
-        // Lua: instance
-        lua_getfield(lua, -1, Grammar::k_OnGraphStartFunctionName);
-        // Lua: instance, graph_VM['k_OnGraphStartFunctionName']
-        if (lua_isfunction(lua, -1))
-        {
-            // Lua: instance, graph_VM.k_OnGraphStartFunctionName
-            lua_pushvalue(lua, -2);
-            // Lua: instance, graph_VM.k_OnGraphStartFunctionName, instance
-            const int result = Execution::InterpretedSafeCall(lua, 1, 0);
-            // Lua: instance ?
-            if (result == LUA_OK)
-            {
-                // Lua: instance
-                lua_pop(lua, 1);
-            }
-            else
-            {
-                // Lua: instance, error
-                lua_pop(lua, 2);
-            }
-        }
-        else
-        {
-            // Lua: instance, nil
-            lua_pop(lua, 2);
-        }
-        // Lua:
-        m_deactivationRequired = true;
-    }
+    {}
 
     void ExecutionStateInterpretedPerActivation::Initialize()
     {
@@ -86,9 +52,22 @@ namespace ScriptCanvas
         Execution::ActivationInputArray storage;
         Execution::ActivationData data(*m_component, storage);
         Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
-        Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
-        // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, args...
-        AZ::Internal::LuaSafeCall(lua, aznumeric_caster(1 + range.totalCount), 1);
+
+        if (range.requiresDependencyConstructionParameters)
+        {
+            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.runtimeData.m_requiredAssets)));
+            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, dependencies
+            Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
+            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, dependencies, args...
+            AZ::Internal::LuaSafeCall(lua, aznumeric_caster(2 + range.totalCount), 1);
+        }
+        else
+        {
+            Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
+            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, args...
+            AZ::Internal::LuaSafeCall(lua, aznumeric_caster(1 + range.totalCount), 1);
+        }
+
         // Lua: graph_VM, instance
         ReferenceExecutionState();
         // Lua: graph_VM,
@@ -100,7 +79,7 @@ namespace ScriptCanvas
     void ExecutionStateInterpretedPerActivation::StopExecution()
     {
         const auto registryIndex = GetLuaRegistryIndex();
-        AZ_Assert(registryIndex != LUA_NOREF, "ExecutionStateInterpretedPerActivation::Deactivate called but Initialize is was never called");
+        AZ_Assert(registryIndex != LUA_NOREF, "ExecutionStateInterpretedPerActivation::StopExecution called but Initialize is was never called");
         auto& lua = m_luaState;
         // Lua:
         lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
@@ -121,6 +100,47 @@ namespace ScriptCanvas
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
         {
             behaviorContext->Class<ExecutionStateInterpretedPerActivation>()
+                ;
+        }
+    }
+
+    ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(const ExecutionStateConfig& config)
+        : ExecutionStateInterpretedPerActivation(config)
+    {}
+
+    void ExecutionStateInterpretedPerActivationOnGraphStart::Execute()
+    {
+        const auto registryIndex = GetLuaRegistryIndex();
+        AZ_Assert(registryIndex != LUA_NOREF, "ExecutionStateInterpretedPerActivationOnGraphStart::Execute called but Initialize is was never called");
+        auto& lua = m_luaState;
+        // Lua:
+        lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
+        // Lua: instance
+        lua_getfield(lua, -1, Grammar::k_OnGraphStartFunctionName);
+        // Lua: instance, graph_VM.k_OnGraphStartFunctionName
+        lua_pushvalue(lua, -2);
+        // Lua: instance, graph_VM.k_OnGraphStartFunctionName, instance
+        const int result = Execution::InterpretedSafeCall(lua, 1, 0);
+        // Lua: instance ?
+        if (result == LUA_OK)
+        {
+            // Lua: instance
+            lua_pop(lua, 1);
+        }
+        else
+        {
+            // Lua: instance, error
+            lua_pop(lua, 2);
+        }
+        // Lua:
+        m_deactivationRequired = true;
+    }
+
+    void ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+        {
+            behaviorContext->Class<ExecutionStateInterpretedPerActivationOnGraphStart>()
                 ;
         }
     }

@@ -79,6 +79,12 @@ namespace ScriptCanvas
         Execution::ActivationInputRange m_activationInputRange;
 
         bool RequiresStaticInitialization() const;
+
+        bool RequiresDependencyConstructionParameters() const;
+
+    private:
+
+        bool static RequiresDependencyConstructionParametersRecurse(const RuntimeData& data);
     };
 
     class RuntimeAssetBase
@@ -129,7 +135,6 @@ namespace ScriptCanvas
 
     };
 
-
     class RuntimeAsset : public RuntimeAssetTyped<RuntimeData>
     {
     public:
@@ -146,24 +151,24 @@ namespace ScriptCanvas
 
     class SubgraphInterfaceAsset;
 
-    class RuntimeFunctionAssetDescription : public AssetDescription
+    class SubgraphInterfaceAssetDescription : public AssetDescription
     {
     public:
 
-        AZ_TYPE_INFO(RuntimeFunctionAssetDescription, "{7F7BE1A5-9447-41C2-9190-18580075094C}");
+        AZ_TYPE_INFO(SubgraphInterfaceAssetDescription, "{7F7BE1A5-9447-41C2-9190-18580075094C}");
 
-        RuntimeFunctionAssetDescription()
+        SubgraphInterfaceAssetDescription()
             : AssetDescription(
                 azrtti_typeid<SubgraphInterfaceAsset>(),
-                "Script Canvas Runtime Function",
-                "Script Canvas Runtime Function Graph",
+                "Script Canvas Function Interface",
+                "Script Canvas Function Interface",
                 "@devassets@/scriptcanvas",
                 ".scriptcanvas_fn_compiled",
-                "Script Canvas Runtime Function",
+                "Script Canvas Function Interface",
                 "Untitled-Function-%i",
-                "Script Canvas Compiled Function Files (*.scriptcanvas_fn_compiled)",
-                "Script Canvas Runtime Function",
-                "Script Canvas Runtime Function",
+                "Script Canvas Compiled Function Interfaces (*.scriptcanvas_fn_compiled)",
+                "Script Canvas Function Interface",
+                "Script Canvas Function Interface",
                 "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
                 AZ::Color(1.0f,0.0f,0.0f,1.0f),
                 false
@@ -184,7 +189,6 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        size_t m_version;
         AZStd::string m_name;
         Grammar::SubgraphInterface m_interface;
     };

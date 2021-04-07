@@ -212,7 +212,7 @@ namespace GraphCanvas
     void ExtenderSlotComponent::TriggerExtension()
     {
         // Don't need to track anything. Just create the slot then ignore whatever the return is.
-        ConstructSlot();
+        ConstructSlot(GraphModelRequests::ExtensionRequestReason::UserRequest);
 
         if (m_createdSlot.IsValid())
         {
@@ -236,7 +236,7 @@ namespace GraphCanvas
             return Endpoint();
         }
 
-        ConstructSlot();
+        ConstructSlot(GraphModelRequests::ExtensionRequestReason::ConnectionProposal);
 
         if (!m_createdSlot.IsValid())
         {
@@ -264,7 +264,7 @@ namespace GraphCanvas
     {
     }
 
-    void ExtenderSlotComponent::ConstructSlot()
+    void ExtenderSlotComponent::ConstructSlot(GraphModelRequests::ExtensionRequestReason reason)
     {
         if (!m_createdSlot.IsValid())
         {
@@ -275,7 +275,7 @@ namespace GraphCanvas
 
             {
                 ScopedGraphUndoBlocker undoBlocker(graphId);
-                GraphModelRequestBus::EventResult(m_createdSlot, graphId, &GraphModelRequests::RequestExtension, nodeId, m_extenderId);
+                GraphModelRequestBus::EventResult(m_createdSlot, graphId, &GraphModelRequests::RequestExtension, nodeId, m_extenderId, reason);
             }
         }
     }
@@ -311,7 +311,7 @@ namespace GraphCanvas
     
     AZ::Entity* ExtenderSlotComponent::ConstructConnectionEntity(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint, bool createModelConnection)
     {
-        ConstructSlot();
+        ConstructSlot(GraphModelRequests::ExtensionRequestReason::Internal);
 
         if (m_createdSlot.IsValid())
         {

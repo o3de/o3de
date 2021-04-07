@@ -33,6 +33,7 @@ namespace AzToolsFramework
             FolderThumbnailKey(const char* folderPath, bool isGem);
             const AZStd::string& GetFolderPath() const;
             bool IsGem() const;
+            bool Equals(const ThumbnailKey* other) const override;
 
         protected:
             //! Absolute folder path
@@ -50,36 +51,10 @@ namespace AzToolsFramework
             void LoadThread() override;
         };
 
-        namespace
-        {
-            class FolderKeyHash
-            {
-            public:
-                size_t operator() (const SharedThumbnailKey& /*val*/) const
-                {
-                    return 0;
-                }
-            };
 
-            class FolderKeyEqual
-            {
-            public:
-                bool operator()(const SharedThumbnailKey& val1, const SharedThumbnailKey& val2) const
-                {
-                    auto folderThumbnailKey1 = azrtti_cast<const FolderThumbnailKey*>(val1.data());
-                    auto folderThumbnailKey2 = azrtti_cast<const FolderThumbnailKey*>(val2.data());
-                    if (!folderThumbnailKey1 || !folderThumbnailKey2)
-                    {
-                        return false;
-                    }
-                    // There are only two thumbnails in this cache, one for gem icon and one for folder icon
-                    return folderThumbnailKey1->IsGem() == folderThumbnailKey2->IsGem();
-                }
-            };
-        }
         //! FolderAssetBrowserEntry thumbnails
         class FolderThumbnailCache
-            : public ThumbnailCache<FolderThumbnail, FolderKeyHash, FolderKeyEqual>
+            : public ThumbnailCache<FolderThumbnail>
         {
         public:
             FolderThumbnailCache();

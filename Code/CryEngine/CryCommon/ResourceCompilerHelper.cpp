@@ -401,8 +401,8 @@ IResourceCompilerHelper::ERcCallResult CResourceCompilerHelper::CallResourceComp
     [[maybe_unused]] const wchar_t* szRootPath)
 {
 #if defined(AZ_PLATFORM_WINDOWS)
-    HANDLE hChildStdOutRd, hChildStdOutWr;
-    HANDLE hChildStdInRd, hChildStdInWr;
+    HANDLE hChildStdOutRd = INVALID_HANDLE_VALUE, hChildStdOutWr = INVALID_HANDLE_VALUE;
+    HANDLE hChildStdInRd = INVALID_HANDLE_VALUE, hChildStdInWr = INVALID_HANDLE_VALUE;
     PROCESS_INFORMATION pi;
 #else
     FILE* hChildStdOutRd;

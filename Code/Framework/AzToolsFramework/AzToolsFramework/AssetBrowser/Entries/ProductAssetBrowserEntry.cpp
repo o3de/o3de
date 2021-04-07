@@ -17,7 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/AssetBrowserProductThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
 #include <QVariant>
@@ -120,13 +120,14 @@ namespace AzToolsFramework
 
         void ProductAssetBrowserEntry::ThumbnailUpdated()
         {
-            // if source is displaying product's thumbnail, then it needs to also listen to its ThumbnailUpdated
-            if (m_parentAssetEntry)
+            if (EntryCache* cache = EntryCache::GetInstance())
             {
-                if (EntryCache* cache = EntryCache::GetInstance())
+                // if source is displaying product's thumbnail, then it needs to also listen to its ThumbnailUpdated
+                if (m_parentAssetEntry)
                 {
                     cache->m_dirtyThumbnailsSet.insert(m_parentAssetEntry);
                 }
+                cache->m_dirtyThumbnailsSet.insert(this);
             }
         }
 

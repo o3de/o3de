@@ -917,15 +917,15 @@ TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
 
 /*  //test cases for different presets
     //ddna
-    inputFile = "../SamplesProject/Objects/ParticleAssets/ShowRoom/showroom_pipe_blue_001_m_ddna.tif";
+    inputFile = "../AutomatedTesting/Objects/ParticleAssets/ShowRoom/showroom_pipe_blue_001_m_ddna.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
     //cubemap
-    inputFile = "../SamplesProject/Levels/Samples/Camera_Sample/Cubemaps/noon_cm.tif";
+    inputFile = "../AutomatedTesting/Levels/Samples/Camera_Sample/Cubemaps/noon_cm.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
     //albedo
-    inputFile = "../SamplesProject/Objects/ParticleAssets/ShowRoom/showroom_steel_brushed_001_diff.tif";
+    inputFile = "../AutomatedTesting/Objects/ParticleAssets/ShowRoom/showroom_steel_brushed_001_diff.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
-    inputFile = "../SamplesProject/materials/pbs_reference/light_leather_diff.tif";
+    inputFile = "../AutomatedTesting/materials/pbs_reference/light_leather_diff.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
     inputFile = "../Gems/PBSreferenceMaterials/Assets/materials/pbs_reference/brushed_steel.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
@@ -933,7 +933,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
     inputFile = "../Bems/UiBasics/Assets/UI/Textures/Prefab/textinput_normal.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
     //albedo with generic alpha auto preset
-    inputFile = "../SamplesProject/textures/GettingStartedTextures/LY_Logo_Beaver.tif";
+    inputFile = "../AutomatedTesting/textures/GettingStartedTextures/LY_Logo_Beaver.tif";
     ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, m_context.get()));
     //color chart
     inputFile = "../Gems/PBSreferenceMaterials/Assets/materials/pbs_reference/colorcharts/debug_contrast_low_cch.tif";
@@ -946,7 +946,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
 TEST_F(ImageProcessingTest, DISABLED_TestLoadDdsImage)
 {
     IImageObjectPtr originImage, alphaImage;
-    AZStd::string inputFolder = m_engineRoot + "/Cache/SamplesProject/pc/samplesproject/engineassets/texturemsg/";
+    AZStd::string inputFolder = m_engineRoot + "/Cache/AutomatedTesting/pc/automatedtesting/engineassets/texturemsg/";
     AZStd::string inputFile;
     
     inputFile = "E:/Javelin_NWLYDev/dev/Cache/Assets/pc/assets/textures/blend_maps/moss/jav_moss_ddn.dds";

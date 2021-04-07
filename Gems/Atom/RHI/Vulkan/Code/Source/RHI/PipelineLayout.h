@@ -14,7 +14,7 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
-#include <AZCore/std/containers/bitset.h>
+#include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <RHI/DescriptorSetLayout.h>
 

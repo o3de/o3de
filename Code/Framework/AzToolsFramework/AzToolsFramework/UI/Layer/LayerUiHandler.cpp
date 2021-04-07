@@ -21,29 +21,17 @@
 
 namespace AzToolsFramework
 {
-    const int LayerUiHandler::m_layerSquareSize = 20;
-    const int LayerUiHandler::m_layerStripeWidth = 1;
-    const int LayerUiHandler::m_layerDividerLineHeight = 1;
-    const int LayerUiHandler::m_lastEntityInLayerDividerLineHeight = 1;
     const QColor LayerUiHandler::m_layerBackgroundColor = QColor("#2F2F2F");
     const QColor LayerUiHandler::m_layerDescendantBackgroundColor = QColor("#333333");
     const QColor LayerUiHandler::m_layerBorderTopColor = QColor("#515151");
     const QColor LayerUiHandler::m_layerBorderBottomColor = QColor("#252525");
-    const QString LayerUiHandler::m_layerIconPath = QString(":/Icons/layer_icon.svg");
+    const QString LayerUiHandler::m_layerIconPath = QString(":/Entity/layer.svg");
     
     QString LayerUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
     {
-        QString result;
-        bool isLayerEntity = false;
+        AZ::Outcome<AZStd::string, AZStd::string> layerBaseNameResult;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayerEntity,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        if (!isLayerEntity)
-        {
-            return result;
-        }
+            layerBaseNameResult, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GetLayerBaseFileName);
 
         bool hasUnsavedLayerChanges = false;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
@@ -51,16 +39,28 @@ namespace AzToolsFramework
             entityId,
             &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasUnsavedChanges);
 
+        QString result = "<span style=\"font-style: italic; font-weight: 400;\">";
+
+        if (layerBaseNameResult.IsSuccess())
+        {
+            result += QString("(%1.layer").arg(layerBaseNameResult.GetValue().c_str());
+        }
+
         if (hasUnsavedLayerChanges)
         {
-            result = QObject::tr("*");
+            result += QString("*");
         }
+
+        if (layerBaseNameResult.IsSuccess())
+        {
+            result += QString(")");
+        }
+
+        result += "</span>";
 
         bool isLayerNameValid = false;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayerNameValid,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::IsLayerNameValid);
+            isLayerNameValid, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::IsLayerNameValid);
 
         if (!isLayerNameValid)
         {
@@ -75,22 +75,7 @@ namespace AzToolsFramework
         return QPixmap(m_layerIconPath);
     }
 
-    void LayerUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
-    {
-        QPainterPath backgroundPath;
-        backgroundPath.addRect(option.rect);
-        painter->fillPath(backgroundPath, m_layerBackgroundColor);
-    }
-
-    void LayerUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& /*index*/,
-        const QModelIndex& /*descendantIndex*/) const
-    {
-        QPainterPath backgroundPath;
-        backgroundPath.addRect(option.rect);
-        painter->fillPath(backgroundPath, m_layerDescendantBackgroundColor);
-    }
-
-    void LayerUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    void LayerUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
@@ -99,11 +84,18 @@ namespace AzToolsFramework
             return;
         }
 
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, false);
+
+        // Dark Grey Background
+        QPainterPath backgroundPath;
+        backgroundPath.addRect(option.rect);
+        painter->fillPath(backgroundPath, m_layerBackgroundColor);
+
+        // Left rect with the layer color
         QColor layerColor;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            layerColor,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GetLayerColor);
+            layerColor, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GetLayerColor);
 
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         int indentation = outlinerTreeView->indentation();
@@ -114,39 +106,31 @@ namespace AzToolsFramework
         if (isFirstColumn)
         {
             // Layer colored box
-            QPainterPath layerIconPath;
+            QPainterPath iconBackgroundPath;
             QPoint layerBoxOffset(0, (option.rect.height() - m_layerSquareSize) / 2);
             QRect layerIconRect(option.rect.topLeft() + layerBoxOffset, QSize(m_layerSquareSize, m_layerSquareSize));
-            layerIconPath.addRect(layerIconRect);
-            painter->fillPath(layerIconPath, layerColor);
+            iconBackgroundPath.addRect(layerIconRect);
+            painter->fillPath(iconBackgroundPath, layerColor);
 
             // Left border
             PaintLayerStripeAndBorder(
-                painter,
-                option.rect.left(),
-                option.rect.top(),
-                option.rect.bottom(),
-                m_layerBorderBottomColor,
-                layerColor);
+                painter, option.rect.left() - 1, option.rect.top(), option.rect.bottom(), m_layerBorderBottomColor, layerColor);
         }
 
         QModelIndex nameColumn = index.sibling(index.row(), EntityOutlinerListModel::Column::ColumnName);
         QModelIndex sibling = index.sibling(index.row() + 1, index.column());
-
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing, false);
 
         QPoint lineBottomLeft(option.rect.bottomLeft());
         QPoint lineTopLeft(option.rect.topLeft());
 
         if (isFirstColumn)
         {
-            lineTopLeft.setX(lineTopLeft.x() + m_layerStripeWidth);
+            lineTopLeft.setX(lineTopLeft.x() + m_layerStripeWidth - 1);
         }
         QPen topLinePen(m_layerBorderTopColor, m_layerDividerLineHeight);
         painter->setPen(topLinePen);
         painter->drawLine(lineTopLeft, option.rect.topRight());
-        
+
         if (isFirstColumn)
         {
             lineBottomLeft.setX(lineBottomLeft.x());
@@ -156,11 +140,43 @@ namespace AzToolsFramework
                 lineBottomLeft.setX(lineBottomLeft.x() + m_layerStripeWidth);
             }
         }
-        
+
         QPen bottomLinePen(m_layerBorderBottomColor, m_layerDividerLineHeight);
         painter->setPen(bottomLinePen);
         painter->drawLine(lineBottomLeft, option.rect.bottomRight());
+
+        painter->restore();
+    }
+
+    void LayerUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option,
+        const QModelIndex& /*index*/, const QModelIndex& /*descendantIndex*/) const
+    {
+        QPainterPath backgroundPath;
+        backgroundPath.addRect(option.rect);
+        painter->fillPath(backgroundPath, m_layerDescendantBackgroundColor);
+    }
+
+    void LayerUiHandler::PaintDescendantBranchBackground(QPainter* painter, const QTreeView* view, const QRect& rect,
+        const QModelIndex& index, const QModelIndex& /*descendantIndex*/) const
+    {
+        if (!painter)
+        {
+            return;
+        }
         
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, false);
+
+        QPainterPath backgroundPath;
+
+        const int ancestorLeft = view->visualRect(index).left();
+
+        // Find the rect that extends fully to the left
+        QRect fullRect = rect;
+        fullRect.setLeft(ancestorLeft);
+        backgroundPath.addRect(fullRect);
+
+        painter->fillPath(backgroundPath, m_layerDescendantBackgroundColor);
         painter->restore();
     }
 
@@ -182,7 +198,7 @@ namespace AzToolsFramework
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
-        int ancestorLeft = outlinerTreeView->visualRect(index).left();
+        int ancestorLeft = outlinerTreeView->visualRect(index).left() - 1;
 
         // Draw the left stripe for this layer on the descendant's rect
         if (isFirstColumn)

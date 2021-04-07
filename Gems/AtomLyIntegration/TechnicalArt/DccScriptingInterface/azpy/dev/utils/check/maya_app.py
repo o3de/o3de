@@ -1,0 +1,157 @@
+# coding:utf-8
+#!/usr/bin/python
+#
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
+#
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# -- This line is 75 characters -------------------------------------------
+# -- Standard Python modules --
+import sys
+import os
+import inspect
+import logging as _logging
+
+# -- External Python modules --
+# none
+
+# -- Extension Modules --
+import azpy
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+
+# --------------------------------------------------------------------------
+# -- Global Definitions --
+_DCCSI_DCC_APP = None
+
+# set up global space, logging etc.
+_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+
+_MODULENAME = 'azpy.dev.utils.check.maya_app'
+_LOGGER = _logging.getLogger(_MODULENAME)
+# -------------------------------------------------------------------------
+
+
+###########################################################################
+## These mini-functions need to be defined, before they are called
+# -------------------------------------------------------------------------
+# run this, if we are in Maya
+def set_dcc_app(dcc_app='maya'):
+    """
+    azpy.dev.utils.check.maya.set_dcc_app()
+    this will set global _DCCSI_DCC_APP = 'maya'
+    and os.environ["DCCSI_DCC_APP"] = 'maya'
+    """
+    _DCCSI_DCC_APP = dcc_app
+
+    _LOGGER.info('Setting DCCSI_DCC_APP to: {0}'.format(dcc_app))
+
+    return _DCCSI_DCC_APP
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def clear_dcc_app(dcc_app=False):
+    """
+    azpy.dev.utils.check.maya.set_dcc_app()
+    this will set global _DCCSI_DCC_APP = False
+    and os.environ["DCCSI_DCC_APP"] = False
+    """
+    _DCCSI_DCC_APP = dcc_app
+
+    _LOGGER.info('Setting DCCSI_DCC_APP to: {0}'.format(dcc_app))
+
+    return _DCCSI_DCC_APP
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def validate_state(DCCSI_DCC_APP=_DCCSI_DCC_APP):
+    '''
+    This will detect if we are running in Maya or not,
+    then will call either, set_dcc_app('maya') or clear_dcc_app(dcc_app=False)
+    '''
+
+    if _G_DEBUG:
+        _LOGGER.debug(autolog())
+
+    try:
+        import maya.cmds as cmds
+        DCCSI_DCC_APP = set_dcc_app('maya')
+    except ImportError as e:
+        _LOGGER.warning('Can not perform: import maya.cmds as cmds')
+        DCCSI_DCC_APP = clear_dcc_app()
+    else:
+        try:
+            if cmds.about(batch=True):
+                DCCSI_DCC_APP = set_dcc_app('maya')
+        except AttributeError as e:
+            _LOGGER.warning("maya.cmds module isn't fully loaded/populated, "
+                            "(cmds populates only in batch, maya.standalone, or maya GUI)")
+            # NO Maya
+            DCCSI_DCC_APP=clear_dcc_app()
+
+    return DCCSI_DCC_APP
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def autolog():
+    '''Automatically log the current function details.'''
+    # Get the previous frame in the stack, otherwise it would
+    # be this function!!!
+    func = inspect.currentframe().f_back.f_back.f_code
+    # Dump the message + the name of this function to the log.
+    output = ('{module} AUTOLOG:\r'
+              'Called from::\n{0}():\r'
+              'In file: {1},\r'
+              'At line: {2}\n'
+              ''.format(func.co_name,
+                        func.co_filename,
+                        func.co_firstlineno,
+                        module=_MODULENAME))
+    return output
+#-------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# run the check on import
+_DCCSI_DCC_APP = validate_state()
+# -------------------------------------------------------------------------
+
+
+###########################################################################
+# Main Code Block, runs this script as main (testing)
+# -------------------------------------------------------------------------
+if __name__ == '__main__':
+    # there are not really tests to run here due to this being a list of
+    # constants for shared use.
+    _G_DEBUG = True
+    _DCCSI_DEV_MODE = True
+    _LOGGER.setLevel(_logging.DEBUG)  # force debugging
+
+    ## reduce cyclical azpy imports
+    ## it only has a basic logger configured, add log to console
+    #_handler = _logging.StreamHandler(sys.stdout)
+    #_handler.setLevel(_logging.DEBUG)
+    #FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+    #_formatter = _logging.Formatter(FRMT_LOG_LONG)
+    #_handler.setFormatter(_formatter)
+    #_LOGGER.addHandler(_handler)
+    #_LOGGER.debug('Loading: {0}.'.format({_MODULENAME}))
+
+    # happy print
+    from azpy.constants import STR_CROSSBAR
+    _LOGGER.info(STR_CROSSBAR)
+    _LOGGER.info('{} ... Running script as __main__'.format(_MODULENAME))
+    _LOGGER.info(STR_CROSSBAR)
+
+    _DCCSI_DCC_APP = validate_state()
+    _LOGGER.info('Is Maya Running? _DCCSI_DCC_APP = {}'.format(_DCCSI_DCC_APP))

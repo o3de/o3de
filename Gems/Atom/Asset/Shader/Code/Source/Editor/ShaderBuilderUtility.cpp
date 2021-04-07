@@ -568,6 +568,26 @@ namespace AZ
             Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)
             {
                 AzslSubProducts::Paths products;
+
+                // platform id from identifier
+                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
+                if (platform == "pc")
+                {
+                    platformId = AzFramework::PlatformId::PC;
+                }
+                else if (platform == "osx_gl")
+                {
+                    platformId = AzFramework::PlatformId::OSX;
+                }
+                else if (platform == "es3")
+                {
+                    platformId = AzFramework::PlatformId::ES3;
+                }
+                else if (platform == "ios")
+                {
+                    platformId = AzFramework::PlatformId::IOS;
+                }
+
                 for (RPI::ShaderAssetSubId sub : AzslSubProducts::SubList)
                 {
                     uint32_t assetSubId = MakeAzslBuildProductSubId(sub, apiType);
@@ -581,25 +601,6 @@ namespace AZ
                     // get the relative path:
                     AZStd::string assetPath;
                     Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
-
-                    // platform id from identifier
-                    AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                    if (platform == "pc")
-                    {
-                        platformId = AzFramework::PlatformId::PC;
-                    }
-                    if (platform == "osx_gl")
-                    {
-                        platformId = AzFramework::PlatformId::OSX;
-                    }
-                    else if (platform == "es3")
-                    {
-                        platformId = AzFramework::PlatformId::ES3;
-                    }
-                    else if (platform == "ios")
-                    {
-                        platformId = AzFramework::PlatformId::IOS;
-                    }
 
                     // get the root:
                     AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);

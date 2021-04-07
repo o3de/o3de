@@ -14,11 +14,13 @@ SETLOCAL EnableDelayedExpansion
 
 REM Delete output directory if CLEAN_OUTPUT_DIRECTORY env variable is set
 IF "%CLEAN_OUTPUT_DIRECTORY%"=="true" (
-    IF EXIST Cache (
-        ECHO [ci_build] CLEAN_OUTPUT_DIRECTORY option set with value "%CLEAN_OUTPUT_DIRECTORY%"
-        ECHO [ci_build] Deleting "Cache"
-        DEL /s /q /f Cache
-    )
+    FOR %%P in (%CMAKE_LY_PROJECTS%) do (
+        IF EXIST %%P\Cache (
+            ECHO [ci_build] CLEAN_OUTPUT_DIRECTORY option set with value "%CLEAN_OUTPUT_DIRECTORY%"
+            ECHO [ci_build] Deleting "%%P\Cache"
+            DEL /s /q /f %%P\Cache 1>nul
+        )
+    )    
 )
 
 IF NOT EXIST %OUTPUT_DIRECTORY% (

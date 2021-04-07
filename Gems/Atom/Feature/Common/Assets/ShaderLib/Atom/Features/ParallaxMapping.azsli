@@ -223,7 +223,7 @@ float3 GetParallaxOffset( float depthFactor,
                           float3x3 uvMatrix)
 {
     // Tangent space eye vector
-    float3 dirToCameraTS = normalize(WorldToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));
+    float3 dirToCameraTS = normalize(WorldSpaceToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));
 
     // uv transform matrix in 3d, ignore translation
     float4x4 uv3DTransform;

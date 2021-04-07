@@ -812,9 +812,17 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Save Resources"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     am->AddAction(ID_IMPORT_ASSET, tr("Import &FBX..."));
-    am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
-        .SetShortcut(tr("Ctrl+E"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
+
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+    if (!usePrefabSystemForLevels)
+    {
+        am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
+            .SetShortcut(tr("Ctrl+E"))
+            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
+    }
+
     am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
     am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
@@ -980,10 +988,20 @@ void MainWindow::InitActions()
             .SetShortcut(QKeySequence::Delete)
             .SetStatusTip(tr("Delete selected objects."))
             ->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        am->AddAction(ID_EDIT_CLONE, tr("Duplicate"))
-            .SetShortcut(tr("Ctrl+D"))
-            .SetToolTip(tr("Duplicate (Ctrl+D)"))
-            .SetStatusTip(tr("Duplicate selected objects."));
+
+        bool isPrefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
+        {
+            am->AddAction(ID_EDIT_CLONE, tr("Duplicate"))
+                .SetShortcut(tr("Ctrl+D"))
+                .SetToolTip(tr("Duplicate (Ctrl+D)"))
+                .SetStatusTip(tr("Duplicate selected objects."));
+        }
     }
 
     // Modify actions
@@ -1091,7 +1109,7 @@ void MainWindow::InitActions()
             .SetApplyHoverEffect();
         am->AddAction(ID_OBJECTMODIFY_ALIGN, tr("Align to object")).SetCheckable(true)
 #if AZ_TRAIT_OS_PLATFORM_APPLE
-            .SetStatusTip(tr("⌘: Align an object to a bounding box, ⌥ : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
+            .SetStatusTip(tr(u8"\u2318: Align an object to a bounding box, \u2325 : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
 #else
             .SetStatusTip(tr("Ctrl: Align an object to a bounding box, Alt : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
 #endif

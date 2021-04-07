@@ -79,10 +79,10 @@ namespace Multiplayer
         ReplicationRecordStats GetStats() const;
 
         using RecordBitset = AzNetworking::FixedSizeVectorBitset<MaxRecordBits>;
-        RecordBitset m_authorityToClientRecord;
-        RecordBitset m_authorityToServerRecord;
-        RecordBitset m_authorityToAutonomousRecord;
-        RecordBitset m_autonomousToAuthorityRecord;
+        RecordBitset m_authorityToClient;
+        RecordBitset m_authorityToServer;
+        RecordBitset m_authorityToAutonomous;
+        RecordBitset m_autonomousToAuthority;
 
         uint32_t m_authorityToClientConsumedBits = 0;
         uint32_t m_authorityToServerConsumedBits = 0;

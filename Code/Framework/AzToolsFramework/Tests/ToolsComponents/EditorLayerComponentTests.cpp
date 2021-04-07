@@ -16,7 +16,6 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -25,6 +24,8 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <QColor>
 
@@ -203,6 +204,22 @@ namespace AzToolsFramework
         return true;
     }
 
+    class SliceToolsTestApplication : public UnitTest::ToolsTestApplication
+    {
+    public:
+        explicit SliceToolsTestApplication(AZStd::string applicationName)
+            : ToolsTestApplication(applicationName)
+        {
+        }
+
+    protected:
+        bool IsPrefabSystemEnabled() const override
+        {
+            return false;
+        }
+    };
+
+
     class EditorLayerComponentTest
         : public ::testing::Test
         , public UnitTest::TraceBusRedirector
@@ -211,6 +228,7 @@ namespace AzToolsFramework
         void SetUp() override
         {
             m_app.Start(m_descriptor);
+
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
@@ -231,8 +249,12 @@ namespace AzToolsFramework
                 m_layerEntity.m_layer->CleanupLoadedLayer();
             }
             m_editorLayerComponentTestHelperDescriptor->ReleaseDescriptor();
+
+            
             m_app.Stop();
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+
+            
         }
 
         // A few tests save a layer and want to check the state after saving.
@@ -337,7 +359,7 @@ namespace AzToolsFramework
         }
 
         const char* m_entityName = "LayerEntityName";
-        AzToolsFramework::ToolsApplication m_app;
+        SliceToolsTestApplication m_app{ "EditorLayerComponentTest" };
         EntityAndLayerComponent m_layerEntity;
         AZ::ComponentApplication::Descriptor m_descriptor;
         AZ::ComponentDescriptor* m_editorLayerComponentTestHelperDescriptor = nullptr;
@@ -1368,6 +1390,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RootSliceEntityEraseRestore_EntitiesRemovedAndRestoredCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
         AZ::TransformBus::Event(
             childEntity->GetId(),
@@ -1405,6 +1429,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_NestedLayersDoNotSaveLayersInLayers_LayersLoadCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZStd::string childLayerName = "ChildLayerName";
         EntityAndLayerComponent childLayer = CreateEntityWithLayer(childLayerName.c_str());
 
@@ -1440,6 +1466,8 @@ namespace AzToolsFramework
     // be saved to the LayerEntityName.
     TEST_F(EditorLayerComponentTest, LayerTests_SaveAndLoadLayerLayerEntityHierarchy_LayersAndEntityLoadCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZStd::string childLayerName = "ChildLayer";
         EntityAndLayerComponent childLayerEntityAndComponent = CreateEntityWithLayer(childLayerName.c_str());
         AZ::EntityId childLayerEntityId = childLayerEntityAndComponent.m_entity->GetId();
@@ -1512,6 +1540,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_SliceInstanceAddedToLayer_LayerHasUnsavedChanges)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::SliceComponent::SliceInstanceAddress instantiatedSlice = CreateSliceInstance();
         AZ::Entity* childEntity = GetEntityFromSliceInstance(instantiatedSlice);
         m_layerEntity.m_layer->ClearUnsavedChanges();
@@ -1533,6 +1563,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_SaveAndLoadInstanceInLayer_InstanceLoadsCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::SliceComponent::SliceInstanceAddress instantiatedSlice = CreateSliceInstance();
         AZ::Entity* childEntity = GetEntityFromSliceInstance(instantiatedSlice);
         AZ::TransformBus::Event(
@@ -1675,6 +1707,8 @@ namespace AzToolsFramework
     */
     TEST_F(EditorLayerComponentTest, LayerTests_DuplicateEntitiesInSceneAndLayer_DuplicateEntityIsDeleted)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
         AZ::TransformBus::Event(
             childEntity->GetId(),
@@ -1717,6 +1751,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_DuplicateEntitiesInLayer_DuplicateEntityIsDeleted)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
         AZ::TransformBus::Event(
             childEntity->GetId(),
@@ -1763,6 +1799,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreNullLayer_FailsToRestore)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::EntityId invalidParentId;
         Layers::LayerResult recoveryResult = AzToolsFramework::Layers::EditorLayerComponent::RecoverEditorLayer(nullptr, "RecoveredLayerName", invalidParentId);
         EXPECT_FALSE(recoveryResult.IsSuccess());
@@ -1770,6 +1808,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreEmptyLayer_RestoresCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
         // Check that the layer is in the scene.
         AZ::SliceComponent* rootSlice;
@@ -1816,6 +1856,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreLayerButLayerStillInScene_FailsToRestore)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
         // Check that the layer is in the scene.
         AZ::SliceComponent* rootSlice;
@@ -1851,6 +1893,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreLayerWithEntityChild_RestoresCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
 
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
@@ -1943,6 +1987,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreLayerWithEntityChildStillInScene_FailsToRestore)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
 
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
@@ -2019,6 +2065,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreLayerWithSliceInstance_RestoresCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
         // First, set up a layer with a slice instance in it.
         AZ::SliceComponent::SliceInstanceAddress instantiatedSlice = CreateSliceInstance();
@@ -2092,6 +2140,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_RestoreLayerWithSliceInstanceStillInScene_FailsToRestore)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
         // First, set up a layer with a slice instance in it.
         AZ::SliceComponent::SliceInstanceAddress instantiatedSlice = CreateSliceInstance();
@@ -2163,6 +2213,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_AttemptToCopyLayerComponent_IsNotCopyable)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity::ComponentArrayType components;
         components.push_back(m_layerEntity.m_layer);
 
@@ -2173,6 +2225,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_CheckOverwriteFlag_IsSetCorrectly)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Check layer created with correct value
         EXPECT_FALSE(m_layerEntity.m_layer->GetOverwriteFlag());
         //check direct call works correctly
@@ -2187,6 +2241,8 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_UndoRedoRestoreLayerWithChildren_AllRestoredEntitiesCorrect)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         const AZ::EntityId layerEntityId = m_layerEntity.m_entity->GetId();
 
         AZ::SliceComponent* rootSlice;

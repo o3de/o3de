@@ -76,7 +76,7 @@ namespace Blast
         AZStd::vector<uint32_t> chunkIndices;
         chunkIndices.push_back(0);
 
-        Physics::RigidBodyConfiguration configuration;
+        AzPhysics::RigidBodyConfiguration configuration;
         auto entity = AZStd::make_shared<AZ::Entity>();
         AZ::EntityId entityId = entity->GetId();
         auto actorDesc = BlastActorDesc

@@ -15,6 +15,8 @@
 
 #include "EditorUtils.h"
 
+#include "EditorToolsApplicationAPI.h"
+
 // Qt
 #include <QColor>
 #include <QMessageBox>
@@ -278,5 +280,26 @@ namespace EditorUtils
 
         return false;
     }
+
+    const char* LevelFile::GetOldCryFileExtension()
+    {
+        const char* oldCryExtension = nullptr;
+        EditorInternal::EditorToolsApplicationRequestBus::BroadcastResult(
+            oldCryExtension, &EditorInternal::EditorToolsApplicationRequests::GetOldCryLevelExtension);
+
+        AZ_Assert(oldCryExtension, "Cannot retrieve file extension");
+        return oldCryExtension;
+    }
+
+    const char* LevelFile::GetDefaultFileExtension()
+    {
+        const char* levelExtension = nullptr;
+        EditorInternal::EditorToolsApplicationRequestBus::BroadcastResult(
+            levelExtension, &EditorInternal::EditorToolsApplicationRequests::GetLevelExtension);
+
+        AZ_Assert(levelExtension, "Cannot retrieve file extension");
+        return levelExtension;
+    }
+
 } // namespace EditorUtils
 

@@ -96,7 +96,7 @@ namespace AZ
             //! This is meant to be used at this stage:
             //!
             //!     .azsl source -> common header prepend -> preprocess -> azslc -> dxc -> cross
-            //!                                                       ↑here↑
+            //!                                                       ^here^
             AZStd::string DumpPreprocessedCode(
                 const char* BuilderName,
                 const AZStd::string& preprocessedCode,
@@ -109,7 +109,7 @@ namespace AZ
             //! This is meant to be used at this stage:
             //!
             //!     .azsl source -> common header prepend -> preprocess -> azslc -> dxc -> cross
-            //!                                         ↑here↑
+            //!                                         ^here^
             AZStd::string DumpAzslPrependedCode(
                 const char* BuilderName,
                 const AZStd::string& nonPreprocessedYetAzslSource,

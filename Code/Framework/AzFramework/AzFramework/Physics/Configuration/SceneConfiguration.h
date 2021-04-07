@@ -11,11 +11,13 @@
 */
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
-#include <AzFramework/Physics/World.h> //this will be removed with LYN-438.
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace AZ
 {
@@ -33,14 +35,28 @@ namespace AzPhysics
 
         static SceneConfiguration CreateDefault();
 
-        // Legacy members Will be removed and replaced with LYN-438 work.
-        Physics::WorldConfiguration m_legacyConfiguration;
-        AZ::Crc32 m_legacyId; //use SceneConfiguration::m_SceneName instead
+        AZStd::string m_sceneName; //!< Name given to the scene.
 
-        AZStd::string m_sceneName = "DefaultScene"; //!< Name given to the scene.
+        AZ::Aabb m_worldBounds = AZ::Aabb::CreateFromMinMax(-AZ::Vector3(1000.f, 1000.f, 1000.f), AZ::Vector3(1000.f, 1000.f, 1000.f));
+        AZ::Vector3 m_gravity = AzPhysics::DefaultGravity;
+        void* m_customUserData = nullptr;
+        bool m_enableCcd = false; //!< Enables continuous collision detection in the world.
+        AZ::u32 m_maxCcdPasses = 1; //!< Maximum number of continuous collision detection passes.
+        bool m_enableCcdResweep = true; //!< Use a more accurate but more expensive continuous collision detection method.
+
+        //! Enables reporting of changed Simulated bodies on the OnSceneActiveSimulatedBodiesEvent event.
+        //! @note There may be a performance penalty for enabling the Active Actor Notification.
+        bool m_enableActiveActors = false; 
+        bool m_enablePcm = true; //!< Enables the persistent contact manifold algorithm to be used as the narrow phase algorithm.
+        bool m_kinematicFiltering = true; //!< Enables filtering between kinematic/kinematic  objects.
+        bool m_kinematicStaticFiltering = true; //!< Enables filtering between kinematic/static objects.
+        float m_bounceThresholdVelocity = 2.0f; //!< Relative velocity below which colliding objects will not bounce.
 
         bool operator==(const SceneConfiguration& other) const;
         bool operator!=(const SceneConfiguration& other) const;
+
+    private:
+        AZ::Crc32 GetCcdVisibility() const;
     };
 
     //! Alias for a list of SceneConfiguration objects, used for the creation of multiple Scenes at once.

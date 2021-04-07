@@ -38,7 +38,6 @@ namespace AZ
             , m_msaaMode4xName("MsaaMode::Msaa4x")
             , m_msaaMode8xName("MsaaMode::Msaa8x")
             , m_msaaOptionName("o_msaaMode")
-            , m_constantDataName("m_constantData")
         {
         }
 
@@ -171,8 +170,6 @@ namespace AZ
         void LightCullingTilePreparePass::BuildAttachmentsInternal()
         {
             ChooseShaderVariant();
-            m_constantDataIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(m_constantDataName);
-            AZ_Assert(m_constantDataIndex.IsValid(), "m_constantData not found in shader");
         }
 
         void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)

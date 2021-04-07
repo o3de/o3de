@@ -105,6 +105,16 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         AZ::u64 fileSize = isDirectory ? 0 : entry.size();
         AssetFileInfo assetFileInfo(absPath, modTime, fileSize, &rootScanFolder, isDirectory);
 
+        // Skip over the Cache folder if the file entry is the project cache root
+        QDir projectCacheRoot;
+        AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
+        QString relativeToProjectCacheRoot = projectCacheRoot.relativeFilePath(absPath);
+        if (QDir::isRelativePath(relativeToProjectCacheRoot) && !relativeToProjectCacheRoot.startsWith(".."))
+        {
+            // The Cache folder should not be scanned
+            continue;
+        }
+
         // Filtering out excluded files
         if (m_platformConfiguration->IsFileExcluded(absPath))
         {
@@ -136,7 +146,5 @@ void AssetScannerWorker::EmitFiles()
     m_folderList.clear();
     Q_EMIT ExcludedFound(m_excludedList);
     m_excludedList.clear();
-    
+
 }
-
-

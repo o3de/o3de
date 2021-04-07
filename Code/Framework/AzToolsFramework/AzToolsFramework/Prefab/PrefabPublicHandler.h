@@ -14,18 +14,22 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Vector3.h>
+
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
-
-
-using EntityList = AZStd::vector<AZ::Entity*>;
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/PrefabUndoCache.h>
 
 namespace AzToolsFramework
 {
+    using EntityList = AZStd::vector<AZ::Entity*>;
+
     namespace Prefab
     {
         class Instance;
         class InstanceEntityMapperInterface;
+        class InstanceToTemplateInterface;
+        class PrefabSystemComponentInterface;
 
         class PrefabPublicHandler final
             : public PrefabPublicInterface
@@ -34,27 +38,48 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator, 0);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
 
-            PrefabPublicHandler();
-            ~PrefabPublicHandler();
+            void RegisterPrefabPublicHandlerInterface();
+            void UnregisterPrefabPublicHandlerInterface();
 
+            // PrefabPublicInterface...
             PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) override;
             PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position) override;
+            PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
+            PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
+            
+            void GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
-            bool IsInstanceContainerEntity(AZ::EntityId entityId) override;
-            AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) override;
+            bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
+            bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
+            AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
+            AZ::EntityId GetLevelInstanceContainerEntityId() const override;
+            AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
+            PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
+
+            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
+            PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
 
         private:
-
+            PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, const Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities, AZStd::vector<AZStd::unique_ptr<Instance>>& outInstances) const;
 
-            //! Gets the owning instance of a valid commonRootEntity and the root prefab instance for an invalid commonRootEntity.
-            InstanceOptionalReference GetCommonRootEntityOwningInstance(AZ::EntityId entityId);
+            InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
+            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
+            static void EntityIdListToEntityList(const EntityIdList& inputEntityIds, EntityList& outEntities);
 
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+
+            // Caches entity states for undo/redo purposes
+            PrefabUndoCache m_prefabUndoCache;
+
+            uint64_t m_newEntityCounter = 1;
         };
     }
 }

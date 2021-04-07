@@ -13,14 +13,13 @@
 
 #include <Source/ForceRegionComponent.h>
 #include <Source/ForceRegionForces.h>
-#include <Source/World.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/WorldBody.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 namespace PhysX
 {
@@ -44,16 +43,37 @@ namespace PhysX
         }
     }
 
+    ForceRegionComponent::ForceRegionComponent()
+    {
+        InitPhysicsTickHandler();
+    }
+
     ForceRegionComponent::ForceRegionComponent(ForceRegion&& forceRegion, bool debug)
         : m_forceRegion(std::move(forceRegion))
         , m_debugForces(debug)
     {
+        InitPhysicsTickHandler();
     }
 
     void ForceRegionComponent::Activate()
     {
-        Physics::WorldNotificationBus::Handler::BusConnect(Physics::DefaultPhysicsWorldId);
-        Physics::TriggerNotificationBus::Handler::BusConnect(m_entity->GetId());
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+            sceneInterface->RegisterSceneSimulationFinishHandler(sceneHandle, m_sceneFinishSimHandler);
+        }
+
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(m_entity->GetId());
+            if (foundBody.first != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(
+                    foundBody.first, foundBody.second, m_onTriggerEnterHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(
+                    foundBody.first, foundBody.second, m_onTriggerExitHandler);
+            }
+        }
         if (m_debugForces)
         {
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entity->GetId());
@@ -68,13 +88,38 @@ namespace PhysX
         {
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         }
-        Physics::TriggerNotificationBus::Handler::BusDisconnect();
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_onTriggerEnterHandler.Disconnect();
+        m_onTriggerExitHandler.Disconnect();
+        m_sceneFinishSimHandler.Disconnect();
 
         m_entities.clear(); // On re-activation, each entity in this force region triggers OnTriggerEnter again.
     }
 
-    void ForceRegionComponent::OnPostPhysicsSubtick(float fixedDeltaTime)
+    void ForceRegionComponent::InitPhysicsTickHandler()
+    {
+        m_sceneFinishSimHandler = AzPhysics::SceneEvents::OnSceneSimulationFinishHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            float fixedDeltatime)
+            {
+                this->PostPhysicsSubTick(fixedDeltatime);
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Components));
+
+        m_onTriggerEnterHandler = AzPhysics::SimulatedBodyEvents::OnTriggerEnter::Handler([this](
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+            const  AzPhysics::TriggerEvent& triggerEvent)
+            {
+                OnTriggerEnter(triggerEvent);
+            });
+
+        m_onTriggerExitHandler = AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler([this](
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+            const  AzPhysics::TriggerEvent& triggerEvent)
+            {
+                OnTriggerExit(triggerEvent);
+            });
+    }
+
+    void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
@@ -92,12 +137,7 @@ namespace PhysX
         }
     }
 
-    int ForceRegionComponent::GetPhysicsTickOrder()
-    {
-        return WorldNotifications::Components;
-    }
-
-    void ForceRegionComponent::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
+    void ForceRegionComponent::OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent)
     {
         if (!triggerEvent.m_otherBody)
         {
@@ -118,7 +158,7 @@ namespace PhysX
         }
     }
 
-    void ForceRegionComponent::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
+    void ForceRegionComponent::OnTriggerExit(const AzPhysics::TriggerEvent& triggerEvent)
     {
         if (triggerEvent.m_otherBody == nullptr)
         {

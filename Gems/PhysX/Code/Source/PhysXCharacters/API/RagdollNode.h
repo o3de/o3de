@@ -14,6 +14,7 @@
 
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysX/UserDataTypes.h>
 
 namespace PhysX
@@ -28,17 +29,18 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         RagdollNode() = default;
-        RagdollNode(AZStd::unique_ptr<Physics::RigidBody> rigidBody);
+        explicit RagdollNode(AzPhysics::RigidBody* rigidBody, AzPhysics::SimulatedBodyHandle rigidBodyHandle);
         ~RagdollNode() = default;
 
         void SetJoint(const AZStd::shared_ptr<Physics::Joint>& joint);
 
         // Physics::RagdollNode
-        Physics::RigidBody& GetRigidBody() override;
+        AzPhysics::RigidBody& GetRigidBody() override;
         const AZStd::shared_ptr<Physics::Joint>& GetJoint() const override;
+        bool IsSimulating() const override;
 
-        // Physics::WorldBody
-        Physics::World* GetWorld() const override;
+        // AzPhysics::SimulatedBody
+        AzPhysics::Scene* GetScene() override;
         AZ::EntityId GetEntityId() const override;
 
         AZ::Transform GetTransform() const override;
@@ -48,16 +50,17 @@ namespace PhysX
         AZ::Quaternion GetOrientation() const override;
 
         AZ::Aabb GetAabb() const override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         AZ::Crc32 GetNativeType() const override;
         void* GetNativePointer() const override;
 
-        void AddToWorld(Physics::World&) override;
-        void RemoveFromWorld(Physics::World&) override;
+        AzPhysics::SimulatedBodyHandle GetRigidBodyHandle() const;
+
     private:
         AZStd::shared_ptr<Physics::Joint> m_joint;
-        AZStd::unique_ptr<Physics::RigidBody> m_rigidBody;
+        AzPhysics::RigidBody* m_rigidBody;
+        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         PhysX::ActorData m_actorUserData;
     };
 } // namespace PhysX

@@ -37,12 +37,6 @@ namespace AZ
         {
             m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
             
-            // Find SRG index for global IBL
-            m_specularEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(Name{"m_specularEnvMap"});
-            m_diffuseEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(Name{"m_diffuseEnvMap"});
-            m_iblExposureConstantIndex = m_sceneSrg->FindShaderInputConstantIndex(Name{"m_iblExposure"});
-            m_iblOrientationConstantIndex = m_sceneSrg->FindShaderInputConstantIndex(Name{"m_iblOrientation"});
-
             // Load default specular and diffuse cubemaps
             // These are assigned when Global IBL is disabled or removed from the scene to prevent a Vulkan TDR.
             // [GFX-TODO][ATOM-4181] This can be removed after Vulkan is changed to automatically handle this issue.
@@ -51,9 +45,10 @@ namespace AZ
 
         void ImageBasedLightFeatureProcessor::Deactivate()
         {
-            m_iblExposureConstantIndex = {};
-            m_diffuseEnvMapIndex = {};
-            m_specularEnvMapIndex = {};
+            m_iblOrientationConstantIndex.Reset();
+            m_iblExposureConstantIndex.Reset();
+            m_diffuseEnvMapIndex.Reset();
+            m_specularEnvMapIndex.Reset();
             m_sceneSrg = {};
         }
 

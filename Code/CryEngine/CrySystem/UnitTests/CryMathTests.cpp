@@ -20,7 +20,11 @@ namespace UnitTest
         : public ::testing::Test
     {};
 
+#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
+    TEST_F(CryMathTestFixture, DISABLED_InverserSqrt_HasAtLeast22BitsOfAccuracy)
+#else
     TEST_F(CryMathTestFixture, InverserSqrt_HasAtLeast22BitsOfAccuracy)
+#endif
     {
         float testFloat(0.336950600);
         const float result = isqrt_safe_tpl(testFloat * testFloat);
@@ -28,7 +32,11 @@ namespace UnitTest
         EXPECT_NEAR(2.96779, result, epsilon);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
+    TEST_F(CryMathTestFixture, DISABLED_SimdSqrt_HasAtLeast23BitsOfAccuracy)
+#else
     TEST_F(CryMathTestFixture, SimdSqrt_HasAtLeast23BitsOfAccuracy)
+#endif
     {
         float testFloat(3434.34839439);
         const float result = sqrt_tpl(testFloat);

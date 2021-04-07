@@ -3,14 +3,13 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Artist Workshop",
-        "skyboxImageAsset": {
+        "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{D2B747EE-85B8-5766-8AA0-CCB6AFF81BA2}",
-                "subId": 1000
+                "subId": 3000
             },
-            "assetHint": "lightingpresets/lowcontrast/artist_workshop_4k_iblskyboxcm.exr.streamingimage"
+            "assetHint": "lightingpresets/lowcontrast/artist_workshop_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
         "iblSpecularImageAsset": {
             "assetId": {
@@ -19,15 +18,21 @@
             },
             "assetHint": "lightingpresets/lowcontrast/artist_workshop_4k_iblskyboxcm_iblspecular.exr.streamingimage"
         },
-        "iblDiffuseImageAsset": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{D2B747EE-85B8-5766-8AA0-CCB6AFF81BA2}",
+                "subId": 1000
+            },
+            "assetHint": "lightingpresets/lowcontrast/artist_workshop_4k_iblskyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
             "assetId": {
                 "guid": "{D2B747EE-85B8-5766-8AA0-CCB6AFF81BA2}",
                 "subId": 3000
             },
             "assetHint": "lightingpresets/lowcontrast/artist_workshop_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.3499999940395355,
         "lights": [
             {
                 "direction": [
@@ -35,20 +40,10 @@
                     1.0,
                     -0.20000000298023225
                 ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "intensity": 1.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.3499999940395355
+        ]
     }
 }

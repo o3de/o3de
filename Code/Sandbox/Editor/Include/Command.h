@@ -768,12 +768,12 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
         return "";
     }
 
-    P1 p1;
-    P2 p2;
-    P3 p3;
-    P4 p4;
-    P5 p5;
-    P6 p6;
+    P1 p1 = 0;
+    P2 p2 = 0;
+    P3 p3 = 0;
+    P4 p4 = 0;
+    P5 p5 = 0;
+    P6 p6 = 0;
     bool ok = FromString_(p1, args.GetArg(0).c_str())
         && FromString_(p2, args.GetArg(1).c_str())
         && FromString_(p3, args.GetArg(2).c_str())
@@ -782,9 +782,7 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
         && FromString_(p6, args.GetArg(5).c_str());
     if (ok)
     {
-        AZ_PUSH_DISABLE_WARNING(4703, "-Wunknown-warning-option")
         m_functor(p1, p2, p3, p4, p5, p6);
-        AZ_POP_DISABLE_WARNING
     }
     else
     {

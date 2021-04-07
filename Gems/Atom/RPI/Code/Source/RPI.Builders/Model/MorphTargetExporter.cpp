@@ -11,6 +11,7 @@
 */
 
 #include <Model/MorphTargetExporter.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
@@ -161,11 +162,7 @@ namespace AZ::RPI
 
         const uint32_t numFaces = blendShapeData->GetFaceCount();
 
-        ModelAssetBuilderComponent::ProductMeshContent::MorphTargetVertexData& morphTargetVertexData = productMesh.m_morphTargetVertexData;
-        AZStd::vector<uint32_t>& vertexIndices = morphTargetVertexData.m_vertexIndices;
-        AZStd::vector<float>& uncompressedPositionDeltas = morphTargetVertexData.m_uncompressedPositionDeltas;
-        AZStd::vector<uint16_t>& positionDeltas = morphTargetVertexData.m_positionDeltas;
-        AZStd::vector<uint8_t>& normalDeltas = morphTargetVertexData.m_normalDeltas;
+        AZStd::vector<PackedCompressedMorphTargetDelta>& packedCompressedMorphTargetVertexData = productMesh.m_morphTargetVertexData;
 
         MorphTargetMetaAsset::MorphTarget metaData;
         metaData.m_meshNodeName = sourceMesh.m_name.GetStringView();
@@ -176,12 +173,20 @@ namespace AZ::RPI
         AZ_Assert(blendShapeData->GetVertexCount() == sourceMesh.m_meshData->GetVertexCount(),
             "Blend shape (%s) contains more/less vertices (%d) than the neutral mesh (%d).",
             blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
-        metaData.m_startIndex = aznumeric_caster<uint32_t>(vertexIndices.size());
+
+        // The start index is after any previously added deltas
+        metaData.m_startIndex = aznumeric_caster<uint32_t>(packedCompressedMorphTargetVertexData.size());
 
 
         // Multiply normal by inverse transpose to avoid incorrect values produced by non-uniformly scaled transforms.
         DataTypes::MatrixType globalTransformN = globalTransform.GetInverseFull().GetTranspose();
         globalTransformN.SetTranslation(AZ::Vector3::CreateZero());
+
+        AZStd::vector<AZ::Vector3> uncompressedPositionDeltas;
+        uncompressedPositionDeltas.reserve(numVertices);
+
+        AZStd::vector<CompressedMorphTargetDelta> compressedDeltas;
+        compressedDeltas.reserve(numVertices);
 
         uint32_t numMorphedVertices = 0;
         for (uint32_t vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
@@ -197,14 +202,20 @@ namespace AZ::RPI
             // Check if the vertex positions are different.
             if (!targetPosition.IsClose(neutralPosition, tolerance))
             {
-                vertexIndices.emplace_back(vertexIndex + vertexOffset);
+                // Add a new delta
                 numMorphedVertices++;
+                compressedDeltas.emplace_back(RPI::CompressedMorphTargetDelta{});
+                RPI::CompressedMorphTargetDelta& currentDelta = compressedDeltas.back();
+
+                // Set the morphed index
+                currentDelta.m_morphedVertexIndex = vertexIndex + vertexOffset;
 
                 const AZ::Vector3 deltaPosition = targetPosition - neutralPosition;
                 deltaPositionAabb.AddPoint(deltaPosition);
-                uncompressedPositionDeltas.emplace_back(deltaPosition.GetX());
-                uncompressedPositionDeltas.emplace_back(deltaPosition.GetY());
-                uncompressedPositionDeltas.emplace_back(deltaPosition.GetZ());
+
+                // We can't compress the positions until they've all been gathered so we know the min/max,
+                // so keep track of the uncompressed positions for now
+                uncompressedPositionDeltas.emplace_back(deltaPosition);
 
                 // Normal
                 {
@@ -219,16 +230,30 @@ namespace AZ::RPI
 
                     const AZ::Vector3 deltaNormal = targetNormal - neutralNormal;
 
-                    normalDeltas.emplace_back(Compress<uint8_t>(deltaNormal.GetX(), -2.0f, 2.0f));
-                    normalDeltas.emplace_back(Compress<uint8_t>(deltaNormal.GetY(), -2.0f, 2.0f));
-                    normalDeltas.emplace_back(Compress<uint8_t>(deltaNormal.GetZ(), -2.0f, 2.0f));
+                    currentDelta.m_normalX = Compress<uint8_t>(deltaNormal.GetX(), -2.0f, 2.0f);
+                    currentDelta.m_normalY = Compress<uint8_t>(deltaNormal.GetY(), -2.0f, 2.0f);
+                    currentDelta.m_normalZ = Compress<uint8_t>(deltaNormal.GetZ(), -2.0f, 2.0f);
+                }
+
+                // Tangent
+                {
+                    // Insert zero-delta until morphed tangents are supported in SceneAPI
+                    currentDelta.m_tangentX = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_tangentY = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_tangentZ = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                }
+
+                // Bitangent
+                {
+                    // Insert zero-delta until morphed bitangents are supported in SceneAPI
+                    currentDelta.m_bitangentX = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_bitangentY = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_bitangentZ = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
                 }
             }
         }
 
         metaData.m_numVertices = numMorphedVertices;
-        AZ_Assert((vertexIndices.size() - metaData.m_startIndex) == numMorphedVertices, "Vertex index range (%d) in morph target meta data does not match number of morphed vertices (%d).",
-            vertexIndices.size() - metaData.m_startIndex, numMorphedVertices);
 
         const float morphedVerticesRatio = numMorphedVertices / static_cast<float>(numVertices);
         AZ_Printf(ModelAssetBuilderComponent::s_builderName, "'%s' morphs %.1f%% of the vertices.", blendShapeName.c_str(), morphedVerticesRatio * 100.0f);
@@ -253,15 +278,26 @@ namespace AZ::RPI
 
         metaAssetCreator.AddMorphTarget(metaData);
 
-        // Compress the position deltas. (Only the newly added ones from this morph target)
-        for (size_t i = metaData.m_startIndex * 3; i < uncompressedPositionDeltas.size(); i++)
-        {
-            positionDeltas.emplace_back(Compress<uint16_t>(uncompressedPositionDeltas[i], metaData.m_minPositionDelta, metaData.m_maxPositionDelta));
-        }
-        AZ_Assert(uncompressedPositionDeltas.size() == positionDeltas.size(), "Number of uncompressed (%d) and compressed position delta components (%d) do not match.",
-            uncompressedPositionDeltas.size(), positionDeltas.size());
+        AZ_Assert(uncompressedPositionDeltas.size() == compressedDeltas.size(), "Number of uncompressed (%d) and compressed position delta components (%d) do not match.",
+            uncompressedPositionDeltas.size(), compressedDeltas.size());
 
-        AZ_Assert(positionDeltas.size() == normalDeltas.size(), "Number of position deltas needs to match the number of normal deltas.");
-        AZ_Assert((positionDeltas.size() / 3) == vertexIndices.size(), "Position delta component count needs to be three times the number of vertex indices.");
+        // Compress the position deltas. (Only the newly added ones from this morph target)
+        for (size_t i = 0; i < uncompressedPositionDeltas.size(); i++)
+        {
+            compressedDeltas[i].m_positionX = Compress<uint16_t>(uncompressedPositionDeltas[i].GetX(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+            compressedDeltas[i].m_positionY = Compress<uint16_t>(uncompressedPositionDeltas[i].GetY(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+            compressedDeltas[i].m_positionZ = Compress<uint16_t>(uncompressedPositionDeltas[i].GetZ(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+        }
+
+        // Now that we have all our compressed deltas, they need to be packed
+        // the way the shader expects to read them and added to the product mesh
+        packedCompressedMorphTargetVertexData.reserve(packedCompressedMorphTargetVertexData.size() + compressedDeltas.size());
+        for (size_t i = 0; i < compressedDeltas.size(); ++i)
+        {
+            packedCompressedMorphTargetVertexData.emplace_back(RPI::PackMorphTargetDelta(compressedDeltas[i]));
+        }
+
+        AZ_Assert((packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex) == numMorphedVertices, "Vertex index range (%d) in morph target meta data does not match number of morphed vertices (%d).",
+            packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex, numMorphedVertices);
     }
 } // namespace AZ::RPI

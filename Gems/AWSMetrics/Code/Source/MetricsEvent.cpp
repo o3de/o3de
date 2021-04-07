@@ -92,7 +92,7 @@ namespace AWSMetrics
         if (customAttributes.size() > 0)
         {
             // Wrap up the cutom event attributes in a separate event_data field
-            ok = ok && writer.Key(METRICS_ATTRIBUTE_KEY_EVENT_DATA);
+            ok = ok && writer.Key(AwsMetricsAttributeKeyEventData);
             ok = ok && writer.StartObject();
             for (const auto& attr : customAttributes)
             {
@@ -117,7 +117,7 @@ namespace AWSMetrics
         int attributeIndex = 0;
         for (auto it = metricsObjVal.MemberBegin(); it != metricsObjVal.MemberEnd(); ++it, ++attributeIndex)
         {
-            if (strcmp(it->name.GetString(), METRICS_ATTRIBUTE_KEY_EVENT_DATA) == 0)
+            if (strcmp(it->name.GetString(), AwsMetricsAttributeKeyEventData) == 0)
             {
                 // The event_data field contains a flat json dictionary.
                 // Read the JSON value of this field to add all the custom metrics attributes.
@@ -161,7 +161,7 @@ namespace AWSMetrics
         }
 
         rapidjson::Document jsonSchemaDocument;
-        if (jsonSchemaDocument.Parse(METRICS_EVENT_JSON_SCHEMA).HasParseError())
+        if (jsonSchemaDocument.Parse(AwsMetricsEventJsonSchema).HasParseError())
         {
             AZ_Error("AWSMetrics", false, "Invalid metrics event json schema.");
             return false;

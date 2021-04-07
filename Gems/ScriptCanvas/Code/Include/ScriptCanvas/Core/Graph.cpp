@@ -177,20 +177,6 @@ namespace ScriptCanvas
             return true;    
         }
 
-        for (auto& nodeEntity : m_graphData.m_nodes)
-        {
-            if (nodeEntity)
-            {
-                if (auto node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity))
-                {
-                    if (azrtti_istypeof<Nodes::Core::FunctionDefinitionNode*>(node))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
         return false;
     }
 
@@ -324,8 +310,8 @@ namespace ScriptCanvas
         request.graph = this;
         request.name = "editorValidation";
 
-        request.rawSaveDebugOutput = Grammar::s_saveRawTranslationOuputToFile;
-        request.printModelToConsole = Grammar::s_printAbstractCodeModel;
+        request.rawSaveDebugOutput = Grammar::g_saveRawTranslationOuputToFile;
+        request.printModelToConsole = Grammar::g_printAbstractCodeModel;
 
         const Translation::Result result = Translation::ToLua(request);
 
@@ -348,7 +334,10 @@ namespace ScriptCanvas
     {
         validationResults.ClearResults();
 
-        // Parse(validationResults);
+        if (!Grammar::g_disableParseOnGraphValidation)
+        {
+            Parse(validationResults);
+        }
 
         for (auto& connectionEntity : m_graphData.m_connections)
         {

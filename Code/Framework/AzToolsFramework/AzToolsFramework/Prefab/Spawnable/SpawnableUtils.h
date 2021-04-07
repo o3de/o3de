@@ -18,6 +18,7 @@
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
     AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom);
+    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom);
 
     void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils

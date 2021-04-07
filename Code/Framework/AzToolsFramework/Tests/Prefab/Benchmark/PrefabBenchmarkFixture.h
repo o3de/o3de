@@ -58,7 +58,7 @@ namespace Benchmark
         AzToolsFramework::Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
 
         const char* m_pathString = "path/to/template";
-        AZStd::vector<AZStd::string> m_paths;
+        AZStd::vector<AZ::IO::Path> m_paths;
 
         AZStd::unique_ptr <UnitTest::MockPrefabFileIOActionValidator> m_mockIOActionValidator;
     };

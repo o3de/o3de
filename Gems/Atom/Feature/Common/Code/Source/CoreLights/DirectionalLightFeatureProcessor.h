@@ -352,7 +352,7 @@ namespace AZ
             AZStd::unordered_map<const RPI::View*, GpuBufferHandler> m_shadowBufferHandlers;
             AZStd::unordered_map<const RPI::View*, IndexedDataVector<DirectionalLightShadowData>> m_shadowData;
 
-            RHI::ShaderInputConstantIndex m_shadowIndexDirectionalLightIndex;
+            RHI::ShaderInputNameIndex m_shadowIndexDirectionalLightIndex = "m_shadowIndexDirectionalLight";
 
             AZStd::unordered_map<const RPI::View*, AZStd::vector<RPI::RenderPipelineId>> m_renderPipelineIdsForPersistentView;
             AZStd::unordered_map<const RPI::View*, AZStd::string> m_cameraViewNames;

@@ -13,7 +13,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 
 #include <IAudioSystem.h>
 
@@ -33,11 +33,12 @@ namespace LmbrCentral
     class AudioAreaEnvironmentComponent
         : public AZ::Component
         , private AZ::TransformNotificationBus::MultiHandler
-        , private Physics::TriggerNotificationBus::Handler
     {
         friend class EditorAudioAreaEnvironmentComponent;
 
     public:
+        AudioAreaEnvironmentComponent();
+
         /*!
          * AZ::Component
          */
@@ -49,10 +50,6 @@ namespace LmbrCentral
          * AZ::TransformNotificationBus::MultiHandler
          */
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
-
-
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override;
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -78,6 +75,12 @@ namespace LmbrCentral
         static void Reflect(AZ::ReflectContext* context);
 
     private:
+        void OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent);
+        void OnTriggerExit(const AzPhysics::TriggerEvent& triggerEvent);
+
+        AzPhysics::SimulatedBodyEvents::OnTriggerEnter::Handler m_onTriggerEnterHandler;
+        AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler m_onTriggerExitHandler;
+
         //! Transient data
         Audio::TAudioEnvironmentID m_environmentId;
 

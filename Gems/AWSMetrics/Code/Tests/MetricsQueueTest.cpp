@@ -25,9 +25,9 @@ namespace AWSMetrics
         : public AWSMetricsGemAllocatorFixture
     {
     public:
-        const int NUM_TEST_METRICS = 10;
-        const AZStd::string ATTR_NAME = "name";
-        const AZStd::string ATTR_VALUE = "value";
+        const int NumTestMetrics = 10;
+        const AZStd::string AttrName = "name";
+        const AZStd::string AttrValue = "value";
     };
 
     TEST_F(MetricsQueueTest, AddMetrics_SingleMetrics_Success)
@@ -46,14 +46,14 @@ namespace AWSMetrics
         int numMetrics = queue.GetNumMetrics();
 
         MetricsQueue anotherQueue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             anotherQueue.AddMetrics(MetricsEvent());
         }
         
         queue.AppendMetrics(anotherQueue);
 
-        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NUM_TEST_METRICS);
+        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NumTestMetrics);
     }
 
     TEST_F(MetricsQueueTest, AppendMetrics_NoneEmptyQueue_Success)
@@ -63,14 +63,14 @@ namespace AWSMetrics
         int numMetrics = queue.GetNumMetrics();
 
         MetricsQueue anotherQueue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             anotherQueue.AddMetrics(MetricsEvent());
         }
 
         queue.AppendMetrics(anotherQueue);
 
-        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NUM_TEST_METRICS);
+        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NumTestMetrics);
     }
 
     TEST_F(MetricsQueueTest, PushMetricsToFront_EmptyQueue_Success)
@@ -79,43 +79,43 @@ namespace AWSMetrics
         int numMetrics = queue.GetNumMetrics();
 
         MetricsQueue anotherQueue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             anotherQueue.AddMetrics(MetricsEvent());
         }
 
         queue.PushMetricsToFront(anotherQueue);
 
-        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NUM_TEST_METRICS);
+        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NumTestMetrics);
     }
 
     TEST_F(MetricsQueueTest, PushMetricsToFront_NoneEmptyQueue_Success)
     {
         MetricsQueue queue;
         MetricsEvent metrics;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
         queue.AddMetrics(metrics);
         int numMetrics = queue.GetNumMetrics();
 
         MetricsQueue anotherQueue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             anotherQueue.AddMetrics(MetricsEvent());
         }
 
         queue.PushMetricsToFront(anotherQueue);
 
-        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NUM_TEST_METRICS);
-        ASSERT_EQ(queue[NUM_TEST_METRICS].GetNumAttributes(), 1);
+        ASSERT_EQ(queue.GetNumMetrics(), numMetrics + NumTestMetrics);
+        ASSERT_EQ(queue[NumTestMetrics].GetNumAttributes(), 1);
     }
 
     TEST_F(MetricsQueueTest, FilterMetricsByPriority_ReachMaxCapacity_FilterOutLowerPriorityMetrics)
     {
         MetricsQueue queue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             MetricsEvent metrics;
-            metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+            metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
             metrics.SetEventPriority(index % 2);
 
             // Use the number of failures to check the order of metrics events later.
@@ -128,10 +128,10 @@ namespace AWSMetrics
             queue.AddMetrics(metrics);
         }
 
-        int maxCapacity = queue[0].GetSizeInBytes() * NUM_TEST_METRICS / 2;
+        int maxCapacity = queue[0].GetSizeInBytes() * NumTestMetrics / 2;
 
-        ASSERT_EQ(queue.FilterMetricsByPriority(maxCapacity), NUM_TEST_METRICS / 2);
-        ASSERT_EQ(queue.GetNumMetrics(), NUM_TEST_METRICS / 2);
+        ASSERT_EQ(queue.FilterMetricsByPriority(maxCapacity), NumTestMetrics / 2);
+        ASSERT_EQ(queue.GetNumMetrics(), NumTestMetrics / 2);
 
         for (int index = 0; index < queue.GetNumMetrics(); ++index)
         {
@@ -149,11 +149,11 @@ namespace AWSMetrics
     TEST_F(MetricsQueueTest, ClearMetrics_NoneEmptyQueue_Success)
     {
         MetricsQueue queue;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
             queue.AddMetrics(MetricsEvent());
         }
-        ASSERT_EQ(queue.GetNumMetrics(), NUM_TEST_METRICS);
+        ASSERT_EQ(queue.GetNumMetrics(), NumTestMetrics);
 
         queue.ClearMetrics();
 
@@ -164,12 +164,12 @@ namespace AWSMetrics
     {
         MetricsQueue queue;
         MetricsEvent metrics;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
-        metrics.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
+        metrics.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue));
         queue.AddMetrics(metrics);
 
         AZStd::string serializedQueue = AZStd::string::format("[{\"%s\":\"%s\",\"%s\":{\"%s\":\"%s\"}}]",
-            METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE.c_str(), METRICS_ATTRIBUTE_KEY_EVENT_DATA, ATTR_NAME.c_str(), ATTR_VALUE.c_str());
+            AwsMetricsAttributeKeyEventName, AttrValue.c_str(), AwsMetricsAttributeKeyEventData, AttrName.c_str(), AttrValue.c_str());
         ASSERT_EQ(queue.SerializeToJson(), serializedQueue);
     }
 
@@ -177,8 +177,8 @@ namespace AWSMetrics
     {
         MetricsQueue queue;
         MetricsEvent metrics;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
-        metrics.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
+        metrics.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue));
         queue.AddMetrics(metrics);
 
         std::ostream stream(nullptr);
@@ -194,7 +194,7 @@ namespace AWSMetrics
 
         AZStd::string testFilePath = GetDefaultTestFilePath();
         AZStd::string serializedQueue = AZStd::string::format("[{\"%s\":\"%s\",\"%s\":{\"%s\":\"%s\"}}]",
-            METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE.c_str(), METRICS_ATTRIBUTE_KEY_EVENT_DATA, ATTR_NAME.c_str(), ATTR_VALUE.c_str());
+            AwsMetricsAttributeKeyEventName, AttrValue.c_str(), AwsMetricsAttributeKeyEventData, AttrName.c_str(), AttrValue.c_str());
         ASSERT_TRUE(CreateFile(testFilePath, serializedQueue));
         
         ASSERT_TRUE(queue.ReadFromJson(testFilePath));
@@ -220,7 +220,7 @@ namespace AWSMetrics
 
         AZStd::string testFilePath = GetDefaultTestFilePath();
         AZStd::string serializedQueue = AZStd::string::format("{\"%s\":\"%s\",\"%s\":{\"%s\":\"%s\"}}",
-            METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE.c_str(), METRICS_ATTRIBUTE_KEY_EVENT_DATA, ATTR_NAME.c_str(), ATTR_VALUE.c_str());
+            AwsMetricsAttributeKeyEventName, AttrValue.c_str(), AwsMetricsAttributeKeyEventData, AttrName.c_str(), AttrValue.c_str());
         ASSERT_TRUE(CreateFile(testFilePath, serializedQueue));
 
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -230,62 +230,37 @@ namespace AWSMetrics
         ASSERT_TRUE(RemoveFile(testFilePath));
     }
 
-     TEST_F(MetricsQueueTest, ReadFromString_DefaultandCustomMetricsAttributes_Success)
-    {
-        MetricsQueue queue;
-
-        AZStd::string serializedQueue = AZStd::string::format(
-            "[{\"%s\":\"%s\",\"%s\":{\"%s\":\"%s\"}}]", METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE.c_str(),
-            METRICS_ATTRIBUTE_KEY_EVENT_DATA, ATTR_NAME.c_str(), ATTR_VALUE.c_str());
-
-        ASSERT_TRUE(queue.ReadFromString(serializedQueue));
-        ASSERT_EQ(queue.GetNumMetrics(), 1);
-    }
-
-    TEST_F(MetricsQueueTest, ReadFromString_InvalidJsonFormat_Fail)
-    {
-        MetricsQueue queue;
-
-        AZStd::string serializedQueue = AZStd::string::format(
-            "{\"%s\":\"%s\",\"%s\":{\"%s\":\"%s\"}}", METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE.c_str(),
-            METRICS_ATTRIBUTE_KEY_EVENT_DATA, ATTR_NAME.c_str(), ATTR_VALUE.c_str());
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        ASSERT_FALSE(queue.ReadFromString(serializedQueue));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-    }
-
     TEST_F(MetricsQueueTest, PopBufferedEventsByServiceLimits_QueueSizeExceedsLimits_BufferedEventsAddedToNewQueue)
     {
         MetricsEvent metrics;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
         int sizeOfEachMetrics = metrics.GetSizeInBytes();
 
         MetricsQueue queue;
         queue.AddMetrics(metrics);
      
-        for (int index = 0; index < NUM_TEST_METRICS - 1; ++index)
+        for (int index = 0; index < NumTestMetrics - 1; ++index)
         {
             MetricsEvent newMetrics;
-            newMetrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+            newMetrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
 
             queue.AddMetrics(newMetrics);
         }
 
         MetricsQueue anotherQueue;
         // Payload size limit is hit.
-        queue.PopBufferedEventsByServiceLimits(anotherQueue, sizeOfEachMetrics, NUM_TEST_METRICS + 1);
+        queue.PopBufferedEventsByServiceLimits(anotherQueue, sizeOfEachMetrics, NumTestMetrics + 1);
 
-        ASSERT_EQ(queue.GetNumMetrics(), NUM_TEST_METRICS - 1);
-        ASSERT_EQ(queue.GetSizeInBytes(), sizeOfEachMetrics * (NUM_TEST_METRICS - 1));
+        ASSERT_EQ(queue.GetNumMetrics(), NumTestMetrics - 1);
+        ASSERT_EQ(queue.GetSizeInBytes(), sizeOfEachMetrics * (NumTestMetrics - 1));
         ASSERT_EQ(anotherQueue.GetNumMetrics(), 1);
         ASSERT_EQ(anotherQueue.GetSizeInBytes(), sizeOfEachMetrics);
 
         // Records count limit is hit.
-        queue.PopBufferedEventsByServiceLimits(anotherQueue, sizeOfEachMetrics * NUM_TEST_METRICS, 1);
+        queue.PopBufferedEventsByServiceLimits(anotherQueue, sizeOfEachMetrics * NumTestMetrics, 1);
 
-        ASSERT_EQ(queue.GetNumMetrics(), NUM_TEST_METRICS - 2);
-        ASSERT_EQ(queue.GetSizeInBytes(), sizeOfEachMetrics * (NUM_TEST_METRICS - 2));
+        ASSERT_EQ(queue.GetNumMetrics(), NumTestMetrics - 2);
+        ASSERT_EQ(queue.GetSizeInBytes(), sizeOfEachMetrics * (NumTestMetrics - 2));
         ASSERT_EQ(anotherQueue.GetNumMetrics(), 2);
         ASSERT_EQ(anotherQueue.GetSizeInBytes(), sizeOfEachMetrics * 2);
     }

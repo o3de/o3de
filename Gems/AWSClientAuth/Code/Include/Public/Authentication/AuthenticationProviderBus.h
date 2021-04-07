@@ -152,7 +152,7 @@ namespace AWSClientAuth
         //! @param userCode Unique code generated for user for the session.
         //! @param verificationUrl Verification URL to enter user code in after signing in for the provider.
         //! @param codeExpiresInSeconds Code expiry in seconds.
-        virtual void OnDeviceCodeGrantSignInSuccess(const AZStd::string& userCode, const AZStd::string& verificationUrl, const int codeExpiresInSeconds)
+        virtual void OnDeviceCodeGrantSignInSuccess(const AZStd::string& userCode, const AZStd::string& verificationUrl, int codeExpiresInSeconds)
         {
             AZ_UNUSED(userCode);
             AZ_UNUSED(verificationUrl);

@@ -14,39 +14,14 @@ REM
 :: Launches Wing IDE and the DccScriptingInterface Project Files
 
 :: Set up window
-TITLE Lumberyard DCC Scripting Interface GEM WingIDE 7x
+TITLE O3DE DCCsi Launch WingIDE 7x
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
-
-echo.
-echo _____________________________________________________________________
-echo.
-echo ~    Setting up LY DCCsi WingIDE Dev Env...
-echo _____________________________________________________________________
-echo.
 
 :: Store current dir
 %~d0
 cd %~dp0
 PUSHD %~dp0
-
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
-
-SET ABS_PATH=%~dp0
-echo     ABS_PATH = %ABS_PATH%
-
-:: WingIDE version Major
-set WING_VERSION_MAJOR=7
-echo     WING_VERSION_MAJOR = %WING_VERSION_MAJOR%
-
-:: WingIDE version Major
-set WING_VERSION_MINOR=1
-echo     WING_VERSION_MINOR = %WING_VERSION_MINOR%
-
-:: note the changed path from IDE to Pro
-set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %WING_VERSION_MAJOR%.%WING_VERSION_MINOR%
-echo     WINGHOME = %WINGHOME%
 
 :: Constant Vars (Global)
 :: global debug (propogates)
@@ -68,39 +43,58 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
-CALL %~dp0\Env.bat
-
+:: Initialize env
+CALL %~dp0\Env_Core.bat
+CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_Maya.bat
+CALL %~dp0\Env_Substance.bat
+CALL %~dp0\Env_WingIDE.bat
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    WingIDE Version %WING_VERSION_MAJOR%.%WING_VERSION_MINOR%
+echo ~ WingIDE Version %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
+echo ~ Launching O3DE %LY_PROJECT% project in WingIDE %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR% ...
 echo _____________________________________________________________________
 echo.
 
-SET WING_PROJ=%DCCSIG_PATH%\Solutions\.wing\DCCsi_%WING_VERSION_MAJOR%x.wpr
-echo     WING_PROJ = %WING_PROJ%
+echo     LY_DEV = %LY_DEV%
 
+:: shared location for default O3DE python location
+set DCCSI_PYTHON_INSTALL=%LY_DEV%\Python
+echo     DCCSI_PYTHON_INSTALL = %DCCSI_PYTHON_INSTALL%
+
+:: Wing and other IDEs probably prefer access directly to the python.exe
+set DCCSI_PY_IDE = %DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python
+echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+:: ide and debugger plug
+set DCCSI_PY_BASE=%DCCSI_PY_IDE%\python.exe
+echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
+
+:: ide and debugger plug
+set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
+echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
-echo _____________________________________________________________________
-echo.
-echo ~ Launching %LY_PROJECT% project in WingIDE %WING_VERSION_MAJOR%.%WING_VERSION_MINOR% ...
-echo _____________________________________________________________________
-echo.
+
+:: Change to root dir
+CD /D %LY_PROJECT_PATH%
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
-   start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"
+    start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"
 ) ELSE (
-   Where wing.exe 2> NUL
-   IF ERRORLEVEL 1 (
-      echo wing.exe could not be found
-      pause
-   ) ELSE (
-      start "" wing.exe "%WING_PROJ%"
-   )
+    Where wing.exe 2> NUL
+    IF ERRORLEVEL 1 (
+        echo wing.exe could not be found
+            pause
+    ) ELSE (
+        start "" wing.exe "%WING_PROJ%"
+    )
 )
-
-ENDLOCAL
 
 :: Return to starting directory
 POPD

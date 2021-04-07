@@ -43,7 +43,7 @@ namespace AzFramework
         friend class ScriptComponentReplicaChunk;
         friend class ScriptPropertyDataSet;
 
-        // Helper struct to keep track of a a ScriptConctext
+        // Helper struct to keep track of a a ScriptContext
         // and the entityTableReference. Mainly used for
         // calling in to functions in LUA where we want
         // to push in the table reference as the first parameter
@@ -117,6 +117,8 @@ namespace AzFramework
             bool AssignValue(AZ::ScriptDataContext& scriptDataContext, const AZStd::string& propertyName);
             bool InspectValue(AZ::ScriptContext* scriptContext) const;            
 
+            // Methods used for unit tests
+            const AZ::ScriptProperty* GetShimmedScriptProperty() const { return m_shimmedScriptProperty; }
         private:
 
             // This value will be used if we have a networked property, but don't have a valid chunk yet.
@@ -201,6 +203,10 @@ namespace AzFramework
 
         void OnPropertyUpdate(AZ::ScriptProperty*const& scriptProperty, const GridMate::TimeContext& tc);
         bool OnInvokeRPC(AZStd::string functionName, AZStd::vector< AZ::ScriptProperty*> properties, const GridMate::RpcContext& rpcContext);
+
+        // Methods used for unit tests
+        const AZ::ScriptProperty* FindScriptProperty(const AZStd::string& name) const;
+
 
     private:
 

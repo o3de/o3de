@@ -26,8 +26,8 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
-        static constexpr const char* ENGINE_CONFIG_FILE_PATH = "@root@/engine.json";
-        static constexpr const char* ENGINE_VERSION_JSON_KEY = "LumberyardVersion";
+        static constexpr const char* EngineConfigFilePath = "@root@/engine.json";
+        static constexpr const char* EngineVersionJsonKey = "LumberyardVersion";
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
         if (!fileIO)
@@ -37,7 +37,7 @@ namespace AWSMetrics
         }
 
         char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        if (!fileIO->ResolvePath(ENGINE_CONFIG_FILE_PATH, resolvedPath, AZ_MAX_PATH_LEN))
+        if (!fileIO->ResolvePath(EngineConfigFilePath, resolvedPath, AZ_MAX_PATH_LEN))
         {
             AZ_Error("AWSMetrics", false, "Failed to resolve the engine config file directory");
             return "";
@@ -52,7 +52,7 @@ namespace AWSMetrics
         }
 
         rapidjson_ly::Document& jsonDoc = readOutcome.GetValue();
-        auto memberIt = jsonDoc.FindMember(ENGINE_VERSION_JSON_KEY);
+        auto memberIt = jsonDoc.FindMember(EngineVersionJsonKey);
         if (memberIt != jsonDoc.MemberEnd())
         {
             return memberIt->value.GetString();

@@ -725,6 +725,14 @@ namespace AssetProcessor
             {
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
                 m_stateData->GetProductsByJobID(job.m_jobID, products);
+
+                auto keepProductsIter = description.m_productsToKeepOnFailure.find(jobEntry.m_jobKey.toUtf8().constData());
+                if (keepProductsIter != description.m_productsToKeepOnFailure.end())
+                {
+                    // keep some products
+                    AZStd::erase_if(products, [&](const auto& entry) { return !keepProductsIter->second.contains(entry.m_subID); });
+                }
+
                 DeleteProducts(products);
             }
         }
@@ -1569,7 +1577,7 @@ namespace AssetProcessor
         // this might be interesting, but only if its a known product!
         // the dictionary in statedata stores only the relative path, not the platform.
         // which means right now we have, for example
-        // d:/SamplesProject/Cache/ios/textures/favorite.tga
+        // d:/AutomatedTesting/Cache/ios/textures/favorite.tga
         // ^^^^^^^^^  projectroot
         // ^^^^^^^^^^^^^^^^^^^^^ cache root
         // ^^^^^^^^^^^^^^^^^^^^^^^^^ platform root
@@ -1701,7 +1709,19 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Deleting file %s because either its source file %s was removed or the builder did not emit this job.\n", fullProductPath.toUtf8().constData(), source.m_sourceName.c_str());
 
                 AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, fullProductPath.toUtf8().data());
-                successfullyRemoved &= QFile::remove(fullProductPath);
+                bool wasRemoved = QFile::remove(fullProductPath);
+
+                // Another process may be holding on to the file currently, so wait for a very brief period and then retry deleting
+                // once in case we were just too quick to delete the file before.
+                if (!wasRemoved)
+                {
+                    constexpr int DeleteRetryDelay = 10;
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(DeleteRetryDelay));
+                    wasRemoved = QFile::remove(fullProductPath);
+                }
+
+                successfullyRemoved &= wasRemoved;
+
                 AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, fullProductPath.toUtf8().data(), false);
 
                 if(productFileInfo.absoluteDir().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).empty())
@@ -1805,10 +1825,9 @@ namespace AssetProcessor
                         {
                             if (!DeleteProducts(products))
                             {
-                                // try again in a while.  Achieve this by recycling the item back into
-                                // the queue as if it had been deleted again.
-                                CheckSource(FileEntry(normalizedPath, true));
-                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!. \n", normalizedPath.toUtf8().constData());
+                                // DeleteProducts will make an attempt to retry deleting each product
+                                // We can't just re-queue the whole file with CheckSource because we're deleting bits from the database as we go
+                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s.\n", normalizedPath.toUtf8().constData());
                             }
                         }
                         else

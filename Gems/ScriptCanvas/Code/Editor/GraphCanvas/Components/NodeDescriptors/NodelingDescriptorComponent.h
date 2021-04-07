@@ -16,25 +16,41 @@
 #include <Editor/GraphCanvas/Components/NodeDescriptors/NodeDescriptorComponent.h>
 
 #include <ScriptCanvas/Core/NodelingBus.h>
+#include <ScriptCanvas/Core/GraphBus.h>
 
 namespace ScriptCanvasEditor
 {
     class NodelingDescriptorComponent
         : public NodeDescriptorComponent
         , public ScriptCanvas::NodelingNotificationBus::Handler
+        , private ScriptCanvas::GraphNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(NodelingDescriptorComponent, "{9EFA1DA5-2CCB-4A6D-AA84-BD121C75773A}", NodeDescriptorComponent);
         static void Reflect(AZ::ReflectContext* reflectContext);
         
-        NodelingDescriptorComponent();
-        ~NodelingDescriptorComponent() = default;
-        
+        NodelingDescriptorComponent(NodeDescriptorType descriptorType = NodeDescriptorType::FunctionDefinitionNode);
+        ~NodelingDescriptorComponent() override = default;
+
+        void Deactivate() override;
+
         // NodelingNotificationBus
         void OnNameChanged(const AZStd::string& newName) override;
         ////
 
+        // GraphCanvas::GraphNotificationBus
+        void OnConnectionComplete(const AZ::EntityId& connectionId) override;
+        void OnDisonnectionComplete(const AZ::EntityId& connectionId) override;
+        void OnPreConnectionRemoved(const AZ::EntityId& connectionId) override;
+        ////
+
     protected:
         void OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId) override;
+
+        ScriptCanvas::Slot* GetSlotFromNodeling(const AZ::EntityId& connectionId);
+
+        AZ::Entity* m_slotEntity;
+        ScriptCanvas::Slot* m_removedSlot;
+        AZ::EntityId m_removedSlotId;
     };
 }

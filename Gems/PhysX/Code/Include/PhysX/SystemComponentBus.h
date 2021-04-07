@@ -13,8 +13,8 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 
 namespace AzPhysics
 {
@@ -47,11 +47,6 @@ namespace PhysX
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         virtual ~SystemRequests() = default;
-
-        /// Creates a new scene (world).
-        /// @param sceneDesc Scene descriptor specifying details of scene to be created.
-        /// @return Pointer to the created scene.
-        virtual physx::PxScene* CreateScene(physx::PxSceneDesc& sceneDesc) = 0;
 
         /// Creates a new convex mesh.
         /// @param vertices Pointer to beginning of vertex data.

@@ -66,8 +66,7 @@ namespace ScriptCanvas
                 PropertyFields GetPropertyFields() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
 

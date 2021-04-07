@@ -13,19 +13,15 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/function/function_base.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Material/EditorMaterialComponentUtil.h>
 #endif
 
 namespace AZ
@@ -44,7 +40,9 @@ namespace AZ
             public:
                 AZ_CLASS_ALLOCATOR(MaterialPropertyInspector, AZ::SystemAllocator, 0);
 
-                explicit MaterialPropertyInspector(const AZ::Data::AssetId& assetId, PropertyChangedCallback propertyChangedCallback, QWidget* parent = nullptr);
+                explicit MaterialPropertyInspector(
+                    const AZStd::string& slotName, const AZ::Data::AssetId& assetId, PropertyChangedCallback propertyChangedCallback,
+                    QWidget* parent = nullptr);
                 ~MaterialPropertyInspector() override;
 
                 bool LoadMaterial();
@@ -55,6 +53,14 @@ namespace AZ
                 void Populate();
 
                 void SetOverrides(const MaterialPropertyOverrideMap& propertyOverrideMap);
+
+                bool SaveMaterial() const;
+                bool SaveMaterialToSource() const;
+                bool HasMaterialSource() const;
+                bool HasMaterialParentSource() const;
+                void OpenMaterialSourceInEditor() const;
+                void OpenMaterialParentSourceInEditor() const;
+                const EditorMaterialComponentUtil::MaterialEditData& GetEditData() const;
 
             private:
 
@@ -76,20 +82,19 @@ namespace AZ
                 // Tracking the property that is actively being edited in the inspector
                 const AtomToolsFramework::DynamicProperty* m_activeProperty = {};
 
+                AZStd::string m_slotName;
                 AZ::Data::AssetId m_materialAssetId = {};
-                MaterialPropertyOverrideMap m_materialPropertyOverrideMap = {};
+                EditorMaterialComponentUtil::MaterialEditData m_editData;
                 PropertyChangedCallback m_propertyChangedCallback = {};
-                AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset = {};
-                AZ::Data::Asset<AZ::RPI::MaterialTypeAsset> m_materialTypeAsset = {};
-                AZ::Data::Asset<AZ::RPI::MaterialAsset> m_parentMaterialAsset = {};
                 AZ::Data::Instance<AZ::RPI::Material> m_materialInstance = {};
-                AZ::RPI::MaterialTypeSourceData m_materialTypeSourceData;
                 AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>> m_editorFunctors = {};
                 AZ::RPI::MaterialPropertyFlags m_dirtyPropertyFlags = {};
                 AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups = {};
             };
 
-            bool OpenInspectorDialog(const AZ::Data::AssetId& assetId, MaterialPropertyOverrideMap propertyOverrideMap, PropertyChangedCallback propertyChangedCallback);
+            bool OpenInspectorDialog(
+                const AZStd::string& slotName, const AZ::Data::AssetId& assetId, MaterialPropertyOverrideMap propertyOverrideMap,
+                PropertyChangedCallback propertyChangedCallback);
         } // namespace EditorMaterialComponentInspector
     } // namespace Render
 } // namespace AZ

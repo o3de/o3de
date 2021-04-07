@@ -37,6 +37,7 @@ set(FILES
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
     API/EditorAnimationSystemRequestBus.h
+    API/EditorEntityAPI.h
     API/EditorLevelNotificationBus.h
     API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
@@ -48,6 +49,8 @@ set(FILES
     API/ViewPaneOptions.h
     Application/Ticker.h
     Application/Ticker.cpp
+    Application/EditorEntityManager.cpp
+    Application/EditorEntityManager.h
     Application/ToolsApplication.cpp
     Application/ToolsApplication.h
     Asset/AssetDebugInfo.h
@@ -448,6 +451,7 @@ set(FILES
     UI/UICore/WidgetHelpers.h
     Undo/UndoSystem.cpp
     Undo/UndoSystem.h
+    Undo/UndoCacheInterface.h
     Commands/ComponentModeCommand.cpp
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.h
@@ -584,8 +588,8 @@ set(FILES
     AssetBrowser/Search/SearchWidget.ui
     AssetBrowser/Thumbnails/FolderThumbnail.cpp
     AssetBrowser/Thumbnails/FolderThumbnail.h
-    AssetBrowser/Thumbnails/AssetBrowserProductThumbnail.cpp
-    AssetBrowser/Thumbnails/AssetBrowserProductThumbnail.h
+    AssetBrowser/Thumbnails/ProductThumbnail.cpp
+    AssetBrowser/Thumbnails/ProductThumbnail.h
     AssetBrowser/Thumbnails/SourceThumbnail.cpp
     AssetBrowser/Thumbnails/SourceThumbnail.h
     AssetBrowser/AssetPicker/AssetPickerDialog.cpp
@@ -609,6 +613,8 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/EditorPrefabComponent.h
+    Prefab/EditorPrefabComponent.cpp
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
@@ -623,6 +629,8 @@ set(FILES
     Prefab/Instance/Instance.cpp
     Prefab/Instance/InstanceSerializer.h
     Prefab/Instance/InstanceSerializer.cpp
+    Prefab/Instance/InstanceEntityScrubber.h
+    Prefab/Instance/InstanceEntityScrubber.cpp
     Prefab/Instance/InstanceEntityIdMapper.h
     Prefab/Instance/InstanceEntityIdMapper.cpp
     Prefab/Instance/InstanceEntityMapper.h
@@ -666,6 +674,8 @@ set(FILES
     Prefab/Template/Template.cpp
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
+    Prefab/PrefabUndoCache.cpp
+    Prefab/PrefabUndoCache.h
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
@@ -673,6 +683,7 @@ set(FILES
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
+    UI/Outliner/EntityOutlinerWidgetInterface.h
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
     UI/Outliner/EntityOutlinerCacheBus.h
@@ -695,8 +706,10 @@ set(FILES
     UI/Prefab/PrefabEditInterface.h
     UI/Prefab/PrefabEditManager.h
     UI/Prefab/PrefabEditManager.cpp
+    UI/Prefab/PrefabIntegrationBus.h
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
+    UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
     PythonTerminal/ScriptHelpDialog.cpp

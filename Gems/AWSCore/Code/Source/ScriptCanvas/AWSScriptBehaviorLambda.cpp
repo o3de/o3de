@@ -17,6 +17,7 @@
 #include <aws/lambda/model/InvokeRequest.h>
 #include <aws/lambda/model/InvokeResult.h>
 #include <aws/core/utils/Outcome.h>
+#include <aws/core/auth/AWSCredentials.h>
 #include <aws/core/utils/memory/stl/AWSStringStream.h>
 
 #include <Framework/AWSApiRequestJob.h>

@@ -15,9 +15,11 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
+#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
+#include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 
 namespace AZ::SceneAPI::FbxSceneBuilder
@@ -94,5 +96,35 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         }
 
         return true;
+    }
+
+    GetMeshDataFromParentResult GetMeshDataFromParent(AssImpSceneNodeAppendedContext& context)
+    {
+        const DataTypes::IGraphObject* const parentData =
+            context.m_scene.GetGraph().GetNodeContent(context.m_currentGraphPosition).get();
+
+        if (!parentData)
+        {
+            AZ_Error(Utilities::ErrorWindow, false,
+                "GetMeshDataFromParent failed because the parent was null, it should only be called with a valid parent node");
+            return AZ::Failure(Events::ProcessingResult::Failure);
+        }
+
+        if (!parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
+        {
+            // The parent node may contain bone information and not mesh information, skip it.
+            if (parentData->RTTI_IsTypeOf(SceneData::GraphData::BoneData::TYPEINFO_Uuid()))
+            {
+                // Return the ignore processing result in the failure.
+                return AZ::Failure(Events::ProcessingResult::Ignored);
+            }
+            AZ_Error(Utilities::ErrorWindow, false,
+                "Tried to get mesh data from parent for non-mesh parent data");
+            return AZ::Failure(Events::ProcessingResult::Failure);
+        }
+
+        const SceneData::GraphData::MeshData* const parentMeshData =
+            azrtti_cast<const SceneData::GraphData::MeshData* const>(parentData);
+        return AZ::Success(parentMeshData);
     }
 }

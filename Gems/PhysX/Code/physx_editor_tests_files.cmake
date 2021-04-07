@@ -15,6 +15,8 @@ set(FILES
     Source/SystemComponent.h
     Tests/PhysXTestCommon.cpp
     Tests/PhysXTestCommon.h
+    Tests/ColliderScalingTests.cpp
+    Tests/DebugDrawTests.cpp
     Tests/EditorTestUtilities.cpp
     Tests/EditorTestUtilities.h
     Tests/PhysXEditorTest.cpp

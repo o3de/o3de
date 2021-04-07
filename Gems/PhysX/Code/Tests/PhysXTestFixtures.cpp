@@ -16,6 +16,7 @@
 #include <Tests/PhysXTestCommon.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 //hook in the test environments for Gem::PhysX.Tests
 #include <PhysXTestEnvironment.h>
@@ -39,12 +40,9 @@ namespace PhysX
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-            sceneConfiguration.m_legacyId = Physics::DefaultPhysicsWorldId;
+            sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
             m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
-            if (m_defaultScene = physicsSystem->GetScene(m_testSceneHandle))
-            {
-                m_defaultScene->GetLegacyWorld()->SetEventHandler(this);
-            }
+            m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
         }
 
         Physics::DefaultWorldBus::Handler::BusConnect();
@@ -67,34 +65,9 @@ namespace PhysX
         m_testSceneHandle = AzPhysics::InvalidSceneHandle;
         TestUtils::ResetPhysXSystem();
     }
-
-    AZStd::shared_ptr<Physics::World> PhysXDefaultWorldTest::GetDefaultWorld()
+    
+    AzPhysics::SceneHandle PhysXDefaultWorldTest::GetDefaultSceneHandle() const
     {
-        return m_defaultScene->GetLegacyWorld();
-    }
-
-    void PhysXDefaultWorldTest::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerEnter, triggerEvent);
-    }
-
-    void PhysXDefaultWorldTest::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerExit, triggerEvent);
-    }
-
-    void PhysXDefaultWorldTest::OnCollisionBegin(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionBegin, event);
-    }
-
-    void PhysXDefaultWorldTest::OnCollisionPersist(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionPersist, event);
-    }
-
-    void PhysXDefaultWorldTest::OnCollisionEnd(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionEnd, event);
+        return m_testSceneHandle;
     }
 }

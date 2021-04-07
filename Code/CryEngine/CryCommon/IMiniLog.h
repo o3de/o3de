@@ -40,9 +40,9 @@ struct IMiniLog
     // <interfuscator:shuffle>
     // Notes:
     //   You only have to implement this function.
-    virtual void LogV (const ELogType nType, const char* szFormat, va_list args) PRINTF_PARAMS(3, 0) = 0;
+    virtual void LogV(ELogType nType, const char* szFormat, va_list args) PRINTF_PARAMS(3, 0) = 0;
 
-    virtual void LogV (const ELogType nType, int flags, const char* szFormat, va_list args) PRINTF_PARAMS(4, 0) = 0;
+    virtual void LogV(ELogType nType, int flags, const char* szFormat, va_list args) PRINTF_PARAMS(4, 0) = 0;
 
     // Summary:
     //   Logs using type.
@@ -123,8 +123,8 @@ struct CNullMiniLog
     //   The default implementation just won't do anything
     //##@{
     void LogV([[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV([[maybe_unused]] const ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV ([[maybe_unused]] const ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
+    void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
+    void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
     //##@}
 };
 

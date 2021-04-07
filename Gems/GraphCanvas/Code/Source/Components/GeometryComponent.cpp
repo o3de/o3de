@@ -165,7 +165,7 @@ namespace GraphCanvas
         m_saveData.SignalDirty();
     }
 
-    void GeometryComponent::OnItemChange(const AZ::EntityId& entityId, QGraphicsItem::GraphicsItemChange change, const QVariant& value)
+    void GeometryComponent::OnItemChange([[maybe_unused]] const AZ::EntityId& entityId, QGraphicsItem::GraphicsItemChange change, const QVariant& value)
     {
         AZ_Assert(entityId == GetEntityId(), "EIDs should match");
 

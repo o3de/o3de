@@ -69,9 +69,8 @@ namespace AZ
                 return true;
             }
 
-            void CommandListFactory::ShutdownObject(CommandList& commandList, bool isPoolShutdown)
+            void CommandListFactory::ShutdownObject(CommandList& commandList, [[maybe_unused]] bool isPoolShutdown)
             {
-                (void)isPoolShutdown;
                 commandList.Shutdown();
             }
 

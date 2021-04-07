@@ -25,6 +25,11 @@
 
 namespace AzToolsFramework
 {
+    namespace UndoSystem
+    {
+        class UndoCacheInterface;
+    }
+
     typedef AZStd::vector<AZ::EntityId> EntityList;
 
     // transform command specializes undo to just care about the transform of an entity instead of the entire thing, for performance.
@@ -54,6 +59,9 @@ namespace AzToolsFramework
 
         CapturedTransforms m_priorTransforms;
         CapturedTransforms m_nextTransforms;
+
+    private:
+        UndoCacheInterface* m_undoCacheInterface;
     };
 }
 

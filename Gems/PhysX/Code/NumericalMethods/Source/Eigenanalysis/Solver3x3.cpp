@@ -31,7 +31,7 @@ namespace NumericalMethods::Eigenanalysis
         // A        - the symmetric input matrix
         // a<ij>    - the upper elements of the matrix (0 <= i <= j <= 2).
         // B        - a matrix derived from A, such that B = (A - q*I)/p where
-        //                p = sqrt( tr( (A−q∗I)^2 ) / 6 )
+        //                p = sqrt( tr( (A-q*I)^2 ) / 6 )
         //                q = tr(A) / 3
         // beta<i>  - the eigenvalues of B (0 <= i <= 2)
         // alpha<i> - the eigenvalues of A (not explicit, stored in the result) (0 <= i <= 2)

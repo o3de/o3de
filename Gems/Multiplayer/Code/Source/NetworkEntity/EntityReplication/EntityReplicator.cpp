@@ -50,8 +50,8 @@ namespace Multiplayer
         , m_onEntityDirtiedHandler([this]() { OnEntityDirtiedEvent(); })
         , m_onSendRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
         , m_onForwardRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
-        , m_onSendClientAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
-        , m_onForwardClientAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
+        , m_onSendAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
+        , m_onForwardAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
         , m_onEntityStopHandler([this](const ConstNetworkEntityHandle &) { OnEntityRemovedEvent(); })
         , m_proxyRemovalEvent([this] { OnProxyRemovalTimedEvent(); }, AZ::Name("ProxyRemovalTimedEvent"))
     {
@@ -73,11 +73,11 @@ namespace Multiplayer
         m_prefabEntityIdSet = true;
     }
 
-    void EntityReplicator::Reset(NetEntityRole a_RemoteNetworkRole)
+    void EntityReplicator::Reset(NetEntityRole remoteNetworkRole)
     {
         AZ::EntityBus::Handler::BusDisconnect();
 
-        m_remoteNetworkRole = a_RemoteNetworkRole;
+        m_remoteNetworkRole = remoteNetworkRole;
 
         m_propertyPublisher = nullptr;
         m_propertySubscriber = nullptr;
@@ -86,8 +86,8 @@ namespace Multiplayer
 
         m_onSendRpcHandler.Disconnect();
         m_onForwardRpcHandler.Disconnect();
-        m_onSendClientAutonomousRpcHandler.Disconnect();
-        m_onForwardClientAutonomousRpcHandler.Disconnect();
+        m_onSendAutonomousRpcHandler.Disconnect();
+        m_onForwardAutonomousRpcHandler.Disconnect();
         m_onEntityStopHandler.Disconnect();
     }
 
@@ -136,8 +136,8 @@ namespace Multiplayer
             m_propertyPublisher = nullptr;
         }
 
-        if (m_remoteNetworkRole == NetEntityRole::ServerAuthority ||
-            m_remoteNetworkRole == NetEntityRole::ClientAutonomous)
+        if (m_remoteNetworkRole == NetEntityRole::Authority ||
+            m_remoteNetworkRole == NetEntityRole::Autonomous)
         {
             m_propertySubscriber = AZStd::make_unique<PropertySubscriber>(m_replicationManager, m_netBindComponent);
         }
@@ -165,9 +165,9 @@ namespace Multiplayer
     {
         // Make sure all handlers are detached first
         m_onSendRpcHandler.Disconnect();
-        m_onSendClientAutonomousRpcHandler.Disconnect();
+        m_onSendAutonomousRpcHandler.Disconnect();
         m_onForwardRpcHandler.Disconnect();
-        m_onForwardClientAutonomousRpcHandler.Disconnect();
+        m_onForwardAutonomousRpcHandler.Disconnect();
 
         if (auto localEntity = m_entityHandle.GetEntity())
         {
@@ -176,49 +176,49 @@ namespace Multiplayer
 
             switch (GetBoundLocalNetworkRole())
             {
-            case NetEntityRole::ServerAuthority:
+            case NetEntityRole::Authority:
             {
-                if (GetRemoteNetworkRole() == NetEntityRole::ClientSimulation || GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous)
+                if (GetRemoteNetworkRole() == NetEntityRole::Client || GetRemoteNetworkRole() == NetEntityRole::Autonomous)
                 {
-                    m_onSendRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientSimulationRpcEvent());
-                    if (GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous)
+                    m_onSendRpcHandler.Connect(netBindComponent->GetSendAuthorityToClientRpcEvent());
+                    if (GetRemoteNetworkRole() == NetEntityRole::Autonomous)
                     {
-                        m_onSendClientAutonomousRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientAutonomousRpcEvent());
+                        m_onSendAutonomousRpcHandler.Connect(netBindComponent->GetSendAuthorityToAutonomousRpcEvent());
                     }
                 }
-                else if (GetRemoteNetworkRole() == NetEntityRole::ServerSimulation)
+                else if (GetRemoteNetworkRole() == NetEntityRole::Server)
                 {
-                    m_onForwardRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientSimulationRpcEvent());
+                    m_onForwardRpcHandler.Connect(netBindComponent->GetSendAuthorityToClientRpcEvent());
                 }
             }
             break;
-            case NetEntityRole::ServerSimulation:
+            case NetEntityRole::Server:
             {
-                if (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority)
+                if (GetRemoteNetworkRole() == NetEntityRole::Authority)
                 {
-                    m_onSendRpcHandler.Connect(netBindComponent->GetSendServerSimulationToServerAuthorityRpcEvent());
-                    m_onForwardRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientSimulationRpcEvent());
-                    m_onForwardClientAutonomousRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientAutonomousRpcEvent());
+                    m_onSendRpcHandler.Connect(netBindComponent->GetSendServerToAuthorityRpcEvent());
+                    m_onForwardRpcHandler.Connect(netBindComponent->GetSendAuthorityToClientRpcEvent());
+                    m_onForwardAutonomousRpcHandler.Connect(netBindComponent->GetSendAuthorityToAutonomousRpcEvent());
                 }
-                else if (GetRemoteNetworkRole() == NetEntityRole::ClientSimulation)
+                else if (GetRemoteNetworkRole() == NetEntityRole::Client)
                 {
                     // Listen for these to forward the rpc along to the other Client replicators
-                    m_onSendRpcHandler.Connect(netBindComponent->GetSendServerAuthorityToClientSimulationRpcEvent());
+                    m_onSendRpcHandler.Connect(netBindComponent->GetSendAuthorityToClientRpcEvent());
                 }
-                // NOTE: e_ClientAutonomous is not connected to e_ServerProxy, it is always connected to an e_ServerAuthority
-                AZ_Assert(GetRemoteNetworkRole() != NetEntityRole::ClientAutonomous, "Unexpected autonomous remote role")
+                // NOTE: e_Autonomous is not connected to e_ServerProxy, it is always connected to an e_Authority
+                AZ_Assert(GetRemoteNetworkRole() != NetEntityRole::Autonomous, "Unexpected autonomous remote role")
             }
             break;
-            case NetEntityRole::ClientSimulation:
+            case NetEntityRole::Client:
             {
-                // Nothing allowed, no ClientSimulation to Server communication
+                // Nothing allowed, no Client to Server communication
             }
             break;
-            case NetEntityRole::ClientAutonomous:
+            case NetEntityRole::Autonomous:
             {
-                if (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority)
+                if (GetRemoteNetworkRole() == NetEntityRole::Authority)
                 {
-                    m_onSendRpcHandler.Connect(netBindComponent->GetSendClientAutonomousToServerAuthorityRpcEvent());
+                    m_onSendRpcHandler.Connect(netBindComponent->GetSendAutonomousToAuthorityRpcEvent());
                 }
             }
             break;
@@ -282,11 +282,11 @@ namespace Multiplayer
             NetBindComponent* netBindComponent = m_netBindComponent;
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
 
-            bool isServerAuthority = (GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority)
+            bool isAuthority = (GetBoundLocalNetworkRole() == NetEntityRole::Authority)
                                   && (GetBoundLocalNetworkRole() == netBindComponent->GetNetEntityRole());
-            bool isClientSimulation = GetRemoteNetworkRole() == NetEntityRole::ClientSimulation;
-            bool isClientAutonomous = GetBoundLocalNetworkRole() == NetEntityRole::ClientAutonomous;
-            if (isServerAuthority || isClientSimulation || isClientAutonomous)
+            bool isClient = GetRemoteNetworkRole() == NetEntityRole::Client;
+            bool isAutonomous = GetBoundLocalNetworkRole() == NetEntityRole::Autonomous;
+            if (isAuthority || isClient || isAutonomous)
             {
                 ret = true;
             }
@@ -297,10 +297,10 @@ namespace Multiplayer
     bool EntityReplicator::OwnsReplicatorLifetime() const
     {
         bool ret(false);
-        if (GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority
-            || (GetBoundLocalNetworkRole() == NetEntityRole::ServerSimulation
-                && (GetRemoteNetworkRole() == NetEntityRole::ClientSimulation
-                    || GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous)))
+        if (GetBoundLocalNetworkRole() == NetEntityRole::Authority
+            || (GetBoundLocalNetworkRole() == NetEntityRole::Server
+                && (GetRemoteNetworkRole() == NetEntityRole::Client
+                    || GetRemoteNetworkRole() == NetEntityRole::Autonomous)))
         {
             ret = true;
         }
@@ -310,11 +310,11 @@ namespace Multiplayer
     bool EntityReplicator::RemoteManagerOwnsEntityLifetime() const
     {
         bool ret(false);
-        bool isServerSimulation = (GetBoundLocalNetworkRole() == NetEntityRole::ServerSimulation)
-                               && (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority);
-        bool isClientSimulation = (GetBoundLocalNetworkRole() == NetEntityRole::ClientSimulation)
-                               || (GetBoundLocalNetworkRole() == NetEntityRole::ClientAutonomous);
-        if (isServerSimulation || isClientSimulation)
+        bool isServer = (GetBoundLocalNetworkRole() == NetEntityRole::Server)
+                               && (GetRemoteNetworkRole() == NetEntityRole::Authority);
+        bool isClient = (GetBoundLocalNetworkRole() == NetEntityRole::Client)
+                               || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
+        if (isServer || isClient)
         {
             ret = true;
         }
@@ -346,7 +346,7 @@ namespace Multiplayer
         m_replicationManager.AddReplicatorToPendingRemoval(*this);
 
         m_onForwardRpcHandler.Disconnect();
-        m_onForwardClientAutonomousRpcHandler.Disconnect();
+        m_onForwardAutonomousRpcHandler.Disconnect();
 
         m_onEntityStopHandler.Disconnect();
     }
@@ -492,32 +492,32 @@ namespace Multiplayer
         RpcValidationResult result = RpcValidationResult::DropRpcAndDisconnect;
         switch (entityRpcMessage.GetRpcDeliveryType())
         {
-        case RpcDeliveryType::ServerAuthorityToClientSimulation:
+        case RpcDeliveryType::AuthorityToClient:
         {
-            if (((GetBoundLocalNetworkRole() == NetEntityRole::ClientSimulation) || (GetBoundLocalNetworkRole() == NetEntityRole::ClientAutonomous))
-                && (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority))
+            if (((GetBoundLocalNetworkRole() == NetEntityRole::Client) || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous))
+                && (GetRemoteNetworkRole() == NetEntityRole::Authority))
             {
                 // We are a local client, and we are connected to server, aka AuthorityToClient
                 result = RpcValidationResult::HandleRpc;
             }
-            if ((GetBoundLocalNetworkRole() == NetEntityRole::ServerSimulation)
-                && (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority))
+            if ((GetBoundLocalNetworkRole() == NetEntityRole::Server)
+                && (GetRemoteNetworkRole() == NetEntityRole::Authority))
             {
                 // We are on a server, and we received this message from another server, therefore we should forward this to any connected clients
                 result = RpcValidationResult::ForwardToClient;
             }
         }
         break;
-        case RpcDeliveryType::ServerAuthorityToClientAutonomous:
+        case RpcDeliveryType::AuthorityToAutonomous:
         {
-            if ((GetBoundLocalNetworkRole() == NetEntityRole::ClientAutonomous)
-                && (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority))
+            if ((GetBoundLocalNetworkRole() == NetEntityRole::Autonomous)
+                && (GetRemoteNetworkRole() == NetEntityRole::Authority))
             {
                 // We are an autonomous client, and we are connected to server, aka AuthorityToAutonomous
                 result = RpcValidationResult::HandleRpc;
             }
-            if ((GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority)
-                && (GetRemoteNetworkRole() == NetEntityRole::ServerSimulation))
+            if ((GetBoundLocalNetworkRole() == NetEntityRole::Authority)
+                && (GetRemoteNetworkRole() == NetEntityRole::Server))
             {
                 // We are on a server, and we received this message from another server, therefore we should forward this to our autonomous player
                 // This can occur if we've recently migrated 
@@ -525,10 +525,10 @@ namespace Multiplayer
             }
         }
         break;
-        case RpcDeliveryType::ClientAutonomousToServerAuthority:
+        case RpcDeliveryType::AutonomousToAuthority:
         {
-            if ((GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority)
-                && (GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous))
+            if ((GetBoundLocalNetworkRole() == NetEntityRole::Authority)
+                && (GetRemoteNetworkRole() == NetEntityRole::Autonomous))
             {
                 if (IsMarkedForRemoval())
                 {
@@ -552,10 +552,10 @@ namespace Multiplayer
             }
         }
         break;
-        case RpcDeliveryType::ServerSimulationToServerAuthority:
+        case RpcDeliveryType::ServerToAuthority:
         {
-            if ((GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority)
-                && (GetRemoteNetworkRole() == NetEntityRole::ServerSimulation))
+            if ((GetBoundLocalNetworkRole() == NetEntityRole::Authority)
+                && (GetRemoteNetworkRole() == NetEntityRole::Server))
             {
                 // if we're marked for removal, then we should forward to whomever now owns this entity
                 if (IsMarkedForRemoval())
@@ -583,8 +583,8 @@ namespace Multiplayer
         }
         if (result == RpcValidationResult::DropRpcAndDisconnect)
         {
-            bool isLocalServer = (GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority) || (GetBoundLocalNetworkRole() == NetEntityRole::ServerSimulation);
-            bool isRemoteServer = (GetRemoteNetworkRole() == NetEntityRole::ServerAuthority) || (GetRemoteNetworkRole() == NetEntityRole::ServerSimulation);
+            bool isLocalServer = (GetBoundLocalNetworkRole() == NetEntityRole::Authority) || (GetBoundLocalNetworkRole() == NetEntityRole::Server);
+            bool isRemoteServer = (GetRemoteNetworkRole() == NetEntityRole::Authority) || (GetRemoteNetworkRole() == NetEntityRole::Server);
             if (isLocalServer && isRemoteServer)
             {
                 // Demote this to just a drop message, we didn't want to handle the message, but we don't want to drop the connection
@@ -680,19 +680,19 @@ namespace Multiplayer
         case RpcValidationResult::ForwardToClient:
         {
             ScopedForwardingMessage forwarding(*this);
-            m_netBindComponent->GetSendServerAuthorityToClientSimulationRpcEvent().Signal(entityRpcMessage);
+            m_netBindComponent->GetSendAuthorityToClientRpcEvent().Signal(entityRpcMessage);
             return true;
         }
         case RpcValidationResult::ForwardToAutonomous:
         {
             ScopedForwardingMessage forwarding(*this);
-            m_netBindComponent->GetSendServerAuthorityToClientAutonomousRpcEvent().Signal(entityRpcMessage);
+            m_netBindComponent->GetSendAuthorityToAutonomousRpcEvent().Signal(entityRpcMessage);
             return true;
         }
         case RpcValidationResult::ForwardToAuthority:
         {
             ScopedForwardingMessage forwarding(*this);
-            m_netBindComponent->GetSendServerSimulationToServerAuthorityRpcEvent().Signal(entityRpcMessage);
+            m_netBindComponent->GetSendServerToAuthorityRpcEvent().Signal(entityRpcMessage);
             return true;
         }
         default:

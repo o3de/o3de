@@ -64,6 +64,9 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
+            AZ_RTTI(PrefabUndoEntityUpdate, "{6D60C5A6-9535-45B3-8897-E5F6382FDC93}", PrefabUndoBase);
+            AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdate, AZ::SystemAllocator, 0);
+
             explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
             void Capture(
@@ -88,7 +91,6 @@ namespace AzToolsFramework
             {
                 ADD,
                 REMOVE,
-                UPDATE,
                 LINKSTATUS
             };
 
@@ -99,11 +101,13 @@ namespace AzToolsFramework
                 const TemplateId& targetId,
                 const TemplateId& sourceId,
                 const InstanceAlias& instanceAlias,
-                const LinkId& linkId = InvalidLinkId,
-                const Link& link = Link());
+                const PrefabDomReference linkDom = PrefabDomReference(),
+                const LinkId linkId = InvalidLinkId);
 
             void Undo() override;
             void Redo() override;
+
+            LinkId GetLinkId();
 
         private:
             //used for special cases of add/delete
@@ -116,10 +120,35 @@ namespace AzToolsFramework
             InstanceAlias m_instanceAlias;
 
             LinkId m_linkId;
-            Link m_link;  //data for delete/update
+            PrefabDom m_linkDom;  //data for delete/update
             LinkStatus m_linkStatus;
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
+
+        class PrefabUndoLinkUpdate
+            : public PrefabUndoBase
+        {
+        public:
+            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName);
+
+            //capture for add/remove
+            void Capture(
+                const PrefabDom& patch,
+                const LinkId linkId = InvalidLinkId);
+
+            void Undo() override;
+            void Redo() override;
+
+        private:
+            void UpdateLink(PrefabDom& linkDom);
+
+            LinkId m_linkId;
+            PrefabDom m_linkDomNext;  //data for delete/update
+            PrefabDom m_linkDomPrevious; //stores the data for undo
+
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+        };
+
     }
 }

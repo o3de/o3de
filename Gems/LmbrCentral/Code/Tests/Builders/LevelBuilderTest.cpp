@@ -133,7 +133,6 @@ protected:
         ProductPathDependencySet productDependencies;
 
         ASSERT_TRUE(OpenTestFile(fileName, fileStream));
-        ASSERT_FALSE(worker.PopulateLevelDataDependenciesHelper(&fileStream, productDependencies));
         ASSERT_EQ(productDependencies.size(), 0);
     }
 
@@ -162,101 +161,6 @@ protected:
     AZ::ComponentApplication::Descriptor m_descriptor;
     AZ::ComponentDescriptor* m_simpleAssetRefDescriptor;
 };
-
-TEST_F(LevelBuilderTest, TestLevelData_RequestOptionalLevelDependencies_ExpectedDependenciesAdded)
-{
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productDependencies;
-
-    const AZStd::string levelPath("some/levelName/");
-    AZStd::string levelPak;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "level.pak", levelPak);
-
-    worker.PopulateOptionalLevelDependencies(levelPak, productDependencies);
-
-    AZStd::string coverPath;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "terrain/cover.ctc", coverPath);
-
-    AZStd::string occluderPath;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "occluder.ocm", occluderPath);
-
-    AZStd::string levelCfgPath;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "level.cfg", levelCfgPath);
-
-    AZStd::string autoResourceList;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "auto_resourcelist.txt", autoResourceList);
-
-    AZStd::string mergedMeshesList;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "terrain/merged_meshes_sectors/mmrm_used_meshes.lst", mergedMeshesList);
-
-    AZStd::string levelXmlPath;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "levelName.xml", levelXmlPath);
-
-    AZStd::string terrainTexturePakPath;
-    AzFramework::StringFunc::Path::Join(levelPath.c_str(), "terraintexture.pak", terrainTexturePakPath);
-
-    ASSERT_THAT(productDependencies,
-        testing::UnorderedElementsAre(
-            ProductPathDependency(coverPath.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(occluderPath.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(levelCfgPath.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(autoResourceList.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(mergedMeshesList.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(terrainTexturePakPath.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile),
-            ProductPathDependency(levelXmlPath.c_str(), AssetBuilderSDK::ProductPathDependencyType::SourceFile))
-    );
-}
-
-TEST_F(LevelBuilderTest, TestLevelData_MultipleDependencies)
-{
-    // Tests processing a leveldata.xml file containing multiple dependencies
-    // Should output 5 dependencies
-
-    IO::FileIOStream fileStream;
-    
-    ASSERT_TRUE(OpenTestFile("leveldata_test1.xml", fileStream));
-
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productDependencies;
-
-    ASSERT_TRUE(worker.PopulateLevelDataDependenciesHelper(&fileStream, productDependencies));
-    ASSERT_THAT(productDependencies, 
-        testing::UnorderedElementsAre(
-            ProductPathDependency("materials/natural/terrain/am_mud1.mtl", AssetBuilderSDK::ProductPathDependencyType::ProductFile),
-            ProductPathDependency("materials/natural/terrain/am_grass1.mtl", AssetBuilderSDK::ProductPathDependencyType::ProductFile),
-            ProductPathDependency("materials/natural/terrain/am_rockcliff1.mtl", AssetBuilderSDK::ProductPathDependencyType::ProductFile),
-            ProductPathDependency("materials/natural/terrain/am_path_hexagon.mtl", AssetBuilderSDK::ProductPathDependencyType::ProductFile),
-            ProductPathDependency("materials/natural/terrain/am_rockground.mtl", AssetBuilderSDK::ProductPathDependencyType::ProductFile))
-        );
-}
-
-TEST_F(LevelBuilderTest, TestLevelData_NoDependencies)
-{
-    // Tests processing a leveldata.xml file that has no dependencies
-    // Should output 0 dependencies
-
-    IO::FileIOStream fileStream;
-
-    ASSERT_TRUE(OpenTestFile("leveldata_test2.xml", fileStream));
-
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productDependencies;
-
-    ASSERT_TRUE(worker.PopulateLevelDataDependenciesHelper(&fileStream, productDependencies));
-    ASSERT_EQ(productDependencies.size(), 0);
-}
-
-TEST_F(LevelBuilderTest, TestLevelData_InvalidStream)
-{
-    // Tests passing an invalid stream in
-    // Should output 0 dependencies and return false
-
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productDependencies;
-
-    ASSERT_FALSE(worker.PopulateLevelDataDependenciesHelper(nullptr, productDependencies));
-    ASSERT_EQ(productDependencies.size(), 0);
-}
 
 TEST_F(LevelBuilderTest, TestLevelData_EmptyFile)
 {
@@ -472,30 +376,3 @@ TEST_F(LevelBuilderTest, DynamicSlice_HasEmptySimpleAssetReference_HasNoProductD
     ASSERT_EQ(productPathDependencies.size(), 0);
 }
 
-
-// Disabling due to OpenTestFile race condition
-TEST_F(LevelBuilderTest, DISABLED_VegetationMap_HasFileReference_HasCorrectProductDependency)
-{
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productPathDependencies;
-
-    AZ::IO::FileIOStream fileStream;
-    ASSERT_TRUE(OpenTestFile("VegetationMap_oneFileReferences.dat", fileStream));
-
-    worker.PopulateVegetationMapDataDependenciesHelper(&fileStream, productPathDependencies);
-    ASSERT_EQ(productPathDependencies.size(), 1);
-    ASSERT_THAT(productPathDependencies, testing::UnorderedElementsAre(
-        ProductPathDependency{ "dummytestbasefolder/dummytestfolder/dummygeometryfile.cgf", AssetBuilderSDK::ProductPathDependencyType::ProductFile }));
-}
-
-TEST_F(LevelBuilderTest, DISABLED_VegetationMap_HasNoFileReference_HasCorrectProductDependency)
-{
-    LevelBuilderWorker worker;
-    ProductPathDependencySet productPathDependencies;
-
-    AZ::IO::FileIOStream fileStream;
-    ASSERT_TRUE(OpenTestFile("VegetationMap_noFileReferences.dat", fileStream));
-
-    worker.PopulateVegetationMapDataDependenciesHelper(&fileStream, productPathDependencies);
-    ASSERT_EQ(productPathDependencies.size(), 0);
-}

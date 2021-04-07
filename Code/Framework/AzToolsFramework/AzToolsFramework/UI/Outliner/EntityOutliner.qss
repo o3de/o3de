@@ -44,11 +44,11 @@ AzToolsFramework--EntityOutlinerCheckBox
     border: 0px solid transparent;
     border-radius: 0px;
     spacing: 0px;
-    padding: 0px;
+    padding: 0;
+	padding-right: 2px;
     line-height: 0px;
     font-size: 0px;
     margin: 0px;
-    background-color: transparent;
     max-height: 20px;
     max-width: 18px;
 }
@@ -58,14 +58,15 @@ AzToolsFramework--EntityOutlinerCheckBox::indicator
     width: 16px;
     height: 16px;
     image-position:center;
-
     border: 1px solid transparent;
     image: none;
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
     font-size: 0px;
-    margin: 0;
+    margin: 3px 0 0 0;
+    max-width: 18px;
+    width: 18px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:checked
@@ -83,7 +84,6 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:checked
 {
     background: rgba(0, 0, 0, 80);
     border-radius: 5px;
-    padding-bottom: 1px;
 }
 
 
@@ -99,6 +99,7 @@ AzToolsFramework--EntityOutlinerCheckBox#Visibility::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:unchecked
 {
     image: url(:/visibility_on.svg);
+	margin-top: 3px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverridden::indicator:checked
@@ -109,6 +110,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverridden::indicator:checked
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverridden::indicator:unchecked
 {
     image: url(:/visibility_on_transparent.svg);
+	margin-top: 3px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:checked
@@ -116,6 +118,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverriddenHover::indicator:checked
 {
     image: url(:/visibility_default_hover.svg);
+	margin-top: 3px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:unchecked
@@ -123,6 +126,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverriddenHover::indicator:unchecked
 {
     image: url(:/visibility_on_hover.svg);
+	margin-top: 3px;
 }
 
 
@@ -132,6 +136,7 @@ AzToolsFramework--EntityOutlinerCheckBox#Lock::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixed::indicator:checked
 {
     image: url(:/lock_on.svg);
+	margin-top: 1px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#Lock::indicator:unchecked
@@ -148,6 +153,7 @@ AzToolsFramework--EntityOutlinerCheckBox#LockOverridden::indicator:checked
 AzToolsFramework--EntityOutlinerCheckBox#LockOverridden::indicator:unchecked
 {
     image: url(:/lock_default_transparent.svg);
+	margin-top: 1px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:checked
@@ -155,6 +161,7 @@ AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockOverriddenHover::indicator:checked
 {
     image: url(:/lock_on_hover.svg);
+	margin-top: 1px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:unchecked
@@ -162,4 +169,5 @@ AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#LockOverriddenHover::indicator:unchecked
 {
     image: url(:/lock_default_hover.svg);
+	margin-top: 1px;
 }

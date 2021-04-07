@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
@@ -20,6 +21,7 @@
 
 namespace AzToolsFramework
 {
+
     class PrefabEditorEntityOwnershipInterface
     {
     public:
@@ -33,7 +35,13 @@ namespace AzToolsFramework
         //! /return The optional reference to the prefab created.
         virtual Prefab::InstanceOptionalReference CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
-            const AZStd::string& filePath, Prefab::Instance& instanceToParentUnder) = 0;
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
         virtual Prefab::InstanceOptionalReference GetRootPrefabInstance() = 0;
+
+        virtual bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
+        virtual bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
+        
+        virtual void StartPlayInEditor() = 0;
+        virtual void StopPlayInEditor() = 0;
     };
 }

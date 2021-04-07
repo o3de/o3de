@@ -16,33 +16,31 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace AZ
 {
     class Vector3;
 }
 
+namespace AzPhysics
+{
+    struct SimulatedBody;
+    struct RigidBodyConfiguration;
+    struct RigidBody;
+}
+
 namespace Physics
 {
-    class World;
     class WorldBody;
-    class RigidBody;
-    class RigidBodyStatic;
     class Shape;
     class Material;
     class MaterialSelection;
     class MaterialConfiguration;
-    class MaterialLibraryAsset;
-    class WorldBodyConfiguration;
-    class RigidBodyConfiguration;
     class ColliderConfiguration;
     class ShapeConfiguration;
     class JointLimitConfiguration;
     class Joint;
-    struct RayCastRequest;
-    struct RayCastResult;
-    struct ShapeCastRequest;
-    struct ShapeCastResult;
     class CharacterConfiguration;
     class Character;
 
@@ -71,9 +69,9 @@ namespace Physics
     /// Settings structure provided to DebugDrawPhysics to drive debug drawing behavior.
     struct DebugDrawSettings
     {
-        using DebugDrawLineCallback = AZStd::function<void(const DebugDrawVertex& from, const DebugDrawVertex& to, const AZStd::shared_ptr<WorldBody>& body, float thickness, void* udata)>;
-        using DebugDrawTriangleCallback = AZStd::function<void(const DebugDrawVertex& a, const DebugDrawVertex& b, const DebugDrawVertex& c, const AZStd::shared_ptr<WorldBody>& body, void* udata)>;
-        using DebugDrawTriangleBatchCallback = AZStd::function<void(const DebugDrawVertex* verts, AZ::u32 numVerts, const AZ::u32* indices, AZ::u32 numIndices, const AZStd::shared_ptr<WorldBody>& body, void* udata)>;
+        using DebugDrawLineCallback = AZStd::function<void(const DebugDrawVertex& from, const DebugDrawVertex& to, const AZStd::shared_ptr<AzPhysics::SimulatedBody>& body, float thickness, void* udata)>;
+        using DebugDrawTriangleCallback = AZStd::function<void(const DebugDrawVertex& a, const DebugDrawVertex& b, const DebugDrawVertex& c, const AZStd::shared_ptr<AzPhysics::SimulatedBody>& body, void* udata)>;
+        using DebugDrawTriangleBatchCallback = AZStd::function<void(const DebugDrawVertex* verts, AZ::u32 numVerts, const AZ::u32* indices, AZ::u32 numIndices, const AZStd::shared_ptr<AzPhysics::SimulatedBody>& body, void* udata)>;
 
         DebugDrawLineCallback           m_drawLineCB;                               ///< Required user callback for line drawing.
         DebugDrawTriangleBatchCallback  m_drawTriBatchCB;                           ///< User callback for triangle batch drawing. Required if \ref m_isWireframe is false.
@@ -84,8 +82,8 @@ namespace Physics
         bool                            m_drawBodyTransforms = false;               ///< If enabled, draws transform axes for each body.
         void*                           m_udata = nullptr;                          ///< Platform specific and/or gem specific optional user data pointer.
 
-        void DrawLine(const DebugDrawVertex& from, const DebugDrawVertex& to, const AZStd::shared_ptr<WorldBody>& body, float thickness = 1.0f) { m_drawLineCB(from, to, body, thickness, m_udata); }
-        void DrawTriangleBatch(const DebugDrawVertex* verts, AZ::u32 numVerts, const AZ::u32* indices, AZ::u32 numIndices, const AZStd::shared_ptr<WorldBody>& body) { m_drawTriBatchCB(verts, numVerts, indices, numIndices, body, m_udata); }
+        void DrawLine(const DebugDrawVertex& from, const DebugDrawVertex& to, const AZStd::shared_ptr<AzPhysics::SimulatedBody>& body, float thickness = 1.0f) { m_drawLineCB(from, to, body, thickness, m_udata); }
+        void DrawTriangleBatch(const DebugDrawVertex* verts, AZ::u32 numVerts, const AZ::u32* indices, AZ::u32 numIndices, const AZStd::shared_ptr<AzPhysics::SimulatedBody>& body) { m_drawTriBatchCB(verts, numVerts, indices, numIndices, body, m_udata); }
     };
 
     /// An interface to get the default physics world for systems that do not support multiple worlds.
@@ -95,8 +93,8 @@ namespace Physics
     public:
         using MutexType = AZStd::mutex;
 
-        /// Returns the Default world managed by a relevant system.
-        virtual AZStd::shared_ptr<World> GetDefaultWorld() = 0;
+        //! Returns a handle to the Default Scene managed by a relevant system.
+        virtual AzPhysics::SceneHandle GetDefaultSceneHandle() const = 0;
     };
 
     typedef AZ::EBus<DefaultWorldRequests> DefaultWorldBus;
@@ -108,8 +106,8 @@ namespace Physics
     public:
         using MutexType = AZStd::mutex;
 
-        /// Returns the Editor world managed editor system component.
-        virtual AZStd::shared_ptr<World> GetEditorWorld() = 0;
+        //! Returns a handle to the Editor Scene managed by editor system component.
+        virtual AzPhysics::SceneHandle GetEditorSceneHandle() const = 0;
     };
     using EditorWorldBus = AZ::EBus<EditorWorldRequests>;
 
@@ -142,8 +140,6 @@ namespace Physics
         //////////////////////////////////////////////////////////////////////////
         //// General Physics
 
-        virtual AZStd::unique_ptr<RigidBodyStatic> CreateStaticRigidBody(const WorldBodyConfiguration& configuration) = 0;
-        virtual AZStd::unique_ptr<RigidBody> CreateRigidBody(const RigidBodyConfiguration& configuration) = 0;
         virtual AZStd::shared_ptr<Shape> CreateShape(const ColliderConfiguration& colliderConfiguration, const ShapeConfiguration& configuration) = 0;
 
         /// Adds an appropriate collider component to the entity based on the provided shape configuration.
@@ -177,7 +173,7 @@ namespace Physics
         virtual AZStd::vector<AZ::TypeId> GetSupportedJointTypes() = 0;
         virtual AZStd::shared_ptr<JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) = 0;
         virtual AZStd::shared_ptr<Joint> CreateJoint(const AZStd::shared_ptr<JointLimitConfiguration>& configuration,
-            Physics::WorldBody* parentBody, Physics::WorldBody* childBody) = 0;
+            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody) = 0;
         /// Generates joint limit visualization data in appropriate format to pass to DebugDisplayRequests draw functions.
         /// @param configuration The joint configuration to generate visualization data for.
         /// @param parentRotation The rotation of the joint's parent body (in the same frame as childRotation).
@@ -272,11 +268,7 @@ namespace Physics
         /// Creates the physics representation used to handle basic character interactions (also known as a character
         /// controller).
         virtual AZStd::unique_ptr<Character> CreateCharacter(const CharacterConfiguration& characterConfig,
-            const ShapeConfiguration& shapeConfig, World& world) = 0;
-
-        /// Performs any updates related to character controllers which are per-world and not per-character, such as
-        /// computing character-character interactions.
-        virtual void UpdateCharacters(World& world, float deltaTime) = 0;
+            const ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) = 0;
     };
 
     typedef AZ::EBus<CharacterSystemRequests> CharacterSystemRequestBus;
@@ -300,17 +292,5 @@ namespace Physics
     };
 
     typedef AZ::EBus<SystemDebugRequests> SystemDebugRequestBus;
-
-    class SystemNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-        virtual ~SystemNotifications() {}
-
-        virtual void OnWorldCreated(World* /*world*/) {};
-        virtual void OnPreWorldDestroy(World* /*world*/) {};
-    };
-
-    using SystemNotificationBus = AZ::EBus<SystemNotifications>;
 
 } // namespace Physics

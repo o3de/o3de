@@ -82,11 +82,11 @@ namespace PhysX
         //! Raycast against this shape.
         //! @param request Ray parameters in world space.
         //! @param worldTransform World transform of this shape.
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform) override;
 
         //! Raycast against this shape using local coordinates.
         //! @param request Ray parameters in local space.
-        Physics::RayCastHit RayCastLocal(const Physics::RayCastRequest& localSpaceRequest) override;
+        AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) override;
 
         //! Retrieve this shape AABB.
         //! @param worldTransform World transform of this shape.
@@ -102,7 +102,7 @@ namespace PhysX
         void ExtractMaterialsFromPxShape();
         physx::PxScene* GetScene() const;
         void ReleasePxShape(physx::PxShape* shape);
-        Physics::RayCastHit RayCastInternal(const Physics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose);
+        AzPhysics::SceneQueryHit RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose);
 
         using PxShapeUniquePtr = AZStd::unique_ptr<physx::PxShape, AZStd::function<void(physx::PxShape*)>>;
         Shape() = default;

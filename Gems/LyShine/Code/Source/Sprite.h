@@ -19,6 +19,9 @@
 #include "TextureAtlas/TextureAtlasBus.h"
 #include "TextureAtlas/TextureAtlasNotificationBus.h"
 
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class CSprite
     : public ISprite
@@ -68,6 +71,8 @@ public: // member functions
 
     // ~TextureAtlasNotifications
 
+    AZ::Data::Instance<AZ::RPI::Image> GetImage() { return m_image; }
+
 public: // static member functions
 
     static void Initialize();
@@ -82,6 +87,9 @@ public: // static member functions
 private:
     static bool LoadTexture(const string& texturePathname, const string& pathname, ITexture*& texture);
     static void ReleaseTexture(ITexture*& texture);
+
+    static bool LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI::Image>& image);
+    static void ReleaseImage(AZ::Data::Instance<AZ::RPI::Image>& image);
 
 protected: // member functions
 
@@ -105,6 +113,7 @@ private: // data
     string m_texturePathname;
     Borders m_borders;
     ITexture* m_texture;
+    AZ::Data::Instance<AZ::RPI::Image> m_image;
     int m_numSpriteSheetCellTags;                       //!< Number of Cell child-tags in sprite XML; unfortunately needed to help with serialization.
 
     //! Texture atlas data

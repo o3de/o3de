@@ -21,7 +21,7 @@
 
 #include <Source/Components/SurfaceDataColliderComponent.h>
 
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 
@@ -59,11 +59,15 @@ namespace UnitTest
             // Only initialize our mock physics to return a raycast result if the test wants the point to hit.
             if (setHitResult)
             {
+                m_rayCastHit.m_resultFlags = AzPhysics::SceneQuery::ResultFlags::Distance |
+                    AzPhysics::SceneQuery::ResultFlags::Position |
+                    AzPhysics::SceneQuery::ResultFlags::Normal |
+                    AzPhysics::SceneQuery::ResultFlags::BodyHandle;
                 m_rayCastHit.m_distance = 0.0f;
                 m_rayCastHit.m_position = hitResult.m_position;
                 m_rayCastHit.m_normal = hitResult.m_normal;
-                // Just need to set this to a non-null value, it gets checked vs null but not otherwise used.
-                m_rayCastHit.m_body = reinterpret_cast<Physics::WorldBody*>(1);
+                // Just need to set this to a non-null value, it gets checked vs InvalidSimulatedBodyHandle but not otherwise used.
+                m_rayCastHit.m_bodyHandle = AzPhysics::SimulatedBodyHandle(AZ::Crc32(12345), 0);
             }
         }
 
@@ -76,14 +80,14 @@ namespace UnitTest
         void EnablePhysics() override {}
         void DisablePhysics() override {}
         bool IsPhysicsEnabled() const override { return true; }
-        Physics::WorldBody* GetWorldBody() override { return nullptr; }
+        AzPhysics::SimulatedBody* GetWorldBody() override { return nullptr; }
 
         // Functional mocks to mock out the data needed by the component
         AZ::Aabb GetAabb() const override { return m_aabb; }
-        Physics::RayCastHit RayCast([[maybe_unused]] const Physics::RayCastRequest& request) override { return m_rayCastHit; }
+        AzPhysics::SceneQueryHit RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& request) override { return m_rayCastHit; }
 
         AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-        Physics::RayCastHit m_rayCastHit;
+        AzPhysics::SceneQueryHit m_rayCastHit;
 
     };
 

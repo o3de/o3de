@@ -32,20 +32,8 @@ namespace AZ
         {
         }
 
-        void CheckerboardColorResolvePass::Init()
-        {
-            m_constantsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(AZ::Name("m_constants"));
-            AZ_Assert(m_constantsIndex.IsValid(), "Unable to find m_constants in shader");
-            m_initialized = true;
-        }
-
         void CheckerboardColorResolvePass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (!m_initialized)
-            {
-                Init();
-            }
-
             // Import input attachments since some of them might be from last frame
             auto attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
             for (const RPI::PassAttachmentBinding& binding : m_attachmentBindings)

@@ -23,8 +23,6 @@ set(FILES
     Tests/LmbrCentralReflectionTest.cpp
     Tests/LmbrCentralTest.cpp
     Tests/ShapeGeometryUtilTest.cpp
-    Tests/ShapeTestUtils.cpp
-    Tests/ShapeTestUtils.h
     Tests/SpawnerComponentTest.cpp
     Tests/SplineComponentTests.cpp
     Tests/DiskShapeTest.cpp

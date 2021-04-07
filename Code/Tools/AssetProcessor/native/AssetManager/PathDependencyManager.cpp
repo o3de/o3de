@@ -464,8 +464,8 @@ namespace AssetProcessor
                 if (isExactDependency)
                 {
                     // Search for products in the cache platform folder
-                    // Example: If a path dependency is "test1.asset" in SamplesProject on PC, this would search 
-                    //  "SamplesProject/Cache/pc/test1.asset"
+                    // Example: If a path dependency is "test1.asset" in AutomatedTesting on PC, this would search 
+                    //  "AutomatedTesting/Cache/pc/test1.asset"
                     m_stateData->GetProductsByProductName(productNameWithPlatform, productInfoContainer);
 
                 }

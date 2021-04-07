@@ -28,7 +28,7 @@ namespace UnitTest
         : public ToolsApplicationFixture
     {
     protected:
-        using EntityPtr = AZStd::unique_ptr<AZ::Entity>;
+        using EntityPtr = AZ::Entity*;
 
         AZ::ComponentId m_colliderComponentId;
 
@@ -48,9 +48,7 @@ namespace UnitTest
 
             AzToolsFramework::SelectEntity(entityId);
 
-            AZStd::unique_ptr<AZ::Entity> ptr;
-            ptr.reset(entity);
-            return AZStd::move(ptr);
+            return entity;
         }
 
         // Needed to support ViewportUi request calls.

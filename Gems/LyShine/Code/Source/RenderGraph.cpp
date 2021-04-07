@@ -15,6 +15,8 @@
 #include "RenderGraph.h"
 #include "UiRenderer.h"
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+
 #ifndef _RELEASE
 #include <AzFramework/IO/LocalFileIO.h>
 #endif
@@ -40,7 +42,7 @@ namespace LyShine
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    PrimitiveListRenderNode::PrimitiveListRenderNode(ITexture* texture,
+    PrimitiveListRenderNode::PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture,
         bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState)
         : RenderNode(RenderNodeType::PrimitiveList)
         , m_numTextures(1)
@@ -56,8 +58,9 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    PrimitiveListRenderNode::PrimitiveListRenderNode(ITexture* texture, ITexture* maskTexture,
-        bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState)
+    PrimitiveListRenderNode::PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture,
+        const AZ::Data::Instance<AZ::RPI::Image>& maskTexture, bool isClampTextureMode, bool isTextureSRGB,
+        bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState)
         : RenderNode(RenderNodeType::PrimitiveList)
         , m_numTextures(2)
         , m_isTextureSRGB(isTextureSRGB)
@@ -82,6 +85,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void PrimitiveListRenderNode::Render(UiRenderer* uiRenderer)
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for reference for future phase (masks/render targets)
         for (int i = 0; i < m_numTextures; ++i)
         {
             uiRenderer->SetTexture(m_textures[i].m_texture, i, m_textures[i].m_isClampTextureMode);
@@ -123,6 +127,60 @@ namespace LyShine
         {
             renderer->SetSrgbWrite(true);
         }
+#endif
+        if (!uiRenderer->IsReady())
+        {
+            return;
+        }
+
+        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
+        const UiRenderer::UiShaderData& uiShaderData = uiRenderer->GetUiShaderData();
+
+        dynamicDraw->SetShaderVariant(uiShaderData.m_shaderVariantDefault);
+
+        // Set up per draw SRG
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
+
+        // Set textures
+        uint32_t isClampTextureMode = 0;
+        for (int i = 0; i < m_numTextures; ++i)
+        {
+            const AZ::RHI::ImageView* imageView = m_textures[i].m_texture ? m_textures[i].m_texture->GetImageView() : nullptr;
+
+            if (!imageView)
+            {
+                // Default to white texture
+                auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+                imageView = image->GetImageView();
+            }
+
+            if (imageView)
+            {
+                drawSrg->SetImageView(uiShaderData.m_imageInputIndex, imageView, i);
+                if (m_textures[i].m_isClampTextureMode)
+                {
+                    isClampTextureMode |= (1 << i);
+                }
+            }
+        }
+
+        // Set sampler state per texture
+        drawSrg->SetConstant(uiShaderData.m_isClampInputIndex, isClampTextureMode);
+
+        // Set projection matrix
+        drawSrg->SetConstant(uiShaderData.m_viewProjInputIndex, uiRenderer->GetModelViewProjectionMatrix());
+
+        drawSrg->Compile();
+
+        // Add the indexed primitives to the dynamic draw context for drawing
+        //
+        // [LYSHINE_ATOM_TODO][ATOM-15073] - need to combine into a single DrawIndexed call to take advantage of the draw call
+        // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
+        // now we could combine the vertices ourselves
+        for (const IRenderer::DynUiPrimitive& primitive : m_primitives)
+        {
+            dynamicDraw->DrawIndexed(primitive.m_vertices, primitive.m_numVertices, primitive.m_indices, primitive.m_numIndices, AZ::RHI::IndexFormat::Uint16, drawSrg);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +201,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    int PrimitiveListRenderNode::GetOrAddTexture(ITexture* texture, bool isClampTextureMode)
+    int PrimitiveListRenderNode::GetOrAddTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode)
     {
         // Check if node is already using this texture
         int texUnit = FindTexture(texture, isClampTextureMode);
@@ -167,7 +225,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    int PrimitiveListRenderNode::FindTexture(ITexture* texture, bool isClampTextureMode) const
+    int PrimitiveListRenderNode::FindTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode) const
     {
         for (int i = 0; i < m_numTextures; ++i)
         {
@@ -580,24 +638,35 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginMask(bool isMaskingEnabled, bool useAlphaTest, bool drawBehind, bool drawInFront)
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
+
         // this uses pool allocator
         MaskRenderNode* maskRenderNode = new MaskRenderNode(m_currentMask, isMaskingEnabled, useAlphaTest, drawBehind, drawInFront);
 
         m_currentMask = maskRenderNode;
         m_renderNodeListStack.push(&maskRenderNode->GetMaskRenderNodeList());
+#else
+        AZ_UNUSED(drawInFront);
+        AZ_UNUSED(drawBehind);
+        AZ_UNUSED(useAlphaTest);
+        AZ_UNUSED(isMaskingEnabled);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::StartChildrenForMask()
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZ_Assert(m_currentMask, "Calling StartChildrenForMask while not defining a mask");
         m_renderNodeListStack.pop();
         m_renderNodeListStack.push(&m_currentMask->GetContentRenderNodeList());
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::EndMask()
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZ_Assert(m_currentMask, "Calling EndMask while not defining a mask");
         if (m_currentMask)
         {
@@ -618,12 +687,14 @@ namespace LyShine
                 m_renderNodeListStack.top()->push_back(newMaskRenderNode);
             }
         }
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
         const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor)
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         // this uses pool allocator
         RenderTargetRenderNode* renderTargetRenderNode = new RenderTargetRenderNode(
             m_currentRenderTarget, renderTargetHandle, renderTargetDepthSurface,
@@ -632,11 +703,19 @@ namespace LyShine
         m_currentRenderTarget = renderTargetRenderNode;
         m_renderNodeListStack.push(&m_currentRenderTarget->GetChildRenderNodeList());
         m_renderTargetNestLevel++;
+#else
+        AZ_UNUSED(clearColor);
+        AZ_UNUSED(viewportSize);
+        AZ_UNUSED(viewportTopLeft);
+        AZ_UNUSED(renderTargetDepthSurface);
+        AZ_UNUSED(renderTargetHandle);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::EndRenderToTexture()
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZ_Assert(m_currentRenderTarget, "Calling EndRenderToTexture while not defining a render target node");
         if (m_currentRenderTarget)
         {
@@ -650,9 +729,9 @@ namespace LyShine
             m_renderNodeListStack.pop();
             m_renderTargetNestLevel--;
         }
+#endif
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::AddPrimitive(
         IRenderer::DynUiPrimitive* primitive,
         ITexture* texture,
@@ -660,6 +739,19 @@ namespace LyShine
         bool isTextureSRGB,
         bool isTexturePremultipliedAlpha,
         BlendMode blendMode)
+    {
+        // LYSHINE_ATOM_TODO - this function will be removed when all IRenderer references are gone from UI components
+        AZ_UNUSED(primitive);
+        AZ_UNUSED(texture);
+        AZ_UNUSED(isClampTextureMode);
+        AZ_UNUSED(isTextureSRGB);
+        AZ_UNUSED(isTexturePremultipliedAlpha);
+        AZ_UNUSED(blendMode);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void RenderGraph::AddPrimitiveAtom(IRenderer::DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+        bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode)
     {
         AZStd::vector<RenderNode*>* renderNodeList = m_renderNodeListStack.top();
 
@@ -735,6 +827,7 @@ namespace LyShine
             ITexture* texture, ITexture* maskTexture,
             bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode)
     {
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZStd::vector<RenderNode*>* renderNodeList = m_renderNodeListStack.top();
 
         int texUnit0 = -1;
@@ -808,6 +901,15 @@ namespace LyShine
             // add this primitive to the render node
             renderNodeToAddTo->AddPrimitive(primitive);
         }
+#else
+        AZ_UNUSED(primitive);
+        AZ_UNUSED(texture);
+        AZ_UNUSED(maskTexture);
+        AZ_UNUSED(isClampTextureMode);
+        AZ_UNUSED(isTextureSRGB);
+        AZ_UNUSED(isTexturePremultipliedAlpha);
+        AZ_UNUSED(blendMode);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -892,8 +994,12 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::Render(UiRenderer* uiRenderer, const AZ::Vector2& viewportSize)
     {
+        // LYSHINE_ATOM_TODO - will probably need to support this when converting UI Editor to use Atom
+        AZ_UNUSED(viewportSize);
+
         // First render the render targets, they are sorted so that more deeply nested ones are rendered first.
 
+#ifdef LYSHINE_ATOM_TODO // keeping this code for reference for future phase (render targets)
         // They only need to be rendered the first time that a render graph is rendered after it has been built.
         // Though there is a special case, if this is the first time a shader variant has been used it can miss
         // the first render. So to be safe we only stop rendering to render targets after we have rendered to
@@ -922,19 +1028,27 @@ namespace LyShine
                 m_renderToRenderTargetCount = 0;
             }
         }
+#else
+        for (RenderNode* renderNode : m_renderTargetRenderNodes)
+        {
+            renderNode->Render(uiRenderer);
+        }
+#endif
 
+#ifdef LYSHINE_ATOM_TODO // keeping this code for reference for future phase (UI Editor)
         // Set2DMode defines the viewport so we set it to canvas viewport here (the render target render nodes 
         // above will have set the viewport as they needed).
         TransformationMatrices backupMatrices;
         gEnv->pRenderer->Set2DMode(static_cast<uint32>(viewportSize.GetX()), static_cast<uint32>(viewportSize.GetY()), backupMatrices);
-
+#endif
         for (RenderNode* renderNode : m_renderNodes)
         {
             renderNode->Render(uiRenderer);
         }
-
+#ifdef LYSHINE_ATOM_TODO // keeping this code for reference for future phase (UI Editor)
         // end the 2D mode
         gEnv->pRenderer->Unset2DMode(backupMatrices);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1034,6 +1148,11 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::GetDebugInfoRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, LyShineDebug::DebugInfoRenderGraph& info, AZStd::set<ITexture*>& uniqueTextures) const
     {
+        AZ_UNUSED(renderNodeList);
+        AZ_UNUSED(info);
+        AZ_UNUSED(uniqueTextures);
+
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         const PrimitiveListRenderNode* prevPrimListNode = nullptr;
         bool isFirstNode = true;
         bool wasLastNodeAMask = false;
@@ -1118,6 +1237,7 @@ namespace LyShine
 
             isFirstNode = false;
         }
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1172,6 +1292,13 @@ namespace LyShine
         void* context,
         const AZStd::string& indent) const
     {
+        AZ_UNUSED(renderNodeList);
+        AZ_UNUSED(fileHandle);
+        AZ_UNUSED(reportInfo);
+        AZ_UNUSED(context);
+        AZ_UNUSED(indent);
+
+#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         AZStd::string logLine;
 
         bool previousNodeAlreadyCounted = false;
@@ -1334,6 +1461,7 @@ namespace LyShine
                 prevPrimListNode = primListRenderNode;
             }
         }
+#endif
     }
 
 #endif

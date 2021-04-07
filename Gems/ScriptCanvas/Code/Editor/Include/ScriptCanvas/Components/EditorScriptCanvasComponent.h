@@ -146,8 +146,6 @@ namespace ScriptCanvasEditor
         void LoadVariables(const ScriptCanvasMemoryAsset::pointer memoryAsset);
         void ClearVariables();
 
-        void GetScriptCanvasId();
-
     private:
         AZ::Data::AssetId m_removedCatalogId;
         AZ::Data::AssetId m_previousAssetId;

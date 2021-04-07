@@ -31,6 +31,7 @@ namespace AZ::IO
                 options.m_enableUnbufferedReads = m_enableUnbufferedReads;
                 options.m_enableSharing = m_enableFileSharing;
                 options.m_hasSeekPenalty = drive.m_hasSeekPenalty;
+                options.m_minimalReporting = m_minimalReporting;
 
                 AZStd::vector<AZStd::string_view> drivePaths(drive.m_paths.begin(), drive.m_paths.end());
                 AZ_Assert(!drive.m_paths.empty(), "Expected at least one drive path.");
@@ -59,7 +60,8 @@ namespace AZ::IO
                 ->Field("MaxMetaDataCache", &WindowsStorageDriveConfig::m_maxMetaDataCache)
                 ->Field("Overcommit", &WindowsStorageDriveConfig::m_overcommit)
                 ->Field("EnableFileSharing", &WindowsStorageDriveConfig::m_enableFileSharing)
-                ->Field("EnableUnbufferedReads", &WindowsStorageDriveConfig::m_enableUnbufferedReads);
+                ->Field("EnableUnbufferedReads", &WindowsStorageDriveConfig::m_enableUnbufferedReads)
+                ->Field("MinimalReporting", &WindowsStorageDriveConfig::m_minimalReporting);
         }
     }
 } // namespace AZ::IO

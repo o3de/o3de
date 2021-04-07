@@ -80,6 +80,8 @@ namespace MockGraphCanvasServices
         bool CanConvertToReference() const override;
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;
+        bool IsUserSlot() const override;
+
         GraphCanvas::DataSlotType GetDataSlotType() const override;
         GraphCanvas::DataValueType GetDataValueType() const override;
         AZ::Uuid GetDataTypeId() const override;

@@ -113,7 +113,7 @@ namespace ScriptCanvas
 
                     virtual void Initialize(const AZ::Data::AssetId assetId);
 
-                    bool IsSupportedByNewBackend() const override { return true; }
+                    
 
                 protected:
 

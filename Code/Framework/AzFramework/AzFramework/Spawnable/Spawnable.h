@@ -33,9 +33,10 @@ namespace AzFramework
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
 
         inline static constexpr const char* FileExtension = "spawnable";
+        inline static constexpr const char* DotFileExtension = ".spawnable";
 
         Spawnable() = default;
-        explicit Spawnable(const AZ::Data::AssetId& id);
+        explicit Spawnable(const AZ::Data::AssetId& id, AssetStatus status = AssetStatus::NotLoaded);
         Spawnable(const Spawnable& rhs) = delete;
         Spawnable(Spawnable&& other);
         ~Spawnable() override = default;

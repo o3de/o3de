@@ -57,7 +57,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_New_Script"/>
-    <addaction name="actionFunction"/>
     <addaction name="action_Open"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_As"/>
@@ -178,11 +177,6 @@
   <action name="action_New_Script">
    <property name="text">
     <string>&amp;New Script</string>
-   </property>
-  </action>
-  <action name="action_New_Function">
-   <property name="text">
-    <string>&amp;Function</string>
    </property>
   </action>
   <action name="action_New_Editor_Graph">
@@ -779,11 +773,6 @@
   <action name="actionEditor_Graph">
    <property name="text">
     <string>Editor Graph</string>
-   </property>
-  </action>
-  <action name="actionFunction">
-   <property name="text">
-    <string>New Function</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

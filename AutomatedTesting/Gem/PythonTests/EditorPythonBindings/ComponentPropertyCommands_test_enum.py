@@ -53,7 +53,7 @@ typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsB
 addComponentsOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
 print_result("Components added to entity", addComponentsOutcome.IsSuccess())
 
-# fetch the Vegetation Distance Between Filter
+# fetch the Vegetation Distance Between Filter
 vegDistTypeIdList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Vegetation Distance Between Filter"], entity.EntityType().Game)
 componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentsOfType', entityId, vegDistTypeIdList[0])
 print_result('Found Vegetation Distance Between Filter', componentOutcome.IsSuccess())

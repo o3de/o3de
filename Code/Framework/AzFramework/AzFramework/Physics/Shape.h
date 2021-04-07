@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 namespace AZ
 {
@@ -83,7 +84,6 @@ namespace Physics
     using ShapeConfigurationList = AZStd::vector<ShapeConfigurationPair>;
 
     struct RayCastRequest;
-    struct RayCastHit;
 
     class Shape
     {
@@ -121,11 +121,11 @@ namespace Physics
         //! Raycast against this shape.
         //! @param request Ray parameters in world space.
         //! @param worldTransform World transform of this shape.
-        virtual Physics::RayCastHit RayCast(const Physics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform) = 0;
+        virtual AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform) = 0;
 
         //! Raycast against this shape using local coordinates.
         //! @param request Ray parameters in local space.
-        virtual Physics::RayCastHit RayCastLocal(const Physics::RayCastRequest& localSpaceRequest) = 0;
+        virtual AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) = 0;
 
         //! Retrieve this shape AABB.
         //! @param worldTransform World transform of this shape.

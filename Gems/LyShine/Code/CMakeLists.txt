@@ -15,7 +15,6 @@ ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/So
 ly_add_target(
     NAME LyShine.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.LyShine.Static
     FILES_CMAKE
         lyshine_static_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -29,6 +28,11 @@ ly_add_target(
             Legacy::CryCommon
             Gem::LmbrCentral
             Gem::TextureAtlas
+        PUBLIC
+            Gem::Atom_RPI.Public
+            Gem::Atom_Utils.Static
+            Gem::Atom_Bootstrap.Headers
+            Gem::AtomFont
 )
 
 ly_add_target(
@@ -84,6 +88,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LmbrCentral
                 Gem::TextureAtlas
                 ${additional_dependencies}
+            PUBLIC
+                Gem::Atom_RPI.Public
+                Gem::Atom_Utils.Static
     )
 
     ly_add_target(

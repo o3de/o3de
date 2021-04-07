@@ -318,6 +318,8 @@ namespace LmbrCentral
         MeshComponent();
         ~MeshComponent() override;
 
+        AZ_DISABLE_COPY_MOVE(MeshComponent);
+
         // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;

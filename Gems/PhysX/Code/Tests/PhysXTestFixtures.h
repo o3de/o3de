@@ -14,16 +14,12 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/TriggerBus.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace AzPhysics
 {
     class Scene;
+    struct TriggerEvent;
 }
 
 namespace PhysX
@@ -33,22 +29,13 @@ namespace PhysX
     class PhysXDefaultWorldTest
         : public ::testing::Test
         , protected Physics::DefaultWorldBus::Handler
-        , protected Physics::WorldEventHandler
     {
     protected:
         void SetUp() override;
         void TearDown() override;
 
         // DefaultWorldBus
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld() override;
-
-        // WorldEventHandler
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override;
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override;
-
-        void OnCollisionBegin(const Physics::CollisionEvent& event);
-        void OnCollisionPersist(const Physics::CollisionEvent& event);
-        void OnCollisionEnd(const Physics::CollisionEvent& event);
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
 
         AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
         AzPhysics::Scene* m_defaultScene = nullptr;

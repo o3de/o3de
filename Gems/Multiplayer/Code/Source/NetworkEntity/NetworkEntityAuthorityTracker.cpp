@@ -103,7 +103,7 @@ namespace Multiplayer
                     {
                         networkRole = netBindComponent->GetNetEntityRole();
                     }
-                    if (networkRole != NetEntityRole::ClientAutonomous)
+                    if (networkRole != NetEntityRole::Autonomous)
                     {
                         AZ_Assert
                         (
@@ -118,7 +118,7 @@ namespace Multiplayer
                     }
                     else
                     {
-                        AZLOG(NET_AuthTracker, "AuthTracker: Skipping timeout for ClientAutonomous networkEntityId %u", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()));
+                        AZLOG(NET_AuthTracker, "AuthTracker: Skipping timeout for Autonomous networkEntityId %u", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()));
                     }
                 }
             }
@@ -152,7 +152,7 @@ namespace Multiplayer
             {
                 networkRole = netBindComponent->GetNetEntityRole();
             }
-            if (networkRole == NetEntityRole::ServerAuthority)
+            if (networkRole == NetEntityRole::Authority)
             {
                 return m_networkEntityManager.GetHostId();
             }
@@ -205,7 +205,7 @@ namespace Multiplayer
                 {
                     networkRole = netBindComponent->GetNetEntityRole();
                 }
-                if (networkRole != NetEntityRole::ServerAuthority)
+                if (networkRole != NetEntityRole::Authority)
                 {
                     AZLOG_ERROR
                     (

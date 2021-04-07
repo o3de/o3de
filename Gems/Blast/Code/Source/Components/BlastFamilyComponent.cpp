@@ -21,7 +21,8 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
 #include <Common/Utils.h>
@@ -203,7 +204,13 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
 
-        Physics::CollisionNotificationBus::MultiHandler::BusDisconnect();
+        // cleanup collision handlers
+        for (auto& itr : m_collisionHandlers)
+        {
+            itr.second.Disconnect();
+        }
+        m_collisionHandlers.clear();
+        
         BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect();
         BlastFamilyComponentRequestBus::Handler::BusDisconnect();
 
@@ -391,7 +398,7 @@ namespace Blast
         }
     }
 
-    void BlastFamilyComponent::OnCollisionBegin(const Physics::CollisionEvent& collisionEvent)
+    void BlastFamilyComponent::OnCollisionBegin(const AzPhysics::CollisionEvent& collisionEvent)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
@@ -481,14 +488,18 @@ namespace Blast
                 auto worldBody = actor->GetWorldBody();
                 if (actor->IsStatic())
                 {
-                    auto gravity = worldBody->GetWorld()->GetGravity();
+                    AZ::Vector3 gravity = AzPhysics::DefaultGravity;
+                    if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                    {
+                        gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
+                    }
                     auto localGravity =
                         worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(gravity);
                     m_solver->addGravityForce(*actor->GetTkActor().getActorLL(), Convert(localGravity));
                 }
                 else
                 {
-                    auto rigidBody = static_cast<Physics::RigidBody*>(worldBody);
+                    auto* rigidBody = static_cast<AzPhysics::RigidBody*>(worldBody);
                     auto localCenterMass = rigidBody->GetCenterOfMassLocal();
                     auto localAngularVelocity =
                         worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(
@@ -516,8 +527,21 @@ namespace Blast
     {
         m_actorRenderManager->OnActorCreated(actor);
         m_solver->notifyActorCreated(*actor.GetTkActor().getActorLL());
-
-        Physics::CollisionNotificationBus::MultiHandler::BusConnect(actor.GetEntity()->GetId());
+        
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(actor.GetEntity()->GetId());
+            if (foundBody.first != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler collisionHandler = AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler(
+                    [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle, const AzPhysics::CollisionEvent& event)
+                    {
+                        OnCollisionBegin(event);
+                    });
+                CollisionHandlersMap::pair_iter_bool newHandlerItr = m_collisionHandlers.emplace(actor.GetEntity()->GetId(), collisionHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(foundBody.first, foundBody.second, newHandlerItr.first->second);
+            }
+        }
         BlastFamilyDamageRequestBus::MultiHandler::BusConnect(actor.GetEntity()->GetId());
         BlastFamilyComponentNotificationBus::Event(
             GetEntityId(), &BlastFamilyComponentNotifications::OnActorCreated, actor);
@@ -528,7 +552,13 @@ namespace Blast
         BlastFamilyComponentNotificationBus::Event(
             GetEntityId(), &BlastFamilyComponentNotifications::OnActorDestroyed, actor);
         BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect(actor.GetEntity()->GetId());
-        Physics::CollisionNotificationBus::MultiHandler::BusDisconnect(actor.GetEntity()->GetId());
+
+        if (CollisionHandlersMapItr foundHandler = m_collisionHandlers.find(actor.GetEntity()->GetId());
+            foundHandler != m_collisionHandlers.end())
+        {
+            foundHandler->second.Disconnect();
+            m_collisionHandlers.erase(foundHandler);
+        }
 
         m_solver->notifyActorDestroyed(*actor.GetTkActor().getActorLL());
         m_actorRenderManager->OnActorDestroyed(actor);

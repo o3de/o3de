@@ -17,7 +17,10 @@
 #include "../offline/hash.h"
 
 #if defined(_WIN32) && !defined(PORTABLE)
+#include <AzCore/PlatformDef.h>
+AZ_PUSH_DISABLE_WARNING(4115, "-Wunknown-warning-option")
 #include <d3dcompiler.h>
+AZ_POP_DISABLE_WARNING
 #pragma comment(lib,"d3dcompiler.lib")
 #endif //defined(_WIN32) && !defined(PORTABLE)
 

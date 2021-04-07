@@ -98,15 +98,13 @@ namespace AZ
             // Pass Behaviour Overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            void FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* name);
-
-            AZ::RHI::ShaderInputConstantIndex m_intensityInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sourceImageSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sourceImageTexelSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_targetImageSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sourceMipLevelInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_enableBicubicInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_tintInputIndex;
+            RHI::ShaderInputNameIndex m_intensityInputIndex = "m_intensity";
+            RHI::ShaderInputNameIndex m_sourceImageSizeInputIndex = "m_sourceImageSize";
+            RHI::ShaderInputNameIndex m_sourceImageTexelSizeInputIndex = "m_sourceImageTexelSize";
+            RHI::ShaderInputNameIndex m_targetImageSizeInputIndex = "m_targetImageSize";
+            RHI::ShaderInputNameIndex m_sourceMipLevelInputIndex = "m_sourceMipLevel";
+            RHI::ShaderInputNameIndex m_enableBicubicInputIndex = "m_enableBicubic";
+            RHI::ShaderInputNameIndex m_tintInputIndex = "m_tint";
 
             uint32_t m_targetImageWidth;
             uint32_t m_targetImageHeight;

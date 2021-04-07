@@ -92,8 +92,8 @@ public:
     virtual void UnregisterConsoleVariables();
     virtual void AddCallback(ILogCallback* pCallback);
     virtual void RemoveCallback(ILogCallback* pCallback);
-    virtual void LogV(const ELogType ineType, int flags, const char* szFormat, va_list args);
-    virtual void LogV(const ELogType ineType, const char* szFormat, va_list args);
+    virtual void LogV(ELogType ineType, int flags, const char* szFormat, va_list args);
+    virtual void LogV(ELogType ineType, const char* szFormat, va_list args);
     virtual void Update();
     virtual const char* GetModuleFilter();
     virtual void FlushAndClose();

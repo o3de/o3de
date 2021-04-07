@@ -123,7 +123,7 @@ namespace ScriptCanvas
             return AZ::Success(behaviorClass);
         }
 
-        SlotsOutcome NodeableNode::GetBehaviorContextOutName(const Slot& inSlot) const
+        ConstSlotsOutcome NodeableNode::GetBehaviorContextOutName(const Slot& inSlot) const
         {
             auto behaviorClassOutcome = GetBehaviorContextClass();
             if (!behaviorClassOutcome)
@@ -234,11 +234,6 @@ namespace ScriptCanvas
         const SlotExecution::Map* NodeableNode::GetSlotExecutionMap() const
         {
             return &m_slotExecutionMap;
-        }
-
-        bool NodeableNode::HandlerStartsConnected() const
-        {
-            return true;
         }
 
         bool NodeableNode::IsNodeableNode() const

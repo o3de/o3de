@@ -15,6 +15,7 @@
 
 #include <AzCore/Outcome/Outcome.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 
@@ -23,6 +24,7 @@
 
 namespace ScriptCanvas
 {
+    class Nodeable;
     namespace Grammar
     {
         enum class Direction
@@ -30,6 +32,7 @@ namespace ScriptCanvas
             In,
             Out
         };
+
         enum class EventHandingType
         {
             EBus,
@@ -42,7 +45,16 @@ namespace ScriptCanvas
         {
             Class,
             Namespace,
+            Self,
             Variable,
+        };
+
+        enum class NodelingType
+        {
+            In,
+            None,
+            Out,
+            OutReturn,
         };
 
         enum TraitsFlags
@@ -161,10 +173,22 @@ namespace ScriptCanvas
             virtual ~NodeableParse() {}
 
             VariableConstPtr m_nodeable;
+            AZStd::string m_simpleName;
             AZStd::vector<ExecutionTreeConstPtr> m_onInputChanges;
             AZStd::vector<AZStd::pair<AZStd::string, ExecutionTreeConstPtr>> m_latents;
 
             void Clear();
+        };
+
+        struct ParsedRuntimeInputs
+        {
+            AZStd::vector<Nodeable*> m_nodeables;
+            AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
+            // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
+            AZStd::vector<AZStd::pair<VariableId, Data::EntityIDType>> m_entityIds;
+            // Statics required for internal, local values that need non-code constructible initialization,
+            // when the system can't pass in the input from C++.
+            AZStd::vector<AZStd::pair<VariableId, AZStd::any>> m_staticVariables;
         };
 
         struct PropertyExtraction

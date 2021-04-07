@@ -37,7 +37,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
 

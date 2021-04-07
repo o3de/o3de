@@ -193,17 +193,6 @@ namespace ScriptCanvasEditor
                     if (remapVariableOutcome)
                     {
                         SetVariableId(remapVariableOutcome.GetValue());
-
-                        bool runtimeGraph = false;
-                        EditorGraphRequestBus::EventResult(runtimeGraph, scriptCanvasId2, &EditorGraphRequests::IsRuntimeGraph);
-
-                        ScriptCanvas::GraphVariable* variable = nullptr;
-                        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(variable, scriptCanvasId2, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, remapVariableOutcome.GetValue());
-
-                        if (variable)
-                        {
-                            variable->RemoveScope(ScriptCanvas::VariableFlags::Scope::Output);
-                        }
                     }
                 }
             }

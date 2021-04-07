@@ -1,0 +1,34 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
+            "textureMap": "Textures/vaseRound_1k_basecolor.png"
+        },
+        "normal": {
+            "textureMap": "Textures/vaseRound_1k_normal.jpg"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "algorithm": "POM",
+            "enable": true,
+            "factor": 0.019999999552965165,
+            "pdo": true,
+            "quality": "High",
+            "textureMap": "Textures/vaseRound_1k_height.png"
+        },
+        "roughness": {
+            "textureMap": "Textures/vaseRound_1k_roughness.png"
+        }
+    }
+}

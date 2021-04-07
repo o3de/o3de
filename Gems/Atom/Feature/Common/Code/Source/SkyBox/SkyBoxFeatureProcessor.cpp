@@ -82,21 +82,18 @@ namespace AZ
 
             // Find the relevant indices in the scene srg
             m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
-            m_skyboxEnableIndex = m_sceneSrg->FindShaderInputConstantIndex(Name("m_enable"));
-            m_physicalSkyBufferIndex = m_sceneSrg->FindShaderInputBufferIndex(Name("m_physicalSkyData"));
-            m_physicalSkyIndex = m_sceneSrg->FindShaderInputConstantIndex(Name("m_physicalSky"));
-            m_cubemapIndex = m_sceneSrg->FindShaderInputImageIndex(Name("m_skyboxCubemap"));
-            m_cubemapRotationMatrixIndex = m_sceneSrg->FindShaderInputConstantIndex(Name("m_cubemapRotationMatrix"));
-            m_cubemapExposureIndex = m_sceneSrg->FindShaderInputConstantIndex(Name("m_cubemapExposure"));
 
-            AZ_Error(FeatureProcessorName, m_skyboxEnableIndex.IsValid(), "Unable to find m_enable in scene shader resource group.");
-            AZ_Error(FeatureProcessorName, m_physicalSkyBufferIndex.IsValid(), "Unable to find m_physicalSkyData in scene shader resource group.");
-            AZ_Error(FeatureProcessorName, m_physicalSkyIndex.IsValid(), "Unable to find m_useCubemap in scene shader resource group.");
-            AZ_Error(FeatureProcessorName, m_cubemapIndex.IsValid(), "Unable to find m_skyboxCubemap in scene shader resource group.");
-            AZ_Error(FeatureProcessorName, m_cubemapRotationMatrixIndex.IsValid(), "Unable to find m_cubemapRotationMatrix in scene shader resource group.");
-            AZ_Error(FeatureProcessorName, m_cubemapExposureIndex.IsValid(), "Unable to find m_cubemapExposure in scene shader resource group.");
+            m_skyboxEnableIndex.Reset();
+            m_physicalSkyBufferIndex.Reset();
+            m_physicalSkyIndex.Reset();
+            m_cubemapIndex.Reset();
+            m_cubemapRotationMatrixIndex.Reset();
+            m_cubemapExposureIndex.Reset();
 
-            m_sceneSrg->SetBufferView(m_physicalSkyBufferIndex, m_buffer->GetBufferView());
+            if (m_buffer)
+            {
+                m_sceneSrg->SetBufferView(m_physicalSkyBufferIndex, m_buffer->GetBufferView());
+            }
         }
 
         void SkyBoxFeatureProcessor::Deactivate()
@@ -154,8 +151,10 @@ namespace AZ
                              AZ::Vector4 artistParams = AZ::Vector4(m_skyIntensity.GetIntensity(), m_sunIntensity.GetIntensity(), 0.0f, 0.0f);
                              artistParams.StoreToFloat4(m_physicalSkyData.m_physicalSkyAndSunIntensity.data());
 
-                             m_buffer->UpdateData(&m_physicalSkyData, sizeof(PhysicalSkyData));
-
+                             if (m_buffer)
+                             {
+                                 m_buffer->UpdateData(&m_physicalSkyData, sizeof(PhysicalSkyData));
+                             }
                              m_skyNeedUpdate = false;
                              m_sunNeedUpdate = false;
                              m_mapBuffer = false;

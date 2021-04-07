@@ -14,7 +14,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/AssetBrowserProductThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/MaterialBrowser/MaterialBrowserBus.h>
 #endif
 

@@ -44,9 +44,15 @@ endif()
 # or checked into source control so that others on the same project can avoid re-downloading
 set(LY_PACKAGE_KEEP_AFTER_DOWNLOADING TRUE CACHE BOOL "If enabled, packages will be kept after downloading them for later re-use")
 set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION ${LY_3RDPARTY_PATH}/downloaded_packages CACHE PATH "You can make it store the packages in a folder of your choosing")
+if (DEFINED ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
+    set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION $ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
+endif()
 
 # LY_PACKAGE_UNPACK_LOCATION - you can change this to any path reachable.
 set(LY_PACKAGE_UNPACK_LOCATION ${LY_3RDPARTY_PATH}/packages CACHE PATH "Location to unpack downloaded packages to")
+if (DEFINED ENV{LY_PACKAGE_UNPACK_LOCATION})
+    set(LY_PACKAGE_UNPACK_LOCATION $ENV{LY_PACKAGE_UNPACK_LOCATION})
+endif()
 
 # note that sometimes the user configures first without populating LY_3RDPARTY_PATH
 # in that case, we'll try overwriting the cache value, only if it is blank:
@@ -273,18 +279,22 @@ function(ly_package_internal_download_package package_name url_variable)
             # remove the status code and treat the rest of the list as the error.
             list(REMOVE_AT results 0)
             set(current_error_message "Error from server ${server_url} - ${status_code} - ${results}")
+            #strip whitespace
+            string(REGEX REPLACE "[ \t\r\n]$" "" current_error_message "${current_error_message}")
             list(APPEND error_messages "${current_error_message}")
-
             # we can't keep the file, sometimes it makes a zero-byte file!
             file(REMOVE ${download_target})
-            ly_package_message(${current_error_message})
         endif()
     endforeach()
-    message(SEND_ERROR "ly_package:     - Unable to find package ${package_name} on any download server.  Enable LY_PACKAGE_DEBUG to debug")
-    # only output errors if all servers failed and we found it nowhere:
+    # note that we FATAL_ERROR here because otherwise, some of the packages we provide would fall through
+    # and use unknown versions possibly present somewhere in the user's system - but if we wanted that to happen
+    # we wouldn't have used a ly-package-association in the first place!  Continuing from there would just cause
+    # a cascade of errors even harder to track down.
+    set(final_error_message "ly_package:     - Unable to get package ${package_name} from any download server.  Enable LY_PACKAGE_DEBUG to debug.")
     foreach(error_message ${error_messages})
-        message(STATUS "${error_message}")
+        set(final_error_message "${final_error_message}\n${error_message}")
     endforeach()
+    message(FATAL_ERROR "${final_error_message}")
 endfunction()
 
 # parse_sha256sums_line  
@@ -497,7 +507,12 @@ function(ly_force_download_package package_name)
         ly_package_message(STATUS "ly_package:     - downloading package '${package_name}' to '${final_folder}'")
 
         ly_package_internal_download_package(${package_name} ${temp_download_target})
-        # the above call actually aborts this function if it fails, so its not necessary to check here.
+        # The above function will try every download location, with retries, so by the time we get here, the
+        # operation is either done, or has completely failed.
+        if (NOT EXISTS ${temp_download_target})
+            # the system will have already issued errors, no need to issue more.
+            return()
+        endif()
     else()
         ly_package_message(STATUS "ly_package:     - package already correct hash ${temp_download_target}, re-using")
     endif()
@@ -578,9 +593,7 @@ function(ly_enable_package package_name)
             ly_force_download_package(${package_name})
         endif()
         
-        if(NOT ${package_name}_VALIDATED)
-            message(FATAL_ERROR "ly_package: Package ${package_name} could not be found or downloaded.  Expect build errors.  Enable LY_PACKAGE_DEBUG to debug.")
-        else()
+        if(${package_name}_VALIDATED)
             set_property(GLOBAL PROPERTY LY_${package_name}_VALIDATED TRUE)
             # this message is unconditional as it will help prove that the package even was
             # attempted to be mounted using our package system.  In the absence of this message

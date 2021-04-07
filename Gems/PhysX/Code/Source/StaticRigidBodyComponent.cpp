@@ -15,10 +15,14 @@
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
-#include <Source/World.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzCore/Component/Entity.h>
 
 #include <PhysX/ColliderComponentBus.h>
 
@@ -28,6 +32,12 @@ namespace PhysX
     // This causes AZStd::unique_ptr<T> ctor/dtor to be generated when full type info is available
     StaticRigidBodyComponent::StaticRigidBodyComponent() = default;
     StaticRigidBodyComponent::~StaticRigidBodyComponent() = default;
+
+    StaticRigidBodyComponent::StaticRigidBodyComponent(AzPhysics::SceneHandle sceneHandle)
+        : m_attachedSceneHandle(sceneHandle)
+    {
+
+    }
 
     void StaticRigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -65,9 +75,9 @@ namespace PhysX
         dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
     }
 
-    PhysX::RigidBodyStatic* StaticRigidBodyComponent::GetStaticRigidBody()
+    PhysX::StaticRigidBody* StaticRigidBodyComponent::GetStaticRigidBody()
     {
-        return m_staticRigidBody.get();
+        return m_staticRigidBody;
     }
 
     void StaticRigidBodyComponent::InitStaticRigidBody()
@@ -75,26 +85,30 @@ namespace PhysX
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        Physics::WorldBodyConfiguration configuration;
+        AzPhysics::StaticRigidBodyConfiguration configuration;
         configuration.m_orientation = transform.GetRotation();
         configuration.m_position = transform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        m_staticRigidBody = AZStd::make_unique<PhysX::RigidBodyStatic>(configuration);
-
-        ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [this](ColliderComponentRequests* handler)
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allshapes;
+        ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [&allshapes](ColliderComponentRequests* handler)
         {
             const AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& shapes = handler->GetShapes();
-            for (auto& shape : shapes)
-            {
-                m_staticRigidBody->AddShape(shape);
-            }
+            allshapes.insert(allshapes.end(), shapes.begin(), shapes.end());
             return true;
         });
+        configuration.m_colliderAndShapeData = allshapes;
 
-        World* world = Utils::GetDefaultWorld();
-        world->AddBody(*m_staticRigidBody);
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        }
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
+            m_staticRigidBody = azdynamic_cast<PhysX::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle));
+        }
     }
 
     void StaticRigidBodyComponent::Activate()
@@ -109,7 +123,12 @@ namespace PhysX
 
     void StaticRigidBodyComponent::Deactivate()
     {
-        Physics::Utils::DeferDelete(AZStd::move(m_staticRigidBody));
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
+            m_staticRigidBodyHandle = AzPhysics::InvalidSceneHandle;
+            m_staticRigidBody = nullptr;
+        }
 
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -126,17 +145,19 @@ namespace PhysX
         {
             return;
         }
-        World* world = Utils::GetDefaultWorld();
-        world->AddBody(*m_staticRigidBody);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
+        }
 
         Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
     }
 
     void StaticRigidBodyComponent::DisablePhysics()
     {
-        if (Physics::World* world = m_staticRigidBody->GetWorld())
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            world->RemoveBody(*m_staticRigidBody);
+            sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
 
         Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
@@ -144,7 +165,7 @@ namespace PhysX
 
     bool StaticRigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_staticRigidBody != nullptr && m_staticRigidBody->GetWorld() != nullptr;
+        return m_staticRigidBody != nullptr && m_staticRigidBody->m_simulating;
     }
 
     AZ::Aabb StaticRigidBodyComponent::GetAabb() const
@@ -152,14 +173,18 @@ namespace PhysX
         return m_staticRigidBody->GetAabb();
     }
 
-    Physics::WorldBody* StaticRigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* StaticRigidBodyComponent::GetWorldBody()
     {
-        return m_staticRigidBody.get();
+        return m_staticRigidBody;
     }
 
-    Physics::RayCastHit StaticRigidBodyComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit StaticRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        return m_staticRigidBody->RayCast(request);
+        if (m_staticRigidBody)
+        {
+            return m_staticRigidBody->RayCast(request);
+        }
+        return AzPhysics::SceneQueryHit();
     }
 
 } // namespace PhysX

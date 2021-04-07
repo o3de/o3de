@@ -95,25 +95,6 @@ namespace GraphCanvas
             intermediateRoot = m_rootMaps[key];
         }
 
-        /*AZStd::vector<AZStd::string> categories;
-        AzFramework::StringFunc::Tokenize(categoryPath, categories, "/", true, true);
-        
-        for (auto it = categories.begin(); it < categories.end(); it++)
-        {
-            AZStd::string intermediatePath;
-            AzFramework::StringFunc::Join(intermediatePath, categories.begin(), it + 1, "/");
-
-            CategoryKey key(parentRoot, intermediatePath);
-
-            if (m_rootMaps.find(key) == m_rootMaps.end())
-            {
-                GraphCanvas::GraphCanvasTreeItem* treeItem = m_categorizerInterface.CreateCategoryNode(intermediatePath, it->c_str(), intermediateRoot);
-                m_rootMaps[key] = treeItem;
-            }
-
-            intermediateRoot = m_rootMaps[key];
-        }*/
-
         return intermediateRoot;
     }
 
@@ -124,20 +105,24 @@ namespace GraphCanvas
 
         for (auto& mapPair : m_rootMaps)
         {
-            if (mapPair.second->GetChildCount() == 0 && mapPair.second->AllowPruneOnEmpty())
+            if (mapPair.second)
             {
-                GraphCanvas::GraphCanvasTreeItem* parentItem = mapPair.second->GetParent();
-                mapPair.second->DetachItem();
-
-                if (parentItem->GetChildCount() == 0 && mapPair.second->AllowPruneOnEmpty())
+                if (mapPair.second->GetChildCount() == 0 && mapPair.second->AllowPruneOnEmpty())
                 {
-                    potentialCategories.insert(parentItem);
-                }
+                    if (GraphCanvas::GraphCanvasTreeItem* parentItem = mapPair.second->GetParent())
+                    {
+                        if (parentItem->GetChildCount() == 0 && mapPair.second->AllowPruneOnEmpty())
+                        {
+                            potentialCategories.insert(parentItem);
+                        }
+                    }
 
-                potentialCategories.erase(mapPair.second);
-                deletedKeys.push_back(mapPair.first);
-                delete mapPair.second;
+                    mapPair.second->DetachItem();
+                    potentialCategories.erase(mapPair.second);
+                    deletedKeys.push_back(mapPair.first);
+                }
             }
+            
         }
 
         for (const CategoryKey& key : deletedKeys)
@@ -163,30 +148,23 @@ namespace GraphCanvas
     void GraphCanvasTreeCategorizer::PruneNodes(AZStd::unordered_set< GraphCanvas::GraphCanvasTreeItem*> potentialPruners)
     {
         AZStd::unordered_set< GraphCanvas::GraphCanvasTreeItem* > deletedRoots;
-
         while (!potentialPruners.empty())
         {
             GraphCanvas::GraphCanvasTreeItem* treeItem = (*potentialPruners.begin());
             potentialPruners.erase(potentialPruners.begin());
-
             if (treeItem && treeItem->GetChildCount() == 0 && treeItem->AllowPruneOnEmpty())
             {
                 GraphCanvas::GraphCanvasTreeItem* parentItem = static_cast<GraphCanvas::GraphCanvasTreeItem*>(treeItem->GetParent());
-
                 treeItem->DetachItem();                
                 potentialPruners.insert(parentItem);
-
                 deletedRoots.insert(treeItem);
                 delete treeItem;
             }
         }
-
         auto mapIter = m_rootMaps.begin();
-
         while (mapIter != m_rootMaps.end() && !deletedRoots.empty())
         {
             size_t erasedCount = deletedRoots.erase(mapIter->second);
-
             if (erasedCount > 0)
             {
                 mapIter = m_rootMaps.erase(mapIter);

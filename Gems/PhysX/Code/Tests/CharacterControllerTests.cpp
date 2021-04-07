@@ -25,7 +25,6 @@
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/SystemComponentBus.h>
 #include <System/PhysXSystem.h>
-#include <Physics/PhysicsTests.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestUtil.h>
 #include <Tests/PhysXTestCommon.h>
@@ -38,11 +37,15 @@ namespace PhysX
     class ControllerTestBasis
     {
     public:
-        ControllerTestBasis(AzPhysics::Scene* scene,
+        ControllerTestBasis(AzPhysics::SceneHandle sceneHandle,
             const Physics::ShapeType shapeType = Physics::ShapeType::Capsule,
             const AZ::Transform& floorTransform = DefaultFloorTransform)
-            : m_testScene(scene)
+            : m_sceneHandle(sceneHandle)
         {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                m_testScene = physicsSystem->GetScene(m_sceneHandle);
+            }
             AZ_Assert(m_testScene != nullptr, "ControllerTestBasis: the Test scene is null.");
             SetUp(shapeType, floorTransform);
         }
@@ -50,7 +53,7 @@ namespace PhysX
         void SetUp(const Physics::ShapeType shapeType = Physics::ShapeType::Capsule,
             const AZ::Transform& floorTransform = DefaultFloorTransform)
         {
-            m_floor = Physics::AddStaticFloorToWorld(GetLegacyWorld(), floorTransform);
+            m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
 
             m_controllerEntity = AZStd::make_unique<AZ::Entity>("CharacterEntity");
             m_controllerEntity->CreateComponent<AzFramework::TransformComponent>()->SetWorldTM(AZ::Transform::Identity());
@@ -90,13 +93,9 @@ namespace PhysX
             }
         }
 
-        Physics::World* GetLegacyWorld()
-        {
-            return m_testScene->GetLegacyWorld().get();
-        }
-
         AzPhysics::Scene* m_testScene;
-        AZStd::shared_ptr<Physics::RigidBodyStatic> m_floor;
+        AzPhysics::SceneHandle m_sceneHandle;
+        AzPhysics::StaticRigidBody* m_floor;
         AZStd::unique_ptr<AZ::Entity> m_controllerEntity;
         Physics::Character* m_controller = nullptr;
         float m_timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
@@ -106,7 +105,7 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_UnimpededController_MovesAtDesiredVelocity)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
         basis.Update(AZ::Vector3::CreateZero());
         AZ::Vector3 desiredVelocity = AZ::Vector3::CreateAxisX();
 
@@ -121,10 +120,10 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_MovingDirectlyTowardsStaticBox_StoppedByBox)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3::CreateAxisX();
 
-        auto box = Physics::AddStaticUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(1.5f, 0.0f, 0.5f));
+        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.5f, 0.0f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and stop
         basis.Update(velocity, 50);
@@ -147,10 +146,10 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_MovingDiagonallyTowardsStaticBox_SlidesAlongBox)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3(1.0f, 1.0f, 0.0f);
 
-        auto box = Physics::AddStaticUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(1.0f, 0.5f, 0.5f));
+        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.5f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and start sliding
         basis.Update(velocity, 20);
@@ -174,7 +173,7 @@ namespace PhysX
         AZ::Transform slopedFloorTransform = AZ::Transform::CreateRotationY(-AZ::Constants::Pi / 6.0f);
         slopedFloorTransform.SetTranslation(
             AZ::Vector3::CreateAxisZ(0.35f) + slopedFloorTransform.TransformPoint(AZ::Vector3::CreateAxisZ(-0.85f)));
-        ControllerTestBasis basis(m_defaultScene, Physics::ShapeType::Capsule, slopedFloorTransform);
+        ControllerTestBasis basis(m_testSceneHandle, Physics::ShapeType::Capsule, slopedFloorTransform);
 
         // we should be able to travel at right angles to the slope
         AZ::Vector3 desiredVelocity = AZ::Vector3::CreateAxisY();
@@ -227,10 +226,10 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_Steps_StoppedByTallStep)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
 
-        auto shortStep = Physics::AddStaticUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(1.0f, 0.0f, -0.3f));
-        auto tallStep = Physics::AddStaticUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(2.0f, 0.0f, 0.5f));
+        auto shortStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, -0.3f));
+        auto tallStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(2.0f, 0.0f, 0.5f));
 
         AZ::Vector3 desiredVelocity = AZ::Vector3::CreateAxisX();
 
@@ -261,10 +260,10 @@ namespace PhysX
     TEST_P(CharacterControllerFixture, CharacterController_ResizedController_CannotFitUnderLowBox)
     {
         Physics::ShapeType shapeType = GetParam();
-        ControllerTestBasis basis(m_defaultScene, shapeType);
+        ControllerTestBasis basis(m_testSceneHandle, shapeType);
 
         // the bottom of the box will be at height 1.0
-        auto box = Physics::AddStaticUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(1.0f, 0.0f, 1.5f));
+        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, 1.5f));
 
         // resize the controller so that it is too tall to fit under the box
         auto controller = static_cast<CharacterController*>(basis.m_controller);
@@ -294,7 +293,7 @@ namespace PhysX
     TEST_P(CharacterControllerFixture, CharacterController_ResizingToNegativeHeight_EmitsError)
     {
         Physics::ShapeType shapeType = GetParam();
-        ControllerTestBasis basis(m_defaultScene, shapeType);
+        ControllerTestBasis basis(m_testSceneHandle, shapeType);
         auto controller = static_cast<CharacterController*>(basis.m_controller);
         UnitTest::ErrorHandler errorHandler("PhysX requires controller height to be positive");
         controller->Resize(-0.2f);
@@ -305,7 +304,7 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_ResizingCapsuleControllerBelowTwiceRadius_EmitsError)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
 
         auto controller = static_cast<CharacterController*>(basis.m_controller);
         // the controller will have been made with the default radius of 0.25, so any height under 0.5 should
@@ -320,9 +319,9 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_DroppingBox_CollidesWithController)
     {
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
 
-        auto box = Physics::AddUnitBoxToWorld(basis.GetLegacyWorld(), AZ::Vector3(0.5f, 0.0f, 5.0f));
+        AzPhysics::RigidBody* box = PhysX::TestUtils::AddUnitBoxToScene(m_testSceneHandle, AZ::Vector3(0.5f, 0.0f, 5.0f));
 
         basis.Update(AZ::Vector3::CreateZero(), 200);
 
@@ -336,25 +335,25 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_RaycastAgainstController_ReturnsHit)
     {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+
         // raycast on an empty scene should return no hits
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3(-100.0f, 0.0f, 0.25f);
         request.m_direction = AZ::Vector3(1.0f, 0.0f, 0.0f);
         request.m_distance = 200.0f;
 
-        Physics::RayCastHit hit;
-        Physics::WorldRequestBus::BroadcastResult(hit, &Physics::WorldRequests::RayCast, request);
-        EXPECT_FALSE(hit);
+        AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
+        EXPECT_FALSE(result);
 
         // now add a controller and raycast again
-        ControllerTestBasis basis(m_defaultScene);
+        ControllerTestBasis basis(m_testSceneHandle);
 
         // the controller won't move to its initial position with its base at the origin until one update has happened
         basis.Update(AZ::Vector3::CreateZero());
 
-        Physics::WorldRequestBus::BroadcastResult(hit, &Physics::WorldRequests::RayCast, request);
-
-        EXPECT_TRUE(hit);
+        result = sceneInterface->QueryScene(m_testSceneHandle, &request);
+        EXPECT_TRUE(result);
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_DeleteCharacterInsideTrigger_RaisesExitEvent)
@@ -489,7 +488,7 @@ namespace PhysX
         }
 
         // Create unit box located near character, collides with character by default
-        auto box = Physics::AddStaticUnitBoxToWorld(GetDefaultWorld().get(), AZ::Vector3(1.0f, 0.0f, 0.0f));
+        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, 0.0f));
 
         // Assign 'None' collision group to character controller - it should not collide with the box
         AZStd::string collisionGroupName;

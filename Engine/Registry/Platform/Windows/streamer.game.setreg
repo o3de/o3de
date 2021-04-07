@@ -34,7 +34,10 @@
                                 // results in a faster read the first time a file is read, but subsequent reads will possibly be slower as
                                 // those could have been serviced from the faster OS cache. During development or for games that reread 
                                 // files frequently it's recommended to set this option to false, but generally it's best to be turned on.
-                                "EnableUnbufferedReads": true
+                                "EnableUnbufferedReads": true,
+                                // If true, only information that's explicitly requested or issues are reported. If false, status information
+                                // such as when drives are created and destroyed is reported as well.
+                                "MinimalReporting": false
                             },
                             {
                                 "$type": "AZ::IO::ReadSplitterConfig",

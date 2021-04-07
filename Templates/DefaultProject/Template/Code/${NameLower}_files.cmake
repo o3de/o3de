@@ -15,4 +15,5 @@ set(FILES
     Source/${Name}SystemComponent.h
     runtime_dependencies.cmake
     tool_dependencies.cmake
+    server_dependencies.cmake
 )

@@ -39,10 +39,10 @@ namespace ScriptCanvas
             static const char* k_onTrue;
             static const char* k_onFalse;
 
-            bool IsSupportedByNewBackend() const override { return true; }
+            
 
         protected:
-            SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
+            ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
             {
                 return AZ::Success(GetSlotsByType(targetSlotType));
             }
@@ -71,7 +71,7 @@ namespace ScriptCanvas
             static void Reflect(AZ::ReflectContext* reflection);
 
             bool IsDeprecated() const override { return true; }
-            bool IsSupportedByNewBackend() const override { return false; }
+            
             AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const override;
             void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 

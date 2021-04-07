@@ -94,6 +94,8 @@ set(FILES
     Containers/Utilities/ProxyPointer.inl
     Containers/Utilities/Filters.h
     Containers/Utilities/Filters.inl
+    Containers/Utilities/SceneUtilities.h
+    Containers/Utilities/SceneUtilities.cpp
     Containers/Utilities/SceneGraphUtilities.h
     Containers/Utilities/SceneGraphUtilities.inl
     Containers/Utilities/SceneGraphUtilities.cpp

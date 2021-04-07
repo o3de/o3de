@@ -120,6 +120,8 @@ namespace AZ::IO
         {
             AZ::IO::Path m_pathBindRoot; // the zip binding root
             AZStd::string strFileName; // the zip file name (with path) - very useful for debugging so please don't remove
+
+            // [LYN-2376] Remove once legacy slice support is removed
             bool m_containsLevelPak = false; // indicates whether this archive has level.pak inside it or not  
 
             const char* GetFullPath() const { return pZip->GetFilePath(); }
@@ -199,6 +201,7 @@ namespace AZ::IO
 
         bool IsInstalledToHDD(AZStd::string_view acFilePath = 0) const override;
 
+        // [LYN-2376] Remove 'addLevels' parameter once legacy slice support is removed
         bool OpenPack(AZStd::string_view pName, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
         bool OpenPack(AZStd::string_view szBindRoot, AZStd::string_view pName, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
         // after this call, the file will be unlocked and closed, and its contents won't be used to search for files
@@ -300,7 +303,8 @@ namespace AZ::IO
 
         EStreamSourceMediaType GetFileMediaType(AZStd::string_view szName) const override;
 
-        auto GetLevelPackOpenEvent()->LevelPackOpenEvent* override;
+        // [LYN-2376] Remove once legacy slice support is removed
+        auto GetLevelPackOpenEvent() -> LevelPackOpenEvent* override;
         auto GetLevelPackCloseEvent()->LevelPackCloseEvent* override;
 
 
@@ -336,6 +340,8 @@ namespace AZ::IO
         //! Return the Manifest from a bundle, if it exists
         AZStd::shared_ptr<AzFramework::AssetBundleManifest> GetBundleManifest(ZipDir::CachePtr pZip);
         AZStd::shared_ptr<AzFramework::AssetRegistry> GetBundleCatalog(ZipDir::CachePtr pZip, const AZStd::string& catalogName);
+
+        // [LYN-2376] Remove once legacy slice support is removed
         AZStd::vector<AZStd::string> ScanForLevels(ZipDir::CachePtr pZip);
 
         mutable AZStd::shared_mutex m_csOpenFiles;
@@ -362,6 +368,8 @@ namespace AZ::IO
         RecordedFilesSet m_recordedFilesSet;
 
         AZStd::intrusive_ptr<IResourceList> m_pEngineStartupResourceList;
+
+        // [LYN-2376] Remove once legacy slice support is removed
         AZStd::intrusive_ptr<IResourceList> m_pLevelResourceList;
         AZStd::intrusive_ptr<IResourceList> m_pNextLevelResourceList;
 
@@ -378,6 +386,8 @@ namespace AZ::IO
         AZStd::fixed_string<128> m_sLocalizationRoot;
 
         AZStd::set<uint32_t, AZStd::less<>, AZ::OSStdAllocator> m_filesCachedOnHDD;
+
+        // [LYN-2376] Remove once legacy slice support is removed
         LevelPackOpenEvent m_levelOpenEvent;
         LevelPackCloseEvent m_levelCloseEvent;
     };

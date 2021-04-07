@@ -41,6 +41,7 @@ namespace AZ::IO
         : m_hasSeekPenalty(true)
         , m_enableUnbufferedReads(true)
         , m_enableSharing(false)
+        , m_minimalReporting(false)
     {}
 
     //
@@ -102,7 +103,10 @@ namespace AZ::IO
             m_name += m_drivePaths[i].substr(0, m_drivePaths[i].length()-1);
         }
         m_name += ')';
-        AZ_Printf("Streamer", "%s created.\n", m_name.c_str());
+        if (!m_constructionOptions.m_minimalReporting)
+        {
+            AZ_Printf("Streamer", "%s created.\n", m_name.c_str());
+        }
 
         if (m_physicalSectorSize == 0)
         {
@@ -160,7 +164,10 @@ namespace AZ::IO
                 ::CloseHandle(file);
             }
         }
-        AZ_Printf("Streamer", "%s destroyed.\n", m_name.c_str());
+        if (!m_constructionOptions.m_minimalReporting)
+        {
+            AZ_Printf("Streamer", "%s destroyed.\n", m_name.c_str());
+        }
     }
 
     void StorageDriveWin::PrepareRequest(FileRequest* request)
@@ -483,7 +490,7 @@ namespace AZ::IO
                 // Remove any alertable IO completion notifications that could be queued by the IO Manager.
                 if (!::SetFileCompletionNotificationModes(file, FILE_SKIP_SET_EVENT_ON_HANDLE | FILE_SKIP_COMPLETION_PORT_ON_SUCCESS))
                 {
-                    AZ_Printf("StorageDriveWin", "Failed to remove alertable IO completion notifications. (Error: %u)\n", ::GetLastError());
+                    AZ_Warning("StorageDriveWin", false, "Failed to remove alertable IO completion notifications. (Error: %u)\n", ::GetLastError());
                 }
 
                 if (m_fileCache_handles[cacheIndex] != INVALID_HANDLE_VALUE)
@@ -651,15 +658,6 @@ namespace AZ::IO
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         }
         
-        // Keep this, it helps to see the critical info about every read.
-        //AZ_Printf("StorageDriveWin", "FileRead: addr: 0x%p  size: %zu  offs: %zu  alloc: %s  direct: %.2f%%  '%s'\n",
-        //    data->m_output,
-        //    data->m_size,
-        //    data->m_offset,
-        //    (isAligned) ? "Yes" : "No",
-        //    m_directReadsPercentageStat.GetAverage() * 100.0,
-        //    data->m_path.GetRelativePath());
-
         FileReadStatus& readStatus = m_readSlots_statusInfo[readSlot];
         LPOVERLAPPED overlapped = &readStatus.m_overlapped;
         overlapped->Offset = aznumeric_caster(readOffs);
@@ -678,7 +676,7 @@ namespace AZ::IO
             DWORD error = ::GetLastError();
             if (error != ERROR_IO_PENDING)
             {
-                AZ_Printf("StorageDriveWin", "::ReadFile failed with error: %u\n", error);
+                AZ_Warning("StorageDriveWin", false, "::ReadFile failed with error: %u\n", error);
 
                 m_context->GetStreamerThreadSynchronizer().DestroyEventHandle(overlapped->hEvent);
 

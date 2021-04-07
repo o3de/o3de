@@ -51,10 +51,6 @@ CMission::CMission(CCryEditDoc* doc)
 
     m_numCGFObjects = 0;
 
-    m_minimap.vCenter = Vec2(512, 512);
-    m_minimap.vExtends = Vec2(512, 512);
-    m_minimap.textureWidth = m_minimap.textureHeight = 1024;
-
     m_reentrancyProtector = false;
 }
 
@@ -85,10 +81,6 @@ void CMission::Serialize(CXmlArchive& ar, bool bParts)
         ar.root->getAttr("Name", m_name);
         ar.root->getAttr("Description", m_description);
 
-        //time_t time = 0;
-        //ar.root->getAttr( "Time",time );
-        //m_time = time;
-
         XmlNodeRef objects = ar.root->findChild("Objects");
         if (objects)
         {
@@ -105,34 +97,12 @@ void CMission::Serialize(CXmlArchive& ar, bool bParts)
 
         m_Animations = ar.root->findChild("MovieData");
 
-        /*
-        XmlNodeRef expData = ar.root->findChild( "ExportData" );
-        if (expData)
-        {
-            m_exportData = expData;
-        }
-        */
         SerializeEnvironment(ar);
-
-        XmlNodeRef minimapNode = ar.root->findChild("MiniMap");
-        if (minimapNode)
-        {
-            minimapNode->getAttr("CenterX", m_minimap.vCenter.x);
-            minimapNode->getAttr("CenterY", m_minimap.vCenter.y);
-            minimapNode->getAttr("ExtendsX", m_minimap.vExtends.x);
-            minimapNode->getAttr("ExtendsY", m_minimap.vExtends.y);
-            //          minimapNode->getAttr( "CameraHeight",m_minimap.cameraHeight );
-            minimapNode->getAttr("TexWidth", m_minimap.textureWidth);
-            minimapNode->getAttr("TexHeight", m_minimap.textureHeight);
-        }
     }
     else
     {
         ar.root->setAttr("Name", m_name.toUtf8().data());
         ar.root->setAttr("Description", m_description.toUtf8().data());
-
-        //time_t time = m_time.GetTime();
-        //ar.root->setAttr( "Time",time );
 
         QString timeStr;
         int nHour = floor(m_time);
@@ -154,15 +124,6 @@ void CMission::Serialize(CXmlArchive& ar, bool bParts)
             SerializeTimeOfDay(ar);
             SerializeEnvironment(ar);
         }
-
-        XmlNodeRef minimapNode = ar.root->newChild("MiniMap");
-        minimapNode->setAttr("CenterX", m_minimap.vCenter.x);
-        minimapNode->setAttr("CenterY", m_minimap.vCenter.y);
-        minimapNode->setAttr("ExtendsX", m_minimap.vExtends.x);
-        minimapNode->setAttr("ExtendsY", m_minimap.vExtends.y);
-        //      minimapNode->setAttr( "CameraHeight",m_minimap.cameraHeight );
-        minimapNode->setAttr("TexWidth", m_minimap.textureWidth);
-        minimapNode->setAttr("TexHeight", m_minimap.textureHeight);
     }
 }
 
@@ -190,15 +151,6 @@ void CMission::Export(XmlNodeRef& root, XmlNodeRef& objectsNode)
     m_timeOfDay->setAttr("Time", m_time);
     root->addChild(m_timeOfDay);
 
-    XmlNodeRef minimapNode = root->newChild("MiniMap");
-    minimapNode->setAttr("CenterX", m_minimap.vCenter.x);
-    minimapNode->setAttr("CenterY", m_minimap.vCenter.y);
-    minimapNode->setAttr("ExtendsX", m_minimap.vExtends.x);
-    minimapNode->setAttr("ExtendsY", m_minimap.vExtends.y);
-    //  minimapNode->setAttr( "CameraHeight",m_minimap.cameraHeight );
-    minimapNode->setAttr("TexWidth", m_minimap.textureWidth);
-    minimapNode->setAttr("TexHeight", m_minimap.textureHeight);
-
     IObjectManager* pObjMan = GetIEditor()->GetObjectManager();
 
     //////////////////////////////////////////////////////////////////////////
@@ -211,19 +163,6 @@ void CMission::Export(XmlNodeRef& root, XmlNodeRef& objectsNode)
     objectsNode = root->newChild("Objects");
     pObjMan->Export(path, objectsNode, true); // Export shared.
     pObjMan->Export(path, objectsNode, false);  // Export not shared.
-
-    /*
-    CObjectManager objectManager;
-    XmlNodeRef loadRoot = root->createNode("Root");
-    loadRoot->addChild( m_objects );
-
-    std::vector<CObjectClassDesc*> classes;
-    GetIEditor()->GetObjectManager()->GetClasses( classes );
-    objectManager.SetClasses( classes );
-    objectManager.SetCreateGameObject(false);
-    objectManager.Serialize( loadRoot,true,SERIALIZE_ALL );
-    objectManager.Export( path,objects,false );
-    */
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -322,13 +261,6 @@ void CMission::SetLayersNode(XmlNodeRef& node)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMission::SetMinimap(const SMinimapInfo& minimap)
-{
-    m_minimap = minimap;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 void CMission::SaveParts()
 {
     // Save Time of Day
@@ -425,11 +357,5 @@ void CMission::SerializeEnvironment(CXmlArchive& ar)
         env->setTag("Environment");
         ar.root->addChild(env);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-const SMinimapInfo& CMission::GetMinimap() const
-{
-    return m_minimap;
 }
 

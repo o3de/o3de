@@ -253,7 +253,7 @@ def C4044697_Material_PerfaceMaterialValidation():
 
     # 3) Create entity objects
     sphere_0 = Entity("Sphere_0", math.Vector3(0.0, -10.0, 0.0), math.Vector3(0.0, 0.0, 0.0))
-    sphere_1 = Entity("Sphere_1", math.Vector3(-10.0, 0.0, 0.0), math.Vector3(8.35, -0.71, 4.56))
+    sphere_1 = Entity("Sphere_1", math.Vector3(-10.0, 0.0, 0.0), math.Vector3(10.09, 1.85, 1.18))
     sphere_2 = Entity("Sphere_2", math.Vector3(10.0, 0.0, 0.0), math.Vector3(-5.0, 0.0, 0.0))
     perface_entity = Entity("Perface_Entity")
     entity_list = [sphere_0, sphere_1, sphere_2, perface_entity]

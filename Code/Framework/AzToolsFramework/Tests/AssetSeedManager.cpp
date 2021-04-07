@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzTest/Utils.h>
@@ -57,7 +58,7 @@ namespace UnitTest
         void SetUp() override
         {
             using namespace AZ::Data;
-            m_application = new AzToolsFramework::ToolsApplication();
+            m_application = new ToolsTestApplication("AssetSeedManagerTest");
             m_assetSeedManager = new AzToolsFramework::AssetSeedManager();
             m_assetRegistry = new AzFramework::AssetRegistry();
 
@@ -765,7 +766,7 @@ namespace UnitTest
 
         AzToolsFramework::AssetSeedManager* m_assetSeedManager;
         AzFramework::AssetRegistry* m_assetRegistry;
-        AzToolsFramework::ToolsApplication* m_application;
+        ToolsTestApplication* m_application;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_es3Catalog;
         AZ::IO::FileIOStream m_fileStreams[s_totalTestPlatforms][s_totalAssets];

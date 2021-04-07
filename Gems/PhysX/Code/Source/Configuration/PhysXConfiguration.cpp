@@ -45,7 +45,7 @@ namespace PhysX
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<WindConfiguration>()
+            serialize->Class<PhysX::WindConfiguration>()
                 ->Version(1)
                 ->Field("GlobalWindTag", &WindConfiguration::m_globalWindTag)
                 ->Field("LocalWindTag", &WindConfiguration::m_localWindTag)
@@ -53,7 +53,7 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<WindConfiguration>("Wind Configuration", "Wind settings for PhysX")
+                editContext->Class<PhysX::WindConfiguration>("Wind Configuration", "Wind settings for PhysX")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &WindConfiguration::m_globalWindTag,
@@ -86,13 +86,22 @@ namespace PhysX
         AzPhysics::SystemConfiguration::Reflect(context);
         WindConfiguration::Reflect(context);
 
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<PhysXSystemConfiguration, AzPhysics::SystemConfiguration>()
+            serializeContext->Class<PhysX::PhysXSystemConfiguration, AzPhysics::SystemConfiguration>()
                 ->Version(1)
                 ->Field("WindConfiguration", &PhysXSystemConfiguration::m_windConfiguration)
                 ->Field("MaterialLibrary", &PhysXSystemConfiguration::m_defaultMaterialLibrary)
                 ;
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                // this is needed so the edit context of AzPhysics::SystemConfiguration can be used.
+                editContext->Class<PhysX::PhysXSystemConfiguration>("System Configuration", "PhysX system configuration")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ;
+            }
         }
     }
 

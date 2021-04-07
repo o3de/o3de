@@ -64,7 +64,7 @@ namespace ExecutionInterpretedAPICpp
     int DeleteNodeable(lua_State* lua)
     {
         AZ::LuaUserData* userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -1));
-        AZ_Assert(userData && userData->magicData == AZ_CRC("AZLuaUserData", 0x7d76a773), "this isn't user data");
+        AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
         delete reinterpret_cast<ScriptCanvas::Nodeable*>(userData->value);
         userData->value = nullptr;
         return 0;
@@ -413,7 +413,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
 
             auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
-            AZ_Assert(userData && userData->magicData == AZ_CRC("AZLuaUserData", 0x7d76a773), "this isn't user data");
+            AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             // Lua: LuaUserData::nodeable, class_mt
             lua_newtable(lua);
             // Lua: LuaUserData::nodeable, class_mt, proxy
@@ -472,6 +472,8 @@ namespace ScriptCanvas
             lua_register(lua, k_NodeableSetExecutionOutResultName, &SetExecutionOutResult);
             lua_register(lua, k_NodeableSetExecutionOutUserSubgraphName, &SetExecutionOutUserSubgraph);
             lua_register(lua, k_OverrideNodeableMetatableName, &OverrideNodeableMetatable);
+            lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
+            lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
 #if defined(PERFORMANCE_BUILD)
             lua_pushboolean(lua, true);
@@ -693,6 +695,49 @@ namespace ScriptCanvas
             AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
         }
 
+        struct DependencyConstructionPack
+        {
+            ExecutionStateInterpreted* executionState;
+            AZStd::vector<AZ::Data::Asset<RuntimeAsset>>* dependentAssets;
+            const size_t dependentAssetsIndex;
+            RuntimeData& runtimeData;
+        };
+
+        DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
+        {
+            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
+            AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
+            auto dependentAssets = reinterpret_cast<AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*>(lua_touserdata(lua, 2));
+            AZ_Assert(lua_isinteger(lua, 3), "Error in compiled Lua file, 3rd argument to UnpackDependencyArgs is not a number");
+            const size_t dependentAssetsIndex = lua_tointeger(lua, 3);
+
+            return DependencyConstructionPack{ executionState, dependentAssets, dependentAssetsIndex, (*dependentAssets)[dependentAssetsIndex].Get()->m_runtimeData };
+        }
+
+        int Unpack(lua_State* lua, DependencyConstructionPack& args)
+        {
+            ActivationInputArray storage;
+            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetVariableOverrides(), args.runtimeData, storage);
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
+            PushActivationArgs(lua, range.inputs, range.totalCount);
+            return range.totalCount;
+        }
+
+        int UnpackDependencyConstructionArgs(lua_State* lua)
+        {
+            // Lua: executionState, dependentAssets, dependentAssetsIndex
+            DependencyConstructionPack pack = UnpackDependencyConstructionArgsSanitize(lua);
+            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&pack.runtimeData.m_requiredAssets)));
+            return 1 + Unpack(lua, pack);
+        }
+
+        int UnpackDependencyConstructionArgsLeaf(lua_State* lua)
+        {
+            // Lua: executionState, dependentAssets, dependentAssetsIndex
+            DependencyConstructionPack constructionArgs = UnpackDependencyConstructionArgsSanitize(lua);
+            return Unpack(lua, constructionArgs);
+        }
     } 
 
 } 

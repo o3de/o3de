@@ -12,12 +12,16 @@
 
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutor.h>
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 
 namespace AzToolsFramework
 {
@@ -72,42 +76,81 @@ namespace AzToolsFramework
 
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
-            const int instanceCountToUpdateInBatch = m_instanceCountToUpdateInBatch == 0 ? m_instancesUpdateQueue.size() : m_instanceCountToUpdateInBatch;
-            TemplateId currentTemplateId = InvalidTemplateId;
-            TemplateReference currentTemplateReference = AZStd::nullopt;
             bool isUpdateSuccessful = true;
-
-            for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
+            if (!m_updatingTemplateInstancesInQueue)
             {
-                Instance* instanceToUpdate = m_instancesUpdateQueue.front();
-                TemplateId instanceTemplateId = instanceToUpdate->GetTemplateId();
-                if (currentTemplateId != instanceTemplateId)
+                m_updatingTemplateInstancesInQueue = true;
+
+                const int instanceCountToUpdateInBatch =
+                    m_instanceCountToUpdateInBatch == 0 ? m_instancesUpdateQueue.size() : m_instanceCountToUpdateInBatch;
+                TemplateId currentTemplateId = InvalidTemplateId;
+                TemplateReference currentTemplateReference = AZStd::nullopt;
+
+                if (instanceCountToUpdateInBatch > 0)
                 {
-                    currentTemplateId = instanceTemplateId;
-                    currentTemplateReference = m_prefabSystemComponentInterface->FindTemplate(currentTemplateId);
-                    if (!currentTemplateReference.has_value())
+                    EntityIdList selectedEntityIds;
+                    ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, EntityIdList());
+
+                    // Disable the Outliner to avoid showing the propagation steps
+                    EntityOutlinerWidgetInterface* entityOutlinerWidgetInterface = AZ::Interface<EntityOutlinerWidgetInterface>::Get();
+                    if (entityOutlinerWidgetInterface)
                     {
-                        AZ_Error("Prefab", false,
-                            "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                            "Could not find Template using Id '%llu'. Unable to update Instance.",
-                            currentTemplateId);
-
-                        isUpdateSuccessful = false;
+                        entityOutlinerWidgetInterface->SetUpdatesEnabled(false);
                     }
+
+                    for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
+                    {
+                        Instance* instanceToUpdate = m_instancesUpdateQueue.front();
+                        TemplateId instanceTemplateId = instanceToUpdate->GetTemplateId();
+                        if (currentTemplateId != instanceTemplateId)
+                        {
+                            currentTemplateId = instanceTemplateId;
+                            currentTemplateReference = m_prefabSystemComponentInterface->FindTemplate(currentTemplateId);
+                            if (!currentTemplateReference.has_value())
+                            {
+                                AZ_Error(
+                                    "Prefab", false,
+                                    "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                    "Could not find Template using Id '%llu'. Unable to update Instance.",
+                                    currentTemplateId);
+
+                                isUpdateSuccessful = false;
+                            }
+                        }
+
+                        Template& currentTemplate = currentTemplateReference->get();
+                        Instance::EntityList newEntities;
+                        if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
+                                *instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
+                        {
+                            AZ_Error(
+                                "Prefab", false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance from Prefab DOM of Template with Id '%llu' on file path '%s'.",
+                                currentTemplateId, currentTemplate.GetFilePath().c_str());
+
+                            isUpdateSuccessful = false;
+                        }
+                        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+
+                        m_instancesUpdateQueue.pop();
+
+                    }
+
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
+
+                    // Enable the Outliner
+                    AZ::SystemTickBus::QueueFunction([entityOutlinerWidgetInterface]() {
+                        if (entityOutlinerWidgetInterface)
+                        {
+                            entityOutlinerWidgetInterface->SetUpdatesEnabled(true);
+                        }
+                    });
                 }
 
-                Template& currentTemplate = currentTemplateReference->get();
-                if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, currentTemplate.GetPrefabDom(), true))
-                {
-                    AZ_Error("Prefab", false,
-                        "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                        "Could not load Instance from Prefab DOM of Template with Id '%llu' on file path '%s'.",
-                        currentTemplateId, currentTemplate.GetFilePath().c_str());
-
-                    isUpdateSuccessful = false;
-                }
-
-                m_instancesUpdateQueue.pop();
+                m_updatingTemplateInstancesInQueue = false;
             }
 
             return isUpdateSuccessful;

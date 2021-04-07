@@ -198,5 +198,14 @@ namespace AZ
                 AzToolsFramework::Refresh_EntireTree);
         }
 
+        AZ::u32 EditorMeshComponent::OnConfigurationChanged()
+        {
+            // temp variable is needed to hold reference to m_modelAsset while it's being loaded.
+            // Otherwise it gets released in Deactivate function, and instantly re-activating the component
+            // places it in a bad state, which happens in OnConfigurationChanged base function.
+            // This is a bug with AssetManager [LYN-2249]
+            auto temp = m_controller.m_configuration.m_modelAsset;
+            return BaseClass::OnConfigurationChanged();
+        }
     } // namespace Render
 } // namespace AZ

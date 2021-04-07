@@ -17,6 +17,8 @@ namespace UnitTest
 {
     TEST_F(SliceStabilityTest, CreateSlice_ValidSingleParentEntityWithValidChildEntity_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Generate Parent entity
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId parent = CreateEditorEntity("Parent", liveEntityIds);
@@ -38,6 +40,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_ValidGrandparentParentChildHierarchy_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Build Grandparent->Parent->Child and link parent entities between them
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId grandparent = CreateEditorEntity("Grandparent", liveEntityIds);
@@ -61,6 +65,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_10DeepParentChildHierarchy_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AzToolsFramework::EntityIdList liveEntityIds;
 
         // Build a 10 entity deep hierarchy
@@ -86,6 +92,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_ValidParentWith10ValidChildren_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AzToolsFramework::EntityIdList liveEntityIds;
 
         // Create the parent entity and hold on to its id
@@ -111,6 +119,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_ValidParentEntityWithValidChildEntity_OnlyChildEntityAddedToSlice_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AzToolsFramework::EntityIdList liveEntityIds;
 
         // Build parent and child entities and connect child to parent
@@ -133,6 +143,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_EntityWithExternalReference_ExternalReferenceEntityAutoAddedToSlice_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Generate a root entity that will be referenced externally by the entities used to create the slice
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId externalRootId = CreateEditorEntity("ExternalRoot", liveEntityIds);
@@ -174,6 +186,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_2ValidWithSharedParent_ParentNotIncludedInSliceCreate_ParentIsGenerated_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create a shared parent that won't be included in the CreateSlice call
         // Including a shared parent will validate that the generated parent becomes a child of the original parent
         // A generated parent is made because CreateSlice will not have a parent entity to work with and one is required
@@ -273,6 +287,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_TestSubsliceOfSameType_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create a Root entity
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId rootEntity = CreateEditorEntity("Root", liveEntityIds);
@@ -308,6 +324,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_TestSubsliceOfDifferentType_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create a root entity to be used in Slice1
         AzToolsFramework::EntityIdList slice1Entities;
         AZ::EntityId slice1Root = CreateEditorEntity("Slice1Root", slice1Entities);
@@ -365,6 +383,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_Test10DeepSliceAncestry_EntityStateRemainsTheSame_InstanceAncestryIntact_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::u32 totalAncestors = 10;
 
         // Generate a Root entity
@@ -396,6 +416,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_Test5DeepSliceAncestryWithSubslices_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Generate a Root entity
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId rootEntity = CreateEditorEntity("Root", liveEntityIds);
@@ -426,6 +448,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, CreateSlice_TestOverride_OverrideAppliesSuccesfully_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Generate a Root entity
         AzToolsFramework::EntityIdList liveEntityIds;
         ASSERT_TRUE(CreateEditorEntity("Root", liveEntityIds).IsValid());

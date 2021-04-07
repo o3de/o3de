@@ -71,8 +71,6 @@ namespace AWSMetrics
         //! @return Whether the metrics queue is created successfully.
         bool ReadFromJson(const AZStd::string& filePath);
 
-        bool ReadFromString(const AZStd::string& string);
-
     private:
         bool ReadFromJsonDocument(rapidjson::Document& doc);
 

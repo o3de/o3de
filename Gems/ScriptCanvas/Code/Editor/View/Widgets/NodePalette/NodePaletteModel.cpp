@@ -583,6 +583,13 @@ namespace
                 {
                     if (!IsExplicitOverload(*methodIter.second))
                     {
+                        // Respect the exclusion flags
+                        auto attributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, methodIter.second->m_attributes));
+                        if (ShouldExcludeFromNodeList(attributeData , {}))
+                        {
+                            return;
+                        }
+
                         RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, methodIter.first, *methodIter.second, behaviorClass->IsMethodOverloaded(methodIter.first));
                     }
                 }
@@ -1290,7 +1297,7 @@ namespace ScriptCanvasEditor
 
         AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
 
-        AZStd::string category = "Global Functions";
+        AZStd::string category = "User Functions";
         AZStd::string relativePath;
 
         if (AzFramework::StringFunc::Path::GetFolderPath(assetInfo.m_relativePath.c_str(), relativePath))

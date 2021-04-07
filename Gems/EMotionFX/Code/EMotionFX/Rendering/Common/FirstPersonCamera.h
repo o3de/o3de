@@ -61,8 +61,8 @@ namespace MCommon
         const char* GetTypeString() const                       { return "First Person"; }
 
         /**
-         * Set the pitch angle in degrees. Looking up and down is limited to 90�. (0=Straight Ahead, +Up, -Down)
-         * @param The pitch angle in degrees, range[-90.0�, 90.0�].
+         * Set the pitch angle in degrees. Looking up and down is limited to 90°. (0=Straight Ahead, +Up, -Down)
+         * @param The pitch angle in degrees, range[-90.0°, 90.0°].
          */
         MCORE_INLINE void SetPitch(float pitch)                     { mPitch = pitch; }
 
@@ -79,8 +79,8 @@ namespace MCommon
         MCORE_INLINE void SetRoll(float roll)                       { mRoll = roll; }
 
         /**
-         * Get the pitch angle in degrees. Looking up and down is limited to 90�. (0=Straight Ahead, +Up, -Down)
-         * @return The pitch angle in degrees, range[-90.0�, 90.0�].
+         * Get the pitch angle in degrees. Looking up and down is limited to 90°. (0=Straight Ahead, +Up, -Down)
+         * @return The pitch angle in degrees, range[-90.0°, 90.0°].
          */
         MCORE_INLINE float GetPitch() const                         { return mPitch; }
 

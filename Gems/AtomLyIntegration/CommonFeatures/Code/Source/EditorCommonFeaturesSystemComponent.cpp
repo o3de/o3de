@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -33,6 +34,7 @@ namespace AZ
         }
 
         EditorCommonFeaturesSystemComponent::EditorCommonFeaturesSystemComponent() = default;
+
         EditorCommonFeaturesSystemComponent::~EditorCommonFeaturesSystemComponent() = default;
 
         //! Main system component for the Atom Common Feature Gem's editor/tools module.
@@ -84,49 +86,67 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::Activate()
         {
+            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
+            m_previewerFactory = AZStd::make_unique <LyIntegration::CommonPreviewerFactory>();
             m_skinnedMeshDebugDisplay = AZStd::make_unique<SkinnedMeshDebugDisplay>();
 
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
+            AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void EditorCommonFeaturesSystemComponent::Deactivate()
         {
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+            AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
+
             m_skinnedMeshDebugDisplay.reset();
+            m_previewerFactory.reset();
+            m_renderer.reset();
         }
 
         void EditorCommonFeaturesSystemComponent::OnNewLevelCreated()
         {
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(m_levelDefaultSliceAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_atomLevelDefaultAssetPath.c_str(), azrtti_typeid<AZ::SliceAsset>(), false);
+            bool isPrefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-            if (m_levelDefaultSliceAssetId.IsValid())
+            if (!isPrefabSystemEnabled)
             {
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::SliceAsset>(
-                    m_levelDefaultSliceAssetId,
-                    AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    m_levelDefaultSliceAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_atomLevelDefaultAssetPath.c_str(),
+                    azrtti_typeid<AZ::SliceAsset>(), false);
 
-                asset.BlockUntilLoadComplete();
-
-                if (asset)
+                if (m_levelDefaultSliceAssetId.IsValid())
                 {
-                    AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
-                    bool activeCameraFound = false;
-                    Camera::EditorCameraRequestBus::BroadcastResult(activeCameraFound, &Camera::EditorCameraRequestBus::Events::GetActiveCameraPosition, cameraPosition);
+                    AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::SliceAsset>(
+                        m_levelDefaultSliceAssetId, AZ::Data::AssetLoadBehavior::Default);
 
-                    if (activeCameraFound)
+                    asset.BlockUntilLoadComplete();
+
+                    if (asset)
                     {
-                        AZ::Transform worldTransform = AZ::Transform::CreateTranslation(cameraPosition);
+                        AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+                        bool activeCameraFound = false;
+                        Camera::EditorCameraRequestBus::BroadcastResult(
+                            activeCameraFound, &Camera::EditorCameraRequestBus::Events::GetActiveCameraPosition, cameraPosition);
 
-                        AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-
-                        if (IEditor* editor = GetLegacyEditor();
-                            !editor->IsUndoSuspended())
+                        if (activeCameraFound)
                         {
-                            editor->SuspendUndo();
-                        }
+                            AZ::Transform worldTransform = AZ::Transform::CreateTranslation(cameraPosition);
 
-                        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
+                            AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
+
+                            if (IEditor* editor = GetLegacyEditor(); !editor->IsUndoSuspended())
+                            {
+                                editor->SuspendUndo();
+                            }
+
+                            AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
+                                &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset,
+                                worldTransform);
+                        }
                     }
                 }
             }
@@ -165,7 +185,6 @@ namespace AZ
             }
         }
 
-
         void EditorCommonFeaturesSystemComponent::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/)
         {
             if (m_levelDefaultSliceAssetId == sliceAssetId)
@@ -174,6 +193,17 @@ namespace AZ
                 AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
                 AZ_Warning("EditorCommonFeaturesSystemComponent", false, "Failed to instantiate default Atom environment slice.");
             }
+        }
+
+        const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorCommonFeaturesSystemComponent::GetPreviewerFactory(
+            const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
+        {
+            return m_previewerFactory->IsEntrySupported(entry) ? m_previewerFactory.get() : nullptr;
+        }
+
+        void EditorCommonFeaturesSystemComponent::OnApplicationAboutToStop()
+        {
+            m_renderer.reset();
         }
     } // namespace Render
 } // namespace AZ

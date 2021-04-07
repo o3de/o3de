@@ -11,7 +11,6 @@
  */
 
 
-#if AZ_TRAIT_OS_PLATFORM_APPLE
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
@@ -433,4 +432,3 @@ namespace AzFramework
     }
 } //namespace AzFramework
 
-#endif // AZ_TRAIT_OS_PLATFORM_APPLE

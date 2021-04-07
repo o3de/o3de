@@ -56,6 +56,9 @@ namespace ScriptCanvasBuilder
         ChangeScriptRequirementToAsset,
         RemoveDebugVariablesFromRelease,
         FailJobsOnMissingLKG,
+        QuantumLeap,
+        DependencyArguments,
+        DependencyRequirementsData,
         // add new entries above
         Current,
     };
@@ -172,7 +175,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
 
-        mutable AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_sourceDependencies;
+        mutable AZStd::vector<AZ::Data::AssetFilterInfo> m_processEditorAssetDependencies;
         // cached on first time query
         mutable AZStd::string m_fingerprintString;
     };

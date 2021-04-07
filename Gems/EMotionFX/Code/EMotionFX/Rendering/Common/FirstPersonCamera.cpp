@@ -35,7 +35,7 @@ namespace MCommon
     {
         MCORE_UNUSED(timeDelta);
 
-        // lock pitching to [-90.0�, 90.0�]
+        // lock pitching to [-90.0°, 90.0°]
         if (mPitch < -90.0f + 0.1f)
         {
             mPitch = -90.0f + 0.1f;

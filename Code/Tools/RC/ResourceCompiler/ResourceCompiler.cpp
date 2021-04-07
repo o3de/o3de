@@ -48,6 +48,7 @@
 #include "CryLibrary.h"
 
 #include <AzCore/Module/Environment.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 
@@ -2407,23 +2408,30 @@ void ResourceCompiler::ScanForAssetReferences(std::vector<string>& outReferences
         }
     }
 
-    std::vector<string> levelPaks;
-    FileUtil::ScanDirectory(scanRoot, "level.pak", levelPaks, true, string());
-    for (size_t i = 0; i < levelPaks.size(); ++i)
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    if (!usePrefabSystemForLevels)
     {
-        const string path = PathHelpers::GetDirectory(levelPaks[i].c_str()) + "\\resourcelist.txt";
-        if (reader.LoadFromPak(GetPakSystem(), path, lines))
+        std::vector<string> levelPaks;
+        FileUtil::ScanDirectory(scanRoot, "level.pak", levelPaks, true, string());
+        for (size_t i = 0; i < levelPaks.size(); ++i)
         {
-            for (size_t j = 0; j < lines.size(); ++j)
+            const string path = PathHelpers::GetDirectory(levelPaks[i].c_str()) + "\\resourcelist.txt";
+            if (reader.LoadFromPak(GetPakSystem(), path, lines))
             {
-                const char* const line = lines[j];
-                if (references.find(line) == references.end())
+                for (size_t j = 0; j < lines.size(); ++j)
                 {
-                    strings.push_back(line);
-                    references.insert(strings.back().c_str());
+                    const char* const line = lines[j];
+                    if (references.find(line) == references.end())
+                    {
+                        strings.push_back(line);
+                        references.insert(strings.back().c_str());
+                    }
                 }
+                ++numSources;
             }
-            ++numSources;
         }
     }
 

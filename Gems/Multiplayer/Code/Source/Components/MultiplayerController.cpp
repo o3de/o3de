@@ -52,10 +52,19 @@ namespace Multiplayer
         return m_owner.GetNetBindComponent();
     }
 
+    const MultiplayerComponent& MultiplayerController::GetOwner() const
+    {
+        return m_owner;
+    }
+
+    MultiplayerComponent& MultiplayerController::GetOwner()
+    {
+        return m_owner;
+    }
+
     bool MultiplayerController::IsProcessingInput() const
     {
-        //return m_owner.GetNetBindComponent()->IsProcessingInput();
-        return false;
+        return GetNetBindComponent()->IsProcessingInput();
     }
 
     MultiplayerController* MultiplayerController::FindController(const AZ::Uuid& typeId, const NetworkEntityHandle& entityHandle) const

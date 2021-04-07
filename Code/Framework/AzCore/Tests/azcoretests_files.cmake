@@ -123,6 +123,7 @@ set(FILES
     Serialization/Json/TestCases_Pointers.h
     Serialization/Json/TestCases_Pointers.cpp
     Serialization/Json/TestCases_TypeId.cpp
+    Serialization/Json/TransformSerializerTests.cpp
     Serialization/Json/TupleSerializerTests.cpp
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp

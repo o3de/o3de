@@ -201,3 +201,27 @@ float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 {
     return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
 }
+
+// ---------- Random number generators -----------
+// George Marsaglia's Xorshift RNGs
+// https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
+uint Xorshift(in uint value) 
+{
+    value ^= value << 13;
+    value ^= value >> 17;
+    value ^= value << 5;
+    return value;
+}
+
+uint NextRandomUint(inout uint seed)
+{
+    seed = Xorshift(seed);
+    return seed;
+}
+
+// Returns a random float with range [0, 1)
+float NextRandomFloatUniform(inout uint seed)
+{
+    seed = Xorshift(seed);
+    return (float)seed /  4294967295.0f;
+}

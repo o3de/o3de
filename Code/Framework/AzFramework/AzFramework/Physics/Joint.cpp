@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Joint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 namespace Physics
 {

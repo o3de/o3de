@@ -69,7 +69,7 @@ namespace AZ
             {
                 RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
                 shaderOptionGroup.SetUnspecifiedToDefaultValues();
-                for (auto optionAndValue : *optionAndValues)
+                for (const auto& optionAndValue : *optionAndValues)
                 {
                     shaderOptionGroup.SetValue(optionAndValue.first, optionAndValue.second);
                 }
@@ -209,6 +209,11 @@ namespace AZ
         const RHI::PipelineStateDescriptorForDraw& PipelineStateForDraw::ConstDescriptor() const
         {
             return m_descriptor;
+        }
+
+        const Data::Instance<Shader>& PipelineStateForDraw::GetShader() const
+        {
+            return m_shader;
         }
 
         bool PipelineStateForDraw::UpdateSrgVariantFallback(Data::Instance<ShaderResourceGroup>& srg) const

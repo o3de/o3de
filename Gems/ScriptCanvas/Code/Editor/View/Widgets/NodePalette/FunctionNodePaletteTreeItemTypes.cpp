@@ -15,22 +15,19 @@
 #include <QPixmap>
 
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
-
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
-
-#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
-
-#include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/Components/VisualBus.h>
+#include <Editor/View/Widgets/NodePalette/FunctionNodePaletteTreeItemTypes.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h>
+#include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
+#include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
-
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/View/Widgets/NodePalette/FunctionNodePaletteTreeItemTypes.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
+#include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -51,50 +48,41 @@ namespace ScriptCanvasEditor
 
     }
 
-    CreateFunctionMimeEvent::CreateFunctionMimeEvent(const AZ::Data::AssetId& assetId)
+    CreateFunctionMimeEvent::CreateFunctionMimeEvent(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)
         : m_assetId(assetId)
+        , m_assetType(assetType)
+        , m_sourceId(sourceId)
     {
     }
 
-    bool CreateFunctionMimeEvent::CanGraphHandleEvent(const GraphCanvas::GraphId& graphId) const
+    bool CreateFunctionMimeEvent::CanGraphHandleEvent([[maybe_unused]] const GraphCanvas::GraphId& graphId) const
     {
-        AZ::EntityId scGraphId;
-        GeneralRequestBus::BroadcastResult(scGraphId, &GeneralRequests::GetScriptCanvasId, graphId);
-
-        bool isFunctionGraph = false;
-        EditorGraphRequestBus::EventResult(isFunctionGraph, scGraphId, &EditorGraphRequests::IsFunctionGraph);
-
-        return !isFunctionGraph;
+        return true;
     }
 
     ScriptCanvasEditor::NodeIdPair CreateFunctionMimeEvent::CreateNode(const AZ::EntityId& scriptCanvasGraphId) const
     {
-        return Nodes::CreateFunctionNode(scriptCanvasGraphId, m_assetId);
+        return Nodes::CreateFunctionNode(scriptCanvasGraphId, m_assetId, m_sourceId);
     }
 
     /////////////////////////////////////
     // FunctionPaletteTreeItem
     /////////////////////////////////////
 
-    FunctionPaletteTreeItem::FunctionPaletteTreeItem(const char* name, const AZ::Data::AssetId& sourceAssetId, const AZ::Data::AssetId& runtimeAssetId)
+    FunctionPaletteTreeItem::FunctionPaletteTreeItem(const char* name, const ScriptCanvas::Grammar::FunctionSourceId& sourceId, AZ::Data::Asset<AZ::Data::AssetData> asset)
         : GraphCanvas::DraggableNodePaletteTreeItem(name, ScriptCanvasEditor::AssetEditorId)
         , m_editIcon(":/ScriptCanvasEditorResources/Resources/edit_icon.png")
-        , m_sourceAssetId(sourceAssetId)
-        , m_runtimeAssetId(runtimeAssetId)
+        , m_sourceId(sourceId)
+        , m_asset(asset)
     {
-        //TODO
+        // TODO
         //SetToolTip(m_methodDefinition.GetTooltip().c_str());
         SetTitlePalette("FunctionNodeTitlePalette");
     }
 
-    void FunctionPaletteTreeItem::SetRuntimeAssetId(const AZ::Data::AssetId& assetId)
-    {
-        m_runtimeAssetId = assetId;
-    }
-
     GraphCanvas::GraphCanvasMimeEvent* FunctionPaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateFunctionMimeEvent(m_runtimeAssetId);
+        return aznew CreateFunctionMimeEvent(m_asset->GetId(), m_asset->GetType(), m_sourceId);
     }
 
     QVariant FunctionPaletteTreeItem::OnData(const QModelIndex& index, int role) const
@@ -117,14 +105,24 @@ namespace ScriptCanvasEditor
         return GraphCanvas::DraggableNodePaletteTreeItem::OnData(index, role);
     }
 
-    const AZ::Data::AssetId& FunctionPaletteTreeItem::GetSourceAssetId() const
+    ScriptCanvas::Grammar::FunctionSourceId FunctionPaletteTreeItem::GetFunctionSourceId() const
     {
-        return m_sourceAssetId;
+        return m_sourceId;
     }
 
-    const AZ::Data::AssetId& FunctionPaletteTreeItem::GetRuntimeAssetId() const
+    AZ::Data::AssetId FunctionPaletteTreeItem::GetSourceAssetId() const
     {
-        return m_runtimeAssetId;
+        return AZ::Data::AssetId(GetAssetId().m_guid, 0);
+    }
+
+    AZ::Data::AssetId FunctionPaletteTreeItem::GetAssetId() const
+    {
+        return m_asset->GetId();
+    }
+
+    AZ::Data::AssetType FunctionPaletteTreeItem::GetAssetType() const
+    {
+        return m_asset->GetType();
     }
 
     void FunctionPaletteTreeItem::OnHoverStateChanged()
@@ -136,7 +134,7 @@ namespace ScriptCanvasEditor
     {
         if (row == NodePaletteTreeItem::Column::Customization)
         {
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, m_sourceAssetId, -1);
+            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, GetSourceAssetId(), -1);
         }
     }
 
@@ -144,7 +142,7 @@ namespace ScriptCanvasEditor
     {
         if (row != NodePaletteTreeItem::Column::Customization)
         {
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, m_sourceAssetId, -1);
+            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, GetSourceAssetId(), -1);
             return true;
         }
 

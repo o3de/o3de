@@ -29,7 +29,6 @@ ly_add_target(
 ly_add_target( 
     NAME AWSMetrics ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AWSMetrics.cc6fc7a18fc047039a369a26100fcbbe.0.1.0
     FILES_CMAKE
         awsmetrics_shared_files.cmake
     INCLUDE_DIRECTORIES

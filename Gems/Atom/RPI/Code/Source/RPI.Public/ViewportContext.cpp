@@ -95,6 +95,8 @@ namespace AZ
                 m_currentPipeline.reset();
                 UpdatePipelineView();
             }
+
+            m_sceneChangedEvent.Signal(scene);
         }
 
         void ViewportContext::RenderTick()
@@ -138,6 +140,11 @@ namespace AZ
         void ViewportContext::ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_projectionMatrixChangedEvent);
+        }
+
+        void ViewportContext::ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_sceneChangedEvent);
         }
 
         const AZ::Matrix4x4& ViewportContext::GetCameraViewMatrix() const

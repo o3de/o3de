@@ -58,7 +58,7 @@ namespace ScriptCanvas
 
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
                 UpdateResult OnUpdateNode() override;
 

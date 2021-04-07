@@ -75,7 +75,7 @@ namespace ScriptCanvas
                 void SetAutoConnectToGraphOwner(bool enabled);
 
                 AZStd::string GetEBusName() const override;
-                bool HandlerStartsConnected() const override;
+                bool IsAutoConnected() const override;
                 bool IsEBusAddressed() const override;
                 bool IsEventHandler() const override;
                 const Datum* GetHandlerStartAddress() const override;
@@ -85,7 +85,7 @@ namespace ScriptCanvas
                 AZStd::vector<const Slot*> GetOnVariableHandlingExecutionSlots() const override;
 
             protected:
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
                 void OnScriptEventReady(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>&) override;
 

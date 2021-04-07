@@ -100,8 +100,9 @@ namespace ScriptCanvasBuilder
             // or the fingerprint of the individual job is different.
             size_t fingerprint = ScriptCanvas::BehaviorContextUtils::GenerateFingerprintForBehaviorContext();
             builderDescriptor.m_analysisFingerprint = AZStd::string(m_scriptCanvasBuilder.GetFingerprintString())
-                .append(AZStd::string::format("|%zu", fingerprint));
+                .append(AZStd::string::format("|%lu", static_cast<uint64_t>(fingerprint)));
             builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
+            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
 
@@ -123,6 +124,7 @@ namespace ScriptCanvasBuilder
             // or the fingerprint of the individual job is different.
             builderDescriptor.m_analysisFingerprint = m_scriptCanvasFunctionBuilder.GetFingerprintString();
             builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
+            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
             ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
             AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(), ScriptCanvasEditor::ScriptCanvasFunctionAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());

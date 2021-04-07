@@ -29,8 +29,8 @@ public:
     MOCK_CONST_METHOD0(GetDataProbeString, const char*());
     MOCK_METHOD1(Set, void(const char*));
     MOCK_METHOD1(ForceSet, void(const char*));
-    MOCK_METHOD1(Set, void(const float));
-    MOCK_METHOD1(Set, void(const int));
+    MOCK_METHOD1(Set, void(float));
+    MOCK_METHOD1(Set, void(int));
     MOCK_METHOD1(ClearFlags, void(const int));
     MOCK_CONST_METHOD0(GetFlags, int());
     MOCK_METHOD1(SetFlags, int(const int));

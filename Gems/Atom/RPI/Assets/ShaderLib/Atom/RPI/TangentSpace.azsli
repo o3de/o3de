@@ -21,7 +21,7 @@ float3 TangentSpaceToWorld(float3 vectorTS, float3 normalWS, float3 tangentWS, f
 }
 
 //! Utility function to convert vector from world space to tangent space
-float3 WorldToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+float3 WorldSpaceToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
 {
     float a = dot(tangentWS, vectorWS);
     float b = dot(bitangentWS, vectorWS);

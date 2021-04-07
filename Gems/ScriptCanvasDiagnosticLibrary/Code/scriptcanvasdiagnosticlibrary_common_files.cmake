@@ -20,5 +20,5 @@ set(FILES
     Source/DebugLibraryDefinition.cpp
     Source/DrawText.h
     Source/DrawText.cpp
-    Source/DrawText.ScriptCanvasNode.xml
+    Source/DrawText.ScriptCanvasGrammar.xml
 )

@@ -44,17 +44,12 @@ namespace AZ
         {
             FullscreenTrianglePass::Init();
 
-            AZ_Assert(m_shaderResourceGroup, "DepthOfFieldCompositePass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            if (m_shaderResourceGroup)
-            {
-                m_backBlendFactorDivision2Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_backBlendFactorDivision2"));
-                m_backBlendFactorDivision4Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_backBlendFactorDivision4"));
-                m_backBlendFactorDivision8Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_backBlendFactorDivision8"));
-                m_frontBlendFactorDivision2Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_frontBlendFactorDivision2"));
-                m_frontBlendFactorDivision4Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_frontBlendFactorDivision4"));
-                m_frontBlendFactorDivision8Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_frontBlendFactorDivision8"));
-            }
+            m_backBlendFactorDivision2Index.Reset();
+            m_backBlendFactorDivision4Index.Reset();
+            m_backBlendFactorDivision8Index.Reset();
+            m_frontBlendFactorDivision2Index.Reset();
+            m_frontBlendFactorDivision4Index.Reset();
+            m_frontBlendFactorDivision8Index.Reset();
 
             InitializeShaderVariant();
         }

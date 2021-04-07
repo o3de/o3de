@@ -120,7 +120,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Core, ReceiveScriptEvent>(nodeRegistry);
             AddNodeToRegistry<Core, SendScriptEvent>(nodeRegistry);
             AddNodeToRegistry<Core, Repeater>(nodeRegistry);
-            AddNodeToRegistry<Core, FunctionNode>(nodeRegistry);
+            AddNodeToRegistry<Core, FunctionCallNode>(nodeRegistry);
             AddNodeToRegistry<Core, FunctionDefinitionNode>(nodeRegistry);
             // Nodeables
             AddNodeToRegistry<Core, Nodes::RepeaterNodeableNode>(nodeRegistry);
@@ -145,7 +145,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Core::ReceiveScriptEvent::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::SendScriptEvent::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Repeater::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::FunctionNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::Core::FunctionCallNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::FunctionDefinitionNode::CreateDescriptor(),
                 // Nodeables
                 ScriptCanvas::Nodes::RepeaterNodeableNode::CreateDescriptor(),

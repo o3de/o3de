@@ -118,6 +118,9 @@ namespace AZ
         //! If the entity is in a transition state, this function asserts.
         virtual ~Entity();
 
+        //! Resets the state to default
+        void Reset();
+
         //! Gets the ID of the entity.
         //! @return The ID of the entity. 
         EntityId GetId() const { return m_id; }

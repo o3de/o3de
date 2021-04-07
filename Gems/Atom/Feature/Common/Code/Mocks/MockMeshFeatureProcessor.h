@@ -33,7 +33,8 @@ namespace UnitTest
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD2(SetTransform, void(const MeshHandle&, const AZ::Transform&));
         MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
-        MOCK_METHOD2(SetMaterialAssignmentMap, void (const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
+        MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));
+        MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform (const MeshHandle&));
         MOCK_METHOD2(SetSortKey, void (const MeshHandle&, AZ::RHI::DrawItemSortKey));
         MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));

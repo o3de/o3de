@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
 #include "SliceMetadataEntityContextComponent.h"
 
@@ -196,10 +197,10 @@ namespace AzToolsFramework
         SliceMetadataEntityContextNotificationBus::Broadcast(&SliceMetadataEntityContextNotifications::OnMetadataEntityAdded, metadataEntity.GetId());
 
         // Register the metadata entity with the pre-emptive undo cache (if exists) so it has an initial state
-        auto* preemptiveUndoCache = PreemptiveUndoCache::Get();
-        if (preemptiveUndoCache)
+        auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+        if (undoCacheInterface)
         {
-            preemptiveUndoCache->UpdateCache(metadataEntity.GetId());
+            undoCacheInterface->UpdateCache(metadataEntity.GetId());
         }
     }
 

@@ -852,7 +852,7 @@ public:
     bool EF_PrepareShadowGenForLight(SRenderLight* pLight, int nLightID);
     bool PrepareShadowGenForFrustum(ShadowMapFrustum* pCurFrustum, SRenderLight* pLight, int nLightFrustumID = 0, int nLOD = 0);
     void PrepareShadowGenForFrustumNonJobs(const int nFlags);
-    virtual void EF_InvokeShadowMapRenderJobs(const int nFlags);
+    virtual void EF_InvokeShadowMapRenderJobs(int nFlags);
     void InvokeShadowMapRenderJobs(ShadowMapFrustum* pCurFrustum, const SRenderingPassInfo& passInfo);
     void StartInvokeShadowMapRenderJobs(ShadowMapFrustum* pCurFrustum, const SRenderingPassInfo& passInfo);
 
@@ -989,7 +989,7 @@ public:
     virtual void RT_ReleaseCB(void* pCB);
     virtual void RT_DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, uint32 nVerts, uint32 nInds, const PublicRenderPrimitiveType nPrimType);
     virtual void RT_DrawDynVBUI(SVF_P2F_C4B_T2F_F4B* pBuf, uint16* pInds, uint32 nVerts, uint32 nInds, const PublicRenderPrimitiveType nPrimType);
-    virtual void RT_DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, const bool asciiMultiLine, const STextDrawContext& ctx) const;
+    virtual void RT_DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, bool asciiMultiLine, const STextDrawContext& ctx) const;
     virtual void RT_DrawLines(Vec3 v[], int nump, ColorF& col, int flags, float fGround);
     virtual void RT_Draw2dImage(float xpos, float ypos, float w, float h, CTexture* pTexture, float s0, float t0, float s1, float t1, float angle, DWORD col, float z);
     virtual void RT_Draw2dImageStretchMode(bool bStretch);
@@ -1112,7 +1112,7 @@ public:
     void DrawLines(Vec3 v[], int nump, ColorF& col, int flags, float fGround);
     virtual void Graph(byte* g, int x, int y, int wdt, int hgt, int nC, int type, const char* text, ColorF& color, float fScale);
 
-    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, const PublicRenderPrimitiveType nPrimType);
+    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, PublicRenderPrimitiveType nPrimType);
     virtual void DrawDynUiPrimitiveList(DynUiPrimitiveList& primitives, int totalNumVertices, int totalNumIndices);
 
     virtual void PrintResourcesLeaks();
@@ -1159,7 +1159,7 @@ public:
     virtual void ReadFrameBuffer(unsigned char* pRGB, int nImageX, int nSizeX, int nSizeY, ERB_Type eRBType, bool bRGBA, int nScaledX = -1, int nScaledY = -1);
     virtual void ReadFrameBufferFast(uint32* pDstARGBA8, int dstWidth, int dstHeight, bool BGRA = true);
 
-    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, const bool bSilentMode = false);
+    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, bool bSilentMode = false);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // This routines uses 2 destination surfaces.  It triggers a backbuffer copy to one of its surfaces,
@@ -1267,7 +1267,7 @@ public:
 
     virtual int ScreenToTexture(int nTexID);
 
-    virtual bool    SetGammaDelta(const float fGamma);
+    virtual bool    SetGammaDelta(float fGamma);
 
     //////////////////////////////////////////////////////////////////////
     // Replacement functions for the Font engine
@@ -1871,7 +1871,7 @@ public:
     }
 
     // This is a cross-platform low-level function for DIP call
-    ILINE void FX_DrawPrimitive(const eRenderPrimitiveType eType, const int nStartVertex, const int nVerticesCount, const int nInstanceVertices = 0)
+    ILINE void FX_DrawPrimitive(eRenderPrimitiveType eType, int nStartVertex, int nVerticesCount, int nInstanceVertices = 0)
     {
         int nPrimitives;
         if (nInstanceVertices)
@@ -2046,8 +2046,8 @@ public:
 
     void EF_PrintProfileInfo();
 
-    virtual void EF_EndEf3D (const int nFlags, const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo);
-    virtual void EF_EndEf2D(const bool bSort); // 2d only
+    virtual void EF_EndEf3D (int nFlags, int nPrecacheUpdateId, int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo);
+    virtual void EF_EndEf2D(bool bSort); // 2d only
 
     virtual WIN_HWND GetHWND() { return m_hWnd; }
     virtual bool SetWindowIcon(const char* path);
@@ -2268,7 +2268,6 @@ private:
     ICVar* CV_capture_frames;
     ICVar* CV_capture_folder;
     ICVar* CV_capture_buffer;
-    ICVar* CV_capture_file_format;
     ICVar* CV_capture_frame_once;
     ICVar* CV_capture_file_name;
     ICVar* CV_capture_file_prefix;

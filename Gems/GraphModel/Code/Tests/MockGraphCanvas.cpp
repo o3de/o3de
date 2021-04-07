@@ -108,6 +108,11 @@ namespace MockGraphCanvasServices
         return false;
     }
 
+    bool MockDataSlotComponent::IsUserSlot() const
+    {
+        return false;
+    }
+
     bool MockDataSlotComponent::ConvertToValue()
     {
         return false;

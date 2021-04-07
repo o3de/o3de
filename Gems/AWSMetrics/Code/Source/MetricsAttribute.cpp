@@ -53,9 +53,9 @@ namespace AWSMetrics
     {
         static const AZStd::array<AZStd::string, 7> DefaultAttributeNames =
         {
-            METRICS_ATTRIBUTE_KEY_CLIENT_ID, METRICS_ATTRIBUTE_KEY_EVENT_ID,
-            METRICS_ATTRIBUTE_KEY_EVENT_NAME, METRICS_ATTRIBUTE_KEY_EVENT_TYPE,
-            METRICS_ATTRIBUTE_KEY_EVENT_SOURCE, METRICS_ATTRIBUTE_KEY_EVENT_TIMESTAMP
+            AwsMetricsAttributeKeyClientId, AwsMetricsAttributeKeyEventId,
+            AwsMetricsAttributeKeyEventName, AwsMetricsAttributeKeyEventType,
+            AwsMetricsAttributeKeyEventSource, AwsMetricsAttributeKeyEventTimestamp
         };
 
         m_isDefault = AZStd::find(DefaultAttributeNames.begin(), DefaultAttributeNames.end(), name) != DefaultAttributeNames.end();

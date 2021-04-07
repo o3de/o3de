@@ -14,11 +14,22 @@
 #include "LevelBuilderComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/API/ApplicationAPI.h>
 
 namespace LevelBuilder
 {
     void LevelBuilderComponent::Activate()
     {
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+        // No need to build level.pak files when using the prefab system.
+        if (usePrefabSystemForLevels)
+        {
+            return;
+        }
+
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "LevelBuilderWorker";
         // This builder only works with the level.pak exported from levels. Other pak files are handled by the copy job.

@@ -147,6 +147,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
         setMinimumSize(minimumSize().width(), newGeometry.height());
         resize(newGeometry.size());
     }
+
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 }
 
 
@@ -209,33 +211,28 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     int recentListSize = pList->GetSize();
     for (int i = 0; i < recentListSize; ++i)
     {
-        if (CFileUtil::Exists(pList->m_arrNames[i], false))
+        const QString& recentFile = pList->m_arrNames[i];
+        if (recentFile.endsWith(m_levelExtension))
         {
-            QString sCurEntryDir = pList->m_arrNames[i].left(nCurDir);
-
-            if (sCurEntryDir.compare(sCurDir, Qt::CaseInsensitive) != 0)
+            if (CFileUtil::Exists(recentFile, false))
             {
-                //unavailable entry (wrong directory)
-                continue;
+                QString sCurEntryDir = recentFile.left(nCurDir);
+                if (sCurEntryDir.compare(sCurDir, Qt::CaseInsensitive) == 0)
+                {
+                    QString fullPath = recentFile;
+                    QString name = Path::GetFileName(fullPath);
+
+                    Path::ConvertSlashToBackSlash(fullPath);
+                    fullPath = Path::ToUnixPath(fullPath.toLower());
+                    fullPath = Path::AddSlash(fullPath);
+
+                    if (fullPath.contains(gamePath))
+                    {
+                        m_pRecentListModel->setStringList(m_pRecentListModel->stringList() << QString(name));
+                        m_levels.push_back(std::make_pair(name, recentFile));
+                    }
+                }
             }
-        }
-        else
-        {
-            //invalid entry (not existing)
-            continue;
-        }
-
-        QString fullPath = pList->m_arrNames[i];
-        QString name = Path::GetFileName(fullPath);
-
-        Path::ConvertSlashToBackSlash(fullPath);
-        fullPath = Path::ToUnixPath(fullPath.toLower());
-        fullPath = Path::AddSlash(fullPath);
-
-        if (fullPath.contains(gamePath))
-        {
-            m_pRecentListModel->setStringList(m_pRecentListModel->stringList() << QString(name));
-            m_levels.push_back(std::make_pair(name, pList->m_arrNames[i]));
         }
     }
 

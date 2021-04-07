@@ -11,11 +11,16 @@
 */
 
 #include <PhysX_precompiled.h>
+
+#include <AzCore/Component/Entity.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <PhysXCharacters/Components/RagdollComponent.h>
 
 namespace PhysX
@@ -145,109 +150,15 @@ namespace PhysX
     void RagdollComponent::Activate()
     {
         AzFramework::CharacterPhysicsDataNotificationBus::Handler::BusConnect(GetEntityId());
-
-        Reinit();
-    }
-
-    void RagdollComponent::Reinit()
-    {
-        bool ragdollConfigValid = false;
-        Physics::RagdollConfiguration ragdollConfiguration;
-        AzFramework::CharacterPhysicsDataRequestBus::EventResult(ragdollConfigValid, GetEntityId(),
-            &AzFramework::CharacterPhysicsDataRequests::GetRagdollConfiguration, ragdollConfiguration);
-
-        // Reinit is called in two cases:
-        // 1. When activating the ragdoll component
-        //    In this case the ragdoll configuration might not be available yet as the actor asset hasn't finished loading.
-        //    Early out in this case and wait for the OnRagdollConfigurationReady() callback.
-        // 2. OnRagdollConfigurationReady() callback
-        if (!ragdollConfigValid)
-        {
-            m_ragdoll.reset();
-            return;
-        }
-
-        const size_t numNodes = ragdollConfiguration.m_nodes.size();
-
-        if (numNodes == 0)
-        {
-            AZ_Error("PhysX Ragdoll Component", false,
-                "Ragdoll configuration has 0 nodes, ragdoll will not be created for entity \"%s\".",
-                GetEntity()->GetName().c_str());
-            return;
-        }
-
-        ParentIndices parentIndices;
-        parentIndices.resize(numNodes);
-        for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
-        {
-            AZStd::string parentName;
-            AZStd::string nodeName = ragdollConfiguration.m_nodes[nodeIndex].m_debugName;
-            AzFramework::CharacterPhysicsDataRequestBus::EventResult(parentName, GetEntityId(),
-                &AzFramework::CharacterPhysicsDataRequests::GetParentNodeName, nodeName);
-            AZ::Outcome<size_t> parentIndex = Utils::Characters::GetNodeIndex(ragdollConfiguration, parentName);
-            parentIndices[nodeIndex] = parentIndex ? parentIndex.GetValue() : SIZE_MAX;
-
-            ragdollConfiguration.m_nodes[nodeIndex].m_entityId = GetEntityId();
-        }
-
-        Physics::RagdollState bindPose;
-        AzFramework::CharacterPhysicsDataRequestBus::EventResult(bindPose, GetEntityId(),
-            &AzFramework::CharacterPhysicsDataRequests::GetBindPose, ragdollConfiguration);
-
-        AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        Physics::RagdollState bindPoseWorld = GetBindPoseWorld(bindPose, entityTransform);
-
-        m_ragdoll = Utils::Characters::CreateRagdoll(ragdollConfiguration, bindPoseWorld, parentIndices);
-        if (!m_ragdoll)
-        {
-            AZ_Error("PhysX Ragdoll Component", false, "Failed to create ragdoll.");
-            return;
-        }
-
-        for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
-        {
-            if (auto pxRigidBody = m_ragdoll->GetPxRigidDynamic(nodeIndex))
-            {
-                pxRigidBody->setSolverIterationCounts(m_positionIterations, m_velocityIterations);
-            }
-        }
-
-        if (m_enableJointProjection)
-        {
-            const float linearTolerance = AZ::GetMax(0.0f, m_jointProjectionLinearTolerance);
-            const float angularTolerance = AZ::DegToRad(AZ::GetMax(0.0f, m_jointProjectionAngularToleranceDegrees));
-
-            for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
-            {
-                if (auto joint = m_ragdoll->GetNode(nodeIndex)->GetJoint())
-                {
-                    if (auto pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
-                    {
-                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECTION, true);
-                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
-                        pxJoint->setProjectionLinearTolerance(linearTolerance);
-                        pxJoint->setProjectionAngularTolerance(angularTolerance);
-                    }
-                }
-            }
-        }
-
-        AzFramework::RagdollPhysicsRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
-
-        AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
-            &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
     }
 
     void RagdollComponent::Deactivate()
     {
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
-        DisableSimulation();
         AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
             &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
+        m_ragdoll.reset();
         AzFramework::CharacterPhysicsDataNotificationBus::Handler::BusDisconnect();
     }
 
@@ -315,14 +226,14 @@ namespace PhysX
 
     void RagdollComponent::EnablePhysics()
     {
-        // do nothing here, ragdolls are enabled via EnableSimulation
+        // do nothing here, ragdolls are enabled via RagdollPhysicsBus::EnableSimulation
         // don't raise an error though, because the character controller component may also be handling the world body
         // request bus and it would be legitimate to call this function on this entity ID
     }
 
     void RagdollComponent::DisablePhysics()
     {
-        // do nothing here, ragdolls are disabled via DisableSimulation
+        // do nothing here, ragdolls are disabled via RagdollPhysicsBus::DisableSimulation
         // don't raise an error though, because the character controller component may also be handling the world body
         // request bus and it would be legitimate to call this function on this entity ID
     }
@@ -341,25 +252,98 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    Physics::WorldBody* RagdollComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RagdollComponent::GetWorldBody()
     {
         return m_ragdoll.get();
     }
 
-    Physics::RayCastHit RagdollComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit RagdollComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_ragdoll)
         {
             return m_ragdoll->RayCast(request);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
-    void RagdollComponent::OnRagdollConfigurationReady()
+    void RagdollComponent::OnRagdollConfigurationReady(const Physics::RagdollConfiguration& ragdollConfigurationRef)
     {
-        // The ragdoll configuration currently is stored within the actor component and loaded along with the actor asset.
-        // We'll have to wait until the actor asset it loaded and then trigger a reinit.
-        Reinit();
+        Physics::RagdollConfiguration ragdollConfiguration( ragdollConfigurationRef );
+
+        const size_t numNodes = ragdollConfiguration.m_nodes.size();
+
+        if (numNodes == 0)
+        {
+            AZ_Error("PhysX Ragdoll Component", false,
+                "Ragdoll configuration has 0 nodes, ragdoll will not be created for entity \"%s\".",
+                GetEntity()->GetName().c_str());
+            return;
+        }
+
+        ParentIndices parentIndices;
+        parentIndices.resize(numNodes);
+        for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        {
+            AZStd::string parentName;
+            AZStd::string nodeName = ragdollConfiguration.m_nodes[nodeIndex].m_debugName;
+            AzFramework::CharacterPhysicsDataRequestBus::EventResult(parentName, GetEntityId(),
+                &AzFramework::CharacterPhysicsDataRequests::GetParentNodeName, nodeName);
+            AZ::Outcome<size_t> parentIndex = Utils::Characters::GetNodeIndex(ragdollConfiguration, parentName);
+            parentIndices[nodeIndex] = parentIndex ? parentIndex.GetValue() : SIZE_MAX;
+
+            ragdollConfiguration.m_nodes[nodeIndex].m_entityId = GetEntityId();
+        }
+
+        Physics::RagdollState bindPose;
+        AzFramework::CharacterPhysicsDataRequestBus::EventResult(bindPose, GetEntityId(),
+            &AzFramework::CharacterPhysicsDataRequests::GetBindPose, ragdollConfiguration);
+
+        AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        Physics::RagdollState bindPoseWorld = GetBindPoseWorld(bindPose, entityTransform);
+
+        AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
+        Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        m_ragdoll = Utils::Characters::CreateRagdoll(ragdollConfiguration, bindPoseWorld, parentIndices, defaultSceneHandle);
+        if (!m_ragdoll)
+        {
+            AZ_Error("PhysX Ragdoll Component", false, "Failed to create ragdoll.");
+            return;
+        }
+
+        for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        {
+            if (physx::PxRigidDynamic* pxRigidBody = m_ragdoll->GetPxRigidDynamic(nodeIndex))
+            {
+                pxRigidBody->setSolverIterationCounts(m_positionIterations, m_velocityIterations);
+            }
+        }
+
+        if (m_enableJointProjection)
+        {
+            const float linearTolerance = AZ::GetMax(0.0f, m_jointProjectionLinearTolerance);
+            const float angularTolerance = AZ::DegToRad(AZ::GetMax(0.0f, m_jointProjectionAngularToleranceDegrees));
+
+            for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+            {
+                if (const AZStd::shared_ptr<Physics::Joint>& joint = m_ragdoll->GetNode(nodeIndex)->GetJoint())
+                {
+                    if (auto* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
+                    {
+                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECTION, true);
+                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
+                        pxJoint->setProjectionLinearTolerance(linearTolerance);
+                        pxJoint->setProjectionAngularTolerance(angularTolerance);
+                    }
+                }
+            }
+        }
+
+        AzFramework::RagdollPhysicsRequestBus::Handler::BusConnect(GetEntityId());
+        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+
+        AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
+            &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
     }
 
     // deprecated Cry functions

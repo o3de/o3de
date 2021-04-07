@@ -65,7 +65,7 @@ namespace AzToolsFramework
             static const bool EnableEventQueue = true;
             typedef AZStd::recursive_mutex MutexType;
 
-            virtual void RenderThumbnail(AZ::Data::AssetId assetId, int thumbnailSize) = 0;
+            virtual void RenderThumbnail(SharedThumbnailKey thumbnailKey, int thumbnailSize) = 0;
 
             virtual bool Installed() const { return false; }
         };
@@ -79,7 +79,7 @@ namespace AzToolsFramework
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            typedef AZ::Data::AssetId BusIdType;
+            typedef SharedThumbnailKey BusIdType;
 
             //! notify product thumbnail that the data is ready
             virtual void ThumbnailRendered(QPixmap& thumbnailImage) = 0;

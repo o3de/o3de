@@ -62,7 +62,6 @@ namespace AZ
                 return RHI::ResultCode::InvalidArgument;
             }
 
-            // [GFX_TODO][bethelz]: Move byte code hashing from RPI branch here.
             HashValue64 hash = HashValue64{ 0 };
             for (const ShaderByteCode& byteCode : m_byteCodes)
             {
@@ -72,8 +71,6 @@ namespace AZ
                 }
             }
             SetHash(hash);
-            //![GFX_TODO]
-
             return RHI::ResultCode::Success;
         }
     }

@@ -26,6 +26,11 @@ namespace AzToolsFramework
     namespace Prefab
     {
         Instance::Instance()
+            : Instance(AZStd::make_unique<AZ::Entity>())
+        {
+        }
+
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity)
         {
             m_instanceEntityMapper = AZ::Interface<InstanceEntityMapperInterface>::Get();
 
@@ -41,27 +46,16 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            m_containerEntity = AZStd::make_unique<AZ::Entity>();
+            m_alias = GenerateInstanceAlias();
+            m_containerEntity = containerEntity ? AZStd::move(containerEntity)
+                                                : AZStd::make_unique<AZ::Entity>();
             EntityAlias containerEntityAlias = GenerateEntityAlias();
             RegisterEntity(m_containerEntity->GetId(), containerEntityAlias);
         }
 
         Instance::~Instance()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(),
-                    m_templateId);
-            }
-            
-            ClearEntities();
-
-            m_nestedInstances.clear();
+            Reset();
         }
 
         void Instance::Reflect(AZ::ReflectContext* context)
@@ -121,31 +115,31 @@ namespace AzToolsFramework
             return m_linkId;
         }
 
-        const AZStd::string& Instance::GetTemplateSourcePath() const
+        const AZ::IO::Path& Instance::GetTemplateSourcePath() const
         {
             return m_templateSourcePath;
         }
 
-        void Instance::SetTemplateSourcePath(AZStd::string sourcePath)
+        void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
         {
-            m_templateSourcePath = AZStd::move(sourcePath);
-
-            AZStd::string filename;
-            if (AZ::StringFunc::Path::GetFileName(m_templateSourcePath.c_str(), filename))
-            {
-                m_containerEntity->SetName(filename);
-            }
+            m_templateSourcePath = sourcePath;
+            m_containerEntity->SetName(sourcePath.Filename().Native());
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)
         {
             EntityAlias newEntityAlias = GenerateEntityAlias();
-            if (!RegisterEntity(entity.GetId(), newEntityAlias))
+            return AddEntity(entity, newEntityAlias);
+        }
+
+        bool Instance::AddEntity(AZ::Entity& entity, EntityAlias entityAlias)
+        {
+            if (!RegisterEntity(entity.GetId(), entityAlias))
             {
                 return false;
             }
 
-            if (!m_entities.emplace(AZStd::make_pair(newEntityAlias, &entity)).second)
+            if (!m_entities.emplace(AZStd::make_pair(entityAlias, &entity)).second)
             {
                 return false;
             }
@@ -167,6 +161,7 @@ namespace AzToolsFramework
                     "This happens when the entity is not correctly removed from all the prefab system entity maps.",
                     entityId.ToString().c_str(), m_templateSourcePath.c_str());
             }
+
             return DetachEntity(entityAliasToRemove);
         }
 
@@ -215,6 +210,31 @@ namespace AzToolsFramework
             {
                 instance->RemoveNestedEntities(filter);
             }
+        }
+
+        void Instance::Reset()
+        {
+            // Clean up Instance associations.
+            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
+            {
+                AZ_Assert(
+                    false,
+                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
+                    "Instance may never have been registered or was unregistered early.",
+                    m_templateSourcePath.c_str(), m_templateId);
+            }
+
+            ClearEntities();
+
+            m_nestedInstances.clear();
+
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                m_containerEntity.reset(aznew AZ::Entity());
+                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
+            }
+
         }
 
         void Instance::RemoveEntities(
@@ -400,7 +420,9 @@ namespace AzToolsFramework
                     }
                 }
 
-                entities.reserve(entities.size() + currentInstance->m_entities.size());
+                // Size increases by 1 for each instance because we have to count the container entity also.
+                entities.reserve(entities.size() + currentInstance->m_entities.size() + 1);
+                entities.push_back(m_containerEntity.get());
                 for (const auto& entityByAlias : currentInstance->m_entities)
                 {
                     entities.push_back(entityByAlias.second.get());
@@ -441,55 +463,53 @@ namespace AzToolsFramework
             return nestedInstanceAliases;
         }
 
+        AliasPath Instance::GetAbsoluteInstanceAliasPath() const
+        {
+            // Reset the path using our preferred separator
+            AliasPath aliasPathResult = AliasPath(s_aliasPathSeparator);
+            const Instance* currentInstance = this;
+
+            // If no parent instance we are a root instance and our absolute path is empty
+            AZStd::vector<const Instance*> pathOfInstances;
+
+            while (currentInstance->m_parent)
+            {
+                pathOfInstances.emplace_back(currentInstance);
+                currentInstance = currentInstance->m_parent;
+            }
+
+            pathOfInstances.emplace_back(currentInstance);
+
+            for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
+            {
+                aliasPathResult.Append((*instanceIter)->m_alias);
+            }
+
+            return aliasPathResult;
+        }
+
         EntityAlias Instance::GenerateEntityAlias()
         {
-            return "Entity_" + AZ::Entity::MakeId().ToString();
+            return AZStd::string::format("Entity_%s", AZ::Entity::MakeId().ToString().c_str());
         }
 
         InstanceAlias Instance::GenerateInstanceAlias()
         {
-            return "Instance_" + AZ::Entity::MakeId().ToString();
+            return AZStd::string::format("Instance_%s", AZ::Entity::MakeId().ToString().c_str());
         }
 
-        void Instance::InitializeNestedEntities()
+        void Instance::ActivateContainerEntity()
         {
-            InitializeEntities();
+            AZ_Assert(m_containerEntity, "Container entity of instance is null.");
 
-            for (const auto&[instanceAlias, instance] : m_nestedInstances)
+            if (AZ::Entity::State::Constructed == m_containerEntity->GetState())
             {
-                instance->InitializeNestedEntities();
+                m_containerEntity->Init();
             }
-        }
 
-        void Instance::InitializeEntities()
-        {
-            for (const auto&[entityAlias, entity] : m_entities)
+            if (AZ::Entity::State::Init == m_containerEntity->GetState())
             {
-                if (AZ::Entity::State::Constructed == entity->GetState())
-                {
-                    entity->Init();
-                }
-            }
-        }
-
-        void Instance::ActivateNestedEntities()
-        {
-            ActivateEntities();
-
-            for (const auto&[instanceAlias, instance] : m_nestedInstances)
-            {
-                instance->ActivateNestedEntities();
-            }
-        }
-
-        void Instance::ActivateEntities()
-        {
-            for (const auto&[entityAlias, entity] : m_entities)
-            {
-                if(AZ::Entity::State::Init == entity->GetState())
-                {
-                    entity->Activate();
-                }
+                m_containerEntity->Activate();
             }
         }
 
@@ -544,6 +564,39 @@ namespace AzToolsFramework
         AZ::EntityId Instance::GetContainerEntityId() const
         {
             return m_containerEntity->GetId();
+        }
+
+        bool Instance::HasContainerEntity() const
+        {
+            return m_containerEntity.get() != nullptr;
+        }
+
+        EntityOptionalReference Instance::GetContainerEntity()
+        {
+            if (m_containerEntity)
+            {
+                return *m_containerEntity;
+            }
+            return AZStd::nullopt;
+        }
+
+        EntityOptionalConstReference Instance::GetContainerEntity() const
+        {
+            if (m_containerEntity)
+            {
+                return *m_containerEntity;
+            }
+            return AZStd::nullopt;
+        }
+
+        void Instance::SetContainerEntity(AZ::Entity& entity)
+        {
+            m_containerEntity.reset(&entity);
+        }
+
+        AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
+        {
+            return AZStd::move(m_containerEntity);
         }
     }
 }

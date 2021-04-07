@@ -55,14 +55,14 @@ namespace Multiplayer
         if (netBindComponent != nullptr)
         {
             NetEntityRole networkRole = netBindComponent->GetNetEntityRole();
-            if (networkRole == NetEntityRole::ServerAuthority)
+            if (networkRole == NetEntityRole::Authority)
             {
                 const AZ::Entity* entity = entityHandle.GetEntity();
                 AZ::TransformInterface* transformInterface = entity->GetTransform();
                 AZ::Vector3 entityPosition = transformInterface->GetWorldTranslation();
                 if (m_aabb.Contains(entityPosition))
                 {
-                    outNetworkRole = Multiplayer::NetEntityRole::ServerSimulation;
+                    outNetworkRole = Multiplayer::NetEntityRole::Server;
                     return true;
                 }
             }
@@ -88,9 +88,9 @@ namespace Multiplayer
                         if (netBindComponent != nullptr)
                         {
                             NetEntityRole networkRole = netBindComponent->GetNetEntityRole();
-                            if (networkRole == NetEntityRole::ServerAuthority)
+                            if (networkRole == NetEntityRole::Authority)
                             {
-                                m_replicationSet[entityHandle] = { NetEntityRole::ServerSimulation, 0.0f }; // Note, server replication does not use priority
+                                m_replicationSet[entityHandle] = { NetEntityRole::Server, 0.0f }; // Note, server replication does not use priority
                             }
                         }
                     }
@@ -130,7 +130,7 @@ namespace Multiplayer
         NetEntityRole networkRole = NetEntityRole::InvalidRole;
         if (IsInWindow(entityHandle, networkRole))
         {
-            m_replicationSet[entityHandle] = { NetEntityRole::ServerSimulation, 0.0f };
+            m_replicationSet[entityHandle] = { NetEntityRole::Server, 0.0f };
         }
     }
 

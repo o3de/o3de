@@ -1970,12 +1970,22 @@ namespace AzToolsFramework
 
     void EntityOutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
+        // Customize option to prevent Qt from painting the default focus rectangle
+        QStyleOptionViewItem customOption{option};
+        if (customOption.state & QStyle::State_HasFocus)
+        {
+            customOption.state ^= QStyle::State_HasFocus;
+        }
+
         // Retrieve the Entity UI Handler
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
         const bool isSelected = (option.state & QStyle::State_Selected);
         const bool isHovered = (option.state & QStyle::State_MouseOver) && (option.state & QStyle::State_Enabled);
+
+        // Paint the Selection/Hover Rect
+        PaintSelectionHoverRect(painter, option, index, isSelected, isHovered);
 
         // Paint Ancestor Backgrounds
         PaintAncestorBackgrounds(painter, option, index);
@@ -1984,25 +1994,6 @@ namespace AzToolsFramework
         if (entityUiHandler != nullptr)
         {
             entityUiHandler->PaintItemBackground(painter, option, index);
-        }
-
-        // Paint the Selection/Hover Rect
-        PaintSelectionHoverRect(painter, option, index, isSelected, isHovered);
-
-        // Paint Ancestor Foregrounds
-        PaintAncestorForegrounds(painter, option, index);
-
-        // Paint the Foreground
-        if (entityUiHandler != nullptr)
-        {
-            entityUiHandler->PaintItemForeground(painter, option, index);
-        }
-
-        // Customize option to prevent Qt from painting the default focus rectangle
-        QStyleOptionViewItem customOption{ option };
-        if (customOption.state & QStyle::State_HasFocus)
-        {
-            customOption.state ^= QStyle::State_HasFocus;
         }
 
         switch (index.column())
@@ -2032,6 +2023,15 @@ namespace AzToolsFramework
                 QStyledItemDelegate::paint(painter, customOption, index);
             }
             break;
+        }
+
+        // Paint Ancestor Foregrounds
+        PaintAncestorForegrounds(painter, option, index);
+
+        // Paint the Foreground
+        if (entityUiHandler != nullptr)
+        {
+            entityUiHandler->PaintItemForeground(painter, option, index);
         }
     }
 
@@ -2069,17 +2069,18 @@ namespace AzToolsFramework
 
         if (isSelected || isHovered)
         {
-            QPainterPath layerBGPath;
-            QRect layerBGRect(option.rect);
-            layerBGPath.addRect(layerBGRect);
+            QPainterPath backgroundPath;
+            QRect backgroundRect(option.rect);
 
-            QColor layerBG = m_hoverColor;
+            backgroundPath.addRect(backgroundRect);
+
+            QColor backgroundColor = m_hoverColor;
             if (isSelected)
             {
-                layerBG = m_selectedColor;
+                backgroundColor = m_selectedColor;
             }
 
-            painter->fillPath(layerBGPath, layerBG);
+            painter->fillPath(backgroundPath, backgroundColor);
         }
 
         painter->restore();
@@ -2212,13 +2213,9 @@ namespace AzToolsFramework
             textWidthAvailable -= fontMetrics.horizontalAdvance(QObject::tr("..."));
             if (!infoString.isEmpty())
             {
-                // The info string includes HTML markup, which can cause an issue computing the width.
-                // The markup on the text is light (just color, italic or bold), so an approximate width
-                // is computed by taking the width of the non-HTML portion of the string and padding it a bit.
                 QString htmlStripped = infoString;
                 htmlStripped.remove(htmlMarkupRegex);
-                const float layerInfoPadding = 1.2f;
-                textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding;
+                textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) + 5;
             }
 
             entityNameRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);
@@ -2226,7 +2223,12 @@ namespace AzToolsFramework
 
         if (!infoString.isEmpty())
         {
-            entityNameRichText = QObject::tr("%1%2").arg(entityNameRichText).arg(infoString);
+            entityNameRichText = QString("<table width=\"100%\" style=\"border-collapse: collapse; border-spacing: 0;\">")
+                + QString("<tr><td>")
+                    + QString(entityNameRichText)
+                + QString("</td><td align=\"right\">")
+                    + QString(infoString)
+                + QString("</td></tr></table>");
         }
 
         // delete the text from the item so we can use the standard painter to draw the icon
@@ -2238,7 +2240,7 @@ namespace AzToolsFramework
         textDoc.setDefaultFont(optionV4.font);
         textDoc.setDefaultStyleSheet("body {color: white}");
         textDoc.setHtml("<body>" + entityNameRichText + "</body>");
-        painter->translate(textRect.topLeft() + QPoint(0, -1));
+        painter->translate(textRect.topLeft());
         textDoc.setTextWidth(textRect.width());
         textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
 
@@ -2246,7 +2248,7 @@ namespace AzToolsFramework
         EntityOutlinerListModel::s_paintingName = false;
     }
 
-    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
     {
         // Get the height of a tall character...
         // we do this only once per 'tick'
@@ -2262,14 +2264,7 @@ namespace AzToolsFramework
             QTimer::singleShot(0, resetFunction);
         }
   
-        QSize sh = QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
-
-        if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::ColumnLockToggle)
-        {
-            sh.setWidth(m_toggleColumnWidth);
-        }
-
-        return sh;
+        return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
     }
 
     bool EntityOutlinerItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

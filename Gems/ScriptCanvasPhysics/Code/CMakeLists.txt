@@ -12,7 +12,6 @@
 ly_add_target(
     NAME ScriptCanvasPhysics.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.ScriptCanvasPhysics.Static
     FILES_CMAKE
         scriptcanvas_physics_files.cmake
     INCLUDE_DIRECTORIES

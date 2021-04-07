@@ -55,7 +55,7 @@ namespace ScriptCanvas::Nodes::Core
 
         size_t GenerateFingerprint() const override;
 
-        bool IsSupportedByNewBackend() const override { return true; }
+        
 
         AZ::Outcome<Grammar::LexicalScope, void> GetFunctionCallLexicalScope(const Slot* slot) const override;
 
@@ -79,7 +79,7 @@ namespace ScriptCanvas::Nodes::Core
         NodeTypeIdentifier GetOutputNodeType(const SlotId& slotId) const override;
 
     protected:
-        SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
+        ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
 
     private:
         AzEventEntry m_azEventEntry;

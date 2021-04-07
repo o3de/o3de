@@ -248,13 +248,13 @@ namespace EMotionFX
         return m_ragdoll;
     }
 
-    AZ::Crc32 RagdollInstance::GetRagdollWorldId() const
+    AzPhysics::SceneHandle RagdollInstance::GetRagdollSceneHandle() const
     {
         if (m_ragdoll)
         {
-            return m_ragdoll->GetWorldId();
+            return m_ragdoll->m_sceneOwner;
         }
-        return AZ::Crc32();
+        return AzPhysics::InvalidSceneHandle;
     }
 
     const AZ::Outcome<size_t> RagdollInstance::GetRagdollNodeIndex(size_t jointIndex) const

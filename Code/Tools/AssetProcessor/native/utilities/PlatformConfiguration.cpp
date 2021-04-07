@@ -1011,6 +1011,7 @@ namespace AssetProcessor
         }
 
         AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        AZ::IO::FixedMaxPathString projectName = AZ::Utils::GetProjectName();
 
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
         settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
@@ -1061,6 +1062,7 @@ namespace AssetProcessor
 
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@ROOT@", assetRootPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@PROJECTROOT@", projectPath.c_str());
+                AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@PROJECTNAME@", projectName.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@ENGINEROOT@", engineRoot.c_str());
 
                 QStringList includeIdentifiers;

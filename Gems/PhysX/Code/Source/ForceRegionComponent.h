@@ -18,9 +18,14 @@
 
 #include <AzCore/Component/Component.h>
 
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/TriggerBus.h>
+
+namespace AzPhysics
+{
+    struct TriggerEvent;
+}
 
 namespace PhysX
 {
@@ -30,19 +35,18 @@ namespace PhysX
     /// A net force will be calculated per entity by summing all the attached forces on each tick.
     class ForceRegionComponent
         : public AZ::Component
-        , protected Physics::WorldNotificationBus::Handler
-        , protected Physics::TriggerNotificationBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
         AZ_COMPONENT(ForceRegionComponent, ForceRegionComponentTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
-        ForceRegionComponent() = default;
-        ForceRegionComponent(ForceRegion&& forceRegion, bool debug);
+        ForceRegionComponent();
+        explicit ForceRegionComponent(ForceRegion&& forceRegion, bool debug);
         ~ForceRegionComponent() = default;
 
     protected:
+        
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
@@ -53,21 +57,22 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        // Physics::WorldNotificationBus
-        void OnPostPhysicsSubtick(float fixedDeltaTime) override;
-        int GetPhysicsTickOrder() override;
-
-        // TriggerNotifications
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override;
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override;
-
         // EntityDebugDisplayEventBus
         void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo
             , AzFramework::DebugDisplayRequests& debugDisplayRequests) override;
 
     private:
+        void InitPhysicsTickHandler();
+        void PostPhysicsSubTick(float fixedDeltaTime);
+        void OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent);
+        void OnTriggerExit(const AzPhysics::TriggerEvent& triggerEvent);
+
         AZStd::unordered_set<AZ::EntityId> m_entities; ///< Collection of entity IDs contained within the region.
         ForceRegion m_forceRegion; ///< Calculates the net force.
         bool m_debugForces = false; ///< Draws debug lines for entities in the region
+
+        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+        AzPhysics::SimulatedBodyEvents::OnTriggerEnter::Handler m_onTriggerEnterHandler;
+        AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler m_onTriggerExitHandler;
     };
 }

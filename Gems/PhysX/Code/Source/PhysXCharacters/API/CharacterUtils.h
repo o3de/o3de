@@ -12,6 +12,7 @@
 
 #pragma once
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <AzCore/Outcome/Outcome.h>
 
@@ -19,7 +20,6 @@ namespace Physics
 {
     class CharacterConfiguration;
     class ShapeConfiguration;
-    class World;
 } // namespace Physics
 
 namespace PhysX
@@ -32,26 +32,27 @@ namespace PhysX
         {
             AZ::Outcome<size_t> GetNodeIndex(const Physics::RagdollConfiguration& configuration, const AZStd::string& nodeName);
 
-            /// Creates a character controller based on the supplied configuration in the specified world.
-            /// @param configuration Information required to create the controller such as shape, slope behavior etc.
-            /// @param world The physics world in which the character controller should be created.
+            //! Creates a character controller based on the supplied configuration in the specified world.
+            //! @param configuration Information required to create the controller such as shape, slope behavior etc.
+            //! @param sceneHandle A handle to the physics scene in which the character controller should be created.
             AZStd::unique_ptr<CharacterController> CreateCharacterController(const Physics::CharacterConfiguration&
-                characterConfig, const Physics::ShapeConfiguration& shapeConfig, Physics::World& world);
+                characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle sceneHandle);
 
-            /// Creates a ragdoll based on the specified setup and initial pose.
-            /// @param configuration Information about collider geometry and joint setup required to initialize the ragdoll.
-            /// @param initialState Initial settings for the positions, orientations and velocities of the ragdoll nodes.
-            /// @param parentIndices Identifies the parent ragdoll node for each node in the ragdoll.
-            AZStd::unique_ptr<Ragdoll> CreateRagdoll(const Physics::RagdollConfiguration& configuration,
-                const Physics::RagdollState& initialState, const ParentIndices& parentIndices);
+            //! Creates a ragdoll based on the specified setup and initial pose.
+            //! @param configuration Information about collider geometry and joint setup required to initialize the ragdoll.
+            //! @param initialState Initial settings for the positions, orientations and velocities of the ragdoll nodes.
+            //! @param parentIndices Identifies the parent ragdoll node for each node in the ragdoll.
+            //! @param sceneHandle A handle to the physics scene in which the ragdoll should be created.
+            AZStd::unique_ptr<Ragdoll> CreateRagdoll(Physics::RagdollConfiguration& configuration,
+                const Physics::RagdollState& initialState, const ParentIndices& parentIndices, AzPhysics::SceneHandle sceneHandle);
 
-            /// Creates a joint drive with properties based on the input values.
-            /// The input values are validated and the damping ratio is used to calculate the damping value used internally.
-            /// @param strength The joint strength (also referred to as stiffness).
-            /// @param dampingRatio The ratio of the damping value to the critical damping value, indicating whether the
-            /// joint drive is under-damped, critically damped or over-damped.
-            /// @param forceLimit The upper limit on the force the joint can apply to reach its target.
-            /// @return The created joint drive.
+            //! Creates a joint drive with properties based on the input values.
+            //! The input values are validated and the damping ratio is used to calculate the damping value used internally.
+            //! @param strength The joint strength (also referred to as stiffness).
+            //! @param dampingRatio The ratio of the damping value to the critical damping value, indicating whether the
+            //! joint drive is under-damped, critically damped or over-damped.
+            //! @param forceLimit The upper limit on the force the joint can apply to reach its target.
+            //! @return The created joint drive.
             physx::PxD6JointDrive CreateD6JointDrive(float strength, float dampingRatio, float forceLimit);
         } // namespace Characters
     } // namespace Utils

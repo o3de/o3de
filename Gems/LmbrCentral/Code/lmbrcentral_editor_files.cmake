@@ -56,8 +56,6 @@ set(FILES
     Source/Rendering/EditorEnvProbeComponent.cpp
     Source/Rendering/EditorMeshComponent.h
     Source/Rendering/EditorMeshComponent.cpp
-    Source/Rendering/EditorSkinnedMeshComponent.h
-    Source/Rendering/EditorSkinnedMeshComponent.cpp
     Source/Rendering/EditorHighQualityShadowComponent.h
     Source/Rendering/EditorHighQualityShadowComponent.cpp
     Source/Rendering/EditorFogVolumeComponent.h

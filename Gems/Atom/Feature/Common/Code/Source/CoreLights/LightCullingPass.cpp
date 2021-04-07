@@ -116,33 +116,18 @@ namespace AZ
         LightCullingPass::LightCullingPass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            m_lightdata[eLightTypes_Point].m_lightCountNameInShader = AZ::Name("m_pointLightCount");
-            m_lightdata[eLightTypes_Point].lightBufferNameInShader = AZ::Name("m_pointLights");
-            m_lightdata[eLightTypes_Spot].m_lightCountNameInShader = AZ::Name("m_spotLightCount");
-            m_lightdata[eLightTypes_Spot].lightBufferNameInShader = AZ::Name("m_spotLights");
-            m_lightdata[eLightTypes_Disk].m_lightCountNameInShader = AZ::Name("m_diskLightCount");
-            m_lightdata[eLightTypes_Disk].lightBufferNameInShader = AZ::Name("m_diskLights");
-            m_lightdata[eLightTypes_Capsule].m_lightCountNameInShader = AZ::Name("m_capsuleLightCount");
-            m_lightdata[eLightTypes_Capsule].lightBufferNameInShader = AZ::Name("m_capsuleLights");
-            m_lightdata[eLightTypes_Quad].m_lightCountNameInShader = AZ::Name("m_quadLightCount");
-            m_lightdata[eLightTypes_Quad].lightBufferNameInShader = AZ::Name("m_quadLights");
-            m_lightdata[eLightTypes_Decal].m_lightCountNameInShader = AZ::Name("m_decalCount");
-            m_lightdata[eLightTypes_Decal].lightBufferNameInShader = AZ::Name("m_decals");
-        }
-
-        void LightCullingPass::Init()
-        {
-            CacheSrgIndices();
-            m_initialized = true;
-        }
-
-        void LightCullingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-        {
-            if (!m_initialized)
-            {
-                Init();
-            }
-            ComputePass::SetupFrameGraphDependencies(frameGraph);
+            m_lightdata[eLightTypes_Point].m_lightCountIndex    = Name("m_pointLightCount");
+            m_lightdata[eLightTypes_Point].m_lightBufferIndex   = Name("m_pointLights");
+            m_lightdata[eLightTypes_Spot].m_lightCountIndex     = Name("m_spotLightCount");
+            m_lightdata[eLightTypes_Spot].m_lightBufferIndex    = Name("m_spotLights");
+            m_lightdata[eLightTypes_Disk].m_lightCountIndex     = Name("m_diskLightCount");
+            m_lightdata[eLightTypes_Disk].m_lightBufferIndex    = Name("m_diskLights");
+            m_lightdata[eLightTypes_Capsule].m_lightCountIndex  = Name("m_capsuleLightCount");
+            m_lightdata[eLightTypes_Capsule].m_lightBufferIndex = Name("m_capsuleLights");
+            m_lightdata[eLightTypes_Quad].m_lightCountIndex     = Name("m_quadLightCount");
+            m_lightdata[eLightTypes_Quad].m_lightBufferIndex    = Name("m_quadLights");
+            m_lightdata[eLightTypes_Decal].m_lightCountIndex    = Name("m_decalCount");
+            m_lightdata[eLightTypes_Decal].m_lightBufferIndex   = Name("m_decals");
         }
 
         void LightCullingPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -192,9 +177,10 @@ namespace AZ
 
         void LightCullingPass::SetLightBuffersToSRG()
         {
-            for (const auto& elem : m_lightdata)
+            for (auto& elem : m_lightdata)
             {
                 m_shaderResourceGroup->SetBuffer(elem.m_lightBufferIndex, elem.m_lightBuffer.get());
+                elem.m_lightBufferIndex.AssertValid();
             }
         }
 
@@ -207,9 +193,10 @@ namespace AZ
 
         void LightCullingPass::SetLightsCountToSRG()
         {
-            for (const auto& elem : m_lightdata)
+            for (auto& elem : m_lightdata)
             {
                 m_shaderResourceGroup->SetConstant(elem.m_lightCountIndex, elem.m_lightCount);
+                elem.m_lightCountIndex.AssertValid();
             }
         }
 
@@ -310,37 +297,6 @@ namespace AZ
             const auto decalFP = m_pipeline->GetScene()->GetFeatureProcessor<DecalFeatureProcessorInterface>();
             m_lightdata[eLightTypes_Decal].m_lightBuffer = decalFP->GetDecalBuffer();
             m_lightdata[eLightTypes_Decal].m_lightCount = decalFP->GetDecalCount();
-        }
-
-        void LightCullingPass::CacheSrgIndices()
-        {
-            CacheConstantData();
-            CacheLightCounts();
-            CacheLightBuffer();
-        }
-
-        void LightCullingPass::CacheConstantData()
-        {
-            m_constantDataIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(AZ::Name("m_constantData"));
-            AZ_Assert(m_constantDataIndex.IsValid(), "Unable to find m_constantData in shader");
-        }
-
-        void LightCullingPass::CacheLightCounts()
-        {
-            for (auto& elem : m_lightdata)
-            {
-                elem.m_lightCountIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(elem.m_lightCountNameInShader);
-                AZ_Assert(elem.m_lightCountIndex.IsValid(), "Unable to find variable name in shader")
-            }
-        }
-
-        void LightCullingPass::CacheLightBuffer()
-        {
-            for (auto& elem : m_lightdata)
-            {
-                elem.m_lightBufferIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(elem.lightBufferNameInShader);
-                AZ_Assert(elem.m_lightBufferIndex.IsValid(), "Unable to find lightbuffer in shader")
-            }
         }
 
         float LightCullingPass::CreateTraceValues(const AZ::Vector2& unprojection)

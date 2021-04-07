@@ -1,0 +1,15 @@
+{
+    "material": {
+        "baseMaterial": "StaticMesh.basematerial",
+        "propertyLayoutVersion": 1,
+        "properties": {
+            "general": {
+                "DiffuseColor": [ 1.0, 0.5, 0.5, 1.0 ],
+                "DiffuseMap": "Textures/Streaming/streaming12.dds",
+                "NormalMap": "Textures/left_mask.png",
+                "SpecularMap": "Textures/left_mask.png",
+                "EnvironmentMap": "Textures/YokohamaCube_cm.dds"
+            }
+        }
+    }
+}

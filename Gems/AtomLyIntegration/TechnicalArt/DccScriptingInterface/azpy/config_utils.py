@@ -30,7 +30,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
-           'get_dccsi_config']
+           'get_dccsi_config', 'get_current_project']
 
 # note: this module should reamin py2.7 compatible (Maya) so no f'strings
 # -------------------------------------------------------------------------
@@ -49,7 +49,7 @@ def get_os():
         message = str("DCCsi.azpy.config_utils.py: "
                       "Unexpectedly executing on operating system '{}'"
                       "".format(sys.platform))
-        
+
         raise RuntimeError(message)
     return os_folder
 # -------------------------------------------------------------------------
@@ -72,7 +72,7 @@ def return_stub_dir(stub_file='dccsi_stub'):
                               '({}) in a walk-up from currnet path'
                               ''.format(stub_file))
                 break
-            
+
         _dir_to_last_file = path
 
     return _dir_to_last_file
@@ -109,7 +109,7 @@ def get_stub_check_path(in_path=os.getcwd(), check_stub='engineroot.txt'):
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
     """Convenience method to set and retreive settings directly from module."""
-    
+
     # we can go ahead and just make sure the the DCCsi env is set
     # config is SO generic this ensures we are importing a specific one
     _module_tag = "dccsi.config"
@@ -123,17 +123,35 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
                                                                         str(_dccsi_path.resolve()))
             _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
             _spec_dccsi_config.loader.exec_module(_dccsi_config)
-        
+
             _LOGGER.debug('Executed config: {}'.format(_spec_dccsi_config))
         else:  # py2.x
             import imp
             _dccsi_config = imp.load_source(_module_tag, str(_dccsi_path.resolve()))
             _LOGGER.debug('Imported config: {}'.format(_spec_dccsi_config))
         return _dccsi_config
-            
+
     else:
         return None
 # -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_current_project(dev_folder=get_stub_check_path()):
+    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str"""
+    boostrap_filepath = Path(dev_folder, "bootstrap.cfg")
+    if boostrap_filepath.exists():
+        bootstrap = open(str(boostrap_filepath), "r")
+        regex_str = r"^project_path\s*=\s*(.*)"
+        game_project_regex = re.compile(regex_str)
+        for line in bootstrap:
+            game_folder_match = game_project_regex.match(line)
+            if game_folder_match:
+                _LOGGER.debug('Project is: {}'.format(game_folder_match.group(1)))
+                return game_folder_match.group(1)
+    return None
+# -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
 def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
@@ -166,15 +184,17 @@ if __name__ == '__main__':
     _LOGGER.info("# {0} #".format('-' * 72))
 
     _LOGGER.info('Current Work dir: {0}'.format(os.getcwd()))
-    
+
     _LOGGER.info('OS: {}'.format(get_os()))
 
     _LOGGER.info('DCCSIG_PATH: {}'.format(return_stub_dir('dccsi_stub')))
-    
+
     _config = get_dccsi_config()
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engineroot.txt')))
+
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engineroot.txt'))))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

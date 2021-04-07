@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include <aws/core/auth/AWSCredentials.h>
 #include <aws/dynamodb/DynamoDBClient.h>
 #include <aws/dynamodb/model/GetItemRequest.h>
 #include <aws/dynamodb/model/GetItemResult.h>

@@ -35,6 +35,8 @@ namespace AzPhysics
         virtual ~SystemInterface() = default;
         AZ_DISABLE_COPY_MOVE(SystemInterface);
 
+        static void Reflect(AZ::ReflectContext* context);
+
         //! Initialize the Physics system with the given configuration.
         //! @param config Contains the configuration options
         virtual void Initialize(const SystemConfiguration* config) = 0;
@@ -83,6 +85,11 @@ namespace AzPhysics
         //! @return Returns a list of SceneHandle objects for each created Scene. Order will be the same as the SceneConfigurationList provided.
         virtual SceneHandleList AddScenes(const SceneConfigurationList& configs) = 0;
 
+        //! Returns a Scene Handle connected to the given scene name.
+        //! @param sceneName The name of the scene to look up.
+        //! @returns Will return a SceneHandle to a Scene connected with the given name, otherwise will return InvalidSceneHandle.
+        virtual SceneHandle GetSceneHandle(const AZStd::string& sceneName) = 0;
+
         //! Get the Scene of the requested SceneHandle.
         //! @param handle The SceneHandle of the requested scene.
         //! @return Returns a SceneInterface pointer if found, otherwise nullptr.
@@ -107,6 +114,12 @@ namespace AzPhysics
 
         //! Removes All Scenes.
         virtual void RemoveAllScenes() = 0;
+
+        //! Helper to find the SceneHandle and SimulatedBodyHandle of a body related to the requested EntityId.
+        //! @note This will search all scenes and maybe slow if there are many Scenes.
+        //! @param entityId The entity to search for.
+        //! @return Will return a AZStd::pair of SceneHandle and SimulatedBodyHandle of the requested entityid, otherwise will return AzPhysics::InvalidSceneHandle, AzPhysics::SimulatedBodyHandle.
+        virtual AZStd::pair<SceneHandle, SimulatedBodyHandle> FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId) = 0;
 
         //! Get the current SystemConfiguration used to initialize the Physics system.
         virtual const SystemConfiguration* GetConfiguration() const = 0;
@@ -147,6 +160,12 @@ namespace AzPhysics
         //! Register to receive notifications when the Physics System simulation ends.
         //! @param handler The handler to receive the event.
         void RegisterPostSimulateEvent(SystemEvents::OnPostsimulateEvent::Handler& handler) { handler.Connect(m_postSimulateEvent); }
+        //! Register to receive notifications when the a new Scene is added to the simulation.
+        //! @param handler The handler to receive the event.
+        void RegisterSceneAddedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneAddedEvent); }
+        //! Register to receive notifications when the a Scene is removed from the simulation.
+        //! @param handler The handler to receive the event.
+        void RegisterSceneRemovedEvent(SystemEvents::OnSceneAddedEvent::Handler& handler) { handler.Connect(m_sceneRemovedEvent); }
         //! Register to receive notifications when the SystemConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterSystemConfigurationChangedEvent(SystemEvents::OnConfigurationChangedEvent::Handler& handler) { handler.Connect(m_configChangeEvent); }
@@ -163,6 +182,8 @@ namespace AzPhysics
         SystemEvents::OnShutdownEvent m_shutdownEvent;
         SystemEvents::OnPresimulateEvent m_preSimulateEvent;
         SystemEvents::OnPostsimulateEvent m_postSimulateEvent;
+        SystemEvents::OnSceneAddedEvent m_sceneAddedEvent;
+        SystemEvents::OnSceneRemovedEvent m_sceneRemovedEvent;
         SystemEvents::OnConfigurationChangedEvent m_configChangeEvent;
         SystemEvents::OnDefaultMaterialLibraryChangedEvent m_onDefaultMaterialLibraryChangedEvent;
         SystemEvents::OnDefaultSceneConfigurationChangedEvent m_onDefaultSceneConfigurationChangedEvent;

@@ -242,7 +242,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_MultiRaycastZeroDistanceHits_Ze
     }
 
     // maximum number of hits, but we don't set the distance in any of them.
-    AZStd::vector<Physics::RayCastHit> hits(Audio::s_maxHitResultsPerRaycast);
+    AZStd::vector<AzPhysics::SceneQueryHit> hits(Audio::s_maxHitResultsPerRaycast);
 
     AudioRaycastResult hitResults(AZStd::move(hits), testAudioObjectId, 0);
     audioObject.OnAudioRaycastResults(hitResults);
@@ -268,7 +268,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_SingleRaycastHit_NonZeroObstruc
     audioObject.SetRaycastCalcType(eAOOCT_SINGLE_RAY);
     raycastProcessor.SetupTestRay(0);
 
-    AZStd::vector<Physics::RayCastHit> hits(3);     // three hits
+    AZStd::vector<AzPhysics::SceneQueryHit> hits(3);     // three hits
     hits[0].m_distance = 10.f;
     hits[1].m_distance = 11.f;
     hits[2].m_distance = 12.f;
@@ -301,7 +301,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_MultiRaycastHit_NonZeroOcclusio
         raycastProcessor.SetupTestRay(i);
     }
 
-    AZStd::vector<Physics::RayCastHit> hits(3);     // three hits
+    AZStd::vector<AzPhysics::SceneQueryHit> hits(3);     // three hits
     hits[0].m_distance = 10.f;
     hits[1].m_distance = 11.f;
     hits[2].m_distance = 12.f;
@@ -349,10 +349,11 @@ TEST(AudioRaycastManagerTest, AudioRaycastRequest_FullProcessFlow_CorrectRequest
 {
     AudioRaycastManager_Test raycastManager;
 
-    Physics::RayCastRequest physicsRequest;
+    AzPhysics::RayCastRequest physicsRequest;
     physicsRequest.m_direction = AZ::Vector3::CreateAxisX();
     physicsRequest.m_distance = 5.f;
     physicsRequest.m_maxResults = Audio::s_maxHitResultsPerRaycast;
+    physicsRequest.m_reportMultipleHits = true;
 
     AudioRaycastRequest raycastRequest(AZStd::move(physicsRequest), testAudioObjectId, 0);
 
@@ -364,7 +365,7 @@ TEST(AudioRaycastManagerTest, AudioRaycastRequest_FullProcessFlow_CorrectRequest
     EXPECT_EQ(1, raycastManager.GetNumRequests());
     EXPECT_EQ(0, raycastManager.GetNumResults());
 
-    raycastManager.OnPostPhysicsSubtick(0.017f);     // seconds
+    raycastManager.OnPhysicsSubtickFinished();
 
     EXPECT_EQ(0, raycastManager.GetNumRequests());
     EXPECT_EQ(1, raycastManager.GetNumResults());

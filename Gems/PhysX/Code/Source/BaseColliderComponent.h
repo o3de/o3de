@@ -24,7 +24,7 @@
 
 namespace PhysX
 {
-    class RigidBodyStatic;
+    class StaticRigidBody;
 
     /// Base class for all runtime collider components.
     class BaseColliderComponent
@@ -92,6 +92,7 @@ namespace PhysX
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             dependent.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

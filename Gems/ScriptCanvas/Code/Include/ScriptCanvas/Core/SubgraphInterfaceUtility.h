@@ -26,7 +26,17 @@ namespace ScriptCanvas
     {
         bool IsDefaultOutId(const FunctionSourceId& id);
 
+        bool IsFunctionSourceIdObject(const FunctionSourceId& id);
+
+        bool IsFunctionSourceIdNodeable(const FunctionSourceId& id);
+
+        bool IsReservedId(const FunctionSourceId& id);
+
         FunctionSourceId MakeDefaultOutId(const FunctionSourceId& inID);
+
+        FunctionSourceId MakeFunctionSourceIdObject();
+
+        FunctionSourceId MakeFunctionSourceIdNodeable();
 
         bool OutIdIsEqual(const FunctionSourceId& lhs, const FunctionSourceId& rhs);
 

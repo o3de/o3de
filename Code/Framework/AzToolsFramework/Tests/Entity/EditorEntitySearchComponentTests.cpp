@@ -14,7 +14,6 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -23,6 +22,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 namespace AzToolsFramework
 {
@@ -236,7 +236,7 @@ namespace AzToolsFramework
             m_app.Stop();
         }
 
-        AzToolsFramework::ToolsApplication m_app;
+        UnitTest::ToolsTestApplication m_app{ "EditorEntitySearchComponentTests" };
         AZ::ComponentApplication::Descriptor m_descriptor;
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
 

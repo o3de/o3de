@@ -42,8 +42,8 @@ namespace ScriptCanvas
         VariableData(VariableData&&);
         VariableData& operator=(VariableData&&);
 
-        AZ_INLINE GraphVariableMapping& GetVariables() { return m_variableMap; }
-        AZ_INLINE const GraphVariableMapping& GetVariables() const { return m_variableMap; }
+        inline GraphVariableMapping& GetVariables() { return m_variableMap; }
+        inline const GraphVariableMapping& GetVariables() const { return m_variableMap; }
 
         AZ::Outcome<VariableId, AZStd::string> AddVariable(AZStd::string_view varName, const GraphVariable& graphVariable);
 
@@ -75,7 +75,7 @@ namespace ScriptCanvas
         {
             InitialVersion,
             VariableDatumSimplification,
-
+            RemoveUnusedDefaultValue,
             // Should always be last
             Current
         };
@@ -88,7 +88,6 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* context);
 
         GraphVariable m_graphVariable;
-        Datum m_defaultValue;
     };
 
     //! Variable Data structure which uses the VariableNameValuePair struct to provide editor specific UI visualization

@@ -75,18 +75,18 @@ namespace UnitTest
         EntityAlias entityAlias = entityAliasRef.value();
 
         //update template
-        m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityAlias, templateId);
+        ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityAlias, templateId));
 
         //undo change
         instanceEntityUndo.Undo();
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // verify template updated correctly
         //instantiate second instance for checking if propogation works
         AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(templateId);
         ASSERT_TRUE(secondInstance);
 
-        secondInstance->InitializeNestedEntities();
-        secondInstance->ActivateNestedEntities();
+        ValidateInstanceEntitiesActive(*secondInstance);
 
         //get the values from the transform on the entity
         AZ::EntityId secondNewEntity = secondInstance->GetEntityId(entityAlias);
@@ -136,6 +136,7 @@ namespace UnitTest
 
         //undo change
         instanceEntityAddUndo.Undo();
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
@@ -188,6 +189,7 @@ namespace UnitTest
 
         //undo change
         instanceEntityRemoveUndo.Undo();
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;

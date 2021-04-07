@@ -68,9 +68,11 @@ namespace AZ
 
         bool useAllHardware = true;
         settingsRegistry->Get(useAllHardware, "/Amazon/AzCore/Streamer/UseAllHardware");
+        bool reportHardware = true;
+        settingsRegistry->Get(reportHardware, "/Amazon/AzCore/Streamer/ReportHardware");
 
         AZ::IO::HardwareInformation hardwareInfo;
-        if (!AZ::IO::CollectIoHardwareInformation(hardwareInfo, useAllHardware))
+        if (!AZ::IO::CollectIoHardwareInformation(hardwareInfo, useAllHardware, reportHardware))
         {
             AZ_Assert(false, "Unable to collect information on available IO hardware.");
             return CreateSimpleStreamerStack();

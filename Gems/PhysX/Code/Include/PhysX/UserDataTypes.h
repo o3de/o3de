@@ -13,11 +13,16 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzFramework/Physics/WorldBody.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <PxActor.h>
+
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace PhysX
 {
@@ -69,11 +74,13 @@ namespace PhysX
         AZ::EntityId GetEntityId() const;
         void SetEntityId(AZ::EntityId entityId);
 
-        Physics::RigidBody* GetRigidBody() const;
-        void SetRigidBody(Physics::RigidBody* rigidBody);
+        AzPhysics::SimulatedBodyHandle GetBodyHandle() const;
 
-        Physics::RigidBodyStatic* GetRigidBodyStatic() const;
-        void SetRigidBodyStatic(Physics::RigidBodyStatic* rigidBody);
+        AzPhysics::RigidBody* GetRigidBody() const;
+        void SetRigidBody(AzPhysics::RigidBody* rigidBody);
+
+        AzPhysics::StaticRigidBody* GetRigidBodyStatic() const;
+        void SetRigidBodyStatic(AzPhysics::StaticRigidBody* rigidBody);
 
         Physics::Character* GetCharacter() const;
         void SetCharacter(Physics::Character* character);
@@ -81,7 +88,7 @@ namespace PhysX
         Physics::RagdollNode* GetRagdollNode() const;
         void SetRagdollNode(Physics::RagdollNode* ragdollNode);
 
-        Physics::WorldBody* GetWorldBody() const;
+        AzPhysics::SimulatedBody* GetWorldBody() const;
 
     private:
 
@@ -89,8 +96,8 @@ namespace PhysX
         {
             AZ::EntityId m_entityId;
             // Possible references, only one of them is not nullptr
-            Physics::RigidBody* m_rigidBody = nullptr;
-            Physics::RigidBodyStatic* m_staticRigidBody = nullptr;
+            AzPhysics::RigidBody* m_rigidBody = nullptr;
+            AzPhysics::StaticRigidBody* m_staticRigidBody = nullptr;
             Physics::Character* m_character = nullptr;
             Physics::RagdollNode* m_ragdollNode = nullptr;
             void* m_externalUserData = nullptr;

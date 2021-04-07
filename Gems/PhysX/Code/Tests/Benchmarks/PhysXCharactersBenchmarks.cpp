@@ -98,7 +98,7 @@ namespace PhysX::Benchmarks
             //need to get the Physics::System to be able to spawn the rigid bodies
             m_system = AZ::Interface<Physics::System>::Get();
 
-            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(CharacterConstants::TerrainSize, CharacterConstants::TerrainSize);
+            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, CharacterConstants::TerrainSize, CharacterConstants::TerrainSize);
         }
 
         virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
@@ -109,12 +109,11 @@ namespace PhysX::Benchmarks
 
     protected:
         // PhysXBaseBenchmarkFixture Overrides ...
-        Physics::WorldConfiguration GetDefaultWorldConfiguration() override
+        AzPhysics::SceneConfiguration GetDefaultSceneConfiguration() override
         {
-            Physics::WorldConfiguration worldConfig;
-            worldConfig.m_gravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
-            worldConfig.m_enableCcd = CharacterConstants::CCDEnabled;
-            return worldConfig;
+            AzPhysics::SceneConfiguration sceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
+            sceneConfig.m_enableCcd = CharacterConstants::CCDEnabled;
+            return sceneConfig;
         }
 
         Physics::System* m_system = nullptr;
@@ -132,7 +131,7 @@ namespace PhysX::Benchmarks
         //! @param scene, the scene to spawn the characters controller into
         //! @param genSpawnPosFuncPtr - [optional] function pointer to allow caller to pick the spawn position
         AZStd::vector<AZStd::unique_ptr<Physics::Character>> CreateCharacterControllers(int numCharacterControllers, CharacterConstants::CharacterSettings::ColliderType colliderType,
-            AzPhysics::Scene* scene,
+            AzPhysics::SceneHandle& sceneHandle,
             GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr = nullptr)
         {
             //define some common configs
@@ -168,7 +167,7 @@ namespace PhysX::Benchmarks
             {
                 AZStd::unique_ptr<Physics::Character> controller;
                 Physics::CharacterSystemRequestBus::BroadcastResult(controller,
-                    &Physics::CharacterSystemRequests::CreateCharacter, characterConfig, *shapeConfig, *scene->GetLegacyWorld());
+                    &Physics::CharacterSystemRequests::CreateCharacter, characterConfig, *shapeConfig, sceneHandle);
 
                 const AZ::Vector3 spawnPosition = genSpawnPosFuncPtr != nullptr ? (*genSpawnPosFuncPtr)(i) : AZ::Vector3::CreateZero(); 
                 controller->SetBasePosition(spawnPosition);
@@ -208,7 +207,7 @@ namespace PhysX::Benchmarks
             return AZ::Vector3(x, y, z);
         };
         AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
-            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_defaultScene, &posGenerator);
+            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
         
         //setup the sub tick tracker
         PhysX::Benchmarks::Utils::PrePostSimulationEventHandler subTickTracker;
@@ -222,8 +221,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < CharacterConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -265,7 +263,7 @@ namespace PhysX::Benchmarks
             return AZ::Vector3(x, y, z);
         };
         AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
-            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_defaultScene, &posGenerator);
+            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
 
         //setup the sub tick tracker
         PhysX::Benchmarks::Utils::PrePostSimulationEventHandler subTickTracker;
@@ -289,8 +287,7 @@ namespace PhysX::Benchmarks
                     controller->ApplyRequestedVelocity(PhysX::Benchmarks::DefaultTimeStep);
                 }
 
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -324,7 +321,7 @@ namespace PhysX::Benchmarks
             return AZ::Vector3(x, y, z);
         };
         AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
-            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_defaultScene, &posGenerator);
+            static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
 
         //pair up each character controller with a movement vector
         using ControllerAndMovementDirPair = AZStd::pair<AZStd::unique_ptr<Physics::Character>, AZ::Vector3>;
@@ -369,8 +366,7 @@ namespace PhysX::Benchmarks
                         controllerMovementPair.first->ApplyRequestedVelocity(PhysX::Benchmarks::DefaultTimeStep);
                     }
 
-                    m_defaultScene->StartSimulation(DefaultTimeStep);
-                    m_defaultScene->FinishSimulation();
+                    StepScene1Tick(DefaultTimeStep);
 
                     //time each physics tick and store it to analyze
                     auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);

@@ -5,6 +5,7 @@
         {
             "Streamer":
             {
+                "ReportHardware": false,
                 "Profiles":
                 {
                     "Generic":

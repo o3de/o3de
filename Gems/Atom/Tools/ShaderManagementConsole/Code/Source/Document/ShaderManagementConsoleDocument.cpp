@@ -102,14 +102,15 @@ namespace ShaderManagementConsole
         bool result = false;
         AZ::Data::AssetInfo sourceAssetInfo;
         AZStd::string watchFolder;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-            m_absolutePath.c_str(), sourceAssetInfo, watchFolder);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, m_absolutePath.c_str(), sourceAssetInfo,
+            watchFolder);
         if (!result)
         {
             return AZ::Failure(AZStd::string::format("Could not find source data: '%s'.", m_absolutePath.c_str()));
         }
 
-        m_relativePath = sourceAssetInfo.m_relativePath;
+        m_relativePath = m_shaderVariantListSourceData.m_shaderFilePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_relativePath))
         {
             return AZ::Failure(AZStd::string::format("Shader path could not be normalized: '%s'.", m_relativePath.c_str()));
@@ -117,7 +118,6 @@ namespace ShaderManagementConsole
 
         AZStd::string shaderPath = m_relativePath;
         AzFramework::StringFunc::Path::ReplaceExtension(shaderPath, AZ::RPI::ShaderAsset::Extension);
-        
 
         m_shaderAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ShaderAsset>(shaderPath.c_str());
         if (!m_shaderAsset)

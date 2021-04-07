@@ -26,9 +26,27 @@
 #include <System/PhysXSystem.h>
 #include <System/PhysXCookingParams.h>
 #include <Tests/PhysXTestCommon.h>
+#include <UnitTest/ToolsTestApplication.h>
 
 namespace Physics
 {
+    class PhysXEditorTestToolsApplication
+        : public UnitTest::ToolsTestApplication
+    {
+    public:
+        PhysXEditorTestToolsApplication(AZStd::string appName)
+            : UnitTest::ToolsTestApplication(AZStd::move(appName))
+        {
+        }
+
+        bool IsPrefabSystemEnabled() const override
+        {
+            // Some physx tests fail if prefabs are enabled for the application,
+            // for now, make them use slices
+            return false;
+        }
+    };
+
     class PhysXEditorTestEnvironment
         : public AZ::Test::GemTestEnvironment
     {
@@ -91,7 +109,7 @@ namespace Physics
 
         AZ::ComponentApplication* CreateApplicationInstance() override
         {
-            return aznew AzToolsFramework::ToolsApplication;
+            return aznew PhysXEditorTestToolsApplication("PhysXEditor");
         }
 
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_fileIo;

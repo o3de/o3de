@@ -64,28 +64,22 @@ namespace AZ
             ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
 
             //! Sets one image view for the given shader input index.
-            bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView);
             bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
 
             //! Sets an array of image view for the given shader input index.
-            bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews);
-            bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews, uint32_t arrayIndex);
+            bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews, uint32_t arrayIndex = 0);
 
             //! Sets one buffer view for the given shader input index.
-            bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView);
-            bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex);
+            bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex = 0);
 
             //! Sets an array of image view for the given shader input index.
-            bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews);
-            bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews, uint32_t arrayIndex);
+            bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews, uint32_t arrayIndex = 0);
 
             //! Sets one sampler for the given shader input index, using the bindingIndex as the key.
-            bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler);
-            bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex);
+            bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex = 0);
 
             //! Sets an array of samplers for the given shader input index.
-            bool SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers);
-            bool SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers, uint32_t arrayIndex);
+            bool SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers, uint32_t arrayIndex = 0);
 
             //! Assigns constant data for the given constant shader input index.
             bool SetConstantRaw(ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteCount);

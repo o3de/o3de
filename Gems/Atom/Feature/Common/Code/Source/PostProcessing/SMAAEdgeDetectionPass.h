@@ -51,13 +51,13 @@ namespace AZ
             void UpdateSRG() override;
             void GetCurrentShaderOption(AZ::RPI::ShaderOptionGroup& shaderOption) const override;
 
-            RHI::ShaderInputConstantIndex m_renderTargetMetricsShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_chromaThresholdShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_depthThresholdShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_localContrastAdaptationFactorShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_predicationThresholdShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_predicationScaleShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_predicationStrengthShaderInputIndex;
+            RHI::ShaderInputNameIndex m_renderTargetMetricsShaderInputIndex = "m_renderTargetMetrics";
+            RHI::ShaderInputNameIndex m_chromaThresholdShaderInputIndex = "m_chromaThreshold";
+            RHI::ShaderInputNameIndex m_depthThresholdShaderInputIndex = "m_depthThreshold";
+            RHI::ShaderInputNameIndex m_localContrastAdaptationFactorShaderInputIndex = "m_localContrastAdaptationFactor";
+            RHI::ShaderInputNameIndex m_predicationThresholdShaderInputIndex = "m_predicationThreshold";
+            RHI::ShaderInputNameIndex m_predicationScaleShaderInputIndex = "m_predicationScale";
+            RHI::ShaderInputNameIndex m_predicationStrengthShaderInputIndex = "m_predicationStrength";
 
             const AZ::Name m_enablePredicationFeatureOptionName;
             const AZ::Name m_edgeDetectionModeOptionName;

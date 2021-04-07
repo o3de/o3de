@@ -17,6 +17,8 @@ namespace UnitTest
 {
     TEST_F(SliceStabilityTest, ReParent_SliceEntityMovedFromOneInstanceToAnother_EntityIDRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AzToolsFramework::EntityIdList instance1Entities;
         AZ::EntityId instance1Root = CreateEditorEntity("Slice1Root", instance1Entities);
         ASSERT_TRUE(instance1Root.IsValid());
@@ -54,6 +56,8 @@ namespace UnitTest
      */
     TEST_F(SliceStabilityTest, ReParent_NestedSliceCreatedFromSliceInstanceChild_SliceHierarchyRemainsSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AzToolsFramework::EntityIdList instance1Entities;
         AZ::EntityId instance1Root = CreateEditorEntity("Slice1Root", instance1Entities);
         ASSERT_TRUE(instance1Root.IsValid());

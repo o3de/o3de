@@ -43,8 +43,6 @@ enum ObjectEvent
     EVENT_PHYSICS_RESETSTATE,//!< Signals that physics state must be reseted on objects.
     EVENT_PHYSICS_APPLYSTATE,//!< Signals that the stored physics state must be applied to objects.
 
-    EVENT_PRE_EXPORT, //!< Signals that the game is about to be exported, prepare any data if the object needs to
-
     EVENT_FREE_GAME_DATA,//!< Object should free game data that its holding.
     EVENT_CONFIG_SPEC_CHANGE,   //!< Called when config spec changed.
     EVENT_HIDE_HELPER, //!< Signals that happens when Helper mode switches to be hidden.

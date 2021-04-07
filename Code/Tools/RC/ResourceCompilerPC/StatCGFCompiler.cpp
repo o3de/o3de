@@ -1074,7 +1074,7 @@ bool CStatCGFCompiler::CompileCGF(AssetBuilderSDK::ProcessJobResponse& response,
                     // Check if our material name is just a name, or if it contains a path
                     if (strstr(materialName.c_str(), "/") || strstr(materialName.c_str(), "\\"))
                     {
-                        // The material path is already relative to devroot, for example "samplesproject/materials/foo.mtl"
+                        // The material path is already relative to devroot, for example "automatedtesting/materials/foo.mtl"
                         // We need to convert this to the cache path AP generates.  In this case, cut off the game project name.
                         AZStd::string materialRelativePath = materialName;
                         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, gameFolder);

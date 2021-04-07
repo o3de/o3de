@@ -51,7 +51,7 @@ namespace ScriptCanvasEditor
         void OnVersionConversionEnd() override;
         ////
 
-        // GraphCanvas::NodeNotificationBus
+        // GraphCanvas::VisualNotificationBus
         bool OnMouseDoubleClick(const QGraphicsSceneMouseEvent*) override;
         //
 

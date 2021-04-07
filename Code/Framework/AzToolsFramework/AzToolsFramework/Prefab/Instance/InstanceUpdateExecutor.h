@@ -46,6 +46,7 @@ namespace AzToolsFramework
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
             AZStd::queue<Instance*> m_instancesUpdateQueue;
+            bool m_updatingTemplateInstancesInQueue { false };
         };
     }
 }

@@ -52,6 +52,15 @@ namespace AzToolsFramework
             return true;
         }
 
+        bool SourceControlThumbnailKey::Equals(const ThumbnailKey* other) const
+        {
+            if (!ThumbnailKey::Equals(other))
+            {
+                return false;
+            }
+            return m_fileName == azrtti_cast<const SourceControlThumbnailKey*>(other)->GetFileName();
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // SourceControlThumbnail
         //////////////////////////////////////////////////////////////////////////
@@ -142,7 +151,7 @@ namespace AzToolsFramework
         // SourceControlThumbnailCache
         //////////////////////////////////////////////////////////////////////////
         SourceControlThumbnailCache::SourceControlThumbnailCache()
-            : ThumbnailCache<SourceControlThumbnail, SourceControlKeyHash, SourceControlKeyEqual>()
+            : ThumbnailCache<SourceControlThumbnail>()
         {
         }
 

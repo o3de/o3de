@@ -1,7 +1,4 @@
-:: Need to set up
-
 @echo off
-
 REM 
 REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 REM its licensors.
@@ -18,25 +15,35 @@ REM
 :: Puts you in the CMD within the dev environment
 
 :: Set up window
-TITLE Lumberyard DCC Scripting Interface Cmd
+TITLE O3DE DCC Scripting Interface Cmd
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
+
+echo.
+echo _____________________________________________________________________
+echo.
+echo ~    O3DE DCCsi CMD ...
+echo _____________________________________________________________________
+echo.
 
 %~d0
 cd %~dp0
 PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-CALL %~dp0\Env.bat
+CALL %~dp0\Env_Core.bat
+CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_Maya.bat
+CALL %~dp0\Env_Substance.bat
+CALL %~dp0\Env_WingIDE.bat
 
-echo.
-echo _____________________________________________________________________
-echo.
-echo ~    LY DCC Scripting Interface CMD ...
-echo _____________________________________________________________________
-echo.
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
+:: Change to root dir
+CD /D %LY_PROJECT_PATH%
 
 :: Create command prompt with environment
 CALL %windir%\system32\cmd.exe

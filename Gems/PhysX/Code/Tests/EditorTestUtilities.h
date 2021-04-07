@@ -15,11 +15,14 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <Physics/PhysicsTests.h>
 
 #include <System/PhysXSystem.h>
+
+namespace AzPhysics
+{
+    struct TriggerEvent;
+}
 
 namespace PhysXEditorTests
 {
@@ -44,21 +47,13 @@ namespace PhysXEditorTests
     class PhysXEditorFixture
         : public UnitTest::AllocatorsTestFixture
         , public Physics::DefaultWorldBus::Handler
-        , public Physics::WorldEventHandler
     {
     public:
         void SetUp() override;
         void TearDown() override;
 
         // DefaultWorldBus
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld() override;
-
-        // WorldEventHandler
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override;
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override;
-        void OnCollisionBegin(const Physics::CollisionEvent& event) override;
-        void OnCollisionPersist(const Physics::CollisionEvent& event) override;
-        void OnCollisionEnd(const Physics::CollisionEvent& event) override;
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
        
         AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
         AzPhysics::SceneHandle m_defaultSceneHandle = AzPhysics::InvalidSceneHandle;

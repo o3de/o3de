@@ -20,6 +20,9 @@
 
 namespace Multiplayer
 {
+    //! The default number of rewindable samples for us to store.
+    static constexpr uint32_t RewindHistorySize = 128;
+
     AZ_TYPE_SAFE_INTEGRAL(HostId, uint32_t);
     static constexpr HostId InvalidHostId = static_cast<HostId>(-1);
 
@@ -39,19 +42,19 @@ namespace Multiplayer
     enum class RpcDeliveryType : uint8_t
     {
         None,
-        ServerAuthorityToClientSimulation, // Invoked from ServerAuthority, handled on ClientSimulation
-        ServerAuthorityToClientAutonomous, // Invoked from ServerAuthority, handled on ClientAutonomous
-        ClientAutonomousToServerAuthority, // Invoked from ClientAutonomous, handled on ServerAuthority
-        ServerSimulationToServerAuthority  // Invoked from ServerSimulation, handled on ServerAuthority
+        AuthorityToClient,     // Invoked from Authority, handled on Client
+        AuthorityToAutonomous, // Invoked from Authority, handled on Autonomous
+        AutonomousToAuthority, // Invoked from Autonomous, handled on Authority
+        ServerToAuthority      // Invoked from Server, handled on Authority
     };
 
     enum class NetEntityRole : uint8_t
     {
-        InvalidRole,      // No role
-        ClientSimulation, // A simulated proxy on a client
-        ClientAutonomous, // An autonomous proxy on a client (can execute local prediction)
-        ServerSimulation, // A simulated proxy on a server
-        ServerAuthority   // An authoritative proxy on a server (full authority)
+        InvalidRole, // No role
+        Client,      // A simulated proxy on a client
+        Autonomous,  // An autonomous proxy on a client (can execute local prediction)
+        Server,      // A simulated proxy on a server
+        Authority    // An authoritative proxy on a server (full authority)
     };
 
     enum class ComponentSerializationType : uint8_t

@@ -45,9 +45,10 @@ namespace AZ
                     const aiMeshMorphAnim* meshMorphAnim,
                     const aiMesh* mesh);
 
+                static const double s_defaultTimeStepSampleRate;
+
             protected:
                 static const char* s_animationNodeName;
-                static const FbxSDKWrapper::FbxTimeWrapper::TimeMode s_defaultTimeMode;
             };
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI

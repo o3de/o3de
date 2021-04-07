@@ -17,9 +17,9 @@
 
 #include <AzCore/Math/Random.h>
 #include <AzTest/AzTest.h>
-#include <Physics/PhysicsTests.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <Tests/PhysXGenericTestFixture.h>
 #include <Tests/PhysXTestCommon.h>
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
@@ -50,7 +50,7 @@ namespace PhysX::Benchmarks
 
     class PhysXSceneQueryBenchmarkFixture
         : public benchmark::Fixture
-        , public Physics::GenericPhysicsFixture
+        , public PhysX::GenericPhysicsFixture
         
     {
     public:
@@ -62,7 +62,7 @@ namespace PhysX::Benchmarks
         //! \state.range(1) - max radius
         void SetUp(const ::benchmark::State& state) override
         {
-            Physics::GenericPhysicsFixture::SetUpInternal();
+            PhysX::GenericPhysicsFixture::SetUpInternal();
 
             m_random = AZ::SimpleLcgRandom(SceneQueryConstants::Seed);
             m_numBoxes = aznumeric_cast<AZ::u32>(state.range(0));
@@ -100,7 +100,7 @@ namespace PhysX::Benchmarks
             m_boxes = std::vector<AZ::Vector3>(possibleBoxes.begin(), possibleBoxes.begin() + m_numBoxes);
             for (auto box : m_boxes)
             {
-                auto newEntity = TestUtils::CreateBoxEntity(box, SceneQueryConstants::BoxDimensions, false);
+                auto newEntity = TestUtils::CreateBoxEntity(m_testSceneHandle, box, SceneQueryConstants::BoxDimensions);
                 Physics::RigidBodyRequestBus::Event(newEntity->GetId(), &Physics::RigidBodyRequestBus::Events::SetGravityEnabled, false);
                 m_entities.push_back(newEntity);
             }
@@ -110,7 +110,7 @@ namespace PhysX::Benchmarks
         {
             m_boxes.clear();
             m_entities.clear();
-            Physics::GenericPhysicsFixture::TearDownInternal();
+            PhysX::GenericPhysicsFixture::TearDownInternal();
         }
 
     protected:
@@ -122,11 +122,12 @@ namespace PhysX::Benchmarks
 
     BENCHMARK_DEFINE_F(PhysXSceneQueryBenchmarkFixture, BM_RaycastRandomBoxes)(benchmark::State& state)
     {
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
-        Physics::RayCastHit result;
+        
         AZStd::vector<int64_t> executionTimes;
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
         for (auto _ : state)
@@ -135,7 +136,7 @@ namespace PhysX::Benchmarks
 
             auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
 
-            Physics::WorldRequestBus::BroadcastResult(result, &Physics::WorldRequests::RayCast, request);
+            AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
             auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
@@ -151,14 +152,16 @@ namespace PhysX::Benchmarks
 
     BENCHMARK_DEFINE_F(PhysXSceneQueryBenchmarkFixture, BM_ShapecastRandomBoxes)(benchmark::State& state)
     {
-        Physics::SphereShapeConfiguration shapeConfiguration;
-        shapeConfiguration.m_radius = SceneQueryConstants::SphereShapeRadius;
-        Physics::ShapeCastRequest request;
-        request.m_start = AZ::Transform::CreateIdentity();
-        request.m_distance = 2000.0f;
-        request.m_shapeConfiguration = &shapeConfiguration;
-        Physics::RayCastHit result;
+        AzPhysics::ShapeCastRequest request = AzPhysics::ShapeCastRequestHelpers::CreateSphereCastRequest(
+            SceneQueryConstants::SphereShapeRadius,
+            AZ::Transform::CreateIdentity(),
+            AZ::Vector3::CreateOne(),
+            2000.0f
+        );
+        
+        
         AZStd::vector<int64_t> executionTimes;
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
         for (auto _ : state)
@@ -167,7 +170,7 @@ namespace PhysX::Benchmarks
 
             auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
 
-            Physics::WorldRequestBus::BroadcastResult(result, &Physics::WorldRequests::ShapeCast, request);
+            AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
             auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());
@@ -183,12 +186,13 @@ namespace PhysX::Benchmarks
 
     BENCHMARK_DEFINE_F(PhysXSceneQueryBenchmarkFixture, BM_OverlapRandomBoxes)(benchmark::State& state)
     {
-        Physics::SphereShapeConfiguration shapeConfiguration;
-        shapeConfiguration.m_radius = SceneQueryConstants::SphereShapeRadius;
-        Physics::OverlapRequest request;
-        request.m_shapeConfiguration = &shapeConfiguration;
-        AZStd::vector<Physics::OverlapHit> result;
+        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateSphereOverlapRequest(
+            SceneQueryConstants::SphereShapeRadius,
+            AZ::Transform::CreateIdentity()
+        );
+        
         AZStd::vector<int64_t> executionTimes;
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
         for (auto _ : state)
@@ -197,7 +201,7 @@ namespace PhysX::Benchmarks
 
             auto start = std::chrono::system_clock::now(); //AZStd::chrono::system_clock wont messeare below 1000ns
 
-            Physics::WorldRequestBus::BroadcastResult(result, &Physics::WorldRequests::Overlap, request);
+            AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(m_testSceneHandle, &request);
 
             auto timeElasped = std::chrono::nanoseconds(std::chrono::system_clock::now() - start);
             executionTimes.emplace_back(timeElasped.count());

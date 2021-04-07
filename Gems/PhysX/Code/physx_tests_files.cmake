@@ -14,6 +14,9 @@ set(FILES
     Source/SystemComponent.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
+    Tests/PhysXComponentBusTests.cpp
+    Tests/PhysXGenericTestFixture.h
+    Tests/PhysXGenericTestFixture.cpp
     Tests/PhysXTestCommon.h
     Tests/PhysXTestCommon.inl
     Tests/PhysXTestCommon.cpp
@@ -22,10 +25,11 @@ set(FILES
     Tests/PhysXGenericTest.cpp
     Tests/PhysXSpecificTest.cpp
     Tests/PhysXForceRegionTest.cpp
-    Tests/PhysXWorldTest.cpp
     Tests/PhysXMaterialLibraryTest.cpp
     Tests/PhysXCollisionFilteringTest.cpp
     Tests/PhysXJointsTest.cpp
+    Tests/PhysXSceneTests.cpp
+    Tests/PhysXSceneQueryTests.cpp
     Tests/PhysXSystemTests.cpp
     Tests/PhysXTestFixtures.h
     Tests/PhysXTestFixtures.cpp

@@ -70,7 +70,7 @@ namespace AssetProcessor
 
     namespace
     {
-        constexpr const char* AssetProcessorManagerTestGameProject = "SamplesProject";
+        constexpr const char* AssetProcessorManagerTestGameProject = "AutomatedTesting";
         /// This functions sorts the processed result list by platform name
         /// if platform is same than it sorts by job description
         void sortAssetToProcessResultList(QList<JobDetails>& processResults)

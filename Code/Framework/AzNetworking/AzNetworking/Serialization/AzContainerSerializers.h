@@ -19,6 +19,13 @@
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Aabb.h>
 #include <limits>
 
 namespace AzNetworking
@@ -236,6 +243,68 @@ namespace AzNetworking
         static bool SerializeObject(ISerializer& serializer, TYPE& container)
         {
             return SerializeAzContainer<TYPE>::Serialize(serializer, container);
+        }
+    };
+
+    // Az Types
+    template <>
+    struct SerializeObjectHelper<AZ::Vector2>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Vector2& value)
+        {
+            float values[4];
+            value.StoreToFloat2(values);
+            serializer.Serialize(values[0], "xValue");
+            serializer.Serialize(values[1], "yValue");
+            value = AZ::Vector2::CreateFromFloat2(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Vector3>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Vector3& value)
+        {
+            float values[4];
+            value.StoreToFloat3(values);
+            serializer.Serialize(values[0], "xValue");
+            serializer.Serialize(values[1], "yValue");
+            serializer.Serialize(values[1], "zValue");
+            value = AZ::Vector3::CreateFromFloat3(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Vector4>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Vector4& value)
+        {
+            float values[4];
+            value.StoreToFloat4(values);
+            serializer.Serialize(values[0], "xValue");
+            serializer.Serialize(values[1], "yValue");
+            serializer.Serialize(values[1], "zValue");
+            serializer.Serialize(values[1], "wValue");
+            value = AZ::Vector4::CreateFromFloat4(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Quaternion>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Quaternion& value)
+        {
+            float values[4];
+            value.StoreToFloat4(values);
+            serializer.Serialize(values[0], "xValue");
+            serializer.Serialize(values[1], "yValue");
+            serializer.Serialize(values[1], "zValue");
+            serializer.Serialize(values[1], "wValue");
+            value = AZ::Quaternion::CreateFromFloat4(values);
+            return serializer.IsValid();
         }
     };
 }

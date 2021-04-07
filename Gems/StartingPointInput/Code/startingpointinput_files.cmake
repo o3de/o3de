@@ -25,7 +25,7 @@ set(FILES
     Source/InputHandlerNodeable.h
     Source/InputHandlerNodeable.cpp
     Source/InputHandlerNodeable.ScriptCanvasNodeable.xml
-    Source/InputNode.ScriptCanvasNode.xml
+    Source/InputNode.ScriptCanvasGrammar.xml
     Source/StartingPointInput_precompiled.h
     Source/StartingPointInput_precompiled.cpp
 )

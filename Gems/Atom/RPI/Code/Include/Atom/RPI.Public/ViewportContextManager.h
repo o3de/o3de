@@ -42,7 +42,7 @@ namespace AZ
 
             AZ::Name GetDefaultViewportContextName() const override;
             void PushView(const Name& contextName, ViewPtr view) override;
-            void PopView(const Name& contextName, ViewPtr view) override;
+            bool PopView(const Name& contextName, ViewPtr view) override;
             ViewPtr GetCurrentView(const Name& contextName) const override;
 
         private:

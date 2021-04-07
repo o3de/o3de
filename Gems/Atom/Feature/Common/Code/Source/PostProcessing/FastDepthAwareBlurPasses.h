@@ -77,7 +77,7 @@ namespace AZ
             FastDepthAwareBlurHorPass(const RPI::PassDescriptor& descriptor);
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_constantsIndex;
+            AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
 
             FastDepthAwareBlurPassConstants m_passConstants;
         };
@@ -106,7 +106,7 @@ namespace AZ
             FastDepthAwareBlurVerPass(const RPI::PassDescriptor& descriptor);
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_constantsIndex;
+            AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
 
             FastDepthAwareBlurPassConstants m_passConstants;
         };

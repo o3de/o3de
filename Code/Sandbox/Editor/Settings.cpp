@@ -27,15 +27,15 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
+// AzFramework
+#include <AzFramework/API/ApplicationAPI.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
-
-// Editor Preferences Settings Registry keys
-constexpr char prefabSystemKey[] = "/Amazon/Editor/Preferences/EnablePrefabSystem";
 
 #pragma comment(lib, "Gdi32.lib")
 
@@ -694,7 +694,8 @@ void SEditorSettings::Save()
     // --- Settings Registry values
 
     // Prefab System UI
-    SetSettingsRegistry_Bool(prefabSystemKey, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::Broadcast(
+        &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     SaveSettingsRegistryFile();
 }
@@ -943,7 +944,9 @@ void SEditorSettings::Load()
     }
 
     // Load from Settings Registry
-    GetSettingsRegistry_Bool(prefabSystemKey, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1178,11 +1181,11 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_jsonPointerPrefix = "/Amazon/Editor/Preferences";
+    dumperSettings.m_jsonPointerPrefix = "/Amazon/Preferences";
 
     AZStd::string stringBuffer;
     AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Editor/Preferences", stringStream, dumperSettings))
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Preferences", stringStream, dumperSettings))
     {
         AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
             editorPreferencesFilePath.c_str());

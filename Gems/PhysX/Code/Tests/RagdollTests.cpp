@@ -21,7 +21,6 @@
 #include <PhysXCharacters/Components/RagdollComponent.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
-#include <Physics/PhysicsTests.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestCommon.h>
 
@@ -64,7 +63,7 @@ namespace PhysX
         return ragdollState;
     }
 
-    AZStd::unique_ptr<Ragdoll> CreateRagdoll()
+    AZStd::unique_ptr<Ragdoll> CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetCurrentExecutablePath() + "/Test.Assets/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
@@ -76,7 +75,7 @@ namespace PhysX
             parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
-        return Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices);
+        return Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices, sceneHandle);
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
@@ -85,7 +84,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNativeType_CorrectType)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         EXPECT_EQ(ragdoll->GetNativeType(), NativeTypeIdentifiers::Ragdoll);
 
         const size_t numNodes = ragdoll->GetNumNodes();
@@ -101,7 +100,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, RagdollNode_GetNativePointer_CorrectType)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
         const size_t numNodes = ragdoll->GetNumNodes();
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
@@ -117,7 +116,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, RagdollNode_GetTransform_MatchesTestSetup)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         ragdoll->EnableSimulation(GetTPose());
 
         for (size_t nodeIndex = 0; nodeIndex < RagdollTestData::NumNodes; nodeIndex++)
@@ -138,7 +137,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetTransform_MatchesTestSetup)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
         auto orientation = ragdoll->GetOrientation();
         auto position = ragdoll->GetPosition();
@@ -155,22 +154,21 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetWorld_CorrectWorld)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
         // the ragdoll isn't enabled yet, so it shouldn't be in a world
-        EXPECT_EQ(ragdoll->GetWorld(), nullptr);
+        EXPECT_FALSE(ragdoll->IsSimulated());
         const size_t numNodes = ragdoll->GetNumNodes();
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
-            EXPECT_EQ(ragdoll->GetNode(nodeIndex)->GetWorld(), nullptr);
+            EXPECT_FALSE(ragdoll->GetNode(nodeIndex)->IsSimulating());
         }
 
         ragdoll->EnableSimulation(GetTPose());
-        EXPECT_EQ(ragdoll->GetWorld()->GetWorldId(), Physics::DefaultPhysicsWorldId);
-        EXPECT_EQ(ragdoll->GetWorldId(), Physics::DefaultPhysicsWorldId);
+        EXPECT_TRUE(ragdoll->IsSimulated());
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
-            EXPECT_EQ(ragdoll->GetNode(nodeIndex)->GetWorld()->GetWorldId(), Physics::DefaultPhysicsWorldId);
+            EXPECT_TRUE(ragdoll->GetNode(nodeIndex)->IsSimulating());
         }
     }
 
@@ -180,7 +178,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNumNodes_EqualsNumInTestPose)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         EXPECT_EQ(ragdoll->GetNumNodes(), RagdollTestData::NumNodes);
     }
 
@@ -190,7 +188,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetJoint_MatchesTestDataJointStructure)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         const size_t numNodes = RagdollTestData::NumNodes;
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
@@ -217,7 +215,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetAabb_MatchesTestPoseAabb)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         auto aabb = ragdoll->GetAabb();
         EXPECT_TRUE(aabb.GetMin().IsClose(AZ::Vector3(-0.623f, -0.145f, -0.005f), 1e-3f));
         EXPECT_TRUE(aabb.GetMax().IsClose(AZ::Vector3(0.623f, 0.166f, 1.724f), 1e-3f));
@@ -229,7 +227,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNodeOutsideRange_GeneratesError)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
 
         // this node index should be valid
@@ -247,7 +245,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNodeStateOutsideRange_GeneratesError)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
 
         // this node index should be valid
@@ -266,7 +264,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_SetNodeStateOutsideRange_GeneratesError)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
 
         auto ragdollState = GetTPose();
@@ -287,7 +285,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_SimulateWithKinematicState_AabbDoesNotChange)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         auto initialAabb = ragdoll->GetAabb();
         auto kinematicTPose = GetTPose(Physics::SimulationType::Kinematic);
 
@@ -315,9 +313,9 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_EnableDisableSimulation_NumActorsInSceneCorrect)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
-        auto pxScene = static_cast<physx::PxScene*>(m_defaultScene->GetLegacyWorld()->GetNativePointer());
+        auto pxScene = static_cast<physx::PxScene*>(m_defaultScene->GetNativePointer());
         EXPECT_EQ(GetNumRigidDynamicActors(pxScene), 0);
         EXPECT_FALSE(ragdoll->IsSimulated());
 
@@ -336,7 +334,7 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, Ragdoll_NoOtherGeometry_FallsUnderGravity)
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
-        auto ragdoll = CreateRagdoll();
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
         ragdoll->EnableSimulation(GetTPose());
 
@@ -359,8 +357,8 @@ namespace PhysX
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         AZ::Transform floorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
-        auto floor = Physics::AddStaticFloorToWorld(m_defaultScene->GetLegacyWorld().get(), floorTransform);
-        auto ragdoll = CreateRagdoll();
+        auto floor = PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);
+        auto ragdoll = CreateRagdoll(m_testSceneHandle);
         ragdoll->EnableSimulation(GetTPose());
 
         TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 500);

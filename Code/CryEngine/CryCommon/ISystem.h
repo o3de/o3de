@@ -1267,7 +1267,7 @@ struct ISystem
 
     // Arguments:
     //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual void SetForceNonDevMode(const bool bValue) = 0;
+    virtual void SetForceNonDevMode(bool bValue) = 0;
     // Return Value:
     //   True when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
     virtual bool GetForceNonDevMode() const = 0;
@@ -1386,12 +1386,12 @@ struct ISystem
 
     // Summary:
     //   Changes current configuration platform.
-    virtual void SetConfigPlatform(const ESystemConfigPlatform platform) = 0;
+    virtual void SetConfigPlatform(ESystemConfigPlatform platform) = 0;
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
     //   Detects and set optimal spec.
-    virtual void AutoDetectSpec(const bool detectResolution) = 0;
+    virtual void AutoDetectSpec(bool detectResolution) = 0;
 
     // Summary:
     //   Thread management for subsystems
@@ -1519,7 +1519,7 @@ struct ISystem
     //   it adds a line to "MemoryCoverage.bmp" (generated the first time, there is a max line count).
     virtual void DumpMemoryCoverage() = 0;
     virtual ESystemGlobalState  GetSystemGlobalState(void) = 0;
-    virtual void SetSystemGlobalState(const ESystemGlobalState systemGlobalState) = 0;
+    virtual void SetSystemGlobalState(ESystemGlobalState systemGlobalState) = 0;
 
     // Summary:
     //      Asynchronous memcpy

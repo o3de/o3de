@@ -84,12 +84,9 @@ namespace AZ
                 return RHI::ResultCode::InvalidArgument;
             }
 
-            // [GFX_TODO][bethelz]: Move source code hashing from RPI branch here.
             HashValue64 hash = HashValue64{ 0 };
-
             hash = TypeHash64(reinterpret_cast<const uint8_t*>(m_sourceCode.data()), m_sourceCode.size(), hash);
             SetHash(hash);
-            //![GFX_TODO]
 
             return RHI::ResultCode::Success;
         }

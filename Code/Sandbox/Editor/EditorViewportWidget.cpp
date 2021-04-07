@@ -112,20 +112,17 @@ namespace AZ::ViewportHelpers
 
     class EditorEntityNotifications
         : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        , public AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
         EditorEntityNotifications(EditorViewportWidget& renderViewport)
             : m_renderViewport(renderViewport)
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-            AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         }
 
         ~EditorEntityNotifications() override
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-            AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         }
 
         // AzToolsFramework::EditorEntityContextNotificationBus
@@ -136,12 +133,6 @@ namespace AZ::ViewportHelpers
         void OnStopPlayInEditor() override
         {
             m_renderViewport.OnStopPlayInEditor();
-        }
-
-        // AzToolsFramework::EditorEvents::Bus
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override
-        {
-            m_renderViewport.PopulateEditorGlobalContextMenu(menu, point, flags);
         }
     private:
         EditorViewportWidget& m_renderViewport;
@@ -519,26 +510,17 @@ void EditorViewportWidget::Update()
             PushDisableRendering();
 
             // draw debug visualizations
+            if (m_debugDisplay)
             {
-                const AzFramework::DisplayContextRequestGuard displayContextGuard(m_displayContext);
-
-                const AZ::u32 prevState = m_displayContext.GetState();
-                m_displayContext.SetState(
+                const AZ::u32 prevState = m_debugDisplay->GetState();
+                m_debugDisplay->SetState(
                     e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
-
-                AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-                AzFramework::DebugDisplayRequestBus::Bind(
-                    debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-                AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
-
-                AzFramework::DebugDisplayRequests* debugDisplay =
-                    AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
                 AzFramework::EntityDebugDisplayEventBus::Broadcast(
                     &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-                    AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
+                    AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
 
-                m_displayContext.SetState(prevState);
+                m_debugDisplay->SetState(prevState);
             }
 
             QtViewport::Update();
@@ -570,8 +552,6 @@ void EditorViewportWidget::Update()
         // m_renderer->SetClearColor(Vec3(0.4f, 0.4f, 0.4f));
         // 3D engine stats
         GetIEditor()->GetSystem()->RenderBegin();
-
-        InitDisplayContext();
 
         OnRender();
 
@@ -825,6 +805,23 @@ void EditorViewportWidget::OnRender()
     }
 
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
+}
+
+void EditorViewportWidget::OnBeginPrepareRender()
+{
+    if (!m_debugDisplay)
+    {
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, GetViewportId());
+        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+        m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+    }
+
+    if (!m_debugDisplay)
+    {
+        return;
+    }
 
     float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
     float fFarZ = m_Camera.GetFarPlane();
@@ -838,8 +835,7 @@ void EditorViewportWidget::OnRender()
             Camera::CameraRequestBus::EventResult(fNearZ, m_viewEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);
             Camera::CameraRequestBus::EventResult(fFarZ, m_viewEntityId, &Camera::CameraComponentRequests::GetFarClipDistance);
             LmbrCentral::EditorCameraCorrectionRequestBus::EventResult(
-                lookThroughEntityCorrection, m_viewEntityId,
-                &LmbrCentral::EditorCameraCorrectionRequests::GetTransformCorrection);
+                lookThroughEntityCorrection, m_viewEntityId, &LmbrCentral::EditorCameraCorrectionRequests::GetTransformCorrection);
         }
 
         m_viewTM = cameraObject->GetWorldTM() * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection);
@@ -902,63 +898,31 @@ void EditorViewportWidget::OnRender()
 
     bool levelIsDisplayable = (ge && ge->IsLevelLoaded() && GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady());
 
-    //Handle scene render tasks such as gizmos and handles but only when not in VR
-    if (!m_renderer->IsStereoEnabled())
+    PreWidgetRendering();
+
+    RenderAll();
+
+    // Draw 2D helpers.
+    TransformationMatrices backupSceneMatrices;
+    m_debugDisplay->DepthTestOff();
+    //m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
+    auto prevState = m_debugDisplay->GetState();
+    m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
+
+    if (gSettings.viewports.bShowSafeFrame)
     {
-        DisplayContext& displayContext = m_displayContext;
-
-        PreWidgetRendering();
-
-        RenderAll();
-
-        // Draw Axis arrow in lower left corner.
-        if (levelIsDisplayable && !GetIEditor()->IsNewViewportInteractionModelEnabled())
-        {
-            DrawAxis();
-        }
-
-        // Draw 2D helpers.
-        TransformationMatrices backupSceneMatrices;
-        m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
-        displayContext.SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
-
-        // Display cursor string.
-        RenderCursorString();
-
-        if (gSettings.viewports.bShowSafeFrame)
-        {
-            UpdateSafeFrame();
-            RenderSafeFrame();
-        }
-
-        const AzFramework::DisplayContextRequestGuard displayContextGuard(displayContext);
-
-        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-        AzFramework::DebugDisplayRequestBus::Bind(
-            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
-
-        AzFramework::DebugDisplayRequests* debugDisplay =
-            AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-
-        AzFramework::ViewportDebugDisplayEventBus::Event(
-            AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
-            AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
-
-        if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-        {
-            RenderSelectionRectangle();
-        }
-
-        m_renderer->Unset2DMode(backupSceneMatrices);
-
-        PostWidgetRendering();
+        UpdateSafeFrame();
+        RenderSafeFrame();
     }
 
-    // TODO: Move out this logic to a controller and refactor to work with Atom
-    //ColorF viewportBackgroundColor(pow(71.0f / 255.0f, 2.2f), pow(71.0f / 255.0f, 2.2f), pow(71.0f / 255.0f, 2.2f));
-    //m_renderer->ClearTargetsLater(FRT_CLEAR_COLOR, viewportBackgroundColor);
-    DrawBackground();
+    AzFramework::ViewportDebugDisplayEventBus::Event(
+        AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
+        AzFramework::ViewportInfo{GetViewportId()}, *m_debugDisplay);
+
+    m_debugDisplay->SetState(prevState);
+    m_debugDisplay->DepthTestOn();
+
+    PostWidgetRendering();
 
     if (!m_renderer->IsStereoEnabled())
     {
@@ -967,267 +931,36 @@ void EditorViewportWidget::OnRender()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSelectionRectangle()
-{
-    if (m_selectedRect.isEmpty())
-    {
-        return;
-    }
-
-    Vec3 topLeft(m_selectedRect.left(), m_selectedRect.top(), 1);
-    Vec3 bottomRight(m_selectedRect.right() +1, m_selectedRect.bottom() + 1, 1);
-
-    m_displayContext.DepthTestOff();
-    m_displayContext.SetColor(1, 1, 1, 0.4f);
-    m_displayContext.DrawWireBox(topLeft, bottomRight);
-    m_displayContext.DepthTestOn();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::InitDisplayContext()
-{
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-    // Draw all objects.
-    DisplayContext& displayContext = m_displayContext;
-    displayContext.settings = GetIEditor()->GetDisplaySettings();
-    displayContext.view = this;
-    displayContext.renderer = m_renderer;
-    displayContext.engine = m_engine;
-    displayContext.box.min = Vec3(-100000.0f, -100000.0f, -100000.0f);
-    displayContext.box.max = Vec3(100000.0f, 100000.0f, 100000.0f);
-    displayContext.camera = &m_Camera;
-    displayContext.flags = 0;
-
-    if (!displayContext.settings->IsDisplayLabels() || !displayContext.settings->IsDisplayHelpers())
-    {
-        displayContext.flags |= DISPLAY_HIDENAMES;
-    }
-
-    if (displayContext.settings->IsDisplayLinks() && displayContext.settings->IsDisplayHelpers())
-    {
-        displayContext.flags |= DISPLAY_LINKS;
-    }
-
-    if (m_bDegradateQuality)
-    {
-        displayContext.flags |= DISPLAY_DEGRADATED;
-    }
-
-    if (displayContext.settings->GetRenderFlags() & RENDER_FLAG_BBOX)
-    {
-        displayContext.flags |= DISPLAY_BBOX;
-    }
-
-    if (displayContext.settings->IsDisplayTracks() && displayContext.settings->IsDisplayHelpers())
-    {
-        displayContext.flags |= DISPLAY_TRACKS;
-        displayContext.flags |= DISPLAY_TRACKTICKS;
-    }
-
-    if (m_bAdvancedSelectMode && !GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        displayContext.flags |= DISPLAY_SELECTION_HELPERS;
-    }
-
-    if (GetIEditor()->GetReferenceCoordSys() == COORDS_WORLD)
-    {
-        displayContext.flags |= DISPLAY_WORLDSPACEAXIS;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::PopulateEditorGlobalContextMenu(QMenu* /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/)
-{
-    m_bInMoveMode = false;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderAll()
 {
-    // Draw all objects.
-    DisplayContext& displayContext = m_displayContext;
-
-    displayContext.SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
-    GetIEditor()->GetObjectManager()->Display(displayContext);
-
-    RenderSelectedRegion();
-
-    RenderSnapMarker();
-
-    if (gSettings.viewports.bShowGridGuide
-        && GetIEditor()->GetDisplaySettings()->IsDisplayHelpers())
-    {
-        RenderSnappingGrid();
-    }
-
-    if (displayContext.settings->GetDebugFlags() & DBG_MEMINFO)
-    {
-        ProcessMemInfo mi;
-        CProcessInfo::QueryMemInfo(mi);
-        int MB = 1024 * 1024;
-        QString str = QStringLiteral("WorkingSet=%1Mb, PageFile=%2Mb, PageFaults=%3").arg(mi.WorkingSet / MB).arg(mi.PagefileUsage / MB).arg(mi.PageFaultCount);
-        m_renderer->TextToScreenColor(1, 1, 1, 0, 0, 1, str.toUtf8().data());
-    }
-
-    {
-        const AzFramework::DisplayContextRequestGuard displayContextGuard(displayContext);
-
-        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-        AzFramework::DebugDisplayRequestBus::Bind(
-            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
-
-        AzFramework::DebugDisplayRequests* debugDisplay =
-            AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-
-        // allow the override of in-editor visualization
-        AzFramework::ViewportDebugDisplayEventBus::Event(
-            AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport,
-            AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
-
-        m_entityVisibilityQuery.DisplayVisibility(*debugDisplay);
-
-        if (GetEditTool())
-        {
-            // display editing tool
-            GetEditTool()->Display(displayContext);
-        }
-
-        if (m_manipulatorManager != nullptr)
-        {
-            using namespace AzToolsFramework::ViewportInteraction;
-
-            debugDisplay->DepthTestOff();
-            m_manipulatorManager->DrawManipulators(
-                *debugDisplay, GetCameraState(),
-                BuildMouseInteractionInternal(
-                    MouseButtons(TranslateMouseButtons(QGuiApplication::mouseButtons())),
-                    BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
-                    BuildMousePickInternal(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
-            debugDisplay->DepthTestOn();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::DrawAxis()
-{
-    AZ_Assert(m_cameraSetForWidgetRenderingCount > 0,
-        "DrawAxis was called but viewport widget rendering was not set. PreWidgetRendering must be called before.");
-
-    DisplayContext& dc = m_displayContext;
-
-    // show axis only if draw helpers is activated
-    if (!dc.settings->IsDisplayHelpers())
+    if (!m_debugDisplay)
     {
         return;
     }
 
-    Vec3 colX(1, 0, 0), colY(0, 1, 0), colZ(0, 0, 1), colW(1, 1, 1);
-    Vec3 pos(50, 50, 0.1f); // Bottom-left corner
+    // allow the override of in-editor visualization
+    AzFramework::ViewportDebugDisplayEventBus::Event(
+        AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport,
+        AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
 
-    float wx, wy, wz;
-    UnProjectFromScreen(pos.x, pos.y, pos.z, &wx, &wy, &wz);
-    Vec3 posInWorld(wx, wy, wz);
-    float screenScale = GetScreenScaleFactor(posInWorld);
-    float length = 0.03f * screenScale;
-    float arrowSize = 0.02f * screenScale;
-    float textSize = 1.1f;
+    m_entityVisibilityQuery.DisplayVisibility(*m_debugDisplay);
 
-    Vec3 x(length, 0, 0);
-    Vec3 y(0, length, 0);
-    Vec3 z(0, 0, length);
+    if (m_manipulatorManager != nullptr)
+    {
+        using namespace AzToolsFramework::ViewportInteraction;
 
-    int prevRState = dc.GetState();
-    dc.DepthWriteOff();
-    dc.DepthTestOff();
-    dc.CullOff();
-    dc.SetLineWidth(1);
-
-    dc.SetColor(colX);
-    dc.DrawLine(posInWorld, posInWorld + x);
-    dc.DrawArrow(posInWorld + x * 0.9f, posInWorld + x, arrowSize);
-    dc.SetColor(colY);
-    dc.DrawLine(posInWorld, posInWorld + y);
-    dc.DrawArrow(posInWorld + y * 0.9f, posInWorld + y, arrowSize);
-    dc.SetColor(colZ);
-    dc.DrawLine(posInWorld, posInWorld + z);
-    dc.DrawArrow(posInWorld + z * 0.9f, posInWorld + z, arrowSize);
-
-    dc.SetColor(colW);
-    dc.DrawTextLabel(posInWorld + x, textSize, "x");
-    dc.DrawTextLabel(posInWorld + y, textSize, "y");
-    dc.DrawTextLabel(posInWorld + z, textSize, "z");
-
-    dc.DepthWriteOn();
-    dc.DepthTestOn();
-    dc.CullOn();
-    dc.SetState(prevRState);
+        m_debugDisplay->DepthTestOff();
+        m_manipulatorManager->DrawManipulators(
+            *m_debugDisplay, GetCameraState(),
+            BuildMouseInteractionInternal(
+                MouseButtons(TranslateMouseButtons(QGuiApplication::mouseButtons())),
+                BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
+                BuildMousePickInternal(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
+        m_debugDisplay->DepthTestOn();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::DrawBackground()
-{
-    DisplayContext& dc = m_displayContext;
-
-    if (!dc.settings->IsDisplayHelpers())            // show gradient bg only if draw helpers are activated
-    {
-        return;
-    }
-
-    int heightVP = width();
-    int widthVP = height();
-    Vec3 pos(0, 0, 0);
-
-    Vec3 x(widthVP, 0, 0);
-    Vec3 y(0, heightVP, 0);
-
-    float height = m_rcClient.height();
-
-    auto NegY = [](const Vec3& v, float y) -> Vec3
-    {
-        return Vec3(v.x, y - v.y, v.z);
-    };
-
-    Vec3 src =  NegY(pos, height);
-    Vec3 trgx = NegY(pos + x, height);
-    Vec3 trgy = NegY(pos + y, height);
-
-    QColor topColor = palette().color(QPalette::Window);
-    QColor bottomColor = palette().color(QPalette::Disabled, QPalette::WindowText);
-
-    ColorB firstC(topColor.red(), topColor.green(), topColor.blue(), 255.0f);
-    ColorB secondC(bottomColor.red(), bottomColor.green(), bottomColor.blue(), 255.0f);
-
-    TransformationMatrices backupSceneMatrices;
-
-    m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
-    m_displayContext.SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
-    dc.DrawQuadGradient(src, trgx, pos + x, pos, secondC, firstC);
-    m_renderer->Unset2DMode(backupSceneMatrices);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderCursorString()
-{
-    if (m_cursorStr.isEmpty())
-    {
-        return;
-    }
-
-    const auto point = WidgetToViewport(mapFromGlobal(QCursor::pos()));
-
-    // Display hit object name.
-    float col[4] = { 1, 1, 1, 1 };
-    m_renderer->Draw2dLabel(point.x() + 12, point.y() + 4, 1.2f, col, false, "%s", m_cursorStr.toUtf8().data());
-
-    if (!m_cursorSupplementaryStr.isEmpty())
-    {
-        float col2[4] = { 1, 1, 0, 1 };
-        m_renderer->Draw2dLabel(point.x() + 12, point.y() + 4 + CURSOR_FONT_HEIGHT * 1.2f, 1.2f, col2, false, "%s", m_cursorSupplementaryStr.toUtf8().data());
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::UpdateSafeFrame()
@@ -1285,14 +1018,14 @@ void EditorViewportWidget::RenderSafeFrame()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
 {
-    m_displayContext.SetColor(r, g, b, a);
+    m_debugDisplay->SetColor(r, g, b, a);
 
     const int LINE_WIDTH = 2;
     for (int i = 0; i < LINE_WIDTH; i++)
     {
-        Vec3 topLeft(frame.left() + i, frame.top() + i, 0);
-        Vec3 bottomRight(frame.right() - i, frame.bottom() - i, 0);
-        m_displayContext.DrawWireBox(topLeft, bottomRight);
+        AZ::Vector3 topLeft(frame.left() + i, frame.top() + i, 0);
+        AZ::Vector3 bottomRight(frame.right() - i, frame.bottom() - i, 0);
+        m_debugDisplay->DrawWireBox(topLeft, bottomRight);
     }
 }
 
@@ -2918,195 +2651,6 @@ void EditorViewportWidget::OnStopPlayInEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderConstructionPlane()
-{
-    DisplayContext& dc = m_displayContext;
-
-    int prevState = dc.GetState();
-    dc.DepthWriteOff();
-    // Draw Construction plane.
-
-    CGrid* pGrid = GetViewManager()->GetGrid();
-
-    RefCoordSys coordSys = COORDS_WORLD;
-
-    Vec3 p = m_constructionMatrix[coordSys].GetTranslation();
-    Vec3 n = m_constructionPlane.n;
-
-    Vec3 u = Vec3(1, 0, 0);
-    Vec3 v = Vec3(0, 1, 0);
-
-
-    if (gSettings.snap.bGridUserDefined)
-    {
-        Ang3 angles = Ang3(pGrid->rotationAngles.x * gf_PI / 180.0, pGrid->rotationAngles.y * gf_PI / 180.0, pGrid->rotationAngles.z * gf_PI / 180.0);
-        Matrix34 tm = Matrix33::CreateRotationXYZ(angles);
-
-        if (gSettings.snap.bGridGetFromSelected)
-        {
-            CSelectionGroup* sel = GetIEditor()->GetSelection();
-            if (sel->GetCount() > 0)
-            {
-                CBaseObject* obj = sel->GetObject(0);
-                tm = obj->GetWorldTM();
-                tm.OrthonormalizeFast();
-                tm.SetTranslation(Vec3(0, 0, 0));
-            }
-        }
-
-        u = tm * u;
-        v = tm * v;
-    }
-
-    float step = pGrid->scale * pGrid->size;
-    float size = gSettings.snap.constructPlaneSize;
-
-    dc.SetColor(0, 0, 1, 0.1f);
-
-    float s = size;
-
-    dc.DrawQuad(p - u * s - v * s, p + u * s - v * s, p + u * s + v * s, p - u * s + v * s);
-
-    int nSteps = int(size / step);
-    int i;
-    // Draw X lines.
-    dc.SetColor(1, 0, 0.2f, 0.3f);
-
-    for (i = -nSteps; i <= nSteps; i++)
-    {
-        dc.DrawLine(p - u * size + v * (step * i), p + u * size + v * (step * i));
-    }
-    // Draw Y lines.
-    dc.SetColor(0.2f, 1.0f, 0, 0.3f);
-    for (i = -nSteps; i <= nSteps; i++)
-    {
-        dc.DrawLine(p - v * size + u * (step * i), p + v * size + u * (step * i));
-    }
-
-    // Draw origin lines.
-
-    dc.SetLineWidth(2);
-
-    //X
-    dc.SetColor(1, 0, 0);
-    dc.DrawLine(p - u * s, p + u * s);
-
-    //Y
-    dc.SetColor(0, 1, 0);
-    dc.DrawLine(p - v * s, p + v * s);
-
-    //Z
-    dc.SetColor(0, 0, 1);
-    dc.DrawLine(p - n * s, p + n * s);
-
-    dc.SetLineWidth(0);
-
-    dc.SetState(prevState);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSnappingGrid()
-{
-    // First, Check whether we should draw the grid or not.
-    CSelectionGroup* pSelGroup = GetIEditor()->GetSelection();
-    if (pSelGroup == nullptr || pSelGroup->GetCount() != 1)
-    {
-        return;
-    }
-    if (GetIEditor()->GetEditMode() != eEditModeMove
-        && GetIEditor()->GetEditMode() != eEditModeRotate)
-    {
-        return;
-    }
-    CGrid* pGrid = GetViewManager()->GetGrid();
-    if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
-    {
-        return;
-    }
-    if (GetIEditor()->GetEditTool() && !GetIEditor()->GetEditTool()->IsDisplayGrid())
-    {
-        return;
-    }
-
-    DisplayContext& dc = m_displayContext;
-
-    int prevState = dc.GetState();
-    dc.DepthWriteOff();
-
-    Vec3 p = pSelGroup->GetObject(0)->GetWorldPos();
-
-    AABB bbox;
-    pSelGroup->GetObject(0)->GetBoundBox(bbox);
-    float size = 2 * bbox.GetRadius();
-    float alphaMax = 1.0f, alphaMin = 0.2f;
-    dc.SetLineWidth(3);
-
-    if (GetIEditor()->GetEditMode() == eEditModeMove && pGrid->IsEnabled())
-    // Draw the translation grid.
-    {
-        Vec3 u = m_constructionPlaneAxisX;
-        Vec3 v = m_constructionPlaneAxisY;
-        float step = pGrid->scale * pGrid->size;
-        const int MIN_STEP_COUNT = 5;
-        const int MAX_STEP_COUNT = 300;
-        int nSteps = std::min(std::max(FloatToIntRet(size / step), MIN_STEP_COUNT), MAX_STEP_COUNT);
-        size = nSteps * step;
-        for (int i = -nSteps; i <= nSteps; ++i)
-        {
-            // Draw u lines.
-            float alphaCur = alphaMax - fabsf(float(i) / float(nSteps)) * (alphaMax - alphaMin);
-            dc.DrawLine(p + v * (step * i), p + u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + v * (step * i), p - u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            // Draw v lines.
-            dc.DrawLine(p + u * (step * i), p + v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + u * (step * i), p - v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-        }
-    }
-    else if (GetIEditor()->GetEditMode() == eEditModeRotate && pGrid->IsAngleSnapEnabled())
-    // Draw the rotation grid.
-    {
-        int nAxis(GetAxisConstrain());
-        if (nAxis == AXIS_X || nAxis == AXIS_Y || nAxis == AXIS_Z)
-        {
-            RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
-            Vec3 xAxis(1, 0, 0);
-            Vec3 yAxis(0, 1, 0);
-            Vec3 zAxis(0, 0, 1);
-            Vec3 rotAxis;
-            if (nAxis == AXIS_X)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(xAxis);
-            }
-            else if (nAxis == AXIS_Y)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(yAxis);
-            }
-            else if (nAxis == AXIS_Z)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(zAxis);
-            }
-            Vec3 anotherAxis = m_constructionPlane.n * size;
-            float step = pGrid->angleSnap;
-            int nSteps = FloatToIntRet(180.0f / step);
-            for (int i = 0; i < nSteps; ++i)
-            {
-                AngleAxis rot(i* step* gf_PI / 180.0, rotAxis);
-                Vec3 dir = rot * anotherAxis;
-                dc.DrawLine(p, p + dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-                dc.DrawLine(p, p - dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-            }
-        }
-    }
-    dc.SetState(prevState);
-}
-
-//////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::SPreviousContext EditorViewportWidget::SetCurrentContext(int /*newWidth*/, int /*newHeight*/) const
 {
     SPreviousContext x;
@@ -3320,7 +2864,10 @@ void EditorViewportWidget::UpdateScene()
     AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
     if (scenes.size() > 0)
     {
-        m_renderViewport->SetScene(scenes[0]);
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+        auto scene = scenes[0];
+        m_renderViewport->SetScene(scene);
+        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
     }
 }
 

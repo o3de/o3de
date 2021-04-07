@@ -20,6 +20,23 @@ import azlmbr.paths
 import azlmbr.shadermanagementconsole
 import azlmbr.shader
 import collections
+from PySide2 import QtWidgets
+
+PROJECT_SHADER_VARIANTS_FOLDER = "ShaderVariants"
+
+def prompt_message_box(text, informativeText = None, qButtons = QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No|QtWidgets.QMessageBox.Cancel):
+    msgBox =  QtWidgets.QMessageBox()
+    msgBox.setText(text)
+    if informativeText:
+        msgBox.setInformativeText(informativeText)
+    msgBox.setStandardButtons(qButtons)
+    
+    return msgBox.exec()
+
+def clean_existing_shadervariantlist_files(filePaths):
+    for file in filePaths:
+        if os.path.exists(file):
+            os.remove(file)
 
 def main():
     print("==== Begin shader variant script ==========================================================")
@@ -49,7 +66,16 @@ def main():
         shaderAssetInfo.relativePath
     )
     
-    # TODO: [ATOM-14868] Add UI prompts in shader management console script once PySide2 is available
+    response = prompt_message_box(
+        "Generating .shadervariantlist File",
+        "This process may take a while. Would you like to save the generated .shadervariantlist file in the project folder? " \
+            "Otherwise, it will be saved in the same location as the .shader file."
+    )
+    is_save_in_project_folder = False
+    if response == QtWidgets.QMessageBox.Yes:
+        is_save_in_project_folder = True
+    elif response == QtWidgets.QMessageBox.Cancel:
+        return
     
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
     shaderVariantIds = []
@@ -76,10 +102,9 @@ def main():
                     shaderVariantIds.append(shaderVariantId)
                     shaderVariantListShaderOptionGroups.append(shaderItem.GetShaderOptionGroup())
                     
-    # Generate the shader variant list data by collecting shader option name-value pairs.
-    _, shaderFileName = os.path.split(filename)
+    # Generate the shader variant list data by collecting shader option name-value pairs.s
     shaderVariantList = azlmbr.shader.ShaderVariantListSourceData ()
-    shaderVariantList.shaderFilePath = shaderFileName
+    shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
     shaderVariants = []
     stableId = 1
     for shaderOptionGroup in shaderVariantListShaderOptionGroups:
@@ -104,9 +129,23 @@ def main():
                 
     shaderVariantList.shaderVariants = shaderVariants
     
-    # Save the shader variant list file
+    # clean previously generated shader variant list file so they don't clash.
+    pre, ext = os.path.splitext(shaderAssetInfo.relativePath)
+    projectShaderVariantListFilePath = os.path.join(azlmbr.paths.devassets, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
+    
     pre, ext = os.path.splitext(filename)
-    shaderVariantListFilePath = f'{pre}.shadervariantlist'
+    defaultShaderVariantListFilePath = f'{pre}.shadervariantlist'
+    
+    clean_existing_shadervariantlist_files([
+        projectShaderVariantListFilePath
+    ])
+    # Save the shader variant list file
+    if is_save_in_project_folder:
+        shaderVariantListFilePath = projectShaderVariantListFilePath
+    else:
+        shaderVariantListFilePath = defaultShaderVariantListFilePath
+        
+    print(f"Saving .shadervariantlist file into: {shaderVariantListFilePath}")
     azlmbr.shader.SaveShaderVariantListSourceData(shaderVariantListFilePath, shaderVariantList)
     
     # Open the document in shader management console

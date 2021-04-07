@@ -1,4 +1,5 @@
 {
+    "project_name"      : "AzTestRunner",
     "product_name"      : "AzTestRunner Project",
 	"android_settings": {
         "package_name"  : "com.lumberyard.tests",

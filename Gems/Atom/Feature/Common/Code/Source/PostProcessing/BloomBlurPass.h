@@ -122,17 +122,15 @@ namespace AZ
             // Pass Behaviour Overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            void FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* name);
-
             // output texture vertical dimension required by compute shader
-            AZ::RHI::ShaderInputBufferIndex m_offsetsInputIndex;
-            AZ::RHI::ShaderInputBufferIndex m_weightsInputIndex;
+            RHI::ShaderInputNameIndex m_offsetsInputIndex = "m_offsets";
+            RHI::ShaderInputNameIndex m_weightsInputIndex = "m_weights";
 
-            AZ::RHI::ShaderInputConstantIndex m_kernelRadiusInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_directionInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sourceImageSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sourceImageTexelSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_mipLevelInputIndex;
+            RHI::ShaderInputNameIndex m_kernelRadiusInputIndex = "m_kernelRadius";
+            RHI::ShaderInputNameIndex m_directionInputIndex = "m_direction";
+            RHI::ShaderInputNameIndex m_sourceImageSizeInputIndex = "m_sourceImageSize";
+            RHI::ShaderInputNameIndex m_sourceImageTexelSizeInputIndex = "m_sourceImageTexelSize";
+            RHI::ShaderInputNameIndex m_mipLevelInputIndex = "m_mipLevel";
 
             Data::Instance<RPI::Buffer> m_offsetBuffer;
             Data::Instance<RPI::Buffer> m_weightBuffer;

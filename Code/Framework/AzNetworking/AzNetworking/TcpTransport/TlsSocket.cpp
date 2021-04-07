@@ -222,7 +222,7 @@ namespace AzNetworking
         }
         else if (receivedBytes == 0)
         {
-            // Clean disconnect, force the endpoint to disconnect and cleanup
+            // Clean disconnect, force the endpoint to disconnect and cleanup
             return SocketOpResultDisconnected;
         }
         return receivedBytes;

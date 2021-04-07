@@ -83,7 +83,7 @@ namespace ScriptCanvasEditor
     {
         m_editorAssetRegistry.Register<ScriptCanvasAsset, ScriptCanvasAssetHandler, ScriptCanvasAssetDescription>();
         m_editorAssetRegistry.Register<ScriptCanvasEditor::ScriptCanvasFunctionAsset, ScriptCanvasFunctionAssetHandler, ScriptCanvasEditor::ScriptCanvasFunctionDescription>();
-        m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::RuntimeFunctionAssetDescription>();
+        m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::SubgraphInterfaceAssetDescription>();
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         EditorAssetConversionBus::Handler::BusConnect();
@@ -161,11 +161,6 @@ namespace ScriptCanvasEditor
     }
 
     AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> EditorAssetSystemComponent::CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile)
-    {
-        return ScriptCanvasBuilder::CreateLuaAsset(editAsset->GetScriptCanvasEntity(), editAsset->GetId(), graphPathForRawLuaFile);
-    }
-
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> EditorAssetSystemComponent::CreateLuaFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile)
     {
         return ScriptCanvasBuilder::CreateLuaAsset(editAsset->GetScriptCanvasEntity(), editAsset->GetId(), graphPathForRawLuaFile);
     }

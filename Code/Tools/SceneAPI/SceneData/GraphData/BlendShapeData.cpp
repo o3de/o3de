@@ -30,6 +30,61 @@ namespace AZ
                 return static_cast<unsigned int>(m_positions.size()-1);
             }
 
+            void BlendShapeData::AddTangentAndBitangent(const Vector4& tangent, const Vector3& bitangent)
+            {
+                m_tangents.push_back(tangent);
+                m_bitangents.push_back(bitangent);
+            }
+
+            void BlendShapeData::AddUV(const Vector2& uv, AZ::u8 uvSetIndex)
+            {
+                if (uvSetIndex >= MaxNumUVSets)
+                {
+                    AZ_ErrorOnce("SceneGraphData", false, "uvSetIndex %zu is greater or equal than the maximum uv sets %zu.", uvSetIndex, MaxNumUVSets);
+                    return;
+                }
+                m_uvs[uvSetIndex].push_back(uv);
+            }
+
+            void BlendShapeData::AddColor(const SceneAPI::DataTypes::Color& color, AZ::u8 colorSetIndex)
+            {
+                if (colorSetIndex >= MaxNumColorSets)
+                {
+                    AZ_ErrorOnce("SceneGraphData", false, "colorSetIndex %zu is greater or equal than the maximum color sets %zu.", colorSetIndex, MaxNumColorSets);
+                    return;
+                }
+                m_colors[colorSetIndex].push_back(color);
+            }
+
+            void BlendShapeData::ReserveData(
+                unsigned int numVertices, bool reserveTangents, const AZStd::bitset<MaxNumUVSets>& uvSetUsedFlags,
+                const AZStd::bitset<MaxNumColorSets>& colorSetUsedFlags)
+            {
+                m_positions.reserve(numVertices);
+                m_normals.reserve(numVertices);
+                if (reserveTangents)
+                {
+                    m_tangents.reserve(numVertices);
+                    m_bitangents.reserve(numVertices);
+                }
+
+                for (AZ::u8 uvSetIndex = 0; uvSetIndex < MaxNumUVSets; ++uvSetIndex)
+                {
+                    if (uvSetUsedFlags[uvSetIndex])
+                    {
+                        m_uvs[uvSetIndex].reserve(numVertices);
+                    }
+                }
+
+                for (AZ::u8 colorSetIndex = 0; colorSetIndex < MaxNumColorSets; ++colorSetIndex)
+                {
+                    if (colorSetUsedFlags[colorSetIndex])
+                    {
+                        m_colors[colorSetIndex].reserve(numVertices);
+                    }
+                }
+            }
+
             void BlendShapeData::AddFace(const Face& face)
             {
                 m_faces.push_back(face);
@@ -47,7 +102,7 @@ namespace AZ
             int BlendShapeData::GetControlPointIndex(int vertexIndex) const
             {
                 auto iter = m_vertexIndexToControlPointIndexMap.find(vertexIndex);
-                AZ_Assert(iter != m_vertexIndexToControlPointIndexMap.end(), "Vertex index %i doesn't exist", vertexIndex);
+                AZ_Assert(iter != m_vertexIndexToControlPointIndexMap.end(), "Vertex index %i doesn't exist.", vertexIndex);
                 // Note: AZStd::unordered_map's operator [] doesn't have const version... 
                 return iter->second;
             }
@@ -90,6 +145,45 @@ namespace AZ
             {
                 AZ_Assert(index < m_normals.size(), "GetNormal index not in range");
                 return m_normals[index];
+            }
+
+            const Vector2& BlendShapeData::GetUV(unsigned int vertexIndex, unsigned int uvSetIndex) const
+            {
+                AZ_Assert(uvSetIndex < MaxNumUVSets, "uvSet index out of range");
+                AZ_Assert(vertexIndex < m_uvs[uvSetIndex].size(), "uvSet index out of range");
+                return m_uvs[uvSetIndex][vertexIndex];
+            }
+
+            AZStd::vector<Vector4>& BlendShapeData::GetTangents()
+            {
+                return m_tangents;
+            }
+
+            const AZStd::vector<Vector4>& BlendShapeData::GetTangents() const
+            {
+                return m_tangents;
+            }
+
+            AZStd::vector<Vector3>& BlendShapeData::GetBitangents()
+            {
+                return m_bitangents;
+            }
+
+            const AZStd::vector<Vector3>& BlendShapeData::GetBitangents() const
+            {
+                return m_bitangents;
+            }
+
+            const AZStd::vector<Vector2>& BlendShapeData::GetUVs(AZ::u8 uvSetIndex) const
+            {
+                AZ_Assert(uvSetIndex < MaxNumUVSets, "uvSet index out of range");
+                return m_uvs[uvSetIndex];
+            }
+
+            const AZStd::vector<SceneAPI::DataTypes::Color>& BlendShapeData::GetColors(AZ::u8 colorSetIndex) const
+            {
+                AZ_Assert(colorSetIndex < MaxNumColorSets, "colorSet index out of range");
+                return m_colors[colorSetIndex];
             }
 
             unsigned int BlendShapeData::GetFaceVertexIndex(unsigned int face, unsigned int vertexIndex) const

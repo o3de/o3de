@@ -60,6 +60,7 @@ private:
     QStringListModel* m_model;
 
     QScopedPointer<Ui::QuickAccessBar> m_ui;
+    const char* m_levelExtension = nullptr;
 };
 
 #endif // CRYINCLUDE_EDITOR_QUICKACCESSBAR_H

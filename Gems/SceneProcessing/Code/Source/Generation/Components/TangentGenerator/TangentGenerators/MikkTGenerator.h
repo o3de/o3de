@@ -19,7 +19,7 @@ namespace AZ::SceneAPI::DataTypes { class IMeshVertexUVData; }
 namespace AZ::SceneAPI::DataTypes { class IMeshVertexTangentData; }
 namespace AZ::SceneAPI::DataTypes { class IMeshVertexBitangentData; }
 
-namespace AZ::TangentGeneration::MikkT
+namespace AZ::TangentGeneration::Mesh::MikkT
 {
     struct MikktCustomData
     {

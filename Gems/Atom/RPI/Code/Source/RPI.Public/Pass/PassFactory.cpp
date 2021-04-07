@@ -23,8 +23,9 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Pass/MSAAResolvePass.h>
-#include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
+#include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
+#include <Atom/RPI.Public/Pass/Specific/SelectorPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -69,6 +70,7 @@ namespace AZ
             AddPassCreator(Name("DownsampleMipChainPass"), &DownsampleMipChainPass::Create);
             AddPassCreator(Name("EnvironmentCubeMapPass"), &EnvironmentCubeMapPass::Create);
             AddPassCreator(Name("RenderToTexturePass"), &RenderToTexturePass::Create);
+            AddPassCreator(Name("SelectorPass"), &SelectorPass::Create);
         }
 
         PassFactory::CreatorIndex PassFactory::FindCreatorIndex(Name passClassName)

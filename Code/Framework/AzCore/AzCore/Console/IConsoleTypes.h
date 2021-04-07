@@ -55,6 +55,7 @@ namespace AZ
     ,   IsDeprecated   = (1 << 5) // Command is deprecated, show a warning when invoked
     ,   NeedsReload    = (1 << 6) // Level should be reloaded after executing this command
     ,   AllowClientSet = (1 << 7) // Allow clients to modify this cvar even in release (this alters the cvar for all connected servers and clients, be VERY careful enabling this flag)
+    ,   DontDuplicate  = (1 << 8) // Discard functors with the same name as another that has already been registered instead of duplicating them (which is the default behavior)
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ConsoleFunctorFlags);
 

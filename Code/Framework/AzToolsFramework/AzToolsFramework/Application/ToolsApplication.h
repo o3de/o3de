@@ -17,12 +17,19 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/EditorEntityAPI.h>
+#include <AzToolsFramework/Application/EditorEntityManager.h>
 #include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 
 #pragma once
 
 namespace AzToolsFramework
 {
+    namespace UndoSystem
+    {
+        class UndoCacheInterface;
+    }
+
     class ToolsApplication
         : public AzFramework::Application
         , public ToolsApplicationRequests::Bus::Handler
@@ -145,8 +152,6 @@ namespace AzToolsFramework
         bool IsEditorInIsolationMode() override;
         const char* GetEngineRootPath() const override;
         const char* GetEngineVersion() const override;
-        bool IsLegacySliceSystemEnabled() const override;
-        bool ShouldAssertForLegacySlicesUsage() const override;
 
         void CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName) override;
 
@@ -183,6 +188,12 @@ namespace AzToolsFramework
 
         class EngineConfigImpl;
         AZStd::unique_ptr<EngineConfigImpl> m_engineConfigImpl;
+
+        EditorEntityAPI* m_editorEntityAPI = nullptr;
+
+        EditorEntityManager m_editorEntityManager;
+
+        UndoSystem::UndoCacheInterface*             m_undoCacheInterface = nullptr;
     };
 } // namespace AzToolsFramework
 

@@ -15,10 +15,9 @@
 namespace Multiplayer
 {
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
-    inline RewindableObject<BASE_TYPE, REWIND_SIZE>::RewindableObject(AzNetworking::ConnectionId owningConnectionId)
-        : m_owningConnectionId(owningConnectionId)
+    inline RewindableObject<BASE_TYPE, REWIND_SIZE>::RewindableObject(const BASE_TYPE& value)
     {
-        m_history.fill(BASE_TYPE());
+        m_history.fill(value);
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
@@ -51,6 +50,12 @@ namespace Multiplayer
         INetworkTime* networkTime = AZ::Interface<INetworkTime>::Get();
         SetValueForTime(rhs.GetValueForTime(networkTime->GetApplicationFrameId()), GetCurrentTimeForProperty());
         return *this;
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline void RewindableObject<BASE_TYPE, REWIND_SIZE>::SetOwningConnectionId(AzNetworking::ConnectionId owningConnectionId)
+    {
+        m_owningConnectionId = owningConnectionId;
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>

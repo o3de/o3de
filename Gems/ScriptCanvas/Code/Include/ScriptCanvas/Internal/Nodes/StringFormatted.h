@@ -53,7 +53,7 @@ namespace ScriptCanvas
                 AZ_INLINE const NamedSlotIdMap& GetNamedSlotIdMap() const { return m_formatSlotMap; }
                 AZ_INLINE const int GetPostDecimalPrecision() const { return m_numericPrecision; }
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
 

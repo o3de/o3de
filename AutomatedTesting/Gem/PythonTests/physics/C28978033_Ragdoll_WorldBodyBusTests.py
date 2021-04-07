@@ -37,7 +37,7 @@ def C28978033_Ragdoll_WorldBodyBusTests():
     - RayEnd: entity that points where to end the raycast_correct
 
                       | ( ) |
-         o    - - -   |  ¦  |  - - > o
+         o    - - -   |  |  |  - - > o
       RayStart        | / \ |      RayEnd
                     TestRagdoll
                     

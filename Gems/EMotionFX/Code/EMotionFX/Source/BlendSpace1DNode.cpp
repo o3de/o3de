@@ -819,7 +819,7 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project’s related
+            // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
             // for assets/materials created prior to the change. These will be deprecated in the future.
             int index = classElement.FindElement(AZ_CRC("syncMasterMotionId", 0xfaec9599));

@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/PrefabTestComponent.h>
 #include <Prefab/PrefabTestDomUtils.h>
@@ -67,6 +68,8 @@ namespace UnitTest
         // Create a Template from an Instance owning a single entity.
         using namespace AzToolsFramework::Prefab;
         AZ::Entity* entity1 = CreateEntity("Entity 1");
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity1});
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity1 }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
         EXPECT_TRUE(newTemplateId != InvalidTemplateId);
@@ -89,6 +92,8 @@ namespace UnitTest
         // Add another entity to the Instance and use it to update the PrefabDom of Template.
         AZ::Entity* entity2 = CreateEntity("Entity 2");
         newInstance->AddEntity(*entity2);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity2});
         newTemplateEntityAliases = newInstance->GetEntityAliases();
         EXPECT_EQ(newTemplateEntityAliases.size(), 2);
 
@@ -110,6 +115,8 @@ namespace UnitTest
         // Create a Template with single entity.
         using namespace AzToolsFramework::Prefab;
         AZ::Entity* entity = CreateEntity("Entity");
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity});
         AZStd::unique_ptr<Instance> newNestedInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, NestedPrefabMockFilePath);
         TemplateId newNestedTemplateId = newNestedInstance->GetTemplateId();
         EXPECT_TRUE(newNestedTemplateId != InvalidTemplateId);
@@ -162,16 +169,20 @@ namespace UnitTest
     {
         // Create a Template from an Instance owning a single entity.
         AZ::Entity* entity = CreateEntity("Entity", false);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity});
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
         PrefabDom& newTemplateDom = m_prefabSystemComponent->FindTemplateDom(newTemplateId);
         AZStd::vector<EntityAlias> newTemplateEntityAliases = newInstance->GetEntityAliases();
         ASSERT_EQ(newTemplateEntityAliases.size(), 1);
 
-        // Validate that the entity doesn't have any components under it.
+        // Validate that the entity has 1 component under it. This is added through the scrubbing of entities in
+        // EditorEntityContextComponent, which gets called through HandleEntitiesAdded during loading of entities in Prefab Instances.
         const PrefabDomValue* entityComponents =
             PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents == nullptr);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 1);
 
         // Instantiate Instances and validate if all Instances have the entity.
         const int numberOfInstances = 3;
@@ -187,22 +198,20 @@ namespace UnitTest
 
         // Add a component to the Instance and use it to update the PrefabDom of Template.
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
+        entity->Deactivate();
         entity->AddComponent(prefabTestComponent);
         auto expectedComponentId = prefabTestComponent->GetId();
         PrefabDom updatedDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*newInstance, updatedDom));
         newTemplateDom.CopyFrom(updatedDom, newTemplateDom.GetAllocator());
 
-        // Validate that the entity does have a component under it.
+        // Validate that the entity now has 2 components under it.
         entityComponents = PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsArray());
-        EXPECT_EQ(entityComponents->GetArray().Size(), 1);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 2);
 
         // Extract the component id of the entity in Template and verify that it matches with the component id of the Instance.
-        PrefabDomValueConstReference findEntityComponentIdValueResult =
-            PrefabDomUtils::FindPrefabDomValue(*entityComponents->Begin(), PrefabTestDomUtils::ComponentIdName);
-        ASSERT_TRUE(findEntityComponentIdValueResult.has_value());
-        EXPECT_EQ(expectedComponentId, findEntityComponentIdValueResult->get().GetUint64());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
 
         // Update Template's Instances and validate if all Instances have the new component under their entities.
         m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(newTemplateId);
@@ -211,7 +220,6 @@ namespace UnitTest
 
         PrefabTestDomUtils::ValidateInstances(newTemplateId, *entityComponents,
             PrefabTestDomUtils::GetPrefabDomComponentsPath(newTemplateEntityAliases.front()));
-
     }
 
     TEST_F(PrefabUpdateInstancesTest, UpdatePrefabInstances_DetachEntity_UpdateSucceeds)
@@ -220,6 +228,8 @@ namespace UnitTest
         using namespace AzToolsFramework::Prefab;
         AZ::Entity* entity1 = CreateEntity("Entity 1");
         AZ::Entity* entity2 = CreateEntity("Entity 2");
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity1, entity2});
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
             { entity1, entity2 },
             {},
@@ -267,6 +277,8 @@ namespace UnitTest
         // Create a Template with single entity.
         using namespace AzToolsFramework::Prefab;
         AZ::Entity* entity = CreateEntity("Entity");
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity});
         AZStd::unique_ptr<Instance> newNestedInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, NestedPrefabMockFilePath);
         TemplateId newNestedTemplateId = newNestedInstance->GetTemplateId();
         EXPECT_TRUE(newNestedTemplateId != InvalidTemplateId);
@@ -327,23 +339,22 @@ namespace UnitTest
         AZ::Entity* entity = CreateEntity("Entity", false);
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         entity->AddComponent(prefabTestComponent);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity});
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
         PrefabDom& newTemplateDom = m_prefabSystemComponent->FindTemplateDom(newTemplateId);
         AZStd::vector<EntityAlias> newTemplateEntityAliases = newInstance->GetEntityAliases();
         ASSERT_EQ(newTemplateEntityAliases.size(), 1);
 
-        // Validate that the entity has exactly 1 component under it.
+        // Validate that the entity has 2 components under it. One of them is added through HandleEntitiesAdded() in EditorEntityContext.
         const PrefabDomValue* entityComponents =
             PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsArray());
-        EXPECT_EQ(entityComponents->GetArray().Size(), 1);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 2);
 
         // Extract the component id of the entity in the Template and verify that it matches with the component id of the entity's component.
-        PrefabDomValueConstReference entityComponentIdValue =
-            PrefabDomUtils::FindPrefabDomValue(*entityComponents->Begin(), PrefabTestDomUtils::ComponentIdName);
-        ASSERT_TRUE(entityComponentIdValue.has_value());
-        EXPECT_EQ(prefabTestComponent->GetId(), entityComponentIdValue->get().GetUint64());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
 
         // Instantiate Instances and validate if all Instances have the entity.
         const int numberOfInstances = 3;
@@ -359,15 +370,18 @@ namespace UnitTest
             newTemplateId, *entityComponents, PrefabTestDomUtils::GetPrefabDomComponentsPath(newTemplateEntityAliases.front()));
 
         // Remove a component from the Instance's entity and use the Instance to update the PrefabDom of Template.
+        entity->Deactivate();
         entity->RemoveComponent(prefabTestComponent);
         delete prefabTestComponent;
+        entity->Activate();
         PrefabDom updatedDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*newInstance, updatedDom));
         newTemplateDom.CopyFrom(updatedDom, newTemplateDom.GetAllocator());
 
-        // Validate that the entity does not have any component under it.
+        // Validate that the entity only has 1 component under it.
         entityComponents = PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents == nullptr);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 1);
 
         // Update Template's Instances and validate if all Instances have no component under their entities.
         m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(newTemplateId);
@@ -375,7 +389,6 @@ namespace UnitTest
         EXPECT_TRUE(updateResult);
 
         PrefabTestDomUtils::ValidateEntitiesOfInstances(newTemplateId, newTemplateDom, newTemplateEntityAliases);
-
     }
 
     TEST_F(PrefabUpdateInstancesTest, UpdatePrefabInstances_ChangeComponentProperty_UpdateSucceeds)
@@ -384,23 +397,22 @@ namespace UnitTest
         AZ::Entity* entity = CreateEntity("Entity", false);
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         entity->AddComponent(prefabTestComponent);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{entity});
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
         PrefabDom& newTemplateDom = m_prefabSystemComponent->FindTemplateDom(newTemplateId);
         AZStd::vector<EntityAlias> newTemplateEntityAliases = newInstance->GetEntityAliases();
         ASSERT_EQ(newTemplateEntityAliases.size(), 1);
 
-        // Validate that the entity has exactly 1 component under it.
+        // Validate that the entity has 2 components under it. One of them is added through HandleEntitiesAdded() in EditorEntityContext.
         const PrefabDomValue* entityComponents =
             PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsArray());
-        EXPECT_EQ(entityComponents->GetArray().Size(), 1);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 2);
 
         // Extract the component id of the entity in the Template and verify that it matches with the component id of the entity's component.
-        PrefabDomValueConstReference entityComponentIdValue =
-            PrefabDomUtils::FindPrefabDomValue(*entityComponents->Begin(), PrefabTestDomUtils::ComponentIdName);
-        ASSERT_TRUE(entityComponentIdValue.has_value());
-        EXPECT_EQ(prefabTestComponent->GetId(), entityComponentIdValue->get().GetUint64());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*entityComponents, prefabTestComponent->GetId());
 
         // Instantiate Instances and validate if all Instances have the entity.
         const int numberOfInstances = 3;
@@ -425,12 +437,16 @@ namespace UnitTest
         // Validate that the prefabTestComponent in the Template's DOM doesn't have a BoolProperty.
         // Even though we changed the property to false, it won't be serialized out because it's a default value.
         entityComponents = PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
-        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsArray());
-        EXPECT_EQ(entityComponents->GetArray().Size(), 1);
+        ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
+        EXPECT_EQ(entityComponents->MemberCount(), 2);
 
-        PrefabDomValueConstReference entityComponentBoolPropertyValue =
-            PrefabDomUtils::FindPrefabDomValue(*entityComponents->Begin(), PrefabTestDomUtils::BoolPropertyName);
-        EXPECT_FALSE(entityComponentBoolPropertyValue.has_value());
+        AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", prefabTestComponent->GetId());
+        PrefabDomValueConstReference wheelEntityComponentValue = PrefabDomUtils::FindPrefabDomValue(*entityComponents, componentValueName.c_str());
+        ASSERT_TRUE(wheelEntityComponentValue);
+
+        PrefabDomValueConstReference wheelEntityComponentBoolPropertyValue =
+            PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
+        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
 
         // Update Template's Instances and validate if all Instances have no BoolProperty under their prefabTestComponents in entities.
         m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(newTemplateId);
@@ -438,7 +454,6 @@ namespace UnitTest
         EXPECT_TRUE(updateResult);
 
         PrefabTestDomUtils::ValidateInstances(newTemplateId, *entityComponents, entityComponentsPath);
-
     }
 
 }

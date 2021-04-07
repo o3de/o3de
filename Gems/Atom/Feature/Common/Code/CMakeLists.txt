@@ -30,6 +30,7 @@ ly_add_target(
         PUBLIC
             Include
             Source
+            3rdParty/ACES
             ../External/ImGui
     COMPILE_DEFINITIONS
         PRIVATE

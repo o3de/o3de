@@ -166,7 +166,6 @@ namespace AZ
         struct FontShaderData
         {
             AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
-            AZ::RHI::ShaderInputSamplerIndex m_samplerInputIndex;
             AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
         };
 
@@ -211,6 +210,8 @@ namespace AZ
 
         FontEffect* AddEffect(const char* effectName);
         FontEffect* GetDefaultEffect();
+
+        AZ::Data::Instance<AZ::RPI::Image> GetFontImage() { return m_fontStreamingImage; }
 
     private:
         virtual ~FFont();

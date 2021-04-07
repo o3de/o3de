@@ -38,25 +38,3 @@ ly_add_target(
         PRIVATE
             Gem::DccScriptingInterface.Static
 )
-
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_add_target(
-        NAME DccScriptingInterface.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            dccscriptinginterface_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                Gem::DccScriptingInterface.Static
-    )
-    ly_add_googletest(
-        NAME Gem::DccScriptingInterface.Tests
-    )
-endif()

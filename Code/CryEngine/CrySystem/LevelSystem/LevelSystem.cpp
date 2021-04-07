@@ -11,6 +11,8 @@
 */
 // Original file Copyright Crytek GMBH or its affiliates, used under license.
 
+// [LYN-2376] Remove the entire file once legacy slice support is removed
+
 #include "CrySystem_precompiled.h"
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
@@ -25,9 +27,11 @@
 #include <LoadScreenBus.h>
 
 #include <AzCore/Debug/AssetTracking.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 #include "MainThreadRenderRequestBus.h"
 #include <LyShine/ILyShine.h>
@@ -43,47 +47,88 @@
 
 namespace LegacyLevelSystem
 {
+static constexpr const char* ArchiveExtension = ".pak";
 
-int CLevelSystem::s_loadCount = 0;
-const char* ArchiveExtension = ".pak";
-const char TerrarinTexturePakName[] = "terraintexture.pak";
-
-//------------------------------------------------------------------------
-bool CLevelInfo::SupportsGameType(const char* gameTypeName) const
+void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
 {
-    //read level meta data
-    for (int i = 0; i < m_gamerules.size(); ++i)
-    {
-        if (!azstricmp(m_gamerules[i].c_str(), gameTypeName))
-        {
-            return true;
-        }
-    }
-    return false;
+    pSizer->AddObject(m_levelName);
+    pSizer->AddObject(m_levelPath);
 }
 
-//------------------------------------------------------------------------
-const char* CLevelInfo::GetDisplayName() const
+//////////////////////////////////////////////////////////////////////////
+bool CLevelInfo::OpenLevelPak()
 {
-    return m_levelDisplayName.c_str();
+    LOADING_TIME_PROFILE_SECTION;
+
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    // The prefab system doesn't use level.pak
+    if (usePrefabSystemForLevels)
+    {
+        return false;
+    }
+
+    AZStd::string levelpak(m_levelPath);
+    levelpak += "/level.pak";
+    AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
+    bool bOk = gEnv->pCryPak->OpenPack(
+        levelpak.c_str(), m_isPak ? AZ::IO::IArchive::FLAGS_LEVEL_PAK_INSIDE_PAK : (unsigned)0, NULL, &fullLevelPakPath, false);
+    m_levelPakFullPath.assign(fullLevelPakPath.c_str());
+    return bOk;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLevelInfo::CloseLevelPak()
+{
+    LOADING_TIME_PROFILE_SECTION;
+
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    // The prefab system doesn't use level.pak
+    if (usePrefabSystemForLevels)
+    {
+        return;
+    }
+
+    if (!m_levelPakFullPath.empty())
+    {
+        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str(), AZ::IO::IArchive::FLAGS_PATH_REAL);
+        m_levelPakFullPath.clear();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::ReadInfo()
 {
-    string levelPath = m_levelPath;
-    string xmlFile = levelPath + string("/LevelInfo.xml");
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    if (usePrefabSystemForLevels)
+    {
+        // Set up a default game type for legacy code.
+        m_defaultGameTypeName = "Mission0";
+        return true;
+    }
+
+
+    AZStd::string levelPath(m_levelPath);
+    AZStd::string xmlFile(levelPath);
+    xmlFile += "/LevelInfo.xml";
     XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
 
     if (rootNode)
     {
-        m_heightmapSize = atoi(rootNode->getAttr("HeightmapSize"));
-
-        string dataFile = levelPath + string("/LevelDataAction.xml");
+        AZStd::string dataFile(levelPath);
+        dataFile += "/LevelDataAction.xml";
         XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         if (!dataNode)
         {
-            dataFile = levelPath + string("/LevelData.xml");
+            dataFile = levelPath + "/LevelData.xml";
             dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         }
 
@@ -93,8 +138,7 @@ bool CLevelInfo::ReadInfo()
 
             if ((gameTypesNode != 0) && (gameTypesNode->getChildCount() > 0))
             {
-                m_gameTypes.clear();
-                //m_musicLibs.clear();
+                m_defaultGameTypeName.clear();
 
                 for (int i = 0; i < gameTypesNode->getChildCount(); i++)
                 {
@@ -106,37 +150,11 @@ bool CLevelInfo::ReadInfo()
 
                         if (gameTypeName)
                         {
-                            ILevelInfo::TGameTypeInfo info;
-
-                            info.cgfCount = 0;
-                            gameTypeNode->getAttr("CGFCount", info.cgfCount);
-                            info.name = gameTypeNode->getAttr("Name");
-                            info.xmlFile = gameTypeNode->getAttr("File");
-                            m_gameTypes.push_back(info);
+                            m_defaultGameTypeName = gameTypeName;
+                            break;
                         }
                     }
                 }
-
-                // Gets reintroduced when level specific music data loading is implemented.
-                /*XmlNodeRef musicLibraryNode = dataNode->findChild("MusicLibrary");
-
-                if ((musicLibraryNode!=0) && (musicLibraryNode->getChildCount() > 0))
-                {
-                    for (int i = 0; i < musicLibraryNode->getChildCount(); i++)
-                    {
-                        XmlNodeRef musicLibrary = musicLibraryNode->getChild(i);
-
-                        if (musicLibrary->isTag("Library"))
-                        {
-                            const char *musicLibraryName = musicLibrary->getAttr("File");
-
-                            if (musicLibraryName)
-                            {
-                                m_musicLibs.push_back(string("music/") + musicLibraryName);
-                            }
-                        }
-                    }
-                }*/
             }
         }
     }
@@ -144,130 +162,12 @@ bool CLevelInfo::ReadInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLevelInfo::ReadMetaData()
-{
-    string fullPath(GetPath());
-    int slashPos = fullPath.find_last_of("\\/");
-    string mapName = fullPath.substr(slashPos + 1, fullPath.length() - slashPos);
-    fullPath.append("/");
-    fullPath.append(mapName);
-    fullPath.append(".xml");
-
-    m_levelDisplayName = string("@ui_") + mapName;
-
-    if (!gEnv->pCryPak->IsFileExist(fullPath.c_str()))
-    {
-        return;
-    }
-
-    XmlNodeRef mapInfo = GetISystem()->LoadXmlFromFile(fullPath.c_str());
-    //retrieve the coordinates of the map
-    bool foundMinimapInfo = false;
-    if (mapInfo)
-    {
-        for (int n = 0; n < mapInfo->getChildCount(); ++n)
-        {
-            XmlNodeRef rulesNode = mapInfo->getChild(n);
-            const char* name = rulesNode->getTag();
-            if (!azstricmp(name, "Gamerules"))
-            {
-                for (int a = 0; a < rulesNode->getNumAttributes(); ++a)
-                {
-                    const char* key, * value;
-                    rulesNode->getAttributeByIndex(a, &key, &value);
-                    m_gamerules.push_back(value);
-                }
-            }
-            else if (!azstricmp(name, "Display"))
-            {
-                XmlString v;
-                if (rulesNode->getAttr("Name", v))
-                {
-                    m_levelDisplayName = v.c_str();
-                }
-            }
-            else if (!azstricmp(name, "PreviewImage"))
-            {
-                const char* pFilename = NULL;
-                if (rulesNode->getAttr("Filename", &pFilename))
-                {
-                    m_previewImagePath = pFilename;
-                }
-            }
-            else if (!azstricmp(name, "BackgroundImage"))
-            {
-                const char* pFilename = NULL;
-                if (rulesNode->getAttr("Filename", &pFilename))
-                {
-                    m_backgroundImagePath = pFilename;
-                }
-            }
-            else if (!azstricmp(name, "Minimap"))
-            {
-                foundMinimapInfo = true;
-
-                const char* minimap_dds = "";
-                foundMinimapInfo &= rulesNode->getAttr("Filename", &minimap_dds);
-                m_minimapImagePath = minimap_dds;
-                m_minimapInfo.sMinimapName = GetPath();
-                m_minimapInfo.sMinimapName.append("/");
-                m_minimapInfo.sMinimapName.append(minimap_dds);
-
-                foundMinimapInfo &= rulesNode->getAttr("startX", m_minimapInfo.fStartX);
-                foundMinimapInfo &= rulesNode->getAttr("startY", m_minimapInfo.fStartY);
-                foundMinimapInfo &= rulesNode->getAttr("endX", m_minimapInfo.fEndX);
-                foundMinimapInfo &= rulesNode->getAttr("endY", m_minimapInfo.fEndY);
-                foundMinimapInfo &= rulesNode->getAttr("width", m_minimapInfo.iWidth);
-                foundMinimapInfo &= rulesNode->getAttr("height", m_minimapInfo.iHeight);
-                m_minimapInfo.fDimX = m_minimapInfo.fEndX - m_minimapInfo.fStartX;
-                m_minimapInfo.fDimY = m_minimapInfo.fEndY - m_minimapInfo.fStartY;
-                m_minimapInfo.fDimX = m_minimapInfo.fDimX > 0 ? m_minimapInfo.fDimX : 1;
-                m_minimapInfo.fDimY = m_minimapInfo.fDimY > 0 ? m_minimapInfo.fDimY : 1;
-            }
-            else if (!azstricmp(name, "Tag"))
-            {
-                m_levelTag = ILevelSystem::TAG_UNKNOWN;
-                SwapEndian(m_levelTag, eBigEndian);
-                const char* pTag = NULL;
-                if (rulesNode->getAttr("Value", &pTag))
-                {
-                    m_levelTag = 0;
-                    memcpy(&m_levelTag, pTag, std::min(sizeof(m_levelTag), strlen(pTag)));
-                }
-            }
-            else if (!azstricmp(name, "LevelType"))
-            {
-                const char* levelType;
-                if (rulesNode->getAttr("value", &levelType))
-                {
-                    m_levelTypeList.push_back(levelType);
-                }
-            }
-        }
-        m_bMetaDataRead = true;
-    }
-    if (!foundMinimapInfo)
-    {
-        gEnv->pLog->LogWarning("Map %s: Missing or invalid minimap info!", mapName.c_str());
-    }
-}
-
-//------------------------------------------------------------------------
-const ILevelInfo::TGameTypeInfo* CLevelInfo::GetDefaultGameType() const
-{
-    if (!m_gameTypes.empty())
-    {
-        return &m_gameTypes[0];
-    }
-
-    return 0;
-};
 
 /// Used by console auto completion.
 struct SLevelNameAutoComplete
     : public IConsoleArgumentAutoComplete
 {
-    std::vector<string> levels;
+    AZStd::vector<AZStd::string> levels;
     virtual int GetCount() const { return levels.size(); };
     virtual const char* GetValue(int nIndex) const { return levels[nIndex].c_str(); };
 };
@@ -281,7 +181,7 @@ static void LoadMap(IConsoleCmdArgs* args)
     {
         if (args->GetArgCount() > 1)
         {
-            gEnv->pSystem->GetILevelSystem()->UnLoadLevel();
+            gEnv->pSystem->GetILevelSystem()->UnloadLevel();
             gEnv->pSystem->GetILevelSystem()->LoadLevel(args->GetArg(1));
         }
     }
@@ -292,7 +192,7 @@ static void UnloadMap([[maybe_unused]] IConsoleCmdArgs* args)
 {
     if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
     {
-        gEnv->pSystem->GetILevelSystem()->UnLoadLevel();
+        gEnv->pSystem->GetILevelSystem()->UnloadLevel();
         if (gEnv->p3DEngine)
         {
             gEnv->p3DEngine->LoadEmptyLevel();
@@ -309,29 +209,12 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     LOADING_TIME_PROFILE_SECTION;
     CRY_ASSERT(pSystem);
 
-    //Load user defined level types
-    if (XmlNodeRef levelTypeNode = m_pSystem->LoadXmlFromFile("Libs/Levels/leveltypes.xml"))
-    {
-        for (unsigned int i = 0; i < levelTypeNode->getChildCount(); ++i)
-        {
-            XmlNodeRef child = levelTypeNode->getChild(i);
-            const char* levelType;
-
-            if (child->getAttr("value", &levelType))
-            {
-                m_levelTypeList.push_back(string(levelType));
-            }
-        }
-    }
-
     //if (!gEnv->IsEditor())
-    Rescan(levelsFolder, ILevelSystem::TAG_MAIN);
+    Rescan(levelsFolder);
 
     m_fLastLevelLoadTime = 0;
-    m_fFilteredProgress = 0;
     m_fLastTime = 0;
     m_bLevelLoaded = false;
-    m_bRecordingFileOpens = false;
 
     m_levelLoadStartTime.SetValue(0);
 
@@ -355,10 +238,9 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
             for (AZStd::string dir : levelDirs)
             {
                 AZ::StringFunc::Path::StripComponent(dir, true);
-                string searchPattern = string(dir.c_str(), dir.size()) + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
+                AZStd::string searchPattern = dir + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
                 bool modFolder = false;
-                string rootFolder(dir.c_str(), dir.size());
-                PopulateLevels(searchPattern, rootFolder, gEnv->pCryPak, modFolder, ILevelSystem::TAG_MAIN, false);
+                PopulateLevels(searchPattern, dir, gEnv->pCryPak, modFolder, false);
             }
         });
         m_levelPackOpenHandler.Connect(*levelPakOpenEvent);
@@ -368,7 +250,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     {
         m_levelPackCloseHandler = AZ::IO::IArchive::LevelPackCloseEvent::Handler([this](AZStd::string_view)
         {
-            Rescan(ILevelSystem::LevelsDirectoryName, ILevelSystem::TAG_MAIN);
+            Rescan(ILevelSystem::LevelsDirectoryName);
         });
         m_levelPackCloseHandler.Connect(*levelPakCloseEvent);
     }
@@ -380,7 +262,7 @@ CLevelSystem::~CLevelSystem()
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::Rescan(const char* levelsFolder, const uint32 tag)
+void CLevelSystem::Rescan(const char* levelsFolder)
 {
     if (levelsFolder)
     {
@@ -388,9 +270,9 @@ void CLevelSystem::Rescan(const char* levelsFolder, const uint32 tag)
         {
             if (m_pSystem->IsMODValid(pModArg->GetValue()))
             {
-                m_levelsFolder.Format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
+                m_levelsFolder.format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
                 m_levelInfos.clear();
-                ScanFolder(0, true, tag);
+                ScanFolder(0, true);
             }
         }
 
@@ -400,25 +282,25 @@ void CLevelSystem::Rescan(const char* levelsFolder, const uint32 tag)
     CRY_ASSERT(!m_levelsFolder.empty());
     m_levelInfos.clear();
     m_levelInfos.reserve(64);
-    ScanFolder(0, false, tag);
+    ScanFolder(0, false);
 
     g_LevelNameAutoComplete->levels.clear();
     for (int i = 0; i < (int)m_levelInfos.size(); i++)
     {
-        g_LevelNameAutoComplete->levels.push_back(PathUtil::GetFileName(m_levelInfos[i].GetName()));
+        g_LevelNameAutoComplete->levels.push_back(AZStd::string(PathUtil::GetFileName(m_levelInfos[i].GetName()).c_str()));
     }
 }
 
 //-----------------------------------------------------------------------
-void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder, const uint32 tag)
+void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 {
-    string folder;
+    AZStd::string folder;
     if (subfolder && subfolder[0])
     {
         folder = subfolder;
     }
 
-    string search(m_levelsFolder);
+    AZStd::string search(m_levelsFolder);
     if (!folder.empty())
     {
         if (AZ::StringFunc::StartsWith(folder.c_str(), m_levelsFolder.c_str()))
@@ -427,7 +309,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder, const uint3
         }
         else
         {
-            search += string("/") + folder;
+            search += "/" + folder;
         }
     }
     search += "/*";
@@ -453,12 +335,13 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder, const uint3
             AZ::StringFunc::Path::Split(handle.m_filename.data(), nullptr, nullptr, &levelName, &extension);
             if (extension == ArchiveExtension)
             {
-                if (AZ::StringFunc::Equal(handle.m_filename.data(), ILevelSystem::LevelPakName) || AZ::StringFunc::Equal(handle.m_filename.data(), TerrarinTexturePakName))
+                if (AZ::StringFunc::Equal(handle.m_filename.data(), LevelPakName))
                 {
-                    // level folder contain pak files like 'level.pak' and 'terraintexture.pak'
+                    // level folder contain pak files like 'level.pak' 
                     // which we only want to load during level loading.
                     continue;
                 }
+
                 AZStd::string levelContainerPakPath;
                 AZ::StringFunc::Path::Join("@assets@", m_levelsFolder.c_str(), levelContainerPakPath);
                 if (subfolder && subfolder[0])
@@ -482,101 +365,93 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder, const uint3
     }
 
     // Levels in bundles now take priority over levels outside of bundles.
-    PopulateLevels(search, folder, pPak, modFolder, tag, false);
+    PopulateLevels(search, folder, pPak, modFolder, false);
     // Load levels outside of the bundles to maintain backward compatibility.
-    PopulateLevels(search, folder, pPak, modFolder, tag, true);
+    PopulateLevels(search, folder, pPak, modFolder, true);
       
 }
 
-void CLevelSystem::PopulateLevels(string searchPattern, string& folder, AZ::IO::IArchive* pPak, bool& modFolder, const uint32& tag, bool fromFileSystemOnly)
+void CLevelSystem::PopulateLevels(
+    AZStd::string searchPattern, AZStd::string& folder, AZ::IO::IArchive* pPak, bool& modFolder, bool fromFileSystemOnly)
 {
-    // allow this find first to actually touch the file system
-    // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), 0, fromFileSystemOnly);
-
-    if (handle)
     {
-        do
+        // allow this find first to actually touch the file system
+        // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
+        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), 0, fromFileSystemOnly);
+
+        if (handle)
         {
-            if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) != AZ::IO::FileDesc::Attribute::Subdirectory || handle.m_filename == "." || handle.m_filename == "..")
+            do
             {
-                continue;
-            }
-
-            string levelFolder;
-            if (fromFileSystemOnly)
-            {
-                levelFolder = (folder.empty() ? "" : (folder + "/")) + string(handle.m_filename.data(), handle.m_filename.size());
-            }
-            else
-            {
-                AZStd::string levelName = AZ::IO::PathView(handle.m_filename).Filename().Native();
-                levelFolder = (folder.empty() ? "" : (folder + "/")) + string(levelName.c_str());
-            }
-
-            string levelPath;
-            if (AZ::StringFunc::StartsWith(levelFolder.c_str(), m_levelsFolder.c_str()))
-            {
-                levelPath = levelFolder;
-            }
-            else
-            {
-                levelPath = m_levelsFolder + "/" + levelFolder;
-            }
-            string paks = levelPath + string("/*.pak");
-
-            const string levelPakName = levelPath + "/level.pak";
-            const string levelInfoName = levelPath + "/levelinfo.xml";
-
-            if (!pPak->IsFileExist(levelPakName.c_str(), fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak) && !pPak->IsFileExist(levelInfoName.c_str(), fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak))
-            {
-                ScanFolder(levelFolder.c_str(), modFolder, tag);
-                continue;
-            }
-
-            CLevelInfo levelInfo;
-            levelInfo.m_levelPath = levelPath;
-            levelInfo.m_levelPaks = paks;
-            levelInfo.m_levelName = levelFolder;
-            levelInfo.m_levelName = UnifyName(levelInfo.m_levelName);
-            levelInfo.m_isModLevel = modFolder;
-            levelInfo.m_scanTag = tag;
-            levelInfo.m_levelTag = ILevelSystem::TAG_UNKNOWN;
-            levelInfo.m_isPak = !fromFileSystemOnly;
-
-            SwapEndian(levelInfo.m_scanTag, eBigEndian);
-            SwapEndian(levelInfo.m_levelTag, eBigEndian);
-
-            CLevelInfo* pExistingInfo = GetLevelInfoInternal(levelInfo.m_levelName);
-            if (pExistingInfo && pExistingInfo->MetadataLoaded() == false)
-            {
-                //Reload metadata if it failed to load
-                pExistingInfo->ReadMetaData();
-            }
-
-            // Don't add the level if it is already in the list
-            if (pExistingInfo == NULL)
-            {
-                levelInfo.ReadMetaData();
-
-                m_levelInfos.push_back(levelInfo);
-            }
-            else
-            {
-                // Levels in bundles take priority over levels outside bundles.
-                if (!pExistingInfo->m_isPak && levelInfo.m_isPak)
+                if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) != AZ::IO::FileDesc::Attribute::Subdirectory ||
+                    handle.m_filename == "." || handle.m_filename == "..")
                 {
-                    *pExistingInfo = levelInfo;
+                    continue;
+                }
+
+                AZStd::string levelFolder;
+                if (fromFileSystemOnly)
+                {
+                    levelFolder =
+                        (folder.empty() ? "" : (folder + "/")) + AZStd::string(handle.m_filename.data(), handle.m_filename.size());
                 }
                 else
                 {
-                    // Update the scan tag
-                    pExistingInfo->m_scanTag = tag;
+                    AZStd::string levelName(AZ::IO::PathView(handle.m_filename).Filename().Native());
+                    levelFolder = (folder.empty() ? "" : (folder + "/")) + levelName;
                 }
-            }
-        } while (handle = pPak->FindNext(handle));
 
-        pPak->FindClose(handle);
+                AZStd::string levelPath;
+                if (AZ::StringFunc::StartsWith(levelFolder.c_str(), m_levelsFolder.c_str()))
+                {
+                    levelPath = levelFolder;
+                }
+                else
+                {
+                    levelPath = m_levelsFolder + "/" + levelFolder;
+                }
+
+                const AZStd::string levelPakName = levelPath + "/" + LevelPakName;
+                const AZStd::string levelInfoName = levelPath + "/levelinfo.xml";
+
+                if (!pPak->IsFileExist(
+                        levelPakName.c_str(),
+                        fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak) &&
+                    !pPak->IsFileExist(
+                        levelInfoName.c_str(),
+                        fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak))
+                {
+                    ScanFolder(levelFolder.c_str(), modFolder);
+                    continue;
+                }
+
+                // With the level.pak workflow, levelPath and levelName will point to a directory.
+                // levelPath: levels/mylevel
+                // levelName: mylevel
+                CLevelInfo levelInfo;
+                levelInfo.m_levelPath = levelPath;
+                levelInfo.m_levelName = levelFolder;
+                levelInfo.m_isPak = !fromFileSystemOnly;
+
+                CLevelInfo* pExistingInfo = GetLevelInfoInternal(levelInfo.m_levelName);
+
+                // Don't add the level if it is already in the list
+                if (pExistingInfo == NULL)
+                {
+                    m_levelInfos.push_back(levelInfo);
+                }
+                else
+                {
+                    // Levels in bundles take priority over levels outside bundles.
+                    if (!pExistingInfo->m_isPak && levelInfo.m_isPak)
+                    {
+                        *pExistingInfo = levelInfo;
+                    }
+                }
+            } while (handle = pPak->FindNext(handle));
+
+            pPak->FindClose(handle);
+        }
     }
 }
 
@@ -610,34 +485,36 @@ ILevelInfo* CLevelSystem::GetLevelInfo(const char* levelName)
 }
 
 //------------------------------------------------------------------------
-CLevelInfo* CLevelSystem::GetLevelInfoInternal(const char* levelName)
+CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
 {
     // If level not found by full name try comparing with only filename
-    for (std::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
+    for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
-        if (!azstricmp(it->GetName(), levelName))
+        if (!azstricmp(it->GetName(), levelName.c_str()))
         {
             return &(*it);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////
-    for (std::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
+    for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
-        if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName))
         {
-            return &(*it);
+            if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName.c_str()))
+            {
+                return &(*it);
+            }
         }
     }
 
     // Try stripping out the folder to find the raw filename
-    string sLevelName(levelName);
+    AZStd::string sLevelName(levelName);
     size_t lastSlash = sLevelName.find_last_of('\\');
-    if (lastSlash == string::npos)
+    if (lastSlash == AZStd::string::npos)
     {
         lastSlash = sLevelName.find_last_of('/');
     }
-    if (lastSlash != string::npos)
+    if (lastSlash != AZStd::string::npos)
     {
         sLevelName = sLevelName.substr(lastSlash + 1, sLevelName.size() - lastSlash - 1);
         return GetLevelInfoInternal(sLevelName.c_str());
@@ -649,7 +526,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const char* levelName)
 //------------------------------------------------------------------------
 void CLevelSystem::AddListener(ILevelSystemListener* pListener)
 {
-    std::vector<ILevelSystemListener*>::iterator it = std::find(m_listeners.begin(), m_listeners.end(), pListener);
+    AZStd::vector<ILevelSystemListener*>::iterator it = AZStd::find(m_listeners.begin(), m_listeners.end(), pListener);
 
     if (it == m_listeners.end())
     {
@@ -661,7 +538,7 @@ void CLevelSystem::AddListener(ILevelSystemListener* pListener)
 //------------------------------------------------------------------------
 void CLevelSystem::RemoveListener(ILevelSystemListener* pListener)
 {
-    std::vector<ILevelSystemListener*>::iterator it = std::find(m_listeners.begin(), m_listeners.end(), pListener);
+    AZStd::vector<ILevelSystemListener*>::iterator it = AZStd::find(m_listeners.begin(), m_listeners.end(), pListener);
 
     if (it != m_listeners.end())
     {
@@ -669,18 +546,24 @@ void CLevelSystem::RemoveListener(ILevelSystemListener* pListener)
 
         if (m_listeners.empty())
         {
-            stl::free_container(m_listeners);
+            m_listeners.shrink_to_fit();
         }
     }
 }
 
 //------------------------------------------------------------------------
-ILevel* CLevelSystem::LoadLevel(const char* _levelName)
+bool CLevelSystem::LoadLevel(const char* _levelName)
 {
     if (gEnv->IsEditor())
     {
         AZ_TracePrintf("CrySystem::CLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", _levelName);
-        return nullptr;
+        return false;
+    }
+
+    // If a level is currently loaded, unload it before loading the next one.
+    if (IsLevelLoaded())
+    {
+        UnloadLevel();
     }
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
@@ -689,10 +572,10 @@ ILevel* CLevelSystem::LoadLevel(const char* _levelName)
     ILevel* level = LoadLevelInternal(_levelName);
     if (level)
     {
-        OnLoadingComplete(level);
+        OnLoadingComplete(_levelName);
     }
 
-    return level;
+    return (level != nullptr);
 }
 //------------------------------------------------------------------------
 ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
@@ -724,7 +607,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         m_bLevelLoaded = false;
 
-        const bool bLoadingSameLevel = m_lastLevelName.compareNoCase(levelName) == 0;
+        const bool bLoadingSameLevel = azstricmp(m_lastLevelName.c_str(), levelName) == 0;
         m_lastLevelName = levelName;
 
         delete m_pCurrentLevel;
@@ -736,7 +619,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         // Read main level info.
         if (!pLevelInfo->ReadInfo())
         {
-            OnLoadingError(pLevelInfo, "Failed to read level info (level.pak might be corrupted)!");
+            OnLoadingError(levelName, "Failed to read level info (level.pak might be corrupted)!");
             return 0;
         }
         //[AlexMcC|19.04.10]: Update the level's LevelInfo
@@ -762,12 +645,12 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         m_pSystem->SetViewCamera(defaultCam);
 
         m_pLoadingLevelInfo = pLevelInfo;
-        OnLoadingStart(pLevelInfo);
+        OnLoadingStart(levelName);
 
 
         auto pPak = gEnv->pCryPak;
 
-        string levelPath = pLevelInfo->GetPath();
+        AZStd::string levelPath(pLevelInfo->GetPath());
 
         /*
         ICVar *pFileCache = gEnv->pConsole->GetCVar("sys_FileCache");       CRY_ASSERT(pFileCache);
@@ -793,20 +676,20 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         if (gEnv->p3DEngine)
         {
-            bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name)
-                : gEnv->p3DEngine->LoadLevel(pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name);
+            bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(pLevelInfo->GetPath(), pLevelInfo->m_defaultGameTypeName.c_str())
+                : gEnv->p3DEngine->LoadLevel(pLevelInfo->GetPath(), pLevelInfo->m_defaultGameTypeName.c_str());
             if (!is3DEngineLoaded)
             {
-                OnLoadingError(pLevelInfo, "3DEngine failed to handle loading the level");
+                OnLoadingError(levelName, "3DEngine failed to handle loading the level");
 
                 return 0;
             }
         }
 
         // Parse level specific config data.
-        string const sLevelNameOnly = PathUtil::GetFileName(levelName);
+        AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
 
-        if (!sLevelNameOnly.empty() && sLevelNameOnly.compareNoCase("Untitled") != 0)
+        if (!sLevelNameOnly.empty())
         {
             const char* controlsPath = nullptr;
             Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
@@ -838,22 +721,29 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             }
         }
 
-        string missionXml = pLevelInfo->GetDefaultGameType()->xmlFile;
-        string xmlFile = string(pLevelInfo->GetPath()) + "/" + missionXml;
-
-        if (!gEnv->IsEditor())
         {
-            AZStd::string entitiesFilename = AZStd::string::format("%s/%s.entities_xml", pLevelInfo->GetPath(), pLevelInfo->GetDefaultGameType()->name.c_str());
-            AZStd::vector<char> fileBuffer;
-            CCryFile entitiesFile;
-            if (entitiesFile.Open(entitiesFilename.c_str(), "rt"))
-            {
-                fileBuffer.resize(entitiesFile.GetLength());
+            AZStd::string missionXml("Mission_");
+            missionXml += pLevelInfo->m_defaultGameTypeName;
+            missionXml += ".xml";
+            AZStd::string xmlFile(pLevelInfo->GetPath());
+            xmlFile += "/";
+            xmlFile += missionXml;
 
-                if (fileBuffer.size() == entitiesFile.ReadRaw(fileBuffer.begin(), fileBuffer.size()))
+            if (!gEnv->IsEditor())
+            {
+                AZStd::string entitiesFilename =
+                    AZStd::string::format("%s/%s.entities_xml", pLevelInfo->GetPath(), pLevelInfo->m_defaultGameTypeName.c_str());
+                AZStd::vector<char> fileBuffer;
+                CCryFile entitiesFile;
+                if (entitiesFile.Open(entitiesFilename.c_str(), "rt"))
                 {
-                    AZ::IO::ByteContainerStream<AZStd::vector<char> > fileStream(&fileBuffer);
-                    EBUS_EVENT(AzFramework::GameEntityContextRequestBus, LoadFromStream, fileStream, false);
+                    fileBuffer.resize(entitiesFile.GetLength());
+
+                    if (fileBuffer.size() == entitiesFile.ReadRaw(fileBuffer.begin(), fileBuffer.size()))
+                    {
+                        AZ::IO::ByteContainerStream<AZStd::vector<char>> fileStream(&fileBuffer);
+                        EBUS_EVENT(AzFramework::GameEntityContextRequestBus, LoadFromStream, fileStream, false);
+                    }
                 }
             }
         }
@@ -908,33 +798,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 }
 
 //------------------------------------------------------------------------
-ILevel* CLevelSystem::SetEditorLoadedLevel(const char* levelName, bool bReadLevelInfoMetaData)
-{
-    CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
-
-    if (!pLevelInfo)
-    {
-        gEnv->pLog->LogError("Failed to get level info for level %s!", levelName);
-        return 0;
-    }
-
-    if (bReadLevelInfoMetaData)
-    {
-        pLevelInfo->ReadMetaData();
-    }
-
-    m_lastLevelName = levelName;
-
-    SAFE_DELETE(m_pCurrentLevel);
-    CLevel* pLevel = new CLevel();
-    pLevel->m_levelInfo = *pLevelInfo;
-    m_pCurrentLevel = pLevel;
-    m_bLevelLoaded = true;
-
-    return m_pCurrentLevel;
-}
-
-//------------------------------------------------------------------------
 void CLevelSystem::PrepareNextLevel(const char* levelName)
 {
     CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
@@ -954,56 +817,52 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
         pLevelInfo->OpenLevelPak();
 
         // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
-        gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, (UINT_PTR)pLevelInfo, 0);
+        gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PREPARE);
 
         // Inform resource manager about loading of the new level.
         GetISystem()->GetIResourceManager()->PrepareLevel(pLevelInfo->GetPath(), pLevelInfo->GetName());
     }
 
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnPrepareNextLevel(pLevelInfo);
+        (*it)->OnPrepareNextLevel(pLevelInfo->GetName());
     }
 }
 
 //------------------------------------------------------------------------
 void CLevelSystem::OnLevelNotFound(const char* levelName)
 {
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
         (*it)->OnLevelNotFound(levelName);
     }
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::OnLoadingStart(ILevelInfo* pLevelInfo)
+void CLevelSystem::OnLoadingStart(const char* levelName)
 {
     if (gEnv->pCryPak->GetRecordFileOpenList() == AZ::IO::IArchive::RFOM_EngineStartup)
     {
         gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Level);
     }
 
-    m_fFilteredProgress = 0.f;
     m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
     LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
 
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnLoadingStart(pLevelInfo);
+        (*it)->OnLoadingStart(levelName);
     }
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::OnLoadingError(ILevelInfo* pLevelInfo, const char* error)
+void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
 {
-    if (!pLevelInfo)
-    {
-        pLevelInfo = m_pLoadingLevelInfo;
-    }
+    ILevelInfo* pLevelInfo = m_pLoadingLevelInfo;
     if (!pLevelInfo)
     {
         CRY_ASSERT(false);
@@ -1015,25 +874,17 @@ void CLevelSystem::OnLoadingError(ILevelInfo* pLevelInfo, const char* error)
         gEnv->pRenderer->SetTexturePrecaching(false);
     }
 
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnLoadingError(pLevelInfo, error);
+        (*it)->OnLoadingError(levelName, error);
     }
 
     ((CLevelInfo*)pLevelInfo)->CloseLevelPak();
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::OnLoadingComplete(ILevel* pLevelInfo)
+void CLevelSystem::OnLoadingComplete(const char* levelName)
 {
-    if (m_bRecordingFileOpens)
-    {
-        // Stop recoding file opens.
-        gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Disabled);
-        // Save recorded list.
-        SaveOpenedFilesList();
-    }
-
     CTimeValue t = gEnv->pTimer->GetAsyncTime();
     m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
 
@@ -1044,9 +895,9 @@ void CLevelSystem::OnLoadingComplete(ILevel* pLevelInfo)
     // Hide console after loading.
     gEnv->pConsole->ShowConsole(false);
 
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnLoadingComplete(pLevelInfo);
+        (*it)->OnLoadingComplete(levelName);
     }
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -1055,30 +906,21 @@ void CLevelSystem::OnLoadingComplete(ILevel* pLevelInfo)
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::OnLoadingProgress(ILevelInfo* pLevel, int progressAmount)
+void CLevelSystem::OnLoadingProgress(const char* levelName, int progressAmount)
 {
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnLoadingProgress(pLevel, progressAmount);
+        (*it)->OnLoadingProgress(levelName, progressAmount);
     }
 }
 
 //------------------------------------------------------------------------
-void CLevelSystem::OnUnloadComplete(ILevel* pLevel)
+void CLevelSystem::OnUnloadComplete(const char* levelName)
 {
-    for (std::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
-        (*it)->OnUnloadComplete(pLevel);
+        (*it)->OnUnloadComplete(levelName);
     }
-}
-
-//------------------------------------------------------------------------
-string& CLevelSystem::UnifyName(string& name)
-{
-    //name.MakeLower();
-    name.replace('\\', '/');
-
-    return name;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1103,8 +945,8 @@ void CLevelSystem::LogLoadingTime()
         sChain = " (Chained)";
     }
 
-    string text;
-    text.Format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
+    AZStd::string text;
+    text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     gEnv->pLog->Log(text.c_str());
 }
 
@@ -1116,77 +958,8 @@ void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const
     pSizer->AddObject(m_listeners);
 }
 
-void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_levelName);
-    pSizer->AddObject(m_levelPath);
-    pSizer->AddObject(m_levelPaks);
-    //pSizer->AddObject(m_musicLibs);
-    pSizer->AddObject(m_gamerules);
-    pSizer->AddObject(m_gameTypes);
-}
-
-
 //////////////////////////////////////////////////////////////////////////
-bool CLevelInfo::OpenLevelPak()
-{
-    LOADING_TIME_PROFILE_SECTION;
-
-    string levelpak = m_levelPath + string("/level.pak");
-    AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(levelpak.c_str(), m_isPak ? AZ::IO::IArchive::FLAGS_LEVEL_PAK_INSIDE_PAK : (unsigned)0, NULL, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str());
-    return bOk;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLevelInfo::CloseLevelPak()
-{
-    LOADING_TIME_PROFILE_SECTION;
-    if (!m_levelPakFullPath.empty())
-    {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str(), AZ::IO::IArchive::FLAGS_PATH_REAL);
-        stl::free_container(m_levelPakFullPath);
-    }
-}
-
-const bool CLevelInfo::IsOfType(const char* sType) const
-{
-    for (unsigned int i = 0; i < m_levelTypeList.size(); ++i)
-    {
-        if (strcmp(m_levelTypeList[i], sType) == 0)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLevelSystem::SaveOpenedFilesList()
-{
-    if (!m_pLoadingLevelInfo)
-    {
-        return;
-    }
-
-    // Write resource list to file.
-    string filename = PathUtil::Make(m_pLoadingLevelInfo->GetPath(), "resourcelist.txt");
-    AZ::IO::HandleType fileHandle = fxopen(filename.c_str(), "wt", true);
-    if (fileHandle != AZ::IO::InvalidHandle)
-    {
-        auto pResList = gEnv->pCryPak->GetResourceList(AZ::IO::IArchive::RFOM_Level);
-        for (const char* fname = pResList->GetFirst(); fname; fname = pResList->GetNext())
-        {
-            AZ::IO::Print(fileHandle, "%s\n", fname);
-        }
-        gEnv->pFileIO->Close(fileHandle);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLevelSystem::UnLoadLevel()
+void CLevelSystem::UnloadLevel()
 {
     if (gEnv->IsEditor())
     {
@@ -1197,7 +970,7 @@ void CLevelSystem::UnLoadLevel()
         return;
     }
 
-    CryLog("UnLoadLevel Start");
+    CryLog("UnloadLevel Start");
     INDENT_LOG_DURING_SCOPE();
 
     // Flush core buses. We're about to unload Cry modules and need to ensure we don't have module-owned functions left behind.
@@ -1286,7 +1059,7 @@ void CLevelSystem::UnLoadLevel()
     CCamera defaultCam;
     m_pSystem->SetViewCamera(defaultCam);
 
-    OnUnloadComplete(m_pCurrentLevel);
+    OnUnloadComplete(m_lastLevelName.c_str());
 
     // -- kenzo: this will close all pack files for this level
     // (even the ones which were not added through here, if this is not desired,
@@ -1297,7 +1070,7 @@ void CLevelSystem::UnLoadLevel()
         m_pLoadingLevelInfo = NULL;
     }
 
-    stl::free_container(m_lastLevelName);
+    m_lastLevelName.clear();
 
     GetISystem()->GetIResourceManager()->UnloadLevel();
 
@@ -1352,17 +1125,12 @@ void CLevelSystem::UnLoadLevel()
     m_bLevelLoaded = false;
 
     CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-    CryLog("UnLoadLevel End: %.1f sec", tUnloadTime.GetSeconds());
+    CryLog("UnloadLevel End: %.1f sec", tUnloadTime.GetSeconds());
 
     // Must be sent last.
     // Cleanup all containers
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_POST_UNLOAD, 0, 0);
     AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-}
-
-DynArray<string>* CLevelSystem::GetLevelTypeList()
-{
-    return &m_levelTypeList;
 }
 
 } // namespace LegacyLevelSystem

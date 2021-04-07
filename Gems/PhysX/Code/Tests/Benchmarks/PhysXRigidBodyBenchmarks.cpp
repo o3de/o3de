@@ -16,6 +16,9 @@
 #include <benchmark/benchmark.h>
 
 #include <AzTest/AzTest.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarkWashingMachine.h>
@@ -81,23 +84,56 @@ namespace PhysX::Benchmarks
     {
         //! Object that will connect to the collision notification bus of the provided entity id
         struct SimulatedBodyCollisionHandler
-            : public Physics::CollisionNotificationBus::Handler
         {
-            SimulatedBodyCollisionHandler(AZ::EntityId entityId)
+            SimulatedBodyCollisionHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle)
+                : m_onCollisionBeginHandler(
+                    [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                    [[maybe_unused]] const AzPhysics::CollisionEvent& event)
+                    {
+                        m_beginCount++;
+                    })
+                , m_onCollisionPersistHandler(
+                    [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                    [[maybe_unused]] const AzPhysics::CollisionEvent& event)
+                    {
+                        m_persistCount++;
+                    })
+                , m_onCollisionEndHandler(
+                    [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                    [[maybe_unused]] const AzPhysics::CollisionEvent& event)
+                    {
+                        m_endCount++;
+                    })
             {
-                Physics::CollisionNotificationBus::Handler::BusConnect(entityId);
-            }
-            ~SimulatedBodyCollisionHandler()
-            {
-                Physics::CollisionNotificationBus::Handler::BusDisconnect();
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionBeginHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionPersistHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionEndHandler);
             }
 
-            // Physics::CollisionNotificationBus::Handler ---------
-            // just having the bus connected is enough to cause a change in perf, no need to add anything to the function callbacks
-            void OnCollisionBegin([[maybe_unused]] const Physics::CollisionEvent& collisionEvent) override {}
-            void OnCollisionPersist([[maybe_unused]] const Physics::CollisionEvent& collisionEvent) override {}
-            void OnCollisionEnd([[maybe_unused]] const Physics::CollisionEvent& collisionEvent) override {}
-            // Physics::CollisionNotificationBus::Handler ---------
+            SimulatedBodyCollisionHandler(SimulatedBodyCollisionHandler&& other)
+            {
+                m_onCollisionBeginHandler = AZStd::move(other.m_onCollisionBeginHandler);
+                m_onCollisionPersistHandler = AZStd::move(other.m_onCollisionPersistHandler);
+                m_onCollisionEndHandler = AZStd::move(other.m_onCollisionEndHandler);
+                m_beginCount = other.m_beginCount;
+                m_persistCount = other.m_persistCount;
+                m_endCount = other.m_endCount;
+            }
+
+            ~SimulatedBodyCollisionHandler()
+            {
+                m_onCollisionBeginHandler.Disconnect();
+                m_onCollisionPersistHandler.Disconnect();
+                m_onCollisionEndHandler.Disconnect();
+            }
+
+            int m_beginCount = 0;
+            int m_persistCount = 0;
+            int m_endCount = 0;
+        private:
+            AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler m_onCollisionBeginHandler;
+            AzPhysics::SimulatedBodyEvents::OnCollisionPersist::Handler m_onCollisionPersistHandler;
+            AzPhysics::SimulatedBodyEvents::OnCollisionEnd::Handler m_onCollisionEndHandler;
         };
     } // namespace Utils
 
@@ -113,7 +149,7 @@ namespace PhysX::Benchmarks
             //need to get the Physics::System to be able to spawn the rigid bodies
             m_system = AZ::Interface<Physics::System>::Get();
 
-            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(RigidBodyConstants::TerrainSize, RigidBodyConstants::TerrainSize);
+            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RigidBodyConstants::TerrainSize, RigidBodyConstants::TerrainSize);
         }
 
         virtual void TearDown([[maybe_unused]] const ::benchmark::State &state) override
@@ -124,12 +160,11 @@ namespace PhysX::Benchmarks
 
     protected:
         // PhysXBaseBenchmarkFixture Interface ---------
-        Physics::WorldConfiguration GetDefaultWorldConfiguration() override
+        AzPhysics::SceneConfiguration GetDefaultSceneConfiguration() override
         {
-            Physics::WorldConfiguration worldConfig;
-            worldConfig.m_gravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
-            worldConfig.m_enableCcd = RigidBodyConstants::CCDEnabled;
-            return worldConfig;
+            AzPhysics::SceneConfiguration sceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
+            sceneConfig.m_enableCcd = RigidBodyConstants::CCDEnabled;
+            return sceneConfig;
         }
         // PhysXBaseBenchmarkFixture Interface ---------
 
@@ -174,7 +209,7 @@ namespace PhysX::Benchmarks
             return &boxShapeConfiguration;
         };
         //spawn the rigid bodies
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_system, m_defaultScene,
+        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
             RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator);
 
         //setup the sub tick tracker
@@ -188,8 +223,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -199,10 +233,11 @@ namespace PhysX::Benchmarks
         subTickTracker.Stop();
 
         //object clean up
-        for (int i = 0; i < rigidBodies.size(); i++)
+        for (auto handle : rigidBodies)
         {
-            rigidBodies[i] = nullptr;
+            m_defaultScene->RemoveSimulatedBody(handle);
         }
+        rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -222,7 +257,7 @@ namespace PhysX::Benchmarks
         const AZ::Vector3 washingMachineCentre(500.0f, 500.0f, 1.0f);
         WashingMachine washingMachine;
         washingMachine.SetupWashingMachine(
-            m_defaultScene, RigidBodyConstants::TestRadius, RigidBodyConstants::WashingMachine::CylinderHeight,
+            m_testSceneHandle, RigidBodyConstants::TestRadius, RigidBodyConstants::WashingMachine::CylinderHeight,
             washingMachineCentre, RigidBodyConstants::WashingMachine::BladeRPM);
 
         //get the request number of rigid bodies and prepare to spawn them
@@ -249,7 +284,7 @@ namespace PhysX::Benchmarks
             return &boxShapeConfiguration;
         };
         //spawn the rigid bodies
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_system, m_defaultScene,
+        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
             RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
 
         //setup the sub tick tracker
@@ -264,8 +299,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -276,10 +310,11 @@ namespace PhysX::Benchmarks
 
         //object clean up
         washingMachine.TearDownWashingMachine();
-        for (int i = 0; i < rigidBodies.size(); i++)
+        for (auto handle : rigidBodies)
         {
-            rigidBodies[i] = nullptr;
+            m_defaultScene->RemoveSimulatedBody(handle);
         }
+        rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -289,7 +324,6 @@ namespace PhysX::Benchmarks
     //! Same as the PhysXRigidbodyBenchmarkFixture, adds a world event handler to receive collision events
     class PhysXRigidbodyCollisionsBenchmarkFixture
         : public PhysXRigidbodyBenchmarkFixture
-        , public Physics::WorldEventHandler
     {
     public:
         void SetUp(const ::benchmark::State& state) override
@@ -299,38 +333,46 @@ namespace PhysX::Benchmarks
             m_collisionBeginCount = 0;
             m_collisionPersistCount = 0;
             m_collisionEndCount = 0;
+
+            m_onSceneCollisionHandler = AzPhysics::SceneEvents::OnSceneCollisionsEvent::Handler(
+                [this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                    const AzPhysics::CollisionEventList& collisionData)
+                {
+                    //count the events
+                    for (const auto& collisionEvent : collisionData)
+                    {
+                        switch (collisionEvent.m_type)
+                        {
+                        case AzPhysics::CollisionEvent::Type::Begin:
+                            m_collisionBeginCount++;
+                            break;
+                        case AzPhysics::CollisionEvent::Type::Persist:
+                            m_collisionPersistCount++;
+                            break;
+                        case AzPhysics::CollisionEvent::Type::End:
+                            m_collisionEndCount++;
+                            break;
+                        }
+                    }
+                }
+            );
+            m_defaultScene->RegisterSceneCollisionEventHandler(m_onSceneCollisionHandler);
         }
 
-        // Physics::WorldEventHandler Interface ---------
-        void OnTriggerEnter([[maybe_unused]] const Physics::TriggerEvent& triggerEvent) override {}
-        void OnTriggerExit([[maybe_unused]]  const Physics::TriggerEvent& triggerEvent) override {}
+        void TearDown(const ::benchmark::State& state) override
+        {
+            m_onSceneCollisionHandler.Disconnect();
 
-        //Recreate collision handling to be similar to what was in 1.x Action game
-        //queue an event to each party involved in the collision
-        void OnCollisionBegin(const Physics::CollisionEvent& collisionEvent) override
-        {
-            Physics::CollisionNotificationBus::QueueEvent(collisionEvent.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionBegin, collisionEvent);
-            m_collisionBeginCount++;
+            PhysXRigidbodyBenchmarkFixture::TearDown(state);
         }
-        void OnCollisionPersist(const Physics::CollisionEvent& collisionEvent) override
-        {
-            Physics::CollisionNotificationBus::QueueEvent(collisionEvent.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionPersist, collisionEvent);
-            m_collisionPersistCount++;
-        }
-        void OnCollisionEnd(const Physics::CollisionEvent& collisionEvent) override
-        {
-            Physics::CollisionNotificationBus::QueueEvent(collisionEvent.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionEnd, collisionEvent);
-            m_collisionEndCount++;
-        }
-        // Physics::WorldEventHandler Interface ---------
+
     protected:
-        //attach this fixture as an event handler
-        Physics::WorldEventHandler* GetWorldEventHandler() override { return this; }
-
         // Collision counters to track and report the number of events
         int m_collisionBeginCount;
         int m_collisionPersistCount;
         int m_collisionEndCount;
+
+        AzPhysics::SceneEvents::OnSceneCollisionsEvent::Handler m_onSceneCollisionHandler;
     };
 
     //! BM_RigidBody_MovingAndColliding_CollisionHandlers - Runs that same benchmark as BM_RigidBody_MovingAndColliding, under a different fixture that adds world event handler for collisions
@@ -346,7 +388,7 @@ namespace PhysX::Benchmarks
         const AZ::Vector3 washingMachineCentre(500.0f, 500.0f, 1.0f);
         WashingMachine washingMachine;
         washingMachine.SetupWashingMachine(
-            m_defaultScene, RigidBodyConstants::TestRadius, RigidBodyConstants::WashingMachine::CylinderHeight,
+            m_testSceneHandle, RigidBodyConstants::TestRadius, RigidBodyConstants::WashingMachine::CylinderHeight,
             washingMachineCentre, RigidBodyConstants::WashingMachine::BladeRPM);
 
         //get the request number of rigid bodies and prepare to spawn them
@@ -378,7 +420,7 @@ namespace PhysX::Benchmarks
             return &boxShapeConfiguration;
         };
         //spawn the rigid bodies
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_system, m_defaultScene,
+        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
             RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
 
         //create the collision handlers
@@ -395,8 +437,8 @@ namespace PhysX::Benchmarks
         collisionHandlers.reserve(numberCollisionHandlers);
         for (int i = 0; i < numberCollisionHandlers; i++)
         {
-            AZ::u64 idOffset = rand.Getu64Random() % numRigidBodies; //randomly select the offset.
-            collisionHandlers.emplace_back(Utils::SimulatedBodyCollisionHandler(AZ::EntityId(RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart + idOffset)));
+            const AZ::u64 randIndex = rand.Getu64Random() % numRigidBodies; //randomly select the offset.
+            collisionHandlers.emplace_back(m_testSceneHandle, rigidBodies[randIndex]);
         }
 
         //setup the sub tick tracker
@@ -411,8 +453,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < RigidBodyConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -424,10 +465,11 @@ namespace PhysX::Benchmarks
         //object clean up
         collisionHandlers.clear();
         washingMachine.TearDownWashingMachine();
-        for (int i = 0; i < rigidBodies.size(); i++)
+        for (auto handle : rigidBodies)
         {
-            rigidBodies[i] = nullptr;
+            m_defaultScene->RemoveSimulatedBody(handle);
         }
+        rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());

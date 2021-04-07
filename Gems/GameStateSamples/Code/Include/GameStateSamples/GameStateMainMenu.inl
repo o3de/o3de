@@ -10,6 +10,11 @@
  *
  */
 
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+
 #include <GameState/GameStateRequestBus.h>
 #include <GameStateSamples/GameStateMainMenu.h>
 #include <GameStateSamples/GameStateOptionsMenu.h>
@@ -135,14 +140,16 @@ namespace GameStateSamples
         AZStd::string levelName;
         UiButtonBus::EventResult(levelName, entityId, &UiButtonInterface::GetOnClickActionName);
         ISystem* iSystem = GetISystem();
-        IConsole* iConsole = iSystem ? iSystem->GetIConsole() : nullptr;
         ILevelSystem* levelSystem = iSystem ? iSystem->GetILevelSystem() : nullptr;
-        if (levelSystem && !levelName.empty() && iConsole)
+
+        if (levelSystem && !levelName.empty())
         {
             // This command gets delayed by one frame, so we check for the
             // actual level load start in GameStateMainMenu::OnSystemEvent
-            AZStd::string mapCommand = "map " + levelName;
-            iConsole->ExecuteString(mapCommand.c_str());
+            AZ::TickBus::QueueFunction([levelSystem, levelName]() {
+                levelSystem->UnloadLevel();
+                levelSystem->LoadLevel(levelName.c_str());
+            });
         }
     }
 
@@ -257,6 +264,7 @@ namespace GameStateSamples
         return "@assets@/ui/canvases/defaultmainmenuscreen.uicanvas";
     }
 
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline void GameStateMainMenu::RefreshLevelListDisplay()
     {
@@ -268,48 +276,96 @@ namespace GameStateSamples
                                  "DynamicColumn");
         if (dynamicLayoutElementId.IsValid())
         {
-            // Refresh the dynamic layout UI element with the list of levels in the project
             ISystem* iSystem = GetISystem();
             ILevelSystem* levelSystem = iSystem ? iSystem->GetILevelSystem() : nullptr;
-            const int numLevels = levelSystem ? levelSystem->GetLevelCount() : 0;
-            UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, numLevels);
-            for (int i = 0; i < numLevels; ++i)
+
+            bool usePrefabSystemForLevels = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+            if (usePrefabSystemForLevels)
             {
-                // Get the level name (strip folder names from the path)
-                const char* levelPath = levelSystem->GetLevelInfo(i)->GetName();
-                const int levelPathLength = strlen(levelPath);
-                const char* levelName = levelPath;
-                for (int j = 0; j < levelPathLength; ++j)
+                // Run through all the assets in the asset catalog and gather up the list of level assets
+
+                AZ::Data::AssetType levelAssetType = levelSystem->GetLevelAssetType();
+                AZStd::vector<AZStd::string> levelNames;
+                auto enumerateCB = [levelAssetType, &levelNames](
+                    [[maybe_unused]] const AZ::Data::AssetId id,
+                    const AZ::Data::AssetInfo& assetInfo)
                 {
-                    if ((levelPath[j] == '\\' || levelPath[j] == '/') && j + 1 < levelPathLength)
+                    if (assetInfo.m_assetType == levelAssetType)
                     {
-                        levelName = levelPath + j + 1;
+                        levelNames.emplace_back(assetInfo.m_relativePath);
+                    }
+                };
+
+                AZ::Data::AssetCatalogRequestBus::Broadcast(
+                    &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                // Add all the levels into the UI as buttons
+
+                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, levelNames.size());
+                for (int i = 0; i < levelNames.size(); ++i)
+                {
+                    AZ::IO::PathView level(levelNames[i].c_str());
+
+                    // Get the button element id
+                    AZ::EntityId buttonElementId;
+                    UiElementBus::EventResult(buttonElementId, dynamicLayoutElementId, &UiElementInterface::GetChildEntityId, i);
+
+                    // Get the text element id
+                    AZ::EntityId textElementId;
+                    UiElementBus::EventResult(textElementId, buttonElementId, &UiElementInterface::FindChildEntityIdByName, "Text");
+
+                    // Set the name, on-click callback, and on-click action name for each button
+                    UiTextBus::Event(textElementId, &UiTextInterface::SetText, level.Filename().Native());
+                    UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickCallback, OnLevelButtonClicked);
+                    UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickActionName, levelNames[i]);
+
+                    if (i == 0)
+                    {
+                        // Force the first level to be selected
+                        UiCanvasBus::Event(m_mainMenuCanvasEntityId, &UiCanvasInterface::ForceHoverInteractable, buttonElementId);
                     }
                 }
-
-                // Get the button element id
-                AZ::EntityId buttonElementId;
-                UiElementBus::EventResult(buttonElementId,
-                                          dynamicLayoutElementId,
-                                          &UiElementInterface::GetChildEntityId,
-                                          i);
-
-                // Get the text element id
-                AZ::EntityId textElementId;
-                UiElementBus::EventResult(textElementId,
-                                          buttonElementId,
-                                          &UiElementInterface::FindChildEntityIdByName,
-                                          "Text");
-
-                // Set the name, on-click callback, and on-click action name for each button
-                UiTextBus::Event(textElementId, &UiTextInterface::SetText, levelName);
-                UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickCallback, OnLevelButtonClicked);
-                UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickActionName, levelName);
-
-                if (i == 0)
+            }
+            else
+            {
+                // Refresh the dynamic layout UI element with the list of levels in the project
+                const int numLevels = levelSystem ? levelSystem->GetLevelCount() : 0;
+                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, numLevels);
+                for (int i = 0; i < numLevels; ++i)
                 {
-                    // Force the first level to be selected
-                    UiCanvasBus::Event(m_mainMenuCanvasEntityId, &UiCanvasInterface::ForceHoverInteractable, buttonElementId);
+                    // Get the level name (strip folder names from the path)
+                    const char* levelPath = levelSystem->GetLevelInfo(i)->GetName();
+                    const int levelPathLength = strlen(levelPath);
+                    const char* levelName = levelPath;
+                    for (int j = 0; j < levelPathLength; ++j)
+                    {
+                        if ((levelPath[j] == '\\' || levelPath[j] == '/') && j + 1 < levelPathLength)
+                        {
+                            levelName = levelPath + j + 1;
+                        }
+                    }
+
+                    // Get the button element id
+                    AZ::EntityId buttonElementId;
+                    UiElementBus::EventResult(buttonElementId, dynamicLayoutElementId, &UiElementInterface::GetChildEntityId, i);
+
+                    // Get the text element id
+                    AZ::EntityId textElementId;
+                    UiElementBus::EventResult(textElementId, buttonElementId, &UiElementInterface::FindChildEntityIdByName, "Text");
+
+                    // Set the name, on-click callback, and on-click action name for each button
+                    UiTextBus::Event(textElementId, &UiTextInterface::SetText, levelName);
+                    UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickCallback, OnLevelButtonClicked);
+                    UiButtonBus::Event(buttonElementId, &UiButtonInterface::SetOnClickActionName, levelName);
+
+                    if (i == 0)
+                    {
+                        // Force the first level to be selected
+                        UiCanvasBus::Event(m_mainMenuCanvasEntityId, &UiCanvasInterface::ForceHoverInteractable, buttonElementId);
+                    }
                 }
             }
         }

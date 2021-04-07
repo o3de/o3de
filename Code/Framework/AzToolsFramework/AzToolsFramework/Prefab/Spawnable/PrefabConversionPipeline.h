@@ -31,12 +31,18 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using PrefabProcessorList = AZStd::vector<PrefabProcessorListEntry>;
 
         bool LoadStackProfile(AZStd::string_view stackProfile);
+        bool IsLoaded() const;
 
         void ProcessPrefab(PrefabProcessorContext& context);
 
-        static void Reflect(AZ::ReflectContext* context);
+        size_t GetFingerprint() const;
 
+        static void Reflect(AZ::ReflectContext* context);
+        
     private:
+        size_t CalculateProcessorFingerprint(AZ::SerializeContext* context);
+
         PrefabProcessorList m_processors;
+        size_t m_fingerprint{};
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

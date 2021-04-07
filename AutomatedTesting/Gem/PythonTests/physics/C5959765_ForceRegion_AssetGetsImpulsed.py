@@ -153,7 +153,7 @@ def C5959765_ForceRegion_AssetGetsImpulsed():
         Report.failure(Tests.tests_completed)
 
     else:
-        # Did Force Region succeed. True if vector z ≈ 1 and force region magnitude ≈ magnitude applied on Asset
+        # Did Force Region succeed. True if vector z is close to 1 and force region magnitude is close to magnitude applied on Asset
         force_region_result = (
             ifVectorAxisClose(RegionObject.force_vector.z, UPWARD_Z_VECTOR) and RegionObject.force_region_in_range()
         )

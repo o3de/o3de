@@ -162,6 +162,7 @@ namespace AZ
             AZStd::string expectedHigherPrecedenceFileFullPath;
             AzFramework::StringFunc::Path::Join(gameProjectPath, RPI::ShaderVariantTreeAsset::CommonSubFolder, expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
             AzFramework::StringFunc::Path::Join(expectedHigherPrecedenceFileFullPath.c_str(), shaderProductFileRelativePath.c_str(), expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
+            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantAsset::Extension);
             AzFramework::StringFunc::Path::Normalize(expectedHigherPrecedenceFileFullPath);
 
             AZStd::string normalizedShaderVariantListFileFullPath = shaderVariantListFileFullPath;
@@ -469,6 +470,12 @@ namespace AZ
             AZStd::string previousLoopApiName;
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
+                // Null backend is special and does not require any processing.
+                if (shaderPlatformInterface->GetAPIUniqueIndex() == static_cast<uint32_t>(AZ::RHI::APIIndex::Null))                
+                {
+                    continue;
+                }
+
                 if (shaderSourceDescriptor.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()))
                 {
                     // Gracefully do nothing and continue with the next shaderPlatformInterface.
@@ -647,6 +654,12 @@ namespace AZ
             // Generate shaders for each of those ShaderPlatformInterfaces.
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
+                // Null backend is special and does not require any processing.
+                if (shaderPlatformInterface->GetAPIUniqueIndex() == static_cast<uint32_t>(AZ::RHI::APIIndex::Null))
+                {
+                    continue;
+                }
+
                 AZ_TraceContext("ShaderPlatformInterface", shaderPlatformInterface->GetAPIName().GetCStr());
 
                 if (shaderSourceDescriptor.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()))

@@ -14,9 +14,11 @@
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
+#include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
 
 #include <AzTest/AzTest.h>
@@ -27,6 +29,60 @@
 
 namespace UnitTest
 {
+    AZ::Data::Asset<AZ::RPI::BufferAsset> BuildTestBuffer(const uint32_t elementCount, const uint32_t elementSize)
+    {
+        using namespace AZ;
+
+        const uint32_t bufferSize = elementCount * elementSize;
+
+        AZStd::vector<uint8_t> bufferData;
+        bufferData.resize(bufferSize);
+
+        //The actual data doesn't matter
+        for (uint32_t i = 0; i < bufferData.size(); ++i)
+        {
+            bufferData[i] = i;
+        }
+
+        Data::Asset<RPI::ResourcePoolAsset> bufferPoolAsset;
+
+        {
+            auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
+            bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+            bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+
+            RPI::ResourcePoolAssetCreator creator;
+            creator.Begin(Uuid::CreateRandom());
+            creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
+            creator.SetPoolName("TestPool");
+            EXPECT_TRUE(creator.End(bufferPoolAsset));
+        }
+
+        Data::Asset<RPI::BufferAsset> asset;
+
+        {
+            RHI::BufferDescriptor bufferDescriptor;
+            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+            bufferDescriptor.m_byteCount = bufferSize;
+
+            RHI::BufferViewDescriptor bufferViewDescriptor =
+                RHI::BufferViewDescriptor::CreateStructured(0, elementCount, elementSize);
+
+            RPI::BufferAssetCreator creator;
+
+            creator.Begin(AZ::Uuid::CreateRandom());
+            creator.SetPoolAsset(bufferPoolAsset);
+            creator.SetBuffer(bufferData.data(), bufferDescriptor.m_byteCount, bufferDescriptor);
+            creator.SetBufferViewDescriptor(bufferViewDescriptor);
+
+            EXPECT_TRUE(creator.End(asset));
+            EXPECT_TRUE(asset.IsReady());
+            EXPECT_NE(asset.Get(), nullptr);
+        }
+
+        return asset;
+    }
+
     class ModelTests
         : public RPITestFixture
     {
@@ -80,60 +136,6 @@ namespace UnitTest
             }
 
             return true;
-        }
-
-        AZ::Data::Asset<AZ::RPI::BufferAsset> BuildTestBuffer(const uint32_t elementCount, const uint32_t elementSize)
-        {
-            using namespace AZ;
-
-            const uint32_t bufferSize = elementCount * elementSize;
-
-            AZStd::vector<uint8_t> bufferData;
-            bufferData.resize(bufferSize);
-
-            //The actual data doesn't matter
-            for (uint32_t i = 0; i < bufferData.size(); ++i)
-            {
-                bufferData[i] = i;
-            }
-
-            Data::Asset<RPI::ResourcePoolAsset> bufferPoolAsset;
-
-            {
-                auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
-                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly;
-                bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-
-                RPI::ResourcePoolAssetCreator creator;
-                creator.Begin(Uuid::CreateRandom());
-                creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
-                creator.SetPoolName("TestPool");
-                EXPECT_TRUE(creator.End(bufferPoolAsset));
-            }
-
-            Data::Asset<RPI::BufferAsset> asset;
-
-            {
-                RHI::BufferDescriptor bufferDescriptor;
-                bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
-                bufferDescriptor.m_byteCount = bufferSize;
-
-                RHI::BufferViewDescriptor bufferViewDescriptor =
-                    RHI::BufferViewDescriptor::CreateStructured(0, elementCount, elementSize);
-
-                RPI::BufferAssetCreator creator;
-
-                creator.Begin(AZ::Uuid::CreateRandom());
-                creator.SetPoolAsset(bufferPoolAsset);
-                creator.SetBuffer(bufferData.data(), bufferDescriptor.m_byteCount, bufferDescriptor);
-                creator.SetBufferViewDescriptor(bufferViewDescriptor);
-
-                EXPECT_TRUE(creator.End(asset));
-                EXPECT_TRUE(asset.IsReady());
-                EXPECT_NE(asset.Get(), nullptr);
-            }
-
-            return asset;
         }
 
         AZ::Data::Asset<AZ::RPI::ModelLodAsset> BuildTestLod(const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedLod& expectedLod)
@@ -915,4 +917,167 @@ namespace UnitTest
             creator.EndMesh();
         }
     }
-}  // namespace UnitTest
+
+    // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
+    // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
+    // a position and index buffer.
+    //
+    //      -0.33
+    //    -1     0.33  1
+    // 0.5 *---*---*---*
+    //      \ / \ / \ / \
+    //       *---*---*---*
+    //        \ / \ / \ / \
+    // -0.5 *- *---*---*---*
+    //       \  \ / \ / \ / \
+    //        *- *---*---*---*
+    //         \   \   \   \
+    //          *---*---*---*
+    //           \ / \ / \ / \
+    //            *---*---*---*
+    class TwoSeparatedPlanesMesh
+    {
+    public:
+        TwoSeparatedPlanesMesh()
+        {
+            using namespace AZ;
+
+            RPI::ModelLodAssetCreator lodCreator;
+            lodCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
+
+            lodCreator.BeginMesh();
+            lodCreator.SetMeshAabb(Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
+            lodCreator.SetMeshMaterialAsset(
+                AZ::Data::Asset<AZ::RPI::MaterialAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0),
+                    AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid(), "")
+            );
+
+            {
+                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(s_indexes.size(), sizeof(uint32_t));
+                AZStd::copy(s_indexes.begin(), s_indexes.end(), reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
+                lodCreator.SetMeshIndexBuffer({
+                    indexBuffer,
+                    RHI::BufferViewDescriptor::CreateStructured(0, s_indexes.size(), sizeof(uint32_t))
+                });
+            }
+
+            {
+                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(s_positions.size() / 3, sizeof(float) * 3);
+                AZStd::copy(s_positions.begin(), s_positions.end(), reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
+                lodCreator.AddMeshStreamBuffer(
+                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
+                    AZ::Name(),
+                    {
+                        positionBuffer,
+                        RHI::BufferViewDescriptor::CreateStructured(0, s_positions.size() / 3, sizeof(float) * 3)
+                    }
+                );
+            }
+            lodCreator.EndMesh();
+
+            Data::Asset<RPI::ModelLodAsset> lodAsset;
+            lodCreator.End(lodAsset);
+
+            RPI::ModelAssetCreator modelCreator;
+            modelCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
+            modelCreator.SetName("TestModel");
+            modelCreator.AddLodAsset(AZStd::move(lodAsset));
+            modelCreator.End(m_modelAsset);
+        }
+
+        [[nodiscard]] AZ::Data::Asset<AZ::RPI::ModelAsset> GetModel() const
+        {
+            return m_modelAsset;
+        }
+
+    private:
+        AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
+
+        static constexpr AZStd::array s_positions{
+            -1.0f,   -0.333f, -0.5f, -0.333f, -1.0f,   -0.5f, -0.333f, -0.333f, -0.5f, 0.333f, -0.333f, -0.5f, 1.0f,    -1.0f,   -0.5f,
+            1.0f,    -0.333f, -0.5f, 0.333f,  -1.0f,   -0.5f, 0.333f,  1.0f,    -0.5f, 1.0f,   0.333f,  -0.5f, 1.0f,    1.0f,    -0.5f,
+            0.333f,  0.333f,  -0.5f, -0.333f, 1.0f,    -0.5f, -0.333f, 0.333f,  -0.5f, -1.0f,  1.0f,    -0.5f, -1.0f,   0.333f,  -0.5f,
+            -1.0f,   -0.333f, 0.5f,  -0.333f, -1.0f,   0.5f,  -0.333f, -0.333f, 0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -1.0f,   0.5f,
+            1.0f,    -0.333f, 0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  1.0f,    0.5f,
+            1.0f,    0.333f,  0.5f,  1.0f,    1.0f,    0.5f,  0.333f,  0.333f,  0.5f,  1.0f,   -0.333f, 0.5f,  -0.333f, 1.0f,    0.5f,
+            -0.333f, 0.333f,  0.5f,  0.333f,  -0.333f, 0.5f,  0.333f,  0.333f,  0.5f,  -1.0f,  1.0f,    0.5f,  -0.333f, 0.333f,  0.5f,
+            -1.0f,   0.333f,  0.5f,  -1.0f,   -1.0f,   -0.5f, -1.0f,   -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,
+            1.0f,    -1.0f,   0.5f,  0.333f,  -1.0f,   0.5f,  0.333f,  0.333f,  0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -0.333f, 0.5f,
+            -0.333f, 0.333f,  0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -0.333f, 0.5f,
+        };
+        static constexpr AZStd::array s_indexes{
+            uint32_t{0}, 1,  2,  3,  4,  5,  2,  6,  3,  7,  8,  9,  10, 5,  8,  11, 10, 7,  12, 3,  10, 13, 12, 11, 14, 2,  12,
+            15,          16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 25, 29, 27, 24, 30, 31, 32, 33, 34, 29, 35, 17, 34,
+            0,           36, 1,  3,  6,  4,  2,  1,  6,  7,  10, 8,  10, 3,  5,  11, 12, 10, 12, 2,  3,  13, 14, 12, 14, 0,  2,
+            15,          37, 16, 38, 39, 40, 17, 16, 41, 24, 27, 25, 42, 43, 44, 29, 34, 27, 45, 46, 47, 33, 35, 34, 35, 15, 17,
+        };
+
+        // Ensure that the index buffer references all the positions in the position buffer
+        static constexpr inline auto minmaxElement = AZStd::minmax_element(begin(s_indexes), end(s_indexes));
+        static_assert(*minmaxElement.second == (s_positions.size() / 3) - 1);
+    };
+
+    struct KdTreeIntersectParams
+    {
+        float xpos;
+        float ypos;
+        float zpos;
+        float expectedDistance;
+        bool expectedShouldIntersect;
+
+        friend std::ostream& operator<<(std::ostream& os, const KdTreeIntersectParams& param)
+        {
+            return os
+                << "xpos:" << param.xpos
+                << ", ypos:" << param.ypos
+                << ", zpos:" << param.zpos
+                << ", dist:" << param.expectedDistance
+                << ", shouldIntersect:" << param.expectedShouldIntersect;
+        }
+    };
+
+    class KdTreeIntersectsFixture
+        : public ModelTests
+        , public ::testing::WithParamInterface<KdTreeIntersectParams>
+    {
+    };
+
+    TEST_P(KdTreeIntersectsFixture, KdTreeIntersects)
+    {
+        TwoSeparatedPlanesMesh mesh;
+
+        AZ::RPI::ModelKdTree kdTree;
+        ASSERT_TRUE(kdTree.Build(mesh.GetModel().Get()));
+
+        float distance = AZStd::numeric_limits<float>::max();
+        EXPECT_THAT(kdTree.RayIntersection(AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance), testing::Eq(GetParam().expectedShouldIntersect));
+        EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
+    }
+
+    static constexpr inline AZStd::array<KdTreeIntersectParams, 21> intersectTestData{
+        KdTreeIntersectParams{ -0.1f, 0.0f, 1.0f, 0.5f, true },
+        KdTreeIntersectParams{  0.0f, 0.0f, 1.0f, 0.5f, true },
+        KdTreeIntersectParams{  0.1f, 0.0f, 1.0f, 0.5f, true },
+
+        // Test the center of each triangle
+        KdTreeIntersectParams{-0.111f, -0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.111f, -0.778f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.111f, 0.555f, 1.0f, 0.5f, true}, // Should intersect triangle with indices {29, 34, 27} and {11, 12, 10}
+        KdTreeIntersectParams{-0.555f, -0.555f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.555f, 0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.555f, 0.778f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.778f, -0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.778f, -0.778f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{-0.778f, 0.555f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.111f, -0.555f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.111f, 0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.111f, 0.778f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.555f, -0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.555f, -0.778f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.555f, 0.555f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.778f, -0.555f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.778f, 0.111f, 1.0f, 0.5f, true},
+        KdTreeIntersectParams{0.778f, 0.778f, 1.0f, 0.5f, true},
+    };
+    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsFixture, ::testing::ValuesIn(intersectTestData));
+} // namespace UnitTest

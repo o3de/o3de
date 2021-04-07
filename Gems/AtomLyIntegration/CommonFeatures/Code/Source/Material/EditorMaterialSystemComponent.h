@@ -16,15 +16,11 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-
-#include <Material/Preview/MaterialPreviewerFactory.h>
-#include <Material/Thumbnails/MaterialThumbnail.h>
 
 namespace AZ
 {
@@ -35,7 +31,6 @@ namespace AZ
             : public AZ::Component
             , private EditorMaterialSystemComponentRequestBus::Handler
             , private AzFramework::TargetManagerClient::Bus::Handler
-            , private AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
             , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
@@ -63,10 +58,7 @@ namespace AZ
             //! AzFramework::TargetManagerClient::Bus::Handler overrides...
             void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
             void TargetLeftNetwork(AzFramework::TargetInfo info) override;
-
-            // AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler overrides...
-            const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const override;
-
+            
             // AzFramework::ApplicationLifecycleEvents overrides...
             void OnApplicationAboutToStop() override;
 
@@ -82,8 +74,6 @@ namespace AZ
 
             // Material Editor target for interprocess communication with MaterialEditor
             AzFramework::TargetInfo m_materialEditorTarget;
-
-            AZStd::unique_ptr<LyIntegration::MaterialPreviewerFactory> m_materialPreviewerFactory;
 
             QAction* m_openMaterialEditorAction = nullptr;
         };

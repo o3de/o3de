@@ -10,6 +10,7 @@
  *
  */
 
+#include <AzCore/std/containers/map.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Component/EntitySerializer.h>
@@ -62,10 +63,16 @@ namespace AZ
         }
 
         {
+            AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
             JSR::ResultCode componentLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_components,
-                    azrtti_typeid<decltype(entityInstance->m_components)>(),
+                ContinueLoadingFromJsonObjectField(&componentMap,
+                    azrtti_typeid<decltype(componentMap)>(),
                     inputValue, "Components", context);
+
+            for (auto& [componentKey, component] : componentMap)
+            {
+                entityInstance->m_components.emplace_back(component);
+            }
 
             result.Combine(componentLoadResult);
         }
@@ -145,9 +152,21 @@ namespace AZ
             const AZ::Entity::ComponentArrayType* defaultComponents =
                 defaultEntityInstance ? &defaultEntityInstance->m_components : nullptr;
 
+            AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
+            AZStd::unordered_map<AZStd::string, AZ::Component*> defaultComponentMap;
+
+            ConvertComponentVectorToMap(*components, componentMap);
+
+            if (defaultComponents)
+            {
+                ConvertComponentVectorToMap(*defaultComponents, defaultComponentMap);
+            }
+
             JSR::ResultCode resultComponents =
                 ContinueStoringToJsonObjectField(outputValue, "Components",
-                    components, defaultComponents, azrtti_typeid<decltype(entityInstance->m_components)>(), context);
+                    &componentMap,
+                    defaultComponents ? &defaultComponentMap : nullptr,
+                    azrtti_typeid<decltype(componentMap)>(), context);
 
             result.Combine(resultComponents);
         }
@@ -182,5 +201,17 @@ namespace AZ
         return context.Report(result,
             result.GetProcessing() == JSR::Processing::Halted ? "Successfully stored Entity information." :
             "Failed to store Entity information.");
+    }
+
+    void JsonEntitySerializer::ConvertComponentVectorToMap(const AZ::Entity::ComponentArrayType& components,
+        AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
+    {
+        for (AZ::Component* component : components)
+        {
+            if (component)
+            {
+                componentMapOut.emplace(AZStd::string::format("Component_[%llu]", component->GetId()), component);
+            }
+        }
     }
 }

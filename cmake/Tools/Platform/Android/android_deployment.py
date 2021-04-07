@@ -51,7 +51,7 @@ class AndroidDeployment(object):
     DEPLOY_ASSETS_ONLY = 'ASSETS'
     DEPLOY_BOTH = 'BOTH'
 
-    def __init__(self, dev_root, build_dir, configuration, android_device_filter, clean_deploy, android_sdk_path, deployment_type, game_name=None, asset_mode=None, asset_type=None, embedded_assets=True):
+    def __init__(self, dev_root, build_dir, configuration, android_device_filter, clean_deploy, android_sdk_path, deployment_type, game_name=None, asset_mode=None, asset_type=None, embedded_assets=True, is_unit_test=False):
         """
         Initialize the Android Deployment Worker
 
@@ -60,10 +60,11 @@ class AndroidDeployment(object):
         :param clean_deploy:            Option to clean the target device's assets before deploying the game's assets from the host
         :param android_sdk_path:        Path to the android SDK (to use the adb tool)
         :param deployment_type:         The type of deployment (DEPLOY_APK_ONLY, DEPLOY_ASSETS_ONLY, or DEPLOY_BOTH)
-        :param game_name:               The name of the game whoses assets are being deployed. None if is_test_project is True
+        :param game_name:               The name of the game whose assets are being deployed. None if is_test_project is True
         :param asset_mode:              The asset mode of deployment (LOOSE, PAK, VFS). None if is_test_project is True
         :param asset_type:              The asset type (for android, 'es3'). None if is_test_project is True
         :param embedded_assets:         Boolean to indicate if the assets are embedded in the APK or not
+        :param is_unit_test:            Boolean to indicate if this is a unit test deployment
         """
 
         self.dev_root = pathlib.Path(dev_root)
@@ -84,7 +85,7 @@ class AndroidDeployment(object):
 
         self.deployment_type = deployment_type
 
-        self.is_test_project = game_name == android_support.TEST_RUNNER_PROJECT
+        self.is_test_project = is_unit_test
 
         if not self.is_test_project:
 
@@ -96,7 +97,7 @@ class AndroidDeployment(object):
             if asset_mode == 'PAK':
                 self.local_asset_path = self.dev_root / 'Pak' / f'{game_name.lower()}_{asset_type}_paks'
             else:
-                self.local_asset_path = self.dev_root / game_name / 'Cache'  / asset_type
+                self.local_asset_path = self.dev_root / game_name / 'Cache' / asset_type
 
             assert game_name is not None, f"'game_name' is required"
             self.game_name = game_name

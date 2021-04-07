@@ -52,12 +52,12 @@ namespace AZ
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_areaTexture;
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_searchTexture;
 
-            RHI::ShaderInputImageIndex m_areaTextureShaderInputIndex;
-            RHI::ShaderInputImageIndex m_searchTextureShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_renderTargetMetricsShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_maxSearchStepsShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_maxSearchStepsDiagonalShaderInputIndex;
-            RHI::ShaderInputConstantIndex m_cornerRoundingShaderInputIndex;
+            RHI::ShaderInputNameIndex m_areaTextureShaderInputIndex = "m_areaTexture";
+            RHI::ShaderInputNameIndex m_searchTextureShaderInputIndex = "m_searchTexture";
+            RHI::ShaderInputNameIndex m_renderTargetMetricsShaderInputIndex = "m_renderTargetMetrics";
+            RHI::ShaderInputNameIndex m_maxSearchStepsShaderInputIndex = "m_maxSearchSteps";
+            RHI::ShaderInputNameIndex m_maxSearchStepsDiagonalShaderInputIndex = "m_maxSearchStepsDiagonal";
+            RHI::ShaderInputNameIndex m_cornerRoundingShaderInputIndex = "m_cornerRounding";
 
             const AZ::Name m_enableDiagonalDetectionFeatureOptionName;
             const AZ::Name m_enableCornerDetectionFeatureOptionName;

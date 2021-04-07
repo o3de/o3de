@@ -11,33 +11,18 @@
  */
 #pragma once
 
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/std/string/fixed_string.h>
-#include <AzCore/std/string/string_view.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 
-namespace AzFramework
+namespace AzFramework::ProjectManager
 {
-    namespace ProjectManager
+    enum class ProjectPathCheckResult
     {
-        constexpr AZ::IO::SystemFile::SizeType MaxBootstrapFileSize = 1024 * 10;
-
-        // Check if any project name can be found anywhere
-        bool HasProjectPath(const int argc, char* argv[]);
-        // Check if any project name can be found on the command line
-        bool HasCommandLineProjectName(const int argc, char* argv[]);
-        // Check if a relative project is being used through bootstrap
-        bool HasBootstrapProjectName(AZStd::string_view projectFolder = {});
-        // Search content for project name key
-        bool ContentHasProjectName(AZStd::fixed_string< MaxBootstrapFileSize>& bootstrapString);
-        enum class ProjectPathCheckResult
-        {
-            ProjectManagerLaunchFailed = -1,
-            ProjectManagerLaunched = 0,
-            ProjectPathFound = 1
-        };
-        // Check for a project name, if not found, attempts to launch project manager and returns false
-        ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[]);
-        // Attempt to Launch the project manager.  Requires locating the engine root, project manager script, and python.
-        bool LaunchProjectManager();
-    }
-} // AzFramework
+        ProjectManagerLaunchFailed = -1,
+        ProjectManagerLaunched = 0,
+        ProjectPathFound = 1
+    };
+    // Check for a project name, if not found, attempts to launch project manager and returns false
+    ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[]);
+    // Attempt to Launch the project manager.  Requires locating the engine root, project manager script, and python.
+    bool LaunchProjectManager(const AZ::IO::FixedMaxPath& engineRootPath);
+} // AzFramework::ProjectManager

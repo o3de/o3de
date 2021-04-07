@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.BAT
 @pytest.mark.parametrize('spec', ['all'])
-@pytest.mark.parametrize('project', ['SamplesProject'])
+@pytest.mark.parametrize('project', ['AutomatedTesting'])
 
 class TestWindowsBuildConfig(object):
     """

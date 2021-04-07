@@ -125,8 +125,6 @@ set(FILES
     Source/Rendering/MeshAssetHandler.cpp
     Source/Rendering/MeshComponent.h
     Source/Rendering/MeshComponent.cpp
-    Source/Rendering/SkinnedMeshComponent.h
-    Source/Rendering/SkinnedMeshComponent.cpp
     Source/Rendering/StereoRendererComponent.h
     Source/Rendering/StereoRendererComponent.cpp
     Source/Rendering/HighQualityShadowComponent.h
@@ -184,18 +182,12 @@ set(FILES
     Source/Shape/ShapeComponentConverters.inl
     Source/Shape/ShapeGeometryUtil.h
     Source/Shape/ShapeGeometryUtil.cpp
-    Source/Unhandled/Animation/AnimationEventsAssetTypeInfo.cpp
-    Source/Unhandled/Animation/AnimationEventsAssetTypeInfo.h
-    Source/Unhandled/Animation/DbaAssetTypeInfo.cpp
-    Source/Unhandled/Animation/DbaAssetTypeInfo.h
     Source/Unhandled/Material/MaterialAssetTypeInfo.cpp
     Source/Unhandled/Material/MaterialAssetTypeInfo.h
     Source/Unhandled/Other/AudioAssetTypeInfo.cpp
     Source/Unhandled/Other/AudioAssetTypeInfo.h
     Source/Unhandled/Other/CharacterPhysicsAssetTypeInfo.cpp
     Source/Unhandled/Other/CharacterPhysicsAssetTypeInfo.h
-    Source/Unhandled/Other/CharacterRigAssetTypeInfo.cpp
-    Source/Unhandled/Other/CharacterRigAssetTypeInfo.h
     Source/Unhandled/Other/EntityPrototypeLibraryAssetTypeInfo.cpp
     Source/Unhandled/Other/EntityPrototypeLibraryAssetTypeInfo.h
     Source/Unhandled/Other/GameTokenAssetTypeInfo.cpp
@@ -204,12 +196,6 @@ set(FILES
     Source/Unhandled/Other/GroupAssetTypeInfo.h
     Source/Unhandled/Other/PrefabsLibraryAssetTypeInfo.cpp
     Source/Unhandled/Other/PrefabsLibraryAssetTypeInfo.h
-    Source/Unhandled/Other/SkeletonAssetTypeInfo.cpp
-    Source/Unhandled/Other/SkeletonAssetTypeInfo.h
-    Source/Unhandled/Other/SkeletonParamsAssetTypeInfo.cpp
-    Source/Unhandled/Other/SkeletonParamsAssetTypeInfo.h
-    Source/Unhandled/Other/SkinnedMeshAssetTypeInfo.cpp
-    Source/Unhandled/Other/SkinnedMeshAssetTypeInfo.h
     Source/Unhandled/Texture/SubstanceAssetTypeInfo.cpp
     Source/Unhandled/Texture/SubstanceAssetTypeInfo.h
     Source/Unhandled/Texture/TextureAssetTypeInfo.cpp

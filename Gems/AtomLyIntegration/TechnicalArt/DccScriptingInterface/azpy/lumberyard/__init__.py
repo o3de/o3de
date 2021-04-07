@@ -18,7 +18,7 @@ All Lumberyard render related packages/modules should live here."""
 
 import os
 
-from azpy import env_bool
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 

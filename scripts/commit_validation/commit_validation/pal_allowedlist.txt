@@ -63,5 +63,4 @@
 */Gems/SaveData/Code/Tests/SaveDataTest.cpp
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h
-*/SamplesProject/Gem/Code/Source/MetastreamTest/MetastreamTest.cpp
 */Tools/CryDeprecation/precompile_check_defines.h

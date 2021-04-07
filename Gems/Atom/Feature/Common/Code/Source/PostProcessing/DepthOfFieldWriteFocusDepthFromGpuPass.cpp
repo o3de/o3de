@@ -28,25 +28,6 @@ namespace AZ
         {
         }
 
-        void DepthOfFieldWriteFocusDepthFromGpuPass::Init()
-        {
-            AZ_Assert(m_shaderResourceGroup != nullptr, "%s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            m_autoFocusScreenPositionIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_autoFocusScreenPosition"));
-            m_autoFocusDataBufferIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(Name{"m_outputFocusDepth"});
-        }
-
-        void DepthOfFieldWriteFocusDepthFromGpuPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            if (!m_initialized)
-            {
-                Init();
-                m_initialized = true;
-            }
-
-            ComputePass::FrameBeginInternal(params);
-        }
-
         void DepthOfFieldWriteFocusDepthFromGpuPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             AZ_Assert(m_bufferRef != nullptr, "%s has a null buffer when calling Prepare.", GetPathName().GetCStr());

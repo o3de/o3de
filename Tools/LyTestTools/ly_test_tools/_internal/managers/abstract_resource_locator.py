@@ -118,7 +118,7 @@ class AbstractResourceLocator(object):
     def project(self):
         """
         Return path to the project directory
-        ex. engine_root/dev/SamplesProject
+        ex. engine_root/dev/AutomatedTesting
         :return: path to <engine_root>/dev/Project
         """
         return os.path.join(self.dev(), self._project)

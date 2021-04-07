@@ -14,11 +14,14 @@ set -o errexit # exit on the first failure encountered
 
 # Delete output directory if CLEAN_OUTPUT_DIRECTORY env variable is set
 if [[ $CLEAN_OUTPUT_DIRECTORY == "true" ]]; then
-    if [[ -d Cache ]]; then
-        echo "[ci_build] CLEAN_OUTPUT_DIRECTORY option set with value \"${CLEAN_OUTPUT_DIRECTORY}\""
-        echo "[ci_build] Deleting \"Cache\""
-        rm -rf Cache
-    fi
+    for project in $(echo $CMAKE_LY_PROJECTS | sed "s/;/ /g")
+    do
+        if [[ -d "$project/Cache" ]]; then
+            echo "[ci_build] CLEAN_OUTPUT_DIRECTORY option set with value \"${CLEAN_OUTPUT_DIRECTORY}\""
+            echo "[ci_build] Deleting \"$project/Cache\""
+            rm -rf $project/Cache
+        fi
+    done
 fi
 
 if [[ ! -d $OUTPUT_DIRECTORY ]]; then

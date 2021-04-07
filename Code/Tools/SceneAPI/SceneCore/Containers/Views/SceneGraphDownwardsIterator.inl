@@ -125,7 +125,7 @@ namespace AZ
                 template<typename Iterator, typename Traversal>
                 void SceneGraphDownwardsIterator<Iterator, Traversal>::IgnoreNodeDescendants()
                 {
-                    m_ignoreDescendants = true;
+                    m_ignoreDescendants = -1;
                 }
 
                 template<typename Iterator, typename Traversal>

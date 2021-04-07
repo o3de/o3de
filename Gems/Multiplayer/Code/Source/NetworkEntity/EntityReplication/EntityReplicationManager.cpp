@@ -216,7 +216,7 @@ namespace Multiplayer
                             m_remoteEntitiesPendingCreation.insert(entityId);
                         }
 
-                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous)
+                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous)
                         {
                             autonomousReplicators.push_back(replicator);
                         }
@@ -557,7 +557,7 @@ namespace Multiplayer
         const bool changeNetworkRole = (netBindComponent->GetNetEntityRole() != localNetworkRole);
         if (changeNetworkRole)
         {
-            AZ_Assert(localNetworkRole != NetEntityRole::ServerAuthority, "UpdateMessage trying to set local role to ServerAuthority, this should only happen via migration");
+            AZ_Assert(localNetworkRole != NetEntityRole::Authority, "UpdateMessage trying to set local role to Authority, this should only happen via migration");
             AZLOG_INFO
             (
                 "EntityReplicationManager: Changing network role on entity %u, old role %u new role %u",
@@ -590,14 +590,14 @@ namespace Multiplayer
             // A will tell us to set a timer to delete that entity (since it no longer owns it, and has been handed off), and B will tell us to create it.
             // This covers an edge case where the timer has popped, but the entity is pending removal when we are told by B to create the entity.
             GetNetworkEntityManager()->ClearEntityFromRemovalList(replicatorEntity);
-            entityReplicator = AddEntityReplicator(replicatorEntity, NetEntityRole::ServerAuthority);
+            entityReplicator = AddEntityReplicator(replicatorEntity, NetEntityRole::Authority);
             //AZLOG(NET_RepUpdate, "EntityReplicationManager: Created from update entity id %u for type %s role %d", netEntityId, prefabEntityId.GetString(), localNetworkRole);
         }
 
         // @nt: TODO - delete once dropped RPC problem fixed
         // This code is temporary to work around to the problem that RPC messages are silently lost during migration
         // Once this problem is solved, we can remove this code and associated event
-        if (createReplicator && localNetworkRole == NetEntityRole::ClientAutonomous)
+        if (createReplicator && localNetworkRole == NetEntityRole::Autonomous)
         {
             m_autonomousEntityReplicatorCreated.Signal(netEntityId);
         }
@@ -647,10 +647,10 @@ namespace Multiplayer
                 // don't trust the client by default
                 result = UpdateValidationResult::DropMessageAndDisconnect;
                 // Clients sending data must have a replicator and be sending in the correct mode, further, they must have a replicator and can never delete a replicator
-                if (updateMessage.GetNetworkRole() == NetEntityRole::ServerAuthority && entityReplicator && !updateMessage.GetIsDelete())
+                if (updateMessage.GetNetworkRole() == NetEntityRole::Authority && entityReplicator && !updateMessage.GetIsDelete())
                 {
                     // Make sure we our replicator is in the expected configuration
-                    if ((entityReplicator->GetRemoteNetworkRole() == NetEntityRole::ClientAutonomous) && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority))
+                    if ((entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous) && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Authority))
                     {
                         // If we're marked for removal, just drop the message - migration message is likely in flight
                         if (entityReplicator->IsMarkedForRemoval())
@@ -663,7 +663,7 @@ namespace Multiplayer
                             result = UpdateValidationResult::HandleMessage;
                         }
                     }  // If we've migrated the entity away from the server, but we get this late, just drop it
-                    else if ((entityReplicator->GetRemoteNetworkRole() == NetEntityRole::ClientSimulation) && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::ServerSimulation))
+                    else if ((entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Client) && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Server))
                     {
                         result = UpdateValidationResult::DropMessage;
                     }
@@ -686,22 +686,22 @@ namespace Multiplayer
             break;
         case Mode::LocalServerToRemoteServer:
             {
-                AZ_Assert(updateMessage.GetNetworkRole() == NetEntityRole::ServerSimulation || updateMessage.GetIsDelete(), "Unexpected update type coming from peer server");
+                AZ_Assert(updateMessage.GetNetworkRole() == NetEntityRole::Server || updateMessage.GetIsDelete(), "Unexpected update type coming from peer server");
                 // trust messages from a peer server by default
                 result = UpdateValidationResult::HandleMessage;
                 // If we have a replicator, make sure we're in the correct state
                 if (entityReplicator)
                 {
-                    if (!entityReplicator->IsMarkedForRemoval() && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority))
+                    if (!entityReplicator->IsMarkedForRemoval() && (entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Authority))
                     {
                         // Likely an old message from a previous owner trying to delete the replicator it had, while we've received ownership
                         // This can happen when Shard A migrates an entity to Shard B, then shard B migrates the entity to Shard C, and Shard A tries to delete a replicator it had to Shard C (which has already made a new replicator for Shard A)
                         result = UpdateValidationResult::DropMessage;
                     }
-                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::ServerAuthority)// we expect to the remote role to be e_ServerAuthority
+                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority)// we expect to the remote role to be e_Authority
                     {
                         // This entity has migrated previously, and we haven't heard back that the remove was successful, so we can accept the message
-                        AZ_Assert(entityReplicator->IsMarkedForRemoval() && entityReplicator->GetRemoteNetworkRole() == NetEntityRole::ServerSimulation, "Unexpected server message is not Authority or ServerSimulation");
+                        AZ_Assert(entityReplicator->IsMarkedForRemoval() && entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Server, "Unexpected server message is not Authority or Server");
                     }
                 }
             }
@@ -1018,9 +1018,9 @@ namespace Multiplayer
         AZ_Assert(netBindComponent, "No NetBindComponent");
 
         const EntityReplicator* entityReplicator = GetEntityReplicator(entityHandle.GetNetEntityId());
-        hasAuthority = (netBindComponent->GetNetEntityRole() == NetEntityRole::ServerAuthority); // Make sure someone hasn't migrated this already
+        hasAuthority = (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority); // Make sure someone hasn't migrated this already
         isInDomain = (m_remoteEntityDomain && m_remoteEntityDomain->IsInDomain(entityHandle));   // Make sure the remote side would want it
-        if (entityReplicator && entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::ServerAuthority)
+        if (entityReplicator && entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Authority)
         {
             isMarkedForRemoval = entityReplicator->IsMarkedForRemoval();                         // Make sure we aren't telling the other side to remove the replicator
             const PropertyPublisher* propertyPublisher = entityReplicator->GetPropertyPublisher();
@@ -1035,7 +1035,7 @@ namespace Multiplayer
     {
         if (const EntityReplicator* replicator = GetEntityReplicator(entityHandle.GetNetEntityId()))
         {
-            return replicator->GetRemoteNetworkRole() == NetEntityRole::ServerAuthority;
+            return replicator->GetRemoteNetworkRole() == NetEntityRole::Authority;
         }
         return false;
     }
@@ -1073,9 +1073,9 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
         AZ_Assert(netBindComponent, "No NetBindComponent");
 
-        if (netBindComponent && netBindComponent->GetNetEntityRole() == NetEntityRole::ServerAuthority)
+        if (netBindComponent && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
         {
-            EntityReplicator* replicator = AddEntityReplicator(entityHandle, NetEntityRole::ServerSimulation);
+            EntityReplicator* replicator = AddEntityReplicator(entityHandle, NetEntityRole::Server);
             PropertyPublisher* propPublisher = replicator->GetPropertyPublisher();
             AZ_Assert(propPublisher, "Assumed we have a property publisher");
 
@@ -1092,15 +1092,11 @@ namespace Multiplayer
             if (localEnt->GetState() == AZ::Entity::State::Active)
             {
                 netBindComponent->DeactivateControllers(EntityIsMigrating::True);
-                AzNetworking::NetworkInputSerializer inputSerializer(message.ModifyMigrationData().GetBuffer(), message.ModifyMigrationData().GetCapacity());
-                didSucceed = netBindComponent->SerializeMigrationData(inputSerializer);
-                message.ModifyMigrationData().Resize(inputSerializer.GetSize());
             }
 
             netBindComponent->DestructControllers();
-            netBindComponent->SetMigrationDataValid(false);
 
-            // save off network properties after the migration data is saved to capture any changes that might have occurred during deactivate
+            // Gather the most recent network property state, including authoritative only network properties for migration
             {
                 // Send an update packet if it needs one
                 propPublisher->GenerateRecord();
@@ -1119,7 +1115,7 @@ namespace Multiplayer
             AZLOG(NET_RepDeletes, "Migration packet sent %u to remote manager id %d", netEntityId, aznumeric_cast<int32_t>(GetRemoteHostId()));
 
             // Immediately add a new replicator so that we catch RPC invocations, the remote side will make us a new one, and then remove us if needs be
-            AddEntityReplicator(entityHandle, NetEntityRole::ServerAuthority);
+            AddEntityReplicator(entityHandle, NetEntityRole::Authority);
         }
     }
 
@@ -1135,7 +1131,7 @@ namespace Multiplayer
                     replicator,
                     AzNetworking::InvalidPacketId,
                     message.GetEntityId(),
-                    NetEntityRole::ServerSimulation,
+                    NetEntityRole::Server,
                     outputSerializer,
                     message.GetPrefabEntityId()
                 ))
@@ -1159,15 +1155,6 @@ namespace Multiplayer
         // Stop listening to the OnEntityNetworkRoleChange, since we are about to change it and we don't want that callback
         netBindComponent->ConstructControllers();
 
-        bool didSucceed = false;
-        {
-            AzNetworking::NetworkOutputSerializer outputSerializer(message.ModifyMigrationData().GetBuffer(), message.ModifyMigrationData().GetSize());
-            didSucceed = netBindComponent->SerializeMigrationData(outputSerializer);
-            AZ_Assert(didSucceed, "Failed to migrate entity to server");
-            AZ_Assert(outputSerializer.IsValid() && outputSerializer.GetUnreadSize() == 0, "Bad migration");
-        }
-        netBindComponent->SetMigrationDataValid(true);
-
         if (entityHandle.GetEntity()->GetState() == AZ::Entity::State::Active)
         {
             // Only activate controllers if the entity was previously activated, otherwise, wait for the normal entity activation flow
@@ -1175,10 +1162,10 @@ namespace Multiplayer
         }
 
         // change the role on the replicator
-        AddEntityReplicator(entityHandle, NetEntityRole::ServerSimulation);
+        AddEntityReplicator(entityHandle, NetEntityRole::Server);
 
         AZLOG(NET_RepDeletes, "Handle Migration %u new authority from remote manager id %d", entityHandle.GetNetEntityId(), aznumeric_cast<int32_t>(GetRemoteHostId()));
-        return didSucceed;
+        return true;
     }
 
     void EntityReplicationManager::OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle)

@@ -45,6 +45,8 @@ namespace ScriptCanvas
 
         int InterpretedSafeCall(lua_State* lua, int argCount, int returnValueCount);
 
+        void InterpretedUnloadData(RuntimeData& runtimeData);
+
         void InitializeInterpretedStatics(const RuntimeData& runtimeData);
 
         int InitializeNodeableOutKeys(lua_State* lua);
@@ -76,8 +78,13 @@ namespace ScriptCanvas
 
         bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator);
 
-        void InterpretedUnloadData(RuntimeData& runtimeData);
+        // Lua: executionState, dependentAssets, dependentAssetsIndex
+        // leaves dependentAssets[dependentAssetsIndex], and all the construction args at the top of the stack
+        int UnpackDependencyConstructionArgs(lua_State* lua);
 
+        // Lua: executionState, dependentAssets, dependentAssetsIndex
+        // leaves  all the construction args at the top of the stack
+        int UnpackDependencyConstructionArgsLeaf(lua_State* lua);
     } 
 
 } 

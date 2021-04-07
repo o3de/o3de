@@ -1,0 +1,29 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
+            "textureMap": "Textures/curtainBlue_1k_basecolor.png"
+        },
+        "metallic": {
+            "textureMap": "Textures/curtain_metallic.png"
+        },
+        "normal": {
+            "textureMap": "Textures/curtain_normal.jpg"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "Textures/curtain_roughness.png"
+        }
+    }
+}

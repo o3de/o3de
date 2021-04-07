@@ -12,6 +12,9 @@
 
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/Factory.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/CommandLine/CommandLine.h>
 
 namespace AZ
 {
@@ -102,6 +105,26 @@ namespace AZ
             }
             return originalFormat;
         }
+        
+        bool IsNullRenderer()
+        {
+            return RHI::Factory::Get().GetAPIUniqueIndex() == static_cast<uint32_t>(APIIndex::Null);
+        }
 
+        AZStd::string GetCommandLineValue(const AZStd::string& commandLineOption)
+        {
+            const AzFramework::CommandLine* commandLine = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+
+            AZStd::string commandLineValue;
+            if (commandLine)
+            {
+                if (size_t switchCount = commandLine->GetNumSwitchValues(commandLineOption); switchCount > 0)
+                {
+                    commandLineValue = commandLine->GetSwitchValue(commandLineOption, switchCount - 1);
+                }
+            }
+            return commandLineValue;
+        }
     }
 }

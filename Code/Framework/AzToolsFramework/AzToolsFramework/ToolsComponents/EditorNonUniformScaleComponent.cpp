@@ -67,10 +67,7 @@ namespace AzToolsFramework
             incompatible.push_back(AZ_CRC_CE("LookAtService"));
             incompatible.push_back(AZ_CRC_CE("SequenceService"));
             incompatible.push_back(AZ_CRC_CE("ClothMeshService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXColliderService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXTriggerService"));
             incompatible.push_back(AZ_CRC_CE("PhysXJointService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
             incompatible.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("PhysXRagdollService"));
             incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));

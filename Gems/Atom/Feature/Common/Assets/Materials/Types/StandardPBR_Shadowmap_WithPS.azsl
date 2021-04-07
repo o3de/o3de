@@ -35,7 +35,7 @@ struct VertexInput
 
 struct VertexOutput
 {
-    // "centroid" is needed for SV_DepthLessEqual to compile
+    // "centroid" is needed for SV_Depth to compile
     linear centroid float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
 
@@ -70,7 +70,7 @@ VertexOutput MainVS(VertexInput IN)
 
 struct PSDepthOutput
 {
-    float m_depth : SV_DepthGreaterEqual;
+    float m_depth : SV_Depth;
 };
 
 PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)

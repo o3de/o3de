@@ -1,0 +1,36 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
+            "textureMap": "Textures/lion_1k_basecolor.png"
+        },
+        "metallic": {
+            "textureMap": "Textures/lion_1k_metallic.png"
+        },
+        "normal": {
+            "textureMap": "Textures/lion_1k_normal.jpg"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "algorithm": "POM",
+            "enable": true,
+            "factor": 0.023000000044703485,
+            "pdo": true,
+            "textureMap": "Textures/lion_1k_height.png"
+        },
+        "roughness": {
+            "textureMap": "Textures/lion_1k_roughness.png"
+        }
+    }
+}

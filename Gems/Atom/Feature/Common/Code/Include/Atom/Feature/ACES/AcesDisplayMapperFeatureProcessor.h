@@ -15,7 +15,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
 #include <Atom/RHI/ImagePool.h>

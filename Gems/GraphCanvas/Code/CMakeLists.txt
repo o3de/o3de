@@ -66,6 +66,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
                 3rdParty::Qt::Core
                 3rdParty::Qt::Gui
                 3rdParty::Qt::Widgets

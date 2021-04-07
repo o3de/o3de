@@ -29,7 +29,7 @@ namespace Multiplayer
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalServerToRemoteServer)
         , m_connectEvent([this]() { OnConnectTimeout(); }, AZ::Name("Server to server connection timeout event"))
     {
-        m_entityReplicationManager.SetRemoteHostId(InvalidHostId);// a_ServerAddrInfo.GetServerAddrInfo().GetShardId());
+        m_entityReplicationManager.SetRemoteHostId(InvalidHostId);// serverAddrInfo.GetServerAddrInfo().GetShardId());
         m_entityReplicationManager.SetEntityActivationTimeSliceMs(sv_DefaultNetworkEntityActivationTimeSliceMs);
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(sv_ServerMaxRemoteEntitiesPendingCreationCount);
 

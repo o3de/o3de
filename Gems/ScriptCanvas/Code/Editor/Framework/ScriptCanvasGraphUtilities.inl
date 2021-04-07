@@ -58,12 +58,12 @@ namespace ScriptCanvasEditor
                     originalPath.resize(originalPath.size() - AZStd::string_view(Grammar::k_internalRuntimeSuffix).size());
                 }
                 
-                AZStd::string path = AZStd::string::format("%s/%s.scriptcanvas_fn", k_unitTestDirPathRelative, originalPath.data());
-                LoadTestFunctionResult loadResult = LoadTestFunction(path);
-                AZ_Assert(loadResult.m_runtimeAsset, "failed to load function asset");
+                AZStd::string path = AZStd::string::format("%s/%s.scriptcanvas", k_unitTestDirPathRelative, originalPath.data());
+                LoadTestGraphResult loadResult = LoadTestGraph(path);
+                AZ_Assert(loadResult.m_runtimeAsset, "failed to load dependent asset");
                 
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation for function failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaFunctionAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
                 AZ_Assert(luaAssetOutcome.IsSuccess(), "failed to create Lua asset");
 
                 AZStd::string modulePath = namespacePath[0].data();
@@ -95,29 +95,6 @@ namespace ScriptCanvasEditor
         spec.m_spec = eDuration::Ticks;
         spec.m_ticks = ticks;
         return spec;
-    }
-
-    AZ_INLINE LoadTestFunctionResult LoadTestFunction(AZStd::string_view path)
-    {
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> editorAsset;
-        ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(editorAsset, &ScriptCanvasEditor::EditorAssetConversionBusTraits::LoadFunctionAsset, path);
-
-        if (editorAsset.GetData())
-        {
-            AZ::Outcome< AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> assetOutcome = AZ::Failure(AZStd::string("asset creation failed"));
-            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateFunctionRuntimeAsset, editorAsset);
-            if (assetOutcome.IsSuccess())
-            {
-                LoadTestFunctionResult result;
-                result.m_graphPath = path;
-                result.m_editorAsset = editorAsset;
-                result.m_runtimeAsset = assetOutcome.GetValue();
-                result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
-                return result;
-            }
-        }
-
-        return {};
     }
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view graphPath)
@@ -230,7 +207,7 @@ namespace ScriptCanvasEditor
 
                     if (!reporter.IsProcessOnly())
                     {
-                        dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.userSubgraphs);
+                        dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
 
                         if (!dependencies.empty())
                         {
@@ -260,7 +237,7 @@ namespace ScriptCanvasEditor
                                 dependencyData.m_input = depencyAssetResult.m_runtimeInputs;
                                 dependencyData.m_debugMap = depencyAssetResult.m_debugMap;
                                 dependencyData.m_script = depencyAssetResult.m_scriptAsset;
-                                Execution::Context::IntializeAssetData(dependencyData);
+                                Execution::Context::InitializeActivationData(dependencyData);
                                 Execution::InitializeInterpretedStatics(dependencyData);
                             }
                         }
@@ -270,7 +247,7 @@ namespace ScriptCanvasEditor
                         loadResult.m_runtimeAsset.Get()->GetData().m_input = luaAssetResult.m_runtimeInputs;
                         loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>(loadResult.m_runtimeAsset);
-                        Execution::Context::IntializeAssetData(loadResult.m_runtimeAsset->GetData());
+                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
                     }
                     else

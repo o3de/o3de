@@ -17,17 +17,28 @@
 #include <AzFramework/Archive/ArchiveVars.h>
 #include <AzFramework/Archive/ZipDirFind.h>
 
-
 namespace AZ::IO
 {
     bool AZStdStringLessCaseInsensitive::operator()(AZStd::string_view left, AZStd::string_view right) const
     {
+        // If one or both strings are 0-length, return true if the left side is smaller, false if they're equal or left is larger.
         size_t compareLength = (AZStd::min)(left.size(), right.size());
         if (compareLength == 0)
         {
             return left.size() < right.size();
         }
+
+        // They're both non-zero, so compare the strings up until the length of the shorter string.
         int compareResult = azstrnicmp(left.data(), right.data(), compareLength);
+
+        // If both strings are equal for the number of characters compared, return true if the left side is shorter, false if
+        // they're equal or left is longer.
+        if (compareResult == 0)
+        {
+            return left.size() < right.size();
+        }
+
+        // Return true if the left side should come first alphabetically, false if the right side should.
         return compareResult < 0;
     }
 
@@ -124,7 +135,8 @@ namespace AZ::IO
                 fileDesc.tAccess = fileDesc.tWrite;
                 fileDesc.tCreate = fileDesc.tWrite;
             }
-            m_mapFiles.emplace(AZStd::move(fullFilePath), fileDesc);
+            [[maybe_unused]] auto result = m_mapFiles.emplace(AZStd::move(fullFilePath), fileDesc);
+            AZ_Assert(result.second, "Failed to insert FindData entry for %s", fullFilePath.c_str());
 
             return true;
         });

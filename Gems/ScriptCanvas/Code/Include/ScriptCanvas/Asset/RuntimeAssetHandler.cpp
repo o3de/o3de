@@ -97,7 +97,7 @@ namespace ScriptCanvas
         {
             RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
             AZ_Assert(runtimeAsset, "RuntimeAssetHandler::InitAsset This should be a Script Canvas runtime asset, as this is the only type this handler processes!");
-            Execution::Context::IntializeAssetData(runtimeAsset->GetData());
+            Execution::Context::InitializeActivationData(runtimeAsset->GetData());
             Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
         }
     }

@@ -23,7 +23,7 @@ namespace ScriptCanvas
 
     namespace Execution
     {
-        using ActivationInputArray = AZStd::array<AZ::BehaviorValueParameter, 256>;
+        using ActivationInputArray = AZStd::array<AZ::BehaviorValueParameter, 128>;
 
         struct ActivationData
         {
@@ -39,6 +39,7 @@ namespace ScriptCanvas
         struct ActivationInputRange
         {
             AZ::BehaviorValueParameter* inputs = nullptr;
+            bool requiresDependencyConstructionParameters = false;
             size_t nodeableCount = 0;
             size_t variableCount = 0;
             size_t entityIdCount = 0;
@@ -52,12 +53,12 @@ namespace ScriptCanvas
             AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator, 0);
 
             static ActivationInputRange CreateActivateInputRange(ActivationData& activationData);
-            static void IntializeAssetData(RuntimeData& runtimeData);
+            static void InitializeActivationData(RuntimeData& runtimeData);
             static void UnloadData(RuntimeData& runtimeData);
 
         private:
-            static void IntializeActivationInputs(RuntimeData& runtimeData);
-            static void IntializeStaticCloners(RuntimeData& runtimeData);
+            static void IntializeActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
+            static void IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
         };
 
     } 

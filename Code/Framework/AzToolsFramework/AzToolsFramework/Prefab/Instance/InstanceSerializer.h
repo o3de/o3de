@@ -34,6 +34,11 @@ namespace AzToolsFramework
 
             AZ::JsonSerializationResult::Result Load(void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
                 AZ::JsonDeserializerContext& context) override;
+
+        private:
+            //! Adds the entities of an instance to a InstanceEntityScrubber object in the metadata of JsonDeserializerContext
+            //! so that they can be scrubbed later.
+            void AddEntitiesToScrub(const Instance* instance, AZ::JsonDeserializerContext& jsonDeserializercontext);
         };
     }
 }

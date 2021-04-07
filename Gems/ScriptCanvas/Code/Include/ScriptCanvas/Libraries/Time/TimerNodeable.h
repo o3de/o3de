@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
+#include <ScriptCanvas/Internal/Nodeables/BaseTimer.h>
 
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
@@ -27,24 +27,17 @@ namespace ScriptCanvas
         namespace Time
         {
             class TimerNodeable 
-                : public ScriptCanvas::Nodeable
-                , public AZ::TickBus::Handler
+                : public Nodeables::Time::BaseTimer
             {
                 SCRIPTCANVAS_NODE(TimerNodeable);
 
-            public:
-                virtual ~TimerNodeable();
-
             protected:
-                void OnDeactivate() override;
 
-                // TickBus
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             private:
                 AZ::ScriptTimePoint m_start;
 
-                ScriptCanvas::EnumComboBoxNodePropertyInterface m_timeUnitsInterface;
             };
         }
     }

@@ -59,18 +59,13 @@ namespace
     {
         int fps;
         const char* fpsDesc;
-    };
-    SFPSPair fps[] = {
+    } fps[] = {
         {24, "Film(24)"}, {25, "PAL(25)"}, {30, "NTSC(30)"},
         {48, "Show(48)"}, {50, "PAL Field(50)"}, {60, "NTSC Field(60)"}
     };
 
-    // The text and ordering of these strings need to match ICaptureKey::CaptureFileFormat. These strings are used
-    // both for the comboBox UI strings as well as the file extension strings
-    const char* imageFormats[ICaptureKey::NumCaptureFileFormats] = { "jpg", "tga", "tif" };
-
-    // The text and ordering of these strings need to match ICaptureKey::CaptureBufferType
-    const char* buffersToCapture[ICaptureKey::NumCaptureBufferTypes] = { "Color", "Color+Alpha" };
+    // currently supported file extensions
+    const char* imageFormatExtensions[] = {"dds", "ppm"};
 
     const char defaultPresetFilename[] = "defaultBatchRender.preset";
 
@@ -170,7 +165,6 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_fpsCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnFPSChange);
     connect(m_ui->m_renderList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSequenceBatchRenderDialog::OnRenderItemSelChange);
     connect(m_ui->m_resolutionCombo, activated, this, &CSequenceBatchRenderDialog::OnResolutionSelected);
-    connect(m_ui->m_buffersToCaptureCombo, activated, this, &CSequenceBatchRenderDialog::OnBuffersSelected);
     connect(m_ui->m_startFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnStartFrameChange);
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
@@ -219,25 +213,18 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     m_ui->m_resolutionCombo->setCurrentIndex(0);
 
     // Fill the FPS combo box.
-    for (int i = 0; i < arraysize(fps); ++i)
+    for (int i = 0; i < AZStd::size(fps); ++i)
     {
         m_ui->m_fpsCombo->addItem(fps[i].fpsDesc);
     }
     m_ui->m_fpsCombo->setCurrentIndex(0);
 
     // Fill the image format combo box.
-    for (int i = 0; i < arraysize(imageFormats); ++i)
+    for (int i = 0; i < AZStd::size(imageFormatExtensions); ++i)
     {
-        m_ui->m_imageFormatCombo->addItem(imageFormats[i]);
+        m_ui->m_imageFormatCombo->addItem(imageFormatExtensions[i]);
     }
-    m_ui->m_imageFormatCombo->setCurrentIndex(ICaptureKey::Jpg);
-
-    // Fill the buffers-to-capture combo box.
-    for (int i = 0; i < arraysize(buffersToCapture); ++i)
-    {
-        m_ui->m_buffersToCaptureCombo->addItem(buffersToCapture[i]);
-    }
-    m_ui->m_buffersToCaptureCombo->setCurrentIndex(0);
+    m_ui->m_imageFormatCombo->setCurrentIndex(0);
 
     m_ui->BATCH_RENDER_FILE_PREFIX->setText("Frame");
     m_ui->BATCH_RENDER_FILE_PREFIX->setValidator(m_prefixValidator.data());
@@ -333,13 +320,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         m_customFPS = item.fps;
         m_ui->m_fpsCombo->setCurrentText(QString::number(item.fps));
     }
-    // capture buffer type
-    m_ui->m_buffersToCaptureCombo->setCurrentIndex(item.bufferIndex);
     // prefix
     m_ui->BATCH_RENDER_FILE_PREFIX->setText(item.prefix);
-    // format
-    m_ui->m_imageFormatCombo->setCurrentIndex(item.formatIndex);
-    OnBuffersSelected();
 
     m_ui->m_disableDebugInfoCheckBox->setChecked(item.disableDebugInfo);
 
@@ -702,8 +684,7 @@ void CSequenceBatchRenderDialog::SaveOutputOptions(const QString& pathname) cons
 
     // Capture options (format, buffer, prefix, create_video)
     XmlNodeRef imageNode = batchRenderOptionsNode->newChild("image");
-    imageNode->setAttr("format", m_ui->m_imageFormatCombo->currentIndex() % arraysize(imageFormats));
-    imageNode->setAttr("bufferstocapture", m_ui->m_buffersToCaptureCombo->currentIndex());
+    imageNode->setAttr("format", m_ui->m_imageFormatCombo->currentIndex() % arraysize(imageFormatExtensions));
     const QString prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();
     imageNode->setAttr("prefix", prefix.toUtf8().data());
     bool disableDebugInfo = m_ui->m_disableDebugInfoCheckBox->isChecked();
@@ -803,9 +784,6 @@ bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
         imageNode->getAttr("format", curSel);
         m_ui->m_imageFormatCombo->setCurrentIndex(curSel);
         curSel = CB_ERR;
-        imageNode->getAttr("bufferstocapture", curSel);
-        m_ui->m_buffersToCaptureCombo->setCurrentIndex(curSel);
-        OnBuffersSelected();
         m_ui->BATCH_RENDER_FILE_PREFIX->setText(imageNode->getAttr("prefix"));
         bool disableDebugInfo = false;
         imageNode->getAttr("disabledebuginfo", disableDebugInfo);
@@ -919,25 +897,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     }
 
     // Set specific capture options for this item.
-    m_renderContext.captureOptions.captureBufferIndex = renderItem.bufferIndex;
     m_renderContext.captureOptions.prefix = renderItem.prefix.toUtf8().data();
-    switch (renderItem.formatIndex)
-    {
-    case ICaptureKey::Jpg:
-        m_renderContext.captureOptions.FormatJPG();
-        break;
-    case ICaptureKey::Tga:
-        m_renderContext.captureOptions.FormatTGA();
-        break;
-    case ICaptureKey::Tif:
-        m_renderContext.captureOptions.FormatTIF();
-        break;
-    default:
-        // fall back to tga, the most general of the formats
-        gEnv->pLog->LogWarning("Unhandled file format type detected in CSequenceBatchRenderDialog::CaptureItemStart(), using tga");
-        m_renderContext.captureOptions.FormatTGA();
-        break;
-    }
 
     Range rng = nextSequence->GetTimeRange();
     m_renderContext.captureOptions.duration = rng.end - rng.start;
@@ -966,6 +926,9 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         finalFolder += suffix;
         ++i;
     }
+
+    // create a new folder before writing any files
+    QDir().mkdir(finalFolder);
 
     m_renderContext.captureOptions.folder = finalFolder.toUtf8().data();
 
@@ -1131,17 +1094,18 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
     sequence->SetFlags(m_renderContext.flagBU);
     sequence->SetTimeRange(m_renderContext.rangeBU);
     sequence->SetActiveDirector(m_renderContext.pActiveDirectorBU);
+
+    const auto imageFormat = m_ui->m_imageFormatCombo->currentText();
     
     SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
-    if (m_bFFMPEGCommandAvailable
-        && renderItem.bCreateVideo)
+    if (m_bFFMPEGCommandAvailable && renderItem.bCreateVideo)
     {
         // Create a video using the ffmpeg plug-in from captured images.
         m_renderContext.processingFFMPEG = true;
        
         AZStd::string outputFolder = m_renderContext.captureOptions.folder;
         auto future = QtConcurrent::run(
-            [renderItem, outputFolder]
+            [renderItem, outputFolder, imageFormat]
         {
             AZStd::string outputFile;
             AzFramework::StringFunc::Path::Join(outputFolder.c_str(), renderItem.prefix.toUtf8().data(), outputFile);
@@ -1158,15 +1122,14 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 
             // Create the input file string, leave the %06d unexpanded for the mpeg tool.
             inputFile += "%06d.";
-            inputFile += imageFormats[renderItem.formatIndex];
+            inputFile += imageFormat;
 
             // Replace the input file
             command = command.replace(inputFileDefine, inputFile);
 
             // Run the command
             GetIEditor()->ExecuteCommand(command);
-        }
-        );
+        });
 
         // Use a watcher to set a flag when the mpeg processing is complete.
         connect(&m_renderContext.processingFFMPEGWatcher, &QFutureWatcher<void>::finished, this, [this]()
@@ -1339,8 +1302,9 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
         if (canBeginFrameCapture())
         {
+            const AZStd::string fileName = AZStd::string::format("Frame_%06d", m_renderContext.frameNumber);
+
             AZStd::string filePath;
-            AZStd::string fileName = AZStd::string::format("Frame_%06d.dds", m_renderContext.frameNumber);
             AzFramework::StringFunc::Path::Join(
                 m_renderContext.captureOptions.folder.c_str(), fileName.c_str(), filePath, /*caseInsensitive=*/true,
                 /*normalize=*/false);
@@ -1352,13 +1316,34 @@ void CSequenceBatchRenderDialog::OnKickIdle()
                 GetIEditor()->GetMovieSystem()->ControlCapture();
             };
 
+            const auto imageFormatExtension = m_ui->m_imageFormatCombo->currentText();
             // readback result callback (how the image should be captured)
-            // currently only .dds
-            const auto readbackCallback = [filePath](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult) {
-                if (const AZ::Render::FrameCaptureOutputResult result = AZ::Render::DdsFrameCaptureOutput(filePath, readbackResult);
-                    result.m_errorMessage.has_value())
+            // currently only .dds and .ppm
+            const auto readbackCallback = [filePath,
+                                           imageFormatExtension](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult) {
+                const auto imageFormatExtensionUtf8 = imageFormatExtension.toUtf8();
+                const auto imageFormatExtensionCstr = imageFormatExtensionUtf8.constData();
+
+                const AZStd::string fileName = AZStd::string::format("%s.%s", filePath.c_str(), imageFormatExtensionCstr);
+                if (AZ::StringFunc::Equal(imageFormatExtensionCstr, "dds"))
                 {
-                    AZ_Printf("TrackView", "Frame capture failed: %s", result.m_errorMessage.value().c_str());
+                    if (const AZ::Render::FrameCaptureOutputResult result = AZ::Render::DdsFrameCaptureOutput(fileName, readbackResult);
+                        result.m_errorMessage.has_value())
+                    {
+                        AZ_Printf("TrackView", "Dds frame capture failed: %s", result.m_errorMessage.value().c_str());
+                    }
+                }
+                else if (AZ::StringFunc::Equal(imageFormatExtensionCstr, "ppm"))
+                {
+                    if (const AZ::Render::FrameCaptureOutputResult result = AZ::Render::PpmFrameCaptureOutput(fileName, readbackResult);
+                        result.m_errorMessage.has_value())
+                    {
+                        AZ_Printf("TrackView", "Ppm frame capture failed: %s", result.m_errorMessage.value().c_str());
+                    }
+                }
+                else
+                {
+                    AZ_Printf("TrackView", "Image format .%s not supported", imageFormatExtensionCstr);
                 }
             };
 
@@ -1454,15 +1439,6 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // fps
             itemNode->getAttr("fps", item.fps);
 
-            // format
-            int intAttr;
-            itemNode->getAttr("format", intAttr);
-            item.formatIndex = (intAttr <= ICaptureKey::NumCaptureFileFormats) ? static_cast<ICaptureKey::CaptureFileFormat>(intAttr) : ICaptureKey::Jpg;
-
-            // capture buffer type
-            itemNode->getAttr("bufferstocapture", intAttr);
-            item.bufferIndex = (intAttr <= ICaptureKey::NumCaptureBufferTypes) ? static_cast<ICaptureKey::CaptureBufferType>(intAttr) : ICaptureKey::Color;
-
             // prefix
             item.prefix = itemNode->getAttr("prefix");
 
@@ -1514,12 +1490,6 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
 
             // fps
             itemNode->setAttr("fps", item.fps);
-
-            // format
-            itemNode->setAttr("format", item.formatIndex);
-
-            // capture buffer type
-            itemNode->setAttr("bufferstocapture", item.bufferIndex);
 
             // prefix
             itemNode->setAttr("prefix", item.prefix.toUtf8().data());
@@ -1581,12 +1551,8 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     {
         item.fps = fps[m_ui->m_fpsCombo->currentIndex()].fps;
     }
-    // capture buffer type
-    item.bufferIndex = static_cast<ICaptureKey::CaptureBufferType>(m_ui->m_buffersToCaptureCombo->currentIndex());
     // prefix
     item.prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();
-    // format
-    item.formatIndex = static_cast<ICaptureKey::CaptureFileFormat>(m_ui->m_imageFormatCombo->currentIndex() % arraysize(imageFormats));
     // disable debug info
     item.disableDebugInfo = m_ui->m_disableDebugInfoCheckBox->isChecked();
     // create_video
@@ -1632,35 +1598,12 @@ void CSequenceBatchRenderDialog::AddItem(const SRenderItem& item)
 
 QString CSequenceBatchRenderDialog::GetCaptureItemString(const SRenderItem& item) const
 {
-    return QString::fromLatin1("%1_%2_%3-%4(%5x%6,%7,%8)%9").arg(item.pSequence->GetName())
+    return QString::fromLatin1("%1_%2_%3-%4(%5x%6,%7)%8").arg(item.pSequence->GetName())
                .arg(item.pDirectorNode->GetName())
                .arg(int(item.frameRange.start * m_fpsForTimeToFrameConversion))
                .arg(int(item.frameRange.end * m_fpsForTimeToFrameConversion))
-               .arg(getResWidth(item.resW)).arg(getResHeight(item.resH)).arg(item.fps).arg(buffersToCapture[item.bufferIndex])
+               .arg(getResWidth(item.resW)).arg(getResHeight(item.resH)).arg(item.fps)
                .arg(item.bCreateVideo ? "[v]" : "");
-}
-void CSequenceBatchRenderDialog::OnBuffersSelected()
-{
-    int curSel = m_ui->m_buffersToCaptureCombo->currentIndex();
-    const ICaptureKey::CaptureBufferType bufferType = (curSel >= ICaptureKey::NumCaptureBufferTypes ? ICaptureKey::Color : static_cast<ICaptureKey::CaptureBufferType>(curSel));
-
-    switch (bufferType)
-    {
-    case ICaptureKey::Color:
-        // allow any format for color buffer
-        m_ui->m_imageFormatCombo->setEnabled(true);
-        break;
-    case ICaptureKey::ColorWithAlpha:
-        // only tga supports alpha for now - set it and disable the ability to change it
-        m_ui->m_imageFormatCombo->setCurrentIndex(ICaptureKey::Tga);
-        m_ui->m_imageFormatCombo->setEnabled(false);
-        break;
-    default:
-        gEnv->pLog->LogWarning("Unhandle capture buffer type used in CSequenceBatchRenderDialog::OnBuffersSelected()");
-        break;
-    }
-
-    CheckForEnableUpdateButton();
 }
 
 void CSequenceBatchRenderDialog::UpdateSpinnerProgressMessage(const char* description)

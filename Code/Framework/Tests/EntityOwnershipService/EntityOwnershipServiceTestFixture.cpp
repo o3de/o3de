@@ -14,6 +14,8 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+
 namespace UnitTest
 {
     void EntityOwnershipServiceTestFixture::SetUpEntityOwnershipServiceTest()
@@ -40,6 +42,9 @@ namespace UnitTest
     AZ::ComponentTypeList EntityOwnershipServiceTestFixture::EntityOwnershipServiceApplication::GetRequiredSystemComponents() const
     {
         AZ::ComponentTypeList defaultRequiredComponents = AzFramework::Application::GetRequiredSystemComponents();
+
+        defaultRequiredComponents.emplace_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
+
         auto findComponentIterator = AZStd::find(defaultRequiredComponents.begin(), defaultRequiredComponents.end(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>());
         if (findComponentIterator != defaultRequiredComponents.end())

@@ -15,19 +15,21 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/WorldBody.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Joint.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 namespace Physics
 {
     class RagdollNodeConfiguration
-        : public RigidBodyConfiguration
+        : public AzPhysics::RigidBodyConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(RagdollNodeConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(RagdollNodeConfiguration, "{A1796586-85AB-496E-93C9-C5841F03B1AD}", RigidBodyConfiguration);
+        AZ_RTTI(RagdollNodeConfiguration, "{A1796586-85AB-496E-93C9-C5841F03B1AD}", AzPhysics::RigidBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
         RagdollNodeConfiguration();
@@ -37,11 +39,11 @@ namespace Physics
     };
 
     class RagdollConfiguration
-        : public WorldBodyConfiguration
+        : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(RagdollConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(RagdollConfiguration, "{7C96D332-61D8-4C58-A2BF-707716D38D14}", WorldBodyConfiguration);
+        AZ_RTTI(RagdollConfiguration, "{7C96D332-61D8-4C58-A2BF-707716D38D14}", AzPhysics::SimulatedBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
         RagdollConfiguration() = default;
@@ -58,25 +60,26 @@ namespace Physics
 
     /// Represents a single rigid part of a ragdoll.
     class RagdollNode
-        : public WorldBody
+        : public AzPhysics::SimulatedBody
     {
     public:
         AZ_CLASS_ALLOCATOR(RagdollNode, AZ::SystemAllocator, 0);
-        AZ_RTTI(RagdollNode, "{226D02B7-6138-4F6B-9870-DE5A1C3C5077}", WorldBody);
+        AZ_RTTI(RagdollNode, "{226D02B7-6138-4F6B-9870-DE5A1C3C5077}", AzPhysics::SimulatedBody);
 
-        virtual RigidBody& GetRigidBody() = 0;
+        virtual AzPhysics::RigidBody& GetRigidBody() = 0;
         virtual ~RagdollNode() = default;
 
         virtual const AZStd::shared_ptr<Physics::Joint>& GetJoint() const = 0;
+        virtual bool IsSimulating() const = 0;
     };
 
     /// A hierarchical collection of rigid bodies connected by joints typically used to physically simulate a character.
     class Ragdoll
-        : public WorldBody
+        : public AzPhysics::SimulatedBody
     {
     public:
         AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
-        AZ_RTTI(Ragdoll, "{01F09602-80EC-4693-A0E7-C2719239044B}", WorldBody);
+        AZ_RTTI(Ragdoll, "{01F09602-80EC-4693-A0E7-C2719239044B}", AzPhysics::SimulatedBody);
         virtual ~Ragdoll() = default;
 
         /// Inserts the ragdoll into the physics simulation.
@@ -131,8 +134,5 @@ namespace Physics
 
         /// Returns the number of ragdoll nodes in the ragdoll.
         virtual size_t GetNumNodes() const = 0;
-
-        /// Returns the id of the world the ragdoll exists in.
-        virtual AZ::Crc32 GetWorldId() const = 0;
     };
 }

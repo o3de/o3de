@@ -60,7 +60,6 @@ ly_append_configurations_options(
         
         # Disabling these warnings while they get fixed
         /wd4018 # signed/unsigned mismatch
-        /wd4115 # named type definition in parentheses
         /wd4121 # alignment of a member was sensitive to packing
         /wd4189 # local variable is initialized but not referenced
         /wd4201 # nonstandard extension used: nameless struct/union
@@ -73,18 +72,14 @@ ly_append_configurations_options(
         /wd4310 # cast truncates constant value
         /wd4324 # structure was padded due to alignment specifier
         /wd4366 # the result of unary operator may be unaligned
-        /wd4373 # previous versions of the compiler did not override when parameters only differed by const/volatile qualifiers
         /wd4389 # comparison, signed/unsigned mismatch
         /wd4436 # the result of unary operator may be unaligned
         /wd4450 # declaration hides global declaration
         /wd4457 # declaration hides function parameter
         /wd4459 # declaration hides global declaration
-        /wd4463 # overflow, assigning 1 to bit-field can only hold values from -1 to 0
         /wd4701 # potentially unintialized local variable
         /wd4702 # unreachable code
-        /wd4703 # potentially unitialized local pointer variable
         /wd4706 # assignment with conditional expression
-        /wd4913 # user defined binary operator ',' exists but no overload could convert all operands
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
@@ -139,7 +134,7 @@ ly_append_configurations_options(
         /INCREMENTAL:NO
 )
 
-ly_set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
+set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     ly_append_configurations_options(
         COMPILATION_DEBUG

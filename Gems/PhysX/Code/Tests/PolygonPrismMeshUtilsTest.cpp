@@ -301,7 +301,7 @@ namespace PolygonPrismMeshUtils
         Mesh2D mesh2d = CreateFromPolygon(testData.polygonHShape);
         mesh2d.ConvexMerge();
         const float height = 1.5f;
-        const float scale = 0.2f;
+        const AZ::Vector3 scale(0.2f);
         const AZStd::vector<AZ::Vector3>& debugDrawPoints = mesh2d.GetDebugDrawPoints(height, scale);
 
         // the points should appear in pairs, so there should be an even number of them
@@ -320,7 +320,7 @@ namespace PolygonPrismMeshUtils
         }
 
         EXPECT_TRUE(min.IsClose(AZ::Vector3::CreateZero()));
-        EXPECT_TRUE(max.IsClose(AZ::Vector3(3.0f * scale, 3.0f * scale, height * scale)));
+        EXPECT_TRUE(max.IsClose(scale * AZ::Vector3(3.0f, 3.0f, height)));
     }
 } // namespace PolygonPrismMeshUtils
 

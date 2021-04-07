@@ -35,9 +35,9 @@ namespace PhysX::Benchmarks
         PhysX::Environment::TeardownInternal();
     }
 
-    AZStd::shared_ptr<Physics::World> PhysXBaseBenchmarkFixture::GetDefaultWorld()
+    AzPhysics::SceneHandle PhysXBaseBenchmarkFixture::GetDefaultSceneHandle() const
     {
-        return m_defaultScene->GetLegacyWorld();
+        return m_testSceneHandle;
     }
 
     void PhysXBaseBenchmarkFixture::UpdateSimulation(unsigned int numFrames, float timeStep /*= DefaultTimeStep*/)
@@ -49,6 +49,12 @@ namespace PhysX::Benchmarks
                 physicsSystem->Simulate(timeStep);
             }
         }
+    }
+
+    void PhysXBaseBenchmarkFixture::StepScene1Tick(float timeStep /*= DefaultTimeStep*/)
+    {
+        m_defaultScene->StartSimulation(timeStep);
+        m_defaultScene->FinishSimulation();
     }
 
     void PhysXBaseBenchmarkFixture::SetUpInternal()
@@ -87,17 +93,10 @@ namespace PhysX::Benchmarks
     {
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            AzPhysics::SceneConfiguration sceneConfiguration;
+            AzPhysics::SceneConfiguration sceneConfiguration = GetDefaultSceneConfiguration();
             sceneConfiguration.m_sceneName = "BenchmarkWorld";
-            sceneConfiguration.m_legacyId = AZ_CRC_CE("BenchmarkWorld");
-            sceneConfiguration.m_legacyConfiguration = GetDefaultWorldConfiguration();
             AzPhysics::SceneHandle sceneHandle = physicsSystem->AddScene(sceneConfiguration);
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(sceneHandle))
-            {
-                AZStd::shared_ptr<Physics::World> world = scene->GetLegacyWorld();
-                world->SetEventHandler(GetWorldEventHandler());
-                return sceneHandle;
-            }
+            return sceneHandle;
         }
         return AzPhysics::InvalidSceneHandle;
     }

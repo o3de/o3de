@@ -27,7 +27,7 @@ import os
 import sys
 import site
 import logging as _logging
-    
+
 # for this module to perform standalone
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
@@ -56,12 +56,15 @@ FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 _G_DEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+
 _PACKAGENAME = 'azpy.constants'
 
-_log_level = int(20)
+_LOG_LEVEL = int(20)
 if _G_DEBUG:
-    _log_level = int(10)
-_logging.basicConfig(level=_log_level,
+    _LOG_LEVEL = int(10)
+_logging.basicConfig(level=_LOG_LEVEL,
                      format=FRMT_LOG_LONG,
                      datefmt='%m-%d %H:%M')
 _LOGGER = _logging.getLogger(_PACKAGENAME)
@@ -85,7 +88,7 @@ TAG_MOCK_PROJECT = str('MockProject')
 TAG_DIR_LY_DEV = str('dev')
 TAG_DIR_DCCSI_AZPY = str('azpy')
 TAG_DIR_DCCSI_SDK = str('SDK')
-TAG_DIR_LY_BUILD = str('windows_vs2019')
+TAG_DIR_LY_BUILD = str('build')
 TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 
 # filesystem markers, stub file names.
@@ -255,7 +258,7 @@ PATH_DEFAULT_WINGHOME = str('{0}{1}{2}.{3}'
                                       TAG_DEFAULT_WING_MINOR_VER))
 
 PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
-                          ''.format(PATH_PROGRAMFILES_X64,
+                            ''.format(PATH_PROGRAMFILES_X64,
                                     'Allegorithmic',
                                     'Substance Automation Toolkit',
                                     'Python API',
@@ -273,7 +276,7 @@ if __name__ == '__main__':
     _G_DEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
-    
+
     # this is a top level module and to reduce cyclical azpy imports
     # it only has a basic logger configured, add log to console
     _handler = _logging.StreamHandler(sys.stdout)

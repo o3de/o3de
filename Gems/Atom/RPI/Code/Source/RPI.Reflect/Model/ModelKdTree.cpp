@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/std/numeric.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Math/IntersectSegment.h>
 
@@ -17,33 +18,24 @@ namespace AZ
 {
     namespace RPI
     {
-        ModelKdTree::ESplitAxis ModelKdTree::SearchForBestSplitAxis(const AZ::Aabb& aabb, float& splitPosition)
+        AZStd::tuple<ModelKdTree::ESplitAxis, float> ModelKdTree::SearchForBestSplitAxis(const AZ::Aabb& aabb)
         {
             const float xsize = aabb.GetXExtent();
             const float ysize = aabb.GetYExtent();
             const float zsize = aabb.GetZExtent();
 
-            ModelKdTree::ESplitAxis axis;
             if (xsize >= ysize && xsize >= zsize)
             {
-                axis = ModelKdTree::eSA_X;
-                splitPosition = aabb.GetMin().GetX() + xsize * 0.5f;
+                return {ModelKdTree::eSA_X, aabb.GetMin().GetX() + xsize * 0.5f};
             }
-            else if (ysize >= zsize && ysize >= xsize)
+            if (ysize >= zsize && ysize >= xsize)
             {
-                axis = ModelKdTree::eSA_Y;
-                splitPosition = aabb.GetMin().GetY() + ysize * 0.5f;
+                return {ModelKdTree::eSA_Y, aabb.GetMin().GetY() + ysize * 0.5f};
             }
-            else
-            {
-                axis = ModelKdTree::eSA_Z;
-                splitPosition = aabb.GetMin().GetZ() + zsize * 0.5f;
-            }
-
-            return axis;
+            return {ModelKdTree::eSA_Z, aabb.GetMin().GetZ() + zsize * 0.5f};
         }
 
-        bool ModelKdTree::SplitNode(const AZ::Aabb& boundbox, const AZStd::vector<AZ::u32>& indices, ModelKdTree::ESplitAxis splitAxis, float splitPos, SSplitInfo& outInfo)
+        bool ModelKdTree::SplitNode(const AZ::Aabb& boundbox, const AZStd::vector<ObjectIdTriangleIndices>& indices, ModelKdTree::ESplitAxis splitAxis, float splitPos, SSplitInfo& outInfo)
         {
             if (splitAxis != ModelKdTree::eSA_X && splitAxis != ModelKdTree::eSA_Y && splitAxis != ModelKdTree::eSA_Z)
             {
@@ -68,47 +60,35 @@ namespace AZ
             outInfo.m_aboveIndices.reserve(iIndexSize);
             outInfo.m_belowIndices.reserve(iIndexSize);
 
-            AZStd::array<AZ::Vector3, 3> triangleVertex;
-            for (AZ::u32 i = 0; i <= iIndexSize - 3; i += 3)
+            for (const auto& [nObjIndex, triangleIndices] : indices)
             {
-                const AZ::u32 nObjIndex = (indices[i] & 0xFF000000) >> 24; // asuming that all 3 verices belong to the same triangle from the same object
-                const AZ::u32 nVertexIndices[3] = { indices[i] & 0xFFFFFF, indices[i + 1] & 0xFFFFFF, indices[i + 2] & 0xFFFFFF };
+                const auto& [first, second, third] = triangleIndices;
 
                 const AZStd::array_view<float>& positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
-                if (positionBuffer.empty() == false)
-                {
-                    for (AZStd::size_t triangleVertexIndex = 0; triangleVertexIndex < triangleVertex.size(); ++triangleVertexIndex)
-                    {
-                        triangleVertex[triangleVertexIndex].Set(const_cast<float*>(positionBuffer.data() + 3 * nVertexIndices[triangleVertexIndex]));
-                    }
-                }
-                else
+                if (positionBuffer.empty())
                 {
                     continue;
                 }
 
-                if (triangleVertex[0].GetElement(splitAxis) < splitPos || triangleVertex[1].GetElement(splitAxis) < splitPos || triangleVertex[2].GetElement(splitAxis) < splitPos)
+                // If the split axis is Y, this uses a Vector3 to store the Y positions of each vertex in the triangle.
+                const AZStd::array<const float, 3> triangleVerticesValuesForThisSplitAxis {
+                    positionBuffer[first * 3 + splitAxis], positionBuffer[second * 3 + splitAxis], positionBuffer[third * 3 + splitAxis]
+                };
+
+                if (AZStd::any_of(begin(triangleVerticesValuesForThisSplitAxis), end(triangleVerticesValuesForThisSplitAxis), [splitPos](const float value) { return value < splitPos; }))
                 {
-                    outInfo.m_aboveIndices.push_back(indices[i + 0]);
-                    outInfo.m_aboveIndices.push_back(indices[i + 1]);
-                    outInfo.m_aboveIndices.push_back(indices[i + 2]);
+                    outInfo.m_aboveIndices.emplace_back(nObjIndex, triangleIndices);
                 }
-                if (triangleVertex[0].GetElement(splitAxis) >= splitPos || triangleVertex[1].GetElement(splitAxis) >= splitPos || triangleVertex[2].GetElement(splitAxis) >= splitPos)
+                if (AZStd::any_of(begin(triangleVerticesValuesForThisSplitAxis), end(triangleVerticesValuesForThisSplitAxis), [splitPos](const float value) { return value >= splitPos; }))
                 {
-                    outInfo.m_belowIndices.push_back(indices[i + 0]);
-                    outInfo.m_belowIndices.push_back(indices[i + 1]);
-                    outInfo.m_belowIndices.push_back(indices[i + 2]);
+                    outInfo.m_belowIndices.emplace_back(nObjIndex, triangleIndices);
                 }
             }
 
-            if (indices.size() == outInfo.m_aboveIndices.size() || indices.size() == outInfo.m_belowIndices.size())
-            {
-                // triangles are too close to cut any further
-                return false;
-            }
-
-            return true;
+            // If either the top or bottom contain all the input indices, the triangles are too close to cut any
+            // further and the split failed
+            return indices.size() != outInfo.m_aboveIndices.size() && indices.size() != outInfo.m_belowIndices.size();
         }
 
         bool ModelKdTree::Build(const ModelAsset* model)
@@ -120,34 +100,32 @@ namespace AZ
 
             ConstructMeshList(model, AZ::Transform::CreateIdentity());
 
-            AZ::Aabb entireBoundBox;
-            entireBoundBox.SetNull();
+            AZ::Aabb entireBoundBox = AZ::Aabb::CreateNull();
 
             // indices with object ids
-            AZStd::vector<AZ::u32> indices;
+            AZStd::vector<ObjectIdTriangleIndices> indices;
 
-            int totalSizeNeed = 0;
-            for (const MeshData& data : m_meshes)
+            const size_t totalSizeNeed = AZStd::accumulate(begin(m_meshes), end(m_meshes), size_t{0}, [](const size_t current, const MeshData& data)
             {
-                totalSizeNeed += data.m_mesh->GetVertexCount();
-            }
+                return current + data.m_mesh->GetVertexCount();
+            });
             indices.reserve(totalSizeNeed);
 
-            AZ::Vector3 vertex;
-
-            for (AZ::u32 meshIndex = 0, meshCount = aznumeric_cast<AZ::u32>(m_meshes.size()); meshIndex < meshCount; ++meshIndex)
+            for (AZ::u8 meshIndex = 0, meshCount = aznumeric_caster(m_meshes.size()); meshIndex < meshCount; ++meshIndex)
             {
-                AZStd::array_view<float> positionBuffer = m_meshes[meshIndex].m_vertexData;
-                if (positionBuffer.empty() == false)
+                const AZStd::array_view<float> positionBuffer = m_meshes[meshIndex].m_vertexData;
+                for (size_t positionIndex = 0; positionIndex < positionBuffer.size(); positionIndex += 3)
                 {
-                    const int nVertexCount = m_meshes[meshIndex].m_mesh->GetVertexCount();
-                    for (int k = 0; k < nVertexCount; ++k)
-                    {
-                        vertex.Set(const_cast<float*>((positionBuffer.data() + 3 * k)));
+                    entireBoundBox.AddPoint({positionBuffer[positionIndex], positionBuffer[positionIndex + 1], positionBuffer[positionIndex + 2]});
+                }
 
-                        entireBoundBox.AddPoint(vertex);
-                        indices.push_back((meshIndex << 24) | k);
-                    }
+                // The view returned by GetIndexBuffer returns a tuple<uint32_t, uint32_t, uint32_t>, in order to read
+                // 3 values at a time from the raw index buffer. It uses a reinterpret_cast to accomplish this. The
+                // cast results in the order of the indices being reversed, which is why they are read [third, second,
+                // first] here.
+                for (const auto& [thirdIndex, secondIndex, firstIndex] : GetIndexBuffer(*m_meshes[meshIndex].m_mesh))
+                {
+                    indices.emplace_back(meshIndex, TriangleIndices{firstIndex, secondIndex, thirdIndex});
                 }
             }
 
@@ -160,18 +138,34 @@ namespace AZ
 
         AZStd::array_view<float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            const AZStd::array_view<uint8_t> positionRawBuffer = mesh.GetSemanticBuffer(m_positionName);
-            if (positionRawBuffer.empty() == false)
+            const BufferAssetView* positionBufferAssetView = mesh.GetSemanticBufferAssetView(AZ::Name{"POSITION"});
+            if (positionBufferAssetView)
             {
-                AZStd::array_view<float> floatBuffer(reinterpret_cast<const float*>(positionRawBuffer.data()), positionRawBuffer.size() / 12);
-                return floatBuffer;
+                const AZStd::array_view<uint8_t> positionRawBuffer = positionBufferAssetView->GetBufferAsset()->GetBuffer();
+                const auto size = positionBufferAssetView->GetBufferViewDescriptor().m_elementSize;
+                return {
+                    reinterpret_cast<const float*>(positionRawBuffer.data() + positionBufferAssetView->GetBufferViewDescriptor().m_elementOffset * size),
+                    positionBufferAssetView->GetBufferViewDescriptor().m_elementCount * size / sizeof(float)
+                };
             }
 
             AZ_Warning("ModelKdTree", false, "Could not find position buffers in a mesh");
             return {};
         }
 
-        void ModelKdTree::BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<AZ::u32>& indices)
+        AZStd::array_view<ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
+        {
+            const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
+            const AZStd::array_view<uint8_t> indexRawBuffer = indexBufferAssetView.GetBufferAsset()->GetBuffer();
+            const auto size = indexBufferAssetView.GetBufferViewDescriptor().m_elementSize;
+            static_assert(sizeof(TriangleIndices) == 3 * sizeof(uint32_t));
+            return {
+                reinterpret_cast<const TriangleIndices*>(indexRawBuffer.data() + indexBufferAssetView.GetBufferViewDescriptor().m_elementOffset * size),
+                indexBufferAssetView.GetBufferViewDescriptor().m_elementCount * size / sizeof(TriangleIndices)
+            };
+        }
+
+        void ModelKdTree::BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices)
         {
             pNode->SetBoundBox(boundbox);
 
@@ -181,8 +175,7 @@ namespace AZ
                 return;
             }
 
-            float splitPos(0);
-            const ESplitAxis splitAxis = SearchForBestSplitAxis(boundbox, splitPos);
+            const auto [splitAxis, splitPos] = SearchForBestSplitAxis(boundbox);
             pNode->SetSplitAxis(splitAxis);
             pNode->SetSplitPos(splitPos);
 
@@ -208,20 +201,23 @@ namespace AZ
 
         void ModelKdTree::ConstructMeshList(const ModelAsset* model, [[maybe_unused]] const AZ::Transform& matParent)
         {
-            if (model == nullptr)
+            if (model == nullptr || model->GetLodAssets().empty())
             {
                 return;
             }
 
-            if (model->GetLodAssets().empty() == false)
+            if (ModelLodAsset* lodAssetPtr = model->GetLodAssets()[0].Get())
             {
-                if (ModelLodAsset* loadAssetPtr = model->GetLodAssets()[0].Get())
-                {
-                    for (const ModelLodAsset::Mesh& data : loadAssetPtr->GetMeshes())
-                    {
-                        m_meshes.push_back({ &data, GetPositionsBuffer(data) });
-                    }
-                }
+                AZ_Warning("ModelKdTree", lodAssetPtr->GetMeshes().size() <= std::numeric_limits<AZ::u8>::max() + 1,
+                    "KdTree generation doesn't support models with greater than 256 meshes. RayIntersection results will be incorrect "
+                    "unless the meshes are merged or broken up into multiple models");
+                const size_t size = AZStd::min<size_t>(lodAssetPtr->GetMeshes().size(), std::numeric_limits<AZ::u8>::max() + 1);
+                m_meshes.reserve(size);
+                AZStd::transform(
+                    lodAssetPtr->GetMeshes().begin(), AZStd::next(lodAssetPtr->GetMeshes().begin(), size),
+                    AZStd::back_inserter(m_meshes),
+                    [](const auto& mesh) { return MeshData{&mesh, GetPositionsBuffer(mesh)}; }
+                );
             }
         }
 
@@ -261,24 +257,23 @@ namespace AZ
                 const float maxDist(FLT_MAX);
                 float nearestDist = maxDist;
 
-                for (AZ::u32 i = 0; i <= nVBuffSize - 3; i += 3)
+                for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
-                    const AZ::u32 nVertexIndex = pNode->GetVertexIndex(i);
+                    const auto& [first, second, third] = pNode->GetVertexIndex(i);
                     const AZ::u32 nObjIndex = pNode->GetObjIndex(i);
 
                     AZStd::array_view<float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
-                    AZStd::array<AZ::Vector3, 3> trianglePoints;
-                    if (positionBuffer.empty() == false)
-                    {
-                        trianglePoints[0].Set(const_cast<float*>(positionBuffer.data() + 3 * nVertexIndex));
-                        trianglePoints[1].Set(const_cast<float*>(positionBuffer.data() + 3 * pNode->GetVertexIndex(i + 1)));
-                        trianglePoints[2].Set(const_cast<float*>(positionBuffer.data() + 3 * pNode->GetVertexIndex(i + 2)));
-                    }
-                    else
+                    if (positionBuffer.empty())
                     {
                         continue;
                     }
+
+                    const AZStd::array trianglePoints {
+                        AZ::Vector3{positionBuffer[first * 3 + 0], positionBuffer[first * 3 + 1], positionBuffer[first * 3 + 2]},
+                        AZ::Vector3{positionBuffer[second * 3 + 0], positionBuffer[second * 3 + 1], positionBuffer[second * 3 + 2]},
+                        AZ::Vector3{positionBuffer[third * 3 + 0], positionBuffer[third * 3 + 1], positionBuffer[third * 3 + 2]},
+                    };
 
                     const AZ::Vector3 rayEnd = raySrc + rayDir * distance;
 

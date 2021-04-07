@@ -116,8 +116,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetColliderLayerOnStaticObject)
     {
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
-        auto fallingBox = TestUtils::CreateBoxEntity(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
+        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         // GroupB does not collider with LayerA, no collision expected.
         TestUtils::SetCollisionLayer(ground, LayerA);
@@ -132,8 +132,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetColliderLayerOnDynamicObject)
     {
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
-        auto fallingBox = TestUtils::CreateBoxEntity(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
+        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionGroup(ground, GroupB);
         TestUtils::SetCollisionLayer(fallingBox, LayerA);
@@ -147,8 +147,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithGroupOnDynamicObject)
     {
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
-        auto fallingBox = TestUtils::CreateBoxEntity(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
+        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionGroup(fallingBox, GroupNone);
 
@@ -161,8 +161,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithGroupOnStaticObject)
     {
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
-        auto fallingBox = TestUtils::CreateBoxEntity(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
+        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionGroup(ground, GroupNone);
 
@@ -175,8 +175,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetColliderLayerOnFilteredCollider)
     {
-        auto leftStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
-        auto rightStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto leftStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto rightStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
         auto fallingMultiCollider = CreateDynamicMultiCollider(LeftCollider, RightCollider);
 
         TestUtils::SetCollisionGroup(leftStatic, GroupA);
@@ -194,8 +194,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithGroupOnFilteredCollider)
     {
-        auto leftStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
-        auto rightStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto leftStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto rightStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
         auto fallingMultiCollider = CreateDynamicMultiCollider(LeftCollider, RightCollider);
 
         TestUtils::SetCollisionLayer(leftStatic, LayerA);
@@ -213,8 +213,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithLayer)
     {
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
-        auto fallingBox = TestUtils::CreateBoxEntity(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionLayer(fallingBox, LayerA);
         TestUtils::ToggleCollisionLayer(ground, LayerA, false);
@@ -228,8 +228,8 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithLayerFiltered)
     {
-        auto leftStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
-        auto rightStatic = TestUtils::CreateStaticBoxEntity(AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto leftStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(-1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto rightStatic = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, -1.5f), AZ::Vector3(1.0f, 1.0f, 1.0f));
         auto fallingMultiCollider = CreateDynamicMultiCollider(LeftCollider, RightCollider);
 
         TestUtils::SetCollisionLayer(leftStatic, LayerA);
@@ -247,7 +247,7 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestGetCollisionLayerName)
     {
-        auto staticBody = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto staticBody = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionLayer(staticBody, LayerA);
 
@@ -259,7 +259,7 @@ namespace PhysX
 
     TEST_F(PhysXCollisionFilteringTest, TestGetCollisionGroupName)
     {
-        auto staticBody = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        auto staticBody = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(1.0f, 1.0f, 1.0f));
 
         TestUtils::SetCollisionGroup(staticBody, GroupA);
 

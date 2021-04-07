@@ -27,11 +27,29 @@ option bool o_srgbWrite;
 option enum class Modulate { None, Alpha, AlphaAndColor } o_modulate;
 
 // Each vertex can select one or two of the 16 textures bound
+// We use an array of textures and a bitmask that indicates whether to use clamp
+// sampler (bit set) or wrap. The nth bit has the correct sampler value for the nth texture
 ShaderResourceGroup InstanceSrg : SRG_PerDraw
 {
     row_major float4x4 m_worldToProj;
+    uint m_isClamp;
     Texture2D m_texture[16];
-    Sampler m_sampler[16];
+
+    Sampler m_wrapSampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+
+    Sampler m_clampSampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
 };
 
 struct VSInput
@@ -74,9 +92,14 @@ struct PSOutput
 
 float4 SampleTriangleTexture(int texIndex, float2 uv)
 {
-    // We use an array of textures and an array of samplers. The nth sampler has the correct sampler state
-    // for the nth texture.
-    return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_sampler[texIndex], uv);
+    if ((InstanceSrg::m_isClamp & (1 << texIndex)) != 0)
+    {
+        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_clampSampler, uv);
+    }
+    else
+    {
+        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_wrapSampler, uv);
+    }
 }
 
 PSOutput MainPS(VSOutput IN)

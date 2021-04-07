@@ -15,11 +15,11 @@
 #include <AzCore/Math/Vector3.h>
 
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/WorldBody.h>
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
-
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 namespace Physics
 {
@@ -59,11 +59,11 @@ namespace Physics
 
     /// Information required to create the basic physics representation of a character.
     class CharacterConfiguration
-        : public WorldBodyConfiguration
+        : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}");
+        AZ_RTTI(CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
 
         virtual ~CharacterConfiguration() = default;
 
@@ -84,11 +84,11 @@ namespace Physics
     /// all-purpose character controller implementation. This class just abstracts some common functionality amongst
     /// typical characters, and is take-it-or-leave it style; useful as a starting point or reference.
     class Character
-        : public WorldBody
+        : public AzPhysics::SimulatedBody
     {
     public:
         AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator, 0);
-        AZ_RTTI(Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", WorldBody);
+        AZ_RTTI(Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
 
         ~Character() override = default;
 

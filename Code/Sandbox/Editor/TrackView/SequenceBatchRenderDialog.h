@@ -62,7 +62,6 @@ protected:
     void OnEndFrameChange();
     void OnLoadBatch();
     void OnSaveBatch();
-    void OnBuffersSelected();
     void OnKickIdle();
     void OnCancelRender();
 
@@ -80,8 +79,6 @@ protected:
         Range frameRange;
         int resW, resH;
         int fps;
-        ICaptureKey::CaptureFileFormat formatIndex;
-        ICaptureKey::CaptureBufferType bufferIndex;
         QString folder;
         QString prefix;
         QStringList cvars;
@@ -99,8 +96,6 @@ protected:
                 && frameRange == item.frameRange
                 && resW == item.resW && resH == item.resH
                 && fps == item.fps
-                && formatIndex == item.formatIndex
-                && bufferIndex == item.bufferIndex
                 && folder == item.folder
                 && prefix == item.prefix
                 && cvars == item.cvars

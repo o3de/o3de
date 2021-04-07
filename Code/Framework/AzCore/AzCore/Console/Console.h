@@ -62,7 +62,7 @@ namespace AZ
         void ExecuteCommandLine(const AZ::CommandLine& commandLine) override;
         bool HasCommand(const char* command) override;
         ConsoleFunctorBase* FindCommand(const char* command) override;
-        AZStd::string AutoCompleteCommand(const char* command) override;
+        AZStd::string AutoCompleteCommand(const char* command, AZStd::vector<AZStd::string>* matches = nullptr) override;
         void VisitRegisteredFunctors(const FunctorVisitor& visitor) override;
         void RegisterFunctor(ConsoleFunctorBase* functor) override;
         void UnregisterFunctor(ConsoleFunctorBase* functor) override;

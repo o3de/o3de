@@ -4,7 +4,7 @@
     -->
   <DefaultProperties
       p="pc"
-      game="samplesproject"
+      game="automatedtesting"
       src="cache\${game}\${p}"
       trg="${game}_${p}_paks"
     />

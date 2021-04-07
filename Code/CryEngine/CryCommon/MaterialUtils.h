@@ -87,7 +87,7 @@ namespace MaterialUtils
             if (cachedGameName[0] == 0)
             {
                 // at least substitute something so that unit tests can make this assumption:
-                azstrcpy(cachedGameName, AZ_MAX_PATH_LEN, "SamplesProject/");
+                azstrcpy(cachedGameName, AZ_MAX_PATH_LEN, "AutomatedTesting/");
             }
 
             removals[removalSize - 1] = cachedGameName;

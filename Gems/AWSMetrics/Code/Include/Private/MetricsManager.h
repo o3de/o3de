@@ -32,7 +32,7 @@ namespace AWSMetrics
     class MetricsManager
     {
     public:
-        static const unsigned int desiredMaxWorkers = 2;
+        static const unsigned int DesiredMaxWorkers = 2;
 
         MetricsManager();
         ~MetricsManager();

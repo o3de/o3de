@@ -207,6 +207,7 @@ namespace AzToolsFramework
             auto source = azrtti_cast<SourceAssetBrowserEntry*>(itFile->second);
             source->m_sourceId = sourceWithFileIdEntry.second.m_sourceID;
             source->m_sourceUuid = sourceWithFileIdEntry.second.m_sourceGuid;
+            source->PathsUpdated(); // update thumbnailkey to valid uuid
             EntryCache::GetInstance()->m_sourceUuidMap[source->m_sourceUuid] = source;
             EntryCache::GetInstance()->m_sourceIdMap[source->m_sourceId] = source;
             return true;

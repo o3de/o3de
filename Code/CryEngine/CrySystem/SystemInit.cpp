@@ -54,6 +54,7 @@
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -131,6 +132,7 @@
 #include "ServiceNetwork.h"
 #include "RemoteCommand.h"
 #include "LevelSystem/LevelSystem.h"
+#include "LevelSystem/SpawnableLevelSystem.h"
 #include "ViewSystem/ViewSystem.h"
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -309,8 +311,6 @@ namespace
 }
 
 //static int g_sysSpecChanged = false;
-
-const char* g_szLvlResExt = "_LvlRes.txt";
 
 struct SCVarsClientConfigSink
     : public ILoadConfigurationEntrySink
@@ -1517,27 +1517,16 @@ bool CSystem::InitFileSystem()
         m_pUserCallback->OnInitProgress("Initializing File System...");
     }
 
-    bool bLvlRes = false; // true: all assets since executable start are recorded, false otherwise
-
     // get the DirectInstance FileIOBase which should be the AZ::LocalFileIO
     m_env.pFileIO = AZ::IO::FileIOBase::GetDirectInstance();
     m_env.pResourceCompilerHelper = nullptr;
-
-#if !defined(_RELEASE)
-    const ICmdLineArg* pArg = m_pCmdLine->FindArg(eCLAT_Pre, "LvlRes");          // -LvlRes command line option
-
-    if (pArg)
-    {
-        bLvlRes = true;
-    }
-#endif // !defined(_RELEASE)
 
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(m_env.pCryPak, "CryPak has not been initialized on AZ::Interface");
     AZ_Assert(m_env.pFileIO, "FileIOBase has not been initialized");
 
-    if (m_bEditor || bLvlRes)
+    if (m_bEditor)
     {
         m_env.pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_EngineStartup);
     }
@@ -2212,43 +2201,6 @@ public:
 
     using CommandRegisteredHandler = AZ::IConsole::ConsoleCommandRegisteredEvent::Handler;
     static inline CommandRegisteredHandler s_commandRegisteredHandler = CommandRegisteredHandler([](AZ::ConsoleFunctorBase* functor) { Visit(functor); });
-
-    using CommandInvokedHandler = AZ::ConsoleCommandInvokedEvent::Handler;
-    static inline CommandInvokedHandler s_commandInvokedHandler = CommandInvokedHandler([]
-    (
-        AZStd::string_view command,
-        const AZ::ConsoleCommandContainer& args,
-        [[maybe_unused]] AZ::ConsoleFunctorFlags flags,
-        AZ::ConsoleInvokedFrom invokedFrom
-    )
-    {
-        if (invokedFrom == AZ::ConsoleInvokedFrom::CryBinding)
-        {
-            // If a command originated from the cry console, do not echo it back to the cry console
-            return;
-        }
-        AZ::CVarFixedString joinedCommand = AZ::CVarFixedString(command) + " ";
-        AZ::StringFunc::Join(joinedCommand, args.begin(), args.end(), " ");
-        gEnv->pConsole->ExecuteString(joinedCommand.c_str(), true);
-    });
-
-    using CommandNotFoundHandler = AZ::DispatchCommandNotFoundEvent::Handler;
-    static inline CommandNotFoundHandler s_commandNotFoundHandler = CommandNotFoundHandler([]
-    (
-        AZStd::string_view command,
-        const AZ::ConsoleCommandContainer& args,
-        AZ::ConsoleInvokedFrom invokedFrom
-    )
-    {
-        if (invokedFrom == AZ::ConsoleInvokedFrom::CryBinding)
-        {
-            // If a command originated from the cry console, do not echo it back to the cry console
-            return;
-        }
-        AZ::CVarFixedString joinedCommand = AZ::CVarFixedString(command) + " ";
-        AZ::StringFunc::Join(joinedCommand, args.begin(), args.end(), " ");
-        gEnv->pConsole->ExecuteString(joinedCommand.c_str(), true);
-    });
 };
 
 // System initialization
@@ -3193,7 +3145,19 @@ AZ_POP_DISABLE_WARNING
 
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-        m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, "levels");
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+        if (usePrefabSystemForLevels)
+        {
+            m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
+        }
+        else
+        {
+            // [LYN-2376] Remove once legacy slice support is removed
+            m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, ILevelSystem::GetLevelsDirectoryName());
+        }
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
@@ -3276,8 +3240,6 @@ AZ_POP_DISABLE_WARNING
         // Az to Cry console binding
         AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([](AZ::ConsoleFunctorBase* functor) { AzConsoleToCryConsoleBinder::Visit(functor); });
         AzConsoleToCryConsoleBinder::s_commandRegisteredHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandRegisteredEvent());
-        AzConsoleToCryConsoleBinder::s_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
-        AzConsoleToCryConsoleBinder::s_commandNotFoundHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetDispatchCommandNotFoundEvent());
 
         // final tryflush to be sure that all framework init request have been processed
         if (!startupParams.bShaderCacheGen && m_env.pRenderer)
@@ -3382,548 +3344,6 @@ static string ConcatPath(const char* szPart1, const char* szPart2)
     ret += szPart2;
 
     return ret;
-}
-
-
-
-class CLvlRes_base
-{
-public:
-
-    // destructor
-    virtual ~CLvlRes_base()
-    {
-    }
-
-    void RegisterAllLevelPaks(const string& sPath)
-    {
-        string sPathPattern = ConcatPath(sPath, "*");
-
-        AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(sPathPattern.c_str());
-
-        if (!handle)
-        {
-            gEnv->pLog->LogError("ERROR: CLvlRes_base failed '%s'", sPathPattern.c_str());
-            return;
-        }
-
-        do
-        {
-            if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) == AZ::IO::FileDesc::Attribute::Subdirectory)
-            {
-                if (handle.m_filename != "." && handle.m_filename != "..")
-                {
-                    RegisterAllLevelPaks(ConcatPath(sPath, handle.m_filename.data()));
-                }
-            }
-            else if (HasRightExtension(handle.m_filename.data()))         // open only the level paks if there is a LvlRes.txt, opening all would be too slow
-            {
-                OnPakEntry(sPath, handle.m_filename.data());
-            }
-        } while (handle = gEnv->pCryPak->FindNext(handle));
-
-        gEnv->pCryPak->FindClose(handle);
-    }
-
-
-
-    void Process(const string& sPath)
-    {
-        string sPathPattern = ConcatPath(sPath, "*");
-
-        AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(sPathPattern.c_str());
-
-        if (!handle)
-        {
-            gEnv->pLog->LogError("ERROR: LvlRes_finalstep failed '%s'", sPathPattern.c_str());
-            return;
-        }
-
-        do
-        {
-            if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) == AZ::IO::FileDesc::Attribute::Subdirectory)
-            {
-                if (handle.m_filename != "." && handle.m_filename != "..")
-                {
-                    Process(ConcatPath(sPath, handle.m_filename.data()));
-                }
-            }
-            else if (HasRightExtension(handle.m_filename.data()))
-            {
-                string sFilePath = ConcatPath(sPath, handle.m_filename.data());
-
-                gEnv->pLog->Log("CLvlRes_base processing '%s' ...", sFilePath.c_str());
-
-                AZ::IO::HandleType fileHandle = gEnv->pCryPak->FOpen(sFilePath.c_str(), "rb");
-
-                if (fileHandle != AZ::IO::InvalidHandle)
-                {
-                    std::vector<char> vBuffer;
-
-                    size_t len = gEnv->pCryPak->FGetSize(fileHandle);
-                    vBuffer.resize(len + 1);
-
-                    if (len)
-                    {
-                        if (gEnv->pCryPak->FReadRaw(&vBuffer[0], len, 1, fileHandle) == 1)
-                        {
-                            vBuffer[len] = 0;                                                         // end terminator
-
-                            char* p = &vBuffer[0];
-
-                            while (*p)
-                            {
-                                while (*p != 0 && *p <= ' ')                                     // jump over whitespace
-                                {
-                                    ++p;
-                                }
-
-                                char* pLineStart = p;
-
-                                while (*p != 0 && *p != 10 && *p != 13)                    // goto end of line
-                                {
-                                    ++p;
-                                }
-
-                                char* pLineEnd = p;
-
-                                while (*p != 0 && (*p == 10 || *p == 13))              // goto next line with data
-                                {
-                                    ++p;
-                                }
-
-                                if (*pLineStart != ';')                                            // if it's not a commented line
-                                {
-                                    *pLineEnd = 0;
-                                    OnFileEntry(pLineStart);                // add line
-                                }
-                            }
-                        }
-                        else
-                        {
-                            gEnv->pLog->LogError("Error: LvlRes_finalstep file open '%s' failed", sFilePath.c_str());
-                        }
-                    }
-
-                    gEnv->pCryPak->FClose(fileHandle);
-                }
-                else
-                {
-                    gEnv->pLog->LogError("Error: LvlRes_finalstep file open '%s' failed", sFilePath.c_str());
-                }
-            }
-        } while (handle = gEnv->pCryPak->FindNext(handle));
-
-        gEnv->pCryPak->FindClose(handle);
-    }
-
-    bool IsFileKnown(const char* szFilePath)
-    {
-        string sFilePath = szFilePath;
-
-        return m_UniqueFileList.find(sFilePath) != m_UniqueFileList.end();
-    }
-
-protected: // -------------------------------------------------------------------------
-
-    static bool HasRightExtension(const char* szFileName)
-    {
-        const char* szLvlResExt = szFileName;
-
-        size_t lenName = strlen(szLvlResExt);
-        static size_t lenLvlExt = strlen(g_szLvlResExt);
-
-        if (lenName >= lenLvlExt)
-        {
-            szLvlResExt += lenName - lenLvlExt;         // "test_LvlRes.txt" -> "_LvlRes.txt"
-        }
-        return azstricmp(szLvlResExt, g_szLvlResExt) == 0;
-    }
-
-    // Arguments
-    //   sFilePath - e.g. "game/object/vehices/car01.dds"
-    void OnFileEntry(const char* szFilePath)
-    {
-        string sFilePath = szFilePath;
-        if (m_UniqueFileList.find(sFilePath) == m_UniqueFileList.end())        // to to file processing only once per file
-        {
-            m_UniqueFileList.insert(sFilePath);
-
-            ProcessFile(sFilePath);
-
-            gEnv->pLog->UpdateLoadingScreen(0);
-        }
-    }
-
-    virtual void ProcessFile(const string& sFilePath) = 0;
-
-    virtual void OnPakEntry([[maybe_unused]] const string& sPath, [[maybe_unused]] const char* szPak) {}
-
-    // -----------------------------------------------------------------
-
-    std::set<string>                m_UniqueFileList;               // to removed duplicate files
-};
-
-
-
-
-
-class CLvlRes_finalstep
-    : public CLvlRes_base
-{
-public:
-
-    // constructor
-    CLvlRes_finalstep(const char* szPath)
-        : m_sPath(szPath)
-    {
-        assert(szPath);
-    }
-
-    // destructor
-    virtual ~CLvlRes_finalstep()
-    {
-        // free registered paks
-        std::set<string>::iterator it, end = m_RegisteredPakFiles.end();
-
-        for (it = m_RegisteredPakFiles.begin(); it != end; ++it)
-        {
-            string sName = *it;
-
-            gEnv->pCryPak->ClosePack(sName.c_str());
-        }
-    }
-
-    // register a pak file so all files within do not become file entries but the pak file becomes
-    void RegisterPak(const string& sPath, const char* szFile)
-    {
-        string sPak = ConcatPath(sPath, szFile);
-        AZStd::string_view pakView{ sPak.c_str(), sPak.size() };
-        gEnv->pCryPak->ClosePack(pakView);         // so we don't get error for paks that were already opened
-
-        if (!gEnv->pCryPak->OpenPack(pakView))
-        {
-            CryLog("RegisterPak '%s' failed - file not present?", sPak.c_str());
-            return;
-        }
-
-        enum
-        {
-            nMaxPath = 0x800
-        };
-        char szAbsPathBuf[nMaxPath];
-
-        const char* szAbsPath = gEnv->pCryPak->AdjustFileName({ sPak.c_str(), sPak.size() }, szAbsPathBuf, AZ_ARRAY_SIZE(szAbsPathBuf), 0);
-
-        //      string sAbsPath = PathUtil::RemoveSlash(PathUtil::GetPath(szAbsPath));
-
-        // debug
-        CryLog("RegisterPak '%s'", szAbsPath);
-
-        m_RegisteredPakFiles.insert(string(szAbsPath));
-
-        OnFileEntry(sPak);      // include pak as file entry
-    }
-
-    // finds a specific file
-    static AZ::IO::ArchiveFileIterator FindFile(const char* szFilePath, const char* szFile)
-    {
-        AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(szFilePath);
-
-        if (!handle)
-        {
-            return {};
-        }
-
-        do
-        {
-            if (azstricmp(handle.m_filename.data(), szFile) == 0)
-            {
-                gEnv->pCryPak->FindClose(handle);
-                return handle;
-            }
-        } while (handle = gEnv->pCryPak->FindNext(handle));
-
-        gEnv->pCryPak->FindClose(handle);
-        return {};
-    }
-
-    // slow but safe (to correct path and file name upper/lower case to the existing files)
-    // some code might rely on the case (e.g. CVarGroup creation) so it's better to correct the case
-    static void CorrectCaseInPlace(char* szFilePath)
-    {
-        // required for FindFirst, TODO: investigate as this seems wrong behavior
-        {
-            // jump over "Game"
-            while (*szFilePath != '/' && *szFilePath != '\\' && *szFilePath != 0)
-            {
-                ++szFilePath;
-            }
-            // jump over "/"
-            if (*szFilePath != 0)
-            {
-                ++szFilePath;
-            }
-        }
-
-        char* szFile = szFilePath, * p = szFilePath;
-
-        for (;; )
-        {
-            if (*p == '/' || *p == '\\' || *p == 0)
-            {
-                char cOldChar = *p;
-                *p = 0;                                 // create zero termination
-
-                auto fileIterator = FindFile(szFilePath, szFile);
-
-                if (fileIterator)
-                {
-                    assert(strlen(szFile) == fileIterator.m_filename.size());
-                }
-
-                *p = cOldChar;                                  // get back the old separator
-
-                if (!fileIterator)
-                {
-                    return;
-                }
-
-                fileIterator.m_filename.copy(szFile, fileIterator.m_filename.size());
-
-                if (*p == 0)
-                {
-                    break;
-                }
-
-                ++p;
-                szFile = p;
-            }
-            else
-            {
-                ++p;
-            }
-        }
-    }
-
-    virtual void ProcessFile(const string& _sFilePath)
-    {
-        string sFilePath = _sFilePath;
-
-        CorrectCaseInPlace((char*)&sFilePath[0]);
-
-        gEnv->pLog->LogWithType(ILog::eAlways, "LvlRes: %s", sFilePath.c_str());
-
-        CCryFile file;
-        std::vector<char> data;
-
-        if (!file.Open(sFilePath.c_str(), "rb"))
-        {
-            gEnv->pLog->LogError("ERROR: failed to open '%s'", sFilePath.c_str());          // pak not opened ?
-            return;
-        }
-
-        if (IsInRegisteredPak(file.GetHandle()))
-        {
-            return;                 // then don't process as we include the pak
-        }
-        // Save this file in target folder.
-        string trgFilename = PathUtil::Make(m_sPath, sFilePath);
-        int fsize = file.GetLength();
-
-        size_t len = file.GetLength();
-
-        if (fsize > (int)data.size())
-        {
-            data.resize(fsize + 16);
-        }
-
-        // Read data.
-        file.ReadRaw(&data[0], fsize);
-
-        // Save this data to target file.
-        string trgFileDir = PathUtil::ToDosPath(PathUtil::RemoveSlash(PathUtil::GetPath(trgFilename)));
-
-        gEnv->pFileIO->CreatePath(trgFileDir);      // ensure path exists
-
-        // Create target file
-        FILE* trgFile = nullptr;
-        azfopen(&trgFile, trgFilename, "wb");
-
-        if (trgFile)
-        {
-            fwrite(&data[0], fsize, 1, trgFile);
-            fclose(trgFile);
-        }
-        else
-        {
-            gEnv->pLog->LogError("ERROR: failed to write '%s' (write protected/disk full/rights)", trgFilename.c_str());
-            assert(0);
-        }
-    }
-
-    bool IsInRegisteredPak(AZ::IO::HandleType fileHandle)
-    {
-        const char* szPak = gEnv->pCryPak->GetFileArchivePath(fileHandle);
-
-        if (!szPak)
-        {
-            return false;           // outside pak
-        }
-        bool bInsideRegisteredPak = m_RegisteredPakFiles.find(szPak) != m_RegisteredPakFiles.end();
-
-        return bInsideRegisteredPak;
-    }
-
-    virtual void OnPakEntry(const string& sPath, [[maybe_unused]] const char* szPak)
-    {
-        RegisterPak(sPath, "level.pak");
-        RegisterPak(sPath, "levelmm.pak");
-    }
-
-    // -------------------------------------------------------------------------------
-
-    string                                  m_sPath;                                // directory path to store the assets e.g. "c:\temp\Out"
-    std::set<string>                m_RegisteredPakFiles;       // abs path to pak files we registered e.g. "c:\MasterCD\game\GameData.pak", to avoid processing files inside these pak files - the ones we anyway want to include
-};
-
-
-class CLvlRes_findunused
-    : public CLvlRes_base
-{
-public:
-
-    virtual void ProcessFile([[maybe_unused]] const string& sFilePath)
-    {
-    }
-};
-
-
-
-
-
-
-static void LvlRes_finalstep(IConsoleCmdArgs* pParams)
-{
-    assert(pParams);
-
-    uint32 dwCnt = pParams->GetArgCount();
-
-    if (dwCnt != 2)
-    {
-        gEnv->pLog->LogWithType(ILog::eError, "ERROR: sys_LvlRes_finalstep requires destination path as parameter");
-        return;
-    }
-
-    const char* szPath = pParams->GetArg(1);
-    assert(szPath);
-
-    gEnv->pLog->LogWithType(ILog::eInputResponse, "sys_LvlRes_finalstep %s ...", szPath);
-
-    // open console
-    gEnv->pConsole->ShowConsole(true);
-
-    CLvlRes_finalstep sink(szPath);
-
-    sink.RegisterPak("@assets@", "GameData.pak");
-    sink.RegisterPak("@assets@", "Shaders.pak");
-
-    sink.RegisterAllLevelPaks("levels");
-    sink.Process("levels");
-}
-
-
-
-
-static void _LvlRes_findunused_recursive(CLvlRes_findunused& sink, const string& sPath,
-    uint32& dwUnused, uint32& dwAll)
-{
-    string sPathPattern = ConcatPath(sPath, "*");
-
-    // ignore some directories
-    if (azstricmp(sPath.c_str(), "Shaders") == 0
-        || azstricmp(sPath.c_str(), "ScreenShots") == 0
-        || azstricmp(sPath.c_str(), "Scripts") == 0
-        || azstricmp(sPath.c_str(), "Config") == 0
-        || azstricmp(sPath.c_str(), "LowSpec") == 0)
-    {
-        return;
-    }
-
-    //  gEnv->pLog->Log("_LvlRes_findunused_recursive '%s'",sPath.c_str());
-
-    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(sPathPattern.c_str());
-
-    if (!handle)
-    {
-        gEnv->pLog->LogError("ERROR: _LvlRes_findunused_recursive failed '%s'", sPathPattern.c_str());
-        return;
-    }
-
-    do
-    {
-        if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) == AZ::IO::FileDesc::Attribute::Subdirectory)
-        {
-            if (handle.m_filename != "." && handle.m_filename != "..")
-            {
-                _LvlRes_findunused_recursive(sink, ConcatPath(sPath, handle.m_filename.data()), dwUnused, dwAll);
-            }
-        }
-        else
-        {
-            string sFilePath = CryStringUtils::ToLower(ConcatPath(sPath, handle.m_filename.data()));
-            enum
-            {
-                nMaxPath = 0x800
-            };
-            char szAbsPathBuf[nMaxPath];
-
-            gEnv->pCryPak->AdjustFileName(sFilePath.c_str(), szAbsPathBuf, AZ_ARRAY_SIZE(szAbsPathBuf), 0);
-
-            if (!sink.IsFileKnown(szAbsPathBuf))
-            {
-                gEnv->pLog->LogWithType(IMiniLog::eAlways, "%d, %s", (uint32)handle.m_fileDesc.nSize, szAbsPathBuf);
-                ++dwUnused;
-            }
-            ++dwAll;
-        }
-    } while (handle = gEnv->pCryPak->FindNext(handle));
-
-    gEnv->pCryPak->FindClose(handle);
-}
-
-
-static void LvlRes_findunused([[maybe_unused]] IConsoleCmdArgs* pParams)
-{
-    assert(pParams);
-
-    gEnv->pLog->LogWithType(ILog::eInputResponse, "sys_LvlRes_findunused ...");
-
-    // open console
-    gEnv->pConsole->ShowConsole(true);
-
-    CLvlRes_findunused sink;
-
-    sink.RegisterAllLevelPaks("levels");
-    sink.Process("levels");
-
-    gEnv->pLog->LogWithType(ILog::eInputResponse, " ");
-    gEnv->pLog->LogWithType(ILog::eInputResponse, "Assets not used by the existing LvlRes data:");
-    gEnv->pLog->LogWithType(ILog::eInputResponse, " ");
-
-    char rootpath[_MAX_PATH];
-    AZ::Utils::GetExecutableDirectory(rootpath, _MAX_PATH);
-
-    gEnv->pLog->LogWithType(ILog::eInputResponse, "Folder: %s", rootpath);
-
-    uint32 dwUnused = 0, dwAll = 0;
-
-    string unused;
-    _LvlRes_findunused_recursive(sink, unused, dwUnused, dwAll);
-
-    gEnv->pLog->LogWithType(ILog::eInputResponse, " ");
-    gEnv->pLog->LogWithType(ILog::eInputResponse, "Unused assets: %d/%d", dwUnused, dwAll);
-    gEnv->pLog->LogWithType(ILog::eInputResponse, " ");
 }
 
 static void ScreenshotCmd(IConsoleCmdArgs* pParams)
@@ -4628,15 +4048,9 @@ void CSystem::CreateSystemVars()
 
     REGISTER_INT("capture_frames", 0, 0, "Enables capturing of frames. 0=off, 1=on");
     REGISTER_STRING("capture_folder", "CaptureOutput", 0, "Specifies sub folder to write captured frames.");
-    REGISTER_STRING("capture_file_format", "jpg", 0, "Specifies file format of captured files (jpg, tga, tif).");
     REGISTER_INT("capture_frame_once", 0, 0, "Makes capture single frame only");
     REGISTER_STRING("capture_file_name", "", 0, "If set, specifies the path and name to use for the captured frame");
     REGISTER_STRING("capture_file_prefix", "", 0, "If set, specifies the prefix to use for the captured frame instead of the default 'Frame'.");
-    REGISTER_INT("capture_buffer", 0, 0,
-        "Buffer to capture when capture_frames is enabled.\n"
-        "0=Color\n"
-        "1=Color with Alpha (requires capture_file_format=tga)");
-
 
     m_gpu_particle_physics = REGISTER_INT("gpu_particle_physics", 0, VF_REQUIRE_APP_RESTART, "Enable GPU physics if available (0=off / 1=enabled).");
     assert(m_gpu_particle_physics);
@@ -4645,7 +4059,6 @@ void CSystem::CreateSystemVars()
         "Load .cfg file from disk (from the {Game}/Config directory)\n"
         "e.g. LoadConfig lowspec.cfg\n"
         "Usage: LoadConfig <filename>");
-
     assert(m_env.pConsole);
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F12", "Screenshot");
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F11", "RecordClip");
@@ -4656,8 +4069,6 @@ void CSystem::CreateSystemVars()
         "e.g. Screenshot beach scene with shark\n"
         "Usage: Screenshot <annotation text>");
 
-    REGISTER_COMMAND("sys_LvlRes_finalstep", &LvlRes_finalstep, 0, "to combine all recorded level resources and create final stripped build (pass directory name as parameter)");
-    REGISTER_COMMAND("sys_LvlRes_findunused", &LvlRes_findunused, 0, "find unused level resources");
     /*
         // experimental feature? - needs to be created very early
         m_sys_filecache = REGISTER_INT("sys_FileCache",0,0,

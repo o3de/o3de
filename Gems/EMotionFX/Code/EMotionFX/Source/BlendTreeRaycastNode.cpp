@@ -96,7 +96,7 @@ namespace EMotionFX
         rayRequest.m_start      = rayStart;
         rayRequest.m_direction  = rayDirection;
         rayRequest.m_distance   = maxDistance;
-        rayRequest.m_queryType  = Physics::QueryType::Static;
+        rayRequest.m_queryType  = AzPhysics::SceneQuery::QueryType::Static;
         rayRequest.m_hint       = Integration::RaycastRequests::UsecaseHint::Generic;
 
         // Cast a ray, check for intersections.

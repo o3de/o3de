@@ -57,6 +57,7 @@ private:
     RecentFileList* m_pRecentList;
     News::ResourceManifest* m_manifest = nullptr;
     News::ArticleViewContainer* m_articleViewContainer = nullptr;
+    const char* m_levelExtension = nullptr;
     bool m_waitingOnAsync = true;
     bool m_messageScrollReported = false;
 

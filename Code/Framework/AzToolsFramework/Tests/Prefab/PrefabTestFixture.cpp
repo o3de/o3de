@@ -26,19 +26,15 @@ namespace UnitTest
         AZ::Entity* systemEntity = GetApplication()->FindEntity(AZ::SystemEntityId);
         EXPECT_TRUE(systemEntity);
 
-        // Acquire the prefab system component to gain access to its APIs for testing
         m_prefabSystemComponent = systemEntity->FindComponent<AzToolsFramework::Prefab::PrefabSystemComponent>();
         EXPECT_TRUE(m_prefabSystemComponent);
 
-        // Acquire the interface of PrefabLoader to gain access to its APIs for testing
         m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
         EXPECT_TRUE(m_prefabLoaderInterface);
 
-        // Acquire the interface of InstanceUpdateQueueInterface to gain access to its APIs for testing
         m_instanceUpdateExecutorInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get();
         EXPECT_TRUE(m_instanceUpdateExecutorInterface);
 
-        // Acquire the interface of InstanceToTemplate to gain access to its APIs for testing
         m_instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
@@ -60,7 +56,7 @@ namespace UnitTest
     }
 
     void PrefabTestFixture::CompareInstances(const AzToolsFramework::Prefab::Instance& instanceA,
-        const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds)
+        const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds, bool shouldCompareContainerEntities)
     {
         AzToolsFramework::Prefab::TemplateId templateAId = instanceA.GetTemplateId();
         AzToolsFramework::Prefab::TemplateId templateBId = instanceB.GetTemplateId();
@@ -81,10 +77,11 @@ namespace UnitTest
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceB, prefabDomB));
 
         // Validate that both instances match when serialized
-        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB);
+        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB, true, shouldCompareContainerEntities);
 
         // Validate that the serialized instances match the shared template when serialized
-        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, shouldCompareLinkIds);
+        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, shouldCompareLinkIds,
+            shouldCompareContainerEntities);
     }
 
     void PrefabTestFixture::DeleteInstances(const InstanceList& instancesToDelete)
@@ -94,6 +91,22 @@ namespace UnitTest
             ASSERT_TRUE(instanceToDelete);
             delete instanceToDelete;
             instanceToDelete = nullptr;
+        }
+    }
+
+    void PrefabTestFixture::ValidateInstanceEntitiesActive(Instance& instance)
+    {
+        AZStd::vector<AZ::EntityId> entityIdVector;
+        instance.GetNestedEntityIds([&entityIdVector](AZ::EntityId entityId) {
+            entityIdVector.push_back(entityId);
+            return true;
+        });
+        for (AZ::EntityId entityId : entityIdVector)
+        {
+            AZ::Entity* entityInInstance = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entityInInstance, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            ASSERT_TRUE(entityInInstance);
+            EXPECT_EQ(entityInInstance->GetState(), AZ::Entity::State::Active);
         }
     }
 }

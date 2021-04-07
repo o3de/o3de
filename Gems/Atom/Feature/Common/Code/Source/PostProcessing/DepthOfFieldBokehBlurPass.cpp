@@ -47,15 +47,10 @@ namespace AZ
         {
             FullscreenTrianglePass::Init();
 
-            AZ_Assert(m_shaderResourceGroup, "DepthOfFieldBokehBlurPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            if (m_shaderResourceGroup)
-            {
-                m_sampleNumberIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_sampleNumber"));
-                m_radiusMinIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_radiusMin"));
-                m_radiusMaxIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_radiusMax"));
-                m_sampleTexcoordsRadiusIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_sampleTexcoordsRadius"));
-            }
+            m_sampleNumberIndex.Reset();
+            m_radiusMinIndex.Reset();
+            m_radiusMaxIndex.Reset();
+            m_sampleTexcoordsRadiusIndex.Reset();
 
             InitializeShaderVariant();
         }

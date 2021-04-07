@@ -74,11 +74,6 @@ namespace PhysX
             AZ::Data::AssetLoadBehavior::Default);
     }
 
-    void MeshColliderComponent::GetStaticWorldSpaceMeshTriangles([[maybe_unused]] AZStd::vector<AZ::Vector3>& verts, [[maybe_unused]] AZStd::vector<AZ::u32>& indices) const
-    {
-        AZ_Assert(false, "Run-time support for this function is not available");
-    }
-
     Physics::MaterialId MeshColliderComponent::GetMaterialId() const
     {
         return m_colliderConfiguration->m_materialSelection.GetMaterialId();
@@ -142,6 +137,6 @@ namespace PhysX
             return;
         }
 
-        m_shapeConfigList[0].second->m_scale = Utils::GetNonUniformScale(GetEntityId());
+        m_shapeConfigList[0].second->m_scale = Utils::GetOverallScale(GetEntityId());
     }
 } // namespace PhysX

@@ -41,11 +41,10 @@ namespace ScriptCanvas
 
                 bool IsIfBranch() const override { return true; }
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
-
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }

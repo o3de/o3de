@@ -54,16 +54,9 @@ namespace AZ
         {
             if (m_updateSrg)
             {
-                RHI::ShaderInputConstantIndex constantIndex;
-
-                constantIndex = m_shaderResourceGroup->GetLayout()->FindShaderInputConstantIndex(AZ::Name("m_imageWidth"));
-                m_shaderResourceGroup->SetConstant(constantIndex, m_imageSize.m_width);
-
-                constantIndex = m_shaderResourceGroup->GetLayout()->FindShaderInputConstantIndex(AZ::Name("m_imageHeight"));
-                m_shaderResourceGroup->SetConstant(constantIndex, m_imageSize.m_height);
-
-                constantIndex = m_shaderResourceGroup->GetLayout()->FindShaderInputConstantIndex(AZ::Name("m_outputScale"));
-                m_shaderResourceGroup->SetConstant(constantIndex, m_outputScale);
+                m_shaderResourceGroup->SetConstant(m_imageWidthIndex, m_imageSize.m_width);
+                m_shaderResourceGroup->SetConstant(m_imageHeightIndex, m_imageSize.m_height);
+                m_shaderResourceGroup->SetConstant(m_outputScaleIndex, m_outputScale);
 
                 m_updateSrg = false;
             }

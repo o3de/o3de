@@ -239,16 +239,18 @@ namespace AZ
 
         void CullingSystem::RegisterOrUpdateCullable(Cullable& cullable)
         {
-            m_cullDataConcurrencyCheck.soft_lock();
+            // [GFX TODO][ATOM-15036] Remove lock from CullingSystem visibility updates
+            m_mutex.lock();
             AZ::Interface<AzFramework::IVisibilitySystem>::Get()->InsertOrUpdateEntry(cullable.m_cullData.m_visibilityEntry);
-            m_cullDataConcurrencyCheck.soft_unlock();
+            m_mutex.unlock();
         }
 
         void CullingSystem::UnregisterCullable(Cullable& cullable)
         {
-            m_cullDataConcurrencyCheck.soft_lock();
+            // [GFX TODO][ATOM-15036] Remove lock from CullingSystem visibility updates
+            m_mutex.lock();
             AZ::Interface<AzFramework::IVisibilitySystem>::Get()->RemoveEntry(cullable.m_cullData.m_visibilityEntry);
-            m_cullDataConcurrencyCheck.soft_unlock();
+            m_mutex.unlock();
         }
 
         uint32_t CullingSystem::GetNumCullables() const

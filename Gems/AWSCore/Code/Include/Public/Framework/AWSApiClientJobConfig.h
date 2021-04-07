@@ -28,6 +28,10 @@ namespace Aws
     {
         class HttpClient;
     }
+    namespace Auth
+    {
+        class AWSCredentials;
+    }
 
 }
 
@@ -118,7 +122,7 @@ namespace AWSCore
             else
             {
                 // If no explict credenitals are provided then AWS C++ SDK will perform standard search
-                return std::make_shared<ClientType>(GetClientConfiguration());
+                return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
             }
         }
 

@@ -555,6 +555,14 @@ namespace LumberyardLauncher
         }
 
         systemInitParams.bDedicatedServer = IsDedicatedServer();
+        if (IsDedicatedServer())
+        {
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated true");
+        }
+        else
+        {
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
+        }
 
         bool remoteFileSystemEnabled{};
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,

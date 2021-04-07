@@ -237,11 +237,13 @@ namespace ScriptCanvas
         // Invoked after a variable is renamed
         virtual void OnVariableRenamed(AZStd::string_view /*newVariableName*/) {}
 
-        virtual void OnVariableScopeChanged() {};
+        virtual void OnVariableScopeChanged() {}
 
-        virtual void OnVariablePriorityChanged() {};
+        virtual void OnVariableInitialValueSourceChanged() {}
 
-        virtual void OnVariableValueChanged() {};
+        virtual void OnVariablePriorityChanged() {}
+
+        virtual void OnVariableValueChanged() {}
     };
 
     using VariableNotificationBus = AZ::EBus<VariableNotifications>;    

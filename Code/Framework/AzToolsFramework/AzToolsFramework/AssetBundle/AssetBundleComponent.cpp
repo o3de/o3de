@@ -307,6 +307,10 @@ namespace AzToolsFramework
             }
         }
 
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
         for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
         {
             AZ::u64 fileSize = 0;
@@ -323,7 +327,7 @@ namespace AzToolsFramework
                 AZ_Warning(logWindowName, false, "File (%s) size (%d) is bigger than the max bundle size (%d).\n", assetFileInfo.m_assetRelativePath.c_str(), fileSize, maxSizeInBytes);
             }
 
-            if (AzFramework::StringFunc::EndsWith(assetFileInfo.m_assetRelativePath, "level.pak"))
+            if (!usePrefabSystemForLevels && (AzFramework::StringFunc::EndsWith(assetFileInfo.m_assetRelativePath, "level.pak")))
             {
                 AZStd::string levelFolder;
                 AzFramework::StringFunc::Path::GetFolderPath(assetFileInfo.m_assetRelativePath.c_str(), levelFolder);

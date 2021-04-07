@@ -30,6 +30,7 @@ namespace ScriptCanvas
         // \todo examine if this is required
         // static NodeTypeIdentifier ConstructEBusEventReceiverOverloadedIdentifier(const ScriptCanvas::EBusBusId& ebusIdentifier, const EBusEventId& eventId);
         static NodeTypeIdentifier ConstructFunctionNodeIdentifier(const AZ::Data::AssetId& assetId);
+        static NodeTypeIdentifier ConstructEmbeddedFunctionNodeIdentifier(const AZ::Data::AssetId& assetId);
 
         static NodeTypeIdentifier ConstructScriptEventIdentifier(ScriptCanvas::EBusBusId busId);
         static NodeTypeIdentifier ConstructSendScriptEventIdentifier(ScriptCanvas::EBusBusId ebusIdentifier, const EBusEventId& eventId);

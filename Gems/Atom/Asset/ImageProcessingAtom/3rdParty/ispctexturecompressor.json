@@ -1,9 +1,0 @@
-{
-    "name": "ispctexturecompressor",
-    "source": "@GEM@/External/ISPCTextureCompressor/1.0.0",
-    "description": "ISPC Texture Compressor",
-    "defines": [],
-    "lib_required": "True",
-    "shared_required": "True"
-}
-

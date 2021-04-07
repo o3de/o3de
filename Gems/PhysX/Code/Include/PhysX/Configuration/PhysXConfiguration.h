@@ -30,7 +30,7 @@ namespace PhysX
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_TYPE_INFO(WindConfiguration, "{6EA3E646-ECDA-4044-912D-5722D5100066}");
+        AZ_TYPE_INFO(PhysX::WindConfiguration, "{6EA3E646-ECDA-4044-912D-5722D5100066}");
         static void Reflect(AZ::ReflectContext* context);
 
         /// Tag value that will be used to identify entities that provide global wind value.
@@ -49,7 +49,7 @@ namespace PhysX
     struct PhysXSystemConfiguration : public AzPhysics::SystemConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(PhysXSystemConfiguration, "{6E25A37B-2109-452C-97C9-B737CC72704F}");
+        AZ_RTTI(PhysX::PhysXSystemConfiguration, "{6E25A37B-2109-452C-97C9-B737CC72704F}");
         static void Reflect(AZ::ReflectContext* context);
 
         static PhysXSystemConfiguration CreateDefault();

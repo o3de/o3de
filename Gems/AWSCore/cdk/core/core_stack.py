@@ -26,7 +26,7 @@ class CoreStack(core.Stack):
     Defines common resource project and group(s) to use in project
     """
 
-    # Resource groups cannot start with 'AWS' or 'aws' so preprend this prefix
+    # Resource groups cannot start with 'AWS' or 'aws' so add this prefix
     RESOURCE_GROUP_PREFIX = 'O3D'
 
     def __init__(self, scope: core.Construct, id_: str, project_name: str, feature_name: str, **kwargs) -> None:

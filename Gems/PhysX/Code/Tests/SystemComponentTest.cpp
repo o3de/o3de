@@ -12,47 +12,10 @@
 
 #include "PhysX_precompiled.h"
 
-#include <gmock/gmock.h>
-
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/World.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <PhysX/SystemComponentBus.h>
 #include <Tests/EditorTestUtilities.h>
-#include <Tests/PhysXTestCommon.h>
-
-#include <AzFramework/Physics/WorldBody.h>
-#include <AzFramework/Physics/Casts.h>
-#include <AzFramework/Physics/Material.h>
-
-#include <functional>
-
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/Component/EntityId.h>
 
 namespace PhysXEditorTests
 {
-    class MockSystemNotificationBusHandler
-        : public Physics::SystemNotificationBus::Handler
-    {
-    public:
-        MockSystemNotificationBusHandler()
-        {
-            Physics::SystemNotificationBus::Handler::BusConnect();
-        }
-
-        ~MockSystemNotificationBusHandler()
-        {
-            Physics::SystemNotificationBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD1(OnWorldCreated, void(Physics::World*));
-    };
-
     TEST_F(PhysXEditorFixture, SetDefaultSceneConfiguration_TriggersHandler)
     {
         bool handlerInvoked = false;
@@ -69,32 +32,12 @@ namespace PhysXEditorTests
 
         AzPhysics::SceneConfiguration newConfiguration;
 
-        newConfiguration.m_legacyConfiguration.m_gravity = newGravity;
-        newConfiguration.m_legacyConfiguration.m_fixedTimeStep = newFixedTimeStep;
-        newConfiguration.m_legacyConfiguration.m_maxTimeStep = newMaxTimeStep;
+        newConfiguration.m_gravity = newGravity;
 
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         physicsSystem->RegisterOnDefaultSceneConfigurationChangedEventHandler(defaultSceneConfigHandler);
         physicsSystem->UpdateDefaultSceneConfiguration(newConfiguration);
 
         EXPECT_TRUE(handlerInvoked);
-    }
-
-    TEST_F(PhysXEditorFixture, SystemNotificationBus_CreateWorld_HandlerReceivedOnCreateWorldNotification)
-    {
-        testing::StrictMock<MockSystemNotificationBusHandler> mockHandler;
-
-        EXPECT_CALL(mockHandler, OnWorldCreated).Times(1);
-
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-            sceneConfiguration.m_legacyId = AZ::Crc32("SystemNotificationBusTestWorld");
-            AzPhysics::SceneHandle sceneHandle = physicsSystem->AddScene(sceneConfiguration);
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(sceneHandle))
-            {
-                auto world = scene->GetLegacyWorld();
-            }
-        }
     }
 } // namespace PhysXEditorTests

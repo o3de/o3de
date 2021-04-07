@@ -16,11 +16,15 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <AzCore/Component/TransformBus.h>
 #include <PhysX/CharacterControllerBus.h>
+
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace PhysX
 {
@@ -100,8 +104,8 @@ namespace PhysX
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // CharacterControllerRequestBus
         void Resize(float height) override;
@@ -131,7 +135,7 @@ namespace PhysX
 
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
         AZStd::unique_ptr<Physics::ShapeConfiguration> m_shapeConfig;
-        AZStd::unique_ptr<Physics::Character> m_controller;
+        AZStd::unique_ptr<PhysX::CharacterController> m_controller;
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
     };
 } // namespace PhysX

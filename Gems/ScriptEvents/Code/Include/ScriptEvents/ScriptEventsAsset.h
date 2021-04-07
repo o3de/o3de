@@ -24,11 +24,6 @@
 
 #include "ScriptEventDefinition.h"
 
-namespace ScriptEventAsset
-{
-    constexpr const char* k_RuntimeAssetIdStr = "{CB4D603E-8CB0-4D80-8165-4244F28AF187}";
-}
-
 namespace ScriptEvents
 {
     class ScriptEventsAsset
@@ -36,7 +31,7 @@ namespace ScriptEvents
     {
     public:
 
-        AZ_RTTI(ScriptEventsAsset, ScriptEventAsset::k_RuntimeAssetIdStr, AZ::Data::AssetData);
+        AZ_RTTI(ScriptEventsAsset, "{CB4D603E-8CB0-4D80-8165-4244F28AF187}", AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(ScriptEventsAsset, AZ::SystemAllocator, 0);
         
         ScriptEventsAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)

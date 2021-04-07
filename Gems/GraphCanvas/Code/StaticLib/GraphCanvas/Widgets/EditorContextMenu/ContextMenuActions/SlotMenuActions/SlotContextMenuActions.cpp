@@ -37,6 +37,7 @@ namespace GraphCanvas
     void RemoveSlotMenuAction::RefreshAction()
     {        
         bool enableAction = false;
+        bool isUserSlot = false;
 
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();
@@ -51,9 +52,14 @@ namespace GraphCanvas
 
                 GraphModelRequestBus::EventResult(enableAction, graphId, &GraphModelRequests::IsSlotRemovable, endpoint);
             }
+
+            if (GraphUtils::IsSlotType(targetId, SlotTypes::DataSlot))
+            {
+                DataSlotRequestBus::EventResult(isUserSlot, targetId, &DataSlotRequests::IsUserSlot);
+            }
         }
 
-        setEnabled(enableAction);
+        setEnabled(enableAction || isUserSlot);
     }
 
     ContextMenuAction::SceneReaction RemoveSlotMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -324,6 +330,7 @@ namespace GraphCanvas
     void PromoteToVariableAction::RefreshAction()
     {
         bool enableAction = false;
+        bool isUserSlot = false;
 
         const AZ::EntityId& targetId = GetTargetId();
         const GraphId& graphId = GetGraphId();
@@ -332,6 +339,8 @@ namespace GraphCanvas
         {
             SlotType slotType = SlotTypes::Invalid;
             SlotRequestBus::EventResult(slotType, targetId, &SlotRequests::GetSlotType);
+
+            DataSlotRequestBus::EventResult(isUserSlot, targetId, &DataSlotRequests::IsUserSlot);
 
             if (slotType == SlotTypes::DataSlot)
             {
@@ -359,7 +368,7 @@ namespace GraphCanvas
             }
         }
 
-        setEnabled(enableAction);
+        setEnabled(enableAction && !isUserSlot);
     }
 
     GraphCanvas::ContextMenuAction::SceneReaction PromoteToVariableAction::TriggerAction(const AZ::Vector2& /*scenePos*/)

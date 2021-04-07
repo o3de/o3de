@@ -40,8 +40,20 @@
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 namespace ScriptCanvasEditor
 {
+
+    const char* GraphVariablesModel::m_columnNames[static_cast<int>(ColumnIndex::Count)] =
+    {
+        "Name",
+        "Type",
+        "Default Value",
+        "Scope",
+        "Initial Value"
+    };
+
     ////////////////////////
     // GraphVariablesModel
     ////////////////////////
@@ -135,6 +147,16 @@ namespace ScriptCanvasEditor
                 if (graphVariable)
                 {
                     return ScriptCanvas::VariableFlags::GetScopeDisplayLabel(graphVariable->GetScope());
+                }
+            }
+            else if (index.column() == ColumnIndex::InitialValueSource)
+            {
+                ScriptCanvas::GraphVariable* graphVariable = nullptr;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
+
+                if (graphVariable)
+                {
+                    return graphVariable->GetInitialValueSourceName().data();
                 }
             }
         }
@@ -232,6 +254,16 @@ namespace ScriptCanvasEditor
                     return ScriptCanvas::VariableFlags::GetScopeDisplayLabel(graphVariable->GetScope());
                 }
             }
+            else if (index.column() == ColumnIndex::InitialValueSource)
+            {
+                ScriptCanvas::GraphVariable* graphVariable = nullptr;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
+
+                if (graphVariable)
+                {
+                    return graphVariable->GetInitialValueSourceName().data();
+                }
+            }
         }
         break;
 
@@ -281,6 +313,19 @@ namespace ScriptCanvasEditor
                     return QVariant(type.c_str());
                 }
             }
+            else if (index.column() == ColumnIndex::InitialValueSource)
+            {
+                ScriptCanvas::GraphVariable* graphVariable = nullptr;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
+
+                QString tooltipString = QString("The value of this variable can only be set within this graph");
+                if (graphVariable->GetInitialValueSource() == ScriptCanvas::VariableFlags::InitialValueSource::Component)
+                {
+                    tooltipString = QString("The value of this variable can be set set on the component's properties");
+                }
+
+                return tooltipString;
+            }
             else
             {
                 AZStd::string variableName;
@@ -296,6 +341,7 @@ namespace ScriptCanvasEditor
 
                 return tooltipString;
             }
+           
         }
         break;
         case Qt::DecorationRole:
@@ -381,22 +427,17 @@ namespace ScriptCanvasEditor
         {
             if (index.column() == ColumnIndex::Scope)
             {
-                if (IsFunction())
-                {
-                    return QStringList{
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Local),
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Input),
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Output),
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::InOut)
-                    };
-                }
-                else
-                {
-                    return QStringList{
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Local),
-                        ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Input)
-                    };
-                }
+                return QStringList{
+                    ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Graph),
+                    ScriptCanvas::VariableFlags::GetScopeDisplayLabel(ScriptCanvas::VariableFlags::Scope::Function)
+                };
+            }
+            else if (index.column() == ColumnIndex::InitialValueSource)
+            {
+                return QStringList{
+                    tr(ScriptCanvas::GraphVariable::s_InitialValueSourceNames[0]),
+                    tr(ScriptCanvas::GraphVariable::s_InitialValueSourceNames[1])
+                };
             }
         }
         break;
@@ -497,21 +538,24 @@ namespace ScriptCanvasEditor
             }
             else if (index.column() == ColumnIndex::Scope)
             {
+                // Scope is not changed by users
+            }
+            else if (index.column() == ColumnIndex::InitialValueSource)
+            {
                 ScriptCanvas::GraphVariable* graphVariable = nullptr;
                 ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
 
                 if (graphVariable)
                 {
-                    QString exposureValue = value.toString();
+                    QString comboBoxValue = value.toString();
 
-                    if (!exposureValue.isEmpty())
+                    if (!comboBoxValue.isEmpty())
                     {
-                        ScriptCanvas::VariableFlags::Scope newScope = ScriptCanvas::VariableFlags::GetScopeFromLabel(exposureValue.toUtf8().data());
-
-                        if (graphVariable->GetScope() != newScope)
+                        if (graphVariable->GetInitialValueSourceName().compare(comboBoxValue.toUtf8().data()) != 0)
                         {
                             modifiedData = true;
-                            graphVariable->SetScope(newScope);
+                            graphVariable->SetInitialValueSourceFromName(comboBoxValue.toUtf8().data());
+                            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
                         }
                     }
                 }
@@ -563,8 +607,11 @@ namespace ScriptCanvasEditor
         }
         else if (index.column() == ColumnIndex::Scope)
         {
-            // Disabling the editing column temporarily, since the combo box doesn't work.
-            //itemFlags |= Qt::ItemIsEditable;
+            itemFlags |= Qt::ItemIsEditable;
+        }
+        else if (index.column() == ColumnIndex::InitialValueSource)
+        {
+            itemFlags |= Qt::ItemIsEditable;
         }
 
         return itemFlags;
@@ -778,6 +825,19 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void GraphVariablesModel::OnVariableInitialValueSourceChanged()
+    {
+        const ScriptCanvas::GraphScopedVariableId* variableId = ScriptCanvas::VariableNotificationBus::GetCurrentBusId();
+
+        int index = FindRowForVariableId((*variableId).m_identifier);
+
+        if (index >= 0)
+        {
+            QModelIndex modelIndex = createIndex(index, ColumnIndex::InitialValueSource, nullptr);
+            dataChanged(modelIndex, modelIndex);
+        }
+    }
+
     void GraphVariablesModel::OnVariablePriorityChanged()
     {
         const ScriptCanvas::GraphScopedVariableId* variableId = ScriptCanvas::VariableNotificationBus::GetCurrentBusId();
@@ -791,6 +851,16 @@ namespace ScriptCanvasEditor
 
             dataChanged(modelIndex, otherIndex);
         }
+    }
+
+    QVariant GraphVariablesModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
+    {
+        if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        {
+            return tr(m_columnNames[section]);
+        }
+
+        return QAbstractItemModel::headerData(section, orientation, role);
     }
 
     ScriptCanvas::VariableId GraphVariablesModel::FindVariableIdForIndex(const QModelIndex& index) const
@@ -977,20 +1047,7 @@ namespace ScriptCanvasEditor
 
         for (auto variableMapData : copiedVariableData.m_variableMapping)
         {
-            AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> variableOutcome = requests->CloneVariable(variableMapData.second);
-
-            if (isRuntimeGraph)
-            {
-                if (variableOutcome)
-                {
-                    ScriptCanvas::GraphVariable* variable = requests->FindVariableById(variableOutcome.GetValue());
-
-                    if (variable)
-                    {
-                        variable->RemoveScope(ScriptCanvas::VariableFlags::Scope::Output);
-                    }
-                }
-            }
+            requests->CloneVariable(variableMapData.second);
         }
 
         GeneralRequestBus::Broadcast(&GeneralRequests::PopPreventUndoStateUpdate);
@@ -1015,12 +1072,15 @@ namespace ScriptCanvasEditor
         ApplyPreferenceSort();
         setItemDelegateForColumn(GraphVariablesModel::Name, aznew GraphCanvas::IconDecoratedNameDelegate(this));
         setItemDelegateForColumn(GraphVariablesModel::Scope, aznew GraphCanvas::GenericComboBoxDelegate(this));
+        setItemDelegateForColumn(GraphVariablesModel::InitialValueSource, aznew GraphCanvas::GenericComboBoxDelegate(this));
 
         horizontalHeader()->setStretchLastSection(false);
-        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Type, QHeaderView::ResizeMode::Fixed);
-        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Name, QHeaderView::ResizeMode::Stretch);
-        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::DefaultValue, QHeaderView::ResizeMode::Fixed);
-        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Scope, QHeaderView::ResizeMode::Fixed);
+        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Name, QHeaderView::ResizeMode::ResizeToContents);
+        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::DefaultValue, QHeaderView::ResizeMode::ResizeToContents);
+        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Type, QHeaderView::ResizeMode::Stretch);
+        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::Scope, QHeaderView::ResizeMode::Stretch);
+        horizontalHeader()->setSectionResizeMode(GraphVariablesModel::InitialValueSource, QHeaderView::ResizeMode::Stretch);
+        horizontalHeader()->show();
 
         {
             QAction* deleteAction = new QAction(this);
@@ -1229,16 +1289,18 @@ namespace ScriptCanvasEditor
 
         horizontalHeader()->resizeSection(GraphVariablesModel::Type, typeLength);
         horizontalHeader()->resizeSection(GraphVariablesModel::DefaultValue, defaultValueLength);
-        
-        int exposureLength = aznumeric_cast<int>(availableWidth * 0.2f);
-        int maxExposureLength = 60;
 
-        if (exposureLength >= 60)
+        horizontalHeader()->resizeSection(GraphVariablesModel::Scope, 100);
+
+        int remainingLength = aznumeric_cast<int>(availableWidth * 0.1f);
+        int maxExposureLength = 80;
+
+        if (remainingLength >= maxExposureLength)
         {
-            exposureLength = 60;
+            remainingLength = maxExposureLength;
         }
 
-        horizontalHeader()->resizeSection(GraphVariablesModel::Scope, exposureLength);
+        horizontalHeader()->resizeSection(GraphVariablesModel::InitialValueSource, 120);
     }
 
     void GraphVariablesTableView::OnCopySelected()

@@ -58,7 +58,7 @@ namespace GameStateSamples
         if (levelSystem && !iSystem->GetGlobalEnvironment()->IsEditor())
         {
             // Unload the currently loaded level
-            levelSystem->UnLoadLevel();
+            levelSystem->UnloadLevel();
             if (iSystem->GetI3DEngine())
             {
                 iSystem->GetI3DEngine()->LoadEmptyLevel();

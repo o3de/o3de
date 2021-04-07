@@ -1,0 +1,265 @@
+{
+  "baseMaterial": {
+    "description": "Base Material with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "propertyLayout": {
+      "version": 1,
+      "groups": [
+        {
+          "id": "baseColor",
+          "displayName": "Base Color",
+          "description": "Properties for configuring the surface reflected color for dielectrics or reflectance values for metals."
+        },
+        {
+          "id": "metallic",
+          "displayName": "Metallic",
+          "description": "Properties for configuring whether the surface is metallic or not."
+        },
+        {
+          "id": "roughness",
+          "displayName": "Roughness",
+          "description": "Properties for configuring how rough the surface appears."
+        },
+        {
+          "id": "specularF0",
+          "displayName": "Specular Reflectance f0",
+          "description": "The constant f0 represents the specular reflectance at normal incidence (Fresnel 0 Angle)."
+        },
+        {
+          "id": "normal",
+          "displayName": "Normal",
+          "description": "Properties related to configuring surface normal."
+        },
+        {
+          "id": "opacity",
+          "displayName": "Opacity",
+          "description": "Properties for configuring the materials transparency."
+        }
+      ],
+      "properties": {
+        "general": [
+          {
+            "id": "texcoord",
+            "displayName": "UV Channel",
+            "description": "Which UV channel to use when sampling textures.",
+            "type": "int",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 8
+          }
+        ],
+        "baseColor": [
+          {
+            "id": "colorLinear",
+            "displayName": "Color",
+            "description": "Color is displayed as sRGB but the values are stored as linear color.",
+            "type": "color",
+            "defaultValue": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "aliasOutputId": {
+              "type": "shaderConstant",
+              "id": "m_baseColor"
+            }
+          },
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "Strength factor for scaling the base color values. Zero (0.0) is black, white (1.0) is full color.",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "aliasOutputId": {
+              "type": "shaderConstant",
+              "id": "m_baseColorFactor"
+            }
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to enable using the texture map values (texture value is scaled by the factor.)",
+            "type": "bool",
+            "defaultValue": true
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Base color texture map",
+            "type": "image",
+            "defaultValue": "EngineAssets/TextureMsg/DefaultNoUVs.tif",
+            "aliasOutputId": {
+              "type": "shaderImage",
+              "id": "m_baseColorMap"
+            }
+          }
+        ],
+        "metallic": [
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "Determines if surface is metal or not. Black (0.0) is non-metal, white (1.0) means raw metal.",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to enable using the texture map values (texture value is scaled by the factor.)",
+            "type": "bool",
+            "defaultValue": false
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Texture map for defining per-pixel surface metalness variation.",
+            "type": "image",
+            "defaultValue": ""
+          }
+        ],
+        "roughness": [
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "Describes transition from smooth to rough microfacet surface. Black (0.0) is smooth, white (1.0) is rough.",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to enable using the texture map values (texture value is scaled by the factor.)",
+            "type": "bool",
+            "defaultValue": true
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Texture map for describing per-pixel surface roughness variation.",
+            "type": "image",
+            "defaultValue": "EngineAssets/TextureMsg/DefaultNoUVs_spec.tif"
+          }
+        ],
+        "specularF0": [
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "The default IOR is 1.5, which gives you 0.04 (4% of light reflected at 0\u00c2\u00b0 angle for dielectric materials). F0 values lie in the range 0-0.08, so that\u00e2\u20ac\u2122s why the default F0 slider is set on 0.5.",
+            "type": "float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to enable using the texture map values (texture value is scaled by the factor.)",
+            "type": "bool",
+            "defaultValue": true
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Texture map for describing per-pixel surface specular reflectance variation.",
+            "type": "image",
+            "defaultValue": ""
+          }
+        ],
+        "normal": [
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "Strength factor for scaling the influence of normal map values",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture map, or just rely on vertex normals.",
+            "type": "bool",
+            "defaultValue": true
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Texture map for defining Tangent space surface normal direction.",
+            "type": "image",
+            "defaultValue": "EngineAssets/TextureMsg/DefaultNoUVs_ddn.tif",
+            "aliasOutputId": {
+              "type": "shaderImage",
+              "id": "m_normalMap"
+            }
+          }
+        ],
+        "opacity": [
+          {
+            "id": "doubleSided",
+            "displayName": "Double-sided",
+            "description": "Whether to render back-faces or just front-faces.",
+            "type": "bool",
+            "defaultValue": false
+          },
+          {
+            "id": "factor",
+            "displayName": "Factor",
+            "description": "Scales the opacity values",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "cutoutAlpha",
+            "displayName": "Cutout Alpha",
+            "description": "Whether to clip the surfaces where the alpha value falls below a threshold.",
+            "type": "bool",
+            "defaultValue": false
+          },
+          {
+            "id": "cutoutThreshold",
+            "displayName": "Cutout Alpha Threshold",
+            "description": "If enabled, values lower than this will be clipped.",
+            "type": "float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "max": 1.0
+          },
+          {
+            "id": "useBaseColorTextureAlpha",
+            "displayName": "Use Base Color Texture Alpha",
+            "description": "Use the alpha channel of the base color texture map to define opacity.",
+            "type": "bool",
+            "defaultValue": false
+          },
+          {
+            "id": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture map to define opacity.",
+            "type": "bool",
+            "defaultValue": true
+          },
+          {
+            "id": "textureMap",
+            "displayName": "Texture Map",
+            "description": "Texture map for defining surface opacity.",
+            "type": "image",
+            "defaultValue": ""
+          }
+        ]
+      }
+    },
+    "shaders": [
+      {
+        "file": "./StandardPBR_ForwardPass.shader"
+      }
+    ]
+  }
+}

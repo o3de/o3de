@@ -42,11 +42,10 @@ namespace AZ
 
             void BuildOutAttachmentBinding();
             AZ::Vector4 CalThresholdConstants();
-            void FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* nameStr);
 
             // output texture vertical dimension required by compute shader
-            AZ::RHI::ShaderInputConstantIndex m_sourceImageTexelSizeInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_thresholdConstantsInputIndex;
+            AZ::RHI::ShaderInputNameIndex m_sourceImageTexelSizeInputIndex = "m_sourceImageTexelSize";
+            AZ::RHI::ShaderInputNameIndex m_thresholdConstantsInputIndex = "m_thresholdConstants";
 
             float m_threshold = AZ::Render::Bloom::DefaultThreshold;
             float m_knee = AZ::Render::Bloom::DefaultKnee;

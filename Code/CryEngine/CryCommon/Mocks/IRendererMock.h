@@ -63,9 +63,9 @@ public:
     MOCK_CONST_METHOD2(GetCurrentNumberOfDrawCalls,
         void(int& nGeneral, int& nShadowGen));
     MOCK_CONST_METHOD1(GetCurrentNumberOfDrawCalls,
-        int(const uint32 EFSListMask));
+        int(uint32 EFSListMask));
     MOCK_CONST_METHOD1(GetCurrentDrawCallRTTimes,
-        float(const uint32 EFSListMask));
+        float(uint32 EFSListMask));
     MOCK_METHOD1(SetDebugRenderNode,
         void(IRenderNode * pRenderNode));
     MOCK_CONST_METHOD1(IsDebugRenderNode,
@@ -135,7 +135,7 @@ public:
     MOCK_METHOD1(ApplyViewParameters,
         void(const CameraViewParameters& viewParameters));
     MOCK_METHOD5(DrawDynVB,
-        void(SVF_P3F_C4B_T2F * pBuf, uint16 * pInds, int nVerts, int nInds, const PublicRenderPrimitiveType nPrimType));
+        void(SVF_P3F_C4B_T2F * pBuf, uint16 * pInds, int nVerts, int nInds, PublicRenderPrimitiveType nPrimType));
 
     // Hand-edit: google mock has issues with DynUiPrimitiveList
     void DrawDynUiPrimitiveList([[maybe_unused]] DynUiPrimitiveList& primitives, [[maybe_unused]] int totalNumVertices, [[maybe_unused]] int totalNumIndices) override { return; }
@@ -147,7 +147,7 @@ public:
     MOCK_METHOD1(GetRenderViewForThread,
         CRenderView * (int nThreadID));
     MOCK_METHOD1(SetGammaDelta,
-        bool(const float fGamma));
+        bool(float fGamma));
     MOCK_METHOD0(RestoreGamma,
         void(void));
     MOCK_METHOD3(ChangeDisplay,
@@ -255,7 +255,7 @@ public:
     MOCK_METHOD3(FlushRTCommands,
         bool(bool bWait, bool bImmediatelly, bool bForce));
     MOCK_CONST_METHOD7(DrawStringU,
-        void(IFFont_RenderProxy * pFont, float x, float y, float z, const char* pStr, const bool asciiMultiLine, const STextDrawContext& ctx));
+        void(IFFont_RenderProxy * pFont, float x, float y, float z, const char* pStr, bool asciiMultiLine, const STextDrawContext& ctx));
     MOCK_METHOD0(RT_CurThreadList,
         int());
     MOCK_METHOD6(EF_PrecacheResource,
@@ -343,9 +343,9 @@ public:
     MOCK_METHOD7(EF_AddEf,
         void(IRenderElement * pRE, SShaderItem & pSH, CRenderObject * pObj, const SRenderingPassInfo& passInfo, int nList, int nAW, const SRendItemSorter& rendItemSorter));
     MOCK_METHOD4(EF_EndEf3D,
-        void(const int nFlags, const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo));
+        void(int nFlags, int nPrecacheUpdateId, int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo));
     MOCK_METHOD1(EF_InvokeShadowMapRenderJobs,
-        void(const int nFlags));
+        void(int nFlags));
     MOCK_METHOD1(EF_IsFakeDLight,
         bool(const CDLight * Source));
     MOCK_METHOD2(EF_ADDDlight,
@@ -393,11 +393,11 @@ public:
     MOCK_METHOD0(EF_DisableTemporalEffects,
         void());
     MOCK_METHOD3(EF_AddWaterSimHit,
-        void(const Vec3& vPos, const float scale, const float strength));
+        void(const Vec3& vPos, float scale, float strength));
     MOCK_METHOD0(EF_DrawWaterSimHits,
         void());
     MOCK_METHOD1(EF_EndEf2D,
-        void(const bool bSort));
+        void(bool bSort));
     MOCK_METHOD0(ForceGC,
         void());
     MOCK_CONST_METHOD0(GetPolyCount,
@@ -532,7 +532,7 @@ public:
     MOCK_METHOD8(DXTCompress,
         bool(const byte * raw_data, int nWidth, int nHeight, ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, MIPDXTcallback callback));
     MOCK_METHOD9(DXTDecompress,
-        bool(const byte * srcData, const size_t srcFileSize, byte * dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix));
+        bool(const byte * srcData, size_t srcFileSize, byte * dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix));
     MOCK_METHOD1(RemoveTexture,
         void(unsigned int TextureId));
     MOCK_METHOD1(DeleteFont,
@@ -727,7 +727,7 @@ public:
     MOCK_METHOD1(EndScreenShot,
         void(int e_ScreenShot));
     MOCK_METHOD3(SetRendererCVar,
-        void(ICVar*, const char*, const bool));
+        void(ICVar*, const char*, bool));
     MOCK_METHOD0(GetRenderPipeline,
         SRenderPipeline * ());
     MOCK_METHOD0(GetShaderManager,

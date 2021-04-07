@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/ColliderComponentBus.h>
 
 namespace Blast
@@ -22,7 +23,7 @@ namespace Blast
         , public PhysX::BodyConfigurationComponentBus::Handler
     {
     public:
-        ShapesProvider(AZ::EntityId entityId, Physics::RigidBodyConfiguration configuration);
+        ShapesProvider(AZ::EntityId entityId, AzPhysics::RigidBodyConfiguration configuration);
         ~ShapesProvider();
 
         void AddShape(AZStd::shared_ptr<Physics::Shape> shape);
@@ -32,14 +33,14 @@ namespace Blast
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
-        Physics::RigidBodyConfiguration GetRigidBodyConfiguration() override;
+        AzPhysics::RigidBodyConfiguration GetRigidBodyConfiguration() override;
 
-        Physics::WorldBodyConfiguration GetWorldBodyConfiguration() override;
+        AzPhysics::SimulatedBodyConfiguration GetSimulatedBodyConfiguration() override;
 
     private:
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_shapes;
         AZ::EntityId m_entityId;
-        Physics::RigidBodyConfiguration m_configuration;
+        AzPhysics::RigidBodyConfiguration m_configuration;
     };
     AZ_POP_DISABLE_WARNING
 } // namespace Blast

@@ -19,9 +19,11 @@ from manager.configuration_manager import ConfigurationManager
 from manager.controller_manager import ControllerManager
 from manager.thread_manager import ThreadManager
 from manager.view_manager import ViewManager
+from style import azqtcomponents_resources
+from utils import file_utils
 
 # logging setup
-logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+logging.basicConfig(filename="resource_mapping_tool.log", filemode='w', level=logging.INFO,
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
 logging.getLogger('boto3').setLevel(logging.CRITICAL)
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
@@ -30,10 +32,18 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 logger = logging.getLogger(__name__)
 if __name__ == "__main__":
-    import sys
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app: QApplication = QApplication(sys.argv)
+
+    try:
+        style_sheet_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__),
+                                                     'style/base_style_sheet.qss')
+        with open(style_sheet_path, "r") as in_file:
+            style_sheet: str = in_file.read()
+            app.setStyleSheet(style_sheet)
+    except FileNotFoundError:
+        logger.warning("Failed to load style sheet for resource mapping tool")
 
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()

@@ -67,7 +67,7 @@ namespace Multiplayer
 
     void PropertyPublisher::SetRebasing()
     {
-        AZ_Assert(m_pendingRecord.GetNetworkRole() == NetEntityRole::ClientAutonomous, "Expected to be rebasing on a ClientAutonomous entity");
+        AZ_Assert(m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous, "Expected to be rebasing on a Autonomous entity");
         m_replicatorState = EntityReplicatorState::Rebasing;
     }
 
@@ -117,8 +117,8 @@ namespace Multiplayer
         // This is basically an Add record, but we don't want to send back predictable values
         m_sentRecords.clear();
         m_netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
-        // Don't send predictable properties back to the ClientAutonomous unless we correct them
-        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::ClientAutonomous)
+        // Don't send predictable properties back to the Autonomous unless we correct them
+        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous)
         {
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
@@ -144,8 +144,8 @@ namespace Multiplayer
             m_pendingRecord.Append(*iter);
         }
 
-        // Don't send predictable properties back to the ClientAutonomous unless we correct them
-        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::ClientAutonomous)
+        // Don't send predictable properties back to the Autonomous unless we correct them
+        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous)
         {
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
@@ -165,7 +165,7 @@ namespace Multiplayer
         AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.ResetConsumedBits();
         m_pendingRecord.Serialize(serializer);
-        m_netBindComponent->SerializeStateDeltaMessage(m_pendingRecord, serializer, ComponentSerializationType::Properties);
+        m_netBindComponent->SerializeStateDeltaMessage(m_pendingRecord, serializer);
         return serializer.IsValid();
     }
 

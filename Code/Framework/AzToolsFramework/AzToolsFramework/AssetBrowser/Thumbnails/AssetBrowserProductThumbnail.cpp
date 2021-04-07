@@ -14,7 +14,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/AssetBrowserProductThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <QPixmap>
 
 namespace AzToolsFramework
@@ -36,6 +36,21 @@ namespace AzToolsFramework
         const AZ::Data::AssetId& ProductThumbnailKey::GetAssetId() const { return m_assetId; }
 
         const AZ::Data::AssetType& ProductThumbnailKey::GetAssetType() const { return m_assetType; }
+
+        size_t ProductThumbnailKey::GetHash() const
+        {
+            return m_assetType.GetHash();
+        }
+
+        bool ProductThumbnailKey::Equals(const ThumbnailKey* other) const
+        {
+            if (!ThumbnailKey::Equals(other))
+            {
+                return false;
+            }
+            // products displayed in Asset Browser have icons based on asset type, so multiple different products with same asset type will have same thumbnail
+            return m_assetId == azrtti_cast<const ProductThumbnailKey*>(other)->GetAssetId();
+        }
 
         //////////////////////////////////////////////////////////////////////////
         // ProductThumbnail
@@ -93,7 +108,7 @@ namespace AzToolsFramework
         // ProductThumbnailCache
         //////////////////////////////////////////////////////////////////////////
         ProductThumbnailCache::ProductThumbnailCache()
-            : ThumbnailCache<ProductThumbnail, ProductKeyHash, ProductKeyEqual>() {}
+            : ThumbnailCache<ProductThumbnail>() {}
 
         ProductThumbnailCache::~ProductThumbnailCache() = default;
 

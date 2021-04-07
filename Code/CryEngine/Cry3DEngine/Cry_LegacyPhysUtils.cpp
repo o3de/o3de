@@ -37,7 +37,7 @@ namespace LegacyCryPhysicsUtils
             strided_pointer<Vec3mem> pts = strided_pointer<Vec3mem>((Vec3mem*)_pts.data, _pts.iStride);
 
             ptitem* pt, * ptmax, * ptdeleted, * ptlist = npts > sizeof(ptbuf) / sizeof(ptbuf[0]) ? new ptitem[npts] : ptbuf;
-            qhtritem* tr, * trnext, * trend, * trnew, * trdata = trbuf, * trstart = 0, * trlast, * trbest;
+            qhtritem* tr, * trnext, * trend, * trnew, * trdata = trbuf, * trstart = 0, * trlast, * trbest = nullptr;
             int i, j, k, ti, trdatasz = sizeof(trbuf) / sizeof(trbuf[0]), bidx[6], n, next_iter, delbuds;
             qhtritem** tmparr_ptr = tmparr_ptr_buf;
             int* tmparr_idx = tmparr_idx_buf, tmparr_sz = 512;
@@ -679,7 +679,7 @@ namespace LegacyCryPhysicsUtils
             {
                 return 0;
             }
-            vtxthunk* pThunks, * pPrevThunk, * pContStart, ** pSags, ** pBottoms, * pPinnacle, * pBounds[2], * pPrevBounds[2], * ptr, * ptr_next;
+            vtxthunk* pThunks, * pPrevThunk, * pContStart, ** pSags, ** pBottoms, * pPinnacle = nullptr, * pBounds[2], * pPrevBounds[2], * ptr, * ptr_next;
             vtxthunk bufThunks[32], * bufSags[16], * bufBottoms[16];
             int i, nThunks, nBottoms = 0, nSags = 0, iBottom = 0, nConts = 0, j, isag, nThunks0, nTris = 0, nPrevSags, nTrisCnt, iter, nDegenTris = 0;
             float ymax, ymin, e, area0 = 0, area1 = 0, cntarea, minCntArea;

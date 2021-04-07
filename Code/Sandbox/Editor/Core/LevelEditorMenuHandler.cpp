@@ -191,6 +191,8 @@ void LevelEditorMenuHandler::Initialize()
         m_viewPaneManager, &QtViewPaneManager::registeredPanesChanged,
         this, &LevelEditorMenuHandler::ResetToolsMenus);
 
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
     m_topLevelMenus << CreateFileMenu();
 
     auto editMenu = CreateEditMenu();
@@ -226,6 +228,11 @@ bool LevelEditorMenuHandler::MRUEntryIsValid(const QString& entry, const QString
 
     QFileInfo info(entry);
     if (!info.exists())
+    {
+        return false;
+    }
+
+    if (!entry.endsWith(m_levelExtension))
     {
         return false;
     }
@@ -473,8 +480,18 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu->addAction(ID_EDIT_PASTE);
     // editMenu.AddSeparator();
 
-    // Duplicate
-    editMenu.AddAction(ID_EDIT_CLONE);
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    bool prefabWipFeaturesEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+    if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
+    {
+        // Duplicate
+        editMenu.AddAction(ID_EDIT_CLONE);
+    }
 
     // Delete
     editMenu.AddAction(ID_EDIT_DELETE);
@@ -701,8 +718,15 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
     gameMenu.AddAction(ID_SWITCH_PHYSICS);
     gameMenu.AddSeparator();
 
-    // Export to Engine
-    gameMenu.AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE);
+
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+    if (!usePrefabSystemForLevels)
+    {
+        // Export to Engine
+        gameMenu.AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE);
+    }
 
     // Export Selected Objects
     gameMenu.AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS);

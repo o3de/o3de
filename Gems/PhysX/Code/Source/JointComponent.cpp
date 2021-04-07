@@ -13,8 +13,9 @@
 #include <PhysX_precompiled.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
 #include <Source/Joint.h>

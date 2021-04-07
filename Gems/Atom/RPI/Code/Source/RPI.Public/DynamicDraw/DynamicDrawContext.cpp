@@ -95,13 +95,25 @@ namespace AZ
         }
 
 
-        void DynamicDrawContext::InitShader(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues)
+        void DynamicDrawContext::InitShader(Data::Asset<ShaderAsset> shaderAsset)
         {
             Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
-            InitShader(shader, optionAndValues);
+            InitShader(shader);
         }
 
-        void DynamicDrawContext::InitShader(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues)
+        void DynamicDrawContext::InitShader(Data::Instance<Shader> shader)
+        {
+            InitShaderWithVariant(shader, nullptr);
+            m_supportShaderVariants = true;
+        }
+
+        void DynamicDrawContext::InitShaderWithVariant(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues)
+        {
+            Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
+            InitShaderWithVariant(shader, optionAndValues);
+        }
+
+        void DynamicDrawContext::InitShaderWithVariant(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues)
         {
             AZ_Assert(!m_initialized, "Can't call InitShader after context was initialized (EndInit was called)");
 
@@ -110,6 +122,9 @@ namespace AZ
                 AZ_Error("RPI", false, "Initializing DynamicDrawContext with invalid shader");
                 return;
             }
+
+            m_supportShaderVariants = false;
+            m_shader = shader;
 
             m_pipelineState = aznew RPI::PipelineStateForDraw;
             m_pipelineState->Init(shader, optionAndValues);
@@ -198,6 +213,30 @@ namespace AZ
         bool DynamicDrawContext::IsReady()
         {
             return m_initialized;
+        }
+
+        ShaderVariantId DynamicDrawContext::UseShaderVariant(const ShaderOptionList& optionAndValues)
+        {
+            AZ_Assert(m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
+                "Check if it was initialized with InitShaderWithVariant");
+
+            ShaderVariantId variantId;
+
+            if (!m_supportShaderVariants)
+            {
+                return variantId;
+            }
+
+            RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
+
+            for (const auto& optionAndValue : optionAndValues)
+            {
+                shaderOptionGroup.SetValue(optionAndValue.first, optionAndValue.second);
+            }
+
+            variantId = shaderOptionGroup.GetShaderVariantId();
+            return variantId;
         }
 
         void DynamicDrawContext::AddDrawStateOptions(DrawStateOptions options)
@@ -312,6 +351,13 @@ namespace AZ
         void DynamicDrawContext::UnsetViewport()
         {
             m_useViewport = false;
+        }
+
+        void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
+        {
+            AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
+                "Check if it was initialized with InitShaderWithVariant");
+            m_currentShaderVariantId = shaderVariantId;
         }
 
         void DynamicDrawContext::DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
@@ -492,10 +538,19 @@ namespace AZ
             }
             auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_drawSrgAsset);
 
-            // set fallback value for shader variant
+            // Set fallback value for shader variant if draw srg contains constant for shader variant fallback 
             if (m_hasShaderVariantKeyFallbackEntry)
             {
-                m_pipelineState->UpdateSrgVariantFallback(drawSrg);
+                // If the dynamic draw context support multiple shader variants, it uses m_currentShaderVariantId to setup srg shader variant fallback key
+                if (m_supportShaderVariants)
+                {
+                    drawSrg->SetShaderVariantKeyFallbackValue(m_currentShaderVariantId.m_key);
+                }
+                // otherwise use the m_pipelineState to config the fallback
+                else
+                {
+                    m_pipelineState->UpdateSrgVariantFallback(drawSrg);
+                }
             }
 
             return drawSrg;
@@ -514,6 +569,11 @@ namespace AZ
         RHI::DrawListTag DynamicDrawContext::GetDrawListTag()
         {
             return m_drawListTag;
+        }
+
+        const Data::Instance<Shader>& DynamicDrawContext::GetShader() const
+        {
+            return m_shader;
         }
 
         void DynamicDrawContext::SubmitDrawData(ViewPtr view)

@@ -45,18 +45,7 @@ namespace AZ
 
         BloomDownsamplePass::BloomDownsamplePass(const RPI::PassDescriptor& descriptor)
             : ComputePass(descriptor)
-        {
-            FindShaderConstantInputIndex(m_sourceImageTexelSizeInputIndex, "m_sourceImageTexelSize");
-            FindShaderConstantInputIndex(m_thresholdConstantsInputIndex, "m_thresholdConstants");
-        }
-
-        void BloomDownsamplePass::FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* nameStr)
-        {
-            Name name(nameStr);
-            index = m_shaderResourceGroup->FindShaderInputConstantIndex(name);
-            AZ_Error("PassSystem", index.IsValid(), "[BloomBlurChildPass '%s']: Failed to find shader input constant %s.",
-                name.GetCStr());
-        }
+        { }
 
         void BloomDownsamplePass::BuildOutAttachmentBinding()
         {

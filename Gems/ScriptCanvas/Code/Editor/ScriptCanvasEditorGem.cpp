@@ -66,6 +66,7 @@
 #include <Editor/GraphCanvas/Components/NodeDescriptors/UserDefinedNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/VariableNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.h>
+#include <Editor/GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/MappingComponent.h>
 
 #include <Editor/View/Widgets/VariablePanel/VariableDockWidget.h>
@@ -118,6 +119,7 @@ namespace ScriptCanvas
             ScriptCanvasEditor::SetVariableNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::UserDefinedNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::FunctionNodeDescriptorComponent::CreateDescriptor(),
+            ScriptCanvasEditor::FunctionDefinitionNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::NodelingDescriptorComponent::CreateDescriptor()
             });
 

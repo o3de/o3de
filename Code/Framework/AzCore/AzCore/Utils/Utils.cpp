@@ -42,6 +42,30 @@ namespace AZ::Utils
         return result.m_pathStored;
     }
 
+    AZ::IO::FixedMaxPathString GetExecutableDirectory()
+    {
+        AZ::IO::FixedMaxPathString executableDirectory;
+        if(GetExecutableDirectory(executableDirectory.data(), executableDirectory.capacity())
+            == ExecutablePathResult::Success)
+        {
+            // Updated the size field within the fixed string by using char_traits to calculate the string length
+            executableDirectory.resize_no_construct(AZStd::char_traits<char>::length(executableDirectory.data()));
+        }
+
+        return executableDirectory;
+    }
+
+    AZ::IO::FixedMaxPathString GetEngineManifestPath()
+    {
+        AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory();
+        if (!o3deManifestPath.empty())
+        {
+            o3deManifestPath /= "o3de_manifest.json";
+        }
+
+        return o3deManifestPath.Native();
+    }
+
     AZ::IO::FixedMaxPathString GetEnginePath()
     {
         if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)

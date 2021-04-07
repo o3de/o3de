@@ -67,10 +67,10 @@ namespace Multiplayer
     bool ReplicationRecord::AreAllBitsConsumed() const
     {
         bool ret = true;
-        ret &= m_authorityToClientConsumedBits == m_authorityToClientRecord.GetSize();
-        ret &= m_authorityToServerConsumedBits == m_authorityToServerRecord.GetSize();
-        ret &= m_authorityToAutonomousConsumedBits == m_authorityToAutonomousRecord.GetSize();
-        ret &= m_autonomousToAuthorityConsumedBits == m_autonomousToAuthorityRecord.GetSize();
+        ret &= m_authorityToClientConsumedBits == m_authorityToClient.GetSize();
+        ret &= m_authorityToServerConsumedBits == m_authorityToServer.GetSize();
+        ret &= m_authorityToAutonomousConsumedBits == m_authorityToAutonomous.GetSize();
+        ret &= m_autonomousToAuthorityConsumedBits == m_autonomousToAuthority.GetSize();
         return ret;
     }
 
@@ -86,37 +86,37 @@ namespace Multiplayer
     {
         ResetConsumedBits();
 
-        uint32_t recordSize = m_authorityToClientRecord.GetSize();
-        m_authorityToClientRecord.Clear();
-        m_authorityToClientRecord.Resize(recordSize);
+        uint32_t recordSize = m_authorityToClient.GetSize();
+        m_authorityToClient.Clear();
+        m_authorityToClient.Resize(recordSize);
 
-        recordSize = m_authorityToServerRecord.GetSize();
-        m_authorityToServerRecord.Clear();
-        m_authorityToServerRecord.Resize(recordSize);
+        recordSize = m_authorityToServer.GetSize();
+        m_authorityToServer.Clear();
+        m_authorityToServer.Resize(recordSize);
 
-        recordSize = m_authorityToAutonomousRecord.GetSize();
-        m_authorityToAutonomousRecord.Clear();
-        m_authorityToAutonomousRecord.Resize(recordSize);
+        recordSize = m_authorityToAutonomous.GetSize();
+        m_authorityToAutonomous.Clear();
+        m_authorityToAutonomous.Resize(recordSize);
 
-        recordSize = m_autonomousToAuthorityRecord.GetSize();
-        m_autonomousToAuthorityRecord.Clear();
-        m_autonomousToAuthorityRecord.Resize(recordSize);
+        recordSize = m_autonomousToAuthority.GetSize();
+        m_autonomousToAuthority.Clear();
+        m_autonomousToAuthority.Resize(recordSize);
     }
 
     void ReplicationRecord::Append(const ReplicationRecord &rhs)
     {
-        m_authorityToClientRecord |= rhs.m_authorityToClientRecord;
-        m_authorityToServerRecord |= rhs.m_authorityToServerRecord;
-        m_authorityToAutonomousRecord |= rhs.m_authorityToAutonomousRecord;
-        m_autonomousToAuthorityRecord |= rhs.m_autonomousToAuthorityRecord;
+        m_authorityToClient |= rhs.m_authorityToClient;
+        m_authorityToServer |= rhs.m_authorityToServer;
+        m_authorityToAutonomous |= rhs.m_authorityToAutonomous;
+        m_autonomousToAuthority |= rhs.m_autonomousToAuthority;
     }
 
     void ReplicationRecord::Subtract(const ReplicationRecord &rhs)
     {
-        m_authorityToClientRecord.Subtract(rhs.m_authorityToClientRecord);
-        m_authorityToServerRecord.Subtract(rhs.m_authorityToServerRecord);
-        m_authorityToAutonomousRecord.Subtract(rhs.m_authorityToAutonomousRecord);
-        m_autonomousToAuthorityRecord.Subtract(rhs.m_autonomousToAuthorityRecord);
+        m_authorityToClient.Subtract(rhs.m_authorityToClient);
+        m_authorityToServer.Subtract(rhs.m_authorityToServer);
+        m_authorityToAutonomous.Subtract(rhs.m_authorityToAutonomous);
+        m_autonomousToAuthority.Subtract(rhs.m_autonomousToAuthority);
     }
 
     bool ReplicationRecord::HasChanges() const
@@ -124,42 +124,42 @@ namespace Multiplayer
         bool hasChanges(false);
         if (ContainsAuthorityToClientBits())
         {
-            hasChanges = hasChanges ? hasChanges : m_authorityToClientRecord.AnySet();
+            hasChanges = hasChanges ? hasChanges : m_authorityToClient.AnySet();
         }
         if (ContainsAuthorityToServerBits())
         {
-            hasChanges = hasChanges ? hasChanges : m_authorityToServerRecord.AnySet();
+            hasChanges = hasChanges ? hasChanges : m_authorityToServer.AnySet();
         }
         if (ContainsAuthorityToAutonomousBits())
         {
-            hasChanges = hasChanges ? hasChanges : m_authorityToAutonomousRecord.AnySet();
+            hasChanges = hasChanges ? hasChanges : m_authorityToAutonomous.AnySet();
         }
         if (ContainsAutonomousToAuthorityBits())
         {
-            hasChanges = hasChanges ? hasChanges : m_autonomousToAuthorityRecord.AnySet();
+            hasChanges = hasChanges ? hasChanges : m_autonomousToAuthority.AnySet();
         }
         return hasChanges;
     }
 
-    bool ReplicationRecord::Serialize(AzNetworking::ISerializer& a_Serializer)
+    bool ReplicationRecord::Serialize(AzNetworking::ISerializer& serializer)
     {
         if (ContainsAuthorityToClientBits())
         {
-            a_Serializer.Serialize(m_authorityToClientRecord, "ServerToClientsRecord");
+            serializer.Serialize(m_authorityToClient, "ServerToClientsRecord");
         }
         if (ContainsAuthorityToServerBits())
         {
-            a_Serializer.Serialize(m_authorityToServerRecord, "ServerToServersRecord");
+            serializer.Serialize(m_authorityToServer, "ServerToServersRecord");
         }
         if (ContainsAuthorityToAutonomousBits())
         {
-            a_Serializer.Serialize(m_authorityToAutonomousRecord, "ServerToClientAutonomousRecord");
+            serializer.Serialize(m_authorityToAutonomous, "ServerToAutonomousRecord");
         }
         if (ContainsAutonomousToAuthorityBits())
         {
-            a_Serializer.Serialize(m_autonomousToAuthorityRecord, "ClientToServersRecord");
+            serializer.Serialize(m_autonomousToAuthority, "ClientToServersRecord");
         }
-        return a_Serializer.IsValid();
+        return serializer.IsValid();
     }
 
     void ReplicationRecord::ConsumeAuthorityToClientBits(uint32_t consumedBits)
@@ -196,46 +196,46 @@ namespace Multiplayer
 
     bool ReplicationRecord::ContainsAuthorityToClientBits() const
     {
-        return (m_netEntityRole != NetEntityRole::ServerAuthority)
+        return (m_netEntityRole != NetEntityRole::Authority)
             || (m_netEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToServerBits() const
     {
-        return (m_netEntityRole == NetEntityRole::ServerSimulation)
+        return (m_netEntityRole == NetEntityRole::Server)
             || (m_netEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToAutonomousBits() const
     {
-        return (m_netEntityRole == NetEntityRole::ClientAutonomous || m_netEntityRole == NetEntityRole::ServerSimulation)
+        return (m_netEntityRole == NetEntityRole::Autonomous || m_netEntityRole == NetEntityRole::Server)
             || (m_netEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAutonomousToAuthorityBits() const
     {
-        return (m_netEntityRole == NetEntityRole::ServerAuthority)
+        return (m_netEntityRole == NetEntityRole::Authority)
             || (m_netEntityRole == NetEntityRole::InvalidRole);
     }
 
     uint32_t ReplicationRecord::GetRemainingAuthorityToClientBits() const
     {
-        return m_authorityToClientConsumedBits < m_authorityToClientRecord.GetValidBitCount() ? m_authorityToClientRecord.GetValidBitCount() - m_authorityToClientConsumedBits : 0;
+        return m_authorityToClientConsumedBits < m_authorityToClient.GetValidBitCount() ? m_authorityToClient.GetValidBitCount() - m_authorityToClientConsumedBits : 0;
     }
 
     uint32_t ReplicationRecord::GetRemainingAuthorityToServerBits() const
     {
-        return m_authorityToServerConsumedBits < m_authorityToServerRecord.GetValidBitCount() ? m_authorityToServerRecord.GetValidBitCount() - m_authorityToServerConsumedBits : 0;
+        return m_authorityToServerConsumedBits < m_authorityToServer.GetValidBitCount() ? m_authorityToServer.GetValidBitCount() - m_authorityToServerConsumedBits : 0;
     }
 
     uint32_t ReplicationRecord::GetRemainingAuthorityToAutonomousBits() const
     {
-        return m_authorityToAutonomousConsumedBits < m_authorityToAutonomousRecord.GetValidBitCount() ? m_authorityToAutonomousRecord.GetValidBitCount() - m_authorityToAutonomousConsumedBits : 0;
+        return m_authorityToAutonomousConsumedBits < m_authorityToAutonomous.GetValidBitCount() ? m_authorityToAutonomous.GetValidBitCount() - m_authorityToAutonomousConsumedBits : 0;
     }
 
     uint32_t ReplicationRecord::GetRemainingAutonomousToAuthorityBits() const
     {
-        return m_autonomousToAuthorityConsumedBits < m_autonomousToAuthorityRecord.GetValidBitCount() ? m_autonomousToAuthorityRecord.GetValidBitCount() - m_autonomousToAuthorityConsumedBits : 0;
+        return m_autonomousToAuthorityConsumedBits < m_autonomousToAuthority.GetValidBitCount() ? m_autonomousToAuthority.GetValidBitCount() - m_autonomousToAuthorityConsumedBits : 0;
     }
 
     ReplicationRecordStats ReplicationRecord::GetStats() const

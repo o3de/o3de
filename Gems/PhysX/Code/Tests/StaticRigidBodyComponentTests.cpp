@@ -28,13 +28,22 @@ namespace PhysXEditorTests
 {
     int GetEditorStaticRigidBodyCount()
     {
-        AZStd::shared_ptr<Physics::World> world;
-        Physics::EditorWorldBus::BroadcastResult(world, &Physics::EditorWorldRequests::GetEditorWorld);
+        AzPhysics::SceneHandle sceneHandle;
+        Physics::EditorWorldBus::BroadcastResult(sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle);
 
-        auto* scene = static_cast<physx::PxScene*>(world->GetNativePointer());
-        PHYSX_SCENE_READ_LOCK(scene);
+        physx::PxScene* pxScene = nullptr;
 
-        return scene->getNbActors(physx::PxActorTypeFlag::eRIGID_STATIC);
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            if (AzPhysics::Scene* scene = physicsSystem->GetScene(sceneHandle))
+            {
+                pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+            }
+        }
+
+        PHYSX_SCENE_READ_LOCK(pxScene);
+
+        return pxScene->getNbActors(physx::PxActorTypeFlag::eRIGID_STATIC);
     }
 
     void AddEditorBoxShapeComponent(EntityPtr& editorEntity)

@@ -1,8 +1,4 @@
-:: Launches maya wityh a bunch of local hooks for Lumberyard
-:: ToDo: move all of this to a .json data driven boostrapping system
-
 @echo off
-
 REM 
 REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 REM its licensors.
@@ -14,60 +10,67 @@ REM remove or modify any license notices. This file is distributed on an "AS IS"
 REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
-echo ________________________________
-echo ~ calling DccScriptingInterface_Env.bat
-
+:: Store current dir
 %~d0
 cd %~dp0
 PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: PY version Major
-set DCCSI_PY_VERSION_MAJOR=2
-echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
-
-:: PY version Major
-set DCCSI_PY_VERSION_MINOR=7
-echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
-
-:: Default Maya Version
+:: Default Maya and Python version
 set MAYA_VERSION=2020
+set DCCSI_PY_VERSION_MAJOR=2
+set DCCSI_PY_VERSION_MINOR=7
+set DCCSI_PY_VERSION_RELEASE=11
+
+CALL %~dp0\Env_Core.bat
+CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_Maya.bat
+
+:: ide and debugger plug
+set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
+
+:: Default BASE DCCsi python 3.7 location
+:: Can be overridden (example, Launch_mayaPy_2020.bat :: MayaPy.exe)
+set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_2020.bat
+echo     DCCSI_PY_DCCSI = %DCCSI_PY_DCCSI%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
+echo.
+echo _____________________________________________________________________
+echo.
+echo Launching Maya %MAYA_VERSION% for O3DE DCCsi...
+echo _____________________________________________________________________
+echo.
+
 echo     MAYA_VERSION = %MAYA_VERSION%
+echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
+echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
+echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
+echo     MAYA_LOCATION = %MAYA_LOCATION%
+echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
 
-:: if a local customEnv.bat exists, run it
-IF EXIST "%~dp0Env.bat" CALL %~dp0Env.bat
-
-echo ________________________________
-echo Launching Maya %MAYA_VERSION% for LY DCCsi...
-
-::set MAYA_PATH="D:\Program Files\Autodesk\Maya2019"
-echo     MAYA_PATH = %MAYA_PATH%
-
-:::: Set Maya native project acess to this project
-::set MAYA_PROJECT=%LY_PROJECT%
-::echo     MAYA_PROJECT = %MAYA_PROJECT%
-
-:: DX11 Viewport
-Set MAYA_VP2_DEVICE_OVERRIDE=VirtualDeviceDx11
+:: Change to root dir
+CD /D %LY_PROJECT_PATH%
 
 :: Default to the right version of Maya if we can detect it... and launch
-IF EXIST "C:\Program Files\Autodesk\Maya%MAYA_VERSION%\bin\maya.exe" (
-   start "" "C:\Program Files\Autodesk\Maya%MAYA_VERSION%\bin\maya.exe" %*
+IF EXIST "%MAYA_BIN_PATH%\maya.exe" (
+    start "" "%MAYA_BIN_PATH%\maya.exe" %*
 ) ELSE (
-   Where maya.exe 2> NUL
-   IF ERRORLEVEL 1 (
-      echo Maya.exe could not be found
-      pause
-   ) ELSE (
-      start "" Maya.exe %*
-   )
+    Where maya.exe 2> NUL
+    IF ERRORLEVEL 1 (
+        echo Maya.exe could not be found
+            pause
+    ) ELSE (
+        start "" Maya.exe %*
+    )
 )
 
-:: Return to starting directory
+::ENDLOCAL
+
+:: Restore previous directory
 POPD
 
 :END_OF_FILE
-
-exit /b 0

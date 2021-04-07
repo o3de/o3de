@@ -14,7 +14,7 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 
 #include <PostProcess/LookModification/LookModificationComponentController.h>
 

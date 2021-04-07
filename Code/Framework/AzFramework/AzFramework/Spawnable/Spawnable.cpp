@@ -16,8 +16,8 @@
 
 namespace AzFramework
 {
-    Spawnable::Spawnable(const AZ::Data::AssetId& id)
-        : AZ::Data::AssetData(id)
+    Spawnable::Spawnable(const AZ::Data::AssetId& id, AssetStatus status)
+        : AZ::Data::AssetData(id, status)
     {
     }
 

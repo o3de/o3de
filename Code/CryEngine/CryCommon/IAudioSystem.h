@@ -844,21 +844,21 @@ namespace Audio
     {
         virtual ~IAudioProxy() = default;
 
-        virtual void Initialize(const char* const sObjectName, const bool bInitAsync = true) = 0;
+        virtual void Initialize(const char* sObjectName, bool bInitAsync = true) = 0;
         virtual void Release() = 0;
         virtual void Reset() = 0;
 
         virtual void ExecuteSourceTrigger(TAudioControlID nTriggerID, const SAudioSourceInfo& rSourceInfo, const SAudioCallBackInfos& rCallbackInfos = SAudioCallBackInfos::GetEmptyObject()) = 0;
-        virtual void ExecuteTrigger(const TAudioControlID nTriggerID, const SAudioCallBackInfos& rCallbackInfos = SAudioCallBackInfos::GetEmptyObject()) = 0;
+        virtual void ExecuteTrigger(TAudioControlID nTriggerID, const SAudioCallBackInfos& rCallbackInfos = SAudioCallBackInfos::GetEmptyObject()) = 0;
         virtual void StopAllTriggers() = 0;
-        virtual void StopTrigger(const TAudioControlID nTriggerID) = 0;
-        virtual void SetSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID) = 0;
-        virtual void SetRtpcValue(const TAudioControlID nRtpcID, const float fValue) = 0;
-        virtual void SetObstructionCalcType(const EAudioObjectObstructionCalcType eObstructionType) = 0;
+        virtual void StopTrigger(TAudioControlID nTriggerID) = 0;
+        virtual void SetSwitchState(TAudioControlID nSwitchID, TAudioSwitchStateID nStateID) = 0;
+        virtual void SetRtpcValue(TAudioControlID nRtpcID, float fValue) = 0;
+        virtual void SetObstructionCalcType(EAudioObjectObstructionCalcType eObstructionType) = 0;
         virtual void SetPosition(const SATLWorldPosition& rPosition) = 0;
         virtual void SetPosition(const AZ::Vector3& rPosition) = 0;
         virtual void SetMultiplePositions(const MultiPositionParams& params) = 0;
-        virtual void SetEnvironmentAmount(const TAudioEnvironmentID nEnvironmentID, const float fAmount) = 0;
+        virtual void SetEnvironmentAmount(TAudioEnvironmentID nEnvironmentID, float fAmount) = 0;
         virtual void SetCurrentEnvironments() = 0;
         virtual void ResetRtpcValues() = 0;
         virtual TAudioObjectID GetAudioObjectID() const = 0;
@@ -907,37 +907,37 @@ namespace Audio
 
         virtual void AddRequestListener(
             AudioRequestCallbackType callBack,
-            void* const objectToListenTo,
-            const EAudioRequestType requestType = eART_AUDIO_ALL_REQUESTS,
-            const TATLEnumFlagsType specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) = 0;
+            void* objectToListenTo,
+            EAudioRequestType requestType = eART_AUDIO_ALL_REQUESTS,
+            TATLEnumFlagsType specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) = 0;
         virtual void RemoveRequestListener(
             AudioRequestCallbackType callBack,
-            void* const requestOwner) = 0;
+            void* requestOwner) = 0;
 
-        virtual TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const = 0;
-        virtual TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const = 0;
-        virtual TAudioControlID GetAudioSwitchID(const char* const sAudioSwitchName) const = 0;
-        virtual TAudioSwitchStateID GetAudioSwitchStateID(const TAudioControlID nSwitchID, const char* const sAudioSwitchStateName) const = 0;
-        virtual TAudioPreloadRequestID GetAudioPreloadRequestID(const char* const sAudioPreloadRequestName) const = 0;
-        virtual TAudioEnvironmentID GetAudioEnvironmentID(const char* const sAudioEnvironmentName) const = 0;
+        virtual TAudioControlID GetAudioTriggerID(const char* sAudioTriggerName) const = 0;
+        virtual TAudioControlID GetAudioRtpcID(const char* sAudioRtpcName) const = 0;
+        virtual TAudioControlID GetAudioSwitchID(const char* sAudioSwitchName) const = 0;
+        virtual TAudioSwitchStateID GetAudioSwitchStateID(TAudioControlID nSwitchID, const char* sAudioSwitchStateName) const = 0;
+        virtual TAudioPreloadRequestID GetAudioPreloadRequestID(const char* sAudioPreloadRequestName) const = 0;
+        virtual TAudioEnvironmentID GetAudioEnvironmentID(const char* sAudioEnvironmentName) const = 0;
 
         virtual bool ReserveAudioListenerID(TAudioObjectID& rAudioObjectID) = 0;
-        virtual bool ReleaseAudioListenerID(const TAudioObjectID nAudioObjectID) = 0;
-        virtual bool SetAudioListenerOverrideID(const TAudioObjectID nAudioObjectID) = 0;
+        virtual bool ReleaseAudioListenerID(TAudioObjectID nAudioObjectID) = 0;
+        virtual bool SetAudioListenerOverrideID(TAudioObjectID nAudioObjectID) = 0;
 
         virtual void GetInfo(SAudioSystemInfo& rAudioSystemInfo) = 0;
         virtual const char* GetControlsPath() const = 0;
         virtual void UpdateControlsPath() = 0;
-        virtual void RefreshAudioSystem(const char* const levelName) = 0;
+        virtual void RefreshAudioSystem(const char* levelName) = 0;
 
         virtual IAudioProxy* GetFreeAudioProxy() = 0;
-        virtual void FreeAudioProxy(IAudioProxy* const pIAudioProxy) = 0;
+        virtual void FreeAudioProxy(IAudioProxy* pIAudioProxy) = 0;
 
         virtual TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) = 0;
         virtual void DestroyAudioSource(TAudioSourceId sourceId) = 0;
 
-        virtual const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const = 0;
-        virtual const char* GetAudioSwitchStateName(const TAudioControlID switchID, const TAudioSwitchStateID stateID) const = 0;
+        virtual const char* GetAudioControlName(EAudioControlType controlType, TATLIDType atlID) const = 0;
+        virtual const char* GetAudioSwitchStateName(TAudioControlID switchID, TAudioSwitchStateID stateID) const = 0;
     };
 
     using AudioSystemRequestBus = AZ::EBus<AudioSystemRequests>;

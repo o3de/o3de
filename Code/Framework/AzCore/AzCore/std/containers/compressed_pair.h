@@ -38,7 +38,7 @@ namespace AZStd
      * therefore an empty class in C++ has size of 1 byte.
      * From the C++20 draft chapter 10, note 5
      * "[Note: Complete objects of class type have nonzero size. Base class subobjects and "
-     * "members declared with the no_­unique_­address attribute ([dcl.attr.nouniqueaddr]) are not so constrained. —end note]"
+     * "members declared with the no_unique_address attribute ([dcl.attr.nouniqueaddr]) are not so constrained. -end note]"
      * The Index template parameter is used to disambiguate a compressed pair containing multiple elements of the same types
      * This is used to allow multiple inheritance from 2 of the same types underlying elements
      */

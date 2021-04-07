@@ -53,7 +53,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -1093,13 +1093,11 @@ namespace AzToolsFramework
                 AZ::Data::AssetType assetType;
                 const AZStd::string platformName = ""; // Empty for default
                 AZStd::string rootFilePath;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetInfoById,
-                    assetID, assetType, platformName, assetInfo, rootFilePath);
+                AssetSystemRequestBus::BroadcastResult(result, &AssetSystemRequestBus::Events::GetAssetInfoById, assetID, assetType, platformName, assetInfo, rootFilePath);
 
                 if (result)
                 {
-                    AZStd::string fullSourcePath = AZStd::string::format("%s/%s", rootFilePath.c_str(), assetInfo.m_relativePath.c_str());
-                    SharedThumbnailKey thumbnailKey = MAKE_TKEY(AzToolsFramework::AssetBrowser::SourceThumbnailKey, fullSourcePath.c_str());
+                    SharedThumbnailKey thumbnailKey = MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetID);
                     m_thumbnail->SetThumbnailKey(thumbnailKey, Thumbnailer::ThumbnailContext::DefaultContext);
                     return;
                 }

@@ -15,11 +15,34 @@
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
+// --- NOTES ---
+//
+// This shader performs a custom MSAA resolve by applying tonemapping logic to each sub-pixel before they are average
+// This yields more accurate/less aliased results (see https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/)
+// Additionally, aliasing can be further reduced by applying neighborhood lumanince clamping. This will clamp luminace
+// values of sampled sub-pixels based on how bright neighboring sub-pixels are.
+
 #define PROVISIONAL_TONEMAP_GAMMA 2.2f
+
+// Tonemapping strategy
+#define REINHARD_TONEMAPPING_STRATEGY   0
+#define LOG_TONEMAPPING_STRATEGY        1
+#define TONEMAPPING_STRATEGY            LOG_TONEMAPPING_STRATEGY
+
+// Neighbor clamping strategy
+#define CLAMP_NEIGHBOR_MAX_LUMINANCE        0
+#define CLAMP_NEIGHBOR_AVERAGE_LUMINANCE    1
+#define CLAMPING_STRATEGY                   CLAMP_NEIGHBOR_MAX_LUMINANCE
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float4> m_albedoMap;
+    Texture2DMS<float4> inputTexture;
+
+    // Whether to use neighborhood clamping to reduce aliasing
+    uint enableNeighborClamping;
+
+    // Maximum factor by which a sub-pixel can exceed the luminance of it's neighboring sub-pixels
+    float maxNeighborContrast;
 }
 
 float3 ApplyProvisionalTonemap(float3 color)
@@ -38,12 +61,33 @@ float3 ApplyInverseProvisionalTonemap(float3 color)
 
 float3 ConvertLighting(float3 color)
 {
+#if TONEMAPPING_STRATEGY == LOG_TONEMAPPING_STRATEGY
+
+    return log(color);
+
+#elif TONEMAPPING_STRATEGY == REINHARD_TONEMAPPING_STRATEGY
+
     return ApplyProvisionalTonemap(color);
+
+#endif
 }
 
 float3 ConvertBack(float3 color)
 {
+#if TONEMAPPING_STRATEGY == LOG_TONEMAPPING_STRATEGY
+
+    return exp(color);
+
+#elif TONEMAPPING_STRATEGY == REINHARD_TONEMAPPING_STRATEGY
+
     return ApplyInverseProvisionalTonemap(color);
+
+#endif
+}
+
+float CalcLuminance(float3 color)
+{
+    return dot(color, float3(0.299f, 0.587f, 0.114f));
 }
 
 struct PSOutput
@@ -59,21 +103,84 @@ PSOutput MainPS(VSOutput IN)
     uint height = 0;
     uint numberOfSamples = 0;
 
-    PassSrg::m_albedoMap.GetDimensions(width, height, numberOfSamples);
+    PassSrg::inputTexture.GetDimensions(width, height, numberOfSamples);
 
-    float3 albedo = float3(0, 0, 0);
+    // The brightest luminance value of all neighbor sub-pixels
+    float brightestNeighborLuminance = 0.0f;
 
-    // Just average the samples equally
-    for (uint i = 0; i < numberOfSamples; ++i)
+    // The average luminance of all neighbor sub-pixels
+    float averageNeighborLuminance = 0.0f;
+
+    int2 coord = int2(width * IN.m_texCoord.x, height * IN.m_texCoord.y);
+
+    if(PassSrg::enableNeighborClamping)
     {
-        float3 sampleColor = PassSrg::m_albedoMap.Load(int2(width * IN.m_texCoord.x, height * IN.m_texCoord.y), i).rgb;
-        sampleColor = ConvertLighting(sampleColor);
-        albedo += sampleColor;
+        // Get average + brightest neighborhood sub-pixel luminance value 
+        for (uint i = 0; i < numberOfSamples; ++i)
+        {
+            float3 sampleColor00 = PassSrg::inputTexture.Load(int2(coord.x + 1, coord.y + 1), i).rgb;
+            float luminance00 = CalcLuminance(sampleColor00);
+            brightestNeighborLuminance = max(brightestNeighborLuminance, luminance00);
+            averageNeighborLuminance += luminance00;
+
+            float3 sampleColor01 = PassSrg::inputTexture.Load(int2(coord.x + 1, coord.y - 1), i).rgb;
+            float luminance01 = CalcLuminance(sampleColor01);
+            brightestNeighborLuminance = max(brightestNeighborLuminance, luminance01);
+            averageNeighborLuminance += luminance01;
+
+            float3 sampleColor10 = PassSrg::inputTexture.Load(int2(coord.x - 1, coord.y + 1), i).rgb;
+            float luminance10 = CalcLuminance(sampleColor10);
+            brightestNeighborLuminance = max(brightestNeighborLuminance, luminance10);
+            averageNeighborLuminance += luminance10;
+                
+            float3 sampleColor11 = PassSrg::inputTexture.Load(int2(coord.x - 1, coord.y - 1), i).rgb;
+            float luminance11 = CalcLuminance(sampleColor11);
+            brightestNeighborLuminance = max(brightestNeighborLuminance, luminance11);
+            averageNeighborLuminance += luminance11;
+        }
+
+        // Normalize sum
+        averageNeighborLuminance = averageNeighborLuminance / (4.0f * float(numberOfSamples));
     }
 
-    albedo = albedo / float(numberOfSamples);
-    albedo = ConvertBack(albedo);
+    float3 color = float3(0, 0, 0);
 
-    OUT.m_color = float4(albedo, 1.0);
+    // Accumulate sub-pixels
+    for (uint i = 0; i < numberOfSamples; ++i)
+    {
+        // Get sub-pixel i
+        float3 sampleColor = PassSrg::inputTexture.Load(coord, i).rgb;
+
+        if(PassSrg::enableNeighborClamping)
+        {
+            float sampleLuminance = CalcLuminance(sampleColor);
+
+        #if CLAMPING_STRATEGY == CLAMP_NEIGHBOR_MAX_LUMINANCE
+
+            float lumFactor = PassSrg::maxNeighborContrast * brightestNeighborLuminance / sampleLuminance;
+
+        #elif CLAMPING_STRATEGY == CLAMP_NEIGHBOR_AVERAGE_LUMINANCE
+
+            float lumFactor = PassSrg::maxNeighborContrast * averageNeighborLuminance / sampleLuminance;
+
+        #endif
+
+            sampleColor *= min(1.0f, lumFactor);
+        }
+
+        // Apply tonemapping strategy
+        sampleColor = ConvertLighting(sampleColor);
+
+        // Accumulate sample
+        color += sampleColor;
+    }
+
+    // Sample normalization and inverse tone mapping
+    color = color / float(numberOfSamples);
+
+    // Apply inverse tonemapping st
+    color = ConvertBack(color);
+
+    OUT.m_color = float4(color, 1.0);
     return OUT;
 }

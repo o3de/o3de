@@ -21,13 +21,13 @@ namespace Physics
     RagdollNodeConfiguration::RagdollNodeConfiguration()
     {
         m_propertyVisibilityFlags =
-            PropertyVisibility::InertiaProperties |
-            PropertyVisibility::Damping |
-            PropertyVisibility::SleepOptions |
-            PropertyVisibility::Interpolation |
-            PropertyVisibility::Gravity |
-            PropertyVisibility::ContinuousCollisionDetection |
-            PropertyVisibility::MaxVelocities;
+            RigidBodyConfiguration::PropertyVisibility::InertiaProperties |
+            RigidBodyConfiguration::PropertyVisibility::Damping |
+            RigidBodyConfiguration::PropertyVisibility::SleepOptions |
+            RigidBodyConfiguration::PropertyVisibility::Interpolation |
+            RigidBodyConfiguration::PropertyVisibility::Gravity |
+            RigidBodyConfiguration::PropertyVisibility::ContinuousCollisionDetection |
+            RigidBodyConfiguration::PropertyVisibility::MaxVelocities;
     }
 
     void RagdollNodeConfiguration::Reflect(AZ::ReflectContext* context)
@@ -57,7 +57,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<RagdollConfiguration, WorldBodyConfiguration>()
+            serializeContext->Class<RagdollConfiguration, AzPhysics::SimulatedBodyConfiguration>()
                 ->Version(2, &ClassConverters::RagdollConfigConverter)
                 ->Field("nodes", &RagdollConfiguration::m_nodes)
                 ->Field("colliders", &RagdollConfiguration::m_colliders)

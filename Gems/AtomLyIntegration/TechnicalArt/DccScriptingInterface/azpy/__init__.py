@@ -67,18 +67,11 @@ _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
 
 # for py2.7 (Maya) we provide this, so we must assume some bootstrapping
 # has occured, see DccScriptingInterface\\config.py (_DCCSI_PYTHON_LIB_PATH)
-if sys.version_info.major >= 3:
-    import pathlib
-else:  # py2.x
-    import pathlib2 as pathlib  # python 2 backport
-    # its mkdir() function supposedly supports exist_ok
-    # ^ but in practice still seems to bark
-    # TypeError: mkdir() got an unexpected keyword argument 'exist_ok'
-    
+
+import pathlib
+from pathlib import Path
 if _G_DEBUG:
     print('DCCsi debug breadcrumb, pathlib is: {}'.format(pathlib))
-
-from pathlib import Path
 
 # to be continued...
 
@@ -95,7 +88,7 @@ _LY_PROJECT_TAG = os.getenv(constants.ENVAR_LY_PROJECT,
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
                                  Path(_LY_DEV,
                                       _LY_PROJECT_TAG,
-                                     'Cache',
+                                      'Cache',
                                      'pc', 'user', 'log', 'logs')))
 
 
@@ -105,7 +98,7 @@ for handler in _logging.root.handlers[:]:
 # very basic root logger for early debugging, flip to while 1:
 while 0:
     _logging.basicConfig(level=_logging.DEBUG,
-                        format=constants.FRMT_LOG_LONG,
+                         format=constants.FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
 
     _logging.debug('azpy.rootlogger> root logger set up for debugging')  # root logger
@@ -190,7 +183,7 @@ def initialize_logger(name,
             _logger.debug("Folder is already there")
         else:
             _logger.debug("Folder was created")
-            
+
         _log_filepath = Path(_DCCSI_LOG_PATH, '{}.log'.format(name))
         try:
             _log_filepath.touch(mode=0o666, exist_ok=True)

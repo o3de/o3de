@@ -181,7 +181,7 @@ namespace Multiplayer
 
     void NetworkEntityManager::HandleLocalRpcMessage(NetworkEntityRpcMessage& message)
     {
-        AZ_Assert(message.GetRpcDeliveryType() == RpcDeliveryType::ServerSimulationToServerAuthority, "Only ServerSimulationToServerAuthority rpc messages can be locally deferred");
+        AZ_Assert(message.GetRpcDeliveryType() == RpcDeliveryType::ServerToAuthority, "Only ServerToAuthority rpc messages can be locally deferred");
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 

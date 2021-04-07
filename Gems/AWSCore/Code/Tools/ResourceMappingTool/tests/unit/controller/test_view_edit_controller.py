@@ -14,7 +14,7 @@ from unittest import TestCase
 from unittest.mock import (call, MagicMock, patch)
 
 from controller.view_edit_controller import ViewEditController
-from model import constants
+from model import (constants, notification_label_text)
 from model.basic_resource_attributes import (BasicResourceAttributes, BasicResourceAttributesBuilder,)
 from model.resource_mapping_attributes import (ResourceMappingAttributes, ResourceMappingAttributesStatus)
 from view.view_edit_page import ViewEditPageConstants
@@ -77,8 +77,6 @@ class TestViewEditController(TestCase):
         assert actual_resource.region == self._expected_resource.region
 
     def test_setup_with_expected_state_and_behavior_connected(self) -> None:
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
-            ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
         self._mocked_view_edit_page.set_current_main_view_index.assert_called_once_with(
             ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
         self._mocked_view_edit_page.set_config_files.assert_called_once_with(
@@ -102,9 +100,9 @@ class TestViewEditController(TestCase):
             self._test_view_edit_controller._filter_based_on_search_text)
         self._mocked_view_edit_page.cancel_button.clicked.connect.assert_called_once_with(
             self._test_view_edit_controller._cancel)
-        self._mocked_view_edit_page.notification_prompt_create_new_button.clicked.connect.assert_called_once_with(
+        self._mocked_view_edit_page.create_new_button.clicked.connect.assert_called_once_with(
             self._test_view_edit_controller._create_new_config_file)
-        self._mocked_view_edit_page.notification_prompt_rescan_button.clicked.connect.assert_called_once_with(
+        self._mocked_view_edit_page.rescan_button.clicked.connect.assert_called_once_with(
             self._test_view_edit_controller._rescan_config_directory)
 
     def test_page_config_file_combobox_nothing_happen_when_index_is_default_value(self) -> None:
@@ -278,7 +276,7 @@ class TestViewEditController(TestCase):
         mocked_call_args[0]()  # triggering config_location_button connected function
         mock_file_dialog.getExistingDirectory.assert_called_once()
         self._mocked_view_edit_page.set_notification_page_text.assert_called_with(
-            ViewEditPageConstants.NOTIFICATION_LOADING_TEXT)
+            notification_label_text.NOTIFICATION_LOADING_MESSAGE)
         self._mocked_view_edit_page.set_current_main_view_index.assert_called_with(
             ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
         self._mocked_table_view.reset_view.assert_called_once()
@@ -305,8 +303,8 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == []
         self._mocked_view_edit_page.set_config_files.assert_called_with([])
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_with(
-            ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
+        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+            notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     @patch("controller.view_edit_controller.ThreadManager")
     @patch("controller.view_edit_controller.QFileDialog")
@@ -327,8 +325,8 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == []
         self._mocked_view_edit_page.set_config_files.assert_called_with([])
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_with(
-            ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
+        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+            notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     @patch("controller.view_edit_controller.ThreadManager")
     @patch("controller.view_edit_controller.QFileDialog")
@@ -350,8 +348,8 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == expected_new_config_files
         self._mocked_view_edit_page.set_config_files.assert_called_with(expected_new_config_files)
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_with(
-            ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
+        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+            notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     def test_page_add_row_button_expected_resource_gets_loaded_into_model(self) -> None:
         mocked_call_args: call = self._mocked_view_edit_page.add_row_button.clicked.connect.call_args[0]
@@ -479,7 +477,7 @@ class TestViewEditController(TestCase):
         expected_config_files: List[str] = ["dummyfile"]
         mock_file_utils.find_files_with_suffix_under_directory.return_value = expected_config_files
         mocked_call_args: call = \
-            self._mocked_view_edit_page.notification_prompt_create_new_button.clicked.connect.call_args[0]
+            self._mocked_view_edit_page.create_new_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering create_new_button connected function
         mock_file_utils.join_path.assert_called_once()
@@ -494,7 +492,7 @@ class TestViewEditController(TestCase):
         expected_config_files: List[str] = ["dummyfile"]
         mock_json_utils.create_empty_resource_mapping_file.side_effect = IOError("dummy IO error")
         mocked_call_args: call = \
-            self._mocked_view_edit_page.notification_prompt_create_new_button.clicked.connect.call_args[0]
+            self._mocked_view_edit_page.create_new_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering create_new_button connected function
         mock_file_utils.join_path.assert_called_once()
@@ -507,7 +505,7 @@ class TestViewEditController(TestCase):
             self, mock_file_utils: MagicMock) -> None:
         mock_file_utils.find_files_with_suffix_under_directory.side_effect = FileNotFoundError("dummy error")
         mocked_call_args: call = \
-            self._mocked_view_edit_page.notification_prompt_rescan_button.clicked.connect.call_args[0]
+            self._mocked_view_edit_page.rescan_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering rescan_button connected function
         mock_file_utils.find_files_with_suffix_under_directory.assert_called_once()

@@ -64,7 +64,7 @@ namespace Audio
         void Release();
         void Update();
 
-        virtual TAudioFileEntryID TryAddFileCacheEntry(const AZ::rapidxml::xml_node<char>* fileXmlNode, const EATLDataScope dataScope, bool autoLoad);  // 'virtual' is needed for unit tests/mocking
+        virtual TAudioFileEntryID TryAddFileCacheEntry(const AZ::rapidxml::xml_node<char>* fileXmlNode, EATLDataScope dataScope, bool autoLoad);  // 'virtual' is needed for unit tests/mocking
         bool TryRemoveFileCacheEntry(const TAudioFileEntryID audioFileID, const EATLDataScope dataScope);
         void UpdateLocalizedFileCacheEntries();
 

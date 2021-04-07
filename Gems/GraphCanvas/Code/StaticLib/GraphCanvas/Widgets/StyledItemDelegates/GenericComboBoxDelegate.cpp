@@ -68,8 +68,6 @@ namespace GraphCanvas
             }
 
             cb->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
-
-            cb->showPopup();
         }
         else
         {

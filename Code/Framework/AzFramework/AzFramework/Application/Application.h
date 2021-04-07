@@ -104,6 +104,11 @@ namespace AzFramework
         const char* GetAppRoot() const override;
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
         void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
+        bool IsPrefabSystemEnabled() const override;
+        bool ArePrefabWipFeaturesEnabled() const override;
+        void SetPrefabSystemEnabled(bool enable) override;
+        bool IsPrefabSystemForLevelsEnabled() const override;
+        bool ShouldAssertForLegacySlicesUsage() const override;
 
 #pragma push_macro("GetCommandLine")
 #undef GetCommandLine

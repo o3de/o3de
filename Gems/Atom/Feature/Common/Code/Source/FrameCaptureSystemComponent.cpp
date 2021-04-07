@@ -50,6 +50,28 @@ namespace AZ
                                        : FrameCaptureOutputResult{FrameCaptureResult::InternalError, outcome.GetError().m_message};
         }
 
+        FrameCaptureOutputResult PpmFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            // write the read back result of the image attachment to a buffer
+            const AZStd::vector<uint8_t> outBuffer = Utils::PpmFile::CreatePpmFromImageBuffer(
+                *readbackResult.m_dataBuffer.get(), readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
+
+            // write the buffer to a ppm file
+            if (IO::FileIOStream fileStream(outputFilePath.c_str(), IO::OpenMode::ModeWrite | IO::OpenMode::ModeCreatePath);
+                fileStream.IsOpen())
+            {
+                fileStream.Write(outBuffer.size(), outBuffer.data());
+                fileStream.Close();
+
+                return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
+            }
+
+            return FrameCaptureOutputResult{
+                FrameCaptureResult::FileWriteError,
+                AZStd::string::format("Failed to open file %s for writing", outputFilePath.c_str())};
+        }
+
         class FrameCaptureNotificationBusHandler final
             : public FrameCaptureNotificationBus::Handler
             , public AZ::BehaviorEBusHandler
@@ -376,29 +398,17 @@ namespace AZ
 
                     if (extension == "ppm")
                     {
-                        if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM || readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
+                        if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
+                            readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
                         {
-                            const AZStd::vector<uint8_t> outBuffer = Utils::PpmFile::CreatePpmFromImageBuffer(*readbackResult.m_dataBuffer.get(),
-                                readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
-
-                            IO::FileIOStream fileStream(m_outputFilePath.c_str(), IO::OpenMode::ModeWrite | IO::OpenMode::ModeCreatePath);
-
-                            if (fileStream.IsOpen())
-                            {
-                                fileStream.Write(outBuffer.size(), outBuffer.data());
-                                fileStream.Close();
-                                m_result = FrameCaptureResult::Success;
-                            }
-                            else
-                            {
-                                m_latestCaptureInfo = AZStd::string::format("Failed to open file %s for writing", m_outputFilePath.c_str());
-                                m_result = FrameCaptureResult::FileWriteError;
-                            }
+                            const auto ppmFrameCapture = PpmFrameCaptureOutput(m_outputFilePath, readbackResult);
+                            m_result = ppmFrameCapture.m_result;
+                            m_latestCaptureInfo = ppmFrameCapture.m_errorMessage.value_or("");
                         }
                         else
                         {
-                            m_latestCaptureInfo = AZStd::string::format("Can't save image with format %s to a ppm file",
-                                RHI::ToString(readbackResult.m_imageDescriptor.m_format));
+                            m_latestCaptureInfo = AZStd::string::format(
+                                "Can't save image with format %s to a ppm file", RHI::ToString(readbackResult.m_imageDescriptor.m_format));
                             m_result = FrameCaptureResult::UnsupportedFormat;
                         }
                     }

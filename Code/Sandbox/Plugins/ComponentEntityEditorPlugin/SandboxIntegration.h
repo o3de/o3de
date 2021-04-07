@@ -83,6 +83,11 @@ namespace AzToolsFramework
     {
         class AssetSelectionModel;
     }
+
+    namespace Prefab
+    {
+        class PrefabIntegrationInterface;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -383,6 +388,7 @@ private:
     AzToolsFramework::Prefab::PrefabIntegrationManager m_prefabIntegrationManager;
 
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;

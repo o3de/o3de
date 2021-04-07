@@ -12,7 +12,6 @@
 ly_add_target(
     NAME Maestro.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Maestro.Static
     FILES_CMAKE
         maestro_static_files.cmake
     INCLUDE_DIRECTORIES

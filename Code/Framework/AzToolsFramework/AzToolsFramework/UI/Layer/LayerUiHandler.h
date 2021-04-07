@@ -32,7 +32,8 @@ namespace AzToolsFramework
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
-        void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void PaintDescendantBranchBackground(QPainter* painter, const QTreeView* view, const QRect& rect,
+            const QModelIndex& index, const QModelIndex& descendantIndex) const override;
         void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
 
@@ -43,12 +44,16 @@ namespace AzToolsFramework
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
 
-        static const int m_layerSquareSize;
-        static const int m_layerStripeWidth;
-        static const int m_layerDividerLineHeight;
-        static const int m_lastEntityInLayerDividerLineHeight;
+        static constexpr int m_layerSquareSize = 22;
+        static constexpr int m_layerStripeWidth = 1;
+        static constexpr int m_layerDividerLineHeight = 1;
+        static constexpr int m_lastEntityInLayerDividerLineHeight = 1;
         static const QColor m_layerBackgroundColor;
+        static const QColor m_layerBackgroundHoveredColor;
+        static const QColor m_layerBackgroundSelectedColor;
         static const QColor m_layerDescendantBackgroundColor;
+        static const QColor m_layerDescendantBackgroundHoveredColor;
+        static const QColor m_layerDescendantBackgroundSelectedColor;
         static const QColor m_layerBorderTopColor;
         static const QColor m_layerBorderBottomColor;
         static const QString m_layerIconPath;

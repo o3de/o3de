@@ -68,6 +68,11 @@ namespace AzToolsFramework
         class ProductAssetBrowserEntry;
     }
 
+    namespace Prefab
+    {
+        class PrefabPublicInterface;
+    };
+
     namespace UndoSystem
     {
         class URSequencePoint;
@@ -299,6 +304,7 @@ namespace AzToolsFramework
             None,
             OnlyStandardEntities,
             OnlyLayerEntities,
+            OnlyPrefabEntities,
             Mixed,
             LevelEntity
         };
@@ -480,9 +486,11 @@ namespace AzToolsFramework
             StatusItems
         };
 
-        QStringList m_itemNames{ "Start active","Start inactive","Editor only" };
+        QStringList m_itemNames;
 
         void UpdateStatusComboBox();
+        size_t StatusTypeToIndex(StatusType statusType) const;
+        StatusType IndexToStatusType(size_t index) const;
 
         bool m_isBuildingProperties;
 
@@ -540,6 +548,9 @@ namespace AzToolsFramework
 
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
+
+        Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        bool m_prefabsAreEnabled = false;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

@@ -157,7 +157,10 @@ PSOutput MainPS(VSOutput input)
         float exposureFactor = pow(2.0, SceneSrg::m_cubemapExposure);
         color *= exposureFactor;
     }
-   
+    
+    // Clamp lower bounds of sky to prevent zero or negative values, which can leads to NaNs in other shaders like SMAA
+    color = max(0.000001f, color);
+
     PSOutput OUT;
     OUT.m_specular = float4(color, 1.0);
     OUT.m_reflection = float4(color, 1.0);

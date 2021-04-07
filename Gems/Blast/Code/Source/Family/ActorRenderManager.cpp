@@ -16,6 +16,7 @@
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Blast/BlastActor.h>
 #include <Components/BlastMeshDataComponent.h>
 #include <Family/ActorRenderManager.h>

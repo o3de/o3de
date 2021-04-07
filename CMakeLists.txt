@@ -10,7 +10,7 @@
 #
 
 # Cmake version 3.17 is the minimum version needed for all of lumberyard's supported platforms
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
 # INTERFACE IMPORTED library. We use this type of libraries for handling 3rdParty. The rest of

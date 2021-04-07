@@ -12,7 +12,6 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Physics/World.h>
 #include <Integration/Components/ActorComponent.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/Node.h>
@@ -20,6 +19,7 @@
 #include <Tests/TestAssetCode/JackActor.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/Mocks/PhysicsRagdoll.h>
 
 namespace EMotionFX
@@ -67,13 +67,23 @@ namespace EMotionFX
         AZ::EntityId entityId(740216387);
         AZ::Crc32 worldId(174592);
 
+        AzPhysics::SceneEvents::OnSceneSimulationFinishEvent sceneFinishSimEvent;
+
+        Physics::MockPhysicsSceneInterface mockSceneInterface;
+        EXPECT_CALL(mockSceneInterface, RegisterSceneSimulationFinishHandler)
+            .WillRepeatedly([&sceneFinishSimEvent](
+                [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
+                AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler)
+                {
+                    handler.Connect(sceneFinishSimEvent);
+                });
+
         TestRagdoll testRagdoll;
         TestRagdollPhysicsRequestHandler ragdollPhysicsRequestHandler(&testRagdoll, entityId);
 
         EXPECT_CALL(testRagdoll, GetState(::testing::_)).Times(::testing::AnyNumber());
         EXPECT_CALL(testRagdoll, GetNumNodes()).WillRepeatedly(::testing::Return(1));
         EXPECT_CALL(testRagdoll, IsSimulated()).WillRepeatedly(::testing::Return(true));
-        EXPECT_CALL(testRagdoll, GetWorldId()).WillRepeatedly(::testing::Return(worldId));
         EXPECT_CALL(testRagdoll, GetEntityId()).WillRepeatedly(::testing::Return(entityId));
         EXPECT_CALL(testRagdoll, GetPosition()).WillRepeatedly(::testing::Return(AZ::Vector3::CreateZero()));
         EXPECT_CALL(testRagdoll, GetOrientation()).WillRepeatedly(::testing::Return(AZ::Quaternion::CreateIdentity()));
@@ -94,23 +104,23 @@ namespace EMotionFX
         gameEntity->Activate();
 
         actorComponent->SetActorAsset(actorAsset);
-        EXPECT_FALSE(actorComponent->IsWorldNotificationBusConnected(worldId))
-            << "World notification bus should not be connected directly after creating the actor instance.";
+        EXPECT_FALSE(actorComponent->IsPhysicsSceneSimulationFinishEventConnected())
+            << "Scene Finish Simulation handler should not be connected directly after creating the actor instance.";
 
         actorComponent->OnRagdollActivated();
-        EXPECT_TRUE(actorComponent->IsWorldNotificationBusConnected(worldId))
-            << "World notification bus should be connected after activating the ragdoll.";
+        EXPECT_TRUE(actorComponent->IsPhysicsSceneSimulationFinishEventConnected())
+            << "Scene Finish Simulation handler should be connected after activating the ragdoll.";
 
         actorComponent->OnRagdollDeactivated();
-        EXPECT_FALSE(actorComponent->IsWorldNotificationBusConnected(worldId))
-            << "World notification bus should not be connected after deactivating the ragdoll.";
+        EXPECT_FALSE(actorComponent->IsPhysicsSceneSimulationFinishEventConnected())
+            << "Scene Finish Simulation handler should not be connected after deactivating the ragdoll.";
 
         actorComponent->OnRagdollActivated();
-        EXPECT_TRUE(actorComponent->IsWorldNotificationBusConnected(worldId))
-            << "World notification bus should be connected after activating the ragdoll.";
+        EXPECT_TRUE(actorComponent->IsPhysicsSceneSimulationFinishEventConnected())
+            << "Scene Finish Simulation handler should be connected after activating the ragdoll.";
 
         gameEntity->Deactivate();
-        EXPECT_FALSE(actorComponent->IsWorldNotificationBusConnected(worldId))
-            << "World notification bus should not be connected anymore after deactivating the entire entity.";
+        EXPECT_FALSE(actorComponent->IsPhysicsSceneSimulationFinishEventConnected())
+            << "Scene Finish Simulation handler should not be connected anymore after deactivating the entire entity.";
     }
 }

@@ -10,6 +10,7 @@
 *
 */
 #include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/RHIUtils.h>
 
 namespace AZ
 {
@@ -29,6 +30,12 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
+                // No need for validation for a null renderer
+                if (IsNullRenderer())
+                {
+                    return;
+                }
+
                 if (!isDataValid)
                 {
                     AZ_Warning("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
@@ -42,6 +49,12 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
+                // No need for validation for a null renderer
+                if (IsNullRenderer())
+                {
+                    return true;
+                }
+
                 if (--buffer.m_mapRefCount == -1)
                 {
                     AZ_Error("BufferPoolBase", false, "Buffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());

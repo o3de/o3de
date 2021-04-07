@@ -13,7 +13,7 @@
 
 #include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionCallNode.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/MethodOverloaded.h>
@@ -73,7 +73,7 @@ namespace ScriptCanvas
         {
             return ConstructSetVariableNodeIdentifier(setVariableNode->GetId());
         }
-        else if (auto functionNode = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionNode*>(scriptCanvasNode))
+        else if (auto functionNode = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(scriptCanvasNode))
         {
             return ConstructFunctionNodeIdentifier(functionNode->GetAssetId());
         }
@@ -222,8 +222,18 @@ namespace ScriptCanvas
     {
         NodeTypeIdentifier resultHash = 0;
 
-        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionNode>()));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionCallNode>()));
         AZStd::hash_combine(resultHash, AZStd::hash<AZ::Data::AssetId>()(assetId.m_guid));
+
+        return resultHash;
+    }
+
+    NodeTypeIdentifier NodeUtils::ConstructEmbeddedFunctionNodeIdentifier(const AZ::Data::AssetId& assetId)
+    {
+        NodeTypeIdentifier resultHash = 0;
+
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionCallNode>()));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::Data::AssetId>()(assetId));
 
         return resultHash;
     }

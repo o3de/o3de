@@ -113,8 +113,7 @@ class DataIngestion:
 
         apigateway_role = iam.Role(
             self._stack,
-            id="ApiGatewayRole",
-            role_name=f'{self._stack.stack_name}-ApiGatewayRole',
+            id=f'{self._stack.stack_name}-ApiGatewayRole',
             assumed_by=iam.ServicePrincipal(
                 service="apigateway.amazonaws.com"
             ),

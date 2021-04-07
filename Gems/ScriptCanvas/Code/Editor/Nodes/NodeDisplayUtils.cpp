@@ -30,6 +30,8 @@
 #include <GraphCanvas/Components/NodeDescriptors/ScriptEventReceiverNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/ScriptEventSenderNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/UserDefinedNodeDescriptorComponent.h>
+#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
+
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Components/Slots/Extender/ExtenderSlotBus.h>
@@ -39,13 +41,14 @@
 #include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionCallNode.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
 #include <ScriptCanvas/Libraries/Entity/EntityRef.h>
+
 
 namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
@@ -819,12 +822,12 @@ namespace ScriptCanvasEditor::Nodes
     }
 
 // Function Nodes
-    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionNode* functionNode)
+    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode)
     {
-        return DisplayFunctionNode(graphCanvasGraphId, const_cast<ScriptCanvas::Nodes::Core::FunctionNode*>(functionNode));
+        return DisplayFunctionNode(graphCanvasGraphId, const_cast<ScriptCanvas::Nodes::Core::FunctionCallNode*>(functionNode));
     }
 
-    AZ::EntityId DisplayFunctionNode(AZ::EntityId, ScriptCanvas::Nodes::Core::FunctionNode* functionNode)
+    AZ::EntityId DisplayFunctionNode(AZ::EntityId, ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode)
     {
         AZ::EntityId graphCanvasNodeId;
 
@@ -890,6 +893,80 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, "MethodNodeTitlePalette");
 
         return graphCanvasNodeId;
+    }
+
+    AZ::EntityId DisplayFunctionDefinitionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling)
+    {
+        NodeConfiguration nodeConfiguration;
+
+        nodeConfiguration.PopulateComponentDescriptors<IconComponent, FunctionDefinitionNodeDescriptorComponent>();
+
+        if (nodeling->RequiresDynamicSlotOrdering())
+        {
+            nodeConfiguration.PopulateComponentDescriptors<DynamicOrderingDynamicSlotComponent>();
+        }
+        else
+        {
+            nodeConfiguration.PopulateComponentDescriptors<DynamicSlotComponent>();
+        }
+
+        nodeConfiguration.m_nodeSubStyle = ".nodeling";
+        nodeConfiguration.m_titlePalette = "NodelingTitlePalette";
+        nodeConfiguration.m_scriptCanvasId = nodeling->GetEntityId();
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid(nodeling));
+
+        if (classData)
+        {
+            AZStd::string nodeContext = GetContextName(*classData);
+            nodeConfiguration.m_translationContext = TranslationHelper::GetUserDefinedContext(nodeContext);
+
+            nodeConfiguration.m_titleFallback = (classData->m_editData && classData->m_editData->m_name) ? classData->m_editData->m_name : classData->m_name;
+            nodeConfiguration.m_tooltipFallback = (classData->m_editData && classData->m_editData->m_description) ? classData->m_editData->m_description : "";
+
+            GraphCanvas::TranslationKeyedString subtitleKeyedString(nodeContext, nodeConfiguration.m_translationContext);
+            subtitleKeyedString.m_key = TranslationHelper::GetUserDefinedNodeKey(nodeContext, nodeConfiguration.m_titleFallback, ScriptCanvasEditor::TranslationKeyId::Category);
+
+            nodeConfiguration.m_subtitleFallback = subtitleKeyedString.GetDisplayString();
+
+            nodeConfiguration.m_translationKeyName = nodeConfiguration.m_titleFallback;
+            nodeConfiguration.m_translationKeyContext = nodeContext;
+
+            nodeConfiguration.m_translationGroup = TranslationContextGroup::ClassMethod;
+
+
+            ScriptCanvas::GraphScopedNodeId nodelingId;
+
+            nodelingId.m_identifier = nodeConfiguration.m_scriptCanvasId;
+            nodelingId.m_scriptCanvasId = nodeling->GetOwningScriptCanvasId();
+
+            AZStd::string nodelingName;
+            ScriptCanvas::NodelingRequestBus::EventResult(nodelingName, nodelingId, &ScriptCanvas::NodelingRequests::GetDisplayName);
+
+            if (classData->m_editData)
+            {
+                const AZ::Edit::ElementData* elementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+
+                if (elementData)
+                {
+                    if (auto nodeTypeAttribute = elementData->FindAttribute(ScriptCanvas::Attributes::Node::NodeType))
+                    {
+                        if (auto nodeTypeAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<NodeType>*>(nodeTypeAttribute))
+                        {
+                            nodeConfiguration.m_nodeType = nodeTypeAttributeData->Get(nullptr);
+                        }
+                    }
+                }
+            }
+        }
+
+        nodeConfiguration.m_subtitleFallback = "";
+
+        return DisplayGeneralScriptCanvasNode(graphCanvasGraphId, nodeling, nodeConfiguration);
     }
 
     AZ::EntityId DisplayNodeling(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Internal::Nodeling* nodeling)
@@ -1062,9 +1139,13 @@ namespace ScriptCanvasEditor::Nodes
         {
             graphCanvasNodeId = DisplayScriptEventSenderNode(graphCanvasGraphId, static_cast<const ScriptCanvas::Nodes::Core::SendScriptEvent*>(node));
         }
-        else if (azrtti_istypeof<ScriptCanvas::Nodes::Core::FunctionNode>(node))
+        else if (azrtti_istypeof<ScriptCanvas::Nodes::Core::FunctionCallNode>(node))
         {
-            graphCanvasNodeId = DisplayFunctionNode(graphCanvasGraphId, static_cast<const ScriptCanvas::Nodes::Core::FunctionNode*>(node));
+            graphCanvasNodeId = DisplayFunctionNode(graphCanvasGraphId, static_cast<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(node));
+        }
+        else if (azrtti_istypeof<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(node))
+        {
+            graphCanvasNodeId = DisplayFunctionDefinitionNode(graphCanvasGraphId, static_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node));
         }
         else if (azrtti_istypeof<ScriptCanvas::Nodes::Core::Internal::Nodeling>(node))
         {
@@ -1138,7 +1219,7 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot.IsLatent())
             {
-                executionConfiguration.m_textDecoration = "🕒";
+                executionConfiguration.m_textDecoration = u8"\U0001f552";
                 executionConfiguration.m_textDecorationToolTip = "This slot will not be executed immediately.";
             }
 
@@ -1163,7 +1244,7 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot.IsLatent())
             {
-                dataSlotConfiguration.m_textDecoration = "🕒";
+                dataSlotConfiguration.m_textDecoration = u8"\U0001f552";
                 dataSlotConfiguration.m_textDecorationToolTip = "This slot will not be executed immediately.";
             }
 

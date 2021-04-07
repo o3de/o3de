@@ -42,8 +42,6 @@ namespace ScriptCanvas
                 SlotId HandleExtension(AZ::Crc32 extensionId);        
 
                 // Script Canvas Translation...
-                bool IsSupportedByNewBackend() const override { return true; }
-
                 bool IsSwitchStatement() const override { return true; }
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override
@@ -51,7 +49,7 @@ namespace ScriptCanvas
                     return AZ::Success(DependencyReport{});
                 }
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }

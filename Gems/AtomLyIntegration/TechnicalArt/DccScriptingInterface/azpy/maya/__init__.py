@@ -15,14 +15,10 @@
 # importing all of the modules
 """azpy.maya.__init__"""
 
-import os
-
-from azpy import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__

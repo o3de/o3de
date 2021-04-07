@@ -20,6 +20,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzFramework/Physics/CharacterBus.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/SingleThreadScheduler.h>
@@ -52,7 +53,10 @@
 #include <Integration/System/SystemComponent.h>
 #include <Integration/System/CVars.h>
 
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
+
 #include <Integration/MotionExtractionBus.h>
 
 
@@ -799,22 +803,27 @@ namespace EMotionFX
             RaycastRequests::RaycastResult rayResult;
 
             // Build the ray request in the physics system.
-            Physics::RayCastRequest physicsRayRequest;
+            AzPhysics::RayCastRequest physicsRayRequest;
             physicsRayRequest.m_start       = rayRequest.m_start;
             physicsRayRequest.m_direction   = rayRequest.m_direction;
             physicsRayRequest.m_distance    = rayRequest.m_distance;
             physicsRayRequest.m_queryType   = rayRequest.m_queryType;
 
             // Cast the ray in the physics system.
-            Physics::RayCastHit physicsRayResult;
-            Physics::WorldRequestBus::EventResult(physicsRayResult, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::RayCast, physicsRayRequest);
-            if (physicsRayResult) // We intersected.
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
-                rayResult.m_position    = physicsRayResult.m_position;
-                rayResult.m_normal      = physicsRayResult.m_normal;
-                rayResult.m_intersected = true;
+                if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                    sceneHandle != AzPhysics::InvalidSceneHandle)
+                {
+                    AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &physicsRayRequest);
+                    if (result) // We intersected.
+                    {
+                        rayResult.m_position = result.m_hits[0].m_position;
+                        rayResult.m_normal = result.m_hits[0].m_normal;
+                        rayResult.m_intersected = true;
+                    }
+                }
             }
-
             return rayResult;
         }
 

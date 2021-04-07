@@ -102,6 +102,9 @@ namespace AzFramework
 
         AZ_COMPONENT(AzFramework::ScriptComponent, "{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}", NetBindable);        
 
+        /// \red ComponentDescriptor::Reflect
+        static void Reflect(AZ::ReflectContext* reflection);        
+
         ScriptComponent();
         ~ScriptComponent();
 
@@ -110,6 +113,10 @@ namespace AzFramework
 
         const AZ::Data::Asset<AZ::ScriptAsset>& GetScript() const       { return m_script; }
         void                                    SetScript(const AZ::Data::Asset<AZ::ScriptAsset>& script);
+
+        // Methods used for unit tests
+        AZ::ScriptProperty* GetScriptProperty(const char* propertyName);
+        const AZ::ScriptProperty* GetNetworkedScriptProperty(const char* propertyName) const;
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
@@ -145,18 +152,15 @@ namespace AzFramework
         void CreateEntityTable();
         void DestroyEntityTable();
 
-        void CreateNetworkBindingTable(int baseTableIndex, int entityTableIndex);
+        void CreateNetworkBindingTable(int baseStackIndex, int entityStackIndex);
 
-        void CreatePropertyGroup(const ScriptPropertyGroup& group, int prototypeParentIndex, int parentIndex, int metatableIndex, bool isRoot);
-
-        /// \red ComponentDescriptor::Reflect
-        static void Reflect(AZ::ReflectContext* reflection);        
+        void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
         AZ::ScriptContext*               m_context;              ///< Context in which the script will be running
         AZ::ScriptContextId                 m_contextId;            ///< Id of the script context.
         AZ::Data::Asset<AZ::ScriptAsset>    m_script;               ///< Reference to the script asset used for this component.
         int                                 m_table;                ///< Cached table index
-        ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_scourceScriptName class inside m_script.
+        ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
         ScriptNetBindingTable*              m_netBindingTable;      ///< Table that will hold our networked script values, and manage callbacks
     };        
 }   // namespace AZ

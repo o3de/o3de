@@ -41,6 +41,11 @@ namespace EditorInternal
         virtual AZStd::string GetCurrentLevelName() const = 0;
         virtual AZStd::string GetCurrentLevelPath() const = 0;
 
+        //! Retrieve old cry level file extension (With prepending '.')
+        virtual const char* GetOldCryLevelExtension() const = 0;
+        //! Retrieve default level file extension (With prepending '.')
+        virtual const char* GetLevelExtension() const = 0;
+
         virtual void Exit() = 0;
         virtual void ExitNoPrompt() = 0;
     };

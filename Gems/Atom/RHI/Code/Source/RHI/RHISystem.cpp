@@ -13,6 +13,7 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystem.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Interface/Interface.h>
 
@@ -124,15 +125,7 @@ namespace AZ
                 return nullptr;
             }
 
-            // Command line set up to search for forcing adapter argument
-            const AzFramework::CommandLine* commandLine = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
-
-            AZStd::string preferredUserAdapterName;
-            if (commandLine)
-            {
-                preferredUserAdapterName = commandLine->GetSwitchValue("forceAdapter", 0);
-            }
+            AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
 
             RHI::PhysicalDevice* preferredUserDevice{};
             RHI::PhysicalDevice* preferredVendorDevice{};

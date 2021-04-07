@@ -14,7 +14,7 @@
 
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
-#include <SceneAPI/SceneData/Rules/CommentRule.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -87,6 +87,7 @@ namespace AZ
                 AZ::SceneAPI::RegisterDataTypeReflection(m_serializeContext.get());
                 AZ::SceneAPI::Containers::SceneManifest::Reflect(m_serializeContext.get());
                 AZ::SceneAPI::DataTypes::IManifestObject::Reflect(m_serializeContext.get());
+                m_serializeContext->Class<AZ::SceneAPI::DataTypes::IRule, AZ::SceneAPI::DataTypes::IManifestObject>()->Version(1);
                 AZ::SceneAPI::MockRotationRule::Reflect(m_serializeContext.get());
 
                 m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -173,6 +174,54 @@ namespace AZ
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(0.27)"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(0.65)"));
+        }
+
+        TEST_F(SceneManifest_JSON, LoadFromString_CoordinateSystemRule_ReturnsTrue)
+        {
+            AZ::SceneAPI::SceneData::CoordinateSystemRule foo;
+            EXPECT_FALSE(foo.GetUseAdvancedData());
+
+            using namespace SceneAPI::Containers;
+
+            constexpr const char* jsonCoordinateSystemRule = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "CoordinateSystemRule",
+                        "useAdvancedData": true,
+                        "originNodeName": "test_origin_name",
+                        "translation": [1.0, 2.0, 3.0],
+                        "rotation": { "yaw" : 45.0, "pitch" : 18.5, "roll" : 215.0 },
+                        "scale": 10.0
+                    }
+                ]
+            })JSON" };
+
+            SceneManifest loaded;
+            auto loadFromStringResult = loaded.LoadFromString(jsonCoordinateSystemRule, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(loadFromStringResult.IsSuccess());
+            EXPECT_FALSE(loaded.IsEmpty());
+
+            auto writeToJsonResult =
+                SceneManifestContainer::SaveToJsonDocumentHelper(loaded, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            ASSERT_TRUE(writeToJsonResult.IsSuccess());
+
+            AZStd::string jsonText;
+            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            ASSERT_TRUE(writeToStringResult.IsSuccess());
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "CoordinateSystemRule")"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("useAdvancedData": true,)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("originNodeName": "test_origin_name",)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(0.028)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(-0.40)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(0.85)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(-0.33)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("translation": [)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(1.0)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(2.0)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(3.0)"));
+            EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("scale": 10.0)"));
         }
     }
 }

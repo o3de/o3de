@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 namespace AZ
 {

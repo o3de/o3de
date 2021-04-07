@@ -499,7 +499,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SSliceSettings sliceSettings;
 
-    bool prefabSystem = false;                  ///< Toggle to enable the Prefab system for level entities.
+    bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);

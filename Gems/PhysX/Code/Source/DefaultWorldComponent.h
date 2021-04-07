@@ -12,26 +12,20 @@
 #pragma once
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
-namespace Physics
+namespace AzPhysics
 {
-    class World;
+    struct TriggerEvent;
 }
 
 namespace PhysX
 {
-    class World;
-
-    // Sub Component to be conviniently used for spawning and ticking the default world
+    // Sub Component to be conveniently used for spawning and ticking the default world
     // Creates world and enables ticking when the game context activates (before game entities start)
     class DefaultWorldComponent
         : private Physics::DefaultWorldBus::Handler
-        , private Physics::WorldEventHandler
         , private AzFramework::GameEntityContextEventBus::Handler
     {
     public:
@@ -42,15 +36,9 @@ namespace PhysX
         void Deactivate();
 
     private:
-        // WorldEventHandler
-        void OnTriggerEnter(const Physics::TriggerEvent& event) override;
-        void OnTriggerExit(const Physics::TriggerEvent& event) override;
-        void OnCollisionBegin(const Physics::CollisionEvent& event) override;
-        void OnCollisionPersist(const Physics::CollisionEvent& event) override;
-        void OnCollisionEnd(const Physics::CollisionEvent& event) override;
 
         // DefaultWorldBus
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld() override;
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
 
         // GameEntityContextEventBus
         void OnPreGameEntitiesStarted() override;
