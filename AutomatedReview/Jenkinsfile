@@ -165,7 +165,6 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
             if(platform) {
                 pipelineConfig.platforms[platform].build_types = readJSON file: build_config_path.toString()
             }
-            palRm(build_config_path.toString())
         }
     }
     return pipelineConfig
@@ -298,6 +297,15 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     }
 }
 
+def SetLfsCredentials(cmd, lbl = '') {
+    if (env.IS_UNIX) {
+        sh label: lbl,
+           script: cmd
+    } else { 
+        bat label: lbl,
+            script: cmd
+    }
+
 def CheckoutBootstrapScripts(String branchName) {
     checkout([$class: "GitSCM",
             branches: [[name: "*/${branchName}"]],
@@ -321,8 +329,9 @@ def CheckoutBootstrapScripts(String branchName) {
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
-
     dir(ENGINE_REPOSITORY_NAME) {
+        palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
+
         if(fileExists('.git')) {
             // If the repository after checkout is locked, likely we took a snapshot while git was running,
             // to leave the repo in a usable state, garbagecollect. This also helps in situations where 
@@ -378,8 +387,15 @@ def CheckoutRepo(boolean disableSubmodules = false) {
         palMkdir('3rdParty')
     }    
 
-    // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
     dir(ENGINE_REPOSITORY_NAME) {
+        // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
+        withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
+            SetLfsCredentials("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials')
+        }
+        palSh('git lfs install', 'Git LFS Install')
+        palSh('git lfs pull', 'Git LFS Pull')
+
+        // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
         palSh('git rev-parse HEAD > commitid', 'Getting commit id')
         env.CHANGE_ID = readFile file: 'commitid'
         env.CHANGE_ID = env.CHANGE_ID.trim()
