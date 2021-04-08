@@ -48,8 +48,6 @@ namespace AzFramework
         Scene* GetScene(AZStd::string_view name) override;
         AZStd::vector<Scene*> GetAllScenes() override;
         bool RemoveScene(AZStd::string_view name) override;
-        bool SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) override;
-        bool RemoveSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) override;
         Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) override;
 
     private:

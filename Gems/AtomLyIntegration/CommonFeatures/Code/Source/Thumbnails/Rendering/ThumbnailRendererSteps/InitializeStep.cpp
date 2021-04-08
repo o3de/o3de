@@ -111,14 +111,6 @@ namespace AZ
                 data->m_frameworkScene->SetSubsystem(data->m_scene);
 
                 data->m_frameworkScene->SetSubsystem(data->m_entityContext.get());
-                bool success = false;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    success,
-                    &AzFramework::SceneSystemRequests::SetSceneForEntityContextId,
-                    data->m_entityContext->GetContextId(),
-                    data->m_frameworkScene);
-                AZ_Assert(success, "Unable to set entity context on AzFramework::Scene: %s", data->m_sceneName.c_str());
-
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
                 RPI::RenderPipelineDescriptor pipelineDesc;
                 pipelineDesc.m_mainViewTagName = "MainCamera";

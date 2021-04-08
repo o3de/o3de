@@ -51,14 +51,6 @@ namespace AzFramework
         //!  - If the removed scene is the default scene, there will no longer be a default scene.
         virtual bool RemoveScene(AZStd::string_view name) = 0;
 
-        //! Add a mapping from the provided EntityContextId to a Scene
-        //! - If a scene is already associated with this EntityContextId, nothing is changed and false is returned.
-        virtual bool SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) = 0;
-
-        //! Remove a mapping from the provided EntityContextId to a Scene
-        //!  - If no scene is found from the provided EntityContextId, false is returned.
-        virtual bool RemoveSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) = 0;
-
         //! Get the scene associated with an EntityContextId
         //!  - If no scene is found for the provided EntityContextId, nullptr is returned.
         virtual Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) = 0;
@@ -106,12 +98,6 @@ namespace AzFramework
 
         //! Called just before a scene is removed.
         virtual void SceneAboutToBeRemoved() {};
-
-        //! Called when an entity context is mapped to this scene.
-        virtual void EntityContextMapped(EntityContextId /*entityContextId*/) {};
-
-        //! Called when an entity context is unmapped from this scene.
-        virtual void EntityContextUnmapped(EntityContextId /*entityContextId*/) {};
     };
 
     using SceneNotificationBus = AZ::EBus<SceneNotifications>;

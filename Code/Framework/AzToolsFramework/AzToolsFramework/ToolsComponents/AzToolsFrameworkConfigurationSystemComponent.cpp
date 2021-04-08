@@ -83,12 +83,6 @@ namespace AzToolsFramework
                             editorScene.GetValue()->SetSubsystem<AzFramework::EntityContext::SceneStorageType&>(editorEntityContext);
                         AZ_Assert(contextAdded, "Unable to add editor entity context to scene.");
                     }
-
-                    [[maybe_unused]] bool success = false;
-                    AzFramework::SceneSystemRequestBus::BroadcastResult(
-                        success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, editorEntityContextId,
-                        editorScene.GetValue());
-                    AZ_Assert(success, "Failed to associate the editor entity context with the editor scene")
                 }
                 else
                 {

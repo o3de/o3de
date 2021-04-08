@@ -68,8 +68,6 @@ namespace AzFramework
                 {
                     scene->SetSubsystem<EntityContext::SceneStorageType&>(gameEntityContext);
                 }
-                SceneSystemRequestBus::BroadcastResult(
-                    success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, gameEntityContextId, scene);     
             }
             AZ_Assert(success, "The application was unable to setup a scene for the game entity context, this should always work");
         }

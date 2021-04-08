@@ -125,38 +125,6 @@ namespace AzFramework
         return false;
     }
 
-    bool SceneSystemComponent::SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene)
-    {
-        if (!scene || entityContextId.IsNull())
-        {
-            return false;
-        }
-
-        [[maybe_unused]] EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
-        AZ_Assert(
-            entityContext && (*entityContext)->GetContextId() == entityContextId,
-            "Scene didn't contain an Entity Context or the id of the context didn't match the provided entity context id.");
-        
-        SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextMapped, entityContextId);
-        return true;
-    }
-
-    bool SceneSystemComponent::RemoveSceneForEntityContextId(EntityContextId entityContextId, Scene* scene)
-    {
-        if (!scene || entityContextId.IsNull())
-        {
-            return false;
-        }
-
-        [[maybe_unused]] EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
-        AZ_Assert(
-            entityContext && (*entityContext)->GetContextId() == entityContextId,
-            "Scene didn't contain an Entity Context or the id of the context didn't match the provided entity context id.");
-
-        SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextUnmapped, entityContextId);
-        return true;
-    }
-
     Scene* SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
     {
         for (AZStd::unique_ptr<Scene>& scene : m_scenes)
